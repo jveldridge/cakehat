@@ -48,11 +48,17 @@ public class TADB {
     }
 
     public static String[] getTableNames() throws SqlJetException {
+         if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
         Set<String> s = db.getSchema().getTableNames();
         return s.toArray(new String[0]);
     }
 
     public static String[] getColumnNames(String tableName) throws SqlJetException {
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
         db = SqlJetDb.open(new File(FILE_NAME), true);
         String[] s = new String[db.getSchema().getTable(tableName).getColumns().size()];
         for (int i = 0; i < s.length; i++) {
@@ -82,7 +88,7 @@ public class TADB {
 
     }
 
-    public static void createTable(final String tableName, final String sqlNewTableString, final String sqlIndexString) throws SqlJetException {
+    public static void createTable(final String sqlNewTableString, final String sqlIndexString) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
@@ -142,7 +148,7 @@ public class TADB {
     }
 
     public static void update(final long rowid, final String tableName, final Object... values) throws SqlJetException {
-         if (db == null) {
+        if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {

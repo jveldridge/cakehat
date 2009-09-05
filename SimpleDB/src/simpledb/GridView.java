@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -26,8 +27,10 @@ public class GridView extends JTable {
     private TableColumn _idCol;
     private String _tableName;
     private boolean _refreshTable = false;
+
     public GridView() {
         super();
+        //Make the table look somewhat decent
         this.removeAll();
         this.setBackground(Color.white);
         this.setRowHeight(20);
@@ -35,9 +38,19 @@ public class GridView extends JTable {
         this.setGridColor(new Color(190, 214, 246));
         this.setForeground(new Color(79, 79, 79));
         this.setIntercellSpacing(new Dimension(3, 3));
+
+
         initDatabaseWatch();
     }
 
+    /**
+     * Alternate row color backgrounds (cause overriding the prepareRender is
+     * perfectly obvious...thanks swing.
+     * @param renderer
+     * @param rowIndex
+     * @param vColIndex
+     * @return
+     */
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
@@ -49,6 +62,13 @@ public class GridView extends JTable {
         return c;
     }
 
+    /**
+     * This gets called whenver a cell is changed/modified.  So we can add it
+     * to the database.
+     * @param aValue
+     * @param row
+     * @param column
+     */
     @Override
     public void setValueAt(Object aValue, int row, int column) {
         try {
@@ -62,7 +82,7 @@ public class GridView extends JTable {
                 data[i] = this.getValueAt(this.getSelectedRow(), i);
             }
             TADB.update(rowId, _tableName, data);
-            if(_refreshTable) {
+            if (_refreshTable) {
                 _refreshTable = false;
                 refresh(_tableName);
             }
@@ -87,8 +107,12 @@ public class GridView extends JTable {
         this.addColumn(c);
         model.addColumn(colName);
     }
+
     private Timer _dbTimer = new Timer();
 
+    /**
+     * Watches the databse file for modifications to reload.
+     */
     private void initDatabaseWatch() {
         TimerTask task = new DatabaseWatch(new File(TADB.FILE_NAME)) {
 
@@ -103,6 +127,11 @@ public class GridView extends JTable {
         _dbTimer.schedule(task, new Date(), 100);
     }
 
+    /**
+     * Removes the database watch (useful when saving or modifying the databse
+     * to prevent us from getting stuck in a loop detecting changes and writing
+     * changes)
+     */
     private void removeDatabaseWatch() {
         _dbTimer.cancel();
         _dbTimer.purge();
@@ -110,7 +139,7 @@ public class GridView extends JTable {
     }
 
     /**
-     * Removes the currently selected rows from the grid
+     * Removes the currently selected rows from the grid and databse.
      */
     public void removeRows(String tableName) {
         removeDatabaseWatch();
@@ -130,6 +159,10 @@ public class GridView extends JTable {
         initDatabaseWatch();
     }
 
+    /**
+     * Adds a row to the grid and databse.
+     * @param tableName
+     */
     public void addRow(String tableName) {
         removeDatabaseWatch();
         try {
@@ -147,14 +180,25 @@ public class GridView extends JTable {
         initDatabaseWatch();
     }
 
+    private TableRowSorter<TableModel> _textFilter;
+    /**
+     * Grid text filter.
+     * @param filterText
+     */
+    public void filter(String filterText) {
+        if(filterText.length() == 0)
+            _textFilter.setRowFilter(null);
+        else
+            _textFilter.setRowFilter(RowFilter.regexFilter(filterText));
+    }
     /**
      * Refreshes the table to the database version.  Kind of craptastic because
      * we have to loard the whole table again.  But its okay for small cs015 tables.
      * @param tableName
      */
     public void refresh(String tableName) {
-        if(this.isEditing()) {
-            _refreshTable = true;
+        if (this.isEditing()) {
+            _refreshTable = true; //Prevent us from refreshing when editing a cell
             return;
         }
         removeDatabaseWatch();
@@ -162,9 +206,8 @@ public class GridView extends JTable {
         this.removeAll();
         this.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
         DefaultTableModel m = (DefaultTableModel) this.getModel();
-        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(m);
-
-        this.setRowSorter(sorter);
+        _textFilter = new TableRowSorter<TableModel>(m);
+        this.setRowSorter(_textFilter);
         try {
             String[] columnNames = TADB.getColumnNames(tableName);
             for (String s : columnNames) {
