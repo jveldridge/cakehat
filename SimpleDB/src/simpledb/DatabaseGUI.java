@@ -112,6 +112,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         jButton8 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         jButton10 = new javax.swing.JButton();
+        addTable = new javax.swing.JDialog();
         mainToolbar = new javax.swing.JToolBar();
         createTableToolbarButton = new javax.swing.JButton();
         revertChangesToolbarButton = new javax.swing.JButton();
@@ -413,6 +414,9 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        addDropDialog.setMinimumSize(new java.awt.Dimension(500, 400));
+        addDropDialog.setModal(true);
+
         try {
             String[] tableNames = TADB.getTableNames();
             DefaultListModel lm = new DefaultListModel();
@@ -463,6 +467,17 @@ public class DatabaseGUI extends javax.swing.JFrame {
                     .addComponent(jButton10)
                     .addComponent(jButton8))
                 .addContainerGap())
+        );
+
+        javax.swing.GroupLayout addTableLayout = new javax.swing.GroupLayout(addTable.getContentPane());
+        addTable.getContentPane().setLayout(addTableLayout);
+        addTableLayout.setHorizontalGroup(
+            addTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        addTableLayout.setVerticalGroup(
+            addTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -825,6 +840,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JDialog addColumnDialog;
     private javax.swing.JDialog addDropDialog;
     private javax.swing.JButton addRowButton;
+    private javax.swing.JDialog addTable;
     private javax.swing.JButton createTableToolbarButton;
     private javax.swing.JDialog databaseUpdateDialog;
     private javax.swing.JMenu editMenu;
