@@ -10,14 +10,11 @@
  */
 package simpledb;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
-import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
+import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
 
 /**
@@ -39,19 +36,23 @@ public class DatabaseGUI extends javax.swing.JFrame {
         initComponents();
         try {
             String[] tableNames = TADB.getTableNames();
+            DefaultTableModel dtm = (DefaultTableModel) tableList.getModel();
             for (String s : tableNames) {
                 tableSelector.insertItemAt(s, tableSelector.getItemCount());
+
+                Object[] data = new Object[1];
+                data[0] = s;
+                dtm.addRow(data);
             }
             if (tableSelector.getItemCount() > 0) {
                 tableSelector.setSelectedIndex(0);
-                refreshTable((String)tableSelector.getModel().getSelectedItem());
+                refreshTable((String) tableSelector.getModel().getSelectedItem());
             }
         } catch (SqlJetException e) {
             e.printStackTrace();
         }
         this.setVisible(true);
     }
-
 
     private void refreshTable(String tableName) {
         gridView.refresh(tableName);
@@ -106,13 +107,23 @@ public class DatabaseGUI extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
         addDropDialog = new javax.swing.JDialog();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jList2 = new javax.swing.JList();
         jButton7 = new javax.swing.JButton();
         jButton8 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         jButton10 = new javax.swing.JButton();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        tableList = new javax.swing.JTable();
         addTable = new javax.swing.JDialog();
+        jButton11 = new javax.swing.JButton();
+        jTextField2 = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jList3 = new javax.swing.JList();
+        jButton12 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        jButton13 = new javax.swing.JButton();
+        jButton14 = new javax.swing.JButton();
+        jButton15 = new javax.swing.JButton();
         mainToolbar = new javax.swing.JToolBar();
         createTableToolbarButton = new javax.swing.JButton();
         revertChangesToolbarButton = new javax.swing.JButton();
@@ -417,18 +428,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         addDropDialog.setMinimumSize(new java.awt.Dimension(500, 400));
         addDropDialog.setModal(true);
 
-        try {
-            String[] tableNames = TADB.getTableNames();
-            DefaultListModel lm = new DefaultListModel();
-            jList2.setModel(lm);
-            for (String s : tableNames) {
-                lm.addElement(s);
-            }
-        } catch (SqlJetException e) {
-            e.printStackTrace();
-        }
-        jScrollPane3.setViewportView(jList2);
-
         jButton7.setText("Add Table");
 
         jButton8.setText("Remove Table(s)");
@@ -437,19 +436,32 @@ public class DatabaseGUI extends javax.swing.JFrame {
 
         jButton10.setText("Cancel");
 
+        tableList.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tables"
+            }
+        ));
+        tableList.setDoubleBuffered(true);
+        tableList.setFillsViewportHeight(true);
+        tableList.setGridColor(new java.awt.Color(255, 255, 255));
+        jScrollPane5.setViewportView(tableList);
+
         javax.swing.GroupLayout addDropDialogLayout = new javax.swing.GroupLayout(addDropDialog.getContentPane());
         addDropDialog.getContentPane().setLayout(addDropDialogLayout);
         addDropDialogLayout.setHorizontalGroup(
             addDropDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(addDropDialogLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(addDropDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addDropDialogLayout.createSequentialGroup()
+                .addGroup(addDropDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(addDropDialogLayout.createSequentialGroup()
                         .addComponent(jButton7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 248, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton10)))
@@ -459,25 +471,79 @@ public class DatabaseGUI extends javax.swing.JFrame {
             addDropDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addDropDialogLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(addDropDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton7)
                     .addComponent(jButton9)
                     .addComponent(jButton10)
+                    .addComponent(jButton7)
                     .addComponent(jButton8))
                 .addContainerGap())
         );
+
+        jButton11.setText("Import File...");
+        jButton11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton11ActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Table Name");
+
+        jScrollPane4.setViewportView(jList3);
+
+        jButton12.setText("Add Column");
+
+        jLabel3.setText("Table Columns (the first item will automatically be used as the index)");
+
+        jButton13.setText("Remove Column(s)");
+
+        jButton14.setText("Cancel");
+
+        jButton15.setText("Confirm");
 
         javax.swing.GroupLayout addTableLayout = new javax.swing.GroupLayout(addTable.getContentPane());
         addTable.getContentPane().setLayout(addTableLayout);
         addTableLayout.setHorizontalGroup(
             addTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(addTableLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(addTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .addComponent(jButton11)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .addGroup(addTableLayout.createSequentialGroup()
+                        .addComponent(jButton12)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton13)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
+                        .addComponent(jButton15)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton14))
+                    .addComponent(jLabel3))
+                .addContainerGap())
         );
         addTableLayout.setVerticalGroup(
             addTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(addTableLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButton11)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(addTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton12)
+                    .addComponent(jButton13)
+                    .addComponent(jButton14)
+                    .addComponent(jButton15))
+                .addContainerGap())
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -821,6 +887,10 @@ public class DatabaseGUI extends javax.swing.JFrame {
         addDropDialog.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton11ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -849,6 +919,11 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton10;
+    private javax.swing.JButton jButton11;
+    private javax.swing.JButton jButton12;
+    private javax.swing.JButton jButton13;
+    private javax.swing.JButton jButton14;
+    private javax.swing.JButton jButton15;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
@@ -858,8 +933,10 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JList jList1;
-    private javax.swing.JList jList2;
+    private javax.swing.JList jList3;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
@@ -869,12 +946,14 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
     private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JMenuBar mainMenu;
     private javax.swing.JPanel mainPanel;
@@ -892,6 +971,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JButton revertOkayButton;
     private javax.swing.JPanel statusBarPanel;
     private javax.swing.JLabel statusLabel;
+    private javax.swing.JTable tableList;
     private javax.swing.JComboBox tableSelector;
     private javax.swing.JSeparator toolbarSeparator;
     // End of variables declaration//GEN-END:variables
