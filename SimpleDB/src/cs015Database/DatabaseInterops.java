@@ -7,6 +7,7 @@ package cs015Database;
 import java.io.File;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.internal.SqlJetTransactionMode;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTransaction;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
@@ -58,10 +59,16 @@ public class DatabaseInterops {
     }
 
     public static ISqlJetCursor getAllData(String tableName) throws SqlJetException {
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
         return db.getTable(tableName).open();
     }
 
     public static ISqlJetCursor getData(String tableName, String login) throws SqlJetException {
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
         return db.getTable(tableName).lookup("login_names", login);
     }
 
@@ -119,7 +126,6 @@ public class DatabaseInterops {
 //    public static boolean isValidName(String name) {
 //
 //    }
-
     /**
      * Check if the table actually exists
      */
@@ -127,11 +133,17 @@ public class DatabaseInterops {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
-        if(tableName == null)
+        if (tableName == null) {
             return false;
-        for(String s : db.getSchema().getTableNames())
-            if(s.compareTo(tableName) == 0)
+
+        }
+        for (String s : db.getSchema().getTableNames()) {
+            if (s.compareTo(tableName) == 0) {
                 return true;
+
+            }
+
+        }
         return false;
     }
 
@@ -179,6 +191,29 @@ public class DatabaseInterops {
 
             }
         });
+    }
+
+    public static ISqlJetCursor getItemWithFilter(final String tableName, final String indexName, final String filter) throws SqlJetException {
+        return db.getTable(tableName).lookup(indexName, filter);
+    }
+
+    public static void regenerateDatabase() throws SqlJetException {
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
+        for (String s : db.getSchema().getTableNames()) {
+            db.dropTable(s);
+        }
+        for (String s : db.getSchema().getIndexNames()) {
+            db.dropIndex(s);
+        }
+
+        //Add new tables  should be read from xml file
+
+        db.createTable("create table assignments (assignmentNames text not null)");
+        db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
+        db.createTable("create table gradingDist (taLogin text not null, Clock text, LiteBrite text, Cartoon text)");
+        db.createIndex("create index taLoginDist on gradingDist (taLogin)");
     }
 
     public static void close() throws SqlJetException {

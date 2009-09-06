@@ -31,11 +31,14 @@ public class DatabaseGUI extends javax.swing.JFrame {
     /** Creates new form DatabaseGUI */
     public DatabaseGUI() {
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/simpledb/x-office-spreadsheet.png")));
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/x-office-spreadsheet.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
         initComponents();
+//        try{
+//        DatabaseInterops.regenerateDatabase();}
+//        catch(Exception e){e.printStackTrace();}
         updateFormComponents();
 
     }
