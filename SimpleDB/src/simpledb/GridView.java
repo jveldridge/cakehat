@@ -24,6 +24,7 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
  */
 public class GridView extends JTable {
 
+    private static final long serialVersionUID = 1L;
     private TableColumn _idCol;
     private String _tableName;
     private boolean _refreshTable = false;
@@ -38,8 +39,6 @@ public class GridView extends JTable {
         this.setGridColor(new Color(190, 214, 246));
         this.setForeground(new Color(79, 79, 79));
         this.setIntercellSpacing(new Dimension(3, 3));
-
-
         initDatabaseWatch();
     }
 
@@ -81,7 +80,7 @@ public class GridView extends JTable {
             for (int i = 0; i < data.length; i++) {
                 data[i] = this.getValueAt(this.getSelectedRow(), i);
             }
-            TADB.update(rowId, _tableName, data);
+            DatabaseInterops.update(rowId, _tableName, data);
             if (_refreshTable) {
                 _refreshTable = false;
                 refresh(_tableName);
@@ -107,14 +106,13 @@ public class GridView extends JTable {
         this.addColumn(c);
         model.addColumn(colName);
     }
-
     private Timer _dbTimer = new Timer();
 
     /**
      * Watches the databse file for modifications to reload.
      */
-    private void initDatabaseWatch() {
-        TimerTask task = new DatabaseWatch(new File(TADB.FILE_NAME)) {
+    public void initDatabaseWatch() {
+        TimerTask task = new DatabaseWatch(new File(DatabaseInterops.FILE_NAME)) {
 
             protected void onChange(File file) {
                 removeDatabaseWatch();
@@ -132,7 +130,7 @@ public class GridView extends JTable {
      * to prevent us from getting stuck in a loop detecting changes and writing
      * changes)
      */
-    private void removeDatabaseWatch() {
+    public void removeDatabaseWatch() {
         _dbTimer.cancel();
         _dbTimer.purge();
         _dbTimer = new Timer();
@@ -149,7 +147,7 @@ public class GridView extends JTable {
         for (int r : this.getSelectedRows()) {
             try {
                 long rowId = Long.parseLong(this.getValueAt(r + k, m.getColumnCount() - 1).toString());
-                TADB.removeDatum(rowId, tableName);
+                DatabaseInterops.removeDatum(rowId, tableName);
                 m.removeRow(r + k--); //When a row is removed all rows shift up by one
             } catch (Exception e) {
                 e.printStackTrace();
@@ -167,10 +165,10 @@ public class GridView extends JTable {
         removeDatabaseWatch();
         try {
             this.getColumnModel().addColumn(_idCol);
-            Object[] data1 = new Object[TADB.getColumnNames(tableName).length];
+            Object[] data1 = new Object[DatabaseInterops.getColumnNames(tableName).length];
             data1[0] = "";
             Object[] data2 = new Object[data1.length + 1];
-            data2[data1.length] = TADB.addDatum(tableName, data1);
+            data2[data1.length] = DatabaseInterops.addDatum(tableName, data1);
             DefaultTableModel m = (DefaultTableModel) this.getModel();
             m.insertRow(this.getRowCount(), data2);
             this.getColumnModel().removeColumn(_idCol);
@@ -179,18 +177,20 @@ public class GridView extends JTable {
         }
         initDatabaseWatch();
     }
-
     private TableRowSorter<TableModel> _textFilter;
+
     /**
      * Grid text filter.
      * @param filterText
      */
     public void filter(String filterText) {
-        if(filterText.length() == 0)
+        if (filterText.length() == 0) {
             _textFilter.setRowFilter(null);
-        else
+        } else {
             _textFilter.setRowFilter(RowFilter.regexFilter(filterText));
+        }
     }
+
     /**
      * Refreshes the table to the database version.  Kind of craptastic because
      * we have to loard the whole table again.  But its okay for small cs015 tables.
@@ -201,6 +201,13 @@ public class GridView extends JTable {
             _refreshTable = true; //Prevent us from refreshing when editing a cell
             return;
         }
+        try {
+            if (!DatabaseInterops.isValidTable(tableName)) {
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         removeDatabaseWatch();
         _tableName = tableName;
         this.removeAll();
@@ -209,14 +216,14 @@ public class GridView extends JTable {
         _textFilter = new TableRowSorter<TableModel>(m);
         this.setRowSorter(_textFilter);
         try {
-            String[] columnNames = TADB.getColumnNames(tableName);
+            String[] columnNames = DatabaseInterops.getColumnNames(tableName);
             for (String s : columnNames) {
                 m.addColumn(s);
             }
             m.addColumn("rowID"); //Hidden rowId information
             _idCol = this.getColumnModel().getColumn(columnNames.length);
             this.getColumnModel().removeColumn(_idCol);
-            ISqlJetCursor cursor = TADB.getAllData(tableName);
+            ISqlJetCursor cursor = DatabaseInterops.getAllData(tableName);
             try {
                 while (!cursor.eof()) {
                     Object[] rowData = new Object[columnNames.length + 1];
@@ -245,13 +252,13 @@ public class GridView extends JTable {
     public void save(String tableName) {
         removeDatabaseWatch();
         try {
-            TADB.resetTable(tableName);
+            DatabaseInterops.resetTable(tableName);
             Object[] rowData = new Object[(this.getColumnCount()) - 1];
             for (int i = 0; i < this.getRowCount(); i++) {
                 for (int j = 0; j < this.getColumnCount() - 1; j++) {
                     rowData[j] = this.getValueAt(i, j);
                 }
-                TADB.addDatum(tableName, rowData);
+                DatabaseInterops.addDatum(tableName, rowData);
             }
         } catch (SqlJetException e) {
             e.printStackTrace();

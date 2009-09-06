@@ -5,34 +5,25 @@
 package simpledb;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTransaction;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
-import java.lang.Runtime;
 
 /**
  *
  * @author psastras
  */
-public class TADB {
+public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
     private static final boolean regenerate_tables = false;
-    private static final String[][] TABLES = new String[][]{
-        {"create table taData (login text not null, comment text)", "create index login_names on taData (login)"},
-        {"create index login_names on taData (login)"}
-    };
     private static SqlJetDb db;
 
     public static void open() throws SqlJetException {
         db = SqlJetDb.open(new File(FILE_NAME), true);
+
     }
 
     public static void resetTable(final String tableName) throws SqlJetException {
@@ -48,7 +39,7 @@ public class TADB {
     }
 
     public static String[] getTableNames() throws SqlJetException {
-         if (db == null) {
+        if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
         Set<String> s = db.getSchema().getTableNames();
@@ -59,7 +50,6 @@ public class TADB {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
-        db = SqlJetDb.open(new File(FILE_NAME), true);
         String[] s = new String[db.getSchema().getTable(tableName).getColumns().size()];
         for (int i = 0; i < s.length; i++) {
             s[i] = db.getSchema().getTable(tableName).getColumns().get(i).getName();
@@ -120,6 +110,29 @@ public class TADB {
                 return null;
             }
         });
+    }
+
+//    /**
+//     * Check for invalid characters in sql name.
+//     * @return
+//     */
+//    public static boolean isValidName(String name) {
+//
+//    }
+
+    /**
+     * Check if the table actually exists
+     */
+    public static boolean isValidTable(final String tableName) throws SqlJetException {
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
+        if(tableName == null)
+            return false;
+        for(String s : db.getSchema().getTableNames())
+            if(s.compareTo(tableName) == 0)
+                return true;
+        return false;
     }
 
     public static long addDatum(final String tableName, final Object... data) throws SqlJetException {

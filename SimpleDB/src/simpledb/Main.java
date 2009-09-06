@@ -18,7 +18,6 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
 //        Toolkit.getDefaultToolkit().beep();
 //        System.out.print("\007");
 //        System.out.flush();
@@ -27,7 +26,7 @@ public class Main {
         } catch (Exception e) {
         }
         try {
-            TADB.open();
+            DatabaseInterops.open();
         } catch (SqlJetException e) {
             e.printStackTrace();
             return;
@@ -39,7 +38,7 @@ public class Main {
 
 
         try {
-            TADB.close();
+            DatabaseInterops.close();
         } catch (SqlJetException e) {
             e.printStackTrace();
         }
