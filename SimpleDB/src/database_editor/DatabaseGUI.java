@@ -8,8 +8,9 @@
  *
  * Created on Sep 3, 2009, 1:28:33 PM
  */
-package simpledb;
+package database_editor;
 
+import simpledb.DatabaseInterops;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Timer;
@@ -36,7 +37,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         }
         initComponents();
         updateFormComponents();
-        this.setVisible(true);
 
     }
 
@@ -121,7 +121,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         removeRowButton = new javax.swing.JButton();
         toolbarSeparator = new javax.swing.JSeparator();
         gridViewScrollPane = new javax.swing.JScrollPane();
-        gridView = new simpledb.GridView();
+        gridView = new database_editor.GridView();
         filterTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         mainMenu = new javax.swing.JMenuBar();
@@ -145,7 +145,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         revertDialog.setModal(true);
         revertDialog.setResizable(false);
 
-        revertDialogLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/dialog-warning.png"))); // NOI18N
+        revertDialogLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
         revertDialogLabel1.setText("Are you sure you want to revert to the database version?");
         revertDialogLabel1.setIconTextGap(15);
 
@@ -258,7 +258,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         aboutDialog.setResizable(false);
 
         aboutDialogTitleText.setFont(new java.awt.Font("Tahoma", 1, 11));
-        aboutDialogTitleText.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/help-browser.png"))); // NOI18N
+        aboutDialogTitleText.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/help-browser.png"))); // NOI18N
         aboutDialogTitleText.setText("cs015 Database Editor");
         aboutDialogTitleText.setIconTextGap(15);
 
@@ -296,7 +296,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         quitDialog.setModal(true);
         quitDialog.setResizable(false);
 
-        quitDialogText.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/dialog-warning.png"))); // NOI18N
+        quitDialogText.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
         quitDialogText.setText("The table has been modified.  Are you sure you want to quit?");
         quitDialogText.setIconTextGap(15);
 
@@ -356,7 +356,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         databaseUpdateDialog.setModal(true);
         databaseUpdateDialog.setResizable(false);
 
-        databaseUpdateDialogLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/dialog-warning.png"))); // NOI18N
+        databaseUpdateDialogLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
         databaseUpdateDialogLabel.setText("The database has been modified.  Reload changes?");
         databaseUpdateDialogLabel.setIconTextGap(15);
 
@@ -582,7 +582,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("cs015 Database Editor");
         setBackground(java.awt.SystemColor.controlDkShadow);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -605,7 +604,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         });
         mainToolbar.add(createTableToolbarButton);
 
-        revertChangesToolbarButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/view-refresh.png"))); // NOI18N
+        revertChangesToolbarButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/view-refresh.png"))); // NOI18N
         revertChangesToolbarButton.setToolTipText("Refresh");
         revertChangesToolbarButton.setFocusable(false);
         revertChangesToolbarButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -640,7 +639,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
             }
         });
 
-        addRowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/list-add.png"))); // NOI18N
+        addRowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/list-add.png"))); // NOI18N
         addRowButton.setText("Add Row");
         addRowButton.setFocusable(false);
         addRowButton.addActionListener(new java.awt.event.ActionListener() {
@@ -649,7 +648,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
             }
         });
 
-        removeRowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/list-remove.png"))); // NOI18N
+        removeRowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/list-remove.png"))); // NOI18N
         removeRowButton.setText("Remove Row(s)");
         removeRowButton.setFocusable(false);
         removeRowButton.addActionListener(new java.awt.event.ActionListener() {
@@ -684,7 +683,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
                     .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1094, Short.MAX_VALUE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(tableSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 325, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 365, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -709,7 +708,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE)
+                .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
@@ -737,7 +736,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         editMenu.setText("Edit");
 
         editMenuAddRow.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
-        editMenuAddRow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/list-add.png"))); // NOI18N
+        editMenuAddRow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/list-add.png"))); // NOI18N
         editMenuAddRow.setText("Add Row");
         editMenuAddRow.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -747,7 +746,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         editMenu.add(editMenuAddRow);
 
         editMenuRemoveRows.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
-        editMenuRemoveRows.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/list-remove.png"))); // NOI18N
+        editMenuRemoveRows.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/list-remove.png"))); // NOI18N
         editMenuRemoveRows.setText("Remove Row(s)");
         editMenuRemoveRows.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -783,7 +782,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         });
 
         helpMenuAbout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, java.awt.event.InputEvent.CTRL_MASK));
-        helpMenuAbout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/help-browser.png"))); // NOI18N
+        helpMenuAbout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/help-browser.png"))); // NOI18N
         helpMenuAbout.setText("About");
         helpMenuAbout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -879,11 +878,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
 
-        if (_isModified) {
-            quitDialog.setVisible(true);
-        } else {
-            System.exit(0);
-        }
     }//GEN-LAST:event_formWindowClosing
 
     private void quitDialogCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitDialogCancelButtonActionPerformed
@@ -1108,7 +1102,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem fileMenuExit;
     private javax.swing.JSeparator fileMenuSeparator;
     private javax.swing.JTextField filterTextField;
-    private simpledb.GridView gridView;
+    private database_editor.GridView gridView;
     private javax.swing.JScrollPane gridViewScrollPane;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuAbout;

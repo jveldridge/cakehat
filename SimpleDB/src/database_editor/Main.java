@@ -2,17 +2,26 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package simpledb;
-import database_editor.*;
+package database_editor;
+
+import simpledb.DatabaseInterops;
+import java.awt.Toolkit;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.SqlJetException;
+
 /**
  *
- * @author Paul
+ * @author psastras
  */
 public class Main {
 
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
+//        Toolkit.getDefaultToolkit().beep();
+//        System.out.print("\007");
+//        System.out.flush();
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -23,14 +32,14 @@ public class Main {
             e.printStackTrace();
             return;
         }
-        StartupDialog sd = new StartupDialog();
-        sd.setVisible(true);
-        //DatabaseGUI dg = new DatabaseGUI();
+
+        DatabaseGUI dg = new DatabaseGUI();
 
         try {
             DatabaseInterops.close();
         } catch (SqlJetException e) {
             e.printStackTrace();
         }
+
     }
 }
