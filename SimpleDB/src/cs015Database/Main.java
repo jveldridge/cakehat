@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package simpledb;
+package cs015Database;
 import database_editor.*;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.SqlJetException;

@@ -8,7 +8,7 @@
  *
  * Created on Sep 6, 2009, 1:52:56 PM
  */
-package simpledb;
+package cs015Database;
 
 import database_editor.DatabaseGUI;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class StartupDialog extends javax.swing.JFrame {
     /** Creates new form StartupDialog */
     public StartupDialog() {
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/simpledb/application-x-executable.png")));
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/application-x-executable.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,7 +48,7 @@ public class StartupDialog extends javax.swing.JFrame {
         setTitle("cs015 Grades");
         setResizable(false);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/x-office-spreadsheet.png"))); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-spreadsheet.png"))); // NOI18N
         jButton1.setText("<html><b>Database Editor</b><br>Manually edit the database and database schema</html>");
         jButton1.setFocusable(false);
         jButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -59,13 +59,13 @@ public class StartupDialog extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/accessories-text-editor.png"))); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-text-editor.png"))); // NOI18N
         jButton2.setText("<html><b>Grade Distributor</b><br>Distribute grading assignments to TAs</html>");
         jButton2.setFocusable(false);
         jButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jButton2.setIconTextGap(20);
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/simpledb/x-office-drawing.png"))); // NOI18N
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-drawing.png"))); // NOI18N
         jButton3.setText("<html><b>Grade Information</b><br>Generate and email grade information and histograms</html>");
         jButton3.setFocusable(false);
         jButton3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -101,12 +101,13 @@ public class StartupDialog extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 

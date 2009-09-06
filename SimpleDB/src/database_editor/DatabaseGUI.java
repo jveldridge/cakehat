@@ -10,7 +10,7 @@
  */
 package database_editor;
 
-import simpledb.DatabaseInterops;
+import cs015Database.DatabaseInterops;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Timer;

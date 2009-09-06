@@ -4,7 +4,7 @@
  */
 package database_editor;
 
-import simpledb.DatabaseInterops;
+import cs015Database.DatabaseInterops;
 import java.awt.Toolkit;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.SqlJetException;

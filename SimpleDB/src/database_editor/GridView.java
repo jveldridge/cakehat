@@ -1,6 +1,6 @@
 package database_editor;
 
-import simpledb.DatabaseInterops;
+import cs015Database.DatabaseInterops;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
