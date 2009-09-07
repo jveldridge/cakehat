@@ -101,8 +101,10 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Assignment");
 
+        assignmentList.setForeground(new java.awt.Color(51, 51, 51));
         assignmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         assignmentList.setDoubleBuffered(true);
+        assignmentList.setSelectionBackground(new java.awt.Color(194, 214, 246));
         assignmentList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 assignmentListMouseClicked(evt);
@@ -293,7 +295,9 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel2.setText("Student");
 
+        studentList.setForeground(new java.awt.Color(51, 51, 51));
         studentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        studentList.setSelectionBackground(new java.awt.Color(190, 214, 246));
         studentList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 studentListMouseClicked(evt);
@@ -458,7 +462,9 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         String user = System.getProperty("user.name");
 
          try {
-            ISqlJetCursor cursor = DatabaseInterops.getItemWithFilter("gradingDist", "taLoginDist", user);
+            ISqlJetCursor cursor = DatabaseInterops.getItemWithFilter("assignment_dist", "taLoginDist", user);
+            if(cursor.eof())
+                return;
             try {
                 String s = cursor.getString((String)assignmentList.getSelectedValue());
                 String[] ss = s.split(",");

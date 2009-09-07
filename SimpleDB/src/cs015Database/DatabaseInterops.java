@@ -19,12 +19,14 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
 public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
-    private static final boolean regenerate_tables = false;
+    private static final String[] ASSIGNMENT_NAMES = {"Clock", "LiteBrite", "TASafeHouse", "Cartoon", "Swarm", "Tetris", "PizzaDex"};
+    private static final String[] GRADE_RUBRIC_FIELDS = {"BaseGrade", "Extras", "LateEarly", "Total"};
+    private static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
+    private static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
     private static SqlJetDb db;
 
     public static void open() throws SqlJetException {
         db = SqlJetDb.open(new File(FILE_NAME), true);
-
     }
 
     public static void resetTable(final String tableName) throws SqlJetException {
@@ -198,9 +200,12 @@ public class DatabaseInterops {
     }
 
     public static void regenerateDatabase() throws SqlJetException {
+
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
+
+        
         for (String s : db.getSchema().getTableNames()) {
             db.dropTable(s);
         }
@@ -212,8 +217,46 @@ public class DatabaseInterops {
 
         db.createTable("create table assignments (assignmentNames text not null)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
-        db.createTable("create table gradingDist (taLogin text not null, Clock text, LiteBrite text, Cartoon text)");
-        db.createIndex("create index taLoginDist on gradingDist (taLogin)");
+        String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
+        for (String s : ASSIGNMENT_NAMES) {
+            addDatum("assignments", s);
+            String sqlCreateTableString2 = "create table grades_" + s + " (studLogins text not null";
+
+            for (String ss : GRADE_RUBRIC_FIELDS) {
+                sqlCreateTableString2 += ", " + ss + " text";
+            }
+            sqlCreateTableString2 += ")";
+            db.createTable(sqlCreateTableString2);
+            sqlCreateTableString1 += ", " + s + " text";
+        }
+        sqlCreateTableString1 += ")";
+        db.createTable(sqlCreateTableString1);
+        db.createIndex("create index taLoginDist on assignment_dist (taLogin)");
+        autoPopulate();
+    }
+
+    private static void autoPopulate() throws SqlJetException {
+        //tester...remove this when done
+
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
+        for (String s : ASSIGNMENT_NAMES) {
+            for (String ss : STUD_LOGINS) {
+                Object[] data = new String[5];
+                data[0] = ss;
+                int grade = (int) (Math.random() * 50 + 50);
+                data[1] = Integer.toString(grade);
+                data[2] = Integer.toString((int)(Math.random() * 5));
+                data[3] = "0";
+                data[4] = Integer.toString(Integer.parseInt((String)data[1]) + Integer.parseInt((String) data[2]) + Integer.parseInt((String) data[3]));
+                addDatum("grades_" + s, data);
+            }
+        }
+        for(String s : TA_LOGINS) {
+            addDatum("assignment_dist", s);
+        }
+
     }
 
     public static void close() throws SqlJetException {

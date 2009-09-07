@@ -36,9 +36,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
         initComponents();
-//        try{
-//        DatabaseInterops.regenerateDatabase();}
-//        catch(Exception e){e.printStackTrace();}
         updateFormComponents();
 
     }
@@ -72,50 +69,9 @@ public class DatabaseGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        revertDialog = new javax.swing.JDialog();
-        revertDialogLabel1 = new javax.swing.JLabel();
-        revertOkayButton = new javax.swing.JButton();
-        revertCancelButton = new javax.swing.JButton();
-        addColumnDialog = new javax.swing.JDialog();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
         aboutDialog = new javax.swing.JDialog();
         aboutDialogTitleText = new javax.swing.JLabel();
         aboutDialogOkayButton = new javax.swing.JButton();
-        quitDialog = new javax.swing.JDialog();
-        quitDialogText = new javax.swing.JLabel();
-        quitDialogSaveChangesButton = new javax.swing.JButton();
-        quitDialogDontSaveButton = new javax.swing.JButton();
-        quitDialogCancelButton = new javax.swing.JButton();
-        databaseUpdateDialog = new javax.swing.JDialog();
-        databaseUpdateDialogLabel = new javax.swing.JLabel();
-        databaseUpdateDialogYes = new javax.swing.JButton();
-        databaseUpdateDialogNo = new javax.swing.JButton();
-        tableListDialog = new javax.swing.JDialog();
-        tableListDialogAddTable = new javax.swing.JButton();
-        tableListDialogRemoveTables = new javax.swing.JButton();
-        tableListDialogClose = new javax.swing.JButton();
-        tableListScrollPane = new javax.swing.JScrollPane();
-        tableList = new javax.swing.JTable();
-        addTableDialog = new javax.swing.JDialog();
-        importButton = new javax.swing.JButton();
-        tableNameTextField = new javax.swing.JTextField();
-        tableNameLabel = new javax.swing.JLabel();
-        addColumnButton = new javax.swing.JButton();
-        tableColumnsLabel = new javax.swing.JLabel();
-        columnTableScrollPanel = new javax.swing.JScrollPane();
-        columnTable = new javax.swing.JTable();
-        addTableCancelButton = new javax.swing.JButton();
-        addTableConfirmButton = new javax.swing.JButton();
-        removeColumnButton = new javax.swing.JButton();
-        mainToolbar = new javax.swing.JToolBar();
-        createTableToolbarButton = new javax.swing.JButton();
-        revertChangesToolbarButton = new javax.swing.JButton();
-        mainToolbarSeparator = new javax.swing.JToolBar.Separator();
         statusBarPanel = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         mainPanel = new javax.swing.JPanel();
@@ -136,123 +92,8 @@ public class DatabaseGUI extends javax.swing.JFrame {
         editMenuAddRow = new javax.swing.JMenuItem();
         editMenuRemoveRows = new javax.swing.JMenuItem();
         editMenuSeparator = new javax.swing.JSeparator();
-        editMenuAddRemoveTable = new javax.swing.JMenuItem();
-        editMenuModifyColumns = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         helpMenuAbout = new javax.swing.JMenuItem();
-
-        revertDialog.setTitle("Revert Table");
-        revertDialog.setForeground(java.awt.Color.white);
-        revertDialog.setLocationByPlatform(true);
-        revertDialog.setMinimumSize(new java.awt.Dimension(382, 113));
-        revertDialog.setModal(true);
-        revertDialog.setResizable(false);
-
-        revertDialogLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
-        revertDialogLabel1.setText("Are you sure you want to revert to the database version?");
-        revertDialogLabel1.setIconTextGap(15);
-
-        revertOkayButton.setText("Revert");
-        revertOkayButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                revertOkayButtonActionPerformed(evt);
-            }
-        });
-
-        revertCancelButton.setText("Cancel");
-        revertCancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                revertCancelButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout revertDialogLayout = new javax.swing.GroupLayout(revertDialog.getContentPane());
-        revertDialog.getContentPane().setLayout(revertDialogLayout);
-        revertDialogLayout.setHorizontalGroup(
-            revertDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, revertDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(revertDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(revertDialogLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                    .addGroup(revertDialogLayout.createSequentialGroup()
-                        .addComponent(revertOkayButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(revertCancelButton)))
-                .addContainerGap())
-        );
-        revertDialogLayout.setVerticalGroup(
-            revertDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, revertDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(revertDialogLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(revertDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(revertCancelButton)
-                    .addComponent(revertOkayButton))
-                .addContainerGap())
-        );
-
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane1.setViewportView(jList1);
-
-        jButton1.setText("Add Column");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jButton2.setText("Remove Column");
-
-        jButton3.setText("Okay");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
-        jButton4.setText("Cancel");
-
-        javax.swing.GroupLayout addColumnDialogLayout = new javax.swing.GroupLayout(addColumnDialog.getContentPane());
-        addColumnDialog.getContentPane().setLayout(addColumnDialogLayout);
-        addColumnDialogLayout.setHorizontalGroup(
-            addColumnDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(addColumnDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(addColumnDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(16, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addColumnDialogLayout.createSequentialGroup()
-                .addContainerGap(296, Short.MAX_VALUE)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        addColumnDialogLayout.setVerticalGroup(
-            addColumnDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(addColumnDialogLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(addColumnDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(addColumnDialogLayout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(addColumnDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton4)
-                    .addComponent(jButton3))
-                .addContainerGap())
-        );
 
         aboutDialog.setTitle("About");
         aboutDialog.setLocationByPlatform(true);
@@ -294,297 +135,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        quitDialog.setTitle("cs015 Database Editor");
-        quitDialog.setMinimumSize(new java.awt.Dimension(400, 140));
-        quitDialog.setModal(true);
-        quitDialog.setResizable(false);
-
-        quitDialogText.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
-        quitDialogText.setText("The table has been modified.  Are you sure you want to quit?");
-        quitDialogText.setIconTextGap(15);
-
-        quitDialogSaveChangesButton.setText("Save Changes");
-        quitDialogSaveChangesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quitDialogSaveChangesButtonActionPerformed(evt);
-            }
-        });
-
-        quitDialogDontSaveButton.setText("Don't Save");
-        quitDialogDontSaveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quitDialogDontSaveButtonActionPerformed(evt);
-            }
-        });
-
-        quitDialogCancelButton.setText("Cancel");
-        quitDialogCancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quitDialogCancelButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout quitDialogLayout = new javax.swing.GroupLayout(quitDialog.getContentPane());
-        quitDialog.getContentPane().setLayout(quitDialogLayout);
-        quitDialogLayout.setHorizontalGroup(
-            quitDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(quitDialogLayout.createSequentialGroup()
-                .addGroup(quitDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(quitDialogLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(quitDialogText, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
-                    .addGroup(quitDialogLayout.createSequentialGroup()
-                        .addContainerGap(55, Short.MAX_VALUE)
-                        .addComponent(quitDialogSaveChangesButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(quitDialogDontSaveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(quitDialogCancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        quitDialogLayout.setVerticalGroup(
-            quitDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(quitDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(quitDialogText, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(quitDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(quitDialogSaveChangesButton)
-                    .addComponent(quitDialogDontSaveButton)
-                    .addComponent(quitDialogCancelButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        databaseUpdateDialog.setMinimumSize(new java.awt.Dimension(400, 130));
-        databaseUpdateDialog.setModal(true);
-        databaseUpdateDialog.setResizable(false);
-
-        databaseUpdateDialogLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
-        databaseUpdateDialogLabel.setText("The database has been modified.  Reload changes?");
-        databaseUpdateDialogLabel.setIconTextGap(15);
-
-        databaseUpdateDialogYes.setText("Yes");
-        databaseUpdateDialogYes.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                databaseUpdateDialogYesActionPerformed(evt);
-            }
-        });
-
-        databaseUpdateDialogNo.setText("No");
-        databaseUpdateDialogNo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                databaseUpdateDialogNoActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout databaseUpdateDialogLayout = new javax.swing.GroupLayout(databaseUpdateDialog.getContentPane());
-        databaseUpdateDialog.getContentPane().setLayout(databaseUpdateDialogLayout);
-        databaseUpdateDialogLayout.setHorizontalGroup(
-            databaseUpdateDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(databaseUpdateDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(databaseUpdateDialogLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, databaseUpdateDialogLayout.createSequentialGroup()
-                .addContainerGap(183, Short.MAX_VALUE)
-                .addComponent(databaseUpdateDialogYes, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(databaseUpdateDialogNo, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        databaseUpdateDialogLayout.setVerticalGroup(
-            databaseUpdateDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(databaseUpdateDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(databaseUpdateDialogLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(databaseUpdateDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(databaseUpdateDialogNo)
-                    .addComponent(databaseUpdateDialogYes))
-                .addContainerGap())
-        );
-
-        tableListDialog.setTitle("Add / Remove Database Tables");
-        tableListDialog.setMinimumSize(new java.awt.Dimension(500, 400));
-        tableListDialog.setModal(true);
-        tableListDialog.addWindowStateListener(new java.awt.event.WindowStateListener() {
-            public void windowStateChanged(java.awt.event.WindowEvent evt) {
-                tableListDialogWindowStateChanged(evt);
-            }
-        });
-
-        tableListDialogAddTable.setText("Add Table");
-        tableListDialogAddTable.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tableListDialogAddTableActionPerformed(evt);
-            }
-        });
-
-        tableListDialogRemoveTables.setText("Remove Table(s)");
-        tableListDialogRemoveTables.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tableListDialogRemoveTablesActionPerformed(evt);
-            }
-        });
-
-        tableListDialogClose.setText("Close");
-        tableListDialogClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tableListDialogCloseActionPerformed(evt);
-            }
-        });
-
-        tableList.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Tables"
-            }
-        ));
-        tableList.setDoubleBuffered(true);
-        tableList.setFillsViewportHeight(true);
-        tableList.setGridColor(new java.awt.Color(255, 255, 255));
-        tableListScrollPane.setViewportView(tableList);
-
-        javax.swing.GroupLayout tableListDialogLayout = new javax.swing.GroupLayout(tableListDialog.getContentPane());
-        tableListDialog.getContentPane().setLayout(tableListDialogLayout);
-        tableListDialogLayout.setHorizontalGroup(
-            tableListDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(tableListDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(tableListDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(tableListScrollPane)
-                    .addGroup(tableListDialogLayout.createSequentialGroup()
-                        .addComponent(tableListDialogAddTable)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableListDialogRemoveTables)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 193, Short.MAX_VALUE)
-                        .addComponent(tableListDialogClose)))
-                .addContainerGap())
-        );
-        tableListDialogLayout.setVerticalGroup(
-            tableListDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tableListDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tableListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(tableListDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tableListDialogClose)
-                    .addComponent(tableListDialogAddTable)
-                    .addComponent(tableListDialogRemoveTables))
-                .addContainerGap())
-        );
-
-        addTableDialog.setTitle("Modify Table");
-        addTableDialog.setMinimumSize(new java.awt.Dimension(500, 400));
-        addTableDialog.setModal(true);
-
-        importButton.setText("Import File...");
-        importButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importButtonActionPerformed(evt);
-            }
-        });
-
-        tableNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                tableNameTextFieldKeyReleased(evt);
-            }
-        });
-
-        tableNameLabel.setText("Table Name (required)");
-
-        addColumnButton.setText("Add Column");
-        addColumnButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addColumnButtonActionPerformed(evt);
-            }
-        });
-
-        tableColumnsLabel.setText("Table Columns (the first item will automatically be used as the index)");
-
-        columnTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Columns"
-            }
-        ));
-        columnTable.setDoubleBuffered(true);
-        columnTable.setFillsViewportHeight(true);
-        columnTable.setFocusable(false);
-        columnTable.setShowHorizontalLines(false);
-        columnTable.setShowVerticalLines(false);
-        columnTableScrollPanel.setViewportView(columnTable);
-
-        addTableCancelButton.setText("Cancel");
-        addTableCancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addTableCancelButtonActionPerformed(evt);
-            }
-        });
-
-        addTableConfirmButton.setText("Confirm");
-        addTableConfirmButton.setEnabled(false);
-        addTableConfirmButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addTableConfirmButtonActionPerformed(evt);
-            }
-        });
-
-        removeColumnButton.setText("Remove Columns");
-        removeColumnButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeColumnButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout addTableDialogLayout = new javax.swing.GroupLayout(addTableDialog.getContentPane());
-        addTableDialog.getContentPane().setLayout(addTableDialogLayout);
-        addTableDialogLayout.setHorizontalGroup(
-            addTableDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addTableDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(addTableDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(columnTableScrollPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-                    .addComponent(importButton, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tableNameLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tableNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-                    .addComponent(tableColumnsLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, addTableDialogLayout.createSequentialGroup()
-                        .addComponent(addColumnButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeColumnButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 142, Short.MAX_VALUE)
-                        .addComponent(addTableConfirmButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addTableCancelButton)))
-                .addContainerGap())
-        );
-        addTableDialogLayout.setVerticalGroup(
-            addTableDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(addTableDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(importButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(tableNameLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableColumnsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(columnTableScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(addTableDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addColumnButton)
-                    .addComponent(addTableCancelButton)
-                    .addComponent(addTableConfirmButton)
-                    .addComponent(removeColumnButton))
-                .addContainerGap())
-        );
-
         setTitle("cs015 Database Editor");
         setBackground(java.awt.SystemColor.controlDkShadow);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -592,28 +142,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 formWindowClosing(evt);
             }
         });
-
-        mainToolbar.setRollover(true);
-
-        createTableToolbarButton.setIcon(new javax.swing.ImageIcon("C:\\Users\\Paul\\Desktop\\16x16\\actions\\document-new.png")); // NOI18N
-        createTableToolbarButton.setToolTipText("New Table");
-        createTableToolbarButton.setFocusable(false);
-        createTableToolbarButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        createTableToolbarButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        createTableToolbarButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createTableToolbarButtonActionPerformed(evt);
-            }
-        });
-        mainToolbar.add(createTableToolbarButton);
-
-        revertChangesToolbarButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/view-refresh.png"))); // NOI18N
-        revertChangesToolbarButton.setToolTipText("Refresh");
-        revertChangesToolbarButton.setFocusable(false);
-        revertChangesToolbarButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        revertChangesToolbarButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        mainToolbar.add(revertChangesToolbarButton);
-        mainToolbar.add(mainToolbarSeparator);
 
         statusBarPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
 
@@ -626,7 +154,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         statusBarPanelLayout.setHorizontalGroup(
             statusBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, statusBarPanelLayout.createSequentialGroup()
-                .addContainerGap(627, Short.MAX_VALUE)
+                .addContainerGap(677, Short.MAX_VALUE)
                 .addComponent(statusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -635,6 +163,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
             .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
         );
 
+        tableSelector.setMaximumRowCount(20);
         tableSelector.setMinimumSize(new java.awt.Dimension(10, 25));
         tableSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -683,10 +212,10 @@ public class DatabaseGUI extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1094, Short.MAX_VALUE)
+                    .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1144, Short.MAX_VALUE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(tableSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 365, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 375, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -697,7 +226,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 .addContainerGap())
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                    .addComponent(toolbarSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1114, Short.MAX_VALUE)
+                    .addComponent(toolbarSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1164, Short.MAX_VALUE)
                     .addGap(0, 0, 0)))
         );
         mainPanelLayout.setVerticalGroup(
@@ -711,19 +240,23 @@ public class DatabaseGUI extends javax.swing.JFrame {
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+                .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
                     .addComponent(toolbarSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(660, Short.MAX_VALUE)))
+                    .addContainerGap(698, Short.MAX_VALUE)))
         );
 
         fileMenu.setText("File");
         fileMenu.add(fileMenuSeparator);
 
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem1.setText("Export...");
+        jMenuItem1.setText("Regenerate Database");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
         fileMenu.add(jMenuItem1);
 
         fileMenuExit.setText("Exit");
@@ -759,22 +292,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         editMenu.add(editMenuRemoveRows);
         editMenu.add(editMenuSeparator);
 
-        editMenuAddRemoveTable.setText("Add/Remove Tables...");
-        editMenuAddRemoveTable.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editMenuAddRemoveTableActionPerformed(evt);
-            }
-        });
-        editMenu.add(editMenuAddRemoveTable);
-
-        editMenuModifyColumns.setText("Modify Columns");
-        editMenuModifyColumns.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editMenuModifyColumnsActionPerformed(evt);
-            }
-        });
-        editMenu.add(editMenuModifyColumns);
-
         mainMenu.add(editMenu);
 
         helpMenu.setText("Help");
@@ -804,13 +321,10 @@ public class DatabaseGUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(statusBarPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(mainToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, 1114, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(mainToolbar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusBarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -838,24 +352,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_fileMenuExitActionPerformed
 
-    private void revertOkayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revertOkayButtonActionPerformed
-
-        refreshTable((String) tableSelector.getSelectedItem());
-        updateStatus("Reverted table to database version");
-        revertDialog.setVisible(false);
-}//GEN-LAST:event_revertOkayButtonActionPerformed
-
-    private void revertCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revertCancelButtonActionPerformed
-
-        revertDialog.setVisible(false);
-}//GEN-LAST:event_revertCancelButtonActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void editMenuRemoveRowsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuRemoveRowsActionPerformed
 
         gridView.removeRows(tableSelector.getSelectedItem().toString());
@@ -880,59 +376,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_helpMenuAboutActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-
     }//GEN-LAST:event_formWindowClosing
-
-    private void quitDialogCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitDialogCancelButtonActionPerformed
-
-        quitDialog.setVisible(false);
-    }//GEN-LAST:event_quitDialogCancelButtonActionPerformed
-
-    private void quitDialogDontSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitDialogDontSaveButtonActionPerformed
-
-        System.exit(0);
-    }//GEN-LAST:event_quitDialogDontSaveButtonActionPerformed
-
-    private void quitDialogSaveChangesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitDialogSaveChangesButtonActionPerformed
-
-        //gridView.save((String) tableSelector.getSelectedItem());
-        System.exit(0);
-    }//GEN-LAST:event_quitDialogSaveChangesButtonActionPerformed
-
-    private void editMenuModifyColumnsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuModifyColumnsActionPerformed
-
-        addColumnDialog.setVisible(true);
-    }//GEN-LAST:event_editMenuModifyColumnsActionPerformed
-
-    private void databaseUpdateDialogNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseUpdateDialogNoActionPerformed
-
-        databaseUpdateDialog.setVisible(false);
-    }//GEN-LAST:event_databaseUpdateDialogNoActionPerformed
-
-    private void databaseUpdateDialogYesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseUpdateDialogYesActionPerformed
-
-        refreshTable((String) tableSelector.getSelectedItem());
-        databaseUpdateDialog.setVisible(false);
-    }//GEN-LAST:event_databaseUpdateDialogYesActionPerformed
-
-    private void editMenuAddRemoveTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuAddRemoveTableActionPerformed
-
-        try {
-            String[] tableNames = DatabaseInterops.getTableNames();
-            DefaultTableModel dtm = (DefaultTableModel) tableList.getModel();
-            dtm.getDataVector().removeAllElements();
-            for (String s : tableNames) {
-                Object[] data = {s};
-                dtm.addRow(data);
-            }
-        } catch (SqlJetException e) {
-            e.printStackTrace();
-        }
-        tableListDialog.setVisible(true);
-    }//GEN-LAST:event_editMenuAddRemoveTableActionPerformed
-
-    private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
-    }//GEN-LAST:event_importButtonActionPerformed
 
     private void filterTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterTextFieldActionPerformed
     }//GEN-LAST:event_filterTextFieldActionPerformed
@@ -942,100 +386,21 @@ public class DatabaseGUI extends javax.swing.JFrame {
         gridView.filter(filterTextField.getText());
     }//GEN-LAST:event_filterTextFieldKeyTyped
 
-    private void tableListDialogAddTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableListDialogAddTableActionPerformed
-
-        addTableDialog.setVisible(true);
-        tableNameTextField.setText("");
-    }//GEN-LAST:event_tableListDialogAddTableActionPerformed
-
-    private void addColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addColumnButtonActionPerformed
-
-
-        DefaultTableModel dtm = (DefaultTableModel) columnTable.getModel();
-        Object[] data = {"Col" + dtm.getRowCount()};
-        dtm.addRow(data);
-    }//GEN-LAST:event_addColumnButtonActionPerformed
-
-    private void addTableCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTableCancelButtonActionPerformed
-
-        addTableDialog.setVisible(false);
-    }//GEN-LAST:event_addTableCancelButtonActionPerformed
-
-    private void addTableConfirmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTableConfirmButtonActionPerformed
-
-        DefaultTableModel dtm = (DefaultTableModel) columnTable.getModel();
-        String[] junk = {""};
-        dtm.addRow(junk);
-        String sqlNewTableStringBuilder = "create table " + tableNameTextField.getText() + " (";
-        for (int i = 0; i < dtm.getRowCount() - 1; i++) {
-            sqlNewTableStringBuilder += dtm.getValueAt(i, 0) + " text";
-            if (i != dtm.getRowCount() - 2) {
-                sqlNewTableStringBuilder += ", ";
-            }
-        }
-        sqlNewTableStringBuilder += ")";
-        String sqlIndexStringBuilder = "create index tableIndex on " + tableNameTextField.getText() + " (" + dtm.getValueAt(0, 0) + ")";
-        try {
-            gridView.removeDatabaseWatch();
-            DatabaseInterops.createTable(sqlNewTableStringBuilder, sqlIndexStringBuilder);
-            gridView.initDatabaseWatch();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        updateFormComponents();
-        addTableDialog.setVisible(false);
-    }//GEN-LAST:event_addTableConfirmButtonActionPerformed
-
-    private void tableNameTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tableNameTextFieldKeyReleased
-        if (tableNameTextField.getText().length() != 0) {
-            addTableConfirmButton.setEnabled(true);
-        } else {
-            addTableConfirmButton.setEnabled(false);
-        }
-
-    }//GEN-LAST:event_tableNameTextFieldKeyReleased
-
-    private void tableListDialogWindowStateChanged(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_tableListDialogWindowStateChanged
-    }//GEN-LAST:event_tableListDialogWindowStateChanged
-
-    private void tableListDialogRemoveTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableListDialogRemoveTablesActionPerformed
-
-        DefaultTableModel m = (DefaultTableModel) tableList.getModel();
-        int k = 0;
-        for (int r : tableList.getSelectedRows()) {
-            try {
-                gridView.removeDatabaseWatch();
-                DatabaseInterops.dropTable((String) tableList.getValueAt(r + k, 0));
-                m.removeRow(r + k--); //When a row is removed all rows shift up by one
-                gridView.initDatabaseWatch();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        updateFormComponents();
-    }//GEN-LAST:event_tableListDialogRemoveTablesActionPerformed
-
     private void tableSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableSelectorActionPerformed
-
+        gridView.removeEditor();
         refreshTable((String) tableSelector.getSelectedItem());
     }//GEN-LAST:event_tableSelectorActionPerformed
 
-    private void tableListDialogCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableListDialogCloseActionPerformed
-
-        tableListDialog.setVisible(false);
-    }//GEN-LAST:event_tableListDialogCloseActionPerformed
-
-    private void createTableToolbarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createTableToolbarButtonActionPerformed
-        editMenuAddRemoveTableActionPerformed(evt);
-    }//GEN-LAST:event_createTableToolbarButtonActionPerformed
-
-    private void removeColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeColumnButtonActionPerformed
-        DefaultTableModel m = (DefaultTableModel) columnTable.getModel();
-        int k = 0;
-        for (int r : columnTable.getSelectedRows()) {
-            m.removeRow(r + k--); //When a row is removed all rows shift up by one
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        try {
+            gridView.removeDatabaseWatch();
+            DatabaseInterops.regenerateDatabase();
+            gridView.initDatabaseWatch();
+            updateFormComponents();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }//GEN-LAST:event_removeColumnButtonActionPerformed
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
      * Update components to current database information.
@@ -1044,13 +409,8 @@ public class DatabaseGUI extends javax.swing.JFrame {
         updateStatus("Synchronizing...");
 
         try {
-            DefaultTableModel dtm = (DefaultTableModel) tableList.getModel();
             String[] tableNames = DatabaseInterops.getTableNames();
-            dtm.getDataVector().removeAllElements();
-            for (String s : tableNames) {
-                Object[] data = {s};
-                dtm.addRow(data);
-            }
+
             tableSelector.removeAllItems();
             Arrays.sort(tableNames);
             for (String s : tableNames) {
@@ -1058,10 +418,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
             }
             if (tableSelector.getItemCount() > 0) {
                 tableSelector.setSelectedIndex(0);
-                refreshTable((String) tableSelector.getModel().getSelectedItem());
             }
-            dtm = (DefaultTableModel) columnTable.getModel();
-            dtm.getDataVector().removeAllElements();
         } catch (SqlJetException e) {
             e.printStackTrace();
         }
@@ -1082,23 +439,9 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JDialog aboutDialog;
     private javax.swing.JButton aboutDialogOkayButton;
     private javax.swing.JLabel aboutDialogTitleText;
-    private javax.swing.JButton addColumnButton;
-    private javax.swing.JDialog addColumnDialog;
     private javax.swing.JButton addRowButton;
-    private javax.swing.JButton addTableCancelButton;
-    private javax.swing.JButton addTableConfirmButton;
-    private javax.swing.JDialog addTableDialog;
-    private javax.swing.JTable columnTable;
-    private javax.swing.JScrollPane columnTableScrollPanel;
-    private javax.swing.JButton createTableToolbarButton;
-    private javax.swing.JDialog databaseUpdateDialog;
-    private javax.swing.JLabel databaseUpdateDialogLabel;
-    private javax.swing.JButton databaseUpdateDialogNo;
-    private javax.swing.JButton databaseUpdateDialogYes;
     private javax.swing.JMenu editMenu;
-    private javax.swing.JMenuItem editMenuAddRemoveTable;
     private javax.swing.JMenuItem editMenuAddRow;
-    private javax.swing.JMenuItem editMenuModifyColumns;
     private javax.swing.JMenuItem editMenuRemoveRows;
     private javax.swing.JSeparator editMenuSeparator;
     private javax.swing.JMenu fileMenu;
@@ -1109,42 +452,13 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane gridViewScrollPane;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuAbout;
-    private javax.swing.JButton importButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jList1;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuBar mainMenu;
     private javax.swing.JPanel mainPanel;
-    private javax.swing.JToolBar mainToolbar;
-    private javax.swing.JToolBar.Separator mainToolbarSeparator;
-    private javax.swing.JDialog quitDialog;
-    private javax.swing.JButton quitDialogCancelButton;
-    private javax.swing.JButton quitDialogDontSaveButton;
-    private javax.swing.JButton quitDialogSaveChangesButton;
-    private javax.swing.JLabel quitDialogText;
-    private javax.swing.JButton removeColumnButton;
     private javax.swing.JButton removeRowButton;
-    private javax.swing.JButton revertCancelButton;
-    private javax.swing.JButton revertChangesToolbarButton;
-    private javax.swing.JDialog revertDialog;
-    private javax.swing.JLabel revertDialogLabel1;
-    private javax.swing.JButton revertOkayButton;
     private javax.swing.JPanel statusBarPanel;
     private javax.swing.JLabel statusLabel;
-    private javax.swing.JLabel tableColumnsLabel;
-    private javax.swing.JTable tableList;
-    private javax.swing.JDialog tableListDialog;
-    private javax.swing.JButton tableListDialogAddTable;
-    private javax.swing.JButton tableListDialogClose;
-    private javax.swing.JButton tableListDialogRemoveTables;
-    private javax.swing.JScrollPane tableListScrollPane;
-    private javax.swing.JLabel tableNameLabel;
-    private javax.swing.JTextField tableNameTextField;
     private javax.swing.JComboBox tableSelector;
     private javax.swing.JSeparator toolbarSeparator;
     // End of variables declaration//GEN-END:variables
