@@ -4,10 +4,13 @@
  */
 package cs015Database;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.internal.SqlJetTransactionMode;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTransaction;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
@@ -19,10 +22,10 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
 public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
-    private static final String[] ASSIGNMENT_NAMES = {"Clock", "LiteBrite", "TASafeHouse", "Cartoon", "Swarm", "Tetris", "PizzaDex"};
-    private static final String[] GRADE_RUBRIC_FIELDS = {"BaseGrade", "Extras", "LateEarly", "Total"};
-    private static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
-    private static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
+    public static final String[] ASSIGNMENT_NAMES = {"Clock", "LiteBrite", "TASafeHouse", "Cartoon", "Swarm", "Tetris", "PizzaDex"};
+    public static final String[] GRADE_RUBRIC_FIELDS = {"BaseGrade", "Extras", "LateEarly", "Total"};
+    public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
+    public static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
     private static SqlJetDb db;
 
     public static void open() throws SqlJetException {
@@ -205,13 +208,16 @@ public class DatabaseInterops {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
 
-        
+
         for (String s : db.getSchema().getTableNames()) {
             db.dropTable(s);
         }
         for (String s : db.getSchema().getIndexNames()) {
             db.dropIndex(s);
         }
+
+
+      
 
         //Add new tables  should be read from xml file
 
@@ -232,8 +238,11 @@ public class DatabaseInterops {
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
         db.createIndex("create index taLoginDist on assignment_dist (taLogin)");
+
         autoPopulate();
     }
+
+    
 
     private static void autoPopulate() throws SqlJetException {
         //tester...remove this when done
@@ -247,13 +256,13 @@ public class DatabaseInterops {
                 data[0] = ss;
                 int grade = (int) (Math.random() * 50 + 50);
                 data[1] = Integer.toString(grade);
-                data[2] = Integer.toString((int)(Math.random() * 5));
+                data[2] = Integer.toString((int) (Math.random() * 5));
                 data[3] = "0";
-                data[4] = Integer.toString(Integer.parseInt((String)data[1]) + Integer.parseInt((String) data[2]) + Integer.parseInt((String) data[3]));
+                data[4] = Integer.toString(Integer.parseInt((String) data[1]) + Integer.parseInt((String) data[2]) + Integer.parseInt((String) data[3]));
                 addDatum("grades_" + s, data);
             }
         }
-        for(String s : TA_LOGINS) {
+        for (String s : TA_LOGINS) {
             addDatum("assignment_dist", s);
         }
 

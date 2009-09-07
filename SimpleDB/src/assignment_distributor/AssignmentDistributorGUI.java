@@ -8,8 +8,15 @@
  *
  * Created on Sep 7, 2009, 12:53:58 PM
  */
-
 package assignment_distributor;
+
+import cs015Database.*;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 /**
  *
@@ -20,9 +27,63 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     /** Creates new form AssignmentDistributorGUI */
     public AssignmentDistributorGUI() {
         initComponents();
-        //assignmentNameComboBox.getModel(
+        try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/accessories-text-editor.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
+            assignmentNameComboBox.removeAllItems();
+            for (int i = 1; i < columnNames.length; i++) {
+                assignmentNameComboBox.insertItemAt(columnNames[i], assignmentNameComboBox.getItemCount());
+            }
+            if (assignmentNameComboBox.getItemCount() > 0) {
+                assignmentNameComboBox.setSelectedIndex(0);
+                this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+            }
+
+        } catch (SqlJetException e) {
+            e.printStackTrace();
+        }
+        fillTable();
+        this.setLocationRelativeTo(null);
+
     }
 
+    private void fillTable() {
+
+        try {
+            ISqlJetCursor cursor = DatabaseInterops.getAllData("assignment_dist");
+            mainTable.removeAll();
+            mainTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
+            mainTable.removeAll();
+            DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
+
+            m.addColumn("TA Login");
+            m.addColumn("Number of Students to Grade");
+            try {
+                while (!cursor.eof()) {
+                    String s = cursor.getString((String) assignmentNameComboBox.getSelectedItem());
+                    String[] ss;
+                    if (s == null) {
+                        s = "";
+                    }
+                    ss = s.split(",");
+                    String[] sss = {cursor.getString("taLogin"), Integer.toString(ss.length)};
+                    if (s.isEmpty()) {
+                        sss[1] = "0";
+                    }
+                    m.insertRow(mainTable.getRowCount(), sss);
+                    cursor.next();
+                }
+            } finally {
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -42,8 +103,6 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
         mainTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -52,11 +111,26 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
 
             }
         ));
+        mainTable.setFocusable(false);
         jScrollPane1.setViewportView(mainTable);
 
-        redistributeButton.setText("Redistribute");
+        assignmentNameComboBox.setFocusable(false);
+        assignmentNameComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                assignmentNameComboBoxActionPerformed(evt);
+            }
+        });
 
-        generateDistButton.setText("Generate Grading Assignments");
+        redistributeButton.setText("1. Redistribute");
+        redistributeButton.setFocusable(false);
+        redistributeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redistributeButtonActionPerformed(evt);
+            }
+        });
+
+        generateDistButton.setText("2. Generate Grading Assignments");
+        generateDistButton.setFocusable(false);
 
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
@@ -74,41 +148,59 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 664, Short.MAX_VALUE)
+                    .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 378, Short.MAX_VALUE)
-                        .addComponent(redistributeButton))
-                    .addComponent(generateDistButton))
+                        .addComponent(redistributeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(generateDistButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(redistributeButton)
-                    .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(generateDistButton)
-                .addGap(11, 11, 11))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(generateDistButton)
+                    .addComponent(redistributeButton))
+                .addGap(14, 14, 14))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void assignmentNameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assignmentNameComboBoxActionPerformed
+        this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+        fillTable();
+    }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
+
+    private void redistributeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redistributeButtonActionPerformed
+        int[] numToGrade = new int[mainTable.getModel().getRowCount()];
+        TableModel m = mainTable.getModel();
+        
+        int index = (int)(Math.random() * numToGrade.length);
+        for(int i = 0; i < DatabaseInterops.STUD_LOGINS.length; i++) {
+            numToGrade[index++ % numToGrade.length]++;
+        }
+        for(int i = 0; i < numToGrade.length; i++) {
+            m.setValueAt(numToGrade[i], i, 1);
+        }
+    }//GEN-LAST:event_redistributeButtonActionPerformed
+
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new AssignmentDistributorGUI().setVisible(true);
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox assignmentNameComboBox;
     private javax.swing.JButton generateDistButton;
@@ -119,5 +211,4 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     private cs015Database.Table mainTable;
     private javax.swing.JButton redistributeButton;
     // End of variables declaration//GEN-END:variables
-
 }

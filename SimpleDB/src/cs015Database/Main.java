@@ -3,7 +3,6 @@
  * and open the template in the editor.
  */
 package cs015Database;
-import database_editor.*;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.SqlJetException;
 /**
@@ -25,7 +24,6 @@ public class Main {
         }
         StartupDialog sd = new StartupDialog();
         sd.setVisible(true);
-        //DatabaseGUI dg = new DatabaseGUI();
 
         try {
             DatabaseInterops.close();

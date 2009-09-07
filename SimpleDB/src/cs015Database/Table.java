@@ -31,6 +31,7 @@ public class Table extends JTable {
         this.setGridColor(new Color(190, 214, 246));
         this.setForeground(new Color(79, 79, 79));
         this.setIntercellSpacing(new Dimension(3, 3));
+        this.setDragEnabled(false);
     }
 
     /**

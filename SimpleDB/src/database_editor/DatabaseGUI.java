@@ -37,7 +37,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         }
         initComponents();
         updateFormComponents();
-
+        this.setLocationRelativeTo(null);
     }
 
     private void refreshTable(String tableName) {

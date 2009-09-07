@@ -22,6 +22,7 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
  * @author psastras
  */
 public class GradingCommanderGUI extends javax.swing.JFrame {
+
     private static final long serialVersionUID = 1L;
 
     /** Creates new form GradingCommanderGUI2 */
@@ -333,6 +334,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel3.setText("Currently Grading");
 
+        currentInfo.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         currentInfo.setText("None");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -341,18 +343,18 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
-                    .addComponent(currentInfo))
-                .addContainerGap(439, Short.MAX_VALUE))
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 401, Short.MAX_VALUE)
+                .addComponent(currentInfo)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(currentInfo))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(currentInfo))
+                .addContainerGap(3, Short.MAX_VALUE))
         );
 
         jMenu1.setText("File");
@@ -395,7 +397,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                         .addComponent(assignmentListPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(studentListPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -405,23 +408,23 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        GradingCommander.openStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+        GradingCommander.openStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_openButtonActionPerformed
 
     private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
-        GradingCommander.printStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+        GradingCommander.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_printButtonActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-        GradingCommander.compileStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+        GradingCommander.compileStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        GradingCommander.runStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+        GradingCommander.runStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_runButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
-        GradingCommander.runTester((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+        GradingCommander.runTester((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_runTesterButtonActionPerformed
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
@@ -437,43 +440,46 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
-        GradingCommander.runStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+        GradingCommander.runStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_runButton1ActionPerformed
 
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-
     }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
-        GradingCommander.demoProject((String)assignmentList.getSelectedValue());
+        GradingCommander.demoProject((String) assignmentList.getSelectedValue());
     }//GEN-LAST:event_runDemoButtonActionPerformed
 
     private void studentListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentListKeyReleased
-        currentInfo.setText((String)studentList.getSelectedValue());
+        currentInfo.setText((String) studentList.getSelectedValue());
     }//GEN-LAST:event_studentListKeyReleased
 
     private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
-        currentInfo.setText((String)studentList.getSelectedValue());
+        currentInfo.setText((String) studentList.getSelectedValue());
     }//GEN-LAST:event_studentListMouseClicked
-
 
     private void populateStudentList() {
 
         String user = System.getProperty("user.name");
 
-         try {
+        try {
             ISqlJetCursor cursor = DatabaseInterops.getItemWithFilter("assignment_dist", "taLoginDist", user);
-            if(cursor.eof())
+            if (cursor.eof()) {
+                cursor.close();
                 return;
+            }
             try {
-                String s = cursor.getString((String)assignmentList.getSelectedValue());
+                String s = cursor.getString((String) assignmentList.getSelectedValue());
+                if (s == null) {
+                    s = "";
+                }
                 String[] ss = s.split(",");
                 studentList.setListData(ss);
                 if (studentList.getModel().getSize() > 0) {
                     studentList.setSelectedIndex(0);
-                    currentInfo.setText((String)studentList.getSelectedValue());
+                    currentInfo.setText((String) studentList.getSelectedValue());
                 }
-                
+
             } finally {
                 cursor.close();
             }
@@ -498,7 +504,6 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList assignmentList;
     private javax.swing.JPanel assignmentListPanel;

@@ -10,8 +10,15 @@
  */
 package cs015Database;
 
+import assignment_distributor.AssignmentDistributorGUI;
 import database_editor.DatabaseGUI;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import javax.imageio.ImageIO;
 
 /**
@@ -28,6 +35,25 @@ public class StartupDialog extends javax.swing.JFrame {
             e.printStackTrace();
         }
         initComponents();
+        this.setLocationRelativeTo(null);
+
+        try {
+
+            FileInputStream fstream = new FileInputStream(getClass().getResource("/cs015Database/config.txt").getFile());
+           
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String strLine;
+            while ((strLine = br.readLine()) != null) {
+                if (!strLine.startsWith("//")) {
+                    System.out.println(strLine);
+                }
+            }
+            in.close();
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+
     }
 
     /** This method is called from within the constructor to
@@ -39,8 +65,8 @@ public class StartupDialog extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        databaseEditorButton = new javax.swing.JButton();
+        gradeDistributorButton = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
 
@@ -48,22 +74,27 @@ public class StartupDialog extends javax.swing.JFrame {
         setTitle("cs015 Grades");
         setResizable(false);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-spreadsheet.png"))); // NOI18N
-        jButton1.setText("<html><b>Database Editor</b><br>Manually edit the database and database schema</html>");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jButton1.setIconTextGap(20);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        databaseEditorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-spreadsheet.png"))); // NOI18N
+        databaseEditorButton.setText("<html><b>Database Editor</b><br>Manually edit the database and database schema</html>");
+        databaseEditorButton.setFocusable(false);
+        databaseEditorButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        databaseEditorButton.setIconTextGap(20);
+        databaseEditorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                databaseEditorButtonActionPerformed(evt);
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-text-editor.png"))); // NOI18N
-        jButton2.setText("<html><b>Grade Distributor</b><br>Distribute grading assignments to TAs</html>");
-        jButton2.setFocusable(false);
-        jButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jButton2.setIconTextGap(20);
+        gradeDistributorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-text-editor.png"))); // NOI18N
+        gradeDistributorButton.setText("<html><b>Grade Distributor</b><br>Distribute grading assignments to TAs</html>");
+        gradeDistributorButton.setFocusable(false);
+        gradeDistributorButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gradeDistributorButton.setIconTextGap(20);
+        gradeDistributorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gradeDistributorButtonActionPerformed(evt);
+            }
+        });
 
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-drawing.png"))); // NOI18N
         jButton3.setText("<html><b>Grade Information</b><br>Generate and email grade information and histograms</html>");
@@ -86,9 +117,9 @@ public class StartupDialog extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
+                        .addComponent(databaseEditorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
+                        .addComponent(gradeDistributorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
                         .addGap(348, 348, 348))
@@ -103,26 +134,31 @@ public class StartupDialog extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(databaseEditorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(gradeDistributorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void databaseEditorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseEditorButtonActionPerformed
         // TODO add your handling code here:
         DatabaseGUI dg = new DatabaseGUI();
         dg.setVisible(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_databaseEditorButtonActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void gradeDistributorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeDistributorButtonActionPerformed
+
+        assignment_distributor.AssignmentDistributorGUI g = new AssignmentDistributorGUI();
+        g.setVisible(true);
+    }//GEN-LAST:event_gradeDistributorButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -136,8 +172,8 @@ public class StartupDialog extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton databaseEditorButton;
+    private javax.swing.JButton gradeDistributorButton;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
