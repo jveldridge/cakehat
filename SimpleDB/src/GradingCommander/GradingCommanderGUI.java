@@ -11,8 +11,9 @@
 package GradingCommander;
 
 import cs015Database.*;
+import java.io.IOException;
 import java.util.Vector;
-import javax.swing.DefaultListModel;
+import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
@@ -21,11 +22,18 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
  * @author psastras
  */
 public class GradingCommanderGUI extends javax.swing.JFrame {
+    private static final long serialVersionUID = 1L;
 
     /** Creates new form GradingCommanderGUI2 */
     public GradingCommanderGUI() {
         initComponents();
         updateFormComponents();
+        this.setTitle(System.getProperty("user.name") + " - cs015 Grader");
+        try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/icon.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateFormComponents() {
@@ -45,6 +53,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
             } finally {
                 cursor.close();
             }
+            populateStudentList();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,29 +68,29 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        splitPane1 = new javax.swing.JSplitPane();
-        splitPane2 = new javax.swing.JSplitPane();
-        studentListPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jList2 = new javax.swing.JList();
-        commandPanel = new javax.swing.JPanel();
+        assignmentListPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        assignmentList = new javax.swing.JList();
+        jPanel1 = new javax.swing.JPanel();
         generalCommandsLabel = new javax.swing.JLabel();
-        runDemoButton = new javax.swing.JButton();
-        SubmitGradingButton = new javax.swing.JButton();
-        printAllButton = new javax.swing.JButton();
-        SEPARATOR = new javax.swing.JSeparator();
         selectedStudentLabel = new javax.swing.JLabel();
         openButton = new javax.swing.JButton();
         printButton = new javax.swing.JButton();
         compileButton = new javax.swing.JButton();
         runButton = new javax.swing.JButton();
         runTesterButton = new javax.swing.JButton();
-        gradeButton = new javax.swing.JButton();
-        assignmentListPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        assignmentList = new javax.swing.JList();
+        runDemoButton = new javax.swing.JButton();
+        printAllButton = new javax.swing.JButton();
+        submitGradesButton = new javax.swing.JButton();
+        runButton1 = new javax.swing.JButton();
+        studentListPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        studentList = new javax.swing.JList();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        currentInfo = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         quitMenuItem = new javax.swing.JMenuItem();
@@ -89,167 +98,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel2.setText("Student");
-
-        jList2.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane2.setViewportView(jList2);
-
-        javax.swing.GroupLayout studentListPanelLayout = new javax.swing.GroupLayout(studentListPanel);
-        studentListPanel.setLayout(studentListPanelLayout);
-        studentListPanelLayout.setHorizontalGroup(
-            studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(studentListPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                    .addComponent(jLabel2))
-                .addContainerGap())
-        );
-        studentListPanelLayout.setVerticalGroup(
-            studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(studentListPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        splitPane2.setLeftComponent(studentListPanel);
-
-        generalCommandsLabel.setText("General Commands");
-
-        runDemoButton.setText("Run Demo");
-        runDemoButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runDemoButtonActionPerformed(evt);
-            }
-        });
-
-        SubmitGradingButton.setText("Submit Grading");
-
-        printAllButton.setText("Print All");
-        printAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                printAllButtonActionPerformed(evt);
-            }
-        });
-
-        selectedStudentLabel.setText("Selected Student");
-
-        openButton.setText("Open In Kate");
-        openButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openButtonActionPerformed(evt);
-            }
-        });
-
-        printButton.setText("Print");
-        printButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                printButtonActionPerformed(evt);
-            }
-        });
-
-        compileButton.setText("Compile");
-        compileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compileButtonActionPerformed(evt);
-            }
-        });
-
-        runButton.setText("Run");
-        runButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runButtonActionPerformed(evt);
-            }
-        });
-
-        runTesterButton.setText("Run Tester");
-        runTesterButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runTesterButtonActionPerformed(evt);
-            }
-        });
-
-        gradeButton.setText("Grade");
-        gradeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gradeButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout commandPanelLayout = new javax.swing.GroupLayout(commandPanel);
-        commandPanel.setLayout(commandPanelLayout);
-        commandPanelLayout.setHorizontalGroup(
-            commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(commandPanelLayout.createSequentialGroup()
-                .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(commandPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(generalCommandsLabel)
-                            .addGroup(commandPanelLayout.createSequentialGroup()
-                                .addComponent(runDemoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(printAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(SubmitGradingButton))))
-                    .addGroup(commandPanelLayout.createSequentialGroup()
-                        .addGap(171, 171, 171)
-                        .addComponent(SEPARATOR, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(commandPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(selectedStudentLabel))
-                    .addGroup(commandPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(compileButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(openButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(printButton, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(runTesterButton)))
-                .addContainerGap())
-            .addGroup(commandPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(gradeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
-                .addGap(346, 346, 346))
-        );
-        commandPanelLayout.setVerticalGroup(
-            commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(commandPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(generalCommandsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(runDemoButton)
-                    .addComponent(printAllButton)
-                    .addComponent(SubmitGradingButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(SEPARATOR, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectedStudentLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(openButton)
-                    .addComponent(printButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(commandPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(compileButton)
-                    .addComponent(runButton)
-                    .addComponent(runTesterButton))
-                .addGap(27, 27, 27)
-                .addComponent(gradeButton)
-                .addContainerGap(211, Short.MAX_VALUE))
-        );
-
-        splitPane2.setRightComponent(commandPanel);
-
-        splitPane1.setRightComponent(splitPane2);
-
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Assignment");
 
         assignmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -270,10 +119,10 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         assignmentListPanel.setLayout(assignmentListPanelLayout);
         assignmentListPanelLayout.setHorizontalGroup(
             assignmentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(assignmentListPanelLayout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, assignmentListPanelLayout.createSequentialGroup()
+                .addContainerGap(22, Short.MAX_VALUE)
                 .addGroup(assignmentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addContainerGap())
         );
@@ -283,11 +132,224 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+        );
+
+        generalCommandsLabel.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        generalCommandsLabel.setText("General Commands");
+
+        selectedStudentLabel.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        selectedStudentLabel.setText("Selected Student Commands");
+
+        openButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/open.png"))); // NOI18N
+        openButton.setText("<html><b>Open Files</b><br>Open files in Kate editor</html>");
+        openButton.setFocusable(false);
+        openButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        openButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openButtonActionPerformed(evt);
+            }
+        });
+
+        printButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/print.png"))); // NOI18N
+        printButton.setText("<html><b>Print</b><br>Print the student's files</html>");
+        printButton.setFocusable(false);
+        printButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        printButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printButtonActionPerformed(evt);
+            }
+        });
+
+        compileButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/compile.png"))); // NOI18N
+        compileButton.setText("<html><b>Compile</b><br>Compile the student's project</html>");
+        compileButton.setFocusable(false);
+        compileButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        compileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compileButtonActionPerformed(evt);
+            }
+        });
+
+        runButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/run.png"))); // NOI18N
+        runButton.setText("<html><b>Run</b><br>Run the project (must compile first)</html>");
+        runButton.setFocusable(false);
+        runButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        runButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runButtonActionPerformed(evt);
+            }
+        });
+
+        runTesterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/runTester.png"))); // NOI18N
+        runTesterButton.setText("<html><b>Run Tester</b><br>Run tester on the project</html>");
+        runTesterButton.setFocusable(false);
+        runTesterButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        runTesterButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runTesterButtonActionPerformed(evt);
+            }
+        });
+
+        runDemoButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/test.png"))); // NOI18N
+        runDemoButton.setText("<html><b>Run Demo</b><br>Run the demo for the current project");
+        runDemoButton.setFocusable(false);
+        runDemoButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        runDemoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runDemoButtonActionPerformed(evt);
+            }
+        });
+
+        printAllButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/print.png"))); // NOI18N
+        printAllButton.setText("<html><b>Print All</b><br>Print all assignments");
+        printAllButton.setFocusable(false);
+        printAllButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+
+        submitGradesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/submit.png"))); // NOI18N
+        submitGradesButton.setText("<html><b>Submit Grading</b><br>Submit all graded assignments");
+        submitGradesButton.setFocusable(false);
+        submitGradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        submitGradesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitGradesButtonActionPerformed(evt);
+            }
+        });
+
+        runButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/grade.png"))); // NOI18N
+        runButton1.setText("<html><b>Grade</b><br>Grade the student's assignment</html>");
+        runButton1.setFocusable(false);
+        runButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        runButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(generalCommandsLabel)
+                        .addContainerGap())
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(submitGradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(runDemoButton, javax.swing.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                                .addGap(3, 3, 3)
+                                .addComponent(printAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(selectedStudentLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 367, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                    .addComponent(compileButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                    .addComponent(openButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                    .addComponent(printButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                    .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))))
+                        .addGap(9, 9, 9))))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(generalCommandsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(runDemoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(printAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(submitGradesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(selectedStudentLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                    .addComponent(printButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(compileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                            .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
-        splitPane1.setLeftComponent(assignmentListPanel);
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel2.setText("Student");
+
+        studentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        studentList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                studentListMouseClicked(evt);
+            }
+        });
+        studentList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                studentListKeyReleased(evt);
+            }
+        });
+        jScrollPane2.setViewportView(studentList);
+
+        javax.swing.GroupLayout studentListPanelLayout = new javax.swing.GroupLayout(studentListPanel);
+        studentListPanel.setLayout(studentListPanelLayout);
+        studentListPanelLayout.setHorizontalGroup(
+            studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(studentListPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+                    .addComponent(jLabel2))
+                .addContainerGap())
+        );
+        studentListPanelLayout.setVerticalGroup(
+            studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(studentListPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+        );
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel3.setText("Currently Grading");
+
+        currentInfo.setText("None");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(currentInfo))
+                .addContainerGap(439, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(currentInfo))
+        );
 
         jMenu1.setText("File");
 
@@ -311,47 +373,52 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(splitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(assignmentListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(studentListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(splitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(assignmentListPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(studentListPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
-        GradingCommander.demoProject(GradingCommander.getAsgn());
-}//GEN-LAST:event_runDemoButtonActionPerformed
-
-    private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
-        GradingCommander.printAll(GradingCommander.getAsgn(), GradingCommander.getStudentList());
-    }//GEN-LAST:event_printAllButtonActionPerformed
-
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        GradingCommander.openStudentProject(GradingCommander.getAsgn(), GradingCommander.getStudent());
+        GradingCommander.openStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
     }//GEN-LAST:event_openButtonActionPerformed
 
     private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
-        GradingCommander.printStudentProject(GradingCommander.getAsgn(), GradingCommander.getStudent());
+        GradingCommander.printStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
     }//GEN-LAST:event_printButtonActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-        GradingCommander.compileStudentProject(GradingCommander.getAsgn(), GradingCommander.getStudent());
+        GradingCommander.compileStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        GradingCommander.runStudentProject(GradingCommander.getAsgn(), GradingCommander.getStudent());
+        GradingCommander.runStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
     }//GEN-LAST:event_runButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
-        GradingCommander.runTester(GradingCommander.getAsgn(), GradingCommander.getStudent());
+        GradingCommander.runTester((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
     }//GEN-LAST:event_runTesterButtonActionPerformed
-
-    private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
-        GradingCommander.gradeProject(GradingCommander.getAsgn(), GradingCommander.getStudent());
-    }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
         System.exit(0);
@@ -365,20 +432,42 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         populateStudentList();
     }//GEN-LAST:event_assignmentListMouseClicked
 
+    private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
+        GradingCommander.runStudentProject((String)assignmentList.getSelectedValue(), (String)studentList.getSelectedValue());
+    }//GEN-LAST:event_runButton1ActionPerformed
+
+    private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
+
+    }//GEN-LAST:event_submitGradesButtonActionPerformed
+
+    private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
+        GradingCommander.demoProject((String)assignmentList.getSelectedValue());
+    }//GEN-LAST:event_runDemoButtonActionPerformed
+
+    private void studentListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentListKeyReleased
+        currentInfo.setText((String)studentList.getSelectedValue());
+    }//GEN-LAST:event_studentListKeyReleased
+
+    private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
+        currentInfo.setText((String)studentList.getSelectedValue());
+    }//GEN-LAST:event_studentListMouseClicked
+
+
     private void populateStudentList() {
 
         String user = System.getProperty("user.name");
 
          try {
             ISqlJetCursor cursor = DatabaseInterops.getItemWithFilter("gradingDist", "taLoginDist", user);
-            //String[] columnNames = DatabaseInterops.getColumnNames("");
             try {
                 String s = cursor.getString((String)assignmentList.getSelectedValue());
                 String[] ss = s.split(",");
-                jList2.setListData(ss);
-                if (jList2.getModel().getSize() > 0) {
-                    jList2.setSelectedIndex(0);
+                studentList.setListData(ss);
+                if (studentList.getModel().getSize() > 0) {
+                    studentList.setSelectedIndex(0);
+                    currentInfo.setText((String)studentList.getSelectedValue());
                 }
+                
             } finally {
                 cursor.close();
             }
@@ -405,19 +494,18 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSeparator SEPARATOR;
-    private javax.swing.JButton SubmitGradingButton;
     private javax.swing.JList assignmentList;
     private javax.swing.JPanel assignmentListPanel;
-    private javax.swing.JPanel commandPanel;
     private javax.swing.JButton compileButton;
+    private javax.swing.JLabel currentInfo;
     private javax.swing.JLabel generalCommandsLabel;
-    private javax.swing.JButton gradeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JList jList2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar mainMenuBar;
@@ -426,11 +514,12 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     private javax.swing.JButton printButton;
     private javax.swing.JMenuItem quitMenuItem;
     private javax.swing.JButton runButton;
+    private javax.swing.JButton runButton1;
     private javax.swing.JButton runDemoButton;
     private javax.swing.JButton runTesterButton;
     private javax.swing.JLabel selectedStudentLabel;
-    private javax.swing.JSplitPane splitPane1;
-    private javax.swing.JSplitPane splitPane2;
+    private javax.swing.JList studentList;
     private javax.swing.JPanel studentListPanel;
+    private javax.swing.JButton submitGradesButton;
     // End of variables declaration//GEN-END:variables
 }
