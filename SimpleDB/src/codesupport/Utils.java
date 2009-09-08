@@ -33,7 +33,7 @@ public class Utils {
      * @param body
      * @return
      */
-    public static boolean sendMail(String senderEmail, String[] recipientEmail, String subject, String body, String imageId, File image) {
+    public static boolean sendMail(String senderEmail, String[] recipientEmail, String subject, String body, String[] imageContentIDs, File[] images) {
         String host = "mail-relay.brown.edu";
         Properties props = new Properties();
         props.setProperty("mail.transport.protocol", "smtp");
@@ -56,12 +56,14 @@ public class Utils {
             BodyPart htmlPart = new MimeBodyPart();
             htmlPart.setContent(body, "text/html");
             mp.addBodyPart(htmlPart);
-
-            BodyPart imagePart = new MimeBodyPart();
-            FileDataSource ds = new FileDataSource(image);
-            imagePart.setDataHandler(new DataHandler(ds));
-            imagePart.setFileName("histogram.jpg");
-            mp.addBodyPart(imagePart);
+            for(int i = 0; i< images.length; i++) {
+                BodyPart imagePart = new MimeBodyPart();
+                FileDataSource ds = new FileDataSource(images[i]);
+                imagePart.setDataHandler(new DataHandler(ds));
+                imagePart.setFileName(images[i].getName());
+                imagePart.setHeader("Content-ID", "<" + imageContentIDs[i] + ">");
+                mp.addBodyPart(imagePart);
+            }
             msg.setContent(mp);
             Transport t = session.getTransport();
             t.connect();
