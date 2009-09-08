@@ -73,7 +73,7 @@ public class GradingCommander {
                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
                String cdCommand = new String("cd " + login + "/course/cs015/" + project);
                String printCommand = new String("lpr -P" + printer + " *.java");
-               System.out.println("print command is: '" + printCommand + "'");
+               System.out.println("print command is: " + printCommand);
                out.println(cdCommand);
                out.println(printCommand);
                out.println("exit");
@@ -93,7 +93,15 @@ public class GradingCommander {
            }
 		}
 	}
-	
+
+    public static boolean hasTester(String asgn) {
+        // TODO: change to get from some kind of config file
+        if (asgn.equals("gfx") || asgn.equals("PizzaDex"))
+            return true;
+        else
+            return false;
+    }
+
 	/**
 	 * Opens the student's code in Kate
 	 * 

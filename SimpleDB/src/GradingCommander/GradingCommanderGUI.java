@@ -256,7 +256,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(selectedStudentLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 373, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 379, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(compileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
@@ -440,6 +440,12 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
     private void assignmentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentListMouseClicked
         populateStudentList();
+
+        //must also inform Tester button of the current assignment
+        if (GradingCommander.hasTester((String)assignmentList.getSelectedValue()))
+            runTesterButton.setEnabled(true);
+        else
+            runTesterButton.setEnabled(false);
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
