@@ -1,8 +1,5 @@
 package codesupport;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,7 +8,7 @@ import java.util.Properties;
 import java.util.Vector;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
-import javax.imageio.ImageIO;
+import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -21,15 +18,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.sql.DataSource;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import sun.misc.BASE64Encoder;
 
 public class Utils {
-
 
     /**
      * Sends an email.  Returns true if success, false if no success.
@@ -42,9 +36,10 @@ public class Utils {
     public static boolean sendMail(String senderEmail, String[] recipientEmail, String subject, String body, String imageId, File image) {
         String host = "mail-relay.brown.edu";
         Properties props = new Properties();
-        props.put("mail.smtp.host", host);
-        props.put("mail.debug", "true");
-        Session session = Session.getInstance(props);
+        props.setProperty("mail.transport.protocol", "smtp");
+        props.setProperty("mail.smtp.host", host);
+        Session session = Session.getDefaultInstance(props);
+        session.setDebug(true);
         try {
             MimeMessage msg = new MimeMessage(session);
             msg.setFrom(new InternetAddress(senderEmail));
@@ -55,19 +50,23 @@ public class Utils {
             msg.setRecipients(Message.RecipientType.TO, address);
             msg.setSubject(subject);
             msg.setSentDate(new Date());
+
             Multipart mp = new MimeMultipart();
-            MimeBodyPart htmlPart = new MimeBodyPart();
-            msg.setContent(body, "text/html");
+
+            BodyPart htmlPart = new MimeBodyPart();
+            htmlPart.setContent(body, "text/html");
             mp.addBodyPart(htmlPart);
-            mp.addBodyPart(new MimeBodyPart());
-            MimeBodyPart imagePart = new MimeBodyPart();
+
+            BodyPart imagePart = new MimeBodyPart();
             FileDataSource ds = new FileDataSource(image);
             imagePart.setDataHandler(new DataHandler(ds));
-
-            imagePart.setHeader("Content-ID", imageId);
+            imagePart.setFileName("histogram.jpg");
             mp.addBodyPart(imagePart);
             msg.setContent(mp);
-            Transport.send(msg);
+            Transport t = session.getTransport();
+            t.connect();
+            t.sendMessage(msg, address);
+            t.close();
             return true;
         } catch (MessagingException e) {
             e.printStackTrace();
