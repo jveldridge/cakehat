@@ -9,6 +9,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Vector;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 
 
 public class GradingCommander {
@@ -28,9 +33,15 @@ public class GradingCommander {
 		}
 	}
 	
-	public static void printAll(String project, String[] studentLogins) {
+	public static void printAll(String project, JList assignmentList) {
+        Vector<String> studentLogins = new Vector<String>();
+        int size = assignmentList.getModel().getSize();
+        for (int i=0; i<size; i++) {
+            studentLogins.add((String)assignmentList.getModel().getElementAt(i));
+        }
 		for (String sL : studentLogins) {
-			printStudentProject(project, sL);
+			System.out.println(sL);
+            //printStudentProject(project, sL);
 		}
 	}
 
@@ -44,7 +55,7 @@ public class GradingCommander {
 	}
 	
 	public static void printStudentProject(String project, String login) {
-		Runtime r = Runtime.getRuntime();
+        Runtime r = Runtime.getRuntime();
 		File wd = new File("/home/");  
 		Process proc = null; 
 		try { 
@@ -54,25 +65,32 @@ public class GradingCommander {
 		   e.printStackTrace(); 
 		} 
 		if (proc != null) { 
-		   BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream())); 
-		   PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true); 
-		   String cdCommand = new String("cd " + login + "/course/cs015/" + project);
-		   out.println(cdCommand); 
-		   out.println("lpr -Pbw1 *.java"); 
-		   out.println("exit"); 
-		   try { 
-		      String line; 
-		      while ((line = in.readLine()) != null) { 
-		         System.out.println(line); 
-		      } 
-		      proc.waitFor(); 
-		      in.close(); 
-		      out.close(); 
-		      proc.destroy(); 
-		   } 
-		   catch (Exception e) { 
-		      e.printStackTrace(); 
-		   } 
+		   Object[] printerChoices = {"bw2", "bw3", "bw4", "bw5"};
+           ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
+           String printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
+           if ((printer != null) && (printer.length() > 0)) {
+               BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+               PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
+               String cdCommand = new String("cd " + login + "/course/cs015/" + project);
+               String printCommand = new String("lpr -P" + printer + " *.java");
+               System.out.println("printCommand is " + printCommand);
+               out.println(cdCommand);
+               //out.println(printCommand);
+               out.println("exit");
+               try {
+                  String line;
+                  while ((line = in.readLine()) != null) {
+                     System.out.println(line);
+                  }
+                  proc.waitFor();
+                  in.close();
+                  out.close();
+                  proc.destroy();
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+               }
+           }
 		}
 	}
 	

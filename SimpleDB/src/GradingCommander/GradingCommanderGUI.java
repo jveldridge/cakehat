@@ -462,7 +462,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_studentListMouseClicked
 
     private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
-        
+        GradingCommander.printAll((String)assignmentList.getSelectedValue(), assignmentList);
     }//GEN-LAST:event_printAllButtonActionPerformed
 
 
