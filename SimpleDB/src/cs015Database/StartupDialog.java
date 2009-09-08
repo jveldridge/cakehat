@@ -12,12 +12,11 @@ package cs015Database;
 
 import assignment_distributor.AssignmentDistributorGUI;
 import database_editor.DatabaseGUI;
+import histogrammer.HistogramGUI;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import javax.imageio.ImageIO;
 
@@ -67,7 +66,7 @@ public class StartupDialog extends javax.swing.JFrame {
 
         databaseEditorButton = new javax.swing.JButton();
         gradeDistributorButton = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        histogramButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -96,14 +95,14 @@ public class StartupDialog extends javax.swing.JFrame {
             }
         });
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-drawing.png"))); // NOI18N
-        jButton3.setText("<html><b>Grade Information</b><br>Generate and email grade information and histograms</html>");
-        jButton3.setFocusable(false);
-        jButton3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jButton3.setIconTextGap(20);
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        histogramButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-drawing.png"))); // NOI18N
+        histogramButton.setText("<html><b>Grade Information</b><br>Generate and email grade information and histograms</html>");
+        histogramButton.setFocusable(false);
+        histogramButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        histogramButton.setIconTextGap(20);
+        histogramButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                histogramButtonActionPerformed(evt);
             }
         });
 
@@ -121,7 +120,7 @@ public class StartupDialog extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(gradeDistributorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
+                        .addComponent(histogramButton, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
                         .addGap(348, 348, 348))
                     .addComponent(jLabel1))
                 .addContainerGap())
@@ -136,7 +135,7 @@ public class StartupDialog extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(databaseEditorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(histogramButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(gradeDistributorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -150,9 +149,10 @@ public class StartupDialog extends javax.swing.JFrame {
         dg.setVisible(true);
     }//GEN-LAST:event_databaseEditorButtonActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
+    private void histogramButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_histogramButtonActionPerformed
+        HistogramGUI hg = new HistogramGUI();
+        hg.setVisible(true);
+    }//GEN-LAST:event_histogramButtonActionPerformed
 
     private void gradeDistributorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeDistributorButtonActionPerformed
 
@@ -174,7 +174,7 @@ public class StartupDialog extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton databaseEditorButton;
     private javax.swing.JButton gradeDistributorButton;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton histogramButton;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

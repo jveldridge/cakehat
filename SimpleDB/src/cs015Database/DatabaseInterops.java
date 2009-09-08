@@ -70,11 +70,11 @@ public class DatabaseInterops {
         return db.getTable(tableName).open();
     }
 
-    public static ISqlJetCursor getData(String tableName, String login) throws SqlJetException {
+    public static ISqlJetCursor getData(String tableName, String indexName, String lookupItem) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
-        return db.getTable(tableName).lookup("login_names", login);
+        return db.getTable(tableName).lookup(indexName, lookupItem);
     }
 
     public static String getDatum(String tableName, long rowid) throws SqlJetException {

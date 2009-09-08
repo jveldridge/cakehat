@@ -8,8 +8,19 @@
  *
  * Created on Sep 7, 2009, 10:01:49 PM
  */
-
 package histogrammer;
+
+import cs015Database.DatabaseInterops;
+import java.awt.Graphics;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.imageio.ImageIO;
+import org.jfree.data.statistics.Statistics;
+import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import codesupport.*;
+import org.jfree.chart.JFreeChart;
 
 /**
  *
@@ -20,6 +31,55 @@ public class HistogramGUI extends javax.swing.JFrame {
     /** Creates new form HistogramGUI */
     public HistogramGUI() {
         initComponents();
+        try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/x-office-drawing.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
+            assignmentNameComboBox.removeAllItems();
+            for (int i = 1; i < columnNames.length; i++) {
+                assignmentNameComboBox.insertItemAt(columnNames[i], assignmentNameComboBox.getItemCount());
+            }
+            if (assignmentNameComboBox.getItemCount() > 0) {
+                assignmentNameComboBox.setSelectedIndex(0);
+                this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Histogram Data");
+                updateChartData();
+            }
+
+        } catch (SqlJetException e) {
+            e.printStackTrace();
+        }
+        this.setLocationRelativeTo(null);
+
+    }
+
+    private void updateChartData() {
+        String asgnName = (String) assignmentNameComboBox.getSelectedItem();
+        try {
+            ISqlJetCursor cursor = DatabaseInterops.getAllData("grades_" + asgnName);
+            List<Double> l = new ArrayList<Double>();
+            while (!cursor.eof()) {
+                l.add(Double.parseDouble(cursor.getString("Total")));
+                cursor.next();
+            }
+            double[] data = new double[l.size()];
+            for (int i = 0; i < data.length; i++) {
+                data[i] = l.get(i);
+            }
+            Number[] dataAsNumber = new Number[data.length];
+            for (int i = 0; i < dataAsNumber.length; i++) {
+                dataAsNumber[i] = (Number) data[i];
+            }
+            nLabel.setText("" + data.length);
+            medianLabel.setText("" + Statistics.calculateMedian(l));
+            meanLabel.setText("" + Statistics.calculateMean(l));
+            stdDevLabel.setText("" + Statistics.getStdDev(dataAsNumber));
+            chartPanel1.loadData(asgnName, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -31,34 +91,193 @@ public class HistogramGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        assignmentNameComboBox = new javax.swing.JComboBox();
+        jPanel1 = new javax.swing.JPanel();
+        chartPanel1 = new histogrammer.ChartPanel();
+        jLabel1 = new javax.swing.JLabel();
+        nLabel = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        meanLabel = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        medianLabel = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        stdDevLabel = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
+
+        assignmentNameComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                assignmentNameComboBoxActionPerformed(evt);
+            }
+        });
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout chartPanel1Layout = new javax.swing.GroupLayout(chartPanel1);
+        chartPanel1.setLayout(chartPanel1Layout);
+        chartPanel1Layout.setHorizontalGroup(
+            chartPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 562, Short.MAX_VALUE)
+        );
+        chartPanel1Layout.setVerticalGroup(
+            chartPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 288, Short.MAX_VALUE)
+        );
+
+        jLabel1.setForeground(new java.awt.Color(30, 30, 30));
+        jLabel1.setText("<html><b>Number of Students</b></html>");
+
+        nLabel.setForeground(new java.awt.Color(30, 30, 30));
+        nLabel.setText("jLabel2");
+
+        jLabel3.setForeground(new java.awt.Color(30, 30, 30));
+        jLabel3.setText("<html><b>Mean / Average</b></html>");
+
+        meanLabel.setForeground(new java.awt.Color(30, 30, 30));
+        meanLabel.setText("jLabel4");
+
+        jLabel5.setForeground(new java.awt.Color(30, 30, 30));
+        jLabel5.setText("<html><b>Median</b></html>");
+
+        medianLabel.setForeground(new java.awt.Color(30, 30, 30));
+        medianLabel.setText("jLabel6");
+
+        jLabel7.setForeground(new java.awt.Color(30, 30, 30));
+        jLabel7.setText("<html><b>Standard Deviation</b></html>");
+
+        stdDevLabel.setForeground(new java.awt.Color(30, 30, 30));
+        stdDevLabel.setText("jLabel8");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(chartPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(stdDevLabel)
+                    .addComponent(medianLabel)
+                    .addComponent(jLabel5)
+                    .addComponent(meanLabel)
+                    .addComponent(jLabel3)
+                    .addComponent(nLabel)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel7))
+                .addGap(24, 24, 24))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(chartPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(19, 19, 19)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(meanLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(medianLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(stdDevLabel)))
+                .addContainerGap())
+        );
+
+        jButton1.setText("Email Data");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jMenu1.setText("File");
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Edit");
+        jMenuBar1.add(jMenu2);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 340, Short.MAX_VALUE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void assignmentNameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assignmentNameComboBoxActionPerformed
+        updateChartData();
+    }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String[] s = {"bherila@bherila.net", "psastras@gmail.com"};
+        //Utils.sendMail("nofriends99992005@yahoo.com",s , "[cs015] Generated Email", "<b>");
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new HistogramGUI().setVisible(true);
             }
         });
     }
 
+    public void paintComponent(Graphics g) {
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox assignmentNameComboBox;
+    private histogrammer.ChartPanel chartPanel1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel meanLabel;
+    private javax.swing.JLabel medianLabel;
+    private javax.swing.JLabel nLabel;
+    private javax.swing.JLabel stdDevLabel;
     // End of variables declaration//GEN-END:variables
-
 }

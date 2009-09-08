@@ -1,240 +1,274 @@
 package codesupport;
 
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Properties;
 import java.util.Vector;
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.imageio.ImageIO;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.sql.DataSource;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import sun.misc.BASE64Encoder;
 
-class Utils
-{
-	/**
-	 * Returns the user login.
-	 *
-	 * @return user login
-	 */
-	public static String getUserLogin()
-	{
-		return System.getProperty("user.name");
-	}
+public class Utils {
 
 
-	/**
-	 * Extracts a tar file.
-	 *
-	 * @param tarPath the absolute path of the tar file
-	 * @param destPath the directory the tar file will be expanded into
-	 */
-	public static void untar(String tarPath, String destPath)
-	{
-		String cmd = "tar -xf " + tarPath + " -C " + destPath;
-		try
-		{
-			Process proc = Runtime.getRuntime().exec(cmd);
-			proc.waitFor();
-		}
-		catch (Exception e) { }
-	}
+    /**
+     * Sends an email.  Returns true if success, false if no success.
+     * @param senderEmail
+     * @param recipientEmail
+     * @param subject
+     * @param body
+     * @return
+     */
+    public static boolean sendMail(String senderEmail, String[] recipientEmail, String subject, String body, String imageId, File image) {
+        String host = "mail-relay.brown.edu";
+        Properties props = new Properties();
+        props.put("mail.smtp.host", host);
+        props.put("mail.debug", "true");
+        Session session = Session.getInstance(props);
+        try {
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(senderEmail));
+            InternetAddress[] address = new InternetAddress[recipientEmail.length];
+            for (int i = 0; i < recipientEmail.length; i++) {
+                address[i] = new InternetAddress(recipientEmail[i]);
+            }
+            msg.setRecipients(Message.RecipientType.TO, address);
+            msg.setSubject(subject);
+            msg.setSentDate(new Date());
+            Multipart mp = new MimeMultipart();
+            MimeBodyPart htmlPart = new MimeBodyPart();
+            msg.setContent(body, "text/html");
+            mp.addBodyPart(htmlPart);
+            mp.addBodyPart(new MimeBodyPart());
+            MimeBodyPart imagePart = new MimeBodyPart();
+            FileDataSource ds = new FileDataSource(image);
+            imagePart.setDataHandler(new DataHandler(ds));
 
-	/**
-	 * Makes a directory.
-	 *
-	 * @param dirPath
-	 * @return successful creation of directory
-	 */
-	public static boolean makeDirectory(String dirPath)
-	{
-		File dir = new File(dirPath);
-		if(!dir.exists())
-		{
-			return dir.mkdirs();
-		}
+            imagePart.setHeader("Content-ID", imageId);
+            mp.addBodyPart(imagePart);
+            msg.setContent(mp);
+            Transport.send(msg);
+            return true;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-		return true;
-	}
+    /**
+     * Returns the user login.
+     *
+     * @return user login
+     */
+    public static String getUserLogin() {
+        return System.getProperty("user.name");
+    }
 
-	/**
-	 * Removes a directory and all of its files and subdirectories.
-	 *
-	 * @param dirPath
-	 */
-	public static void removeDirectory(String dirPath)
-	{
-		String cmd = "rm -rf " + dirPath;
+    /**
+     * Extracts a tar file.
+     *
+     * @param tarPath the absolute path of the tar file
+     * @param destPath the directory the tar file will be expanded into
+     */
+    public static void untar(String tarPath, String destPath) {
+        String cmd = "tar -xf " + tarPath + " -C " + destPath;
+        try {
+            Process proc = Runtime.getRuntime().exec(cmd);
+            proc.waitFor();
+        } catch (Exception e) {
+        }
+    }
 
-		try
-		{
-			Runtime.getRuntime().exec(cmd);
-		}
-		catch (IOException e) {	}
-	}
+    /**
+     * Makes a directory.
+     *
+     * @param dirPath
+     * @return successful creation of directory
+     */
+    public static boolean makeDirectory(String dirPath) {
+        File dir = new File(dirPath);
+        if (!dir.exists()) {
+            return dir.mkdirs();
+        }
 
-	/**
-	 * Executes the java code in a separate thread.
-	 *
-	 * If you were attempting to execute TASafeHouse and the main class
-	 * was located at /course/cs015/demos/TASafeHouse/App.class then
-	 * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
-	 *
-	 * @param dirPath - the path to the package
-	 * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
-	 * @return whether the code was successfully executed
-	 */
-	public static boolean execute(String dirPath, String javaArg)
-	{
-		//Get the existing classpath, add dirPath to the classpath
-		String classPath = getClassPath() + ":" + dirPath;
-		ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
+        return true;
+    }
 
-		//Attempt to execute code
-		try
-		{
-			pb.start();
-		}
-		catch (IOException e)
-		{
-			return false;
-		}
+    /**
+     * Removes a directory and all of its files and subdirectories.
+     *
+     * @param dirPath
+     */
+    public static void removeDirectory(String dirPath) {
+        String cmd = "rm -rf " + dirPath;
 
-		return true;
-	}
+        try {
+            Runtime.getRuntime().exec(cmd);
+        } catch (IOException e) {
+        }
+    }
 
-	/**
-	 * Returns the current java class path.
-	 *
-	 * @return classPath
-	 */
-	public static String getClassPath()
-	{
-		//When not running in Eclipse, only the line of code below is needed
-		//return System.getProperty("java.class.path");
+    /**
+     * Executes the java code in a separate thread.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * @param dirPath - the path to the package
+     * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
+     * @return whether the code was successfully executed
+     */
+    public static boolean execute(String dirPath, String javaArg) {
+        //Get the existing classpath, add dirPath to the classpath
+        String classPath = getClassPath() + ":" + dirPath;
+        ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
 
-		//Hack to make this work properly with Eclipse
-		String classPath = System.getProperty("java.class.path");
+        //Attempt to execute code
+        try {
+            pb.start();
+        } catch (IOException e) {
+            return false;
+        }
 
-		if(classPath.contains("cs015.jar"))
-		{
-			return classPath;
-		}
+        return true;
+    }
 
-		Vector<String> toExecute = new Vector<String>();
+    /**
+     * Returns the current java class path.
+     *
+     * @return classPath
+     */
+    public static String getClassPath() {
+        //When not running in Eclipse, only the line of code below is needed
+        //return System.getProperty("java.class.path");
 
-		toExecute.add("echo $CLASSPATH");
+        //Hack to make this work properly with Eclipse
+        String classPath = System.getProperty("java.class.path");
 
-		Collection<String> output = BashConsole.write(toExecute);
+        if (classPath.contains("cs015.jar")) {
+            return classPath;
+        }
 
-		if(output.size() > 0)
-		{
-			return output.iterator().next();
-		}
-		else
-		{
-			return "";
-		}
-	}
+        Vector<String> toExecute = new Vector<String>();
 
-	/**
-	 * Compiles code, returns whether the code compiled successfully.
-	 * Pass in the top level directory, subdirectories containing
-	 * java files will also be compiled.
-	 *
-	 * @param dirPath
-	 * @return success of compilation
-	 */
-	public static boolean compile(String dirPath)
-	{
-		//Get java compiler and file manager
-		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        toExecute.add("echo $CLASSPATH");
 
-		//Set the class path to be the same as the one specified in CLASSPATH
-		//That is, the one that would be used if a person used the terminal
-		Collection<String> options = new Vector<String>();
-		options.addAll(Arrays.asList("-classpath",getClassPath()));
+        Collection<String> output = BashConsole.write(toExecute);
 
-		//Get all of the java files in dirPath
-		Collection<File> files = getJavaFiles(dirPath);
-		Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+        if (output.size() > 0) {
+            return output.iterator().next();
+        } else {
+            return "";
+        }
+    }
 
-		//Attempt to compile
-		try
-		{
-			Boolean success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
-			fileManager.close();
+    /**
+     * Compiles code, returns whether the code compiled successfully.
+     * Pass in the top level directory, subdirectories containing
+     * java files will also be compiled.
+     *
+     * @param dirPath
+     * @return success of compilation
+     */
+    public static boolean compile(String dirPath) {
+        //Get java compiler and file manager
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 
-			if(success != null)
-			{
-				return success;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		catch (Exception e)
-		{
-			return false;
-		}
-	}
+        //Set the class path to be the same as the one specified in CLASSPATH
+        //That is, the one that would be used if a person used the terminal
+        Collection<String> options = new Vector<String>();
+        options.addAll(Arrays.asList("-classpath", getClassPath()));
 
-	/**
-	 * Convenience method that uses getFiles(String dirPath, String extension)
-	 * to return all .java files in directory path passed in.
-	 *
-	 * @param dirPath
-	 * @return the .java files in the directory and subdirectories
-	 */
-	public static Collection<File> getJavaFiles(String dirPath)
-	{
-		return getFiles(dirPath, "java");
-	}
+        //Get all of the java files in dirPath
+        Collection<File> files = getJavaFiles(dirPath);
+        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
-	/**
-	 * Returns all files in a directory, recursing into subdirectories, that
-	 * contain files with the specified extension.
-	 *
-	 * @param dirPath starting directory
-	 * @param extension the file extension, e.g. java or class
-	 * @return the files found with the specified extension
-	 */
-	public static Collection<File> getFiles(String dirPath, String extension)
-	{
+        //Attempt to compile
+        try {
+            Boolean success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
+            fileManager.close();
+
+            if (success != null) {
+                return success;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Convenience method that uses getFiles(String dirPath, String extension)
+     * to return all .java files in directory path passed in.
+     *
+     * @param dirPath
+     * @return the .java files in the directory and subdirectories
+     */
+    public static Collection<File> getJavaFiles(String dirPath) {
+        return getFiles(dirPath, "java");
+    }
+
+    /**
+     * Returns all files in a directory, recursing into subdirectories, that
+     * contain files with the specified extension.
+     *
+     * @param dirPath starting directory
+     * @param extension the file extension, e.g. java or class
+     * @return the files found with the specified extension
+     */
+    public static Collection<File> getFiles(String dirPath, String extension) {
         Vector<File> files = new Vector<File>();
 
-        if (dirPath == null)
+        if (dirPath == null) {
             System.out.println("aaack!");
+        }
 
-		File dir = new File(dirPath);
-        
-		for(String name : dir.list())
-		{
-			File entry = new File(dir.getAbsolutePath() + "/" + name);
-			//If it is a directory, recursively explore and add files ending with the extension
-			if(entry.isDirectory())
-			{
-				files.addAll(getFiles(entry.getAbsolutePath(), extension));
-			}
-			//Add if this entry is a file ending with the extension
-			if(entry.isFile() && name.endsWith("."+extension))
-			{
-				files.add(entry);
-			}
-		}
+        File dir = new File(dirPath);
 
-		return files;
-	}
+        for (String name : dir.list()) {
+            File entry = new File(dir.getAbsolutePath() + "/" + name);
+            //If it is a directory, recursively explore and add files ending with the extension
+            if (entry.isDirectory()) {
+                files.addAll(getFiles(entry.getAbsolutePath(), extension));
+            }
+            //Add if this entry is a file ending with the extension
+            if (entry.isFile() && name.endsWith("." + extension)) {
+                files.add(entry);
+            }
+        }
 
-
-	/*
-	public static void printProperties()
-	{
-		for(Object key : System.getProperties().keySet())
-		{
-			System.out.println(key + " - " + System.getProperties().get(key));
-		}
-	}
-	*/
+        return files;
+    }
+    /*
+    public static void printProperties()
+    {
+    for(Object key : System.getProperties().keySet())
+    {
+    System.out.println(key + " - " + System.getProperties().get(key));
+    }
+    }
+     */
 }
