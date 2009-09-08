@@ -99,7 +99,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel1.setText("Assignment");
 
         assignmentList.setForeground(new java.awt.Color(51, 51, 51));
@@ -138,10 +138,10 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
         );
 
-        generalCommandsLabel.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        generalCommandsLabel.setFont(new java.awt.Font("Tahoma", 1, 11));
         generalCommandsLabel.setText("General Commands");
 
-        selectedStudentLabel.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        selectedStudentLabel.setFont(new java.awt.Font("Tahoma", 1, 11));
         selectedStudentLabel.setText("Selected Student Commands");
 
         openButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/open.png"))); // NOI18N
@@ -208,6 +208,11 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         printAllButton.setText("<html><b>Print All</b><br>Print all assignments");
         printAllButton.setFocusable(false);
         printAllButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        printAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printAllButtonActionPerformed(evt);
+            }
+        });
 
         submitGradesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/submit.png"))); // NOI18N
         submitGradesButton.setText("<html><b>Submit Grading</b><br>Submit all graded assignments");
@@ -251,12 +256,12 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(selectedStudentLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 367, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 373, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-                                    .addComponent(compileButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-                                    .addComponent(openButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(compileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                    .addComponent(runTesterButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                    .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
@@ -282,18 +287,18 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                     .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
                     .addComponent(printButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(compileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
-                            .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))))
+                            .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)))
+                    .addComponent(compileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel2.setText("Student");
 
         studentList.setForeground(new java.awt.Color(51, 51, 51));
@@ -331,7 +336,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
         );
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel3.setText("Currently Grading");
 
         currentInfo.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
@@ -457,6 +462,11 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
         currentInfo.setText((String) studentList.getSelectedValue());
     }//GEN-LAST:event_studentListMouseClicked
+
+    private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
+        
+    }//GEN-LAST:event_printAllButtonActionPerformed
+
 
     private void populateStudentList() {
 
