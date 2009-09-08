@@ -1,0 +1,240 @@
+package codesupport;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Vector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
+
+class Utils
+{
+	/**
+	 * Returns the user login.
+	 *
+	 * @return user login
+	 */
+	public static String getUserLogin()
+	{
+		return System.getProperty("user.name");
+	}
+
+
+	/**
+	 * Extracts a tar file.
+	 *
+	 * @param tarPath the absolute path of the tar file
+	 * @param destPath the directory the tar file will be expanded into
+	 */
+	public static void untar(String tarPath, String destPath)
+	{
+		String cmd = "tar -xf " + tarPath + " -C " + destPath;
+		try
+		{
+			Process proc = Runtime.getRuntime().exec(cmd);
+			proc.waitFor();
+		}
+		catch (Exception e) { }
+	}
+
+	/**
+	 * Makes a directory.
+	 *
+	 * @param dirPath
+	 * @return successful creation of directory
+	 */
+	public static boolean makeDirectory(String dirPath)
+	{
+		File dir = new File(dirPath);
+		if(!dir.exists())
+		{
+			return dir.mkdirs();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Removes a directory and all of its files and subdirectories.
+	 *
+	 * @param dirPath
+	 */
+	public static void removeDirectory(String dirPath)
+	{
+		String cmd = "rm -rf " + dirPath;
+
+		try
+		{
+			Runtime.getRuntime().exec(cmd);
+		}
+		catch (IOException e) {	}
+	}
+
+	/**
+	 * Executes the java code in a separate thread.
+	 *
+	 * If you were attempting to execute TASafeHouse and the main class
+	 * was located at /course/cs015/demos/TASafeHouse/App.class then
+	 * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
+	 *
+	 * @param dirPath - the path to the package
+	 * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
+	 * @return whether the code was successfully executed
+	 */
+	public static boolean execute(String dirPath, String javaArg)
+	{
+		//Get the existing classpath, add dirPath to the classpath
+		String classPath = getClassPath() + ":" + dirPath;
+		ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
+
+		//Attempt to execute code
+		try
+		{
+			pb.start();
+		}
+		catch (IOException e)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns the current java class path.
+	 *
+	 * @return classPath
+	 */
+	public static String getClassPath()
+	{
+		//When not running in Eclipse, only the line of code below is needed
+		//return System.getProperty("java.class.path");
+
+		//Hack to make this work properly with Eclipse
+		String classPath = System.getProperty("java.class.path");
+
+		if(classPath.contains("cs015.jar"))
+		{
+			return classPath;
+		}
+
+		Vector<String> toExecute = new Vector<String>();
+
+		toExecute.add("echo $CLASSPATH");
+
+		Collection<String> output = BashConsole.write(toExecute);
+
+		if(output.size() > 0)
+		{
+			return output.iterator().next();
+		}
+		else
+		{
+			return "";
+		}
+	}
+
+	/**
+	 * Compiles code, returns whether the code compiled successfully.
+	 * Pass in the top level directory, subdirectories containing
+	 * java files will also be compiled.
+	 *
+	 * @param dirPath
+	 * @return success of compilation
+	 */
+	public static boolean compile(String dirPath)
+	{
+		//Get java compiler and file manager
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+
+		//Set the class path to be the same as the one specified in CLASSPATH
+		//That is, the one that would be used if a person used the terminal
+		Collection<String> options = new Vector<String>();
+		options.addAll(Arrays.asList("-classpath",getClassPath()));
+
+		//Get all of the java files in dirPath
+		Collection<File> files = getJavaFiles(dirPath);
+		Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+
+		//Attempt to compile
+		try
+		{
+			Boolean success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
+			fileManager.close();
+
+			if(success != null)
+			{
+				return success;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Convenience method that uses getFiles(String dirPath, String extension)
+	 * to return all .java files in directory path passed in.
+	 *
+	 * @param dirPath
+	 * @return the .java files in the directory and subdirectories
+	 */
+	public static Collection<File> getJavaFiles(String dirPath)
+	{
+		return getFiles(dirPath, "java");
+	}
+
+	/**
+	 * Returns all files in a directory, recursing into subdirectories, that
+	 * contain files with the specified extension.
+	 *
+	 * @param dirPath starting directory
+	 * @param extension the file extension, e.g. java or class
+	 * @return the files found with the specified extension
+	 */
+	public static Collection<File> getFiles(String dirPath, String extension)
+	{
+        Vector<File> files = new Vector<File>();
+
+        if (dirPath == null)
+            System.out.println("aaack!");
+
+		File dir = new File(dirPath);
+        
+		for(String name : dir.list())
+		{
+			File entry = new File(dir.getAbsolutePath() + "/" + name);
+			//If it is a directory, recursively explore and add files ending with the extension
+			if(entry.isDirectory())
+			{
+				files.addAll(getFiles(entry.getAbsolutePath(), extension));
+			}
+			//Add if this entry is a file ending with the extension
+			if(entry.isFile() && name.endsWith("."+extension))
+			{
+				files.add(entry);
+			}
+		}
+
+		return files;
+	}
+
+
+	/*
+	public static void printProperties()
+	{
+		for(Object key : System.getProperties().keySet())
+		{
+			System.out.println(key + " - " + System.getProperties().get(key));
+		}
+	}
+	*/
+}

@@ -1,5 +1,7 @@
 package GradingCommander;
 
+import codesupport.Project;
+import codesupport.ProjectManager;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,19 +12,6 @@ import java.io.PrintWriter;
 
 
 public class GradingCommander {
-	
-	public static String getStudent() {
-        return "jeldridg";
-    }
-    
-    public static String[] getStudentList() {
-        String[] studentList = {"jeldridg"};
-        return studentList;
-    }
-
-    public static String getAsgn() {
-        return "Cartoon";
-    }
 
     public static void demoProject(String project) {
 		Runtime r = Runtime.getRuntime();
@@ -46,11 +35,12 @@ public class GradingCommander {
 	}
 
 	public static void compileStudentProject(String project, String login) {
-		System.out.println("Compiling project " + project + " for student " + login);
+        ProjectManager.compile(new Project(project), login);
 	}
 	
 	public static void runStudentProject(String project, String login) {
 		System.out.println("Running project " + project + " for student " + login);
+        ProjectManager.execute(new Project(project), login);
 	}
 	
 	public static void printStudentProject(String project, String login) {
@@ -125,7 +115,7 @@ public class GradingCommander {
     }
 
     static void runTester(String asgn, String student) {
-        System.out.println("Running tester " + asgn + " for student " + student);
+        
     }
 
 }
