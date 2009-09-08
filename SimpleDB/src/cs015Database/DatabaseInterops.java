@@ -203,12 +203,10 @@ public class DatabaseInterops {
     }
 
     public static void regenerateDatabase() throws SqlJetException {
-
+        //Remove the old data
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
-
-
         for (String s : db.getSchema().getTableNames()) {
             db.dropTable(s);
         }
@@ -216,13 +214,14 @@ public class DatabaseInterops {
             db.dropIndex(s);
         }
 
-
+        //Grab data from config file
       
 
         //Add new tables  should be read from xml file
 
         db.createTable("create table assignments (assignmentNames text not null)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
+        db.createTable("create table blacklist (taLogin text not null)");
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
         for (String s : ASSIGNMENT_NAMES) {
             addDatum("assignments", s);
@@ -238,14 +237,17 @@ public class DatabaseInterops {
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
         db.createIndex("create index taLoginDist on assignment_dist (taLogin)");
-
+        for (String s : TA_LOGINS) {
+            addDatum("assignment_dist", s);
+            addDatum("blacklist", s);
+        }
         autoPopulate();
     }
 
     
 
     private static void autoPopulate() throws SqlJetException {
-        //tester...remove this when done
+        //@TODO:tester...remove this when done
 
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -261,9 +263,6 @@ public class DatabaseInterops {
                 data[4] = Integer.toString(Integer.parseInt((String) data[1]) + Integer.parseInt((String) data[2]) + Integer.parseInt((String) data[3]));
                 addDatum("grades_" + s, data);
             }
-        }
-        for (String s : TA_LOGINS) {
-            addDatum("assignment_dist", s);
         }
 
     }

@@ -1,18 +1,11 @@
 package database_editor;
 
 import cs015Database.DatabaseInterops;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.io.File;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
