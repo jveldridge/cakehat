@@ -222,6 +222,12 @@ public class DatabaseInterops {
         db.createTable("create table assignments (assignmentNames text not null)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
         db.createTable("create table blacklist (taLogin text not null)");
+
+        db.createTable("create table studlist (studLogin text not null)");
+        db.createIndex("create index stud_logins on studlist (studLogin)");
+        for(String s : STUD_LOGINS) {
+            addDatum("studlist", s);
+        }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
         for (String s : ASSIGNMENT_NAMES) {
             addDatum("assignments", s);

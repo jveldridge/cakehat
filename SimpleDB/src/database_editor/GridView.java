@@ -1,11 +1,15 @@
 package database_editor;
 
 import cs015Database.DatabaseInterops;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -25,9 +29,32 @@ public class GridView extends cs015Database.Table {
 
     public GridView() {
         super();
+        this.setRowHeight(20);
+        this.setFillsViewportHeight(true);
+        this.setGridColor(new Color(190, 214, 246));
+        this.setForeground(new Color(79, 79, 79));
+        this.setIntercellSpacing(new Dimension(3, 3));
         initDatabaseWatch();
     }
 
+    /**
+     * Alternate row color backgrounds (cause overriding the prepareRender is
+     * perfectly obvious...thanks swing.
+     * @param renderer
+     * @param rowIndex
+     * @param vColIndex
+     * @return
+     */
+    @Override
+    public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
+        Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
+        if (rowIndex % 2 == 0 && !isCellSelected(rowIndex, vColIndex)) {
+            c.setBackground(new Color(247, 250, 255));
+        } else if (!isCellSelected(rowIndex, vColIndex)) {
+            c.setBackground(Color.white);
+        }
+        return c;
+    }
 
     /**
      * This gets called whenver a cell is changed/modified.  So we can add it
@@ -57,22 +84,6 @@ public class GridView extends cs015Database.Table {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Adds a column to the current table.
-     * @param colName
-     * @throws java.lang.IllegalStateException
-     */
-    public void addColumn(String colName) throws IllegalStateException {
-        DefaultTableModel model = (DefaultTableModel) this.getModel();
-        TableColumn c = new TableColumn(model.getColumnCount());
-        if (this.getAutoCreateColumnsFromModel()) {
-            throw new IllegalStateException();
-        }
-        c.setHeaderValue(colName);
-        this.addColumn(c);
-        model.addColumn(colName);
     }
     private Timer _dbTimer = new Timer();
 
@@ -147,6 +158,9 @@ public class GridView extends cs015Database.Table {
     }
 
 
+     public boolean isCellEditable(int row, int col) {
+        return true;
+    }
     /**
      * Refreshes the table to the database version.  Kind of craptastic because
      * we have to loard the whole table again.  But its okay for small cs015 tables.

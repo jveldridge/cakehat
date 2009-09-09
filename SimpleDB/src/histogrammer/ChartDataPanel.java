@@ -25,6 +25,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
     /** Creates new form ChartDataPanel */
     public ChartDataPanel() {
         initComponents();
+        this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)));
     }
 
     public void updateChartData(String asgnName) {

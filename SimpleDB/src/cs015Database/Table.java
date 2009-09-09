@@ -9,7 +9,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -26,31 +28,31 @@ public class Table extends JTable {
         //Make the table look somewhat decent
         this.removeAll();
         this.setBackground(Color.white);
-        this.setRowHeight(20);
         this.setFillsViewportHeight(true);
-        this.setGridColor(new Color(190, 214, 246));
-        this.setForeground(new Color(79, 79, 79));
-        this.setIntercellSpacing(new Dimension(3, 3));
+        this.setGridColor(Color.white);
         this.getTableHeader().setReorderingAllowed(false);
+        this.setRowHeight(17);
     }
 
     /**
-     * Alternate row color backgrounds (cause overriding the prepareRender is
-     * perfectly obvious...thanks swing.
-     * @param renderer
-     * @param rowIndex
-     * @param vColIndex
-     * @return
+     * Adds a column to the current table.
+     * @param colName
+     * @throws java.lang.IllegalStateException
      */
-    @Override
-    public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
-        Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
-        if (rowIndex % 2 == 0 && !isCellSelected(rowIndex, vColIndex)) {
-            c.setBackground(new Color(247, 250, 255));
-        } else if (!isCellSelected(rowIndex, vColIndex)) {
-            c.setBackground(Color.white);
+    public void addColumn(String colName) throws IllegalStateException {
+        DefaultTableModel model = (DefaultTableModel) this.getModel();
+        TableColumn c = new TableColumn(model.getColumnCount());
+        if (this.getAutoCreateColumnsFromModel()) {
+            throw new IllegalStateException();
         }
-        return c;
+        c.setHeaderValue(colName);
+        this.addColumn(c);
+        model.addColumn(colName);
+    }
+
+    public void applyFilterSorter() {
+        _textFilter = new TableRowSorter<TableModel>((DefaultTableModel) this.getModel());
+        this.setRowSorter(_textFilter);
     }
 
     /**
@@ -63,5 +65,9 @@ public class Table extends JTable {
         } else {
             _textFilter.setRowFilter(RowFilter.regexFilter(filterText));
         }
+    }
+
+    public boolean isCellEditable(int row, int col) {
+        return false;
     }
 }
