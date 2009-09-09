@@ -15,6 +15,7 @@ import java.awt.Graphics;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JTextField;
@@ -42,7 +43,13 @@ public class HistogramGUI extends javax.swing.JFrame {
         }
         try {
             String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
-            jList1.setListData(Arrays.copyOfRange(columnNames, 1, columnNames.length));
+            DefaultListModel model = new DefaultListModel();
+            model.add(0, "None");
+            for (int i = 1; i < columnNames.length; i++) {
+                model.add(i, columnNames[i]);
+            }
+
+            jList1.setModel(model);
             if (columnNames.length > 0) {
                 jList1.setSelectedIndex(0);
             }
@@ -53,11 +60,17 @@ public class HistogramGUI extends javax.swing.JFrame {
             javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
             jPanel2.setLayout(jPanel2Layout);
             ParallelGroup pg = jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
+            StudentDataPanel sdp = new StudentDataPanel();
+            sdp.setVisible(true);
+            pg.addComponent(sdp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
             for (ChartDataPanel c : _charts) {
                 pg.addComponent(c, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
             }
             jPanel2Layout.setHorizontalGroup(pg);
             SequentialGroup sg = jPanel2Layout.createSequentialGroup();
+            sg.addComponent(sdp);
+            sg.addComponent(sdp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
+            sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
             for (ChartDataPanel c : _charts) {
                 sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
                 sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
@@ -78,15 +91,11 @@ public class HistogramGUI extends javax.swing.JFrame {
                 m.insertRow(table1.getRowCount(), data);
                 cursor.next();
             }
-            //m.insertRow(table1.getRowCount(), data2);
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        try{
-//            table1.getModel().
-//        } catch(Exception e){
-//            e.printStackTrace();
-//        }
+        table1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
         updateCharts();
     }
 
@@ -96,8 +105,10 @@ public class HistogramGUI extends javax.swing.JFrame {
         }
         Object[] assgns = jList1.getSelectedValues();
         for (int i = 0; i < assgns.length; i++) {
-            _charts[i].updateChartData((String) assgns[i]);
-            _charts[i].setVisible(true);
+            if (assgns[i].toString().compareToIgnoreCase("None") != 0) {
+                _charts[i].updateChartData((String) assgns[i]);
+                _charts[i].setVisible(true);
+            }
         }
 
 
@@ -321,7 +332,6 @@ public class HistogramGUI extends javax.swing.JFrame {
             }
         });
     }
-
 
     public void paintComponent(Graphics g) {
     }

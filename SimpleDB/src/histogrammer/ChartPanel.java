@@ -5,6 +5,7 @@
 package histogrammer;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -18,6 +19,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.chart.title.TextTitle;
 import org.jfree.data.statistics.HistogramDataset;
 
 /**
@@ -44,9 +46,11 @@ public class ChartPanel extends JComponent {
         _chart = ChartFactory.createHistogram("", "Scores", "Number of People", dataset, PlotOrientation.VERTICAL, false, false, false);
         _chart.setBackgroundPaint(Color.white);
         _chart.setBorderPaint(Color.darkGray);
+        TextTitle tt = new TextTitle(assignmentName + " Histogram", new Font("Sans-Serif", Font.BOLD, 14));
+        _chart.setTitle(tt);
         XYPlot p = _chart.getXYPlot();
         ((NumberAxis) p.getRangeAxis()).setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        p.getRenderer().setSeriesPaint(0, Color.darkGray);//new Color(79, 129, 189));
+        p.getRenderer().setSeriesPaint(0, Color.darkGray);//new Color(79, 129, 189));\
         p.getRenderer().setBaseOutlinePaint(Color.white);
         p.setBackgroundPaint(Color.white);
         p.setRangeGridlinePaint(Color.darkGray);
