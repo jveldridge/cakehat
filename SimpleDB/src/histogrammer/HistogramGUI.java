@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.JDialog;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -98,7 +99,7 @@ public class HistogramGUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
         table1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        this.setTitle(Utils.getUserLogin() + " - cs015 Grade Report Generator");
         updateCharts();
     }
 
@@ -135,7 +136,6 @@ public class HistogramGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -151,16 +151,20 @@ public class HistogramGUI extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jCheckBox1 = new javax.swing.JCheckBox();
         jCheckBox2 = new javax.swing.JCheckBox();
+        jPanel4 = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        fromTextField = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        toTextField = new javax.swing.JTextField();
+        subjectTextField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        jLabel7 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
-
-        jButton1.setText("Email Data");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -278,7 +282,7 @@ public class HistogramGUI extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -288,7 +292,7 @@ public class HistogramGUI extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 776, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -300,7 +304,81 @@ public class HistogramGUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Select Data To Email", jPanel1);
+        jTabbedPane1.addTab("1. Select Data To Email", jPanel1);
+
+        jButton1.setText("Send");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        fromTextField.setText("cs015tas@cs.brown.edu");
+
+        jLabel4.setText("From");
+
+        jLabel5.setText("To");
+
+        subjectTextField.setText("[cs015] Grade Report");
+
+        jLabel6.setText("Subject");
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        jTextArea1.setRows(5);
+        jScrollPane4.setViewportView(jTextArea1);
+
+        jLabel7.setText("Note: The selected data will automatically be attached to the current email.  This currently does not work from the iLab because mail-relay.brown.edu is not accessible from the iLab network.");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 961, Short.MAX_VALUE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(subjectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
+                            .addComponent(toTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
+                            .addComponent(fromTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)))
+                    .addComponent(jLabel7))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(fromTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(toTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(subjectTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("2. Email Settings", jPanel4);
 
         jMenu1.setText("File");
         jMenuBar1.add(jMenu1);
@@ -316,64 +394,18 @@ public class HistogramGUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 897, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(787, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 986, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String[] s = {"psastras@gmail.com"};
-        try {
-            List<BufferedImage> bil = new ArrayList<BufferedImage>();
-            List<String> sl = new ArrayList<String>();
-            List<File> fl = new ArrayList<File>();
-            if (sdp.isVisible()) {
-                bil.add(sdp.getImage(600, 300));
-                fl.add(new File("histogram_" + bil.size() + ".png"));
-                sl.add("histogram_" + bil.size());
-                ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
-            }
-            for (ChartDataPanel c : _charts) {
-                if (c.isVisible()) {
-                    bil.add(c.getImage(300, 150));
-                    fl.add(new File("histogram_" + bil.size() + ".png"));
-                    sl.add("histogram_" + bil.size());
-                    ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
-                }
-            }
-            String imgString = "";
-            int index = 0;
-            for (String ss : sl) {
-                imgString += "<img src=\"cid:" + ss + "\">";
-                if(index++ % 2 == 0) {
-                    imgString += "<br>";
-                }
-            }
-            Calendar cal = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Utils.sendMail("cs015tas@cs.brown.edu", s, "[cs015] Grade Report","<html><body style=\"margin: 0px;\"><div style=\" padding: 0px 50px 0px 50px; background-color: #fff; font-family: Sans-Serif;\"><div style=\"background-color:#fff; font-size: 8pt; text-align: center; color: #999\">" + imgString + "<hr>This is an autogenerated email from cs015 Grade Report.<br>Sent on " + sdf.format(cal.getTime()) + ".</div></div></body></html>", sl.toArray(new String[0]), fl.toArray(new File[0]));
-            for (File f : fl) {
-                f.delete();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jList1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jList1KeyReleased
         updateCharts();
@@ -419,6 +451,53 @@ public class HistogramGUI extends javax.swing.JFrame {
         updateCharts();
     }//GEN-LAST:event_jCheckBox2ActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String[] s = toTextField.getText().split(",");
+        for (int i = 0; i < s.length; i++) {
+            s[i].trim();
+        }
+        try {
+            List<BufferedImage> bil = new ArrayList<BufferedImage>();
+            List<String> sl = new ArrayList<String>();
+            List<File> fl = new ArrayList<File>();
+            if (sdp.isVisible()) {
+                bil.add(sdp.getImage(600, 300));
+                fl.add(new File("histogram_" + bil.size() + ".png"));
+                sl.add("histogram_" + bil.size());
+                ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
+            }
+            for (ChartDataPanel c : _charts) {
+                if (c.isVisible()) {
+                    bil.add(c.getImage(300, 150));
+                    fl.add(new File("histogram_" + bil.size() + ".png"));
+                    sl.add("histogram_" + bil.size());
+                    ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
+                }
+            }
+            String imgString = "";
+            int index = 0;
+            for (String ss : sl) {
+                imgString += "<img src=\"cid:" + ss + "\">";
+                if (index++ % 2 == 0) {
+                    imgString += "<br>";
+                }
+            }
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Utils.sendMail(fromTextField.getText(), s, subjectTextField.getText(), "<html><body style=\"margin: 0px;\"><div style=\" padding: 0px 50px 0px 50px; background-color: #fff; font-family: Sans-Serif;\"><p style=\"font-size: 10pt\">" + jTextArea1.getText() + "</p><div style=\"background-color:#fff; font-size: 8pt; text-align: center; color: #999\">" + imgString + "<hr>This is an autogenerated email from cs015 Grade Report.<br>Sent on " + sdf.format(cal.getTime()) + ".</div></div></body></html>", sl.toArray(new String[0]), fl.toArray(new File[0]));
+            
+            }
+            catch(Exception e) {
+            }
+            for (File f : fl) {
+                f.delete();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+}//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -434,12 +513,17 @@ public class HistogramGUI extends javax.swing.JFrame {
     public void paintComponent(Graphics g) {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField fromTextField;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -447,11 +531,16 @@ public class HistogramGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField subjectTextField;
     private cs015Database.Table table1;
+    private javax.swing.JTextField toTextField;
     // End of variables declaration//GEN-END:variables
 }
