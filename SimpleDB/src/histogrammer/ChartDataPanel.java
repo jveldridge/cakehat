@@ -11,6 +11,7 @@
 package histogrammer;
 
 import cs015Database.DatabaseInterops;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.jfree.data.statistics.Statistics;
@@ -51,6 +52,10 @@ public class ChartDataPanel extends javax.swing.JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public BufferedImage getImage(int w, int h){
+        return chartPanel1.getImage(w, h);
     }
 
     /** This method is called from within the constructor to

@@ -16,14 +16,13 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardXYItemLabelGenerator;
-import org.jfree.chart.labels.XYItemLabelGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -66,7 +65,7 @@ public class StudentDataPanel extends javax.swing.JPanel {
         }
 
         dataset.addSeries(studName + "'s Scores", data);
-        dataset.addSeries("Class Average", data);
+//        dataset.addSeries("Class Average", data);
         ValueAxis yAxis = new NumberAxis("Score");
         yAxis.setRange(0.0, 110.0);
         ValueAxis xAxis = new SymbolAxis("Assignment Name", assignments);
@@ -76,12 +75,17 @@ public class StudentDataPanel extends javax.swing.JPanel {
         renderer.setSeriesItemLabelsVisible(0, Boolean.TRUE);
         renderer.setBaseItemLabelsVisible(true);
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-        _chart = new JFreeChart(studName + "'s Grade History", new Font("Tahoma", 0, 14), plot, true);
-
+        _chart = new JFreeChart(studName + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, false);
+        _chart.setBackgroundPaint(Color.white);
         this.repaint();
 
     }
 
+    public BufferedImage getImage(int w, int h) {
+       return  _chart.createBufferedImage(w, h);
+    }
+
+    @Override
     public void paintComponent(Graphics g) {
         if (_chart != null) {
             _chart.draw((Graphics2D) g, new Rectangle2D.Double(0.0, 0.0, (double) this.getWidth(), (double) this.getHeight()));
