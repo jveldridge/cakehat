@@ -45,7 +45,7 @@ public class StartupDialog extends javax.swing.JFrame {
             String strLine;
             while ((strLine = br.readLine()) != null) {
                 if (!strLine.startsWith("//")) {
-                    System.out.println(strLine);
+                    
                 }
             }
             in.close();

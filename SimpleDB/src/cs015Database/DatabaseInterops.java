@@ -22,7 +22,7 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
 public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
-    public static final String[] ASSIGNMENT_NAMES = {"Clock", "LiteBrite", "TASafeHouse", "Cartoon", "Swarm", "Tetris", "PizzaDex"};
+    public static final String[] ASSIGNMENT_NAMES = {"Clock", "LiteBrite", "TASafeHouse", "Cartoon", "Swarm", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
     public static final String[] GRADE_RUBRIC_FIELDS = {"BaseGrade", "Extras", "LateEarly", "Total"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
     public static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
