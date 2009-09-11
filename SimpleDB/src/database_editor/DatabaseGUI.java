@@ -86,7 +86,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         mainMenu = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileMenuSeparator = new javax.swing.JSeparator();
-        jMenuItem1 = new javax.swing.JMenuItem();
         fileMenuExit = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         editMenuAddRow = new javax.swing.JMenuItem();
@@ -251,14 +250,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         fileMenu.setText("File");
         fileMenu.add(fileMenuSeparator);
 
-        jMenuItem1.setText("Regenerate Database");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        fileMenu.add(jMenuItem1);
-
         fileMenuExit.setText("Exit");
         fileMenuExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -391,17 +382,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
         refreshTable((String) tableSelector.getSelectedItem());
     }//GEN-LAST:event_tableSelectorActionPerformed
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        try {
-            gridView.removeDatabaseWatch();
-            DatabaseInterops.regenerateDatabase();
-            gridView.initDatabaseWatch();
-            updateFormComponents();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
-
     /**
      * Update components to current database information.
      */
@@ -453,7 +433,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuAbout;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuBar mainMenu;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton removeRowButton;
