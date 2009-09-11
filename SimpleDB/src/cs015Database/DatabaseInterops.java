@@ -213,12 +213,11 @@ public class DatabaseInterops {
         //Grab data from config file
       
 
-        //Add new tables  should be read from xml file
+        //Add new tables for grades stuff should be read from xml rubric file
 
         db.createTable("create table assignments (assignmentNames text not null)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
-        db.createTable("create table blacklist (taLogin text not null)");
-
+        db.createTable("create table blacklist (taLogin text not null, studLogins text)");
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
         for(String s : STUD_LOGINS) {
