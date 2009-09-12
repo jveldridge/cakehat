@@ -467,14 +467,14 @@ public class HistogramGUI extends javax.swing.JFrame {
             if (sdp.isVisible()) {
                 bil.add(sdp.getImage(600, 300));
                 fl.add(new File("histogram_" + bil.size() + ".png"));
-                sl.add("histogram_" + bil.size());
+                sl.add("histogram_" + bil.size() + ".png");
                 ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
             }
             for (ChartDataPanel c : _charts) {
                 if (c.isVisible()) {
                     bil.add(c.getImage(300, 150));
                     fl.add(new File("histogram_" + bil.size() + ".png"));
-                    sl.add("histogram_" + bil.size());
+                    sl.add("histogram_" + bil.size() + ".png");
                     ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
                 }
             }
@@ -494,9 +494,9 @@ public class HistogramGUI extends javax.swing.JFrame {
             }
             catch(Exception e) {
             }
-            for (File f : fl) {
-                f.delete();
-            }
+//            for (File f : fl) {
+//                f.delete();
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }

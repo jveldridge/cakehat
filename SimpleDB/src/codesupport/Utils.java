@@ -1,5 +1,6 @@
 package codesupport;
 
+import histogrammer.InstallCert;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,46 +35,66 @@ public class Utils {
      * @return
      */
     public static boolean sendMail(String senderEmail, String[] recipientEmail, String subject, String body, String[] imageContentIDs, File[] images) {
-        String host = "mail-relay.brown.edu";
-        Properties props = new Properties();
-        props.setProperty("mail.transport.protocol", "smtp");
-        props.setProperty("mail.smtp.host", host);
-        Session session = Session.getDefaultInstance(props);
-        session.setDebug(true);
-        try {
-            MimeMessage msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(senderEmail));
-            InternetAddress[] address = new InternetAddress[recipientEmail.length];
-            for (int i = 0; i < recipientEmail.length; i++) {
-                address[i] = new InternetAddress(recipientEmail[i]);
-            }
-            msg.setRecipients(Message.RecipientType.TO, address);
-            msg.setSubject(subject);
-            msg.setSentDate(new Date());
 
-            Multipart mp = new MimeMultipart();
-
-            BodyPart htmlPart = new MimeBodyPart();
-            htmlPart.setContent(body, "text/html");
-            mp.addBodyPart(htmlPart);
-            for(int i = 0; i< images.length; i++) {
-                BodyPart imagePart = new MimeBodyPart();
-                FileDataSource ds = new FileDataSource(images[i]);
-                imagePart.setDataHandler(new DataHandler(ds));
-                imagePart.setFileName(images[i].getName());
-                imagePart.setHeader("Content-ID", "<" + imageContentIDs[i] + ">");
-                mp.addBodyPart(imagePart);
-            }
-            msg.setContent(mp);
-            Transport t = session.getTransport();
-            t.connect();
-            t.sendMessage(msg, address);
-            t.close();
-            return true;
-        } catch (MessagingException e) {
+        try{
+            String[] cmd = {"/bin/sh","-c", "mutt -s \"" + subject + "\" -a " + Arrays.toString(imageContentIDs).replace(",", "").replace("[", "").replace("]", "") + " -- psastras@gmail.com < testmail"};
+            System.out.println(cmd[2]);//"uuencode histogram_1.png | mailx -s \"test\" \"psastras\""};
+            Runtime.getRuntime().exec(cmd);
+        } catch(Exception e) {
             e.printStackTrace();
-            return false;
         }
+        System.out.println("Emailed<");
+        return false;
+        //        String host = "localhost";//"mail-relay.brown.edu";
+//
+//        Properties props = new Properties();
+////        System.setProperty("javax.net.ssl.trustStore", "browncs-ca.crt");
+//        props.setProperty("mail.transport.protocol", "smtp");
+////        props.setProperty("mail.smtp.starttls.enable","true");
+////
+//        props.setProperty("mail.smtp.host", host);
+//////        props.setProperty("mail.smtp.port", "465");
+////        String[] test = {"smtps.cs.brown.edu:465"};
+////        try{InstallCert.main(test);}
+////        catch(Exception e){e.printStackTrace();}
+////        System.out.println("ASD");
+//
+//        Session session = Session.getDefaultInstance(props);
+//        session.setDebug(true);
+//        try {
+//            MimeMessage msg = new MimeMessage(session);
+//            msg.setFrom(new InternetAddress(senderEmail));
+//            InternetAddress[] address = new InternetAddress[recipientEmail.length];
+//            for (int i = 0; i < recipientEmail.length; i++) {
+//                address[i] = new InternetAddress(recipientEmail[i]);
+//            }
+//            msg.setRecipients(Message.RecipientType.TO, address);
+//            msg.setSubject(subject);
+//            msg.setSentDate(new Date());
+//
+//            Multipart mp = new MimeMultipart();
+//
+//            BodyPart htmlPart = new MimeBodyPart();
+//            htmlPart.setContent(body, "text/html");
+//            mp.addBodyPart(htmlPart);
+//            for(int i = 0; i< images.length; i++) {
+//                BodyPart imagePart = new MimeBodyPart();
+//                FileDataSource ds = new FileDataSource(images[i]);
+//                imagePart.setDataHandler(new DataHandler(ds));
+//                imagePart.setFileName(images[i].getName());
+//                imagePart.setHeader("Content-ID", "<" + imageContentIDs[i] + ">");
+//                mp.addBodyPart(imagePart);
+//            }
+//            msg.setContent(mp);
+//            Transport t = session.getTransport();
+//            t.connect();
+//            t.sendMessage(msg, address);
+//            t.close();
+//            return true;
+//        } catch (MessagingException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
     }
 
     /**
