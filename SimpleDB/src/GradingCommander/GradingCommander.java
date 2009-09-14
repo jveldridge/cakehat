@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -41,11 +42,30 @@ public class GradingCommander {
         }
 	}
 
-    // TODO: decide if this is needed
-	public static void compileAll(String project, String[] studentLogins) {
-		for (String sL : studentLogins) {
-			compileStudentProject(project, sL);
-		}
+    /**
+     * Untars each student's code for the given project
+     * @param assignmentList
+     * @param studentList
+     */
+    public static void untar(JList assignmentList, JList studentList) {
+        ArrayList<String> studentLogins = new ArrayList<String>();
+        int size = studentList.getModel().getSize();
+        for (int i=0; i<size; i++) {
+            studentLogins.add((String)studentList.getModel().getElementAt(i));
+        }
+        ProjectManager.untar(new Project((String)assignmentList.getSelectedValue()),studentLogins);
+    }
+
+    /**
+     * Compiles each student's code for the given project
+     * @param project
+     * @param studentList
+     */
+	public static void compileAll(String project, JList studentList) {
+		int size = studentList.getModel().getSize();
+        for (int i=0; i<size; i++) {
+            compileStudentProject(project,(String)studentList.getModel().getElementAt(i));
+        }
 	}
 
     /**
@@ -124,13 +144,21 @@ public class GradingCommander {
 		}
 	}
 
-    // TODO: find out if this is needed
+    /**
+     * Compiles the currently selected student's code for the currently selected project
+     * @param project
+     * @param login
+     */
 	public static void compileStudentProject(String project, String login) {
         ProjectManager.compile(new Project(project), login);
 	}
-	
+
+	/**
+     * Runs the currently selected student's code for the currently selected project
+     * @param project
+     * @param login
+     */
 	public static void runStudentProject(String project, String login) {
-		System.out.println("Running project " + project + " for student " + login);
         ProjectManager.execute(new Project(project), login);
 	}
 	
@@ -157,7 +185,7 @@ public class GradingCommander {
 	 */
 	public static void openStudentProject(String project, String login) {
 
-		//@TODO: need to add option to option GFX code (or figure out based on whether project uses it)
+		//TODO: need to add option to open GFX code (or figure out based on whether project uses it)
 		
 		Runtime r = Runtime.getRuntime();
 		File wd = new File("/home/");  
@@ -169,7 +197,6 @@ public class GradingCommander {
 		   e.printStackTrace(); 
 		}
 		if (proc != null) { 
-		   BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream())); 
 		   PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true); 
 		   String cdCommand = new String("cd " + login + "/course/cs015/" + project);
 		   out.println(cdCommand); 
@@ -178,16 +205,41 @@ public class GradingCommander {
 		}
 	}
 
-    public static boolean isTesterAvailable(String project) {
-        return false;
-    }
-
+    //TODO!
     static void gradeProject(String asgn, String student) {
         System.out.println("Opening rubric for project " + asgn + " for student " + student);
     }
 
+    //TODO: Deal with need for input from cs015_pizzaTest
     static void runTester(String asgn, String student) {
-        
+        if (asgn.equals("PizzaDex")) {
+            String testCommand = "cs015_pizzaTest " + student;
+            try {
+                Process p = Runtime.getRuntime().exec(testCommand);
+                BufferedReader in = new BufferedReader(
+                                    new InputStreamReader(p.getInputStream()));
+                String line = null;
+                while ((line = in.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            String testCommand = "cs015_gfxTest " + student;
+            try {
+                Process p = Runtime.getRuntime().exec(testCommand);
+                BufferedReader in = new BufferedReader(
+                                    new InputStreamReader(p.getInputStream()));
+                String line = null;
+                while ((line = in.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

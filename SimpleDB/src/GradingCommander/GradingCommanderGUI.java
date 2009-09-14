@@ -454,13 +454,15 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     private void assignmentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentListMouseClicked
         populateStudentList();
 
-        //must also inform Tester button of the current assignment
+        //must also inform Tester button of the newly selected current assignment
         if (GradingCommander.hasTester((String)assignmentList.getSelectedValue()))
             runTesterButton.setEnabled(true);
         else
             runTesterButton.setEnabled(false);
 
-        this.untar();
+        //and untar and compile all student codes for the newly selected current assignment
+        GradingCommander.untar(assignmentList, studentList);
+        GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
@@ -520,15 +522,6 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void untar() {
-        ArrayList<String> studentLogins = new ArrayList<String>();
-        int size = studentList.getModel().getSize();
-        for (int i=0; i<size; i++) {
-            studentLogins.add((String)studentList.getModel().getElementAt(i));
-        }
-        ProjectManager.untar(new Project((String)assignmentList.getSelectedValue()),studentLogins);
     }
 
     /** Main method starts the application
