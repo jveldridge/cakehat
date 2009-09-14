@@ -131,6 +131,11 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
 
         generateDistButton.setText("2. Generate Grading Assignments");
         generateDistButton.setFocusable(false);
+        generateDistButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateDistButtonActionPerformed(evt);
+            }
+        });
 
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
@@ -189,6 +194,10 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             m.setValueAt(numToGrade[i], i, 1);
         }
     }//GEN-LAST:event_redistributeButtonActionPerformed
+
+    private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_generateDistButtonActionPerformed
 
     /**
      * @param args the command line arguments

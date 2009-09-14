@@ -176,7 +176,7 @@
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="selectedStudentLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="379" max="-2" attributes="0"/>
+                                  <EmptySpace pref="385" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -347,7 +347,7 @@
               <Image iconType="3" name="/GradingCommander/icons/print.png"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="&quot;&lt;html&gt;&lt;b&gt;Print All&lt;/b&gt;&lt;br&gt;Print all assignments&quot;" type="code"/>
+              <Connection code="&quot;&lt;html&gt;&lt;b&gt;Print All&lt;/b&gt;&lt;br&gt;Print code for all students&quot;" type="code"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>

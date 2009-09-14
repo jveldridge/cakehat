@@ -5,12 +5,9 @@
 package cs015Database;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;

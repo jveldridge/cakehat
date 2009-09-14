@@ -15,9 +15,23 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 
+/* GradingCommander.java
+ *
+ * This class contains (static) methods that get called by the GradingCommanderGUI class
+ * to actually provide the functionality its buttons promise.
+ *
+ */
 
 public class GradingCommander {
 
+    /**
+     * This method runs a demo of the current project using the existing
+     * 'cs015_runDemo' script
+     *
+     * Fully functional (I think) as of 9/13/09
+     *
+     * @param project
+     */
     public static void demoProject(String project) {
 		Runtime r = Runtime.getRuntime();
         try {
@@ -26,35 +40,38 @@ public class GradingCommander {
             ex.printStackTrace();
         }
 	}
-	
+
+    // TODO: decide if this is needed
 	public static void compileAll(String project, String[] studentLogins) {
 		for (String sL : studentLogins) {
 			compileStudentProject(project, sL);
 		}
 	}
-	
-	public static void printAll(String project, JList assignmentList) {
+
+    /**
+     * This method prints the code of all students the TA has been assigned to grade for
+     * the current project.  It opens a pop-up window that allows the TA to select which printer should
+     * be used (only allows bw3, bw4, and bw5).
+     *
+     * @param project
+     * @param assignmentList
+     */
+	public static void printAll(String project, JList studentList) {
         Vector<String> studentLogins = new Vector<String>();
-        int size = assignmentList.getModel().getSize();
+        int size = studentList.getModel().getSize();
         for (int i=0; i<size; i++) {
-            studentLogins.add((String)assignmentList.getModel().getElementAt(i));
+            studentLogins.add((String)studentList.getModel().getElementAt(i));
         }
-		for (String sL : studentLogins) {
+        Object[] printerChoices = {"bw2", "bw3", "bw4", "bw5"};
+        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png");
+        String printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
+        for (String sL : studentLogins) {
 			System.out.println(sL);
-            //printStudentProject(project, sL);
+            printStudentProject(project, sL, printer);
 		}
 	}
 
-	public static void compileStudentProject(String project, String login) {
-        ProjectManager.compile(new Project(project), login);
-	}
-	
-	public static void runStudentProject(String project, String login) {
-		System.out.println("Running project " + project + " for student " + login);
-        ProjectManager.execute(new Project(project), login);
-	}
-	
-	public static void printStudentProject(String project, String login) {
+    public static void printStudentProject(String project, String login, String printer) {
         Runtime r = Runtime.getRuntime();
 		File wd = new File("/home/");  
 		Process proc = null; 
@@ -67,7 +84,9 @@ public class GradingCommander {
 		if (proc != null) { 
 		   Object[] printerChoices = {"bw2", "bw3", "bw4", "bw5"};
            ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
-           String printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
+           if (printer == null) {
+               printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
+           }
            if ((printer != null) && (printer.length() > 0)) {
                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
@@ -94,12 +113,22 @@ public class GradingCommander {
 		}
 	}
 
+    // TODO: find out if this is needed
+	public static void compileStudentProject(String project, String login) {
+        ProjectManager.compile(new Project(project), login);
+	}
+	
+	public static void runStudentProject(String project, String login) {
+		System.out.println("Running project " + project + " for student " + login);
+        ProjectManager.execute(new Project(project), login);
+	}
+	
+
     public static boolean hasTester(String asgn) {
         // TODO: change to get from some kind of config file
-        if (asgn.equals("gfx") || asgn.equals("PizzaDex"))
-            return true;
-        else
+        if (asgn.equals("Clock") || asgn.equals("LiteBrite") || asgn.equals("TASafeHouse"))
             return false;
+        return true;
     }
 
 	/**

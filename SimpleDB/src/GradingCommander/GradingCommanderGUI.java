@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * GradingCommanderGUI2.java
+/* GradingCommanderGUI.java
+ *
+ * This is the frontend graphical interface for the TAs to use when grading.
  *
  * Created on Sep 6, 2009, 5:14:50 PM
  */
@@ -17,17 +13,13 @@ import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
-/**
- *
- * @author psastras
- */
 public class GradingCommanderGUI extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    /** Creates new form GradingCommanderGUI2 */
+    /** Creates new form GradingCommanderGUI */
     public GradingCommanderGUI() {
-        initComponents();
+        initComponents();           //creates form components
         updateFormComponents();
         this.setTitle(System.getProperty("user.name") + " - cs015 Grader");
         try {
@@ -58,6 +50,14 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        /* check whether runTesterButton should be enabled (if the assignment selected on startup has
+         * a tester to run) or not
+         */
+        if (GradingCommander.hasTester((String)assignmentList.getSelectedValue()))
+            runTesterButton.setEnabled(true);
+        else
+            runTesterButton.setEnabled(false);
     }
 
     /** This method is called from within the constructor to
@@ -205,7 +205,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         });
 
         printAllButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/print.png"))); // NOI18N
-        printAllButton.setText("<html><b>Print All</b><br>Print all assignments");
+        printAllButton.setText("<html><b>Print All</b><br>Print code for all students");
         printAllButton.setFocusable(false);
         printAllButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         printAllButton.addActionListener(new java.awt.event.ActionListener() {
@@ -256,7 +256,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(selectedStudentLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 379, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 385, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(compileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
@@ -410,12 +410,18 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+
+    /* ActionPerformed methods for each button follow below
+     * These methods provide functionality to the buttons by calling appropriate
+     * GradingCommander methods (which generally require getting the selected assignment and the selected
+     * student as parameters).
+     */
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
         GradingCommander.openStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_openButtonActionPerformed
 
     private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
-        GradingCommander.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
+        GradingCommander.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue(), null);
     }//GEN-LAST:event_printButtonActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
@@ -453,6 +459,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_runButton1ActionPerformed
 
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
+        // TODO
     }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
@@ -468,10 +475,14 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_studentListMouseClicked
 
     private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
-        GradingCommander.printAll((String)assignmentList.getSelectedValue(), assignmentList);
+        GradingCommander.printAll((String) assignmentList.getSelectedValue(), studentList);
     }//GEN-LAST:event_printAllButtonActionPerformed
 
 
+    /**
+     * This method populates the StudentList list with the logins of the students that the TA has been
+     * assigned to grade (as recorded in the database) for the selected assignment.
+     */
     private void populateStudentList() {
 
         String user = System.getProperty("user.name");
@@ -502,7 +513,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         }
     }
 
-    /**
+    /** Main method starts the application
      * @param args the command line arguments
      */
     public static void main(String args[]) {
