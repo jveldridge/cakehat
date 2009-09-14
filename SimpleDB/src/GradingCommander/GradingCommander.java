@@ -82,7 +82,7 @@ public class GradingCommander {
 		   e.printStackTrace(); 
 		} 
 		if (proc != null) { 
-		   Object[] printerChoices = {"bw2", "bw3", "bw4", "bw5"};
+		   Object[] printerChoices = {"bw2", "bw3", "bw4"};
            ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
            if (printer == null) {
                printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
