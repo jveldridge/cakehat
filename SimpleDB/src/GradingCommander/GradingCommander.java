@@ -91,10 +91,10 @@ public class GradingCommander {
                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
                String cdCommand = new String("cd " + login + "/course/cs015/" + project);
-               String printCommand = new String("lpr -P" + printer + " *.java");
+               String printCommand = new String("cs015_gradingPrint -P" + printer + " *.java");
                System.out.println("print command is: " + printCommand);
                out.println(cdCommand);
-               out.println(printCommand);
+               //out.println(printCommand);
                out.println("exit");
                try {
                   String line;
