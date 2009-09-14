@@ -6,8 +6,11 @@
  */
 package GradingCommander;
 
+import codesupport.Project;
+import codesupport.ProjectManager;
 import cs015Database.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.UIManager;
@@ -22,6 +25,10 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         initComponents();           //creates form components
         updateFormComponents();
         this.setTitle(System.getProperty("user.name") + " - cs015 Grader");
+
+        //untar all students' code
+        
+
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/icon.png")));
         } catch (IOException e) {
@@ -452,6 +459,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
             runTesterButton.setEnabled(true);
         else
             runTesterButton.setEnabled(false);
+
+        this.untar();
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
@@ -511,6 +520,15 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void untar() {
+        ArrayList<String> studentLogins = new ArrayList<String>();
+        int size = studentList.getModel().getSize();
+        for (int i=0; i<size; i++) {
+            studentLogins.add((String)studentList.getModel().getElementAt(i));
+        }
+        ProjectManager.untar(new Project((String)assignmentList.getSelectedValue()),studentLogins);
     }
 
     /** Main method starts the application

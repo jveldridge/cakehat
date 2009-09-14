@@ -53,6 +53,8 @@ public class GradingCommander {
      * the current project.  It opens a pop-up window that allows the TA to select which printer should
      * be used (only allows bw3, bw4, and bw5).
      *
+     * Fully functional (I think) as of 9/13/09 (excepting what's mentioned in printStudentProject(...))
+     *
      * @param project
      * @param assignmentList
      */
@@ -62,15 +64,24 @@ public class GradingCommander {
         for (int i=0; i<size; i++) {
             studentLogins.add((String)studentList.getModel().getElementAt(i));
         }
-        Object[] printerChoices = {"bw2", "bw3", "bw4", "bw5"};
+        Object[] printerChoices = {"bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png");
         String printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
         for (String sL : studentLogins) {
-			System.out.println(sL);
             printStudentProject(project, sL, printer);
 		}
 	}
 
+    /**
+     * This method prints the code of the student passed in as the second parameter for the project
+     * passed in as the first parameter on the printer passed in as the third parameter
+     *
+     * //TODO: Should probably have some kind of error-checking (e.g., if cdCommand is not executed correctly)
+     *
+     * @param project
+     * @param login
+     * @param printer
+     */
     public static void printStudentProject(String project, String login, String printer) {
         Runtime r = Runtime.getRuntime();
 		File wd = new File("/home/");  
@@ -82,7 +93,7 @@ public class GradingCommander {
 		   e.printStackTrace(); 
 		} 
 		if (proc != null) { 
-		   Object[] printerChoices = {"bw2", "bw3", "bw4"};
+		   Object[] printerChoices = {"bw3", "bw4", "bw5"};
            ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
            if (printer == null) {
                printer = (String)JOptionPane.showInputDialog(new JFrame(),"Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE,icon,printerChoices,"bw3");
@@ -91,10 +102,10 @@ public class GradingCommander {
                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
                String cdCommand = new String("cd " + login + "/course/cs015/" + project);
-               String printCommand = new String("cs015_gradingPrint -P" + printer + " *.java");
+               String printCommand = new String("cs015_gradingPrint " + printer + " *.java");
                System.out.println("print command is: " + printCommand);
                out.println(cdCommand);
-               //out.println(printCommand);
+               out.println(printCommand);
                out.println("exit");
                try {
                   String line;
@@ -124,6 +135,12 @@ public class GradingCommander {
 	}
 	
 
+    /** This method indicates whether there is a tester for the currently selected project
+     *  This is used to control whether the GUI's runTesterButton should be enabled or disabled
+     *
+     * @param asgn
+     * @return
+     */
     public static boolean hasTester(String asgn) {
         // TODO: change to get from some kind of config file
         if (asgn.equals("Clock") || asgn.equals("LiteBrite") || asgn.equals("TASafeHouse"))
