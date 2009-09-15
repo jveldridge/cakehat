@@ -5,6 +5,7 @@
 package cs015Database;
 
 import java.io.File;
+import java.util.LinkedList;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
@@ -22,6 +23,7 @@ public class DatabaseInterops {
     public static final String[] GRADE_RUBRIC_FIELDS = {"BaseGrade", "Extras", "LateEarly", "Total"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
     public static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
+    public static final String STUD_TABLE = "studlist";
     private static SqlJetDb db;
 
     public static void open() throws SqlJetException {
@@ -38,6 +40,45 @@ public class DatabaseInterops {
             }
         });
 
+    }
+
+    /**
+     * Utility method to get student names as array from table
+     * @return
+     * @throws org.tmatesoft.sqljet.core.SqlJetException
+     */
+    public static String[] getStudentNames() {
+        try {
+            return getColumnData("studLogin", "studlist");
+        } catch (Exception e) {
+            return new String[0];
+        }
+    }
+
+    /**
+     * Utility method to get ta names as array from table
+     * @return
+     * @throws org.tmatesoft.sqljet.core.SqlJetException
+     */
+    public static String[] getTANames(){
+        try {
+            return getColumnData("taLogin", "talist");
+        } catch (Exception e) {
+            return new String[0];
+        }
+    }
+
+    public static String[] getColumnData(String colName, String tableName) throws SqlJetException {
+        LinkedList<String> ll = new LinkedList<String>();
+        if (db == null) {
+            db = SqlJetDb.open(new File(FILE_NAME), true);
+        }
+        ISqlJetCursor cursor = db.getTable(tableName).open();
+        while (!cursor.eof()) {
+            ll.add(cursor.getString(colName));
+            cursor.next();
+        }
+        return ll.toArray(new String[0]);
     }
 
     public static String[] getTableNames() throws SqlJetException {
@@ -211,7 +252,7 @@ public class DatabaseInterops {
         }
 
         //Grab data from config file
-      
+
 
         //Add new tables for grades stuff should be read from xml rubric file
 
@@ -220,7 +261,8 @@ public class DatabaseInterops {
         db.createTable("create table blacklist (taLogin text not null, studLogins text)");
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
-        for(String s : STUD_LOGINS) {
+        db.createTable("create table talist (taLogin text not null)");
+        for (String s : STUD_LOGINS) {
             addDatum("studlist", s);
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
@@ -245,8 +287,6 @@ public class DatabaseInterops {
         autoPopulate();
     }
 
-    
-
     private static void autoPopulate() throws SqlJetException {
         //@TODO:tester...remove this when done
 
@@ -264,6 +304,11 @@ public class DatabaseInterops {
                 data[4] = Integer.toString(Integer.parseInt((String) data[1]) + Integer.parseInt((String) data[2]) + Integer.parseInt((String) data[3]));
                 addDatum("grades_" + s, data);
             }
+        }
+        Object[] data = new String[1];
+        for (String s : TA_LOGINS) {
+            data[0] = s;
+            addDatum("talist", data);
         }
 
     }

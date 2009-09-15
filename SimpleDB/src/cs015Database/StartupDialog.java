@@ -230,7 +230,7 @@ public class StartupDialog extends javax.swing.JFrame {
         gradeDistributorButton1.setIconTextGap(20);
         gradeDistributorButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gradeDistributorButton1ActionPerformed(evt);
+                regenerateDatabaseActionPerformed(evt);
             }
         });
 
@@ -292,14 +292,14 @@ public class StartupDialog extends javax.swing.JFrame {
         g.setVisible(true);
     }//GEN-LAST:event_gradeDistributorButtonActionPerformed
 
-    private void gradeDistributorButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeDistributorButton1ActionPerformed
+    private void regenerateDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regenerateDatabaseActionPerformed
         _captcha = new Captcha.Builder(200, 50).addText().addNoise().gimp().build();
         jTextField1.setText("");
         imagePanel1.setImage(_captcha.getImage());
         warningDialog.setLocationRelativeTo(null);
         warningDialog.setVisible(true);
 
-    }//GEN-LAST:event_gradeDistributorButton1ActionPerformed
+}//GEN-LAST:event_regenerateDatabaseActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         warningDialog.setVisible(false);

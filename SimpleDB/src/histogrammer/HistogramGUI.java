@@ -465,14 +465,14 @@ public class HistogramGUI extends javax.swing.JFrame {
             List<String> sl = new ArrayList<String>();
             List<File> fl = new ArrayList<File>();
             if (sdp.isVisible()) {
-                bil.add(sdp.getImage(600, 300));
+                bil.add(sdp.getImage(1000, 250));
                 fl.add(new File("histogram_" + bil.size() + ".png"));
                 sl.add("histogram_" + bil.size() + ".png");
                 ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
             }
             for (ChartDataPanel c : _charts) {
                 if (c.isVisible()) {
-                    bil.add(c.getImage(300, 150));
+                    bil.add(c.getImage(200, 150));
                     fl.add(new File("histogram_" + bil.size() + ".png"));
                     sl.add("histogram_" + bil.size() + ".png");
                     ImageIO.write(bil.get(bil.size() - 1), "png", fl.get(fl.size() - 1));
