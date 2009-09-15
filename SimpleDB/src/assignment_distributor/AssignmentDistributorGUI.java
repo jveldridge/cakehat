@@ -13,6 +13,7 @@ package assignment_distributor;
 import cs015Database.*;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -186,12 +187,12 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     private void redistributeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redistributeButtonActionPerformed
         int[] numToGrade = new int[mainTable.getModel().getRowCount()];
         TableModel m = mainTable.getModel();
-        
-        int index = (int)(Math.random() * numToGrade.length);
-        for(int i = 0; i < DatabaseInterops.STUD_LOGINS.length; i++) {
-            numToGrade[index++ % numToGrade.length]++;
+
+        int index = (int) (Math.random() * numToGrade.length);
+        for (int i = 0; i < DatabaseInterops.STUD_LOGINS.length; i++, index++) {
+            numToGrade[index % numToGrade.length]++;
         }
-        for(int i = 0; i < numToGrade.length; i++) {
+        for (int i = 0; i < numToGrade.length; i++) {
             m.setValueAt(numToGrade[i], i, 1);
         }
     }//GEN-LAST:event_redistributeButtonActionPerformed
@@ -199,12 +200,57 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
         String[] studNames = DatabaseInterops.getStudentNames();
         String[] taNames = DatabaseInterops.getTANames();
-        ArrayDeque ad = new ArrayDeque();
-        for(String s : studNames) {
+        String[] studentsToGrade = new String[taNames.length];
+        Arrays.fill(studentsToGrade, "");
+        String[] tasWithBlacklist = DatabaseInterops.getColumnData("taLogin", "blacklist");
+        ArrayDeque<String> ad = new ArrayDeque<String>();
+        for (String s : studNames) {
             ad.add(s);
         }
-        
+        int index = (int) (Math.random() * taNames.length);
+        Arrays.sort(tasWithBlacklist);
+        while (!ad.isEmpty()) {
+            if (Arrays.binarySearch(tasWithBlacklist, ad.peekLast()) >= 0) {
+                String blacklistedStuds = getBlacklist(ad.peekLast());
+                if (blacklistedStuds.contains(ad.peekLast())) {
+                    ad.addFirst(ad.pollLast());
+                }
+            } else {
+                if (studentsToGrade[index % studentsToGrade.length].isEmpty()) {
+                    studentsToGrade[index++ % studentsToGrade.length] += ad.pollLast();
+                } else {
+                    studentsToGrade[index++ % studentsToGrade.length] +=  ", " + ad.pollLast();
+                }
+            }
+        }
+        try {
+            String[] colNames = DatabaseInterops.getColumnNames("assignment_dist");
+            int colIndex = 0;
+            for (int i = 0; i < colNames.length; i++, colIndex++) {
+                if (colNames[i].compareToIgnoreCase((String) assignmentNameComboBox.getSelectedItem()) == 0) {
+                    break;
+                }
+            }
+            for (int i = 0; i < tasWithBlacklist.length; i++) {
+                long rowid = DatabaseInterops.getRowID("assignment_dist", "taLoginDist", taNames[i]);
+                Object[] o = DatabaseInterops.getDataRow("assignment_dist", rowid);
+                o[colIndex] = studentsToGrade[i];
+                DatabaseInterops.update(rowid, "assignment_dist", o);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_generateDistButtonActionPerformed
+
+    private String getBlacklist(String taName) {
+        try {
+            ISqlJetCursor cursor = DatabaseInterops.getData("blacklist", "ta_blist_logins", taName);
+            return cursor.getString("studLogins");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 
     /**
      * @param args the command line arguments

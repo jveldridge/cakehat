@@ -60,7 +60,7 @@ public class DatabaseInterops {
      * @return
      * @throws org.tmatesoft.sqljet.core.SqlJetException
      */
-    public static String[] getTANames(){
+    public static String[] getTANames() {
         try {
             return getColumnData("taLogin", "talist");
         } catch (Exception e) {
@@ -68,17 +68,21 @@ public class DatabaseInterops {
         }
     }
 
-    public static String[] getColumnData(String colName, String tableName) throws SqlJetException {
-        LinkedList<String> ll = new LinkedList<String>();
-        if (db == null) {
-            db = SqlJetDb.open(new File(FILE_NAME), true);
+    public static String[] getColumnData(String colName, String tableName) {
+        try {
+            LinkedList<String> ll = new LinkedList<String>();
+            if (db == null) {
+                db = SqlJetDb.open(new File(FILE_NAME), true);
+            }
+            ISqlJetCursor cursor = db.getTable(tableName).open();
+            while (!cursor.eof()) {
+                ll.add(cursor.getString(colName));
+                cursor.next();
+            }
+            return ll.toArray(new String[0]);
+        } catch (Exception e) {
+            return new String[0];
         }
-        ISqlJetCursor cursor = db.getTable(tableName).open();
-        while (!cursor.eof()) {
-            ll.add(cursor.getString(colName));
-            cursor.next();
-        }
-        return ll.toArray(new String[0]);
     }
 
     public static String[] getTableNames() throws SqlJetException {
@@ -114,11 +118,25 @@ public class DatabaseInterops {
         return db.getTable(tableName).lookup(indexName, lookupItem);
     }
 
-    public static String getDatum(String tableName, long rowid) throws SqlJetException {
+    public static Object[] getDataRow(String tableName, long rowid) {
+        try {
+            ISqlJetCursor cursor = db.getTable(tableName).open();
+            cursor.goTo(rowid);
+            Object[] o = new String[getColumnNames(tableName).length];
+            for(int i = 0; i < o.length; i++) {
+                o[i] = cursor.getString(i);
+            }
+            return o;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String getDataCell(String tableName, long rowid, String columnName) throws SqlJetException {
         ISqlJetCursor cursor = db.getTable(tableName).open();
         try {
             if (cursor.goTo(rowid)) {
-                return cursor.getString("login");
+                return cursor.getString(columnName);
             }
         } finally {
             cursor.close();
@@ -139,6 +157,14 @@ public class DatabaseInterops {
                 return null;
             }
         });
+    }
+
+    public static long getRowID(final String tableName, final String indexName, final String objectName) {
+        try {
+            return getData(tableName, indexName, objectName).getRowId();
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     public static void removeDatum(final long rowid, final String tableName) throws SqlJetException {
@@ -259,6 +285,7 @@ public class DatabaseInterops {
         db.createTable("create table assignments (assignmentNames text not null)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
         db.createTable("create table blacklist (taLogin text not null, studLogins text)");
+        db.createTable("create indes ta_blist_logins on blacklist (taLogin)");
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
         db.createTable("create table talist (taLogin text not null)");
