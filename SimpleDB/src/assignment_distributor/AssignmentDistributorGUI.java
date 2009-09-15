@@ -12,6 +12,7 @@ package assignment_distributor;
 
 import cs015Database.*;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -196,7 +197,13 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_redistributeButtonActionPerformed
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        // TODO add your handling code here:
+        String[] studNames = DatabaseInterops.getStudentNames();
+        String[] taNames = DatabaseInterops.getTANames();
+        ArrayDeque ad = new ArrayDeque();
+        for(String s : studNames) {
+            ad.add(s);
+        }
+        
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
     /**
