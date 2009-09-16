@@ -64,6 +64,16 @@ public class DatabaseInterops {
         try {
             return getColumnData("taLogin", "talist");
         } catch (Exception e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
+    public static String[] getAssignmentNames() {
+        try{
+            return getColumnData("assignmentNames", "assignments");
+        } catch(Exception e) {
+            e.printStackTrace();
             return new String[0];
         }
     }

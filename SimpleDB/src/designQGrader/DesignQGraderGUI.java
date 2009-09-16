@@ -22,12 +22,19 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     /** Creates new form DesignQGrader */
     public DesignQGraderGUI() {
         initComponents();
+        this.setLocationRelativeTo(null);
         try {
             DefaultTableModel m = (DefaultTableModel) table1.getModel();
             m.addColumn("Students");
             for (String s : DatabaseInterops.getStudentNames()) {
                 String data[] = {s};
                 m.insertRow(table1.getRowCount(), data);
+            }
+            m = (DefaultTableModel) table2.getModel();
+            m.addColumn("Assignments");
+            for(String s: DatabaseInterops.getAssignmentNames()) {
+                String data[] = {s};
+                m.insertRow(table2.getRowCount(), data);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,10 +80,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
             }
         ));
+        table1.setFocusable(false);
         jScrollPane1.setViewportView(table1);
 
-        jTextField1.setText("jTextField1");
-
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
         jLabel1.setText("Select Student");
 
         table2.setModel(new javax.swing.table.DefaultTableModel(
@@ -87,18 +94,18 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
             }
         ));
+        table2.setFocusable(false);
         jScrollPane2.setViewportView(table2);
 
+        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
         jLabel2.setText("Select Assignment");
 
         jLabel3.setText("Earned Points");
 
-        jTextField2.setText("jTextField2");
-
         jLabel4.setText("Total Points");
 
         jTextField3.setEditable(false);
-        jTextField3.setText("jTextField3");
+        jTextField3.setFocusable(false);
 
         jToggleButton1.setText("Enter");
 
@@ -107,8 +114,14 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jLabel5.setText("Score (%)");
 
         jTextField4.setEditable(false);
-        jTextField4.setText("jTextField4");
+        jTextField4.setFocusable(false);
+        jTextField4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField4ActionPerformed(evt);
+            }
+        });
 
+        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
         jLabel6.setText("Enter Score");
 
         jMenu1.setText("File");
@@ -170,7 +183,6 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -191,12 +203,17 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jToggleButton1)
                                     .addComponent(jButton1)))
-                            .addComponent(jScrollPane1, 0, 0, Short.MAX_VALUE))))
+                            .addComponent(jScrollPane1, 0, 0, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jTextField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField4ActionPerformed
 
     /**
      * @param args the command line arguments
