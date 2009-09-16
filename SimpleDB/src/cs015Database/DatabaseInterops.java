@@ -19,8 +19,8 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
 public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
-    public static final String[] ASSIGNMENT_NAMES = {"Clock", "LiteBrite", "TASafeHouse", "Cartoon", "Swarm", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
-    public static final String[] GRADE_RUBRIC_FIELDS = {"BaseGrade", "Extras", "LateEarly", "Total"};
+    public static final String[] ASSIGNMENT_NAMES = {"Objects", "ClockDesign", "Clock", "LiteBriteDesign", "LiteBrite", "References", "TASafeHouse", "CartoonDesign", "Cartoon", "SwarmDesign", "Swarm", "TetrisDesign", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
+    public static final String[] GRADE_RUBRIC_FIELDS = {"Earned", "Total"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
     public static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
     public static final String STUD_TABLE = "studlist";
@@ -87,7 +87,7 @@ public class DatabaseInterops {
 
     /**
      * Returns an array containing the list of student logins.
-     * If no students to grade or ta login not found , will return a zero length array.
+     * If no students to grade or ta login not found, will return a zero length array.
      * @param taName assignmentName
      * @return
      */
@@ -339,13 +339,11 @@ public class DatabaseInterops {
         }
         for (String s : ASSIGNMENT_NAMES) {
             for (String ss : STUD_LOGINS) {
-                Object[] data = new String[5];
+                Object[] data = new String[3];
                 data[0] = ss;
                 int grade = (int) (Math.random() * 50 + 50);
                 data[1] = Integer.toString(grade);
-                data[2] = Integer.toString((int) (Math.random() * 5));
-                data[3] = "0";
-                data[4] = Integer.toString(Integer.parseInt((String) data[1]) + Integer.parseInt((String) data[2]) + Integer.parseInt((String) data[3]));
+                data[2] = "100";
                 addDatum("grades_" + s, data);
             }
         }

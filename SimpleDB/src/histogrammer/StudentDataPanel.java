@@ -53,7 +53,7 @@ public class StudentDataPanel extends javax.swing.JPanel {
                     data[0][i] = i;
                     while (!cursor.eof()) {
                         if (cursor.getString("studLogins").compareToIgnoreCase(studName) == 0) {
-                            data[1][i] = Double.parseDouble(cursor.getString("Total"));
+                            data[1][i] = Double.parseDouble(cursor.getString("Earned")) / Double.parseDouble(cursor.getString("Total")) * 100;
                             break;
                         }
                         cursor.next();
@@ -67,11 +67,13 @@ public class StudentDataPanel extends javax.swing.JPanel {
 
         dataset.addSeries(studName + "'s Scores", data);
 //        dataset.addSeries("Class Average", data);
-        ValueAxis yAxis = new NumberAxis("Score");
+        ValueAxis yAxis = new NumberAxis("Score (%)");
         yAxis.setRange(0.0, 110.0);
-        ValueAxis xAxis = new SymbolAxis("Assignment Name", assignments);
+        SymbolAxis sa = new SymbolAxis("Assignment Name", assignments);
+        sa.setAutoRange(true);
+        ValueAxis xAxis = sa;
         XYItemRenderer renderer = new XYLineAndShapeRenderer();
-        DecimalFormat decimalformat1 = new DecimalFormat("##,###.00");
+        DecimalFormat decimalformat1 = new DecimalFormat("##,###");
         renderer.setSeriesItemLabelGenerator(0, new StandardXYItemLabelGenerator("{2}", decimalformat1, decimalformat1));
         renderer.setSeriesItemLabelsVisible(0, Boolean.TRUE);
         renderer.setBaseItemLabelsVisible(true);

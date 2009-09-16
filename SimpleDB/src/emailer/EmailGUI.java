@@ -24,6 +24,7 @@ public class EmailGUI extends javax.swing.JFrame {
     public EmailGUI() {
         initComponents();
         fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
+        this.setLocationRelativeTo(null);
     }
 
     /** This method is called from within the constructor to
@@ -116,19 +117,19 @@ public class EmailGUI extends javax.swing.JFrame {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
-                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
-                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
-                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE))))
+                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
+                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
+                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
+                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
+                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(fromBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5))
@@ -147,11 +148,11 @@ public class EmailGUI extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(33, 33, 33)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 393, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );

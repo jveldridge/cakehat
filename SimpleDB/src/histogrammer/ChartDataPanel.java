@@ -33,9 +33,10 @@ public class ChartDataPanel extends javax.swing.JPanel {
             ISqlJetCursor cursor = DatabaseInterops.getAllData("grades_" + asgnName);
             List<Double> l = new ArrayList<Double>();
             while (!cursor.eof()) {
-                l.add(Double.parseDouble(cursor.getString("Total")));
+                l.add(Double.parseDouble(cursor.getString("Earned")) / Double.parseDouble(cursor.getString("Total")) * 100);
                 cursor.next();
             }
+            
             double[] data = new double[l.size()];
             for (int i = 0; i < data.length; i++) {
                 data[i] = l.get(i);

@@ -42,8 +42,8 @@ public class ChartPanel extends JComponent {
         BarRenderer.setDefaultBarPainter(new StandardBarPainter());
         BarRenderer.setDefaultShadowsVisible(false);
         HistogramDataset dataset = new HistogramDataset();
-        dataset.addSeries(assignmentName, data, 50, 0, 105);
-        _chart = ChartFactory.createHistogram("", "Scores", "Number of People", dataset, PlotOrientation.VERTICAL, false, false, false);
+        dataset.addSeries(assignmentName, data, 50, 0, 100);
+        _chart = ChartFactory.createHistogram("", "Scores (%)", "Number of People", dataset, PlotOrientation.VERTICAL, false, false, false);
         _chart.setBackgroundPaint(Color.white);
         _chart.setBorderPaint(Color.darkGray);
         TextTitle tt = new TextTitle(assignmentName + " Histogram", new Font("Sans-Serif", Font.BOLD, 14));

@@ -12,6 +12,7 @@ package cs015Database;
 
 import assignment_distributor.AssignmentDistributorGUI;
 import database_editor.DatabaseGUI;
+import designQGrader.DesignQGraderGUI;
 import emailer.EmailGUI;
 import histogrammer.HistogramGUI;
 import java.awt.Color;
@@ -35,7 +36,7 @@ public class StartupDialog extends javax.swing.JFrame {
     /** Creates new form StartupDialog */
     public StartupDialog() {
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/application-x-executable.png")));
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/system-file-manager.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,7 +58,6 @@ public class StartupDialog extends javax.swing.JFrame {
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
-        System.out.println(Arrays.toString(DatabaseInterops.getStudentsToGrade("psastras", "cartoon")));
     }
 
     /** This method is called from within the constructor to
@@ -84,6 +84,10 @@ public class StartupDialog extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         gradeDistributorButton1 = new javax.swing.JButton();
         emailButtonActionPerformed = new javax.swing.JButton();
+        gradeDistributorButton2 = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         warningDialog.setTitle("Database Regenerate Confirmation");
         warningDialog.setMinimumSize(new java.awt.Dimension(600, 200));
@@ -233,7 +237,7 @@ public class StartupDialog extends javax.swing.JFrame {
             }
         });
 
-        emailButtonActionPerformed.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-drawing.png"))); // NOI18N
+        emailButtonActionPerformed.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/internet-news-reader.png"))); // NOI18N
         emailButtonActionPerformed.setText("<html><b>Notify Students</b><br>Send an email to all students.</html>");
         emailButtonActionPerformed.setFocusable(false);
         emailButtonActionPerformed.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -243,6 +247,36 @@ public class StartupDialog extends javax.swing.JFrame {
                 emailButtonActionPerformedActionPerformed(evt);
             }
         });
+
+        gradeDistributorButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-calculator.png"))); // NOI18N
+        gradeDistributorButton2.setText("<html><b>Enter Grades</b><br />Manually enter grades into the database.</html>");
+        gradeDistributorButton2.setFocusable(false);
+        gradeDistributorButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gradeDistributorButton2.setIconTextGap(20);
+        gradeDistributorButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eneterGradesButton(evt);
+            }
+        });
+
+        jMenu1.setText("File");
+        jMenu1.setMaximumSize(new java.awt.Dimension(27, 32767));
+        jMenu1.setMinimumSize(new java.awt.Dimension(27, 19));
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItem1.setText("Exit");
+        jMenuItem1.setMinimumSize(new java.awt.Dimension(200, 0));
+        jMenuItem1.setPreferredSize(new java.awt.Dimension(200, 22));
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -255,16 +289,17 @@ public class StartupDialog extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(databaseEditorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(gradeDistributorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
-                        .addGap(6, 6, 6))
+                        .addComponent(gradeDistributorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(1, 1, 1)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(emailButtonActionPerformed, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
-                            .addComponent(histogramButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(1, 1, 1)
+                                .addComponent(emailButtonActionPerformed, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))
+                            .addComponent(histogramButton, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(gradeDistributorButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
-                        .addGap(6, 6, 6)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(gradeDistributorButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                            .addComponent(gradeDistributorButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -277,15 +312,18 @@ public class StartupDialog extends javax.swing.JFrame {
                     .addComponent(databaseEditorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(gradeDistributorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(gradeDistributorButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(histogramButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(emailButtonActionPerformed, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(emailButtonActionPerformed, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(histogramButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(emailButtonActionPerformed, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(emailButtonActionPerformed, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(gradeDistributorButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                        .addComponent(gradeDistributorButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
 
         pack();
@@ -362,6 +400,15 @@ public class StartupDialog extends javax.swing.JFrame {
         eg.setVisible(true);
 }//GEN-LAST:event_emailButtonActionPerformedActionPerformed
 
+    private void eneterGradesButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eneterGradesButton
+        designQGrader.DesignQGraderGUI dqg = new DesignQGraderGUI();
+        dqg.setVisible(true);
+    }//GEN-LAST:event_eneterGradesButton
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -378,6 +425,7 @@ public class StartupDialog extends javax.swing.JFrame {
     private javax.swing.JButton emailButtonActionPerformed;
     private javax.swing.JButton gradeDistributorButton;
     private javax.swing.JButton gradeDistributorButton1;
+    private javax.swing.JButton gradeDistributorButton2;
     private javax.swing.JButton histogramButton;
     private cs015Database.ImagePanel imagePanel1;
     private javax.swing.JButton jButton1;
@@ -387,6 +435,9 @@ public class StartupDialog extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JDialog warningDialog;
     // End of variables declaration//GEN-END:variables
