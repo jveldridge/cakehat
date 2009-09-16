@@ -85,6 +85,23 @@ public class DatabaseInterops {
         }
     }
 
+    /**
+     * Returns an array containing the list of student logins.
+     * If no students to grade or ta login not found , will return a zero length array.
+     * @param taName assignmentName
+     * @return
+     */
+    public static String[] getStudentsToGrade(String taLogin, String assignmentName) {
+        try{
+            ISqlJetCursor cursor = getData("assignment_dist", "ta_login_dist", taLogin);
+            String s = cursor.getString(assignmentName);
+            return (s == null || s.isEmpty() || cursor.getString("taLogin").compareToIgnoreCase(taLogin) != 0) ? new String[0] : s.replace(" ", "").split(",");
+        } catch(Exception e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
     public static String[] getTableNames() throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -306,7 +323,7 @@ public class DatabaseInterops {
         }
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
-        db.createIndex("create index taLoginDist on assignment_dist (taLogin)");
+        db.createIndex("create index ta_login_dist on assignment_dist (taLogin)");
         for (String s : TA_LOGINS) {
             addDatum("assignment_dist", s);
             addDatum("blacklist", s);

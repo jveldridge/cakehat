@@ -218,7 +218,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                 }
             }
             for (int i = 0; i < tasWithBlacklist.length; i++) {
-                long rowid = DatabaseInterops.getRowID("assignment_dist", "taLoginDist", taNames[i]);
+                long rowid = DatabaseInterops.getRowID("assignment_dist", "ta_login_dist", taNames[i]);
                 Object[] o = DatabaseInterops.getDataRow("assignment_dist", rowid);
                 o[colIndex] = studentsToGrade[i];
                 DatabaseInterops.update(rowid, "assignment_dist", o);

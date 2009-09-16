@@ -17,14 +17,11 @@ import histogrammer.HistogramGUI;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
 import nl.captcha.Captcha;
 
 /**
@@ -60,7 +57,7 @@ public class StartupDialog extends javax.swing.JFrame {
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
-
+        System.out.println(Arrays.toString(DatabaseInterops.getStudentsToGrade("psastras", "cartoon")));
     }
 
     /** This method is called from within the constructor to
