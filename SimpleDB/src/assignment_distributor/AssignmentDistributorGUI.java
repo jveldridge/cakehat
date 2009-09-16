@@ -14,9 +14,10 @@ import cs015Database.*;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
@@ -61,27 +62,14 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             mainTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
             mainTable.removeAll();
             DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
-
+            String[] taNames = DatabaseInterops.getTANames();
             m.addColumn("TA Login");
-            m.addColumn("Number of Students to Grade");
-            try {
-                while (!cursor.eof()) {
-                    String s = cursor.getString((String) assignmentNameComboBox.getSelectedItem());
-                    String[] ss;
-                    if (s == null) {
-                        s = "";
-                    }
-                    ss = s.split(",");
-                    String[] sss = {cursor.getString("taLogin"), Integer.toString(ss.length)};
-                    if (s.isEmpty()) {
-                        sss[1] = "0";
-                    }
-                    m.insertRow(mainTable.getRowCount(), sss);
-                    cursor.next();
-                }
-            } finally {
-                cursor.close();
+            m.addColumn("Max Number to Grade");
+            for (String s : taNames) {
+                String[] ss = {s, "-1"};
+                m.addRow(ss);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -96,14 +84,31 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        mainTable = new cs015Database.Table();
         assignmentNameComboBox = new javax.swing.JComboBox();
-        redistributeButton = new javax.swing.JButton();
         generateDistButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        mainTable = new assignment_distributor.AssignmentDistributorTable();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
+
+        assignmentNameComboBox.setFocusable(false);
+        assignmentNameComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                assignmentNameComboBoxActionPerformed(evt);
+            }
+        });
+
+        generateDistButton.setText("Generate Grading Assignments");
+        generateDistButton.setFocusable(false);
+        generateDistButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateDistButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("A negative value indicates no max number to grade.");
 
         mainTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -113,31 +118,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
 
             }
         ));
-        mainTable.setFocusable(false);
         jScrollPane1.setViewportView(mainTable);
-
-        assignmentNameComboBox.setFocusable(false);
-        assignmentNameComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                assignmentNameComboBoxActionPerformed(evt);
-            }
-        });
-
-        redistributeButton.setText("1. Redistribute");
-        redistributeButton.setFocusable(false);
-        redistributeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                redistributeButtonActionPerformed(evt);
-            }
-        });
-
-        generateDistButton.setText("2. Generate Grading Assignments");
-        generateDistButton.setFocusable(false);
-        generateDistButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generateDistButtonActionPerformed(evt);
-            }
-        });
 
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
@@ -154,25 +135,25 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 664, Short.MAX_VALUE)
-                    .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(redistributeButton)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 671, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(generateDistButton)))
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
+                    .addComponent(generateDistButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(generateDistButton)
-                    .addComponent(redistributeButton))
+                    .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(generateDistButton)
                 .addGap(14, 14, 14))
         );
 
@@ -184,22 +165,13 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         fillTable();
     }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
 
-    private void redistributeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redistributeButtonActionPerformed
-        int[] numToGrade = new int[mainTable.getModel().getRowCount()];
-        TableModel m = mainTable.getModel();
-
-        int index = (int) (Math.random() * numToGrade.length);
-        for (int i = 0; i < DatabaseInterops.STUD_LOGINS.length; i++, index++) {
-            numToGrade[index % numToGrade.length]++;
-        }
-        for (int i = 0; i < numToGrade.length; i++) {
-            m.setValueAt(numToGrade[i], i, 1);
-        }
-    }//GEN-LAST:event_redistributeButtonActionPerformed
-
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
         String[] studNames = DatabaseInterops.getStudentNames();
+        List<String> shuffleList = Arrays.asList(studNames);
+        Collections.shuffle(shuffleList);
+        studNames = shuffleList.toArray(new String[0]);
         String[] taNames = DatabaseInterops.getTANames();
+        DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
         String[] studentsToGrade = new String[taNames.length];
         Arrays.fill(studentsToGrade, "");
         String[] tasWithBlacklist = DatabaseInterops.getColumnData("taLogin", "blacklist");
@@ -208,20 +180,34 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             ad.add(s);
         }
         int index = (int) (Math.random() * taNames.length);
+        int loopCount = 0;
         Arrays.sort(tasWithBlacklist);
         while (!ad.isEmpty()) {
-            if (Arrays.binarySearch(tasWithBlacklist, ad.peekLast()) >= 0) {
-                String blacklistedStuds = getBlacklist(ad.peekLast());
-                if (blacklistedStuds.contains(ad.peekLast())) {
-                    ad.addFirst(ad.pollLast());
-                }
-            } else {
-                if (studentsToGrade[index % studentsToGrade.length].isEmpty()) {
-                    studentsToGrade[index++ % studentsToGrade.length] += ad.pollLast();
-                } else {
-                    studentsToGrade[index++ % studentsToGrade.length] +=  ", " + ad.pollLast();
+            if (Arrays.binarySearch(tasWithBlacklist, taNames[index % studentsToGrade.length]) >= 0) {
+                String blacklistedStuds = getBlacklist(taNames[index % studentsToGrade.length]);
+                if (blacklistedStuds != null) {
+                    System.out.println(blacklistedStuds);
+                    if (blacklistedStuds.contains(ad.peekLast())) {
+                        ad.addFirst(ad.pollLast());
+                        loopCount++;
+                        if(loopCount == ad.size()) {
+                            index++;
+                        }
+                        continue;
+                    }
                 }
             }
+
+            if (studentsToGrade[index % studentsToGrade.length].split(",").length == Integer.parseInt(m.getValueAt(index % studentsToGrade.length, 1).toString())) {
+                index++;
+                continue;
+            }
+            if (studentsToGrade[index % studentsToGrade.length].isEmpty()) {
+                studentsToGrade[index++ % studentsToGrade.length] += ad.pollLast();
+            } else {
+                studentsToGrade[index++ % studentsToGrade.length] += ", " + ad.pollLast();
+            }
+            loopCount = 0;
         }
         try {
             String[] colNames = DatabaseInterops.getColumnNames("assignment_dist");
@@ -266,11 +252,11 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox assignmentNameComboBox;
     private javax.swing.JButton generateDistButton;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuBar mainMenuBar;
-    private cs015Database.Table mainTable;
-    private javax.swing.JButton redistributeButton;
+    private assignment_distributor.AssignmentDistributorTable mainTable;
     // End of variables declaration//GEN-END:variables
 }

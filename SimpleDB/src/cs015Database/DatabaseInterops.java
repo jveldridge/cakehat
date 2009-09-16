@@ -285,7 +285,7 @@ public class DatabaseInterops {
         db.createTable("create table assignments (assignmentNames text not null)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
         db.createTable("create table blacklist (taLogin text not null, studLogins text)");
-        db.createTable("create indes ta_blist_logins on blacklist (taLogin)");
+        db.createIndex("create index ta_blist_logins on blacklist (taLogin)");
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
         db.createTable("create table talist (taLogin text not null)");

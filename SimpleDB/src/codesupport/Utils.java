@@ -34,18 +34,35 @@ public class Utils {
      * @param body
      * @return
      */
-    public static boolean sendMail(String senderEmail, String[] recipientEmail, String subject, String body, String[] imageContentIDs, File[] images) {
+    public static boolean sendMail(String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
 
-        try{
-            String[] cmd = {"/bin/sh","-c", "mutt -s \"" + subject + "\" -a " + Arrays.toString(imageContentIDs).replace(",", "").replace("[", "").replace("]", "") + " -- psastras@gmail.com < testmail"};
-            System.out.println(cmd[2]);//"uuencode histogram_1.png | mailx -s \"test\" \"psastras\""};
+        try {
+
+            String stringBuilder = "mutt -s \"" + subject + "\"";
+
+            if (cc.length > 2) {
+                System.out.println(Arrays.toString(cc));
+                stringBuilder += " -c " + Arrays.toString(cc).replace(",", "").replace("[", "").replace("]", "");
+            }
+            if (bcc.length > 2) {
+
+                stringBuilder += " -b " + Arrays.toString(bcc).replace(",", "").replace("[", "").replace("]", "");
+            }
+            if (attachmentNames.length > 2) {
+                stringBuilder += " -a " + Arrays.toString(attachmentNames).replace(",", "").replace("[", "").replace("]", "");
+            }
+            stringBuilder += " -- " + Arrays.toString(to).replace(",", " ").replace("[", "").replace("]", "") + " <<< \"" + body + "\"";
+            String[] cmd = {"/bin/sh", "-c", stringBuilder};
             Runtime.getRuntime().exec(cmd);
-        } catch(Exception e) {
+             System.out.println(cmd[2]);
+        //"uuencode histogram_1.png | mailx -s \"test\" \"psastras\""};
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Emailed<");
+       
         return false;
-        //        String host = "localhost";//"mail-relay.brown.edu";
+    //        String host = "localhost";//"mail-relay.brown.edu";
 //
 //        Properties props = new Properties();
 ////        System.setProperty("javax.net.ssl.trustStore", "browncs-ca.crt");
