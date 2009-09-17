@@ -24,7 +24,6 @@ import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.JDialog;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -104,6 +103,7 @@ public class HistogramGUI extends javax.swing.JFrame {
     }
 
     private void updateCharts() {
+                        
         for (ChartDataPanel c : _charts) {
             c.setVisible(false);
         }
@@ -430,7 +430,6 @@ public class HistogramGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1KeyTyped
 
     private void table1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table1MouseClicked
-        // TODO add your handling code here:
         updateCharts();
     }//GEN-LAST:event_table1MouseClicked
 
@@ -439,8 +438,6 @@ public class HistogramGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_table1KeyReleased
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-        // TODO add your handling code here:
-
         updateCharts();
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
@@ -494,9 +491,9 @@ public class HistogramGUI extends javax.swing.JFrame {
             }
             catch(Exception e) {
             }
-//            for (File f : fl) {
-//                f.delete();
-//            }
+            for (File f : fl) {
+                f.delete();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

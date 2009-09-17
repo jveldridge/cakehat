@@ -21,7 +21,6 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
 
@@ -90,7 +89,7 @@ public class StartupDialog extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
 
         warningDialog.setTitle("Database Regenerate Confirmation");
-        warningDialog.setMinimumSize(new java.awt.Dimension(600, 200));
+        warningDialog.setMinimumSize(new java.awt.Dimension(600, 210));
         warningDialog.setModal(true);
         warningDialog.setResizable(false);
 
@@ -149,10 +148,10 @@ public class StartupDialog extends javax.swing.JFrame {
             .addGroup(warningDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(warningDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 637, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, warningDialogLayout.createSequentialGroup()
                         .addGroup(warningDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(imagePanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -162,7 +161,7 @@ public class StartupDialog extends javax.swing.JFrame {
                         .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1))
-                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE))
+                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 637, Short.MAX_VALUE))
                 .addContainerGap())
         );
         warningDialogLayout.setVerticalGroup(
@@ -177,7 +176,7 @@ public class StartupDialog extends javax.swing.JFrame {
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel5)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(warningDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -330,7 +329,6 @@ public class StartupDialog extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void databaseEditorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseEditorButtonActionPerformed
-        // TODO add your handling code here:
         DatabaseGUI dg = new DatabaseGUI();
         dg.setVisible(true);
     }//GEN-LAST:event_databaseEditorButtonActionPerformed
@@ -352,6 +350,7 @@ public class StartupDialog extends javax.swing.JFrame {
         imagePanel1.setImage(_captcha.getImage());
         warningDialog.setLocationRelativeTo(null);
         warningDialog.setVisible(true);
+        
 
 }//GEN-LAST:event_regenerateDatabaseActionPerformed
 
@@ -387,6 +386,7 @@ public class StartupDialog extends javax.swing.JFrame {
     private void jTextField1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyReleased
         if (_captcha.isCorrect(jTextField1.getText())) {
             jTextField1.setBackground(new Color(220, 240, 220));
+
         } else if(jTextField1.getText().length() > 0) {
             jTextField1.setBackground(new Color(240, 220, 220));
         } else {
@@ -395,7 +395,6 @@ public class StartupDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1KeyReleased
 
     private void emailButtonActionPerformedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emailButtonActionPerformedActionPerformed
-        // TODO add your handling code here:
         EmailGUI eg = new EmailGUI();
         eg.setVisible(true);
 }//GEN-LAST:event_emailButtonActionPerformedActionPerformed

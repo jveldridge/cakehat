@@ -78,6 +78,30 @@ public class DatabaseInterops {
         }
     }
 
+    public static int getAssignmentTotal(String assignmentName) {
+        try{
+            ISqlJetCursor cursor = getData("assignments", "assignmentNameIndex", assignmentName);
+            if(cursor.getString("assignmentNames").compareToIgnoreCase(assignmentName) == 0) {
+                return Integer.parseInt(cursor.getString("total"));
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static String getStudentScore(String assignmentName, String studLogin) {
+        try{
+            ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
+            if(cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
+                return cursor.getString("Earned");
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     public static String[] getColumnData(String colName, String tableName) {
         try {
             LinkedList<String> ll = new LinkedList<String>();
@@ -309,7 +333,7 @@ public class DatabaseInterops {
 
         //Add new tables for grades stuff should be read from xml rubric file
 
-        db.createTable("create table assignments (assignmentNames text not null)");
+        db.createTable("create table assignments (assignmentNames text not null, total text)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
         db.createTable("create table blacklist (taLogin text not null, studLogins text)");
         db.createIndex("create index ta_blist_logins on blacklist (taLogin)");
@@ -321,7 +345,7 @@ public class DatabaseInterops {
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
         for (String s : ASSIGNMENT_NAMES) {
-            addDatum("assignments", s);
+            addDatum("assignments", s, "100");
             String sqlCreateTableString2 = "create table grades_" + s + " (studLogins text not null";
 
             for (String ss : GRADE_RUBRIC_FIELDS) {
@@ -329,6 +353,7 @@ public class DatabaseInterops {
             }
             sqlCreateTableString2 += ")";
             db.createTable(sqlCreateTableString2);
+            db.createIndex("create index stud_login_" + s + " on grades_" + s + " (studLogins)");
             sqlCreateTableString1 += ", " + s + " text";
         }
         sqlCreateTableString1 += ")";

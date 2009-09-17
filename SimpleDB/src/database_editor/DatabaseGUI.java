@@ -31,7 +31,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
     /** Creates new form DatabaseGUI */
     public DatabaseGUI() {
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/x-office-spreadsheet.png")));
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/accessories-calculator.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,7 +10,11 @@
  */
 package designQGrader;
 
+import codesupport.Utils;
 import cs015Database.DatabaseInterops;
+import java.util.Timer;
+import java.util.TimerTask;
+import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -24,6 +28,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/accessories-calculator.png")));
             DefaultTableModel m = (DefaultTableModel) table1.getModel();
             m.addColumn("Students");
             for (String s : DatabaseInterops.getStudentNames()) {
@@ -32,10 +37,20 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
             m = (DefaultTableModel) table2.getModel();
             m.addColumn("Assignments");
-            for(String s: DatabaseInterops.getAssignmentNames()) {
+            for (String s : DatabaseInterops.getAssignmentNames()) {
                 String data[] = {s};
                 m.insertRow(table2.getRowCount(), data);
             }
+            this.setTitle(Utils.getUserLogin() + " - Grade Modifier");
+            table1.getSelectionModel().setSelectionInterval(0, 0);
+            table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+            table2.getSelectionModel().setSelectionInterval(0, 0);
+            table2.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+            jTextField1.setText((String) table1.getModel().getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
+            jTextField1.setSelectionStart(0);
+            jTextField1.setSelectionEnd(jTextField1.getText().length());
+            statusLabel.setText("Ready");
+            update();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -61,16 +76,17 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jTextField2 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
-        jToggleButton1 = new javax.swing.JToggleButton();
-        jButton1 = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         jTextField4 = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        statusLabel = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         table1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -81,9 +97,28 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
         ));
         table1.setFocusable(false);
+        table1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                table1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(table1);
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
+        jTextField1.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                jTextField1FocusLost(evt);
+            }
+        });
+        jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jTextField1KeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jTextField1KeyTyped(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 12));
         jLabel1.setText("Select Student");
 
         table2.setModel(new javax.swing.table.DefaultTableModel(
@@ -95,21 +130,36 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
         ));
         table2.setFocusable(false);
+        table2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                table2MouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(table2);
 
-        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 12));
         jLabel2.setText("Select Assignment");
 
         jLabel3.setText("Earned Points");
+
+        jTextField2.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                jTextField2FocusGained(evt);
+            }
+        });
+        jTextField2.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jTextField2KeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jTextField2KeyTyped(evt);
+            }
+        });
 
         jLabel4.setText("Total Points");
 
         jTextField3.setEditable(false);
         jTextField3.setFocusable(false);
-
-        jToggleButton1.setText("Enter");
-
-        jButton1.setText("Cancel");
 
         jLabel5.setText("Score (%)");
 
@@ -123,6 +173,33 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
         jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
         jLabel6.setText("Enter Score");
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
+
+        statusLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 11)); // NOI18N
+        statusLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        statusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(322, Short.MAX_VALUE)
+                .addComponent(statusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 364, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE)
+        );
+
+        jButton1.setText("Enter Grade");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jMenu1.setText("File");
         jMenuBar1.add(jMenu1);
@@ -143,77 +220,159 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel5)
-                                            .addComponent(jLabel4)))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel6)
-                                            .addComponent(jLabel3))))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTextField3, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-                                    .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-                                    .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(161, 161, 161)
-                                .addComponent(jButton1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jToggleButton1)))))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel3))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextField3, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                            .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                            .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel3))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 53, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jToggleButton1)
-                                    .addComponent(jButton1)))
-                            .addComponent(jScrollPane1, 0, 0, Short.MAX_VALUE)))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
-                .addContainerGap())
+                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
+                        .addComponent(jButton1)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField4ActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_jTextField4ActionPerformed
+
+    private void jTextField1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyTyped
+        table1.applyFilterSorter();
+        table1.filter(jTextField1.getText());
+        table1.setColumnSelectionAllowed(true);
+        table1.getSelectionModel().setSelectionInterval(0, 0);
+        table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+
+//        String selected = ((String)table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
+//        if((selected.startsWith(jTextField1.getText())) && selected.length() != jTextField1.getText().length()) {
+//            int caret = jTextField1.getCaretPosition();
+//            jTextField1.setText((String)table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
+//            jTextField1.setSelectionStart(caret);
+//            jTextField1.setSelectionEnd(jTextField1.getText().length());
+//        }
+    }//GEN-LAST:event_jTextField1KeyTyped
+    public void updateStatus(String message) {
+        statusLabel.setText(message);
+        Timer t = new Timer();
+        class NewTask extends TimerTask {
+
+            @Override
+            public void run() {
+                statusLabel.setText("Ready");
+                this.cancel();
+            }
+        }
+
+        t.schedule(new NewTask(), 1000);
+    }
+
+    private void update() {
+        jTextField1.setText((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
+        jTextField1.setCaretPosition(0);
+        jTextField1.setSelectionStart(0);
+        jTextField1.setSelectionEnd(jTextField1.getText().length());
+        jTextField2.setText(DatabaseInterops.getStudentScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
+        jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+        if (jTextField2.getText().length() > 0 && jTextField3.getText().length() > 0) {
+            jTextField4.setText("" + (int) (Double.parseDouble(jTextField2.getText()) / Double.parseDouble(jTextField3.getText()) * 100));
+        }
+    }
+
+    private void jTextField1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextField1FocusLost
+        update();
+    }//GEN-LAST:event_jTextField1FocusLost
+
+    private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
+        if (evt.getKeyCode() == 38 && table1.getSelectedRow() != 0) { //up
+            table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() - 1, table1.getSelectedRow() - 1);
+            update();
+        } else if (evt.getKeyCode() == 40 && table1.getSelectedRow() != table1.getRowCount() - 1) { //down
+            table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() + 1, table1.getSelectedRow() + 1);
+            update();
+        }
+    }//GEN-LAST:event_jTextField1KeyPressed
+
+    private void jTextField2KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyTyped
+    }//GEN-LAST:event_jTextField2KeyTyped
+
+    private void table1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table1MouseClicked
+        update();
+    }//GEN-LAST:event_table1MouseClicked
+
+    private void table2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table2MouseClicked
+        update();
+    }//GEN-LAST:event_table2MouseClicked
+
+    private void jTextField2KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyPressed
+        if (evt.getKeyCode() == 10) {
+            jButton1ActionPerformed(null);
+        }
+    }//GEN-LAST:event_jTextField2KeyPressed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        //@TODO:ADD WRITING TO DATABASE
+        updateStatus("Written to database");
+        jTextField1.requestFocus();
+        jTextField1.setText("");
+        jTextField1KeyTyped(null);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jTextField2FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextField2FocusGained
+        jTextField2.setSelectionStart(0);
+        jTextField2.setSelectionEnd(jTextField1.getText().length());
+    }//GEN-LAST:event_jTextField2FocusGained
 
     /**
      * @param args the command line arguments
@@ -237,13 +396,14 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField jTextField4;
-    private javax.swing.JToggleButton jToggleButton1;
+    private javax.swing.JLabel statusLabel;
     private cs015Database.Table table1;
     private cs015Database.Table table2;
     // End of variables declaration//GEN-END:variables
