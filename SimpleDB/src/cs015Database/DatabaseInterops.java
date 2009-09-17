@@ -214,6 +214,7 @@ public class DatabaseInterops {
         try {
             return getData(tableName, indexName, objectName).getRowId();
         } catch (Exception e) {
+            e.printStackTrace();
             return -1;
         }
     }

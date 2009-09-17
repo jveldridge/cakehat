@@ -16,6 +16,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
+import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 /**
  *
@@ -32,15 +33,17 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             DefaultTableModel m = (DefaultTableModel) table1.getModel();
             m.addColumn("Students");
             for (String s : DatabaseInterops.getStudentNames()) {
-                String data[] = {s};
-                m.insertRow(table1.getRowCount(), data);
+                m.insertRow(table1.getRowCount(), new String[] {s});
             }
+            m.insertRow(0, new String[] {""});
             m = (DefaultTableModel) table2.getModel();
             m.addColumn("Assignments");
             for (String s : DatabaseInterops.getAssignmentNames()) {
-                String data[] = {s};
-                m.insertRow(table2.getRowCount(), data);
+                m.insertRow(table2.getRowCount(), new String[] {s});
             }
+
+
+
             this.setTitle(Utils.getUserLogin() + " - Grade Modifier");
             table1.getSelectionModel().setSelectionInterval(0, 0);
             table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
@@ -65,6 +68,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        addStudentDialog = new javax.swing.JDialog();
+        jLabel7 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         table1 = new cs015Database.Table();
         jTextField1 = new javax.swing.JTextField();
@@ -85,6 +92,50 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
+
+        addStudentDialog.setTitle("Add Student Dialog");
+        addStudentDialog.setMinimumSize(new java.awt.Dimension(466, 130));
+        addStudentDialog.setModal(true);
+        addStudentDialog.setResizable(false);
+
+        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_editor/dialog-warning.png"))); // NOI18N
+        jLabel7.setText("<html>The selected student <b>" + jTextField1.getText() + "</b> was not found.<br />Add the student to the database?");
+        jLabel7.setFocusable(false);
+        jLabel7.setIconTextGap(20);
+
+        jButton2.setMnemonic('Y');
+        jButton2.setText("Yes");
+
+        jButton3.setMnemonic('N');
+        jButton3.setText("No");
+
+        javax.swing.GroupLayout addStudentDialogLayout = new javax.swing.GroupLayout(addStudentDialog.getContentPane());
+        addStudentDialog.getContentPane().setLayout(addStudentDialogLayout);
+        addStudentDialogLayout.setHorizontalGroup(
+            addStudentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(addStudentDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(addStudentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(addStudentDialogLayout.createSequentialGroup()
+                        .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addStudentDialogLayout.createSequentialGroup()
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(13, 13, 13))))
+        );
+        addStudentDialogLayout.setVerticalGroup(
+            addStudentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(addStudentDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(addStudentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton3)
+                    .addComponent(jButton2))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -118,7 +169,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 12));
+        jLabel1.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         jLabel1.setText("Select Student");
 
         table2.setModel(new javax.swing.table.DefaultTableModel(
@@ -137,11 +188,16 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(table2);
 
-        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 12));
+        jLabel2.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         jLabel2.setText("Select Assignment");
 
         jLabel3.setText("Earned Points");
 
+        jTextField2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTextField2MouseClicked(evt);
+            }
+        });
         jTextField2.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 jTextField2FocusGained(evt);
@@ -171,12 +227,12 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
         });
 
-        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
+        jLabel6.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         jLabel6.setText("Enter Score");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
 
-        statusLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 11)); // NOI18N
+        statusLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 11));
         statusLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         statusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 
@@ -194,6 +250,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE)
         );
 
+        jButton1.setMnemonic('E');
         jButton1.setText("Enter Grade");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -220,14 +277,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -237,12 +291,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                             .addComponent(jLabel3))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                            .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jTextField3, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                            .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                            .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)))
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -260,7 +312,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
@@ -276,7 +328,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
                             .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
                         .addComponent(jButton1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -319,6 +371,9 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     }
 
     private void update() {
+        if (table1.getRowCount() == 0 || ((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn())).length() == 0) {
+            return;
+        }
         jTextField1.setText((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
         jTextField1.setCaretPosition(0);
         jTextField1.setSelectionStart(0);
@@ -331,7 +386,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     }
 
     private void jTextField1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextField1FocusLost
-        update();
+        //update();
     }//GEN-LAST:event_jTextField1FocusLost
 
     private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
@@ -341,6 +396,8 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         } else if (evt.getKeyCode() == 40 && table1.getSelectedRow() != table1.getRowCount() - 1) { //down
             table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() + 1, table1.getSelectedRow() + 1);
             update();
+        } else if (evt.getKeyCode() == 10) {
+            jTextField2.requestFocus();
         }
     }//GEN-LAST:event_jTextField1KeyPressed
 
@@ -363,16 +420,40 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         //@TODO:ADD WRITING TO DATABASE
-        updateStatus("Written to database");
-        jTextField1.requestFocus();
-        jTextField1.setText("");
-        jTextField1KeyTyped(null);
+        try {
+            String assignmentName = (String) table2.getModel().getValueAt(table2.getSelectedRow(), table2.getSelectedColumn());
+            String studentLogin = jTextField1.getText();
+            long row = DatabaseInterops.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
+            if (DatabaseInterops.getDataCell("grades_" + assignmentName, row, "studLogins").compareToIgnoreCase(studentLogin) == 0) {
+                //String[] colNames = DatabaseInterops.getColumnNames("grades" + assignmentName);
+                String[] s = (String[]) DatabaseInterops.getDataRow("grades_" + assignmentName, row);
+                s[1] = jTextField2.getText();
+                DatabaseInterops.update(row, "grades_" + assignmentName, (Object[]) s);
+            } else {
+                jLabel7.setText("<html>The selected student <b>" + jTextField1.getText() + "</b> was not found.<br />Add the student to the database?");
+                addStudentDialog.setLocationRelativeTo(null);
+                addStudentDialog.setVisible(true);
+                System.out.println("student not found.  need to add student.");
+            }
+            updateStatus("Written to database");
+            jTextField1.requestFocus();
+            jTextField1.setText("");
+            jTextField1KeyTyped(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField2FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextField2FocusGained
+        update();
         jTextField2.setSelectionStart(0);
         jTextField2.setSelectionEnd(jTextField1.getText().length());
     }//GEN-LAST:event_jTextField2FocusGained
+
+    private void jTextField2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextField2MouseClicked
+        // TODO add your handling code here
+        System.out.println("reached2");
+    }//GEN-LAST:event_jTextField2MouseClicked
 
     /**
      * @param args the command line arguments
@@ -386,13 +467,17 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JDialog addStudentDialog;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
