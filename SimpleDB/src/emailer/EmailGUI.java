@@ -8,11 +8,10 @@
  *
  * Created on Sep 15, 2009, 9:50:50 PM
  */
-
 package emailer;
 
 import codesupport.Utils;
-import java.io.File;
+import java.util.Arrays;
 
 /**
  *
@@ -23,6 +22,16 @@ public class EmailGUI extends javax.swing.JFrame {
     /** Creates new form EmailGUI */
     public EmailGUI() {
         initComponents();
+        fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
+        this.setLocationRelativeTo(null);
+    }
+
+    public EmailGUI(String[] to, String[] cc, String[] bcc, String subject) {
+        initComponents();
+        toBox.setText(Arrays.toString(to).replace("[", "").replace("]", ""));
+        ccBox.setText(Arrays.toString(cc).replace("[", "").replace("]", ""));
+        bccBox.setText(Arrays.toString(bcc).replace("[", "").replace("]", ""));
+        subjectBox.setText(subject);
         fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
         this.setLocationRelativeTo(null);
     }
@@ -242,16 +251,16 @@ public class EmailGUI extends javax.swing.JFrame {
     }
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new EmailGUI().setVisible(true);
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField bccBox;
     private javax.swing.JTextArea bodyText;
@@ -273,5 +282,4 @@ public class EmailGUI extends javax.swing.JFrame {
     private javax.swing.JTextField subjectBox;
     private javax.swing.JTextField toBox;
     // End of variables declaration//GEN-END:variables
-
 }

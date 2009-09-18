@@ -104,11 +104,11 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="bccBox" pref="856" max="32767" attributes="0"/>
-                          <Component id="subjectBox" alignment="0" pref="856" max="32767" attributes="0"/>
-                          <Component id="ccBox" alignment="0" pref="856" max="32767" attributes="0"/>
-                          <Component id="toBox" alignment="0" pref="856" max="32767" attributes="0"/>
-                          <Component id="fromBox" alignment="0" pref="856" max="32767" attributes="0"/>
+                          <Component id="bccBox" pref="883" max="32767" attributes="0"/>
+                          <Component id="subjectBox" alignment="0" pref="883" max="32767" attributes="0"/>
+                          <Component id="ccBox" alignment="0" pref="883" max="32767" attributes="0"/>
+                          <Component id="toBox" alignment="0" pref="883" max="32767" attributes="0"/>
+                          <Component id="fromBox" alignment="0" pref="883" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
