@@ -25,8 +25,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         //untar and all students' code for the initially selected project
         if (studentList.getModel().getSize() > 1) {
-            GradingCommander.untar(assignmentList, studentList);
-            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
+//            GradingCommander.untar(assignmentList, studentList);
+//            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
         }
 
         try {
@@ -482,10 +482,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
      * assigned to grade (as recorded in the database) for the selected assignment.
      */
     private void populateStudentList() {
-        System.out.println("entered populateStudentList");
 
         String user = System.getProperty("user.name");
-
         try {
             ISqlJetCursor cursor = DatabaseInterops.getItemWithFilter("assignment_dist", "ta_login_dist", user);
             if (cursor.eof()) {
