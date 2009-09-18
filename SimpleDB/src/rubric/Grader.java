@@ -1,6 +1,6 @@
 package rubric;
 
-public class Grader
-{
-	public String Name = "", Acct = "", Hours = "";
+public class Grader {
+
+    public String Name = "", Acct = "", Hours = "";
 }

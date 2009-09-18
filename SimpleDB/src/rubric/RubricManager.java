@@ -246,10 +246,10 @@ public class RubricManager {
         rubric.Status = status.toString();
 
         //@TODO REPLACE THIS AGAIN
-        rubric.Student.Name = studentAcct;//cs015.tasupport.utils.Utils.getUserName(studentAcct);
+        rubric.Student.Name = Utils.getUserName(studentAcct);
         rubric.Student.Acct = studentAcct;
 
-        rubric.Grader.Name = graderAcct;//cs015.tasupport.utils.Utils.getUserName(graderAcct);
+        rubric.Grader.Name = Utils.getUserName(graderAcct);
         rubric.Grader.Acct = graderAcct;
 
         //Find the design check attribute if applicable, and store value

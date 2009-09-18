@@ -37,14 +37,14 @@ public class Utils {
             stringBuilder += " -- " + Arrays.toString(to).replace(",", " ").replace("[", "").replace("]", "") + " <<< \"" + body + "\"";
             String[] cmd = {"/bin/sh", "-c", stringBuilder};
             Runtime.getRuntime().exec(cmd);
-        //"uuencode histogram_1.png | mailx -s \"test\" \"psastras\""};
+            //"uuencode histogram_1.png | mailx -s \"test\" \"psastras\""};
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-       
+
         return false;
-    //        String host = "localhost";//"mail-relay.brown.edu";
+        //        String host = "localhost";//"mail-relay.brown.edu";
 //
 //        Properties props = new Properties();
 ////        System.setProperty("javax.net.ssl.trustStore", "browncs-ca.crt");
@@ -250,6 +250,28 @@ public class Utils {
      */
     public static Collection<File> getJavaFiles(String dirPath) {
         return getFiles(dirPath, "java");
+    }
+
+    /**
+     * Gets a user's name.
+     *
+     * @param login the user's login
+     * @return user name
+     */
+    public static String getUserName(String login) {
+        Vector<String> toExecute = new Vector<String>();
+
+        toExecute.add("snoop " + login);
+
+        Collection<String> output = BashConsole.write(toExecute);
+
+        for (String line : output) {
+            if (line.startsWith("Name")) {
+                String name = line.substring(line.indexOf(":") + 2, line.length());
+                return name;
+            }
+        }
+        return "UNKNOWN_LOGIN";
     }
 
     /**

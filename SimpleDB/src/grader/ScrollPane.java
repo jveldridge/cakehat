@@ -12,16 +12,14 @@ import java.util.Set;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
-public class ScrollPane extends JScrollPane
-{
-	public ScrollPane(MainPanel panel)
-	{
-		super(panel);
-		
-		Dimension size = new Dimension(panel.getPreferredSize().width + 30, 800);
-		this.setPreferredSize(size);
-		this.setSize(size);
-			
-	}
+public class ScrollPane extends JScrollPane {
 
+    public ScrollPane(MainPanel panel) {
+        super(panel);
+
+        Dimension size = new Dimension(panel.getPreferredSize().width + 30, 800);
+        this.setPreferredSize(size);
+        this.setSize(size);
+
+    }
 }
