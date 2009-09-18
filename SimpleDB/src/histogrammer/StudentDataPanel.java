@@ -53,7 +53,8 @@ public class StudentDataPanel extends javax.swing.JPanel {
                     data[0][i] = i;
                     while (!cursor.eof()) {
                         if (cursor.getString("studLogins").compareToIgnoreCase(studName) == 0) {
-                            data[1][i] = Double.parseDouble(cursor.getString("Earned")) / Double.parseDouble(cursor.getString("Total")) * 100;
+                             double earned = (cursor.getString("Earned").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("Earned"));
+                            data[1][i] = earned / Double.parseDouble(cursor.getString("Total")) * 100;
                             break;
                         }
                         cursor.next();

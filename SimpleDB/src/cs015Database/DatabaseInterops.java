@@ -55,6 +55,20 @@ public class DatabaseInterops {
         }
     }
 
+    public static void addStudent(String studentName) {
+        try {
+            for (String s : getTableNames()) {
+                if (s.startsWith("grade")) {
+                    addDatum(s, studentName, getAssignmentTotal(s.split("_")[1]));
+                } else if (s.compareToIgnoreCase("studlist") == 0) {
+                    addDatum("studlist", studentName);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Utility method to get ta names as array from table
      * @return
@@ -70,33 +84,33 @@ public class DatabaseInterops {
     }
 
     public static String[] getAssignmentNames() {
-        try{
+        try {
             return getColumnData("assignmentNames", "assignments");
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return new String[0];
         }
     }
 
     public static int getAssignmentTotal(String assignmentName) {
-        try{
+        try {
             ISqlJetCursor cursor = getData("assignments", "assignmentNameIndex", assignmentName);
-            if(cursor.getString("assignmentNames").compareToIgnoreCase(assignmentName) == 0) {
+            if (cursor.getString("assignmentNames").compareToIgnoreCase(assignmentName) == 0) {
                 return Integer.parseInt(cursor.getString("total"));
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
 
     public static String getStudentScore(String assignmentName, String studLogin) {
-        try{
+        try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
-            if(cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
+            if (cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
                 return cursor.getString("Earned");
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "";
@@ -126,11 +140,11 @@ public class DatabaseInterops {
      * @return
      */
     public static String[] getStudentsToGrade(String taLogin, String assignmentName) {
-        try{
+        try {
             ISqlJetCursor cursor = getData("assignment_dist", "ta_login_dist", taLogin);
             String s = cursor.getString(assignmentName);
             return (s == null || s.isEmpty() || cursor.getString("taLogin").compareToIgnoreCase(taLogin) != 0) ? new String[0] : s.replace(" ", "").split(",");
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return new String[0];
         }
@@ -174,7 +188,7 @@ public class DatabaseInterops {
             ISqlJetCursor cursor = db.getTable(tableName).open();
             cursor.goTo(rowid);
             Object[] o = new String[getColumnNames(tableName).length];
-            for(int i = 0; i < o.length; i++) {
+            for (int i = 0; i < o.length; i++) {
                 o[i] = cursor.getString(i);
             }
             return o;

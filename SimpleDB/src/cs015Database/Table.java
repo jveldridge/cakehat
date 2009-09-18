@@ -61,6 +61,7 @@ public class Table extends JTable {
             _textFilter.setRowFilter(null);
         } else {
             _textFilter.setRowFilter(RowFilter.regexFilter(filterText));
+            _textFilter.sort();
         }
     }
 

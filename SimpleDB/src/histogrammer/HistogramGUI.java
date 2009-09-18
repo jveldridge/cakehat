@@ -422,6 +422,7 @@ public class HistogramGUI extends javax.swing.JFrame {
     private void jTextField1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyTyped
         table1.applyFilterSorter();
         table1.filter(jTextField1.getText());
+        
         table1.setColumnSelectionAllowed(true);
         table1.getSelectionModel().setSelectionInterval(0, 0);
         table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
