@@ -6,11 +6,8 @@
  */
 package GradingCommander;
 
-import codesupport.Project;
-import codesupport.ProjectManager;
 import cs015Database.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.UIManager;
@@ -26,8 +23,11 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         updateFormComponents();
         this.setTitle(System.getProperty("user.name") + " - cs015 Grader");
 
-        //untar all students' code
-        
+        //untar and all students' code for the initially selected project
+        if (studentList.getModel().getSize() > 1) {
+            GradingCommander.untar(assignmentList, studentList);
+            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
+        }
 
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/icon.png")));
@@ -85,7 +85,6 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         selectedStudentLabel = new javax.swing.JLabel();
         openButton = new javax.swing.JButton();
         printButton = new javax.swing.JButton();
-        compileButton = new javax.swing.JButton();
         runButton = new javax.swing.JButton();
         runTesterButton = new javax.swing.JButton();
         runDemoButton = new javax.swing.JButton();
@@ -171,18 +170,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
             }
         });
 
-        compileButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/compile.png"))); // NOI18N
-        compileButton.setText("<html><b>Compile</b><br>Compile the student's project</html>");
-        compileButton.setFocusable(false);
-        compileButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        compileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compileButtonActionPerformed(evt);
-            }
-        });
-
         runButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/run.png"))); // NOI18N
-        runButton.setText("<html><b>Run</b><br>Run the project (must compile first)</html>");
+        runButton.setText("<html><b>Compile & Run</b><br>Compile and then run the student's code</html>");
         runButton.setFocusable(false);
         runButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         runButton.addActionListener(new java.awt.event.ActionListener() {
@@ -266,15 +255,14 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 391, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(compileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                                     .addComponent(runTesterButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                                     .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(printButton, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                                    .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                                     .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))))
-                        .addGap(9, 9, 9))))
+                        .addGap(9, 9, 9))
+                    .addComponent(runButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -295,13 +283,12 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                     .addComponent(printButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
-                            .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)))
-                    .addComponent(compileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                    .addComponent(runButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                    .addComponent(runTesterButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -431,11 +418,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         GradingCommander.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue(), null);
     }//GEN-LAST:event_printButtonActionPerformed
 
-    private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-        GradingCommander.compileStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
-    }//GEN-LAST:event_compileButtonActionPerformed
-
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
+        GradingCommander.compileStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
         GradingCommander.runStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_runButtonActionPerformed
 
@@ -444,6 +428,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_runTesterButtonActionPerformed
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
+        //add code to remove .code directory
         System.exit(0);
     }//GEN-LAST:event_quitMenuItemActionPerformed
 
@@ -461,8 +446,10 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
             runTesterButton.setEnabled(false);
 
         //and untar and compile all student codes for the newly selected current assignment
-        GradingCommander.untar(assignmentList, studentList);
-        GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
+//        if (assignmentList.getModel().getSize() > 1) {
+//            GradingCommander.untar(assignmentList, studentList);
+//            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
+//        }
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
@@ -495,6 +482,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
      * assigned to grade (as recorded in the database) for the selected assignment.
      */
     private void populateStudentList() {
+        System.out.println("entered populateStudentList");
 
         String user = System.getProperty("user.name");
 
@@ -543,7 +531,6 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList assignmentList;
     private javax.swing.JPanel assignmentListPanel;
-    private javax.swing.JButton compileButton;
     private javax.swing.JLabel currentInfo;
     private javax.swing.JLabel generalCommandsLabel;
     private javax.swing.JLabel jLabel1;
