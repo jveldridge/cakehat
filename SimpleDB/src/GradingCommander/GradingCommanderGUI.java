@@ -6,10 +6,15 @@
  */
 package GradingCommander;
 
+import cs015.tasupport.grading.grader.Grader;
+import cs015.tasupport.utils.Utils;
 import cs015Database.*;
+import emailer.EmailGUI;
+import java.awt.Font;
 import java.io.IOException;
 import java.util.Vector;
 import javax.imageio.ImageIO;
+import javax.swing.ListModel;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
@@ -19,6 +24,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
     /** Creates new form GradingCommanderGUI */
     public GradingCommanderGUI() {
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
         initComponents();           //creates form components
         updateFormComponents();
         this.setTitle(System.getProperty("user.name") + " - cs015 Grader");
@@ -61,10 +68,11 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         /* check whether runTesterButton should be enabled (if the assignment selected on startup has
          * a tester to run) or not
          */
-        if (GradingCommander.hasTester((String)assignmentList.getSelectedValue()))
+        if (GradingCommander.hasTester((String) assignmentList.getSelectedValue())) {
             runTesterButton.setEnabled(true);
-        else
+        } else {
             runTesterButton.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -226,7 +234,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         runButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         runButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runButton1ActionPerformed(evt);
+                gradeButtonActionPerformed(evt);
             }
         });
 
@@ -252,7 +260,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(selectedStudentLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 391, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 397, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(runTesterButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
@@ -440,24 +448,39 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         populateStudentList();
 
         //must also inform Tester button of the newly selected current assignment
-        if (GradingCommander.hasTester((String)assignmentList.getSelectedValue()))
+        if (GradingCommander.hasTester((String) assignmentList.getSelectedValue())) {
             runTesterButton.setEnabled(true);
-        else
+        } else {
             runTesterButton.setEnabled(false);
+        }
 
-        //and untar and compile all student codes for the newly selected current assignment
+    //and untar and compile all student codes for the newly selected current assignment
 //        if (assignmentList.getModel().getSize() > 1) {
 //            GradingCommander.untar(assignmentList, studentList);
 //            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
 //        }
     }//GEN-LAST:event_assignmentListMouseClicked
 
-    private void runButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButton1ActionPerformed
-        GradingCommander.runStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
-    }//GEN-LAST:event_runButton1ActionPerformed
+    private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
+        new Grader((String)assignmentList.getSelectedValue(), Utils.getUserLogin(), (String)studentList.getSelectedValue());
+}//GEN-LAST:event_gradeButtonActionPerformed
 
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-        // TODO
+        // TODO: Actually submit the stuff.
+        //Notify teh studentz?
+        ListModel m = studentList.getModel();
+        String bccStringBuilder = "";
+        for (int i = 0; i < m.getSize(); i++) {
+            bccStringBuilder += ((String) m.getElementAt(i)).trim() + "@cs.brown.edu,";
+        }
+        EmailGUI eg = new EmailGUI(new String[0], new String[0], bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
+        eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        try {
+            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        eg.setVisible(true);
     }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
@@ -475,7 +498,6 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
         GradingCommander.printAll((String) assignmentList.getSelectedValue(), studentList);
     }//GEN-LAST:event_printAllButtonActionPerformed
-
 
     /**
      * This method populates the StudentList list with the logins of the students that the TA has been
@@ -516,13 +538,24 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     public static void main(String args[]) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            Font font = new Font("Sans-Serif", Font.PLAIN, 11);
+            UIManager.put("MenuItem.font", font);
+            UIManager.put("Menu.font", font);
+            UIManager.put("Button.font", font);
+            UIManager.put("ComboBox.font", font);
+            UIManager.put("CheckBox.font", font);
+            UIManager.put("Label.font", font);
+            UIManager.put("TabbedPane.font", font);
+            UIManager.put("TextField.font", font);
+            UIManager.put("List.font", font);
+            UIManager.put("RadioButton.font", font);
         } catch (Exception e) {
         }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new GradingCommanderGUI().setVisible(true);
+                new GradingCommanderGUI();
             }
         });
     }

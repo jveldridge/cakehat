@@ -11,7 +11,9 @@
 package emailer;
 
 import codesupport.Utils;
+import java.io.IOException;
 import java.util.Arrays;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -22,17 +24,30 @@ public class EmailGUI extends javax.swing.JFrame {
     /** Creates new form EmailGUI */
     public EmailGUI() {
         initComponents();
+        this.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
         this.setLocationRelativeTo(null);
     }
 
-    public EmailGUI(String[] to, String[] cc, String[] bcc, String subject) {
+    public EmailGUI(String[] to, String[] cc, String[] bcc, String subject, String body) {
         initComponents();
+        this.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         toBox.setText(Arrays.toString(to).replace("[", "").replace("]", ""));
         ccBox.setText(Arrays.toString(cc).replace("[", "").replace("]", ""));
         bccBox.setText(Arrays.toString(bcc).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
         fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
+        bodyText.setText(body);
         this.setLocationRelativeTo(null);
     }
 
@@ -61,9 +76,10 @@ public class EmailGUI extends javax.swing.JFrame {
         bodyText = new javax.swing.JTextArea();
         jLabel5 = new javax.swing.JLabel();
         fromBox = new javax.swing.JTextField();
+        jButton3 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         jDialog1.setMinimumSize(new java.awt.Dimension(300, 100));
         jDialog1.setModal(true);
@@ -100,6 +116,8 @@ public class EmailGUI extends javax.swing.JFrame {
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jButton1.setMnemonic('S');
         jButton1.setText("Send");
@@ -140,11 +158,22 @@ public class EmailGUI extends javax.swing.JFrame {
 
         fromBox.setEnabled(false);
 
-        jMenu1.setText("File");
-        jMenuBar1.add(jMenu1);
+        jButton3.setMnemonic('C');
+        jButton3.setText("Cancel");
+        jButton3.setFocusable(false);
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
-        jMenu2.setText("Edit");
-        jMenuBar1.add(jMenu2);
+        jMenu1.setText("File");
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItem1.setText("Quit");
+        jMenu1.add(jMenuItem1);
+
+        jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
 
@@ -155,9 +184,11 @@ public class EmailGUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1027, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
@@ -167,18 +198,18 @@ public class EmailGUI extends javax.swing.JFrame {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
-                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
-                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
-                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE))))
+                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 883, Short.MAX_VALUE)
+                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 883, Short.MAX_VALUE)
+                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 883, Short.MAX_VALUE)
+                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 883, Short.MAX_VALUE)
+                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 883, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(fromBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -198,11 +229,12 @@ public class EmailGUI extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(33, 33, 33)))
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 393, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -225,6 +257,10 @@ public class EmailGUI extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         jDialog1.setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     public void setSubject(String s) {
         subjectBox.setText(s);
@@ -268,6 +304,7 @@ public class EmailGUI extends javax.swing.JFrame {
     private javax.swing.JTextField fromBox;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -276,8 +313,8 @@ public class EmailGUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField subjectBox;
     private javax.swing.JTextField toBox;

@@ -157,10 +157,10 @@ public class GridView extends cs015Database.Table {
         initDatabaseWatch();
     }
 
-
-     public boolean isCellEditable(int row, int col) {
+    public boolean isCellEditable(int row, int col) {
         return true;
     }
+
     /**
      * Refreshes the table to the database version.  Kind of craptastic because
      * we have to loard the whole table again.  But its okay for small cs015 tables.
@@ -192,7 +192,7 @@ public class GridView extends cs015Database.Table {
             }
             m.addColumn("rowID"); //Hidden rowId information
             _idCol = this.getColumnModel().getColumn(columnNames.length);
-            this.getColumnModel().removeColumn(_idCol);
+
             ISqlJetCursor cursor = DatabaseInterops.getAllData(tableName);
             try {
                 while (!cursor.eof()) {
@@ -204,9 +204,11 @@ public class GridView extends cs015Database.Table {
                     m.addRow(rowData);
                     cursor.next();
                 }
+
             } finally {
                 cursor.close();
             }
+            this.getColumnModel().removeColumn(_idCol);
         } catch (SqlJetException e) {
             e.printStackTrace();
         }

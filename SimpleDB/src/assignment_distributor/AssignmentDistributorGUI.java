@@ -10,6 +10,7 @@
  */
 package assignment_distributor;
 
+import cs015.tasupport.grading.config.ConfigurationManager;
 import cs015Database.*;
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -62,7 +63,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             mainTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
             mainTable.removeAll();
             DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
-            String[] taNames = DatabaseInterops.getTANames();
+            String[] taNames = ConfigurationManager.getGraderLogins();//DatabaseInterops.getTANames();
             m.addColumn("TA Login");
             m.addColumn("Max Number to Grade");
             for (String s : taNames) {
@@ -170,7 +171,9 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         List<String> shuffleList = Arrays.asList(studNames);
         Collections.shuffle(shuffleList);
         studNames = shuffleList.toArray(new String[0]);
-        String[] taNames = DatabaseInterops.getTANames();
+        System.out.println(Arrays.toString(ConfigurationManager.getGraderLogins()));
+        //DatabaseInterops.getTANames();//
+        String[] taNames = ConfigurationManager.getGraderLogins();
         DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
         String[] studentsToGrade = new String[taNames.length];
         Arrays.fill(studentsToGrade, "");
@@ -186,7 +189,6 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             if (Arrays.binarySearch(tasWithBlacklist, taNames[index % studentsToGrade.length]) >= 0) {
                 String blacklistedStuds = getBlacklist(taNames[index % studentsToGrade.length]);
                 if (blacklistedStuds != null) {
-                    System.out.println(blacklistedStuds);
                     if (blacklistedStuds.contains(ad.peekLast())) {
                         ad.addFirst(ad.pollLast());
                         loopCount++;

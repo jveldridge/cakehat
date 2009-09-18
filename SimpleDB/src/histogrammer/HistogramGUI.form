@@ -282,7 +282,7 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane4" alignment="1" pref="1207" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" alignment="1" pref="950" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jButton1" min="-2" pref="61" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -293,9 +293,9 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="subjectTextField" alignment="1" pref="1067" max="32767" attributes="1"/>
-                                  <Component id="toTextField" alignment="1" pref="1067" max="32767" attributes="1"/>
-                                  <Component id="fromTextField" alignment="1" pref="1067" max="32767" attributes="1"/>
+                                  <Component id="subjectTextField" alignment="1" pref="810" max="32767" attributes="1"/>
+                                  <Component id="toTextField" alignment="1" pref="810" max="32767" attributes="1"/>
+                                  <Component id="fromTextField" alignment="1" pref="810" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -392,7 +392,7 @@
             </Container>
             <Component class="javax.swing.JLabel" name="jLabel7">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Note: The selected data will automatically be attached to the current email.  This currently does not work from the iLab because mail-relay.brown.edu is not accessible from the iLab network."/>
+                <Property name="text" type="java.lang.String" value="Note: The selected data will automatically be attached to the current email. "/>
               </Properties>
             </Component>
           </SubComponents>
