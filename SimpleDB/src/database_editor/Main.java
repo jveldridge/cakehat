@@ -33,7 +33,7 @@ public class Main {
             return;
         }
 
-        DatabaseGUI dg = new DatabaseGUI();
+        new DatabaseGUI();
 
         try {
             DatabaseInterops.close();

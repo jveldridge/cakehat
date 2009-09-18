@@ -24,18 +24,25 @@ public class DatabaseInterops {
     public static final String[] ASSIGNMENT_NAMES = {"Objects", "ClockDesign", "Clock", "LiteBriteDesign", "LiteBrite", "References", "TASafeHouse", "CartoonDesign", "Cartoon", "SwarmDesign", "Swarm", "TetrisDesign", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
     public static final String[] GRADE_RUBRIC_FIELDS = {"Earned", "Total"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
-    public static final String[] STUD_LOGINS = {"andy", "tree", "dog", "cat", "fox", "mouse", "cookie", "cake", "shoe", "sock", "puppet", "bird", "fish", "earth", "sun", "moon", "sky", "cloud", "bee", "honey", "apple", "orange", "tomato"};
-    public static final String STUD_TABLE = "studlist";
+      public static final String STUD_TABLE = "studlist";
     private static SqlJetDb db;
 
+    /**
+     * Open the database.
+     * @throws SqlJetException
+     */
     public static void open() throws SqlJetException {
         db = SqlJetDb.open(new File(FILE_NAME), true);
     }
 
+    /**
+     * Clears the table of all data.
+     * @param tableName
+     * @throws SqlJetException
+     */
     public static void resetTable(final String tableName) throws SqlJetException {
         db = SqlJetDb.open(new File(FILE_NAME), true);
         db.runWriteTransaction(new ISqlJetTransaction() {
-
             public Object run(SqlJetDb arg0) throws SqlJetException {
                 db.getTable(tableName).clear();
                 return null;
@@ -62,7 +69,7 @@ public class DatabaseInterops {
      * @param studentName
      * @return
      */
-    public static long addStudent(String studentName) {
+    public static long addStudent(final String studentName) {
         try {
             for (String s : getTableNames()) {
                 if (s.startsWith("grade")) {
@@ -92,6 +99,10 @@ public class DatabaseInterops {
         }
     }
 
+    /**
+     * Return a string array of assignment names.
+     * @return
+     */
     public static String[] getAssignmentNames() {
         try {
             return getColumnData("assignmentNames", "assignments");
@@ -101,7 +112,12 @@ public class DatabaseInterops {
         }
     }
 
-    public static int getAssignmentTotal(String assignmentName) {
+    /**
+     * Get the maximum score for the given assignment name.
+     * @param assignmentName
+     * @return
+     */
+    public static int getAssignmentTotal(final String assignmentName) {
         try {
             ISqlJetCursor cursor = getData("assignments", "assignmentNameIndex", assignmentName);
             if (cursor.getString("assignmentNames").compareToIgnoreCase(assignmentName) == 0) {
@@ -113,7 +129,13 @@ public class DatabaseInterops {
         return 0;
     }
 
-    public static String getStudentScore(String assignmentName, String studLogin) {
+    /**
+     *
+     * @param assignmentName
+     * @param studLogin
+     * @return
+     */
+    public static String getStudentScore(final String assignmentName, final String studLogin) {
         try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
             if (cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
@@ -125,7 +147,7 @@ public class DatabaseInterops {
         return "";
     }
 
-    public static String[] getColumnData(String colName, String tableName) {
+    public static String[] getColumnData(final String colName, final String tableName) {
         try {
             LinkedList<String> ll = new LinkedList<String>();
             if (db == null) {
@@ -148,7 +170,7 @@ public class DatabaseInterops {
      * @param taName assignmentName
      * @return
      */
-    public static String[] getStudentsToGrade(String taLogin, String assignmentName) {
+    public static String[] getStudentsToGrade(final String taLogin, final String assignmentName) {
         try {
             ISqlJetCursor cursor = getData("assignment_dist", "ta_login_dist", taLogin);
             String s = cursor.getString(assignmentName);
@@ -159,6 +181,11 @@ public class DatabaseInterops {
         }
     }
 
+    /**
+     * Returns a string array of table names in the database.
+     * @return
+     * @throws SqlJetException
+     */
     public static String[] getTableNames() throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -167,7 +194,13 @@ public class DatabaseInterops {
         return s.toArray(new String[0]);
     }
 
-    public static String[] getColumnNames(String tableName) throws SqlJetException {
+    /**
+     * Returns a string array of column names in the given table.
+     * @param tableName
+     * @return
+     * @throws SqlJetException
+     */
+    public static String[] getColumnNames(final String tableName) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
@@ -178,21 +211,42 @@ public class DatabaseInterops {
         return s;
     }
 
-    public static ISqlJetCursor getAllData(String tableName) throws SqlJetException {
+    /**
+     * Returns a cursor with all the data of the given table.
+     * @param tableName
+     * @return
+     * @throws SqlJetException
+     */
+    public static ISqlJetCursor getAllData(final String tableName) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
         return db.getTable(tableName).open();
     }
 
-    public static ISqlJetCursor getData(String tableName, String indexName, String lookupItem) throws SqlJetException {
+    /**
+     * Returns a cursor with just the data of the given lookup item found in the
+     * given table.
+     * @param tableName
+     * @param indexName
+     * @param lookupItem
+     * @return
+     * @throws SqlJetException
+     */
+    public static ISqlJetCursor getData(final String tableName, final String indexName, final String lookupItem) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
         return db.getTable(tableName).lookup(indexName, lookupItem);
     }
 
-    public static Object[] getDataRow(String tableName, long rowid) {
+    /**
+     * Returns a cursor with just the row in the given table name.
+     * @param tableName
+     * @param rowid
+     * @return
+     */
+    public static Object[] getDataRow(final String tableName, final long rowid) {
         try {
             ISqlJetCursor cursor = db.getTable(tableName).open();
             cursor.goTo(rowid);
@@ -206,7 +260,15 @@ public class DatabaseInterops {
         }
     }
 
-    public static String getDataCell(String tableName, long rowid, String columnName) throws SqlJetException {
+    /**
+     * Returns a cursor with the given (row, column name) data.
+     * @param tableName
+     * @param rowid
+     * @param columnName
+     * @return
+     * @throws SqlJetException
+     */
+    public static String getDataCell(final String tableName, final long rowid, final String columnName) throws SqlJetException {
         ISqlJetCursor cursor = db.getTable(tableName).open();
         try {
             if (cursor.goTo(rowid)) {
@@ -219,6 +281,14 @@ public class DatabaseInterops {
 
     }
 
+    /**
+     * Create a new table in the database.  You should never need to call this.
+     * It is simply provided in case something really really bad happens
+     * to the database.
+     * @param sqlNewTableString
+     * @param sqlIndexString
+     * @throws SqlJetException
+     */
     public static void createTable(final String sqlNewTableString, final String sqlIndexString) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -233,6 +303,13 @@ public class DatabaseInterops {
         });
     }
 
+    /**
+     * Get the row number where the given string is found in the table.
+     * @param tableName
+     * @param indexName
+     * @param objectName
+     * @return
+     */
     public static long getRowID(final String tableName, final String indexName, final String objectName) {
         try {
             return getData(tableName, indexName, objectName).getRowId();
@@ -242,6 +319,12 @@ public class DatabaseInterops {
         }
     }
 
+    /**
+     * Remove the given row from the specified table.
+     * @param rowid
+     * @param tableName
+     * @throws SqlJetException
+     */
     public static void removeDatum(final long rowid, final String tableName) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -262,15 +345,12 @@ public class DatabaseInterops {
         });
     }
 
-//    /**
-//     * Check for invalid characters in sql name.
-//     * @return
-//     */
-//    public static boolean isValidName(String name) {
-//
-//    }
+
     /**
-     * Check if the table actually exists
+     * Checks to see if the table name is valid (does it exist in the database?)
+     * @param tableName
+     * @return
+     * @throws SqlJetException
      */
     public static boolean isValidTable(final String tableName) throws SqlJetException {
         if (db == null) {
@@ -290,6 +370,14 @@ public class DatabaseInterops {
         return false;
     }
 
+    /**
+     * Adds the data (as an argument list or array) to the end of the given
+     * table.
+     * @param tableName
+     * @param data
+     * @return
+     * @throws SqlJetException
+     */
     public static long addDatum(final String tableName, final Object... data) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -302,6 +390,11 @@ public class DatabaseInterops {
         });
     }
 
+    /**
+     * Drops / removes the specified table from the database.
+     * @param tableName
+     * @throws SqlJetException
+     */
     public static void dropTable(final String tableName) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -315,6 +408,14 @@ public class DatabaseInterops {
         });
     }
 
+    /**
+     * Replaces the values in the specified table at the given row number.  Values
+     * may be given as a list of arguments or as an array.
+     * @param rowid
+     * @param tableName
+     * @param values
+     * @throws SqlJetException
+     */
     public static void update(final long rowid, final String tableName, final Object... values) throws SqlJetException {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
@@ -336,10 +437,24 @@ public class DatabaseInterops {
         });
     }
 
+    /**
+     * Get a cursor getting the specified filter item from the given table.
+     * @param tableName
+     * @param indexName
+     * @param filter
+     * @return
+     * @throws SqlJetException
+     */
     public static ISqlJetCursor getItemWithFilter(final String tableName, final String indexName, final String filter) throws SqlJetException {
         return db.getTable(tableName).lookup(indexName, filter);
     }
 
+    /**
+     * Resets the whole database to beginning of semester settings.  This will
+     * remove all the data in the database.  You may want to back up the database
+     * first before running this.
+     * @throws SqlJetException
+     */
     public static void regenerateDatabase() throws SqlJetException {
         //Remove the old data
         if (db == null) {
@@ -447,6 +562,10 @@ public class DatabaseInterops {
 
     }
 
+    /**
+     * Closes the database.
+     * @throws SqlJetException
+     */
     public static void close() throws SqlJetException {
         db.close();
         db = null;
