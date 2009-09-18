@@ -4,7 +4,9 @@
  */
 package cs015Database;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -55,18 +57,25 @@ public class DatabaseInterops {
         }
     }
 
-    public static void addStudent(String studentName) {
+    /**
+     * Returns the 1 if success.  Returns -1 if addition failed.
+     * @param studentName
+     * @return
+     */
+    public static long addStudent(String studentName) {
         try {
             for (String s : getTableNames()) {
                 if (s.startsWith("grade")) {
-                    addDatum(s, studentName, getAssignmentTotal(s.split("_")[1]));
+                    addDatum(s, new Object[]{studentName, "", "" + getAssignmentTotal(s.split("_")[1])});
                 } else if (s.compareToIgnoreCase("studlist") == 0) {
                     addDatum("studlist", studentName);
                 }
             }
+            return 1;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return -1;
     }
 
     /**
@@ -355,7 +364,24 @@ public class DatabaseInterops {
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
         db.createTable("create table talist (taLogin text not null)");
-        for (String s : STUD_LOGINS) {
+
+        String[] cmd = {"/bin/sh", "-c", "members cs015student"};
+        String studentLogins = "";
+        try {
+            String s = null;
+            Process p = Runtime.getRuntime().exec(cmd);
+            int i = p.waitFor();
+            if (i == 0) {
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                while ((s = stdInput.readLine()) != null) {
+                    studentLogins += s;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        studentLogins.replaceFirst("cs015000", ""); //Remove the test account cause its stupid
+        for (String s : studentLogins.trim().split(" ")) {
             addDatum("studlist", s);
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
@@ -387,8 +413,24 @@ public class DatabaseInterops {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
+        String[] cmd = {"/bin/sh", "-c", "members cs015student"};
+        String studentLogins = "";
+        try {
+            String s = null;
+            Process p = Runtime.getRuntime().exec(cmd);
+            int i = p.waitFor();
+            if (i == 0) {
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                while ((s = stdInput.readLine()) != null) {
+                    studentLogins += s;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        studentLogins.replaceFirst("cs015000", ""); //Remove the test account cause its stupid
         for (String s : ASSIGNMENT_NAMES) {
-            for (String ss : STUD_LOGINS) {
+            for (String ss : studentLogins.trim().split(" ")) {
                 Object[] data = new String[3];
                 data[0] = ss;
                 int grade = (int) (Math.random() * 50 + 50);

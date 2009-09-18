@@ -25,20 +25,18 @@ public class Utils {
 
             String stringBuilder = "mutt -s \"" + subject + "\"";
 
-            if (cc.length > 2) {
-                System.out.println(Arrays.toString(cc));
+            if (Arrays.toString(cc).length() > 2) {
                 stringBuilder += " -c " + Arrays.toString(cc).replace(",", "").replace("[", "").replace("]", "");
             }
-            if (bcc.length > 2) {
+            if (Arrays.toString(bcc).length() > 2) {
                 stringBuilder += " -b " + Arrays.toString(bcc).replace(",", "").replace("[", "").replace("]", "");
             }
-            if (attachmentNames.length > 2) {
+            if (Arrays.toString(attachmentNames).length() > 2) {
                 stringBuilder += " -a " + Arrays.toString(attachmentNames).replace(",", "").replace("[", "").replace("]", "");
             }
             stringBuilder += " -- " + Arrays.toString(to).replace(",", " ").replace("[", "").replace("]", "") + " <<< \"" + body + "\"";
             String[] cmd = {"/bin/sh", "-c", stringBuilder};
             Runtime.getRuntime().exec(cmd);
-             System.out.println(cmd[2]);
         //"uuencode histogram_1.png | mailx -s \"test\" \"psastras\""};
 
         } catch (Exception e) {

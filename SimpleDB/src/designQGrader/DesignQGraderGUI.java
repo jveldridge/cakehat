@@ -12,11 +12,12 @@ package designQGrader;
 
 import codesupport.Utils;
 import cs015Database.DatabaseInterops;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 /**
  *
@@ -28,6 +29,30 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     public DesignQGraderGUI() {
         initComponents();
         this.setLocationRelativeTo(null);
+        try {
+            addStudentDialog.setIconImage(ImageIO.read(getClass().getResource("/database_editor/dialog-warning.png")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        jTextField2.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!((c == KeyEvent.VK_PERIOD) || (c == KeyEvent.VK_BACK_SPACE) || (c == KeyEvent.VK_DELETE) || (c == KeyEvent.VK_ENTER) || (c == KeyEvent.VK_TAB) || (Character.isDigit(c)))) {
+                    e.consume();
+                } else if ((c == KeyEvent.VK_PERIOD)) {
+                    if (!jTextField2.getText().contains(".")) {
+                        if (jTextField2.getText().length() < 1) {
+                            jTextField2.setText("0");
+                        }
+                    } else {
+                        e.consume();
+                    }
+                }
+
+            }
+        });
+
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/accessories-calculator.png")));
             DefaultTableModel m = (DefaultTableModel) table1.getModel();
@@ -49,6 +74,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             jTextField1.setText((String) table1.getModel().getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
             jTextField1.setSelectionStart(0);
             jTextField1.setSelectionEnd(jTextField1.getText().length());
+            jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
             statusLabel.setText("Ready");
             if (jTextField1.getText().length() == 0) {
                 jButton1.setEnabled(false);
@@ -93,6 +119,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
         addStudentDialog.setTitle("Add Student Dialog");
@@ -115,6 +142,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
         jButton3.setMnemonic('N');
         jButton3.setText("No");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout addStudentDialogLayout = new javax.swing.GroupLayout(addStudentDialog.getContentPane());
         addStudentDialog.getContentPane().setLayout(addStudentDialogLayout);
@@ -225,6 +257,9 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 jTextField2KeyPressed(evt);
             }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextField2KeyReleased(evt);
+            }
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 jTextField2KeyTyped(evt);
             }
@@ -277,6 +312,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         });
 
         jMenu1.setText("File");
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItem1.setText("Quit");
+        jMenu1.add(jMenuItem1);
+
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
@@ -383,12 +423,17 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     }
 
     private void update() {
+        if (jTextField1.getText().length() == 0) {
+            jButton1.setEnabled(false);
+        } else {
+            jButton1.setEnabled(true);
+        }
         if (table1.getRowCount() == 0 || ((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn())).length() == 0) {
             jTextField2.setText("");
-            jTextField3.setText("");
             jTextField4.setText("");
             return;
         }
+
         jTextField1.setText((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
         jTextField1.setCaretPosition(0);
         jTextField1.setSelectionStart(0);
@@ -396,7 +441,9 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jTextField2.setText(DatabaseInterops.getStudentScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
         jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
         if (jTextField2.getText().length() > 0 && jTextField3.getText().length() > 0) {
-            jTextField4.setText("" + (int) (Double.parseDouble(jTextField2.getText()) / Double.parseDouble(jTextField3.getText()) * 100));
+            jTextField4.setText("" + (Double.parseDouble(jTextField2.getText()) / Double.parseDouble(jTextField3.getText()) * 100));
+        } else {
+            jTextField4.setText("");
         }
     }
 
@@ -421,6 +468,9 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2KeyTyped
 
     private void table1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table1MouseClicked
+        if (table1.getRowCount() == 0 || ((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn())).length() == 0) {
+            jTextField1.setText("");
+        }
         update();
     }//GEN-LAST:event_table1MouseClicked
 
@@ -445,15 +495,12 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                 String[] s = (String[]) DatabaseInterops.getDataRow("grades_" + assignmentName, row);
                 s[1] = jTextField2.getText();
                 DatabaseInterops.update(row, "grades_" + assignmentName, (Object[]) s);
+                updateStatus("Written to database");
             } else {
                 jLabel7.setText("<html>The selected student <b>" + jTextField1.getText() + "</b> was not found.<br />Add the student to the database?");
                 addStudentDialog.setLocationRelativeTo(null);
                 addStudentDialog.setVisible(true);
-                String[] s = (String[]) DatabaseInterops.getDataRow("grades_" + assignmentName, row);
-                s[1] = jTextField2.getText();
-                DatabaseInterops.update(row, "grades_" + assignmentName, (Object[]) s);
             }
-            updateStatus("Written to database");
             jTextField1.requestFocus();
             jTextField1.setText("");
             jTextField1KeyTyped(null);
@@ -491,7 +538,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         table1.setColumnSelectionAllowed(true);
         table1.getSelectionModel().setSelectionInterval(0, 0);
         table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
-        update();
+    //update();
     }//GEN-LAST:event_jTextField1KeyReleased
 
     private void table2KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_table2KeyReleased
@@ -504,8 +551,31 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         DatabaseInterops.addStudent(jTextField1.getText());
-
+        String assignmentName = (String) table2.getModel().getValueAt(table2.getSelectedRow(), table2.getSelectedColumn());
+        String studentLogin = jTextField1.getText();
+        long row = DatabaseInterops.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
+        String[] s = (String[]) DatabaseInterops.getDataRow("grades_" + assignmentName, row);
+        s[1] = jTextField2.getText();
+        try {
+            DatabaseInterops.update(row, "grades_" + assignmentName, (Object[]) s);
+            updateStatus("Written to database");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        addStudentDialog.setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jTextField2KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyReleased
+        if (jTextField2.getText().length() > 0 && jTextField3.getText().length() > 0) {
+            jTextField4.setText("" + (Double.parseDouble(jTextField2.getText()) / Double.parseDouble(jTextField3.getText()) * 100));
+        } else {
+            jTextField4.setText("");
+        }
+    }//GEN-LAST:event_jTextField2KeyReleased
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        addStudentDialog.setVisible(false);
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -533,6 +603,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

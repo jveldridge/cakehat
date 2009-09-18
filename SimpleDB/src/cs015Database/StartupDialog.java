@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
 
@@ -40,6 +41,8 @@ public class StartupDialog extends javax.swing.JFrame {
             e.printStackTrace();
         }
         initComponents();
+
+
         this.setLocationRelativeTo(null);
 
         try {
@@ -191,6 +194,7 @@ public class StartupDialog extends javax.swing.JFrame {
         setResizable(false);
 
         databaseEditorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-spreadsheet.png"))); // NOI18N
+        databaseEditorButton.setMnemonic('D');
         databaseEditorButton.setText("<html><b>Database Editor</b><br>Manually edit the database and database schema</html>");
         databaseEditorButton.setFocusable(false);
         databaseEditorButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -202,6 +206,7 @@ public class StartupDialog extends javax.swing.JFrame {
         });
 
         gradeDistributorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-text-editor.png"))); // NOI18N
+        gradeDistributorButton.setMnemonic('G');
         gradeDistributorButton.setText("<html><b>Grade Distributor</b><br>Distribute grading assignments to TAs</html>");
         gradeDistributorButton.setFocusable(false);
         gradeDistributorButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -213,6 +218,7 @@ public class StartupDialog extends javax.swing.JFrame {
         });
 
         histogramButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/x-office-drawing.png"))); // NOI18N
+        histogramButton.setMnemonic('I');
         histogramButton.setText("<html><b>Grade Information</b><br>Generate and email grade information and histograms</html>");
         histogramButton.setFocusable(false);
         histogramButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -226,6 +232,7 @@ public class StartupDialog extends javax.swing.JFrame {
         jLabel1.setText("<html><b>Choose An Action Below</b></html>");
 
         gradeDistributorButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/view-refresh.png"))); // NOI18N
+        gradeDistributorButton1.setMnemonic('R');
         gradeDistributorButton1.setText("<html><b>Regenerate Database</b><br />Reset the database to the conf file</html>");
         gradeDistributorButton1.setFocusable(false);
         gradeDistributorButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -237,6 +244,7 @@ public class StartupDialog extends javax.swing.JFrame {
         });
 
         emailButtonActionPerformed.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/internet-news-reader.png"))); // NOI18N
+        emailButtonActionPerformed.setMnemonic('N');
         emailButtonActionPerformed.setText("<html><b>Notify Students</b><br>Send an email to all students.</html>");
         emailButtonActionPerformed.setFocusable(false);
         emailButtonActionPerformed.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -248,6 +256,7 @@ public class StartupDialog extends javax.swing.JFrame {
         });
 
         gradeDistributorButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-calculator.png"))); // NOI18N
+        gradeDistributorButton2.setMnemonic('E');
         gradeDistributorButton2.setText("<html><b>Enter Grades</b><br />Manually enter grades into the database.</html>");
         gradeDistributorButton2.setFocusable(false);
         gradeDistributorButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -350,7 +359,7 @@ public class StartupDialog extends javax.swing.JFrame {
         imagePanel1.setImage(_captcha.getImage());
         warningDialog.setLocationRelativeTo(null);
         warningDialog.setVisible(true);
-        
+
 
 }//GEN-LAST:event_regenerateDatabaseActionPerformed
 
@@ -380,14 +389,13 @@ public class StartupDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1KeyPressed
 
     private void jTextField1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyTyped
-
     }//GEN-LAST:event_jTextField1KeyTyped
 
     private void jTextField1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyReleased
         if (_captcha.isCorrect(jTextField1.getText())) {
             jTextField1.setBackground(new Color(220, 240, 220));
 
-        } else if(jTextField1.getText().length() > 0) {
+        } else if (jTextField1.getText().length() > 0) {
             jTextField1.setBackground(new Color(240, 220, 220));
         } else {
             jTextField1.setBackground(new Color(255, 255, 255));
@@ -396,6 +404,14 @@ public class StartupDialog extends javax.swing.JFrame {
 
     private void emailButtonActionPerformedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emailButtonActionPerformedActionPerformed
         EmailGUI eg = new EmailGUI();
+        //@TODO:UNCOMMENT
+//        String[] s = DatabaseInterops.getStudentNames();
+//        for (int i = 0; i < s.length; i++) {
+//            s[i] += "@cs.brown.edu";
+//        }
+//        eg.setBcc(Arrays.toString(s).replace("[", "").replace("]", ""));
+        eg.setBcc("psastras@gmail.com, bherila@bherila.net");
+        eg.setSubject("[cs015] ");
         eg.setVisible(true);
 }//GEN-LAST:event_emailButtonActionPerformedActionPerformed
 
