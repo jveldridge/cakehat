@@ -42,7 +42,6 @@ public class StartupDialog extends javax.swing.JFrame {
         }
         initComponents();
 
-
         this.setLocationRelativeTo(null);
 
         try {

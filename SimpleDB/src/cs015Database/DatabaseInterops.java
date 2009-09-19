@@ -10,6 +10,7 @@ import cs015.tasupport.utils.Utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -25,7 +26,7 @@ public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
     public static final String[] ASSIGNMENT_NAMES = {"Objects", "ClockDesign", "Clock", "LiteBriteDesign", "LiteBrite", "References", "TASafeHouse", "CartoonDesign", "Cartoon", "SwarmDesign", "Swarm", "TetrisDesign", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
-    public static final String[] GRADE_RUBRIC_FIELDS = {"Earned", "Total"};
+    public static final String[] GRADE_RUBRIC_FIELDS = {"Earned"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
     public static final String STUD_TABLE = "studlist";
     private static SqlJetDb db;
@@ -103,8 +104,25 @@ public class DatabaseInterops {
         }
     }
 
+    public static String[] getProjectNames() {
+        try {
+            String[] assignNames = getColumnData("assignmentNames", "assignments");
+            String[] assignTypes = getColumnData("type", "assignments");
+            ArrayList<String> al = new ArrayList<String>();
+            for(int i = 0; i < assignNames.length; i++) {
+                if(assignTypes[i].compareToIgnoreCase("project") == 0){
+                    al.add(assignNames[i]);
+                }
+            }
+            return al.toArray(new String[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
     /**
-     * Return a string array of assignment names.
+     * Return a string array of ALL assignment names.
      * @return
      */
     public static String[] getAssignmentNames() {
@@ -470,11 +488,6 @@ public class DatabaseInterops {
             db.dropIndex(s);
         }
 
-        //Grab data from config file
-
-
-        //Add new tables for grades stuff should be read from xml rubric file
-
         db.createTable("create table assignments (assignmentNames text not null, type text, earlydate text, ontimedate text, latedate text, total text)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
         db.createTable("create table blacklist (taLogin text not null, studLogins text)");
@@ -496,11 +509,9 @@ public class DatabaseInterops {
             db.createTable(sqlCreateTableString2);
             db.createIndex("create index stud_login_" + a.Name + " on grades_" + a.Name + " (studLogins)");
             sqlCreateTableString1 += ", " + a.Name + " text";
-        }
-        for (Assignment a : ConfigurationManager.getAssignments()) {
             if (a.Points.DQ != 0) {
                 addDatum("assignments", a.Name + "Design", "DESIGN", "", "", "", "" + a.Points.DQ);
-                String sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
+                sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
                 for (String ss : GRADE_RUBRIC_FIELDS) {
                     sqlCreateTableString2 += ", " + ss + " text";
                 }
@@ -510,6 +521,19 @@ public class DatabaseInterops {
                 sqlCreateTableString1 += ", " + a.Name + "Design text";
             }
         }
+//        for (Assignment a : ConfigurationManager.getAssignments()) {
+//            if (a.Points.DQ != 0) {
+//                addDatum("assignments", a.Name + "Design", "DESIGN", "", "", "", "" + a.Points.DQ);
+//                String sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
+//                for (String ss : GRADE_RUBRIC_FIELDS) {
+//                    sqlCreateTableString2 += ", " + ss + " text";
+//                }
+//                sqlCreateTableString2 += ")";
+//                db.createTable(sqlCreateTableString2);
+//                db.createIndex("create index stud_login_" + a.Name + "Design" + " on grades_" + a.Name + "Design (studLogins)");
+//                sqlCreateTableString1 += ", " + a.Name + "Design text";
+//            }
+//        }
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
         db.createIndex("create index ta_login_dist on assignment_dist (taLogin)");
@@ -518,7 +542,7 @@ public class DatabaseInterops {
             addDatum("blacklist", s);
             addDatum("talist", new Object[]{s});
         }
-    //autoPopulate();
+        autoPopulate();
     }
 
     private static void autoPopulate() throws SqlJetException {
@@ -527,35 +551,19 @@ public class DatabaseInterops {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
-        String[] cmd = {"/bin/sh", "-c", "members cs015student"};
-        String studentLogins = "";
-        try {
-            String s = null;
-            Process p = Runtime.getRuntime().exec(cmd);
-            int i = p.waitFor();
-            if (i == 0) {
-                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                while ((s = stdInput.readLine()) != null) {
-                    studentLogins += s;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        studentLogins.replaceFirst("cs015000", ""); //Remove the test account cause its stupid
-        for (String s : ASSIGNMENT_NAMES) {
-            for (String ss : studentLogins.trim().split(" ")) {
-                Object[] data = new String[3];
+        for (Assignment a : ConfigurationManager.getAssignments()) {
+            for (String ss : Utils.getCS015Students()) {
+                Object[] data = new String[2];
                 data[0] = ss;
                 int grade = (int) (Math.random() * 50 + 50);
                 data[1] = Integer.toString(grade);
-                data[2] = "100";
-                addDatum("grades_" + s, data);
+                addDatum("grades_" + a.Name, data);
+                if (a.Points.DQ != 0) {
+                    addDatum("grades_" + a.Name + "Design", data);
+                }
             }
+
         }
-        Object[] data = new String[1];
-
-
     }
 
     /**
@@ -564,6 +572,7 @@ public class DatabaseInterops {
      */
     public static void close() throws SqlJetException {
         db.close();
-        db = null;
+        db =
+                null;
     }
 }
