@@ -269,7 +269,7 @@
               <Image iconType="3" name="/GradingCommander/icons/print.png"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="&quot;&lt;html&gt;&lt;b&gt;Print&lt;/b&gt;&lt;br&gt;Print the student&apos;s files&lt;/html&gt;&quot;" type="code"/>
+              <Connection code="&quot;&lt;html&gt;&lt;b&gt;Print&lt;/b&gt;&lt;br&gt;Print the current student&apos;s code&lt;/html&gt;&quot;" type="code"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>

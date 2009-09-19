@@ -154,7 +154,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         });
 
         printButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/print.png"))); // NOI18N
-        printButton.setText("<html><b>Print</b><br>Print the student's files</html>");
+        printButton.setText("<html><b>Print</b><br>Print the current student's code</html>");
         printButton.setFocusable(false);
         printButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         printButton.addActionListener(new java.awt.event.ActionListener() {

@@ -258,7 +258,7 @@ public class GradingCommander {
 
     public static void printGRDFiles(String assignment) {
         System.out.println("called printGRDFiles");
-        String printer = GradingCommander.getPrinter(null);
+        String printer = GradingCommander.getPrinter(null, "Select printer to print .GRD files");
         Runtime r = Runtime.getRuntime();
         String printCommand = "lpr -P" + printer + " /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.grd";
         try {
@@ -281,12 +281,12 @@ public class GradingCommander {
         }
     }
 
-    private static String getPrinter(String printer) {
+    private static String getPrinter(String printer, String message) {
         if (printer != null)
             return printer;
         Object[] printerChoices = {"bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
-        printer = (String) JOptionPane.showInputDialog(new JFrame(), "Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
+        printer = (String) JOptionPane.showInputDialog(new JFrame(), "Chose printer:", message, JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
         return printer;
     }
 }
