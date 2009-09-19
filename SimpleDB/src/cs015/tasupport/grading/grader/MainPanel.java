@@ -398,7 +398,7 @@ class MainPanel extends JPanel
 		double sc = _rubric.getTotalOutOf();
 		//Score field
 		double statusPoints = status.getEarlyBonus(sc) + status.getLatePenalty(sc);
-		NumberField scoreField = NumberField.getAsUneditable(Double.valueOf(RubricManager.doubleToString(statusPoints)));
+		NumberField scoreField = NumberField.getAsUneditable(Double.valueOf(Double.toString((statusPoints))));
 		layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, extraCreditText);
 		layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, extraCreditText);
 		panel.add(scoreField);
@@ -470,9 +470,9 @@ class MainPanel extends JPanel
 		{
 			Section section = _sections.elementAt(i);
 			NumberField score = _totals.elementAt(i);
-			score.setText(RubricManager.doubleToString(section.getSectionScore()));
+			score.setText(Double.toString(section.getSectionScore()));
 		}
-		_totalScoreField.setText(RubricManager.doubleToString(_rubric.getTotalScore()));
+		_totalScoreField.setText(Double.toString(_rubric.getTotalScore()));
 	}	
 	
 	public Vector<Component> getTabOrder()

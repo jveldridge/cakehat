@@ -21,11 +21,9 @@ public class ProjectManager {
      */
     public static Collection<String> getHandinLogins(Project prj) {
         Vector<String> logins = new Vector<String>();
-
         for (File handin : prj.getHandins()) {
             logins.add(handin.getName().split("\\.")[0]);
         }
-
         return logins;
     }
 

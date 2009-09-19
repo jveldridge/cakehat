@@ -30,8 +30,7 @@ class NumberField extends JFormattedTextField
 	private NumberField(double value, boolean editable)
 	{
 		super(NumberFormat.getNumberInstance());
-		
-		this.setText(RubricManager.doubleToString(value));
+		this.setText(Double.toString(value));
 		this.setEditable(editable);
 		this.setColumns(5);
 		

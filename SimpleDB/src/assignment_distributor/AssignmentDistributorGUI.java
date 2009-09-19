@@ -11,6 +11,7 @@
 package assignment_distributor;
 
 import cs015.tasupport.grading.config.ConfigurationManager;
+import cs015.tasupport.grading.projects.ProjectManager;
 import cs015Database.*;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -37,19 +38,19 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
-            assignmentNameComboBox.removeAllItems();
-            for (int i = 1; i < columnNames.length; i++) {
-                assignmentNameComboBox.insertItemAt(columnNames[i], assignmentNameComboBox.getItemCount());
-            }
-            if (assignmentNameComboBox.getItemCount() > 0) {
-                assignmentNameComboBox.setSelectedIndex(0);
-                this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
-            }
 
-        } catch (SqlJetException e) {
-            e.printStackTrace();
+//        String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
+//        assignmentNameComboBox.removeAllItems();
+//        for (int i = 1; i < columnNames.length; i++) {
+//            assignmentNameComboBox.insertItemAt(columnNames[i], assignmentNameComboBox.getItemCount());
+//        }
+        for(String s: DatabaseInterops.getProjectNames()) {
+            assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
+        }
+        for(String s: DatabaseInterops.getAssignmentNames())
+        if (assignmentNameComboBox.getItemCount() > 0) {
+            assignmentNameComboBox.setSelectedIndex(0);
+            this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
         }
         fillTable();
         this.setLocationRelativeTo(null);
@@ -58,7 +59,6 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     private void fillTable() {
 
         try {
-            ISqlJetCursor cursor = DatabaseInterops.getAllData("assignment_dist");
             mainTable.removeAll();
             mainTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
             mainTable.removeAll();
@@ -67,8 +67,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             m.addColumn("TA Login");
             m.addColumn("Max Number to Grade");
             for (String s : taNames) {
-                String[] ss = {s, "-1"};
-                m.addRow(ss);
+                m.addRow(new String[] {s, "-1"});
             }
 
         } catch (Exception e) {
@@ -168,11 +167,11 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
 
-        String[] studNames = DatabaseInterops.getStudentNames();
+        String[] studNames = ProjectManager.getHandinLogins(ProjectManager.getProjectFromString((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
+
         List<String> shuffleList = Arrays.asList(studNames);
         Collections.shuffle(shuffleList);
         studNames = shuffleList.toArray(new String[0]);
-        //DatabaseInterops.getTANames();//
         String[] taNames = ConfigurationManager.getGraderLogins();
         DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
         String[] studentsToGrade = new String[taNames.length];
@@ -219,9 +218,6 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                     break;
                 }
             }
-//            Class c = Class.forName("database_editor.GridView");
-//            Object t = c.newInstance();
-//            c.getMethod("removeDatabaseWatch").invoke(t);
             for (int i = 0; i < taNames.length; i++) {
                 long rowid = DatabaseInterops.getRowID("assignment_dist", "ta_login_dist", taNames[i]);
                 Object[] o = DatabaseInterops.getDataRow("assignment_dist", rowid);

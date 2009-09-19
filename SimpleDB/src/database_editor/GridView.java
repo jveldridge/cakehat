@@ -3,8 +3,10 @@ package database_editor;
 import cs015Database.DatabaseInterops;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,7 +39,6 @@ public class GridView extends cs015Database.Table {
         this.setGridColor(new Color(190, 214, 246));
         this.setForeground(new Color(79, 79, 79));
         this.setIntercellSpacing(new Dimension(3, 3));
-        initDatabaseWatch();
     }
 
     /**
@@ -69,11 +70,8 @@ public class GridView extends cs015Database.Table {
     @Override
     public void setValueAt(Object aValue, int row, int column) {
         try {
-            removeDatabaseWatch();
             super.setValueAt(aValue, row, column);
-            this.getColumnModel().addColumn(_idCol);
-            long rowId = Long.parseLong(this.getValueAt(this.getSelectedRow(), this.getColumnCount() - 1).toString());
-            this.getColumnModel().removeColumn(_idCol);
+            long rowId = Long.parseLong(this.getModel().getValueAt(this.getSelectedRow(), this.getModel().getColumnCount() - 1).toString());
             Object[] data = new Object[this.getColumnCount()];
             for (int i = 0; i < data.length; i++) {
                 data[i] = this.getValueAt(this.getSelectedRow(), i);
@@ -83,74 +81,26 @@ public class GridView extends cs015Database.Table {
                 _refreshTable = false;
                 refresh(_tableName);
             }
-            initDatabaseWatch();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    private Timer _dbTimer = new Timer();
-
-    /**
-     * Watches the databse file for modifications to reload.
-     */
-    public void initDatabaseWatch() {
-        TimerTask task = new DatabaseWatch(new File(DatabaseInterops.FILE_NAME)) {
-
-            protected void onChange(File file) {
-                removeDatabaseWatch();
-                if (_tableName != null) {
-//                    JOptionPane pane = new JOptionPane(
-//                            "To be or not to be ?\nThat is the question.");
-//                    Object[] options = new String[]{"To be", "Not to be"};
-//                    pane.setOptions(options);
-//                    JDialog dialog = pane.createDialog(new JFrame(), "Dilaog");
-//                    dialog.setVisible(true);
-//                    Object obj = pane.getValue();
-//                    int result = -1;
-//                    for (int k = 0; k < options.length; k++) {
-//                        if (options[k].equals(obj)) {
-//                            result = k;
-//                        }
-//                    }
-//                    System.out.println("User's choice: " + result);
-                    refresh(_tableName);
-                }
-                initDatabaseWatch();
-            }
-        };
-        _dbTimer.schedule(task, new Date(), 100);
-    }
-
-    /**
-     * Removes the database watch (useful when saving or modifying the databse
-     * to prevent us from getting stuck in a loop detecting changes and writing
-     * changes)
-     */
-    public void removeDatabaseWatch() {
-        _dbTimer.cancel();
-        _dbTimer.purge();
-        _dbTimer = new Timer();
     }
 
     /**
      * Removes the currently selected rows from the grid and databse.
      */
     public void removeRows(String tableName) {
-        removeDatabaseWatch();
-        this.getColumnModel().addColumn(_idCol);
-        DefaultTableModel m = (DefaultTableModel) this.getModel();
-        int k = 0;
-        for (int r : this.getSelectedRows()) {
-            try {
-                long rowId = Long.parseLong(this.getValueAt(r + k, m.getColumnCount() - 1).toString());
+        try {
+            DefaultTableModel m = (DefaultTableModel) this.getModel();
+            for (int i = 0; i < this.getSelectedRows().length; i++) {
+
+                long rowId = Long.parseLong(m.getValueAt(this.convertRowIndexToModel(this.getSelectedRow()), m.getColumnCount() - 1).toString());
                 DatabaseInterops.removeDatum(rowId, tableName);
-                m.removeRow(r + k--); //When a row is removed all rows shift up by one
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+            m.removeRow(this.convertRowIndexToModel(this.getSelectedRow()));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        this.getColumnModel().removeColumn(_idCol);
-        initDatabaseWatch();
     }
 
     /**
@@ -158,20 +108,16 @@ public class GridView extends cs015Database.Table {
      * @param tableName
      */
     public void addRow(String tableName) {
-        removeDatabaseWatch();
         try {
-            this.getColumnModel().addColumn(_idCol);
             Object[] data1 = new Object[DatabaseInterops.getColumnNames(tableName).length];
             data1[0] = "";
             Object[] data2 = new Object[data1.length + 1];
             data2[data1.length] = DatabaseInterops.addDatum(tableName, data1);
             DefaultTableModel m = (DefaultTableModel) this.getModel();
             m.insertRow(this.getRowCount(), data2);
-            this.getColumnModel().removeColumn(_idCol);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        initDatabaseWatch();
     }
 
     public boolean isCellEditable(int row, int col) {
@@ -184,18 +130,21 @@ public class GridView extends cs015Database.Table {
      * @param tableName
      */
     public void refresh(String tableName) {
-        if (this.isEditing()) {
-            _refreshTable = true; //Prevent us from refreshing when editing a cell
+//        if (this.isEditing()) {
+//            _refreshTable = true; //Prevent us from refreshing when editing a cell
+//            return;
+//        }
+//        try {
+//            if (!DatabaseInterops.isValidTable(tableName)) {
+//                return;
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        this.setVisible(false);
+        if (!DatabaseInterops.isValidTable(tableName)) {
             return;
         }
-        try {
-            if (!DatabaseInterops.isValidTable(tableName)) {
-                return;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        removeDatabaseWatch();
         _tableName = tableName;
         this.removeAll();
         this.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
@@ -208,9 +157,11 @@ public class GridView extends cs015Database.Table {
                 m.addColumn(s);
             }
             m.addColumn("rowID"); //Hidden rowId information
-            _idCol = this.getColumnModel().getColumn(columnNames.length);
-            this.getColumnModel().removeColumn(_idCol);
+            this.removeColumn(this.getColumnModel().getColumn(this.getColumnCount() - 1));
             ISqlJetCursor cursor = DatabaseInterops.getAllData(tableName);
+            if (cursor == null) {
+                return;
+            }
             try {
                 while (!cursor.eof()) {
                     Object[] rowData = new Object[columnNames.length + 1];
@@ -225,12 +176,11 @@ public class GridView extends cs015Database.Table {
             } finally {
                 cursor.close();
             }
-
         } catch (SqlJetException e) {
             e.printStackTrace();
         }
         this.repaint();
-        initDatabaseWatch();
+        this.setVisible(true);
     }
 
     /**
@@ -239,7 +189,6 @@ public class GridView extends cs015Database.Table {
      * the sql commands for a lot of different table modifications.
      */
     public void save(String tableName) {
-        removeDatabaseWatch();
         try {
             DatabaseInterops.resetTable(tableName);
             Object[] rowData = new Object[(this.getColumnCount()) - 1];
@@ -252,6 +201,5 @@ public class GridView extends cs015Database.Table {
         } catch (SqlJetException e) {
             e.printStackTrace();
         }
-        initDatabaseWatch();
     }
 }

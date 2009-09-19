@@ -5,7 +5,9 @@
 package cs015Database;
 
 import cs015.tasupport.grading.config.Assignment;
+import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
+import cs015.tasupport.grading.projects.Project;
 import cs015.tasupport.utils.Utils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +33,8 @@ public class DatabaseInterops {
     public static final String STUD_TABLE = "studlist";
     private static SqlJetDb db;
 
+  
+
     /**
      * Open the database.
      * @throws SqlJetException
@@ -54,6 +58,11 @@ public class DatabaseInterops {
             }
         });
 
+    }
+
+    public static AssignmentType getAssignmentType(String assignName) {
+        //getData("assignments", "assignmentNameIndex", assignName)
+        return AssignmentType.getInstance("Project");
     }
 
     /**
@@ -109,8 +118,8 @@ public class DatabaseInterops {
             String[] assignNames = getColumnData("assignmentNames", "assignments");
             String[] assignTypes = getColumnData("type", "assignments");
             ArrayList<String> al = new ArrayList<String>();
-            for(int i = 0; i < assignNames.length; i++) {
-                if(assignTypes[i].compareToIgnoreCase("project") == 0){
+            for (int i = 0; i < assignNames.length; i++) {
+                if (assignTypes[i].compareToIgnoreCase("project") == 0) {
                     al.add(assignNames[i]);
                 }
             }
@@ -120,6 +129,7 @@ public class DatabaseInterops {
             return new String[0];
         }
     }
+    
 
     /**
      * Return a string array of ALL assignment names.
@@ -222,15 +232,20 @@ public class DatabaseInterops {
      * @return
      * @throws SqlJetException
      */
-    public static String[] getColumnNames(final String tableName) throws SqlJetException {
-        if (db == null) {
-            db = SqlJetDb.open(new File(FILE_NAME), true);
+    public static String[] getColumnNames(final String tableName) {
+        try {
+            if (db == null) {
+                db = SqlJetDb.open(new File(FILE_NAME), true);
+            }
+            String[] s = new String[db.getSchema().getTable(tableName).getColumns().size()];
+            for (int i = 0; i < s.length; i++) {
+                s[i] = db.getSchema().getTable(tableName).getColumns().get(i).getName();
+            }
+            return s;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new String[0];
         }
-        String[] s = new String[db.getSchema().getTable(tableName).getColumns().size()];
-        for (int i = 0; i < s.length; i++) {
-            s[i] = db.getSchema().getTable(tableName).getColumns().get(i).getName();
-        }
-        return s;
     }
 
     /**
@@ -243,6 +258,7 @@ public class DatabaseInterops {
         if (db == null) {
             db = SqlJetDb.open(new File(FILE_NAME), true);
         }
+
         return db.getTable(tableName).open();
     }
 
@@ -373,20 +389,24 @@ public class DatabaseInterops {
      * @return
      * @throws SqlJetException
      */
-    public static boolean isValidTable(final String tableName) throws SqlJetException {
-        if (db == null) {
-            db = SqlJetDb.open(new File(FILE_NAME), true);
-        }
-        if (tableName == null) {
-            return false;
-
-        }
-        for (String s : db.getSchema().getTableNames()) {
-            if (s.compareTo(tableName) == 0) {
-                return true;
+    public static boolean isValidTable(final String tableName) {
+        try {
+            if (db == null) {
+                db = SqlJetDb.open(new File(FILE_NAME), true);
+            }
+            if (tableName == null) {
+                return false;
 
             }
+            for (String s : db.getSchema().getTableNames()) {
+                if (s.compareTo(tableName) == 0) {
+                    return true;
 
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -453,7 +473,6 @@ public class DatabaseInterops {
                     cursor.close();
                 }
                 return null;
-
             }
         });
     }
@@ -529,7 +548,7 @@ public class DatabaseInterops {
             addDatum("blacklist", s);
             addDatum("talist", new Object[]{s});
         }
-        autoPopulate();
+        //autoPopulate();
     }
 
     private static void autoPopulate() throws SqlJetException {

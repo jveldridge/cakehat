@@ -11,6 +11,7 @@
 package cs015Database;
 
 import assignment_distributor.AssignmentDistributorGUI;
+import com.sun.org.apache.bcel.internal.generic.IFEQ;
 import database_editor.DatabaseGUI;
 import designQGrader.DesignQGraderGUI;
 import emailer.EmailGUI;
@@ -32,26 +33,19 @@ import nl.captcha.Captcha;
 public class StartupDialog extends javax.swing.JFrame {
 
     private Captcha _captcha;
-    private DatabaseGUI _dbGui = new DatabaseGUI(); //This MUST be persisent.
+
 
     /** Creates new form StartupDialog */
     public StartupDialog() {
+
+        initComponents();
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/system-file-manager.png")));
+            warningDialog.setIconImage(ImageIO.read(getClass().getResource("/database_editor/dialog-warning.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        initComponents();
-
         this.setLocationRelativeTo(null);
-    }
-
-    public void stopDBRefresh() {
-        _dbGui.getGrid().removeDatabaseWatch();
-    }
-
-    public void startDBRefresh() {
-        _dbGui.getGrid().initDatabaseWatch();
     }
 
     /** This method is called from within the constructor to
@@ -330,12 +324,13 @@ public class StartupDialog extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void databaseEditorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseEditorButtonActionPerformed
-        _dbGui.setVisible(true);
+        DatabaseGUI dbGUI = new DatabaseGUI();
+        dbGUI.setVisible(true);
     }//GEN-LAST:event_databaseEditorButtonActionPerformed
 
     private void histogramButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_histogramButtonActionPerformed
-        HistogramGUI hg = new HistogramGUI();
-        hg.setVisible(true);
+        HistogramGUI hGUI = new HistogramGUI();
+        hGUI.setVisible(true);
     }//GEN-LAST:event_histogramButtonActionPerformed
 
     private void gradeDistributorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeDistributorButtonActionPerformed
@@ -359,9 +354,7 @@ public class StartupDialog extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if (_captcha.isCorrect(jTextField1.getText())) {
             try {
-                stopDBRefresh();
                 DatabaseInterops.regenerateDatabase();
-                startDBRefresh();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -394,21 +387,19 @@ public class StartupDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1KeyReleased
 
     private void emailButtonActionPerformedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emailButtonActionPerformedActionPerformed
-        EmailGUI eg = new EmailGUI();
-        //@TODO:UNCOMMENT
-//        String[] s = DatabaseInterops.getStudentNames();
-//        for (int i = 0; i < s.length; i++) {
-//            s[i] += "@cs.brown.edu";
-//        }
-//        eg.setBcc(Arrays.toString(s).replace("[", "").replace("]", ""));
-        eg.setBcc("psastras@gmail.com, bherila@bherila.net");
-        eg.setSubject("[cs015] ");
-        eg.setVisible(true);
+        EmailGUI emailGui = new EmailGUI();
+        String[] s = DatabaseInterops.getStudentNames();
+        for (int i = 0; i < s.length; i++) {
+            s[i] += "@cs.brown.edu";
+        }
+        emailGui.setBcc(Arrays.toString(s).replace("[", "").replace("]", ""));
+        emailGui.setSubject("[cs015] ");
+        emailGui.setVisible(true);
 }//GEN-LAST:event_emailButtonActionPerformedActionPerformed
 
     private void eneterGradesButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eneterGradesButton
-        designQGrader.DesignQGraderGUI dqg = new DesignQGraderGUI();
-        dqg.setVisible(true);
+        DesignQGraderGUI dqGUI = new DesignQGraderGUI();
+        dqGUI.setVisible(true);
     }//GEN-LAST:event_eneterGradesButton
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed

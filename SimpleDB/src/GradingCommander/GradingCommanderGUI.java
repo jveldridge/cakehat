@@ -32,8 +32,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         //untar and all students' code for the initially selected project
         if (studentList.getModel().getSize() > 1) {
-            GradingCommander.untar(assignmentList, studentList);
-            GradingCommander.compileAll((String) assignmentList.getSelectedValue(), studentList);
+            //GradingCommander.untar(assignmentList, studentList);
+            //GradingCommander.compileAll((String) assignmentList.getSelectedValue(), studentList);
         }
 
         try {

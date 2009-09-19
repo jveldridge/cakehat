@@ -11,12 +11,13 @@
 package database_editor;
 
 import cs015Database.DatabaseInterops;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
-import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
 
 /**
@@ -27,6 +28,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
     private boolean _isModified = false;
+    private Timer _dbTimer = new Timer();
 
     /** Creates new form DatabaseGUI */
     public DatabaseGUI() {
@@ -45,7 +47,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         gridView.refresh(tableName);
     }
 
-    public GridView getGrid(){
+    public GridView getGrid() {
         return gridView;
     }
 
@@ -87,6 +89,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         gridView = new database_editor.GridView();
         filterTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         mainMenu = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileMenuSeparator = new javax.swing.JSeparator();
@@ -138,6 +141,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("cs015 Database Editor");
         setBackground(java.awt.SystemColor.controlDkShadow);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -157,7 +161,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
         statusBarPanelLayout.setHorizontalGroup(
             statusBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, statusBarPanelLayout.createSequentialGroup()
-                .addContainerGap(677, Short.MAX_VALUE)
+                .addContainerGap(693, Short.MAX_VALUE)
                 .addComponent(statusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -208,6 +212,13 @@ public class DatabaseGUI extends javax.swing.JFrame {
 
         jLabel1.setText("Filter Table:");
 
+        jButton1.setText("Refresh Table");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -215,10 +226,12 @@ public class DatabaseGUI extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1144, Short.MAX_VALUE)
+                    .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1158, Short.MAX_VALUE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(tableSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 375, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 275, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -229,7 +242,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
                 .addContainerGap())
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                    .addComponent(toolbarSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1164, Short.MAX_VALUE)
+                    .addComponent(toolbarSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1182, Short.MAX_VALUE)
                     .addGap(0, 0, 0)))
         );
         mainPanelLayout.setVerticalGroup(
@@ -241,14 +254,15 @@ public class DatabaseGUI extends javax.swing.JFrame {
                     .addComponent(removeRowButton)
                     .addComponent(addRowButton)
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
+                .addComponent(gridViewScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 648, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
                     .addComponent(toolbarSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(698, Short.MAX_VALUE)))
+                    .addContainerGap(705, Short.MAX_VALUE)))
         );
 
         fileMenu.setText("File");
@@ -332,14 +346,14 @@ public class DatabaseGUI extends javax.swing.JFrame {
 
         updateStatus("Synchronizing...");
         gridView.addRow(tableSelector.getSelectedItem().toString());
-        //_isModified = true;
+    //_isModified = true;
 }//GEN-LAST:event_addRowButtonActionPerformed
 
     private void removeRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeRowButtonActionPerformed
 
         updateStatus("Synchronizing...");
         gridView.removeRows(tableSelector.getSelectedItem().toString());
-        //_isModified = true;
+    //_isModified = true;
 }//GEN-LAST:event_removeRowButtonActionPerformed
 
     private void fileMenuExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuExitActionPerformed
@@ -386,6 +400,10 @@ public class DatabaseGUI extends javax.swing.JFrame {
         refreshTable((String) tableSelector.getSelectedItem());
     }//GEN-LAST:event_tableSelectorActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        gridView.refresh((String)tableSelector.getSelectedItem());
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * Update components to current database information.
      */
@@ -394,7 +412,6 @@ public class DatabaseGUI extends javax.swing.JFrame {
 
         try {
             String[] tableNames = DatabaseInterops.getTableNames();
-
             tableSelector.removeAllItems();
             Arrays.sort(tableNames);
             for (String s : tableNames) {
@@ -436,6 +453,7 @@ public class DatabaseGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane gridViewScrollPane;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem helpMenuAbout;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar mainMenu;
     private javax.swing.JPanel mainPanel;
