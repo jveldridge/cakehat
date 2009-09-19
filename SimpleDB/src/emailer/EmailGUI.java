@@ -10,7 +10,7 @@
  */
 package emailer;
 
-import codesupport.Utils;
+import cs015.tasupport.utils.Utils;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.imageio.ImageIO;

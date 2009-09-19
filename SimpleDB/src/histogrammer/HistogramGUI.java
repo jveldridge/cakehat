@@ -10,7 +10,7 @@
  */
 package histogrammer;
 
-import codesupport.Utils;
+import cs015.tasupport.utils.Utils;
 import cs015Database.DatabaseInterops;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
