@@ -456,7 +456,8 @@ public class Utils {
      */
     public static boolean execute(String dirPath, String javaArg) {
         //Get the existing classpath, add dirPath to the classpath
-        String classPath = getClassPath() + ":" + dirPath;
+        String classPath = dirPath + ":" + getClassPath();
+        System.out.println(classPath);
         ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
 
         //Attempt to execute code

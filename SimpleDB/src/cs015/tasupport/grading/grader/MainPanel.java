@@ -1,3 +1,4 @@
+
 package cs015.tasupport.grading.grader;
 
 import java.awt.Color;
@@ -75,6 +76,7 @@ class MainPanel extends JPanel
 	 * 
 	 * @param panel
 	 */
+
 	public void addPanelBelow(JPanel panel)
 	{	
 		int vGap = 5;

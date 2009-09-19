@@ -1,3 +1,4 @@
+
 package cs015.tasupport.grading.grader;
 
 import java.awt.event.FocusEvent;
@@ -19,6 +20,7 @@ import cs015.tasupport.grading.rubric.Subsection;
  * 
  * @author jak2
  */
+
 class NumberField extends JFormattedTextField
 {	
 	private Subsection _subsection = null;

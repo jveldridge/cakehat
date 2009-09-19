@@ -1,6 +1,7 @@
 package GradingCommander;
 
 import cs015.tasupport.grading.projects.ProjectManager;
+import cs015.tasupport.utils.BashConsole;
 import cs015.tasupport.utils.Utils;
 import emailer.EmailGUI;
 import java.io.BufferedReader;
@@ -12,7 +13,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Vector;
-import javax.imageio.ImageIO;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -52,6 +55,9 @@ public class GradingCommander {
     public static void untar(JList assignmentList, JList studentList) {
         ArrayList<String> studentLogins = new ArrayList<String>();
         int size = studentList.getModel().getSize();
+        if(size == 0) {
+            return;
+        }
         for (int i = 0; i < size; i++) {
             studentLogins.add((String) studentList.getModel().getElementAt(i));
         }
@@ -184,24 +190,27 @@ public class GradingCommander {
      * @throws IOException
      */
     public static void openStudentProject(String project, String login) {
-
         //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
+        String path = ProjectManager.getStudentSpecificDirectory(ProjectManager.getProjectFromString(project), login) + project + "/";
+        final String cmd = "kate " + path + "*.java";
 
-        Runtime r = Runtime.getRuntime();
-        File wd = new File("/home/");
-        Process proc = null;
-        try {
-            proc = Runtime.getRuntime().exec("/bin/bash", null, wd);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Executors.newSingleThreadExecutor().execute(new Runnable()
+        {
+            public void run()
+            {
+                Vector<String> cmds = new Vector<String>();
+                cmds.add(cmd);
+                BashConsole.write(cmds);
+            }
+        });
+
+        /*
+        try{
+            Runtime.getRuntime().exec(cmd);
+        } catch (IOException ex) {
+            Logger.getLogger(GradingCommander.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (proc != null) {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
-            String cdCommand = new String("cd " + login + "/course/cs015/" + project);
-            out.println(cdCommand);
-            out.println("kate *.java &");
-            out.println("exit");
-        }
+         */
     }
 
     //TODO!

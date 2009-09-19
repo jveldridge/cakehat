@@ -254,7 +254,7 @@
               <Image iconType="3" name="/GradingCommander/icons/open.png"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="&quot;&lt;html&gt;&lt;b&gt;Open Files&lt;/b&gt;&lt;br&gt;Open files in Kate editor&lt;/html&gt;&quot;" type="code"/>
+              <Connection code="&quot;&lt;html&gt;&lt;b&gt;Open Student Code&lt;/b&gt;&lt;br&gt;Open the code in Kate editor&lt;/html&gt;&quot;" type="code"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>

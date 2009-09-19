@@ -11,6 +11,9 @@ import cs015.tasupport.utils.Utils;
 import cs015Database.*;
 import emailer.EmailGUI;
 import java.awt.Font;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.Vector;
 import javax.imageio.ImageIO;
@@ -41,6 +44,12 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        this.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e) {
+                
+            }            
+        });
     }
 
     private void updateFormComponents() {
@@ -144,7 +153,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         selectedStudentLabel.setText("Selected Student Commands");
 
         openButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GradingCommander/icons/open.png"))); // NOI18N
-        openButton.setText("<html><b>Open Files</b><br>Open files in Kate editor</html>");
+        openButton.setText("<html><b>Open Student Code</b><br>Open the code in Kate editor</html>");
         openButton.setFocusable(false);
         openButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         openButton.addActionListener(new java.awt.event.ActionListener() {
@@ -440,10 +449,9 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         }
 
     //and untar and compile all student codes for the newly selected current assignment
-//        if (assignmentList.getModel().getSize() > 1) {
-//            GradingCommander.untar(assignmentList, studentList);
-//            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
-//        }
+      //  if (assignmentList.getModel().getSize() > 1) {
+            GradingCommander.untar(assignmentList, studentList);
+       // }
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed

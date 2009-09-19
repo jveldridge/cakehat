@@ -140,7 +140,7 @@ public class ProjectManager {
         Utils.execute(compileDir, prj.getName() + ".App");
     }
 
-    private static String getStudentSpecificDirectory(Project prj, String studentLogin) {
+    public static String getStudentSpecificDirectory(Project prj, String studentLogin) {
         return getCodeDirectory(prj) + studentLogin + "/";
     }
 
