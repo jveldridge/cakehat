@@ -31,10 +31,11 @@ public class ChartDataPanel extends javax.swing.JPanel {
     public void updateChartData(String asgnName) {
         try {
             ISqlJetCursor cursor = DatabaseInterops.getAllData("grades_" + asgnName);
+            double d = DatabaseInterops.getAssignmentTotal(asgnName);
             List<Double> l = new ArrayList<Double>();
             while (!cursor.eof()) {
                 double earned = (cursor.getString("Earned").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("Earned"));
-                l.add(earned / Double.parseDouble(cursor.getString("Total")) * 100);
+                l.add(earned / d * 100);
                 cursor.next();
             }
             
