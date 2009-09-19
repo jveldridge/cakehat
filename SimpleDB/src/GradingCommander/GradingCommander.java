@@ -150,7 +150,6 @@ public class GradingCommander {
      */
     public static void compileStudentProject(String project, String login) {
         ProjectManager.compile(ProjectManager.getProjectFromString(project), login);
-
     }
 
     /**
