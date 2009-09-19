@@ -32,8 +32,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         //untar and all students' code for the initially selected project
         if (studentList.getModel().getSize() > 1) {
-//            GradingCommander.untar(assignmentList, studentList);
-//            GradingCommander.compileAll((String)assignmentList.getSelectedValue(), studentList);
+            GradingCommander.untar(assignmentList, studentList);
+            GradingCommander.compileAll((String) assignmentList.getSelectedValue(), studentList);
         }
 
         try {
@@ -44,26 +44,11 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }
 
     private void updateFormComponents() {
-        try {
-            ISqlJetCursor cursor = DatabaseInterops.getAllData("assignments");
-            String[] columnNames = DatabaseInterops.getColumnNames("assignments");
-            try {
-                Vector v = new Vector<Object>();
-                while (!cursor.eof()) {
-                    v.add(cursor.getString(columnNames[0]));
-                    cursor.next();
-                }
-                assignmentList.setListData(v);
-                if (assignmentList.getModel().getSize() > 0) {
-                    assignmentList.setSelectedIndex(0);
-                }
-            } finally {
-                cursor.close();
-            }
-            populateStudentList();
-        } catch (Exception e) {
-            e.printStackTrace();
+        assignmentList.setListData(DatabaseInterops.getProjectNames());
+        if (assignmentList.getModel().getSize() > 0) {
+            assignmentList.setSelectedIndex(0);
         }
+        populateStudentList();
 
         /* check whether runTesterButton should be enabled (if the assignment selected on startup has
          * a tester to run) or not
@@ -462,25 +447,15 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
-        new Grader((String)assignmentList.getSelectedValue(), Utils.getUserLogin(), (String)studentList.getSelectedValue());
+        new Grader((String) assignmentList.getSelectedValue(), Utils.getUserLogin(), (String) studentList.getSelectedValue());
 }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-        // TODO: Actually submit the stuff.
-        //Notify teh studentz?
-        ListModel m = studentList.getModel();
-        String bccStringBuilder = "";
-        for (int i = 0; i < m.getSize(); i++) {
-            bccStringBuilder += ((String) m.getElementAt(i)).trim() + "@cs.brown.edu,";
-        }
-        EmailGUI eg = new EmailGUI(new String[0], new String[0], bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
-        eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
-        try {
-            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        eg.setVisible(true);
+        boolean submit, print, notify;
+        SubmitDialog sd = new SubmitDialog();
+    //GradingCommander.submitXMLFiles();
+    //GradingCommander.printGRDFiles();
+    //GradingCommander.notifyStudents(assignmentList, studentList);
     }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed

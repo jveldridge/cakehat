@@ -1,9 +1,8 @@
 package GradingCommander;
 
-import cs015.tasupport.grading.config.Assignment;
-import cs015.tasupport.grading.config.ConfigurationManager;
-import cs015.tasupport.grading.projects.Project;
 import cs015.tasupport.grading.projects.ProjectManager;
+import cs015.tasupport.utils.Utils;
+import emailer.EmailGUI;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,10 +12,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Vector;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 
 /* GradingCommander.java
  *
@@ -30,14 +31,14 @@ public class GradingCommander {
      * This method runs a demo of the current project using the existing
      * 'cs015_runDemo' script
      *
-     * Fully functional (I think) as of 9/13/09
+     * FUNCTIONAL 9/18/09
      *
      * @param project
      */
     public static void demoProject(String project) {
         Runtime r = Runtime.getRuntime();
         try {
-            r.exec("cs015_runDemo " + project);
+            r.exec("cs015_runGradeDemo " + project);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -169,10 +170,10 @@ public class GradingCommander {
      */
     public static boolean hasTester(String asgn) {
         // TODO: change to get from some kind of config file
-        if (asgn.equals("Clock") || asgn.equals("LiteBrite") || asgn.equals("TASafeHouse")) {
-            return false;
+        if (asgn.equals("Cartoon") || asgn.equals("Swarm") || asgn.equals("Tetris") || asgn.equals("PizzaDex")) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -237,5 +238,29 @@ public class GradingCommander {
                 e.printStackTrace();
             }
         }
+    }
+
+    static void notifyStudents(JList assignmentList, JList studentList) {
+        ListModel m = studentList.getModel();
+        String bccStringBuilder = "";
+        for (int i = 0; i < m.getSize(); i++) {
+            bccStringBuilder += ((String) m.getElementAt(i)).trim() + "@cs.brown.edu,";
+        }
+        EmailGUI eg = new EmailGUI(new String[0], new String[0], bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
+        eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+//        try {
+//            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        eg.setVisible(true);
+    }
+
+    static void printGRDFiles() {
+        System.out.println("called printGRDFiles");
+    }
+
+    static void submitXMLFiles() {
+        System.out.println("called submitXMLFiles");
     }
 }
