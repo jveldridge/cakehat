@@ -521,19 +521,6 @@ public class DatabaseInterops {
                 sqlCreateTableString1 += ", " + a.Name + "Design text";
             }
         }
-//        for (Assignment a : ConfigurationManager.getAssignments()) {
-//            if (a.Points.DQ != 0) {
-//                addDatum("assignments", a.Name + "Design", "DESIGN", "", "", "", "" + a.Points.DQ);
-//                String sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
-//                for (String ss : GRADE_RUBRIC_FIELDS) {
-//                    sqlCreateTableString2 += ", " + ss + " text";
-//                }
-//                sqlCreateTableString2 += ")";
-//                db.createTable(sqlCreateTableString2);
-//                db.createIndex("create index stud_login_" + a.Name + "Design" + " on grades_" + a.Name + "Design (studLogins)");
-//                sqlCreateTableString1 += ", " + a.Name + "Design text";
-//            }
-//        }
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
         db.createIndex("create index ta_login_dist on assignment_dist (taLogin)");
@@ -572,7 +559,6 @@ public class DatabaseInterops {
      */
     public static void close() throws SqlJetException {
         db.close();
-        db =
-                null;
+        db = null;
     }
 }

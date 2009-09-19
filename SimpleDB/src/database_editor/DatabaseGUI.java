@@ -45,6 +45,10 @@ public class DatabaseGUI extends javax.swing.JFrame {
         gridView.refresh(tableName);
     }
 
+    public GridView getGrid(){
+        return gridView;
+    }
+
     public void updateStatus(String message) {
         statusLabel.setText(message);
         Timer t = new Timer();

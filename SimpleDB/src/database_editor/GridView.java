@@ -8,6 +8,9 @@ import java.io.File;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -96,6 +99,20 @@ public class GridView extends cs015Database.Table {
             protected void onChange(File file) {
                 removeDatabaseWatch();
                 if (_tableName != null) {
+//                    JOptionPane pane = new JOptionPane(
+//                            "To be or not to be ?\nThat is the question.");
+//                    Object[] options = new String[]{"To be", "Not to be"};
+//                    pane.setOptions(options);
+//                    JDialog dialog = pane.createDialog(new JFrame(), "Dilaog");
+//                    dialog.setVisible(true);
+//                    Object obj = pane.getValue();
+//                    int result = -1;
+//                    for (int k = 0; k < options.length; k++) {
+//                        if (options[k].equals(obj)) {
+//                            result = k;
+//                        }
+//                    }
+//                    System.out.println("User's choice: " + result);
                     refresh(_tableName);
                 }
                 initDatabaseWatch();
@@ -192,7 +209,7 @@ public class GridView extends cs015Database.Table {
             }
             m.addColumn("rowID"); //Hidden rowId information
             _idCol = this.getColumnModel().getColumn(columnNames.length);
-
+            this.getColumnModel().removeColumn(_idCol);
             ISqlJetCursor cursor = DatabaseInterops.getAllData(tableName);
             try {
                 while (!cursor.eof()) {
@@ -208,7 +225,7 @@ public class GridView extends cs015Database.Table {
             } finally {
                 cursor.close();
             }
-            this.getColumnModel().removeColumn(_idCol);
+
         } catch (SqlJetException e) {
             e.printStackTrace();
         }

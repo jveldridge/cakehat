@@ -32,6 +32,7 @@ import nl.captcha.Captcha;
 public class StartupDialog extends javax.swing.JFrame {
 
     private Captcha _captcha;
+    private DatabaseGUI _dbGui = new DatabaseGUI(); //This MUST be persisent.
 
     /** Creates new form StartupDialog */
     public StartupDialog() {
@@ -43,22 +44,14 @@ public class StartupDialog extends javax.swing.JFrame {
         initComponents();
 
         this.setLocationRelativeTo(null);
+    }
 
-        try {
+    public void stopDBRefresh() {
+        _dbGui.getGrid().removeDatabaseWatch();
+    }
 
-            FileInputStream fstream = new FileInputStream(getClass().getResource("/cs015Database/config.txt").getFile());
-
-            DataInputStream in = new DataInputStream(fstream);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String strLine;
-            while ((strLine = br.readLine()) != null) {
-                if (!strLine.startsWith("//")) {
-                }
-            }
-            in.close();
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        }
+    public void startDBRefresh() {
+        _dbGui.getGrid().initDatabaseWatch();
     }
 
     /** This method is called from within the constructor to
@@ -337,8 +330,7 @@ public class StartupDialog extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void databaseEditorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseEditorButtonActionPerformed
-        DatabaseGUI dg = new DatabaseGUI();
-        dg.setVisible(true);
+        _dbGui.setVisible(true);
     }//GEN-LAST:event_databaseEditorButtonActionPerformed
 
     private void histogramButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_histogramButtonActionPerformed
@@ -358,8 +350,6 @@ public class StartupDialog extends javax.swing.JFrame {
         imagePanel1.setImage(_captcha.getImage());
         warningDialog.setLocationRelativeTo(null);
         warningDialog.setVisible(true);
-
-
 }//GEN-LAST:event_regenerateDatabaseActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -369,7 +359,9 @@ public class StartupDialog extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if (_captcha.isCorrect(jTextField1.getText())) {
             try {
+                stopDBRefresh();
                 DatabaseInterops.regenerateDatabase();
+                startDBRefresh();
             } catch (Exception e) {
                 e.printStackTrace();
             }

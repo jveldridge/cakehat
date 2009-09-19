@@ -13,6 +13,7 @@ package assignment_distributor;
 import cs015.tasupport.grading.config.ConfigurationManager;
 import cs015Database.*;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +53,6 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         }
         fillTable();
         this.setLocationRelativeTo(null);
-
     }
 
     private void fillTable() {
@@ -167,11 +167,11 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
+
         String[] studNames = DatabaseInterops.getStudentNames();
         List<String> shuffleList = Arrays.asList(studNames);
         Collections.shuffle(shuffleList);
         studNames = shuffleList.toArray(new String[0]);
-        System.out.println(Arrays.toString(ConfigurationManager.getGraderLogins()));
         //DatabaseInterops.getTANames();//
         String[] taNames = ConfigurationManager.getGraderLogins();
         DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
@@ -192,7 +192,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                     if (blacklistedStuds.contains(ad.peekLast())) {
                         ad.addFirst(ad.pollLast());
                         loopCount++;
-                        if(loopCount == ad.size()) {
+                        if (loopCount == ad.size()) {
                             index++;
                         }
                         continue;
@@ -219,7 +219,10 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                     break;
                 }
             }
-            for (int i = 0; i < tasWithBlacklist.length; i++) {
+//            Class c = Class.forName("database_editor.GridView");
+//            Object t = c.newInstance();
+//            c.getMethod("removeDatabaseWatch").invoke(t);
+            for (int i = 0; i < taNames.length; i++) {
                 long rowid = DatabaseInterops.getRowID("assignment_dist", "ta_login_dist", taNames[i]);
                 Object[] o = DatabaseInterops.getDataRow("assignment_dist", rowid);
                 o[colIndex] = studentsToGrade[i];
