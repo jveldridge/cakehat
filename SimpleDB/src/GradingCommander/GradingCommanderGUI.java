@@ -454,7 +454,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         SubmitDialog sd = new SubmitDialog();
 
         if (sd.submitChecked())
-            GradingCommander.submitXMLFiles();
+            GradingCommander.submitXMLFiles((String)assignmentList.getSelectedValue());
         if (sd.notifyChecked())
             GradingCommander.notifyStudents(assignmentList, studentList);
         if (sd.printChecked())

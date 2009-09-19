@@ -262,15 +262,23 @@ public class GradingCommander {
         Runtime r = Runtime.getRuntime();
         String printCommand = "lpr -P" + printer + " /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.grd";
         try {
-            System.out.println("printCommand is " + printCommand);
             r.exec(printCommand);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static void submitXMLFiles() {
+    public static void submitXMLFiles(String assignment) {
         System.out.println("called submitXMLFiles");
+        Runtime r = Runtime.getRuntime();
+        String copyCommand = "cp /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.xml /course/cs015/admin/grade/current/" + assignment + "/" + Utils.getUserLogin() + "/";
+        try {
+            //TODO: add error-checking
+            System.out.println("copyCommand is" + copyCommand);
+            r.exec(copyCommand);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static String getPrinter(String printer) {
