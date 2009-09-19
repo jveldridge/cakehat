@@ -1,5 +1,6 @@
 package cs015.tasupport.grading.config;
 
+import cs015.tasupport.utils.Utils;
 import java.io.File;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -223,7 +224,7 @@ public class ConfigurationManager
 			}
 		}
 		
-		return getCalendar(year, month, day, time);
+		return Utils.getCalendar(year, month, day, time);
 	}
 	
 	private static void processLogins(NodeList graderNodes, Configuration config, String tag, Vector<String> logins)
@@ -277,44 +278,5 @@ public class ConfigurationManager
 		return rubricNode;
 	}
 	
-	private static Calendar getCalendar(String year, String month, String day, String time)
-	{
-		Calendar cal = new GregorianCalendar();
-		
-		//Try to convert all of the entries
-		int yearI = 0, monthI = 0, dayI = 0, hourI = 0, minuteI = 0, secondI = 0; 
-		try
-		{
-			if(year != null && year.length() != 0)
-			{
-				yearI = Integer.valueOf(year);
-			}
-			if(month != null && month.length() != 0)
-			{
-				monthI = Integer.valueOf(month);
-			}
-			if(day != null && day.length() != 0)
-			{
-				dayI = Integer.valueOf(day);
-			}
-			
-			if(time != null)
-			{
-				String[] timeParts = time.split(":");
-				if(timeParts.length == 3)
-				{
-					hourI = Integer.valueOf(timeParts[0]);
-					minuteI = Integer.valueOf(timeParts[1]);
-					secondI = Integer.valueOf(timeParts[2]);
-				}
-			}
-		}
-		catch(Exception e) { }
-		
-		//Set fields
-		monthI--; //Because months are zero indexed
-		cal.set(yearI, monthI, dayI, hourI, minuteI, secondI);
-		
-		return cal;
-	}
+
 }

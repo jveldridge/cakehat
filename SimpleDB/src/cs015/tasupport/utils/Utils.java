@@ -230,25 +230,136 @@ public class Utils {
         return logins;
     }
 
-    //Test
-    public static void main(String[] args) {
+    //For testing purposes only
+    public static void main(String[] args)
+    {
     }
 
-    public static String getCalendarAsString(Calendar entry) {
-        if (entry == null) {
+    /**
+     * Turns a calendar into a String. Returned in the format as
+     * YEAR-MONTH-DAY HOUR:MINUTE:SECOND
+     *
+     * @param entry
+     * @return date and time formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND
+     */
+    public static String getCalendarAsString(Calendar entry)
+    {
+        if (entry == null)
+        {
             return "";
         }
 
-        String date = entry.get(Calendar.YEAR) + "-" + (entry.get(Calendar.MONTH) + 1) + //Add to month as it is zero indexed
-                "-" + entry.get(Calendar.DAY_OF_MONTH);
-        String time = entry.get(Calendar.HOUR_OF_DAY) + ":" + entry.get(Calendar.MINUTE) +
-                ":" + entry.get(Calendar.SECOND);
+        String date = entry.get(Calendar.YEAR) +
+                      //Add to month as it is zero indexed
+                      "-" + ensureLeadingZero((entry.get(Calendar.MONTH) + 1)) +
+                      "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
+        String time = ensureLeadingZero(entry.get(Calendar.HOUR_OF_DAY)) +
+                      ":" + ensureLeadingZero(entry.get(Calendar.MINUTE)) +
+                      ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
 
         return date + " " + time;
     }
 
     /**
-     * Returns an object that represents the last modified date and time
+     * Helper method for getCalendarAsString(...) to ensure that a 1 digit
+     * number is returned with a leading zero when turned into a String.
+     *
+     * @param number
+     * @return
+     */
+    private static String ensureLeadingZero(int number)
+    {
+        String numberS = number + "";
+
+        if(numberS.length() != 2)
+        {
+            return  "0" + numberS;
+        }
+
+        return numberS;
+    }
+
+    /**
+     * Converts a string formatted as either YEAR-MONTH-DAY HOUR:MINUTE:SECOND
+     * or YEAR-MONTH-DAY into a Calendar.
+     *
+     * @param timestamp formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND or YEAR-MONTH-DAY
+     * @return a calendar
+     */
+    public static Calendar getCalendarFromString(String timestamp)
+    {
+        String year, month, day, time = "";
+
+        //Try to split date from time
+        String[] parts = timestamp.split(" ");
+
+        //Date parts
+        String[] dateParts = parts[0].split("-");
+        year = dateParts[0];
+        month = dateParts[1];
+        day = dateParts[2];
+
+        //If it has a time part
+        if(parts.length == 2)
+        {
+            time = parts[1];
+        }
+
+        return getCalendar(year, month, day, time);
+    }
+
+    /**
+     * Returns a Calendar from the Strings passed in.
+     *
+     * @param year
+     * @param month
+     * @param day
+     * @param time formated as HOUR:MINUTE:SECOND
+     * @return
+     */
+    public static Calendar getCalendar(String year, String month, String day, String time)
+	{
+		Calendar cal = new GregorianCalendar();
+
+		//Try to convert all of the entries
+		int yearI = 0, monthI = 0, dayI = 0, hourI = 0, minuteI = 0, secondI = 0;
+		try
+		{
+			if(year != null && year.length() != 0)
+			{
+				yearI = Integer.valueOf(year);
+			}
+			if(month != null && month.length() != 0)
+			{
+				monthI = Integer.valueOf(month);
+			}
+			if(day != null && day.length() != 0)
+			{
+				dayI = Integer.valueOf(day);
+			}
+
+			if(time != null)
+			{
+				String[] timeParts = time.split(":");
+				if(timeParts.length == 3)
+				{
+					hourI = Integer.valueOf(timeParts[0]);
+					minuteI = Integer.valueOf(timeParts[1]);
+					secondI = Integer.valueOf(timeParts[2]);
+				}
+			}
+		}
+		catch(Exception e) { }
+
+		//Set fields
+		monthI--; //Because months are zero indexed
+		cal.set(yearI, monthI, dayI, hourI, minuteI, secondI);
+
+		return cal;
+	}
+    
+    /**
+     * Returns a Calendar that represents the last modified date and time
      * of the file specified by the file path.
      *
      * @param filePath
@@ -259,7 +370,7 @@ public class Utils {
     }
 
     /**
-     * Returns an object that represents the last modified date and time
+     * Returns a Calendar that represents the last modified date and time
      * of the file.
      *
      * @param file
@@ -357,6 +468,48 @@ public class Utils {
 
         return true;
     }
+
+    public static String doubleToString(double value)
+	{
+		String text = Double.toString(value);
+		String prettyText = "";
+
+		char[] chars = text.toCharArray();
+		int dotIndex = text.indexOf(".");
+
+		int truncateLocation = dotIndex+2;
+		int end = chars.length-1;
+
+		if(truncateLocation < end)
+		{
+			int roundValue = Integer.valueOf(Character.toString(chars[truncateLocation+1]));
+			if (roundValue >= 5)
+			{
+				int oldInt = Integer.valueOf(Character.toString(chars[truncateLocation]));
+				int newInt = oldInt + 1;
+				chars[truncateLocation] = Integer.toString(newInt).charAt(0);
+			}
+		}
+
+		end = Math.min(end, truncateLocation);
+
+		for( ; end>=0; end--) {
+			if (chars[end] == '.') {
+				end--;
+				break;
+			}
+			if (chars[end] != '0') {
+				break;
+			}
+		}
+		for(int i=0; i<=end; i++) {
+			prettyText += chars[i];
+		}
+		//split at the decimal if it has a decimal
+		//then remove trailing zeros after the decimal
+
+		return prettyText;
+	}
 
     /**
      * Returns the current java class path.

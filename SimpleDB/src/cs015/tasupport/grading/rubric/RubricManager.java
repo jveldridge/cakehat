@@ -612,15 +612,15 @@ public class RubricManager
 			}
 		}
 		
-		String stringScore = doubleToString(studentScore);
-		String stringOutOf = doubleToString(availScore);
+		String stringScore = Utils.doubleToString(studentScore);
+		String stringOutOf = Utils.doubleToString(availScore);
 		printEnd(stringScore, stringOutOf, output);
 		printDivider(output);
 		
 		studentScore += writeStatusPoints(TimeStatus.getStatus(rubric.Status), availScore, output);
 		studentScore += writeExtraCredit(rubric, output);
 		
-		if (TimeStatus.getStatus(rubric.Status).getPrettyPrintName() == "NC Late")
+		if (TimeStatus.getStatus(rubric.Status).getPrettyPrintName().equals("NC Late"))
 		{
 			studentScore = 0.0;
 		}
@@ -635,7 +635,7 @@ public class RubricManager
 	private static void printTotal(double studentScore, double availScore, BufferedWriter output)
 	{
 		printWithinBounds(0, SECTION_TEXT_WIDTH, "Final Grade", output);
-		printEnd(doubleToString(studentScore), doubleToString(availScore), output);
+		printEnd(Utils.doubleToString(studentScore), Utils.doubleToString(availScore), output);
 		printWithinBounds(0,SECTION_TEXT_WIDTH, "", output);
 		printEnd(null, null, output);
 		writeLine("", output);
@@ -799,48 +799,6 @@ public class RubricManager
 		printDivider(output);
 	}
 	
-	public static String doubleToString(double value)
-	{
-		String text = Double.toString(value);
-		String prettyText = "";
-		
-		char[] chars = text.toCharArray();
-		int dotIndex = text.indexOf(".");
-		
-		int truncateLocation = dotIndex+2;
-		int end = chars.length-1;
-		
-		if(truncateLocation < end)
-		{
-			int roundValue = Integer.valueOf(Character.toString(chars[truncateLocation+1]));
-			if (roundValue >= 5)
-			{
-				int oldInt = Integer.valueOf(Character.toString(chars[truncateLocation]));
-				int newInt = oldInt + 1;
-				chars[truncateLocation] = Integer.toString(newInt).charAt(0);
-			}
-		}
-		
-		end = Math.min(end, truncateLocation);
-		
-		for( ; end>=0; end--) {
-			if (chars[end] == '.') {
-				end--;
-				break;
-			}
-			if (chars[end] != '0') {
-				break;
-			}
-		}
-		for(int i=0; i<=end; i++) {
-			prettyText += chars[i];
-		}
-		//split at the decimal if it has a decimal
-		//then remove trailing zeros after the decimal
-		
-		return prettyText;
-	}
-	
 	private static String formatScore(String score) 
 	{
 		int len = score.length();
@@ -872,29 +830,29 @@ public class RubricManager
 	{
 		if(score > 0) 
 		{
-			printEnd("+" + doubleToString(score), "+" + doubleToString(outOf), output);
+			printEnd("+" + Utils.doubleToString(score), "+" + Utils.doubleToString(outOf), output);
 		}
 		else if(score < 0) 
 		{
-			printEnd(doubleToString(score), doubleToString(outOf), output);
+			printEnd(Utils.doubleToString(score), Utils.doubleToString(outOf), output);
 		}
 		else 
 		{
 			if (outOf<0) 
 			{
-				printEnd(doubleToString(score), doubleToString(outOf), output);
+				printEnd(Utils.doubleToString(score), Utils.doubleToString(outOf), output);
 			}
 			else 
 			{
-				printEnd(doubleToString(score), "+" + doubleToString(outOf), output);
+				printEnd(Utils.doubleToString(score), "+" + Utils.doubleToString(outOf), output);
 			}
 		}
 	}
 	
 	private static void printSectionTotal(double score, double outOf, BufferedWriter output) 
 	{
-		String stringScore = doubleToString(score);
-		String stringOutOf = doubleToString(outOf);
+		String stringScore = Utils.doubleToString(score);
+		String stringOutOf = Utils.doubleToString(outOf);
 		printSpaces(SECTION_TEXT_WIDTH, output);
 		printEnd(null, null, output);
 		writeLine("", output);
