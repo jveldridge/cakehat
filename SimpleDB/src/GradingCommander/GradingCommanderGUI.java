@@ -451,11 +451,14 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-        boolean submit, print, notify;
         SubmitDialog sd = new SubmitDialog();
-    //GradingCommander.submitXMLFiles();
-    //GradingCommander.printGRDFiles();
-    //GradingCommander.notifyStudents(assignmentList, studentList);
+
+        if (sd.submitChecked())
+            GradingCommander.submitXMLFiles();
+        if (sd.notifyChecked())
+            GradingCommander.notifyStudents(assignmentList, studentList);
+        if (sd.printChecked())
+            GradingCommander.printGRDFiles((String)assignmentList.getSelectedValue());
     }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed

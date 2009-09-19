@@ -13,34 +13,33 @@ import javax.swing.*;
  */
 public class SubmitDialog {
 
+    JCheckBox _submitXMLcb, _printGRDcb, _notifyStudentscb;
+
     public SubmitDialog() {
-        JCheckBox submitXMLcb = new JCheckBox("Submit XML Files");
-        JCheckBox printGRDcb = new JCheckBox("Print GRD Files");
-        JCheckBox notifyStudentscb = new JCheckBox("Notify Students");
+        _submitXMLcb = new JCheckBox("Submit XML Files");
+        _printGRDcb = new JCheckBox("Print GRD Files");
+        _notifyStudentscb = new JCheckBox("Notify Students");
+        
+        _submitXMLcb.setSelected(true);
+        _printGRDcb.setSelected(true);
+        _notifyStudentscb.setSelected(true);
+
         JPanel panel = new JPanel();
-        panel.add(submitXMLcb);
-        panel.add(printGRDcb);
-        panel.add(notifyStudentscb);
+        panel.add(_submitXMLcb);
+        panel.add(_printGRDcb);
+        panel.add(_notifyStudentscb);
         JOptionPane.showMessageDialog(null, panel);
     }
 
-    //public void
-
-  public static void main(String[] args)
-  {
-    JCheckBox cb = new JCheckBox("Check Box");
-    JRadioButton rb = new JRadioButton("Radio Button");
-    JTextField textfield = new JTextField(10);
-    JPanel panel = new JPanel();
-    JPanel panel2 = new JPanel();
-    panel2.add(textfield);
-    panel2.add(cb);
-    panel2.add(rb);
-    panel.add(panel2);
-    JOptionPane.showMessageDialog(null, panel);
-
-    System.out.println("Check Box checked: " + cb.isSelected());
-    System.out.println("Radio Button checked: " + rb.isSelected());
-    System.out.println("Text Field contains: " + textfield.getText());
-  }
+    public boolean submitChecked() {
+        return _submitXMLcb.isSelected();
+    }
+    
+    public boolean printChecked() {
+        return _printGRDcb.isSelected();
+    }
+    
+    public boolean notifyChecked() {
+        return _notifyStudentscb.isSelected();
+    }
 }

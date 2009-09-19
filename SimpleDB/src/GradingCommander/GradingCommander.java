@@ -240,7 +240,7 @@ public class GradingCommander {
         }
     }
 
-    static void notifyStudents(JList assignmentList, JList studentList) {
+    public static void notifyStudents(JList assignmentList, JList studentList) {
         ListModel m = studentList.getModel();
         String bccStringBuilder = "";
         for (int i = 0; i < m.getSize(); i++) {
@@ -256,11 +256,29 @@ public class GradingCommander {
         eg.setVisible(true);
     }
 
-    static void printGRDFiles() {
+    public static void printGRDFiles(String assignment) {
         System.out.println("called printGRDFiles");
+        String printer = GradingCommander.getPrinter(null);
+        Runtime r = Runtime.getRuntime();
+        String printCommand = "lpr -P" + printer + " /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.grd";
+        try {
+            System.out.println("printCommand is " + printCommand);
+            r.exec(printCommand);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    static void submitXMLFiles() {
+    public static void submitXMLFiles() {
         System.out.println("called submitXMLFiles");
+    }
+
+    private static String getPrinter(String printer) {
+        if (printer != null)
+            return printer;
+        Object[] printerChoices = {"bw3", "bw4", "bw5"};
+        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
+        printer = (String) JOptionPane.showInputDialog(new JFrame(), "Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
+        return printer;
     }
 }
