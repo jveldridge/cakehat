@@ -25,4 +25,6 @@ public class Constants {
     // /course/cs015/handin/<assignment>/<year>/<studentlogin>.xml
     public static final String HANDIN_DIR = COURSE_DIR + "handin/";
     public static final String TEST_ACCOUNT = "cs015000";
+
+    public static final String GRADES_TA = "jeldridg@cs.brown.edu";
 }

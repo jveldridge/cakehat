@@ -473,10 +473,15 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         if (sd.submitChecked())
             GradingCommander.submitXMLFiles((String)assignmentList.getSelectedValue());
-        if (sd.notifyChecked())
-            GradingCommander.notifyStudents(assignmentList, studentList);
-        if (sd.printChecked())
+        if (sd.printChecked()) {
             GradingCommander.printGRDFiles((String)assignmentList.getSelectedValue());
+            if (sd.notifyChecked()) {
+                GradingCommander.notifyStudents(assignmentList, studentList);
+            }
+        }
+        else if (sd.notifyChecked()) {
+                GradingCommander.notifyStudents(assignmentList, studentList);
+            }
     }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed

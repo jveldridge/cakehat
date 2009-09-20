@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
@@ -175,6 +176,8 @@ public class GradingCommander {
      * @param project - the project name that should be opened
      * @param login - the login of the student whose project should be opened
      * @throws IOException
+     *
+     * STABLE 9/19/09
      */
     public static void openStudentProject(String project, String login) {
         //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
@@ -190,18 +193,10 @@ public class GradingCommander {
                 BashConsole.write(cmds);
             }
         });
-
-        /*
-        try{
-            Runtime.getRuntime().exec(cmd);
-        } catch (IOException ex) {
-            Logger.getLogger(GradingCommander.class.getName()).log(Level.SEVERE, null, ex);
-        }
-         */
     }
 
     public static void runTester(String asgn, String student) {
-        String testCommand;
+        final String testCommand;
         if (asgn.equals("PizzaDex")) {
             testCommand = "cs015_pizzaTest " + student;
         }
@@ -209,13 +204,19 @@ public class GradingCommander {
             testCommand = "cs015_gfxTest " + student;
         }
 
-        Runtime r = Runtime.getRuntime();
-        try {
-            r.exec(testCommand);
-        }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        Executors.newSingleThreadExecutor().execute(new Runnable()
+        {
+            public void run()
+            {
+                Vector<String> cmds = new Vector<String>();
+                cmds.add(testCommand);
+                Collection<String> output = BashConsole.write(cmds);
+                for (String s : output) {
+                    System.out.println(s);
+                }
+            }
+        });
+
     }
 
     public static void notifyStudents(JList assignmentList, JList studentList) {
@@ -226,6 +227,7 @@ public class GradingCommander {
         }
         EmailGUI eg = new EmailGUI(new String[0], new String[0], bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
         eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        eg.setTo(Constants.GRADES_TA); //need to notify grades TA when grading is complete
         //TODO: fix this (check with Paul)
 //        try {
 //            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
@@ -236,10 +238,9 @@ public class GradingCommander {
     }
 
     public static void printGRDFiles(String assignment) {
-        System.out.println("called printGRDFiles");
         String printer = GradingCommander.getPrinter("Select printer to print .GRD files");
         Runtime r = Runtime.getRuntime();
-        String printCommand = "lpr -P" + printer + " /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.grd";
+        String printCommand = "lpr -P" + printer + ProjectManager.getUserGradingDirectory() + assignment + "/*.grd";
         try {
             r.exec(printCommand);
         } catch (IOException ex) {
@@ -248,12 +249,10 @@ public class GradingCommander {
     }
 
     public static void submitXMLFiles(String assignment) {
-        System.out.println("called submitXMLFiles");
         Runtime r = Runtime.getRuntime();
         String copyCommand = "cp " + ProjectManager.getUserGradingDirectory() + assignment + "/*.xml " + Constants.GRADER_SUBMIT_PATH + assignment + "/" + Utils.getUserLogin() + "/";
         try {
             //TODO: add error-checking; needs to make directories when they don't exist
-            System.out.println("copyCommand is" + copyCommand);
             r.exec(copyCommand);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -266,6 +265,11 @@ public class GradingCommander {
         }
     }
 
+    /**
+     * Print dialogue for selecting printer.  Message passed in will be displayed as instructions to the user
+     * @param message
+     * @return
+     */
     private static String getPrinter(String message) {
         Object[] printerChoices = {"bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
