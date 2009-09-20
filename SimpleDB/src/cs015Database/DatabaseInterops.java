@@ -7,11 +7,8 @@ package cs015Database;
 import cs015.tasupport.grading.config.Assignment;
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
-import cs015.tasupport.grading.projects.Project;
 import cs015.tasupport.utils.Utils;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Set;
@@ -28,12 +25,10 @@ public class DatabaseInterops {
 
     public static final String FILE_NAME = "cs015Database.db";
     public static final String[] ASSIGNMENT_NAMES = {"Objects", "ClockDesign", "Clock", "LiteBriteDesign", "LiteBrite", "References", "TASafeHouse", "CartoonDesign", "Cartoon", "SwarmDesign", "Swarm", "TetrisDesign", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
-    public static final String[] GRADE_RUBRIC_FIELDS = {"Earned"};
+    public static final String[] GRADE_RUBRIC_FIELDS = {"DQPoints", "ProjectPoints"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
     public static final String STUD_TABLE = "studlist";
     private static SqlJetDb db;
-
-  
 
     /**
      * Open the database.
@@ -61,8 +56,15 @@ public class DatabaseInterops {
     }
 
     public static AssignmentType getAssignmentType(String assignName) {
-        //getData("assignments", "assignmentNameIndex", assignName)
-        return AssignmentType.getInstance("Project");
+        try {
+            ISqlJetCursor cursor = getData("assignments", "assignmentNameIndex", assignName);
+            if (cursor.getString("assignmentNames").compareToIgnoreCase(assignName) == 0) {
+                return AssignmentType.getInstance((String) cursor.getString("type"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -129,7 +131,6 @@ public class DatabaseInterops {
             return new String[0];
         }
     }
-    
 
     /**
      * Return a string array of ALL assignment names.
@@ -162,6 +163,25 @@ public class DatabaseInterops {
     }
 
     /**
+     * Get the maximum score for the given assignment name.
+     * @param assignmentName
+     * @return
+     */
+    public static int getAssignmentDQ(final String assignmentName) {
+        try {
+            ISqlJetCursor cursor = getData("assignments", "assignmentNameIndex", assignmentName);
+            if (cursor.getString("assignmentNames").compareToIgnoreCase(assignmentName) == 0) {
+                if (!cursor.getString("design").isEmpty()) {
+                    return Integer.parseInt(cursor.getString("design"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
      *
      * @param assignmentName
      * @param studLogin
@@ -171,7 +191,7 @@ public class DatabaseInterops {
         try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
             if (cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
-                return cursor.getString("Earned");
+                return cursor.getString("ProjectPoints");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -507,7 +527,7 @@ public class DatabaseInterops {
             db.dropIndex(s);
         }
 
-        db.createTable("create table assignments (assignmentNames text not null, type text, earlydate text, ontimedate text, latedate text, total text)");
+        db.createTable("create table assignments (assignmentNames text not null, type text, earlydate text, ontimedate text, latedate text, design text, total text)");
         db.createIndex("create index assignmentNameIndex on assignments (assignmentNames)");
         db.createTable("create table blacklist (taLogin text not null, studLogins text)");
         db.createIndex("create index ta_blist_logins on blacklist (taLogin)");
@@ -519,26 +539,29 @@ public class DatabaseInterops {
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            addDatum("assignments", a.Name, a.Type.toString(), Utils.getCalendarAsString(a.Early), Utils.getCalendarAsString(a.Ontime), Utils.getCalendarAsString(a.Late), "" + a.Points.TOTAL);
+            addDatum("assignments", a.Name, a.Type.toString(), Utils.getCalendarAsString(a.Early), Utils.getCalendarAsString(a.Ontime), Utils.getCalendarAsString(a.Late), "" + ((a.Points.DQ == 0) ? "" : a.Points.DQ), "" + a.Points.TOTAL);
             String sqlCreateTableString2 = "create table grades_" + a.Name + " (studLogins text not null";
-            for (String ss : GRADE_RUBRIC_FIELDS) {
-                sqlCreateTableString2 += ", " + ss + " text";
+            if (a.Points.DQ != 0) {
+                sqlCreateTableString2 += ", " + GRADE_RUBRIC_FIELDS[0] + " text";
             }
+            sqlCreateTableString2 += ", " + GRADE_RUBRIC_FIELDS[1] + " text";
             sqlCreateTableString2 += ")";
             db.createTable(sqlCreateTableString2);
             db.createIndex("create index stud_login_" + a.Name + " on grades_" + a.Name + " (studLogins)");
-            sqlCreateTableString1 += ", " + a.Name + " text";
-            if (a.Points.DQ != 0) {
-                addDatum("assignments", a.Name + "Design", "DESIGN", "", "", "", "" + a.Points.DQ);
-                sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
-                for (String ss : GRADE_RUBRIC_FIELDS) {
-                    sqlCreateTableString2 += ", " + ss + " text";
-                }
-                sqlCreateTableString2 += ")";
-                db.createTable(sqlCreateTableString2);
-                db.createIndex("create index stud_login_" + a.Name + "Design" + " on grades_" + a.Name + "Design (studLogins)");
-                sqlCreateTableString1 += ", " + a.Name + "Design text";
+            if (a.Type == AssignmentType.PROJECT) {
+                sqlCreateTableString1 += ", " + a.Name + " text";
             }
+//            if (a.Points.DQ != 0) {
+//                addDatum("assignments", a.Name + "Design", "DESIGN", "", "", "", "" + a.Points.DQ);
+//                sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
+//                for (String ss : GRADE_RUBRIC_FIELDS) {
+//                    sqlCreateTableString2 += ", " + ss + " text";
+//                }
+//                sqlCreateTableString2 += ")";
+//                db.createTable(sqlCreateTableString2);
+//                db.createIndex("create index stud_login_" + a.Name + "Design" + " on grades_" + a.Name + "Design (studLogins)");
+//                sqlCreateTableString1 += ", " + a.Name + "Design text";
+//            }
         }
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
@@ -548,7 +571,23 @@ public class DatabaseInterops {
             addDatum("blacklist", s);
             addDatum("talist", new Object[]{s});
         }
-        //autoPopulate();
+        for (Assignment a : ConfigurationManager.getAssignments()) {
+            for (String ss : Utils.getCS015Students()) {
+                Object[] data;
+                if (a.Points.DQ == 0) {
+                    data = new String[2];
+                    data[0] = ss;
+                    data[1] = "0";
+                } else {
+                    data = new String[3];
+                    data[0] = ss;
+                    data[1] = "0";
+                    data[2] = "0";
+                }
+                addDatum("grades_" + a.Name, data);
+            }
+
+        }
     }
 
     private static void autoPopulate() throws SqlJetException {

@@ -243,7 +243,7 @@ public class StartupDialog extends javax.swing.JFrame {
 
         gradeDistributorButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-calculator.png"))); // NOI18N
         gradeDistributorButton2.setMnemonic('E');
-        gradeDistributorButton2.setText("<html><b>Enter Grades</b><br />Manually enter grades into the database.</html>");
+        gradeDistributorButton2.setText("<html><b>Grade DQs</b><br />Enter DQ grades into the database.</html>");
         gradeDistributorButton2.setFocusable(false);
         gradeDistributorButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         gradeDistributorButton2.setIconTextGap(20);

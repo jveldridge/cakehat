@@ -10,6 +10,7 @@
  */
 package designQGrader;
 
+import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.utils.Utils;
 import cs015Database.DatabaseInterops;
 import java.awt.event.KeyAdapter;
@@ -35,6 +36,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
         jTextField2.addKeyListener(new KeyAdapter() {
+
             @Override
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
@@ -64,7 +66,9 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             m = (DefaultTableModel) table2.getModel();
             m.addColumn("Assignments");
             for (String s : DatabaseInterops.getAssignmentNames()) {
-                m.insertRow(table2.getRowCount(), new String[]{s});
+                if (DatabaseInterops.getAssignmentType(s) == AssignmentType.HOMEWORK || DatabaseInterops.getAssignmentType(s) == AssignmentType.PROJECT) {
+                    m.insertRow(table2.getRowCount(), new String[]{s});
+                }
             }
             this.setTitle(Utils.getUserLogin() + " - Grade Modifier");
             table1.getSelectionModel().setSelectionInterval(0, 0);
@@ -74,7 +78,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             jTextField1.setText((String) table1.getModel().getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
             jTextField1.setSelectionStart(0);
             jTextField1.setSelectionEnd(jTextField1.getText().length());
-            jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
+                jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            } else {
+                jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            }
             statusLabel.setText("Ready");
             if (jTextField1.getText().length() == 0) {
                 jButton1.setEnabled(false);
@@ -439,7 +447,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jTextField1.setSelectionStart(0);
         jTextField1.setSelectionEnd(jTextField1.getText().length());
         jTextField2.setText(DatabaseInterops.getStudentScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
-        jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+        if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
+            jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+        } else {
+            jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+        }
         if (jTextField2.getText().length() > 0 && jTextField3.getText().length() > 0) {
             jTextField4.setText("" + (Double.parseDouble(jTextField2.getText()) / Double.parseDouble(jTextField3.getText()) * 100));
         } else {

@@ -357,7 +357,7 @@
         </Property>
         <Property name="mnemonic" type="int" value="69"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="&quot;&lt;html&gt;&lt;b&gt;Enter Grades&lt;/b&gt;&lt;br /&gt;Manually enter grades into the database.&lt;/html&gt;&quot;" type="code"/>
+          <Connection code="&quot;&lt;html&gt;&lt;b&gt;Grade DQs&lt;/b&gt;&lt;br /&gt;Enter DQ grades into the database.&lt;/html&gt;&quot;" type="code"/>
         </Property>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="2"/>

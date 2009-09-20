@@ -10,6 +10,7 @@
  */
 package assignment_distributor;
 
+import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
 import cs015.tasupport.grading.projects.ProjectManager;
 import cs015Database.*;
@@ -39,12 +40,13 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
 
-//        String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
-//        assignmentNameComboBox.removeAllItems();
-//        for (int i = 1; i < columnNames.length; i++) {
-//            assignmentNameComboBox.insertItemAt(columnNames[i], assignmentNameComboBox.getItemCount());
-//        }
-        for(String s: DatabaseInterops.getProjectNames()) {
+//        String[] assignNames  = DatabaseInterops.getAssignmentNames();
+////        assignmentNameComboBox.removeAllItems();
+////        for (int i = 1; i < columnNames.length; i++) {
+////            assignmentNameComboBox.insertItemAt(columnNames[i], assignmentNameComboBox.getItemCount());
+////        }
+        for(String s: DatabaseInterops.getAssignmentNames()) {
+            if(DatabaseInterops.getAssignmentType(s) == AssignmentType.PROJECT)
             assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
         }
         for(String s: DatabaseInterops.getAssignmentNames())

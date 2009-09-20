@@ -34,7 +34,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
             double d = DatabaseInterops.getAssignmentTotal(asgnName);
             List<Double> l = new ArrayList<Double>();
             while (!cursor.eof()) {
-                double earned = (cursor.getString("Earned").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("Earned"));
+                double earned = (cursor.getString("ProjectPoints").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("ProjectPoints"));
                 l.add(earned / d * 100);
                 cursor.next();
             }
