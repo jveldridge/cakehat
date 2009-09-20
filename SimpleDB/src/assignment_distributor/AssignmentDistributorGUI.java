@@ -89,6 +89,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         mainTable = new assignment_distributor.AssignmentDistributorTable();
+        setupGradingButton = new javax.swing.JButton();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -100,7 +101,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             }
         });
 
-        generateDistButton.setText("Generate Grading Assignments");
+        generateDistButton.setText("1. Distribute Students");
         generateDistButton.setFocusable(false);
         generateDistButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -119,6 +120,13 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             }
         ));
         jScrollPane1.setViewportView(mainTable);
+
+        setupGradingButton.setText("2. Set Up Grading");
+        setupGradingButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                setupGradingButtonActionPerformed(evt);
+            }
+        });
 
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
@@ -140,7 +148,10 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                         .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
-                    .addComponent(generateDistButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(generateDistButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(setupGradingButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -153,7 +164,9 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(generateDistButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(generateDistButton)
+                    .addComponent(setupGradingButton))
                 .addGap(14, 14, 14))
         );
 
@@ -229,6 +242,10 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
+    private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_setupGradingButtonActionPerformed
+
     private String getBlacklist(String taName) {
         try {
             ISqlJetCursor cursor = DatabaseInterops.getData("blacklist", "ta_blist_logins", taName);
@@ -259,5 +276,6 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuBar mainMenuBar;
     private assignment_distributor.AssignmentDistributorTable mainTable;
+    private javax.swing.JButton setupGradingButton;
     // End of variables declaration//GEN-END:variables
 }
