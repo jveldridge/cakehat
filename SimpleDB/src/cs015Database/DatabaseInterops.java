@@ -7,6 +7,7 @@ package cs015Database;
 import cs015.tasupport.grading.config.Assignment;
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
+import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.utils.Utils;
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +37,18 @@ public class DatabaseInterops {
      */
     public static void open() throws SqlJetException {
         db = SqlJetDb.open(new File(FILE_NAME), true);
+    }
+
+    public static double getDQScore(String assignmentName, String studentName) {
+        try {
+            ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studentName);
+            if (cursor.getString("studLogins").compareToIgnoreCase(studentName) == 0) {
+                return Double.parseDouble(cursor.getString("DQPoints"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1.0;
     }
 
     /**
@@ -507,6 +520,7 @@ public class DatabaseInterops {
      */
     public static ISqlJetCursor getItemWithFilter(final String tableName, final String indexName, final String filter) throws SqlJetException {
         return db.getTable(tableName).lookup(indexName, filter);
+
     }
 
     /**

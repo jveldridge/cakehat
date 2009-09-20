@@ -78,11 +78,6 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             jTextField1.setText((String) table1.getModel().getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
             jTextField1.setSelectionStart(0);
             jTextField1.setSelectionEnd(jTextField1.getText().length());
-            if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
-                jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
-            } else {
-                jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
-            }
             statusLabel.setText("Ready");
             if (jTextField1.getText().length() == 0) {
                 jButton1.setEnabled(false);
@@ -236,6 +231,15 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                 table2MouseClicked(evt);
             }
         });
+        table2.addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                table2AncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
         table2.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 table2KeyPressed(evt);
@@ -378,8 +382,8 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -394,7 +398,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
                             .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
                         .addComponent(jButton1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -439,6 +443,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         if (table1.getRowCount() == 0 || ((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn())).length() == 0) {
             jTextField2.setText("");
             jTextField4.setText("");
+            if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
+                jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            } else {
+                jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            }
             return;
         }
 
@@ -588,6 +597,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         addStudentDialog.setVisible(false);
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void table2AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_table2AncestorAdded
+        // TODO add your handling code here:
+    }//GEN-LAST:event_table2AncestorAdded
 
     /**
      * @param args the command line arguments
