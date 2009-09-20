@@ -7,6 +7,7 @@
 package GradingCommander;
 
 import cs015.tasupport.grading.grader.Grader;
+import cs015.tasupport.grading.rubric.RubricManager;
 import cs015.tasupport.utils.Utils;
 import cs015Database.*;
 import java.awt.Font;
@@ -469,6 +470,8 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
+        RubricManager.convertAllToGrd((String)assignmentList.getSelectedValue(), Utils.getUserLogin());
+
         SubmitDialog sd = new SubmitDialog();
 
         if (sd.submitChecked())

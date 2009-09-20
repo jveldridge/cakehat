@@ -293,7 +293,7 @@ public class RubricManager
 	public static void assignXMLToGrader(Project prj, String studentAcct, String graderAcct,
 										 double designCheckScore, int minutesOfLeniency)
 	{
-		String XMLTemplateFilePath = Constants.COURSE_DIR + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR
+		String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR
 									+ Constants.TEMPLATE_GRADE_SHEET_FILENAME;
 		
 		String XMLGraderFilePath = Constants.GRADER_PATH + graderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";

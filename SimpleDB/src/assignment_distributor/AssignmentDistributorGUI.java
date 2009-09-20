@@ -10,19 +10,22 @@
  */
 package assignment_distributor;
 
+import cs015.tasupport.grading.Constants;
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
 import cs015.tasupport.grading.projects.ProjectManager;
+import cs015.tasupport.grading.rubric.RubricManager;
 import cs015Database.*;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 /**
@@ -245,7 +248,20 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
-        // TODO add your handling code here:
+        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
+        String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");
+        int minsLeniency = Constants.MINUTES_OF_LENIENCY;
+        if ((input != null) && (input.length() != 0)) {
+            minsLeniency = Integer.parseInt(input);
+        }
+
+        //for (String taLogin : ConfigurationManager.getGraderLogins()) {
+        String taLogin = "jeldridg";
+            String[] studsToGrade = DatabaseInterops.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
+            for (String stud : studsToGrade) {
+                RubricManager.assignXMLToGrader(ProjectManager.getProjectFromString((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseInterops.getDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+            }
+       // }
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
     private String getBlacklist(String taName) {
