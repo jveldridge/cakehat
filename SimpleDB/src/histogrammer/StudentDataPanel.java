@@ -15,7 +15,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
@@ -53,7 +52,10 @@ public class StudentDataPanel extends javax.swing.JPanel {
                     data[0][i] = i;
                     while (!cursor.eof()) {
                         if (cursor.getString("studLogins").compareToIgnoreCase(studName) == 0) {
-                             double earned = (cursor.getString("ProjectPoints").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("ProjectPoints"));
+                            double earned = (cursor.getString("ProjectPoints").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("ProjectPoints"));
+                            if (DatabaseInterops.getAssignmentDQ(assignments[i]) != 0) {
+                                earned += Double.parseDouble(cursor.getString("DQPoints"));
+                            }
                             data[1][i] = earned / DatabaseInterops.getAssignmentTotal(assignments[i]) * 100;
                             break;
                         }
@@ -82,11 +84,10 @@ public class StudentDataPanel extends javax.swing.JPanel {
         _chart = new JFreeChart(studName + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, false);
         _chart.setBackgroundPaint(Color.white);
         this.repaint();
-
     }
 
     public BufferedImage getImage(int w, int h) {
-       return  _chart.createBufferedImage(w, h);
+        return _chart.createBufferedImage(w, h);
     }
 
     @Override

@@ -66,11 +66,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             m = (DefaultTableModel) table2.getModel();
             m.addColumn("Assignments");
             for (String s : DatabaseInterops.getAssignmentNames()) {
-                if (DatabaseInterops.getAssignmentType(s) == AssignmentType.HOMEWORK || DatabaseInterops.getAssignmentType(s) == AssignmentType.PROJECT) {
+                if (DatabaseInterops.getAssignmentType(s) == AssignmentType.HOMEWORK || (DatabaseInterops.getAssignmentType(s) == AssignmentType.PROJECT && DatabaseInterops.getAssignmentDQ(s) != 0)) {
                     m.insertRow(table2.getRowCount(), new String[]{s});
                 }
             }
-            this.setTitle(Utils.getUserLogin() + " - Grade Modifier");
+            this.setTitle(Utils.getUserLogin() + " - Design Questions / Homework Grader");
             table1.getSelectionModel().setSelectionInterval(0, 0);
             table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
             table2.getSelectionModel().setSelectionInterval(0, 0);
@@ -506,13 +506,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2KeyPressed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        //@TODO:ADD WRITING TO DATABASE
         try {
             String assignmentName = (String) table2.getModel().getValueAt(table2.getSelectedRow(), table2.getSelectedColumn());
             String studentLogin = jTextField1.getText();
             long row = DatabaseInterops.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
             if (DatabaseInterops.getDataCell("grades_" + assignmentName, row, "studLogins").compareToIgnoreCase(studentLogin) == 0) {
-                //String[] colNames = DatabaseInterops.getColumnNames("grades" + assignmentName);
                 String[] s = (String[]) DatabaseInterops.getDataRow("grades_" + assignmentName, row);
                 s[1] = jTextField2.getText();
                 DatabaseInterops.update(row, "grades_" + assignmentName, (Object[]) s);
@@ -524,7 +522,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
             jTextField1.requestFocus();
             jTextField1.setText("");
+            jTextField2.setText("");
+            jTextField4.setText("");
             jTextField1KeyTyped(null);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

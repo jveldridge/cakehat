@@ -10,6 +10,7 @@
  */
 package histogrammer;
 
+import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.utils.Utils;
 import cs015Database.DatabaseInterops;
 import java.awt.Graphics;
@@ -47,17 +48,19 @@ public class HistogramGUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
 
-        String[] columnNames = DatabaseInterops.getColumnNames("assignment_dist");
+        String[] assignmentNames = DatabaseInterops.getAssignmentNames();
         DefaultListModel model = new DefaultListModel();
-        for (int i = 1; i < columnNames.length; i++) {
-            model.add(i - 1, columnNames[i]);
+        for (int i = 1; i < assignmentNames.length; i++) {
+            if (DatabaseInterops.getAssignmentType(assignmentNames[i]) != AssignmentType.LAB) {
+                model.add(i - 1, assignmentNames[i]);
+            }
         }
 
         jList1.setModel(model);
-        if (columnNames.length > 0) {
+        if (assignmentNames.length > 0) {
             jList1.setSelectedIndex(0);
         }
-        _charts = new ChartDataPanel[columnNames.length - 1];
+        _charts = new ChartDataPanel[assignmentNames.length - 1];
         for (int i = 0; i < _charts.length; i++) {
             _charts[i] = new ChartDataPanel();
         }

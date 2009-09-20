@@ -11,17 +11,12 @@
 package cs015Database;
 
 import assignment_distributor.AssignmentDistributorGUI;
-import com.sun.org.apache.bcel.internal.generic.IFEQ;
 import database_editor.DatabaseGUI;
 import designQGrader.DesignQGraderGUI;
 import emailer.EmailGUI;
 import histogrammer.HistogramGUI;
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
@@ -243,7 +238,7 @@ public class StartupDialog extends javax.swing.JFrame {
 
         gradeDistributorButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-calculator.png"))); // NOI18N
         gradeDistributorButton2.setMnemonic('E');
-        gradeDistributorButton2.setText("<html><b>Grade DQs</b><br />Enter DQ grades into the database.</html>");
+        gradeDistributorButton2.setText("<html><b>Grade DQs / Homeworks</b><br />Enter DQ / homeworks grades into the database.</html>");
         gradeDistributorButton2.setFocusable(false);
         gradeDistributorButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         gradeDistributorButton2.setIconTextGap(20);
