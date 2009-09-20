@@ -194,7 +194,7 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
             <LineBorder>
-              <Color PropertyName="color" blue="cc" green="cc" red="cc" type="rgb"/>
+              <Color PropertyName="color" blue="4a" green="4e" id="light" palette="3" red="51" type="palette"/>
             </LineBorder>
           </Border>
         </Property>
@@ -219,9 +219,6 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="statusLabel">
           <Properties>
-            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="33" green="33" red="33" type="rgb"/>
-            </Property>
             <Property name="horizontalAlignment" type="int" value="4"/>
             <Property name="text" type="java.lang.String" value="Ready"/>
           </Properties>
@@ -241,7 +238,7 @@
                           <Component id="tableSelector" min="-2" pref="241" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jButton1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="275" max="32767" attributes="0"/>
+                          <EmptySpace pref="287" max="32767" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="filterTextField" min="-2" pref="225" max="-2" attributes="0"/>
@@ -274,7 +271,7 @@
                       <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="gridViewScrollPane" pref="648" max="32767" attributes="0"/>
+                  <Component id="gridViewScrollPane" pref="650" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
               <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">

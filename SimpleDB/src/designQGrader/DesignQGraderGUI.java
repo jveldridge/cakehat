@@ -295,7 +295,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jLabel6.setFont(new java.awt.Font("SansSerif", 1, 12));
         jLabel6.setText("Enter Score");
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("light")));
 
         statusLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 11));
         statusLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -382,8 +382,8 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -455,10 +455,11 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jTextField1.setCaretPosition(0);
         jTextField1.setSelectionStart(0);
         jTextField1.setSelectionEnd(jTextField1.getText().length());
-        jTextField2.setText(DatabaseInterops.getStudentScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
         if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
+            jTextField2.setText("" + DatabaseInterops.getStudentProjectScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
             jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
         } else {
+            jTextField2.setText("" + DatabaseInterops.getStudentDQScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
             jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
         }
         if (jTextField2.getText().length() > 0 && jTextField3.getText().length() > 0) {
@@ -476,10 +477,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
 
         if (evt.getKeyCode() == 38 && table1.getSelectedRow() != 0) { //up
             table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() - 1, table1.getSelectedRow() - 1);
-            update();
+        //update();
         } else if (evt.getKeyCode() == 40 && table1.getSelectedRow() != table1.getRowCount() - 1) { //down
             table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() + 1, table1.getSelectedRow() + 1);
-            update();
+        //update();
         } else if (evt.getKeyCode() == 10) { //Enter key
             jTextField2.requestFocus();
         }
@@ -550,6 +551,12 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
             return;
         }
+        if (evt.getKeyCode() == 38 || evt.getKeyCode() == 40) { //up
+
+            jTextField1.setText("");
+            update();
+            return;
+        }
         if (jTextField1.getText().length() == 0) {
             jButton1.setEnabled(false);
         } else {
@@ -560,7 +567,6 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         table1.setColumnSelectionAllowed(true);
         table1.getSelectionModel().setSelectionInterval(0, 0);
         table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
-    //update();
     }//GEN-LAST:event_jTextField1KeyReleased
 
     private void table2KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_table2KeyReleased

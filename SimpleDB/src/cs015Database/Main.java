@@ -16,7 +16,22 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.LookAndFeelInfo plafinfo[] = UIManager.getInstalledLookAndFeels();
+            boolean nimbusfound = false;
+            int nimbusindex = 0;
+            for (int look = 0; look < plafinfo.length; look++) {
+                if (plafinfo[look].getClassName().toLowerCase().contains("nimbus")) {
+                    nimbusfound = true;
+                    nimbusindex = look;
+                }
+            }
+
+            if (nimbusfound && !UIManager.getSystemLookAndFeelClassName().toLowerCase().contains("gtk") && !UIManager.getSystemLookAndFeelClassName().toLowerCase().contains("windows")) {
+                UIManager.setLookAndFeel(plafinfo[nimbusindex].getClassName());
+            } else {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+
             Font font = new Font("Sans-Serif", Font.PLAIN, 11);
             UIManager.put("MenuItem.font", font);
             UIManager.put("Menu.font", font);

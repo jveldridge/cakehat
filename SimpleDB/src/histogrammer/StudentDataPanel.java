@@ -26,6 +26,7 @@ import org.jfree.chart.labels.StandardXYItemLabelGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
@@ -45,7 +46,10 @@ public class StudentDataPanel extends javax.swing.JPanel {
     public void updateChart(String studName, String[] assignments) {
         DefaultXYDataset dataset = new DefaultXYDataset();
         double[][] data = new double[2][assignments.length];
+        double[][] avgData = new double[2][assignments.length];
         for (int i = 0; i < assignments.length; i++) {
+            avgData[0][i] = i;
+            avgData[1][i] = DatabaseInterops.getAverage(assignments[i]);
             if (assignments[i].compareTo("") != 0 && assignments[i].compareTo("None") != 0) {
                 try {
                     ISqlJetCursor cursor = DatabaseInterops.getAllData("grades_" + assignments[i]);
@@ -69,7 +73,7 @@ public class StudentDataPanel extends javax.swing.JPanel {
         }
 
         dataset.addSeries(studName + "'s Scores", data);
-//        dataset.addSeries("Class Average", data);
+        dataset.addSeries("Class Average", avgData);
         ValueAxis yAxis = new NumberAxis("Score (%)");
         yAxis.setRange(0.0, 110.0);
         SymbolAxis sa = new SymbolAxis("Assignment Name", assignments);
@@ -79,9 +83,11 @@ public class StudentDataPanel extends javax.swing.JPanel {
         DecimalFormat decimalformat1 = new DecimalFormat("##,###");
         renderer.setSeriesItemLabelGenerator(0, new StandardXYItemLabelGenerator("{2}", decimalformat1, decimalformat1));
         renderer.setSeriesItemLabelsVisible(0, Boolean.TRUE);
+        renderer.setSeriesItemLabelGenerator(1, new StandardXYItemLabelGenerator("{2}", decimalformat1, decimalformat1));
+        renderer.setSeriesItemLabelsVisible(1, Boolean.TRUE);
         renderer.setBaseItemLabelsVisible(true);
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-        _chart = new JFreeChart(studName + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, false);
+        _chart = new JFreeChart(studName + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
         _chart.setBackgroundPaint(Color.white);
         this.repaint();
     }

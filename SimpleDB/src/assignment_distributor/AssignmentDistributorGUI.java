@@ -259,7 +259,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         String taLogin = "jeldridg";
             String[] studsToGrade = DatabaseInterops.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
-                RubricManager.assignXMLToGrader(ProjectManager.getProjectFromString((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseInterops.getDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                RubricManager.assignXMLToGrader(ProjectManager.getProjectFromString((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseInterops.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
             }
        // }
 }//GEN-LAST:event_setupGradingButtonActionPerformed

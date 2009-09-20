@@ -7,10 +7,10 @@ package cs015Database;
 import cs015.tasupport.grading.config.Assignment;
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
-import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.utils.Utils;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -39,7 +39,7 @@ public class DatabaseInterops {
         db = SqlJetDb.open(new File(FILE_NAME), true);
     }
 
-    public static double getDQScore(String assignmentName, String studentName) {
+    public static double getStudentDQScore(String assignmentName, String studentName) {
         try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studentName);
             if (cursor.getString("studLogins").compareToIgnoreCase(studentName) == 0) {
@@ -49,6 +49,28 @@ public class DatabaseInterops {
             e.printStackTrace();
         }
         return -1.0;
+    }
+
+    public static double getAverage(String assignmentName) {
+        try {
+            ISqlJetCursor cursor = getAllData("grades_" + assignmentName);
+            double sum = 0.0;
+            int i = getColumnNames("grades_" + assignmentName).length;
+            double n = 0;
+            while (!cursor.eof()) {
+                sum += Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[1]));
+                if (i == 3) {
+                    sum += Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[0]));
+                }
+                n++;
+                cursor.next();
+            }
+            cursor.close();
+            return sum / (n *getAssignmentTotal(assignmentName)) * 100;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0.0;
     }
 
     /**
@@ -102,7 +124,10 @@ public class DatabaseInterops {
         try {
             for (String s : getTableNames()) {
                 if (s.startsWith("grade")) {
-                    addDatum(s, new Object[]{studentName, "", "" + getAssignmentTotal(s.split("_")[1])});
+                    String[] ss = new String[getColumnNames(s).length];
+                    Arrays.fill(ss, "0");
+                    ss[0] = studentName;
+                    addDatum(s, (Object[]) ss);
                 } else if (s.compareToIgnoreCase("studlist") == 0) {
                     addDatum("studlist", studentName);
                 }
@@ -200,7 +225,7 @@ public class DatabaseInterops {
      * @param studLogin
      * @return
      */
-    public static String getStudentScore(final String assignmentName, final String studLogin) {
+    public static String getStudentProjectScore(final String assignmentName, final String studLogin) {
         try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
             if (cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
@@ -585,23 +610,24 @@ public class DatabaseInterops {
             addDatum("blacklist", s);
             addDatum("talist", new Object[]{s});
         }
-        for (Assignment a : ConfigurationManager.getAssignments()) {
-            for (String ss : Utils.getCS015Students()) {
-                Object[] data;
-                if (a.Points.DQ == 0) {
-                    data = new String[2];
-                    data[0] = ss;
-                    data[1] = "0";
-                } else {
-                    data = new String[3];
-                    data[0] = ss;
-                    data[1] = "0";
-                    data[2] = "0";
-                }
-                addDatum("grades_" + a.Name, data);
-            }
-
-        }
+        autoPopulate();
+//        for (Assignment a : ConfigurationManager.getAssignments()) {
+//            for (String ss : Utils.getCS015Students()) {
+//                Object[] data;
+//                if (a.Points.DQ == 0) {
+//                    data = new String[2];
+//                    data[0] = ss;
+//                    data[1] = "0";
+//                } else {
+//                    data = new String[3];
+//                    data[0] = ss;
+//                    data[1] = "0";
+//                    data[2] = "0";
+//                }
+//                addDatum("grades_" + a.Name, data);
+//            }
+//
+//        }
     }
 
     private static void autoPopulate() throws SqlJetException {
@@ -612,16 +638,19 @@ public class DatabaseInterops {
         }
         for (Assignment a : ConfigurationManager.getAssignments()) {
             for (String ss : Utils.getCS015Students()) {
-                Object[] data = new String[2];
-                data[0] = ss;
-                int grade = (int) (Math.random() * 50 + 50);
-                data[1] = Integer.toString(grade);
-                addDatum("grades_" + a.Name, data);
-                if (a.Points.DQ != 0) {
-                    addDatum("grades_" + a.Name + "Design", data);
+                Object[] data;
+                if (a.Points.DQ == 0) {
+                    data = new String[2];
+                    data[0] = ss;
+                    data[1] = Integer.toString(a.Points.TOTAL - (int)(Math.random() * (a.Points.TOTAL >> 1)));
+                } else {
+                    data = new String[3];
+                    data[0] = ss;
+                    data[1] = Integer.toString(a.Points.DQ - (int)(Math.random() * (a.Points.DQ >> 1)));
+                    data[2] = Integer.toString(a.Points.TOTAL - a.Points.DQ - (int)(Math.random() * (a.Points.TOTAL >> 1)));
                 }
+                addDatum("grades_" + a.Name, data);
             }
-
         }
     }
 

@@ -31,10 +31,14 @@ public class ChartDataPanel extends javax.swing.JPanel {
     public void updateChartData(String asgnName) {
         try {
             ISqlJetCursor cursor = DatabaseInterops.getAllData("grades_" + asgnName);
+            int cols = DatabaseInterops.getColumnNames("grades_" + asgnName).length;
             double d = DatabaseInterops.getAssignmentTotal(asgnName);
             List<Double> l = new ArrayList<Double>();
             while (!cursor.eof()) {
-                double earned = (cursor.getString("ProjectPoints").length() == 0) ? 0.0 : Double.parseDouble(cursor.getString("ProjectPoints"));
+                double earned = (cursor.getString(DatabaseInterops.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseInterops.GRADE_RUBRIC_FIELDS[1]));
+                if(cols == 3) {
+                    earned += (cursor.getString(DatabaseInterops.GRADE_RUBRIC_FIELDS[0]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseInterops.GRADE_RUBRIC_FIELDS[0]));
+                }
                 l.add(earned / d * 100);
                 cursor.next();
             }
