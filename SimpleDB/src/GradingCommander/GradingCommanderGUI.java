@@ -9,35 +9,35 @@ package GradingCommander;
 import cs015.tasupport.grading.grader.Grader;
 import cs015.tasupport.utils.Utils;
 import cs015Database.*;
-import emailer.EmailGUI;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.Vector;
 import javax.imageio.ImageIO;
-import javax.swing.ListModel;
 import javax.swing.UIManager;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 
 public class GradingCommanderGUI extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
+    private Vector<String> _selected;
 
     /** Creates new form GradingCommanderGUI */
     public GradingCommanderGUI() {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+
         initComponents();           //creates form components
         updateFormComponents();
-        this.setTitle(System.getProperty("user.name") + " - cs015 Grader");
 
-        //untar and all students' code for the initially selected project
-        if (studentList.getModel().getSize() > 1) {
-            //GradingCommander.untar(assignmentList, studentList);
-            //GradingCommander.compileAll((String) assignmentList.getSelectedValue(), studentList);
-        }
+        _selected = new Vector<String>();
+        _selected.add((String)assignmentList.getSelectedValue());
+
+        this.setTitle(Utils.getUserLogin() + " - cs015 Grader");
+
+        //untar all students' code for the initially selected project
+        GradingCommander.untar(assignmentList, studentList);
 
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/icon.png")));
@@ -47,7 +47,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
 
         this.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e) {
-                
+                GradingCommander.removeCodeDirectories(_selected);
             }            
         });
     }
@@ -57,6 +57,7 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         if (assignmentList.getModel().getSize() > 0) {
             assignmentList.setSelectedIndex(0);
         }
+
         populateStudentList();
 
         /* check whether runTesterButton should be enabled (if the assignment selected on startup has
@@ -430,29 +431,38 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_runTesterButtonActionPerformed
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        //add code to remove .code directory
+        GradingCommander.removeCodeDirectories(_selected);
         System.exit(0);
     }//GEN-LAST:event_quitMenuItemActionPerformed
 
     private void assignmentListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_assignmentListKeyReleased
-        populateStudentList();
+        this.updateAssignmentList();
     }//GEN-LAST:event_assignmentListKeyReleased
 
     private void assignmentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentListMouseClicked
-        populateStudentList();
+        this.updateAssignmentList();
+    }//GEN-LAST:event_assignmentListMouseClicked
+
+   /**
+     * The code that should be executed for both assignmentListKeyReleased and assignmentListMouseClicked
+     */
+    private void updateAssignmentList() {
+        this.populateStudentList();
 
         //must also inform Tester button of the newly selected current assignment
         if (GradingCommander.hasTester((String) assignmentList.getSelectedValue())) {
             runTesterButton.setEnabled(true);
-        } else {
+        }
+        else {
             runTesterButton.setEnabled(false);
         }
+        
+        //and untar all students' code for the newly selected current assignment
+        GradingCommander.untar(assignmentList, studentList);
 
-    //and untar and compile all student codes for the newly selected current assignment
-      //  if (assignmentList.getModel().getSize() > 1) {
-            GradingCommander.untar(assignmentList, studentList);
-       // }
-    }//GEN-LAST:event_assignmentListMouseClicked
+        //and add this current assignment to the vector of assignments that have been selected
+        _selected.add((String)assignmentList.getSelectedValue());
+    }
 
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
         new Grader((String) assignmentList.getSelectedValue(), Utils.getUserLogin(), (String) studentList.getSelectedValue());

@@ -1,5 +1,6 @@
 package GradingCommander;
 
+import cs015.tasupport.grading.Constants;
 import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.utils.BashConsole;
 import cs015.tasupport.utils.Utils;
@@ -14,8 +15,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -34,7 +33,7 @@ public class GradingCommander {
      * This method runs a demo of the current project using the existing
      * 'cs015_runDemo' script
      *
-     * FUNCTIONAL 9/18/09
+     * STABLE 9/18/09
      *
      * @param project
      */
@@ -51,6 +50,8 @@ public class GradingCommander {
      * Untars each student's code for the given project
      * @param assignmentList
      * @param studentList
+     *
+     * STABLE 9/19/09
      */
     public static void untar(JList assignmentList, JList studentList) {
         ArrayList<String> studentLogins = new ArrayList<String>();
@@ -65,23 +66,11 @@ public class GradingCommander {
     }
 
     /**
-     * Compiles each student's code for the given project
-     * @param project
-     * @param studentList
-     */
-    public static void compileAll(String project, JList studentList) {
-        int size = studentList.getModel().getSize();
-        for (int i = 0; i < size; i++) {
-            compileStudentProject(project, (String) studentList.getModel().getElementAt(i));
-        }
-    }
-
-    /**
      * This method prints the code of all students the TA has been assigned to grade for
      * the current project.  It opens a pop-up window that allows the TA to select which printer should
      * be used (only allows bw3, bw4, and bw5).
      *
-     * Fully functional (I think) as of 9/13/09 (excepting what's mentioned in printStudentProject(...))
+     * STABLE but non-idea, 9/19/09
      *
      * @param project
      * @param assignmentList
@@ -92,11 +81,11 @@ public class GradingCommander {
         for (int i = 0; i < size; i++) {
             studentLogins.add((String) studentList.getModel().getElementAt(i));
         }
-        Object[] printerChoices = {"bw3", "bw4", "bw5"};
-        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png");
-        String printer = (String) JOptionPane.showInputDialog(new JFrame(), "Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
-        for (String sL : studentLogins) {
-            printStudentProject(project, sL, printer);
+        String printer = GradingCommander.getPrinter("Choose printer on which to print all students' code");
+        if (printer != null) {
+            for (String sL : studentLogins) {
+                printStudentProject(project, sL, printer);
+            }
         }
     }
 
@@ -104,7 +93,7 @@ public class GradingCommander {
      * This method prints the code of the student passed in as the second parameter for the project
      * passed in as the first parameter on the printer passed in as the third parameter
      *
-     * //TODO: Should probably have some kind of error-checking (e.g., if cdCommand is not executed correctly)
+     * //TODO: Rewrite to use Josh's bash console
      *
      * @param project
      * @param login
@@ -120,10 +109,8 @@ public class GradingCommander {
             e.printStackTrace();
         }
         if (proc != null) {
-            Object[] printerChoices = {"bw3", "bw4", "bw5"};
-            ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
             if (printer == null) {
-                printer = (String) JOptionPane.showInputDialog(new JFrame(), "Chose printer:", "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
+                printer = GradingCommander.getPrinter("Choose printer on which to print student code");
             }
             if ((printer != null) && (printer.length() > 0)) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -213,39 +200,21 @@ public class GradingCommander {
          */
     }
 
-    //TODO!
-    public static void gradeProject(String asgn, String student) {
-        System.out.println("Opening rubric for project " + asgn + " for student " + student);
-    }
-
-    //TODO: Deal with need for input from cs015_pizzaTest
     public static void runTester(String asgn, String student) {
+        String testCommand;
         if (asgn.equals("PizzaDex")) {
-            String testCommand = "cs015_pizzaTest " + student;
-            try {
-                Process p = Runtime.getRuntime().exec(testCommand);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(p.getInputStream()));
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            String testCommand = "cs015_gfxTest " + student;
-            try {
-                Process p = Runtime.getRuntime().exec(testCommand);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(p.getInputStream()));
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            testCommand = "cs015_pizzaTest " + student;
+        }
+        else {
+            testCommand = "cs015_gfxTest " + student;
+        }
+
+        Runtime r = Runtime.getRuntime();
+        try {
+            r.exec(testCommand);
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -257,6 +226,7 @@ public class GradingCommander {
         }
         EmailGUI eg = new EmailGUI(new String[0], new String[0], bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
         eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        //TODO: fix this (check with Paul)
 //        try {
 //            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
 //        } catch (IOException e) {
@@ -267,7 +237,7 @@ public class GradingCommander {
 
     public static void printGRDFiles(String assignment) {
         System.out.println("called printGRDFiles");
-        String printer = GradingCommander.getPrinter(null, "Select printer to print .GRD files");
+        String printer = GradingCommander.getPrinter("Select printer to print .GRD files");
         Runtime r = Runtime.getRuntime();
         String printCommand = "lpr -P" + printer + " /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.grd";
         try {
@@ -280,9 +250,9 @@ public class GradingCommander {
     public static void submitXMLFiles(String assignment) {
         System.out.println("called submitXMLFiles");
         Runtime r = Runtime.getRuntime();
-        String copyCommand = "cp /course/cs015/admin/uta/grading/" + Utils.getUserLogin() + "/" + assignment + "/*.xml /course/cs015/admin/grade/current/" + assignment + "/" + Utils.getUserLogin() + "/";
+        String copyCommand = "cp " + ProjectManager.getUserGradingDirectory() + assignment + "/*.xml " + Constants.GRADER_SUBMIT_PATH + assignment + "/" + Utils.getUserLogin() + "/";
         try {
-            //TODO: add error-checking
+            //TODO: add error-checking; needs to make directories when they don't exist
             System.out.println("copyCommand is" + copyCommand);
             r.exec(copyCommand);
         } catch (IOException ex) {
@@ -290,12 +260,15 @@ public class GradingCommander {
         }
     }
 
-    private static String getPrinter(String printer, String message) {
-        if (printer != null)
-            return printer;
+    public static void removeCodeDirectories(Vector<String> _selected) {
+        for (String s: _selected) {
+            ProjectManager.removeCodeDirectory(ProjectManager.getProjectFromString(s));
+        }
+    }
+
+    private static String getPrinter(String message) {
         Object[] printerChoices = {"bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
-        printer = (String) JOptionPane.showInputDialog(new JFrame(), "Chose printer:", message, JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
-        return printer;
+        return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }
 }

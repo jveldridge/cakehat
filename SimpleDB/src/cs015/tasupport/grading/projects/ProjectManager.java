@@ -144,11 +144,11 @@ public class ProjectManager {
         return getCodeDirectory(prj) + studentLogin + "/";
     }
 
-    private static String getCodeDirectory(Project prj) {
+    public static String getCodeDirectory(Project prj) {
         return getUserGradingDirectory() + prj.getName() + "/" + Constants.CODE_DIR;
     }
 
-    private static String getUserGradingDirectory() {
+    public static String getUserGradingDirectory() {
         return Constants.GRADER_PATH + Utils.getUserLogin() + "/";
     }
 }
