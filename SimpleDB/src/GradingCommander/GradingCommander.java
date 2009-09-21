@@ -1,6 +1,7 @@
 package GradingCommander;
 
 import cs015.tasupport.grading.Constants;
+import cs015.tasupport.grading.projects.Project;
 import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.utils.BashConsole;
 import cs015.tasupport.utils.Utils;
@@ -63,7 +64,7 @@ public class GradingCommander {
         for (int i = 0; i < size; i++) {
             studentLogins.add((String) studentList.getModel().getElementAt(i));
         }
-        ProjectManager.untar(ProjectManager.getProjectFromString((String) assignmentList.getSelectedValue()), studentLogins);
+        ProjectManager.untar(Project.getInstance((String) assignmentList.getSelectedValue()), studentLogins);
     }
 
     /**
@@ -144,7 +145,7 @@ public class GradingCommander {
      * @param login
      */
     public static void compileStudentProject(String project, String login) {
-        ProjectManager.compile(ProjectManager.getProjectFromString(project), login);
+        ProjectManager.compile(Project.getInstance(project), login);
     }
 
     /**
@@ -153,7 +154,7 @@ public class GradingCommander {
      * @param login
      */
     public static void runStudentProject(String project, String login) {
-        ProjectManager.execute(ProjectManager.getProjectFromString(project), login);
+        ProjectManager.execute(Project.getInstance(project), login);
     }
 
     /** This method indicates whether there is a tester for the currently selected project
@@ -181,7 +182,7 @@ public class GradingCommander {
      */
     public static void openStudentProject(String project, String login) {
         //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
-        String path = ProjectManager.getStudentSpecificDirectory(ProjectManager.getProjectFromString(project), login) + project + "/";
+        String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
         final String cmd = "kate " + path + "*.java";
 
         Executors.newSingleThreadExecutor().execute(new Runnable()
@@ -261,7 +262,7 @@ public class GradingCommander {
 
     public static void removeCodeDirectories(Vector<String> _selected) {
         for (String s: _selected) {
-            ProjectManager.removeCodeDirectory(ProjectManager.getProjectFromString(s));
+            ProjectManager.removeCodeDirectory(Project.getInstance(s));
         }
     }
 

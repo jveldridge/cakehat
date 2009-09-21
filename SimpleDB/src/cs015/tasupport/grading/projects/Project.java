@@ -11,38 +11,31 @@ import cs015.tasupport.grading.config.AssignmentType;
 public class Project {
 
     private final Collection<File> HAND_INS;
-    private Assignment _asgn;
-    private static HashMap<Assignment, Project> Projects = new HashMap<Assignment, Project>();
+    private static HashMap<String, Project> Projects = new HashMap<String, Project>();
+    private String _name;
 
-    public static Project getInstance(Assignment asgn) {
-        if (asgn.Type != AssignmentType.PROJECT) {
-            throw new Error("Cannot create a project for " + asgn.Name + ", as it is a " +
-                    asgn.Type + ", but must be a " + AssignmentType.PROJECT);
-        }
+    public static Project getInstance(String name) {
 
         //Check if the project has been created yet, if so then return it
         Project prj;
-        if (Projects.containsKey(asgn)) {
-            prj = Projects.get(asgn);
+        if (Projects.containsKey(name)) {
+            prj = Projects.get(name);
         } else {
-            prj = new Project(asgn);
-            Projects.put(asgn, prj);
+            prj = new Project(name);
+            Projects.put(name, prj);
         }
 
         return prj;
     }
 
-    private Project(Assignment asgn) {
-        _asgn = asgn;
+    private Project(String name) {
+        _name = name;
         HAND_INS = initializeHandins();
     }
 
-    Assignment getAssignmentInfo() {
-        return _asgn;
-    }
 
     public String getName() {
-        return _asgn.Name;
+        return _name;
     }
 
     private String getHandinPath() {

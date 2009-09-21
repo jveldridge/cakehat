@@ -13,6 +13,7 @@ package assignment_distributor;
 import cs015.tasupport.grading.Constants;
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
+import cs015.tasupport.grading.projects.Project;
 import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.grading.rubric.RubricManager;
 import cs015Database.*;
@@ -185,7 +186,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
 
-        String[] studNames = ProjectManager.getHandinLogins(ProjectManager.getProjectFromString((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
+        String[] studNames = ProjectManager.getHandinLogins(Project.getInstance((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
 
         List<String> shuffleList = Arrays.asList(studNames);
         Collections.shuffle(shuffleList);
@@ -259,7 +260,7 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
         String taLogin = "jeldridg";
             String[] studsToGrade = DatabaseInterops.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
-                RubricManager.assignXMLToGrader(ProjectManager.getProjectFromString((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseInterops.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                RubricManager.assignXMLToGrader(Project.getInstance((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseInterops.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
             }
        // }
 }//GEN-LAST:event_setupGradingButtonActionPerformed

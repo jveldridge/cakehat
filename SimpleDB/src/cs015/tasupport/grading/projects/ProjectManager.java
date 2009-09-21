@@ -28,21 +28,6 @@ public class ProjectManager {
     }
 
     /**
-     * Gets project from project name string.  @TODO: CHANGE THIS.
-     * @param projectName
-     * @return
-     */
-    public static Project getProjectFromString(String projectName) {
-        for (Assignment a : ConfigurationManager.getAssignments()) {
-            if (a.Name.equalsIgnoreCase(projectName)) {
-                return Project.getInstance(a);
-            }
-        }
-        return null;
-    //Throw error here maybe
-    }
-
-    /**
      * Returns the time status of a student project.
      *
      * @param studentLogin
@@ -50,20 +35,30 @@ public class ProjectManager {
      * @param minutesOfLeniency
      */
     public static TimeStatus getTimeStatus(String studentLogin, Project prj, int minutesOfLeniency) {
+           
         Calendar handinTime = Utils.getModifiedDate(prj.getHandin(studentLogin));
-        Calendar early = prj.getAssignmentInfo().Early;
-        Calendar ontime = prj.getAssignmentInfo().Ontime;
-        Calendar late = prj.getAssignmentInfo().Late;
 
-        if (early != null && Utils.isBeforeDeadline(handinTime, early, minutesOfLeniency)) {
+        //TODO: Replace this with get the information out of the database instead
+        Assignment asgn = null;
+        for(Assignment a : ConfigurationManager.getAssignments()){
+            if(a.Name.equalsIgnoreCase(prj.getName())){
+                asgn = a;
+            }
+        }
+        if(asgn == null){
+            throw new Error("No information in the configuration could be found for " + prj.getName());
+        }
+        //END
+
+        if (asgn.Early != null && Utils.isBeforeDeadline(handinTime, asgn.Early, minutesOfLeniency)) {
             return TimeStatus.EARLY;
         }
 
-        if (ontime != null && Utils.isBeforeDeadline(handinTime, ontime, minutesOfLeniency)) {
+        if (asgn.Ontime != null && Utils.isBeforeDeadline(handinTime, asgn.Ontime, minutesOfLeniency)) {
             return TimeStatus.ON_TIME;
         }
 
-        if (late != null && Utils.isBeforeDeadline(handinTime, late, minutesOfLeniency)) {
+        if (asgn.Late != null && Utils.isBeforeDeadline(handinTime, asgn.Late, minutesOfLeniency)) {
             return TimeStatus.LATE;
         }
 
