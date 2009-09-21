@@ -103,12 +103,30 @@ public class ProjectManager {
      * @param studentLogin
      */
     private static void untar(Project prj, String studentLogin) {
+        //Check that the student actually has a handin
+        if(prj.getHandin(studentLogin) == null){
+            return;
+        }
+
         //Create an empty folder for grading compiled student code
         String compileDir = getStudentSpecificDirectory(prj, studentLogin);
         Utils.makeDirectory(compileDir);
 
         //untar student handin
         Utils.untar(prj.getHandin(studentLogin).getAbsolutePath(), compileDir);
+    }
+
+    /**
+     * Deletes all .class files in a student's project. It is safe to run
+     * even if there are no .class files in the project.
+     *
+     * @param prj
+     * @param studentLogin
+     * @return success of deletion operation
+     */
+    public static boolean deleteClassFiles(Project prj, String studentLogin){
+        String compileDir = getStudentSpecificDirectory(prj, studentLogin);
+        return Utils.deleteClassFiles(compileDir);
     }
 
     /**

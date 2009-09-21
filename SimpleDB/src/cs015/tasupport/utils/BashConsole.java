@@ -9,9 +9,40 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Vector;
+import java.util.concurrent.Executors;
 
 public class BashConsole
 {
+    public static void writeThreaded(final String cmd)
+    {
+        Executors.newSingleThreadExecutor().execute(new Runnable()
+        {
+            public void run()
+            {
+                write(cmd);
+            }
+        });
+    }
+
+    public static Collection<String> write(String cmd)
+    {
+        Vector<String> cmds = new Vector<String>();
+        cmds.add(cmd);
+
+        return write(cmds);
+    }
+
+    public static void writeThreaded(final Iterable<String> input)
+    {
+        Executors.newSingleThreadExecutor().execute(new Runnable()
+        {
+            public void run()
+            {
+                write(input);
+            }
+        });
+    }
+
 	public static Collection<String> write(Iterable<String> input)
 	{	
 		Vector<String> output = new Vector<String>();

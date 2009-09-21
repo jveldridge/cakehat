@@ -6,17 +6,10 @@ import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.utils.BashConsole;
 import cs015.tasupport.utils.Utils;
 import emailer.EmailGUI;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Vector;
-import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -101,42 +94,12 @@ public class GradingCommander {
      * @param login
      * @param printer
      */
-    public static void printStudentProject(String project, String login, String printer) {
-        Runtime r = Runtime.getRuntime();
-        File wd = new File("/home/");
-        Process proc = null;
-        try {
-            proc = Runtime.getRuntime().exec("/bin/bash", null, wd);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (proc != null) {
-            if (printer == null) {
+    public static void printStudentProject(String project, String studentLogin, String printer) {
+        if (printer == null) {
                 printer = GradingCommander.getPrinter("Choose printer on which to print student code");
-            }
-            if ((printer != null) && (printer.length() > 0)) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
-                String cdCommand = new String("cd " + login + "/course/cs015/" + project);
-                String printCommand = new String("cs015_gradingPrint " + printer + " *.java");
-                System.out.println("print command is: " + printCommand);
-                out.println(cdCommand);
-                out.println(printCommand);
-                out.println("exit");
-                try {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        System.out.println(line);
-                    }
-                    proc.waitFor();
-                    in.close();
-                    out.close();
-                    proc.destroy();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
+        String printCommand = new String("cs015_gradingPrint " + printer + " " + Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
+        BashConsole.write(printCommand);
     }
 
     /**
@@ -145,6 +108,10 @@ public class GradingCommander {
      * @param login
      */
     public static void compileStudentProject(String project, String login) {
+        //remove old class files
+        ProjectManager.deleteClassFiles(Project.getInstance(project), login);
+        
+        //compile possibly modified java files
         ProjectManager.compile(Project.getInstance(project), login);
     }
 
@@ -185,15 +152,9 @@ public class GradingCommander {
         String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
         final String cmd = "kate " + path + "*.java";
 
-        Executors.newSingleThreadExecutor().execute(new Runnable()
-        {
-            public void run()
-            {
-                Vector<String> cmds = new Vector<String>();
-                cmds.add(cmd);
-                BashConsole.write(cmds);
-            }
-        });
+        System.out.println("Open command: " + cmd);
+
+        BashConsole.writeThreaded(cmd);
     }
 
     public static void runTester(String asgn, String student) {
@@ -205,19 +166,7 @@ public class GradingCommander {
             testCommand = "cs015_gfxTest " + student;
         }
 
-        Executors.newSingleThreadExecutor().execute(new Runnable()
-        {
-            public void run()
-            {
-                Vector<String> cmds = new Vector<String>();
-                cmds.add(testCommand);
-                Collection<String> output = BashConsole.write(cmds);
-                for (String s : output) {
-                    System.out.println(s);
-                }
-            }
-        });
-
+        BashConsole.writeThreaded(testCommand);
     }
 
     public static void notifyStudents(JList assignmentList, JList studentList) {
@@ -240,13 +189,9 @@ public class GradingCommander {
 
     public static void printGRDFiles(String assignment) {
         String printer = GradingCommander.getPrinter("Select printer to print .GRD files");
-        Runtime r = Runtime.getRuntime();
-        String printCommand = "lpr -P" + printer + ProjectManager.getUserGradingDirectory() + assignment + "/*.grd";
-        try {
-            r.exec(printCommand);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        String printCommand = "lpr -P" + printer + " " + ProjectManager.getUserGradingDirectory() + assignment + "/*.grd";
+       
+        BashConsole.writeThreaded(printCommand);
     }
 
     public static void submitXMLFiles(String assignment) {

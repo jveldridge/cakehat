@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.io.File;
 import cs015.tasupport.utils.Utils;
 import cs015.tasupport.grading.Constants;
-import cs015.tasupport.grading.config.Assignment;
-import cs015.tasupport.grading.config.AssignmentType;
 
 public class Project {
 

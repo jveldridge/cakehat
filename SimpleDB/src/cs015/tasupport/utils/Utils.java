@@ -457,7 +457,10 @@ public class Utils {
     public static boolean execute(String dirPath, String javaArg) {
         //Get the existing classpath, add dirPath to the classpath
         String classPath = dirPath + ":" + getClassPath();
-        System.out.println(classPath);
+
+        //TODO: Find a better way of creating the classpath
+        classPath = classPath.replace("/home/"+ Utils.getUserLogin() + "/course/cs015", "");
+
         ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
 
         //Attempt to execute code
@@ -590,6 +593,34 @@ public class Utils {
     }
 
     /**
+     * Convenience method that uses getFiles(String dirPath, String extension)
+     * to return all .class files in directory path passed in.
+     *
+     * @param dirPath
+     * @return the .class files in the directory and subdirectories
+     */
+    public static Collection<File> getClassFiles(String dirPath) {
+        return getFiles(dirPath, "class");
+    }
+
+    /**
+     * Convience method that deletes all .class files in the
+     * directory passed. Recurses into subdirectories.
+     *
+     * @param dirPath
+     * @return success of deleting all files
+     */
+    public static boolean deleteClassFiles(String dirPath){
+        boolean success = true;
+
+        for(File file : getClassFiles(dirPath)){
+            success &= file.delete();
+        }
+
+        return success;
+    }
+
+    /**
      * Returns all files in a directory, recursing into subdirectories, that
      * contain files with the specified extension.
      *
@@ -601,6 +632,9 @@ public class Utils {
         Vector<File> files = new Vector<File>();
 
         File dir = new File(dirPath);
+        if(dir == null || !dir.exists()){
+            return files;
+        }
         for (String name : dir.list()) {
             File entry = new File(dir.getAbsolutePath() + "/" + name);
             //If it is a directory, recursively explore and add files ending with the extension
