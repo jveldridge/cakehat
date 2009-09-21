@@ -43,8 +43,9 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         this.setTitle(Utils.getUserLogin() + " - cs015 Grader");
 
         //untar all students' code for the initially selected project
-        GradingCommander.untar(assignmentList, studentList);
-
+        if (studentList.getModel().getSize() > 1) {
+            GradingCommander.untar(assignmentList, studentList);
+        }
 
 
         this.addWindowListener(new WindowAdapter() {
@@ -443,7 +444,9 @@ public class GradingCommanderGUI extends javax.swing.JFrame {
         }
 
         //and untar all students' code for the newly selected current assignment
-        GradingCommander.untar(assignmentList, studentList);
+        if (studentList.getModel().getSize() > 1) {
+            GradingCommander.untar(assignmentList, studentList);
+        }
 
         //and add this current assignment to the vector of assignments that have been selected
         _selected.add((String) assignmentList.getSelectedValue());

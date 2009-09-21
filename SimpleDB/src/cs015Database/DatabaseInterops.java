@@ -4,6 +4,7 @@
  */
 package cs015Database;
 
+import cs015.tasupport.grading.Constants;
 import cs015.tasupport.grading.config.Assignment;
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.config.ConfigurationManager;
@@ -24,7 +25,7 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
  */
 public class DatabaseInterops {
 
-    public static final String FILE_NAME = "cs015Database.db";
+    public static final String FILE_NAME = Constants.COURSE_DIR + "tabin/gradesys/cs015Database.db";
     public static final String[] ASSIGNMENT_NAMES = {"Objects", "ClockDesign", "Clock", "LiteBriteDesign", "LiteBrite", "References", "TASafeHouse", "CartoonDesign", "Cartoon", "SwarmDesign", "Swarm", "TetrisDesign", "Tetris", "PizzaDex", "lab0", "lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"};
     public static final String[] GRADE_RUBRIC_FIELDS = {"DQPoints", "ProjectPoints"};
     public static final String[] TA_LOGINS = {"Paul", "psastras", "jeldridg"};
@@ -610,24 +611,24 @@ public class DatabaseInterops {
             addDatum("blacklist", s);
             addDatum("talist", new Object[]{s});
         }
-        autoPopulate();
-//        for (Assignment a : ConfigurationManager.getAssignments()) {
-//            for (String ss : Utils.getCS015Students()) {
-//                Object[] data;
-//                if (a.Points.DQ == 0) {
-//                    data = new String[2];
-//                    data[0] = ss;
-//                    data[1] = "0";
-//                } else {
-//                    data = new String[3];
-//                    data[0] = ss;
-//                    data[1] = "0";
-//                    data[2] = "0";
-//                }
-//                addDatum("grades_" + a.Name, data);
-//            }
-//
-//        }
+        //autoPopulate();
+        for (Assignment a : ConfigurationManager.getAssignments()) {
+            for (String ss : Utils.getCS015Students()) {
+                Object[] data;
+                if (a.Points.DQ == 0) {
+                    data = new String[2];
+                    data[0] = ss;
+                    data[1] = "0";
+                } else {
+                    data = new String[3];
+                    data[0] = ss;
+                    data[1] = "0";
+                    data[2] = "0";
+                }
+                addDatum("grades_" + a.Name, data);
+            }
+
+        }
     }
 
     private static void autoPopulate() throws SqlJetException {

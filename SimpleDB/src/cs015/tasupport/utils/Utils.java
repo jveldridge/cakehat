@@ -207,8 +207,8 @@ public class Utils {
      * @return
      */
     public static int getCurrentYear() {
-        return 2008; //For testing purposes only
-    //return Calendar.getInstance().get(Calendar.YEAR);
+       // return 2008; //For testing purposes only
+        return Calendar.getInstance().get(Calendar.YEAR);
     }
 
     /**
