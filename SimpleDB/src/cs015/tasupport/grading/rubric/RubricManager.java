@@ -21,9 +21,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import cs015.tasupport.grading.Constants;
+import cs015.tasupport.grading.config.ConfigurationManager;
 import cs015.tasupport.grading.projects.Project;
 import cs015.tasupport.grading.projects.ProjectManager;
 import cs015.tasupport.utils.Utils;
+import cs015Database.DatabaseInterops;
+import java.util.HashMap;
 
 public class RubricManager
 {	
@@ -910,7 +913,17 @@ public class RubricManager
 			convertToGRD(XMLFilePath, GRDFilePath);
 		}
 	}
-	
+
+    public static HashMap<String,Double> getAllScores(String asgn) {
+        HashMap<String,Double> scoresTable = new HashMap<String,Double>();
+        for (String g : ConfigurationManager.getGraderLogins()) {
+            for (String s : DatabaseInterops.getStudentsToGrade(g, asgn)) {
+                scoresTable.put(s, getTotalScore(asgn,g,s));
+            }
+        }
+        return scoresTable;
+    }
+
 	public static double getTotalScore(String asgn, String graderAcct, String studentAcct)
 	{
 		String path = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/" + studentAcct;

@@ -11,6 +11,7 @@
 package designQGrader;
 
 import cs015.tasupport.grading.config.AssignmentType;
+import cs015.tasupport.grading.rubric.RubricManager;
 import cs015.tasupport.utils.Utils;
 import cs015Database.DatabaseInterops;
 import java.awt.event.KeyAdapter;
@@ -24,10 +25,10 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author Paul
  */
-public class DesignQGraderGUI extends javax.swing.JFrame {
+public class AddGradesGUI extends javax.swing.JFrame {
 
     /** Creates new form DesignQGrader */
-    public DesignQGraderGUI() {
+    public AddGradesGUI() {
         initComponents();
         this.setLocationRelativeTo(null);
         try {
@@ -120,6 +121,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        getAllFromXMLButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -323,6 +325,13 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
             }
         });
 
+        getAllFromXMLButton.setText("Get All Grades from XML Files");
+        getAllFromXMLButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getAllFromXMLButtonActionPerformed(evt);
+            }
+        });
+
         jMenu1.setText("File");
 
         jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
@@ -364,7 +373,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                             .addComponent(jTextField3, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
                             .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
                             .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)))
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(getAllFromXMLButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -382,7 +394,7 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE))
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
@@ -398,8 +410,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
                             .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 139, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton1)
+                            .addComponent(getAllFromXMLButton))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -609,6 +623,10 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_table2AncestorAdded
 
+    private void getAllFromXMLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllFromXMLButtonActionPerformed
+        RubricManager.getAllScores((String)table2.getModel().getValueAt(table2.getSelectedRow(), 0));
+    }//GEN-LAST:event_getAllFromXMLButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -616,12 +634,13 @@ public class DesignQGraderGUI extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new DesignQGraderGUI().setVisible(true);
+                new AddGradesGUI().setVisible(true);
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog addStudentDialog;
+    private javax.swing.JButton getAllFromXMLButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;

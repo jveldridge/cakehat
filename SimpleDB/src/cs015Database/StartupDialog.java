@@ -12,7 +12,7 @@ package cs015Database;
 
 import assignment_distributor.AssignmentDistributorGUI;
 import database_editor.DatabaseGUI;
-import designQGrader.DesignQGraderGUI;
+import designQGrader.AddGradesGUI;
 import emailer.EmailGUI;
 import histogrammer.HistogramGUI;
 import java.awt.Color;
@@ -393,7 +393,7 @@ public class StartupDialog extends javax.swing.JFrame {
 }//GEN-LAST:event_emailButtonActionPerformedActionPerformed
 
     private void eneterGradesButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eneterGradesButton
-        DesignQGraderGUI dqGUI = new DesignQGraderGUI();
+        AddGradesGUI dqGUI = new AddGradesGUI();
         dqGUI.setVisible(true);
     }//GEN-LAST:event_eneterGradesButton
 
