@@ -12,7 +12,7 @@ package cs015Database;
 
 import assignment_distributor.AssignmentDistributorGUI;
 import database_editor.DatabaseGUI;
-import designQGrader.AddGradesGUI;
+import cs015.tasupport.grading.addGrades.AddGradesGUI;
 import emailer.EmailGUI;
 import histogrammer.HistogramGUI;
 import java.awt.Color;
@@ -238,7 +238,7 @@ public class StartupDialog extends javax.swing.JFrame {
 
         gradeDistributorButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cs015Database/accessories-calculator.png"))); // NOI18N
         gradeDistributorButton2.setMnemonic('E');
-        gradeDistributorButton2.setText("<html><b>Grade DQs / Homeworks</b><br />Enter DQ / homeworks grades into the database.</html>");
+        gradeDistributorButton2.setText("<html><b>Enter Grades</b><br />Enter grades into the database by pulling from XML files or entering manually.</html>");
         gradeDistributorButton2.setFocusable(false);
         gradeDistributorButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         gradeDistributorButton2.setIconTextGap(20);

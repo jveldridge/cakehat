@@ -8,7 +8,7 @@
  *
  * Created on Sep 16, 2009, 12:40:19 PM
  */
-package designQGrader;
+package cs015.tasupport.grading.addGrades;
 
 import cs015.tasupport.grading.config.AssignmentType;
 import cs015.tasupport.grading.rubric.RubricManager;
@@ -71,7 +71,7 @@ public class AddGradesGUI extends javax.swing.JFrame {
                     m.insertRow(table2.getRowCount(), new String[]{s});
                 }
             }
-            this.setTitle(Utils.getUserLogin() + " - Design Questions / Homework Grader");
+            this.setTitle(Utils.getUserLogin() + " - Add Grades to Database");
             table1.getSelectionModel().setSelectionInterval(0, 0);
             table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
             table2.getSelectionModel().setSelectionInterval(0, 0);
@@ -449,6 +449,15 @@ public class AddGradesGUI extends javax.swing.JFrame {
     }
 
     private void update() {
+        //determine whether the add XML grades button should be enabled
+        getAllFromXMLButton.setEnabled(false);
+        for (String s : DatabaseInterops.getProjectNames()) {
+            if (s.equalsIgnoreCase((String)table2.getModel().getValueAt(table2.getSelectedRow(), 0))) {
+                getAllFromXMLButton.setEnabled(true);
+                break;
+            }
+        }
+
         if (jTextField1.getText().length() == 0) {
             jButton1.setEnabled(false);
         } else {
@@ -481,6 +490,8 @@ public class AddGradesGUI extends javax.swing.JFrame {
         } else {
             jTextField4.setText("");
         }
+
+       
     }
 
     private void jTextField1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTextField1FocusLost
