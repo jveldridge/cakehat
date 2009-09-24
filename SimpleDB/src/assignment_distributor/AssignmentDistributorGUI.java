@@ -256,13 +256,12 @@ public class AssignmentDistributorGUI extends javax.swing.JFrame {
             minsLeniency = Integer.parseInt(input);
         }
 
-        //for (String taLogin : ConfigurationManager.getGraderLogins()) {
-        String taLogin = "jeldridg";
+        for (String taLogin : ConfigurationManager.getGraderLogins()) {
             String[] studsToGrade = DatabaseInterops.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
                 RubricManager.assignXMLToGrader(Project.getInstance((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseInterops.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
             }
-       // }
+       }
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
     private String getBlacklist(String taName) {

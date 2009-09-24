@@ -61,7 +61,7 @@ public class RubricManager
 		try
 		{ 
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); 
-			DocumentBuilder builder = factory.newDocumentBuilder(); 
+			DocumentBuilder builder = factory.newDocumentBuilder();
 			document = builder.parse(new File(XMLFilePath)); 
 		} 
 		catch (Exception e)
@@ -459,7 +459,7 @@ public class RubricManager
 	
 	private static void saveXMLFile(Document document, String XMLFilePath)
 	{
-		try {
+        try {
 			TransformerFactory tFactory = TransformerFactory.newInstance(); 
 			Transformer transformer = tFactory.newTransformer(); 
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes"); 
