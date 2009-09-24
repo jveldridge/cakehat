@@ -66,8 +66,7 @@ public class RubricManager
 		} 
 		catch (Exception e)
 		{ 
-			System.out.println("Could not create document from XML file. Be sure path specified is accurate.");
-			System.exit(0);
+			throw new Error("Could not create document from XML file. Be sure path specified is accurate.");
 		} 
 		
 		return document;
@@ -78,8 +77,7 @@ public class RubricManager
 		Node rubricNode = document.getDocumentElement();
 		if (!rubricNode.getNodeName().equals("RUBRIC"))
 		{
-			System.out.println("XML not formatted properly.");
-			System.exit(0);
+			throw new Error("XML not formatted properly, encountered node of name = " + rubricNode.getNodeName());
 		}
 		
 		return rubricNode;
@@ -100,7 +98,7 @@ public class RubricManager
 		{
 			Node currNode = rubricList.item(i);
 			//Skip if an empty text node
-			if (currNode.getNodeName().equals("#text"))
+			if (currNode.getNodeName().equals("#text") || currNode.getNodeName().equals("#comment"))
 			{
 				continue;
 			}
@@ -139,8 +137,7 @@ public class RubricManager
 			}
 			else
 			{
-				System.out.println("XML not formatted properly.");
-				System.exit(0);
+				throw new Error("XML not formatted properly, encountered node of name = " + currNode.getNodeName());
 			}
 		}
 	}
@@ -163,7 +160,7 @@ public class RubricManager
 		for (int i=0; i < subsectionList.getLength(); i++) 
 		{
 			Node subsectionNode = subsectionList.item(i);
-			if (subsectionNode.getNodeName().equals("#text"))
+			if (subsectionNode.getNodeName().equals("#text") || subsectionNode.getNodeName().equals("#comment"))
 			{
 				continue;
 			}
@@ -194,8 +191,7 @@ public class RubricManager
 			}
 			else
 			{
-				System.out.println("XML not formatted properly.");
-				System.exit(0);
+				throw new Error("XML not formatted properly, encountered node of name = " + subsectionNode.getNodeName());
 			}
 		}
 	}
@@ -205,7 +201,7 @@ public class RubricManager
 		for (int i=0; i < detailsList.getLength(); i++)
 		{
 			Node detailNode = detailsList.item(i);
-			if (detailNode.getNodeName().equals("#text"))
+			if (detailNode.getNodeName().equals("#text") || detailNode.getNodeName().equals("#comment"))
 			{
 				continue;
 			}
@@ -222,8 +218,7 @@ public class RubricManager
 			}
 			else
 			{
-				System.out.println("XML not formatted properly.");
-				System.exit(0);
+				throw new Error("XML not formatted properly, encountered node of name = " + detailNode.getNodeName());
 			}
 		}
 	}
@@ -233,7 +228,7 @@ public class RubricManager
 		for (int i=0; i < notesList.getLength(); i++)
 		{
 			Node note = notesList.item(i);
-			if (note.getNodeName().equals("#text"))
+			if (note.getNodeName().equals("#text") || note.getNodeName().equals("#comment"))
 			{
 				continue;
 			}
@@ -249,8 +244,7 @@ public class RubricManager
 			}
 			else
 			{
-				System.out.println("XML not formatted properly.");
-				System.exit(0);
+				throw new Error("XML not formatted properly, encountered node of name = " + note.getNodeName());
 			}
 		}
 	}
@@ -260,7 +254,7 @@ public class RubricManager
 		for (int i=0; i < commentsList.getLength(); i++)
 		{
 			Node comment = commentsList.item(i);
-			if (comment.getNodeName().equals("#text"))
+			if (comment.getNodeName().equals("#text") || comment.getNodeName().equals("#comment"))
 			{
 				continue;
 			}
@@ -276,8 +270,7 @@ public class RubricManager
 			}
 			else
 			{
-				System.out.println("XML not formatted properly.");
-				System.exit(0);
+				throw new Error("XML not formatted properly, encountered node of name = " + comment.getNodeName());
 			}
 		}
 	}
@@ -459,8 +452,7 @@ public class RubricManager
 			document = builder.newDocument();
 		} 
 		catch (Exception e) { 
-			System.out.println("Exception thrown in creating document.");
-			System.exit(0);
+			throw new Error("Exception thrown in creating document.");
 		}
 		return document;
 	}
@@ -476,8 +468,7 @@ public class RubricManager
 			transformer.transform(source, result); 
 		}
 		catch (Exception e) {
-			System.out.println("Exception thrown in saving document.");
-			System.exit(0);
+			throw new Error("Exception thrown in saving document.");
 		}
 	}
 	
