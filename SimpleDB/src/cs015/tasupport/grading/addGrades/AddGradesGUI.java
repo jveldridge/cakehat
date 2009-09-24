@@ -58,25 +58,25 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/accessories-calculator.png")));
-            DefaultTableModel m = (DefaultTableModel) table1.getModel();
+            DefaultTableModel m = (DefaultTableModel) studentTable.getModel();
             m.addColumn("Students");
             for (String s : DatabaseInterops.getStudentNames()) {
-                m.insertRow(table1.getRowCount(), new String[]{s});
+                m.insertRow(studentTable.getRowCount(), new String[]{s});
             }
             m.insertRow(0, new String[]{""});
-            m = (DefaultTableModel) table2.getModel();
+            m = (DefaultTableModel) assignmentTable.getModel();
             m.addColumn("Assignments");
             for (String s : DatabaseInterops.getAssignmentNames()) {
                 if (DatabaseInterops.getAssignmentType(s) == AssignmentType.HOMEWORK || (DatabaseInterops.getAssignmentType(s) == AssignmentType.PROJECT && DatabaseInterops.getAssignmentDQ(s) != 0)) {
-                    m.insertRow(table2.getRowCount(), new String[]{s});
+                    m.insertRow(assignmentTable.getRowCount(), new String[]{s});
                 }
             }
             this.setTitle(Utils.getUserLogin() + " - Add Grades to Database");
-            table1.getSelectionModel().setSelectionInterval(0, 0);
-            table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
-            table2.getSelectionModel().setSelectionInterval(0, 0);
-            table2.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
-            jTextField1.setText((String) table1.getModel().getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
+            studentTable.getSelectionModel().setSelectionInterval(0, 0);
+            studentTable.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+            assignmentTable.getSelectionModel().setSelectionInterval(0, 0);
+            assignmentTable.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+            jTextField1.setText((String) studentTable.getModel().getValueAt(studentTable.getSelectedRow(), studentTable.getSelectedColumn()));
             jTextField1.setSelectionStart(0);
             jTextField1.setSelectionEnd(jTextField1.getText().length());
             statusLabel.setText("Ready");
@@ -105,11 +105,11 @@ public class AddGradesGUI extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        table1 = new cs015Database.Table();
+        studentTable = new cs015Database.Table();
         jTextField1 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        table2 = new cs015Database.Table();
+        assignmentTable = new cs015Database.Table();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
@@ -183,7 +183,7 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        table1.setModel(new javax.swing.table.DefaultTableModel(
+        studentTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -191,13 +191,13 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
             }
         ));
-        table1.setFocusable(false);
-        table1.addMouseListener(new java.awt.event.MouseAdapter() {
+        studentTable.setFocusable(false);
+        studentTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                table1MouseClicked(evt);
+                studentTableMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(table1);
+        jScrollPane1.setViewportView(studentTable);
 
         jTextField1.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -219,7 +219,7 @@ public class AddGradesGUI extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 12));
         jLabel1.setText("Select Student");
 
-        table2.setModel(new javax.swing.table.DefaultTableModel(
+        assignmentTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -227,30 +227,30 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
             }
         ));
-        table2.setFocusable(false);
-        table2.addMouseListener(new java.awt.event.MouseAdapter() {
+        assignmentTable.setFocusable(false);
+        assignmentTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                table2MouseClicked(evt);
+                assignmentTableMouseClicked(evt);
             }
         });
-        table2.addAncestorListener(new javax.swing.event.AncestorListener() {
+        assignmentTable.addAncestorListener(new javax.swing.event.AncestorListener() {
             public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
             }
             public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
-                table2AncestorAdded(evt);
+                assignmentTableAncestorAdded(evt);
             }
             public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
             }
         });
-        table2.addKeyListener(new java.awt.event.KeyAdapter() {
+        assignmentTable.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                table2KeyPressed(evt);
+                assignmentTableKeyPressed(evt);
             }
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                table2KeyReleased(evt);
+                assignmentTableKeyReleased(evt);
             }
         });
-        jScrollPane2.setViewportView(table2);
+        jScrollPane2.setViewportView(assignmentTable);
 
         jLabel2.setFont(new java.awt.Font("SansSerif", 1, 12));
         jLabel2.setText("Select Assignment");
@@ -452,7 +452,7 @@ public class AddGradesGUI extends javax.swing.JFrame {
         //determine whether the add XML grades button should be enabled
         getAllFromXMLButton.setEnabled(false);
         for (String s : DatabaseInterops.getProjectNames()) {
-            if (s.equalsIgnoreCase((String)table2.getModel().getValueAt(table2.getSelectedRow(), 0))) {
+            if (s.equalsIgnoreCase((String)assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0))) {
                 getAllFromXMLButton.setEnabled(true);
                 break;
             }
@@ -463,27 +463,27 @@ public class AddGradesGUI extends javax.swing.JFrame {
         } else {
             jButton1.setEnabled(true);
         }
-        if (table1.getRowCount() == 0 || ((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn())).length() == 0) {
+        if (studentTable.getRowCount() == 0 || ((String) studentTable.getValueAt(studentTable.getSelectedRow(), studentTable.getSelectedColumn())).length() == 0) {
             jTextField2.setText("");
             jTextField4.setText("");
-            if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
-                jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            if (DatabaseInterops.getAssignmentDQ((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn())) == 0) {
+                jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn())));
             } else {
-                jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+                jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn())));
             }
             return;
         }
 
-        jTextField1.setText((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()));
+        jTextField1.setText((String) studentTable.getValueAt(studentTable.getSelectedRow(), studentTable.getSelectedColumn()));
         jTextField1.setCaretPosition(0);
         jTextField1.setSelectionStart(0);
         jTextField1.setSelectionEnd(jTextField1.getText().length());
-        if (DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())) == 0) {
-            jTextField2.setText("" + DatabaseInterops.getStudentProjectScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
-            jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+        if (DatabaseInterops.getAssignmentDQ((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn())) == 0) {
+            jTextField2.setText("" + DatabaseInterops.getStudentProjectScore((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn()), jTextField1.getText()));
+            jTextField3.setText("" + DatabaseInterops.getAssignmentTotal((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn())));
         } else {
-            jTextField2.setText("" + DatabaseInterops.getStudentDQScore((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn()), jTextField1.getText()));
-            jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) table2.getValueAt(table2.getSelectedRow(), table2.getSelectedColumn())));
+            jTextField2.setText("" + DatabaseInterops.getStudentDQScore((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn()), jTextField1.getText()));
+            jTextField3.setText("" + DatabaseInterops.getAssignmentDQ((String) assignmentTable.getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn())));
         }
         if (jTextField2.getText().length() > 0 && jTextField3.getText().length() > 0) {
             jTextField4.setText("" + (Double.parseDouble(jTextField2.getText()) / Double.parseDouble(jTextField3.getText()) * 100));
@@ -500,11 +500,11 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
     private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
 
-        if (evt.getKeyCode() == 38 && table1.getSelectedRow() != 0) { //up
-            table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() - 1, table1.getSelectedRow() - 1);
+        if (evt.getKeyCode() == 38 && studentTable.getSelectedRow() != 0) { //up
+            studentTable.getSelectionModel().setSelectionInterval(studentTable.getSelectedRow() - 1, studentTable.getSelectedRow() - 1);
         //update();
-        } else if (evt.getKeyCode() == 40 && table1.getSelectedRow() != table1.getRowCount() - 1) { //down
-            table1.getSelectionModel().setSelectionInterval(table1.getSelectedRow() + 1, table1.getSelectedRow() + 1);
+        } else if (evt.getKeyCode() == 40 && studentTable.getSelectedRow() != studentTable.getRowCount() - 1) { //down
+            studentTable.getSelectionModel().setSelectionInterval(studentTable.getSelectedRow() + 1, studentTable.getSelectedRow() + 1);
         //update();
         } else if (evt.getKeyCode() == 10) { //Enter key
             jTextField2.requestFocus();
@@ -514,16 +514,16 @@ public class AddGradesGUI extends javax.swing.JFrame {
     private void jTextField2KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyTyped
     }//GEN-LAST:event_jTextField2KeyTyped
 
-    private void table1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table1MouseClicked
-        if (table1.getRowCount() == 0 || ((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn())).length() == 0) {
+    private void studentTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentTableMouseClicked
+        if (studentTable.getRowCount() == 0 || ((String) studentTable.getValueAt(studentTable.getSelectedRow(), studentTable.getSelectedColumn())).length() == 0) {
             jTextField1.setText("");
         }
         update();
-    }//GEN-LAST:event_table1MouseClicked
+}//GEN-LAST:event_studentTableMouseClicked
 
-    private void table2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table2MouseClicked
+    private void assignmentTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentTableMouseClicked
         update();
-    }//GEN-LAST:event_table2MouseClicked
+}//GEN-LAST:event_assignmentTableMouseClicked
 
     private void jTextField2KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyPressed
         if (evt.getKeyCode() == 10) {
@@ -533,7 +533,7 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            String assignmentName = (String) table2.getModel().getValueAt(table2.getSelectedRow(), table2.getSelectedColumn());
+            String assignmentName = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn());
             String studentLogin = jTextField1.getText();
             long row = DatabaseInterops.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
             if (DatabaseInterops.getDataCell("grades_" + assignmentName, row, "studLogins").compareToIgnoreCase(studentLogin) == 0) {
@@ -569,11 +569,11 @@ public class AddGradesGUI extends javax.swing.JFrame {
 
     private void jTextField1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyReleased
         if (evt.getKeyCode() == 27) { //Esc key
-            table1.applyFilterSorter();
-            table1.filter("");
-            table1.setColumnSelectionAllowed(true);
-            table1.getSelectionModel().setSelectionInterval(0, 0);
-            table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+            studentTable.applyFilterSorter();
+            studentTable.filter("");
+            studentTable.setColumnSelectionAllowed(true);
+            studentTable.getSelectionModel().setSelectionInterval(0, 0);
+            studentTable.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
             return;
         }
         if (evt.getKeyCode() == 38 || evt.getKeyCode() == 40) { //up
@@ -587,24 +587,24 @@ public class AddGradesGUI extends javax.swing.JFrame {
         } else {
             jButton1.setEnabled(true);
         }
-        table1.applyFilterSorter();
-        table1.filter(jTextField1.getText());
-        table1.setColumnSelectionAllowed(true);
-        table1.getSelectionModel().setSelectionInterval(0, 0);
-        table1.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+        studentTable.applyFilterSorter();
+        studentTable.filter(jTextField1.getText());
+        studentTable.setColumnSelectionAllowed(true);
+        studentTable.getSelectionModel().setSelectionInterval(0, 0);
+        studentTable.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
     }//GEN-LAST:event_jTextField1KeyReleased
 
-    private void table2KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_table2KeyReleased
+    private void assignmentTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_assignmentTableKeyReleased
         // TODO add your handling code here:
-    }//GEN-LAST:event_table2KeyReleased
+}//GEN-LAST:event_assignmentTableKeyReleased
 
-    private void table2KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_table2KeyPressed
+    private void assignmentTableKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_assignmentTableKeyPressed
         update();
-    }//GEN-LAST:event_table2KeyPressed
+}//GEN-LAST:event_assignmentTableKeyPressed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         DatabaseInterops.addStudent(jTextField1.getText());
-        String assignmentName = (String) table2.getModel().getValueAt(table2.getSelectedRow(), table2.getSelectedColumn());
+        String assignmentName = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn());
         String studentLogin = jTextField1.getText();
         long row = DatabaseInterops.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
         String[] s = (String[]) DatabaseInterops.getDataRow("grades_" + assignmentName, row);
@@ -630,12 +630,12 @@ public class AddGradesGUI extends javax.swing.JFrame {
         addStudentDialog.setVisible(false);
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void table2AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_table2AncestorAdded
+    private void assignmentTableAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_assignmentTableAncestorAdded
         // TODO add your handling code here:
-    }//GEN-LAST:event_table2AncestorAdded
+}//GEN-LAST:event_assignmentTableAncestorAdded
 
     private void getAllFromXMLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllFromXMLButtonActionPerformed
-        RubricManager.getAllScores((String)table2.getModel().getValueAt(table2.getSelectedRow(), 0));
+        RubricManager.getAllScores((String)assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0));
     }//GEN-LAST:event_getAllFromXMLButtonActionPerformed
 
     /**
@@ -651,6 +651,7 @@ public class AddGradesGUI extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog addStudentDialog;
+    private cs015Database.Table assignmentTable;
     private javax.swing.JButton getAllFromXMLButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -674,7 +675,6 @@ public class AddGradesGUI extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JLabel statusLabel;
-    private cs015Database.Table table1;
-    private cs015Database.Table table2;
+    private cs015Database.Table studentTable;
     // End of variables declaration//GEN-END:variables
 }

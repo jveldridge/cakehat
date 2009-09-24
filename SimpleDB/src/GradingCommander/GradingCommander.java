@@ -9,6 +9,7 @@ import emailer.EmailGUI;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -78,8 +79,10 @@ public class GradingCommander {
         }
         String printer = GradingCommander.getPrinter("Choose printer on which to print all students' code");
         if (printer != null) {
+            boolean first = true;
             for (String sL : studentLogins) {
-                printStudentProject(project, sL, printer);
+                printStudentProject(project, sL, printer, first);
+                first = false;
             }
         }
     }
@@ -94,12 +97,14 @@ public class GradingCommander {
      * @param login
      * @param printer
      */
-    public static void printStudentProject(String project, String studentLogin, String printer) {
+    public static void printStudentProject(String project, String studentLogin, String printer, boolean first) {
         if (printer == null) {
-                printer = GradingCommander.getPrinter("Choose printer on which to print student code");
+            printer = GradingCommander.getPrinter("Choose printer on which to print student code");
         }
-        String printCommand = new String("cs015_gradingPrint " + printer + " " + Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
-        BashConsole.write(printCommand);
+        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
+        System.out.println("pC is " + printCommand);
+        Collection<String> ss = BashConsole.write(printCommand);
+        System.out.println("output: " + ss.toString());
     }
 
     /**
@@ -152,7 +157,7 @@ public class GradingCommander {
         String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
         final String cmd = "kate " + path + "*.java";
 
-        System.out.println("Open command: " + cmd);
+        System.out.println("PM.gSSD(): " + ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login));
 
         BashConsole.writeThreaded(cmd);
     }

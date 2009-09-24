@@ -57,7 +57,8 @@ public class RubricManager
 	
 	private static Document getDocument(String XMLFilePath)
 	{
-		Document document = null; 
+		System.out.println("XMLFilePath is: " + XMLFilePath);
+        Document document = null;
 		try
 		{ 
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); 
