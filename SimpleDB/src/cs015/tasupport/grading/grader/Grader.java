@@ -32,7 +32,6 @@ public class Grader extends JFrame
 		
 		//Get grading rubric
 		final String XMLFilePath = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/" + studentAcct + ".xml";
-        System.out.println("in Grader, xmlfp is " + XMLFilePath + " and constants.graderpath is" + Constants.GRADER_PATH);
         final Rubric rubric = RubricManager.processXML(XMLFilePath);
 		
 		//Configure basic properties

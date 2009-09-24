@@ -200,14 +200,8 @@ public class GradingCommander {
     }
 
     public static void submitXMLFiles(String assignment) {
-        Runtime r = Runtime.getRuntime();
         String copyCommand = "cp " + ProjectManager.getUserGradingDirectory() + assignment + "/*.xml " + Constants.GRADER_SUBMIT_PATH + assignment + "/" + Utils.getUserLogin() + "/";
-        try {
-            //TODO: add error-checking; needs to make directories when they don't exist
-            r.exec(copyCommand);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        BashConsole.write(copyCommand);
     }
 
     public static void removeCodeDirectories(Vector<String> _selected) {
