@@ -523,7 +523,7 @@ public class RubricManager
 		writeLine(STUDENTS_NAME_LBL + rubric.Student.Name + '\n', output);
 		writeLine(GRADERS_NAME_LBL + rubric.Grader.Name + '\n', output);
 		writeLine(GRADERS_ACCOUNT_LBL + rubric.Grader.Acct + '\n', output);
-		writeLine(GRADERS_HOURS_LBL + rubric.Grader.Hours + '\n', output);
+		//writeLine(GRADERS_HOURS_LBL + rubric.Grader.Hours + '\n', output);
 		printHeader(output);
 	}
 	
