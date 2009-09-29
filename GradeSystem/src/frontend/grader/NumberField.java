@@ -50,6 +50,14 @@ class NumberField extends JFormattedTextField {
             public void insertUpdate(DocumentEvent e) {
                 try {
                     double newValue = Double.parseDouble(field.getText());
+                    if (newValue > field._subsection.OutOf)
+                    {
+                        field.setBackground(java.awt.Color.RED);
+                    }
+                    else
+                    {
+                        field.setBackground(java.awt.Color.WHITE);
+                    }
                     if (newValue != field._oldValue) {
                         field._oldValue = newValue;
                         field._stateManager.rubricChanged();
