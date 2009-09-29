@@ -1,7 +1,6 @@
 
 package backend.visualizer;
 
-import frontend.grader.*;
 import java.awt.Dimension;
 import javax.swing.JScrollPane;
 

@@ -7,9 +7,7 @@ package backend.visualizer;
  */
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;

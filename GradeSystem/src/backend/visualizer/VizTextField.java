@@ -1,10 +1,7 @@
 package backend.visualizer;
 
-import frontend.grader.*;
 import com.inet.jortho.SpellChecker;
 import frontend.grader.rubric.Section;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import frontend.grader.rubric.Entry;
 import java.util.Vector;
 
