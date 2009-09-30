@@ -26,7 +26,9 @@ public class Constants {
     public static final String HANDIN_DIR = COURSE_DIR + "handin/";
     public static final String TEST_ACCOUNT = "cs015000";
 
-    public static final String GRADES_TA = "jeldridg@cs.brown.edu";
+    public static final String GRADES_TA = "jeldridg";
+    public static final String GRADES_HTA = "aunger";
+    public static final String EMAIL_DOMAIN = "cs.brown.edu";
     public static final int MINUTES_OF_LENIENCY = 10;
 
     public static final String DATABASE_DIR = COURSE_DIR + "tabin/gradesys/cs015Database.db";//"/home/psastras/cs15db.db";///COURSE_DIR + "tabin/gradesys/cs015Database.db";

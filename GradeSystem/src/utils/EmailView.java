@@ -42,10 +42,14 @@ public class EmailView extends javax.swing.JFrame {
         } catch (Exception e) {
         }
         toBox.setText(Arrays.toString(to).replace("[", "").replace("]", ""));
+        System.out.println("set to with: " + toBox.getText());
         ccBox.setText(Arrays.toString(cc).replace("[", "").replace("]", ""));
         bccBox.setText(Arrays.toString(bcc).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
+        toBox.setText(Utils.getUserLogin() + Constants.EMAIL_DOMAIN);
+        System.out.println("later, to box is: " + toBox.getText());
+        fromBox.setText(Utils.getUserLogin() + Constants.EMAIL_DOMAIN);
+        ccBox.setText(Constants.GRADES_TA+"@"+Constants.EMAIL_DOMAIN + ", " + Constants.GRADES_HTA+"@"+Constants.EMAIL_DOMAIN);
         bodyText.setText(body);
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);

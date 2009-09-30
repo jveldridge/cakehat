@@ -167,22 +167,11 @@
                           <Component id="generalCommandsLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="submitGradesButton" alignment="0" pref="603" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="runDemoButton" pref="300" max="32767" attributes="0"/>
-                                  <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                                  <Component id="printAllButton" pref="300" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                      </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="selectedStudentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="1" attributes="0">
                                       <Component id="runTesterButton" alignment="1" pref="298" max="32767" attributes="2"/>
                                       <Component id="openButton" alignment="0" pref="298" max="32767" attributes="2"/>
                                   </Group>
@@ -192,8 +181,23 @@
                                       <Component id="printButton" alignment="0" pref="299" max="32767" attributes="2"/>
                                   </Group>
                               </Group>
-                              <Component id="runButton1" alignment="0" pref="603" max="32767" attributes="2"/>
                           </Group>
+                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="runDemoButton" pref="298" max="32767" attributes="0"/>
+                              <Component id="jButton1" alignment="1" pref="298" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="submitGradesButton" alignment="1" pref="299" max="32767" attributes="0"/>
+                              <Component id="printAllButton" alignment="1" pref="299" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="runButton1" pref="603" max="32767" attributes="2"/>
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -207,11 +211,14 @@
                   <Component id="generalCommandsLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="runDemoButton" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
-                      <Component id="printAllButton" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
+                      <Component id="printAllButton" min="-2" pref="51" max="-2" attributes="0"/>
+                      <Component id="runDemoButton" min="-2" pref="51" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="submitGradesButton" min="-2" pref="51" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="submitGradesButton" alignment="3" min="-2" pref="51" max="-2" attributes="0"/>
+                      <Component id="jButton1" alignment="3" pref="54" max="32767" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="selectedStudentLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -226,7 +233,7 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="runButton1" pref="54" max="32767" attributes="1"/>
-                  <EmptySpace pref="82" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -342,6 +349,15 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="submitGradesButton1runButton"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="jButton1">
+          <Properties>
+            <Property name="text" type="java.lang.String" resourceKey="jButton1.text"/>
+            <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

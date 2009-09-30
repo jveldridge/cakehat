@@ -95,6 +95,11 @@ public class Utils {
         return false;
     }
 
+    public static String getProjectDirectory(Project p) {
+        String d = Constants.COURSE_DIR + "/asgn/"+ p.getName() + "/grade/";
+        return d;
+    }
+
     /**
      * Returns the current year
      *
