@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Constants;
 import utils.Project;
 import utils.Utils;
 
@@ -169,7 +170,7 @@ public class FrontendView extends javax.swing.JFrame {
         submitGradesButton = new javax.swing.JButton();
         runButton1 = new javax.swing.JButton();
         submitGradesButton1 = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        viewGradingStandardsButton = new javax.swing.JButton();
         studentListPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -329,11 +330,11 @@ public class FrontendView extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
-        jButton1.setName("jButton1"); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        viewGradingStandardsButton.setText(resourceMap.getString("viewGradingStandardsButton.text")); // NOI18N
+        viewGradingStandardsButton.setName("viewGradingStandardsButton"); // NOI18N
+        viewGradingStandardsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                viewGradingStandardsButtonActionPerformed(evt);
             }
         });
 
@@ -362,7 +363,7 @@ public class FrontendView extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(runDemoButton, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                            .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(submitGradesButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
@@ -384,7 +385,7 @@ public class FrontendView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(submitGradesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
+                    .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectedStudentLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -592,11 +593,11 @@ public class FrontendView extends javax.swing.JFrame {
         currentInfo.setText((String) studentList.getSelectedValue());
 }//GEN-LAST:event_studentListKeyReleased
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void viewGradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewGradingStandardsButtonActionPerformed
         // TODO add your handling code here:
-        FileViewer f = new FileViewer(Utils.getProjectDirectory(Project.getInstance((String)assignmentList.getSelectedValue())), "rubric.txt");
+        FileViewer f = new FileViewer(Utils.getProjectDirectory(Project.getInstance((String)assignmentList.getSelectedValue())), Constants.DEDUCTIONS_LIST_FILENAME);
         f.setVisible(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
+}//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -615,7 +616,6 @@ public class FrontendView extends javax.swing.JFrame {
     private javax.swing.JPanel assignmentListPanel;
     private javax.swing.JLabel currentInfo;
     private javax.swing.JLabel generalCommandsLabel;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -637,5 +637,6 @@ public class FrontendView extends javax.swing.JFrame {
     private javax.swing.JPanel studentListPanel;
     private javax.swing.JButton submitGradesButton;
     private javax.swing.JButton submitGradesButton1;
+    private javax.swing.JButton viewGradingStandardsButton;
     // End of variables declaration//GEN-END:variables
 }

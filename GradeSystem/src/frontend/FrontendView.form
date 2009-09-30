@@ -187,7 +187,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="runDemoButton" pref="298" max="32767" attributes="0"/>
-                              <Component id="jButton1" alignment="1" pref="298" max="32767" attributes="0"/>
+                              <Component id="viewGradingStandardsButton" alignment="1" pref="298" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -217,7 +217,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="submitGradesButton" alignment="3" min="-2" pref="51" max="-2" attributes="0"/>
-                      <Component id="jButton1" alignment="3" pref="54" max="32767" attributes="0"/>
+                      <Component id="viewGradingStandardsButton" alignment="3" pref="54" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="selectedStudentLabel" min="-2" max="-2" attributes="0"/>
@@ -351,13 +351,13 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="submitGradesButton1runButton"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="jButton1">
+        <Component class="javax.swing.JButton" name="viewGradingStandardsButton">
           <Properties>
-            <Property name="text" type="java.lang.String" resourceKey="jButton1.text"/>
-            <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
+            <Property name="text" type="java.lang.String" resourceKey="viewGradingStandardsButton.text"/>
+            <Property name="name" type="java.lang.String" value="viewGradingStandardsButton" noResource="true"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="viewGradingStandardsButtonActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
