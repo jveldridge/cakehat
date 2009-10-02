@@ -17,6 +17,7 @@ import backend.histogram.HistogramView;
 import java.awt.Color;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
+import utils.ErrorView;
 
 /**
  *
@@ -338,7 +339,7 @@ public class BackendView extends javax.swing.JFrame {
             try {
                 DatabaseIO.regenerateDatabase();
             } catch (Exception e) {
-                e.printStackTrace();
+                new ErrorView(e);
             }
             warningDialog.setVisible(false);
         } else {

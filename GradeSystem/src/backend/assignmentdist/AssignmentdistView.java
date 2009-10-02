@@ -13,7 +13,6 @@ package backend.assignmentdist;
 
 import backend.DatabaseIO;
 import frontend.grader.rubric.RubricManager;
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +26,7 @@ import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
 import utils.Constants;
+import utils.ErrorView;
 import utils.Project;
 import utils.ProjectManager;
 
@@ -72,7 +72,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 
@@ -245,7 +245,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
-        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
+        ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");
         int minsLeniency = Constants.MINUTES_OF_LENIENCY;
         if ((input != null) && (input.length() != 0)) {
@@ -265,7 +265,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             ISqlJetCursor cursor = DatabaseIO.getData("blacklist", "ta_blist_logins", taName);
             return cursor.getString("studLogins");
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
             return "";
         }
     }

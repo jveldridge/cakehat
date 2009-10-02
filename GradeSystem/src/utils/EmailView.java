@@ -150,7 +150,7 @@ public class EmailView extends javax.swing.JFrame {
         });
 
         bodyText.setColumns(20);
-        bodyText.setFont(new java.awt.Font("SansSerif", 0, 12));
+        bodyText.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         bodyText.setRows(5);
         bodyText.setMargin(new java.awt.Insets(10, 10, 10, 10));
         jScrollPane1.setViewportView(bodyText);
@@ -187,10 +187,10 @@ public class EmailView extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1033, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
                             .addComponent(jLabel4)
@@ -199,11 +199,11 @@ public class EmailView extends javax.swing.JFrame {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
-                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
-                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
-                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE))))
+                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
+                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
+                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
+                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
+                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -232,11 +232,11 @@ public class EmailView extends javax.swing.JFrame {
                             .addComponent(jLabel3)
                             .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -250,7 +250,7 @@ public class EmailView extends javax.swing.JFrame {
 }//GEN-LAST:event_subjectBoxActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // Utils.sendMail(toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
+        Utils.sendMail(toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
         jDialog1.setLocationRelativeTo(null);
         jDialog1.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed

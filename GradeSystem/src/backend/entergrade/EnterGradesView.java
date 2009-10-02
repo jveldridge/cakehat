@@ -19,11 +19,11 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.AssignmentType;
+import utils.ErrorView;
 
 /**
  *
@@ -100,7 +100,7 @@ public class EnterGradesView extends javax.swing.JFrame {
             }
             update();
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 
@@ -115,7 +115,7 @@ public class EnterGradesView extends javax.swing.JFrame {
 
         addStudentDialog = new javax.swing.JDialog();
         jLabel7 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        addStudentConfirmButton = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         m_scroll1 = new javax.swing.JScrollPane();
         studentTable = new backend.components.Table();
@@ -159,11 +159,11 @@ public class EnterGradesView extends javax.swing.JFrame {
         jLabel7.setFocusable(false);
         jLabel7.setIconTextGap(20);
 
-        jButton2.setMnemonic('Y');
-        jButton2.setText("Yes");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        addStudentConfirmButton.setMnemonic('Y');
+        addStudentConfirmButton.setText("Yes");
+        addStudentConfirmButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                addStudentConfirmButtonActionPerformed(evt);
             }
         });
 
@@ -186,7 +186,7 @@ public class EnterGradesView extends javax.swing.JFrame {
                         .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addStudentDialogLayout.createSequentialGroup()
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addStudentConfirmButton, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(13, 13, 13))))
@@ -199,7 +199,7 @@ public class EnterGradesView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(addStudentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton3)
-                    .addComponent(jButton2))
+                    .addComponent(addStudentConfirmButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -661,7 +661,7 @@ public class EnterGradesView extends javax.swing.JFrame {
             m_studentTextKeyTyped(null);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
 }//GEN-LAST:event_m_enterGradeButtonActionPerformed
 
@@ -710,7 +710,7 @@ public class EnterGradesView extends javax.swing.JFrame {
         update();
 }//GEN-LAST:event_assignmentTableKeyPressed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void addStudentConfirmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStudentConfirmButtonActionPerformed
         DatabaseIO.addStudent(m_studentText.getText());
         String assignmentName = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn());
         String studentLogin = m_studentText.getText();
@@ -721,10 +721,10 @@ public class EnterGradesView extends javax.swing.JFrame {
             DatabaseIO.update(row, "grades_" + assignmentName, (Object[]) s);
             updateStatus("Written to database");
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
         addStudentDialog.setVisible(false);
-    }//GEN-LAST:event_jButton2ActionPerformed
+}//GEN-LAST:event_addStudentConfirmButtonActionPerformed
 
     private void m_dqearnedTextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_m_dqearnedTextKeyReleased
         if (m_dqearnedText.getText().length() > 0 && m_dqtotalText.getText().length() > 0) {
@@ -745,12 +745,13 @@ public class EnterGradesView extends javax.swing.JFrame {
     private void m_xmlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_xmlButtonActionPerformed
         String asgn = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0);
         HashMap<String, Double> hm = RubricManager.getAllScores(asgn);
+        System.out.println(hm.size());
         try {
             for (Object o : hm.keySet()) {
                 ISqlJetCursor c = DatabaseIO.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
                 String[] data = (String[]) DatabaseIO.getDataRow("grades_" + asgn, c.getRowId());
-                if (data[0].compareToIgnoreCase((String) o) != 0) {
-                    DatabaseIO.addStudent((String) o);
+                if (data[0].trim().compareToIgnoreCase(((String) o).trim()) != 0) {
+                    DatabaseIO.addStudent(((String) o).trim());
                     c = DatabaseIO.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
                     data = (String[]) DatabaseIO.getDataRow("grades_" + asgn, c.getRowId());
                     System.out.println("Student " + (String) o + " added.");
@@ -761,7 +762,7 @@ public class EnterGradesView extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Grades for " + asgn + " have been successfully added to the database.", "Added", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error while adding grades to database.", "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            new ErrorView(e);
         }
 }//GEN-LAST:event_m_xmlButtonActionPerformed
 
@@ -777,9 +778,9 @@ public class EnterGradesView extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addStudentConfirmButton;
     private javax.swing.JDialog addStudentDialog;
     private backend.components.Table assignmentTable;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

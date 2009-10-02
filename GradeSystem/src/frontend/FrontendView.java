@@ -22,6 +22,7 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Constants;
+import utils.ErrorView;
 import utils.Project;
 import utils.Utils;
 
@@ -144,7 +145,7 @@ public class FrontendView extends javax.swing.JFrame {
                 cursor.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 
@@ -229,7 +230,7 @@ public class FrontendView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
         );
 
         jPanel1.setName("jPanel1"); // NOI18N
@@ -243,9 +244,11 @@ public class FrontendView extends javax.swing.JFrame {
         selectedStudentLabel.setName("selectedStudentLabel"); // NOI18N
 
         openButton.setIcon(resourceMap.getIcon("openButton.icon")); // NOI18N
+        openButton.setMnemonic('O');
         openButton.setText(resourceMap.getString("openButton.text")); // NOI18N
         openButton.setFocusable(false);
         openButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        openButton.setIconTextGap(10);
         openButton.setName("openButton"); // NOI18N
         openButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -254,9 +257,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         printButton.setIcon(resourceMap.getIcon("printButton.icon")); // NOI18N
+        printButton.setMnemonic('P');
         printButton.setText(resourceMap.getString("printButton.text")); // NOI18N
         printButton.setFocusable(false);
         printButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        printButton.setIconTextGap(10);
         printButton.setName("printButton"); // NOI18N
         printButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -265,9 +270,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         runTesterButton.setIcon(resourceMap.getIcon("runTesterButton.icon")); // NOI18N
+        runTesterButton.setMnemonic('T');
         runTesterButton.setText(resourceMap.getString("runTesterButton.text")); // NOI18N
         runTesterButton.setFocusable(false);
         runTesterButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        runTesterButton.setIconTextGap(10);
         runTesterButton.setName("runTesterButton"); // NOI18N
         runTesterButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -276,10 +283,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         runDemoButton.setIcon(resourceMap.getIcon("runDemoButton.icon")); // NOI18N
+        runDemoButton.setMnemonic('D');
         runDemoButton.setText(resourceMap.getString("runDemoButton.text")); // NOI18N
         runDemoButton.setFocusable(false);
         runDemoButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        runDemoButton.setIconTextGap(20);
+        runDemoButton.setIconTextGap(10);
         runDemoButton.setName("runDemoButton"); // NOI18N
         runDemoButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -288,10 +296,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         printAllButton.setIcon(resourceMap.getIcon("printAllButton.icon")); // NOI18N
+        printAllButton.setMnemonic('A');
         printAllButton.setText(resourceMap.getString("printAllButton.text")); // NOI18N
         printAllButton.setFocusable(false);
         printAllButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        printAllButton.setIconTextGap(20);
+        printAllButton.setIconTextGap(10);
         printAllButton.setName("printAllButton"); // NOI18N
         printAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -300,9 +309,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         submitGradesButton.setIcon(resourceMap.getIcon("submitGradesButton.icon")); // NOI18N
+        submitGradesButton.setMnemonic('S');
         submitGradesButton.setText(resourceMap.getString("submitGradesButton.text")); // NOI18N
         submitGradesButton.setFocusable(false);
         submitGradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        submitGradesButton.setIconTextGap(10);
         submitGradesButton.setName("submitGradesButton"); // NOI18N
         submitGradesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -311,9 +322,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         runButton1.setIcon(resourceMap.getIcon("runButton1.icon")); // NOI18N
+        runButton1.setMnemonic('G');
         runButton1.setText(resourceMap.getString("runButton1.text")); // NOI18N
         runButton1.setFocusable(false);
         runButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        runButton1.setIconTextGap(10);
         runButton1.setName("runButton1"); // NOI18N
         runButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -322,9 +335,11 @@ public class FrontendView extends javax.swing.JFrame {
         });
 
         submitGradesButton1.setIcon(resourceMap.getIcon("submitGradesButton1.icon")); // NOI18N
+        submitGradesButton1.setMnemonic('R');
         submitGradesButton1.setText(resourceMap.getString("submitGradesButton1.text")); // NOI18N
         submitGradesButton1.setFocusable(false);
         submitGradesButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        submitGradesButton1.setIconTextGap(10);
         submitGradesButton1.setName("submitGradesButton1"); // NOI18N
         submitGradesButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,7 +347,11 @@ public class FrontendView extends javax.swing.JFrame {
             }
         });
 
+        viewGradingStandardsButton.setIcon(resourceMap.getIcon("viewGradingStandardsButton.icon")); // NOI18N
+        viewGradingStandardsButton.setMnemonic('V');
         viewGradingStandardsButton.setText(resourceMap.getString("viewGradingStandardsButton.text")); // NOI18N
+        viewGradingStandardsButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        viewGradingStandardsButton.setIconTextGap(10);
         viewGradingStandardsButton.setName("viewGradingStandardsButton"); // NOI18N
         viewGradingStandardsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -367,9 +386,9 @@ public class FrontendView extends javax.swing.JFrame {
                             .addComponent(runDemoButton, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                             .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(submitGradesButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
-                            .addComponent(printAllButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(submitGradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
+                            .addComponent(printAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
                         .addGap(9, 9, 9))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(runButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
@@ -386,7 +405,7 @@ public class FrontendView extends javax.swing.JFrame {
                     .addComponent(runDemoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(submitGradesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(submitGradesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectedStudentLabel)
@@ -441,7 +460,7 @@ public class FrontendView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
         );
 
         jPanel2.setName("jPanel2"); // NOI18N
@@ -517,7 +536,7 @@ public class FrontendView extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 423, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 

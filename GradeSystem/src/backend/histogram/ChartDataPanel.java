@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jfree.data.statistics.Statistics;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.ErrorView;
 
 /**
  *
@@ -56,7 +57,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
             stdDevLabel.setText("" + Statistics.getStdDev(dataAsNumber));
             chartPanel1.loadData(asgnName, data);
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 

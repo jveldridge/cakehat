@@ -55,7 +55,7 @@ public class BashConsole
 		} 
 		catch (IOException e)
 		{ 
-		   e.printStackTrace(); 
+		   new ErrorView(e);
 		} 
 		if (proc != null)
 		{ 
@@ -80,7 +80,7 @@ public class BashConsole
 		   } 
 		   catch (Exception e)
 		   { 
-		      e.printStackTrace(); 
+		      new ErrorView(e);
 		   } 
 		}
 		

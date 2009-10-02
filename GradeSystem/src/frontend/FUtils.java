@@ -13,6 +13,7 @@ import javax.swing.ListModel;
 import utils.BashConsole;
 import utils.Constants;
 import utils.EmailView;
+import utils.ErrorView;
 import utils.Project;
 import utils.ProjectManager;
 import utils.Utils;
@@ -37,8 +38,8 @@ public class FUtils {
         Runtime r = Runtime.getRuntime();
         try {
             r.exec("cs015_runGradeDemo " + project);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            new ErrorView(e);
         }
     }
 
@@ -186,7 +187,7 @@ public class FUtils {
 //        try {
 //            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
 //        } catch (IOException e) {
-//            e.printStackTrace();
+//            new ErrorView(e);
 //        }
         eg.setVisible(true);
     }

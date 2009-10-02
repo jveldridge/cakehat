@@ -30,7 +30,7 @@ public class Utils {
             String[] cmd = {"/bin/sh", "-c", stringBuilder};
             Runtime.getRuntime().exec(cmd);
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
         return false;
     }

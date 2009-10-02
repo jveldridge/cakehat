@@ -11,6 +11,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.ErrorView;
 
 /**
  * Provides a grid view which automatically handles database interactions.
@@ -73,7 +74,7 @@ public class GridView extends Table {
                 refresh(_tableName);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 
@@ -90,7 +91,7 @@ public class GridView extends Table {
             }
             m.removeRow(this.convertRowIndexToModel(this.getSelectedRow()));
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 
@@ -107,7 +108,7 @@ public class GridView extends Table {
             DefaultTableModel m = (DefaultTableModel) this.getModel();
             m.insertRow(this.getRowCount(), data2);
         } catch (Exception e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 
@@ -130,7 +131,7 @@ public class GridView extends Table {
 //                return;
 //            }
 //        } catch (Exception e) {
-//            e.printStackTrace();
+//            new ErrorView(e);
 //        }
         this.setVisible(false);
         if (!DatabaseIO.isValidTable(tableName)) {
@@ -168,7 +169,7 @@ public class GridView extends Table {
                 cursor.close();
             }
         } catch (SqlJetException e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
         this.repaint();
         this.setVisible(true);
@@ -190,7 +191,7 @@ public class GridView extends Table {
                 DatabaseIO.addDatum(tableName, rowData);
             }
         } catch (SqlJetException e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 }

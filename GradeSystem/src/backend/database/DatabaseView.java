@@ -17,6 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import org.tmatesoft.sqljet.core.SqlJetException;
+import utils.ErrorView;
 
 /**
  *
@@ -255,7 +256,7 @@ public class DatabaseView extends javax.swing.JFrame {
                 m_tableSelector.setSelectedIndex(0);
             }
         } catch (SqlJetException e) {
-            e.printStackTrace();
+            new ErrorView(e);
         }
     }
 

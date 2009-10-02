@@ -122,12 +122,18 @@ public class DatabaseIO {
     public static long addStudent(final String studentName) {
         try {
             for (String s : getTableNames()) {
-                if (s.startsWith("grade")) {
+                if (s.startsWith("grades_")) {
+                    if(getData(s, s.replaceFirst("grades_", "stud_login_"), studentName).getString("studLogins").trim().compareToIgnoreCase(studentName.trim()) == 0){
+                        continue;
+                    }
                     String[] ss = new String[getColumnNames(s).length];
                     Arrays.fill(ss, "0");
                     ss[0] = studentName;
                     addDatum(s, (Object[]) ss);
                 } else if (s.compareToIgnoreCase("studlist") == 0) {
+                    if(getData(s, "studlist", studentName).getString("studLogin").trim().compareToIgnoreCase(studentName.trim()) == 0){
+                        continue;
+                    }
                     addDatum("studlist", studentName);
                 }
             }
@@ -598,17 +604,6 @@ public class DatabaseIO {
             if (a.Type == AssignmentType.PROJECT) {
                 sqlCreateTableString1 += ", " + a.Name + " text";
             }
-//            if (a.Points.DQ != 0) {
-//                addDatum("assignments", a.Name + "Design", "DESIGN", "", "", "", "" + a.Points.DQ);
-//                sqlCreateTableString2 = "create table grades_" + a.Name + "Design (studLogins text not null";
-//                for (String ss : GRADE_RUBRIC_FIELDS) {
-//                    sqlCreateTableString2 += ", " + ss + " text";
-//                }
-//                sqlCreateTableString2 += ")";
-//                db.createTable(sqlCreateTableString2);
-//                db.createIndex("create index stud_login_" + a.Name + "Design" + " on grades_" + a.Name + "Design (studLogins)");
-//                sqlCreateTableString1 += ", " + a.Name + "Design text";
-//            }
         }
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);

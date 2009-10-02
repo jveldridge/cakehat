@@ -26,9 +26,9 @@ import org.jfree.chart.labels.StandardXYItemLabelGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.ErrorView;
 
 /**
  *
@@ -63,7 +63,7 @@ public class StudentDataPanel extends javax.swing.JPanel {
                         cursor.next();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    new ErrorView(e);
                 }
             } else {
             }

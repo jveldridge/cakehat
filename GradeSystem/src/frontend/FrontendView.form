@@ -78,7 +78,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                      <Component id="jPanel1" min="-2" pref="429" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -111,7 +111,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="458" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="464" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -190,8 +190,8 @@
                               <Component id="viewGradingStandardsButton" alignment="1" pref="298" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="submitGradesButton" alignment="1" pref="299" max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="submitGradesButton" pref="299" max="32767" attributes="0"/>
                               <Component id="printAllButton" alignment="1" pref="299" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
@@ -216,7 +216,7 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="submitGradesButton" alignment="3" min="-2" pref="51" max="-2" attributes="0"/>
+                      <Component id="submitGradesButton" alignment="3" min="-2" pref="54" max="-2" attributes="0"/>
                       <Component id="viewGradingStandardsButton" alignment="3" pref="54" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -256,9 +256,11 @@
         <Component class="javax.swing.JButton" name="openButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="openButton.icon"/>
+            <Property name="mnemonic" type="int" value="79"/>
             <Property name="text" type="java.lang.String" resourceKey="openButton.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="openButton" noResource="true"/>
           </Properties>
           <Events>
@@ -268,9 +270,11 @@
         <Component class="javax.swing.JButton" name="printButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="printButton.icon"/>
+            <Property name="mnemonic" type="int" value="80"/>
             <Property name="text" type="java.lang.String" resourceKey="printButton.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="printButton" noResource="true"/>
           </Properties>
           <Events>
@@ -280,9 +284,11 @@
         <Component class="javax.swing.JButton" name="runTesterButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="runTesterButton.icon"/>
+            <Property name="mnemonic" type="int" value="84"/>
             <Property name="text" type="java.lang.String" resourceKey="runTesterButton.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="runTesterButton" noResource="true"/>
           </Properties>
           <Events>
@@ -292,10 +298,11 @@
         <Component class="javax.swing.JButton" name="runDemoButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="runDemoButton.icon"/>
+            <Property name="mnemonic" type="int" value="68"/>
             <Property name="text" type="java.lang.String" resourceKey="runDemoButton.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
-            <Property name="iconTextGap" type="int" value="20"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="runDemoButton" noResource="true"/>
           </Properties>
           <Events>
@@ -305,10 +312,11 @@
         <Component class="javax.swing.JButton" name="printAllButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="printAllButton.icon"/>
+            <Property name="mnemonic" type="int" value="65"/>
             <Property name="text" type="java.lang.String" resourceKey="printAllButton.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
-            <Property name="iconTextGap" type="int" value="20"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="printAllButton" noResource="true"/>
           </Properties>
           <Events>
@@ -318,9 +326,11 @@
         <Component class="javax.swing.JButton" name="submitGradesButton">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="submitGradesButton.icon"/>
+            <Property name="mnemonic" type="int" value="83"/>
             <Property name="text" type="java.lang.String" resourceKey="submitGradesButton.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="submitGradesButton" noResource="true"/>
           </Properties>
           <Events>
@@ -330,9 +340,11 @@
         <Component class="javax.swing.JButton" name="runButton1">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="runButton1.icon"/>
+            <Property name="mnemonic" type="int" value="71"/>
             <Property name="text" type="java.lang.String" resourceKey="runButton1.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="runButton1" noResource="true"/>
           </Properties>
           <Events>
@@ -342,9 +354,11 @@
         <Component class="javax.swing.JButton" name="submitGradesButton1">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" resourceKey="submitGradesButton1.icon"/>
+            <Property name="mnemonic" type="int" value="82"/>
             <Property name="text" type="java.lang.String" resourceKey="submitGradesButton1.text"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="submitGradesButton1" noResource="true"/>
           </Properties>
           <Events>
@@ -353,7 +367,11 @@
         </Component>
         <Component class="javax.swing.JButton" name="viewGradingStandardsButton">
           <Properties>
+            <Property name="icon" type="javax.swing.Icon" resourceKey="viewGradingStandardsButton.icon"/>
+            <Property name="mnemonic" type="int" value="86"/>
             <Property name="text" type="java.lang.String" resourceKey="viewGradingStandardsButton.text"/>
+            <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="iconTextGap" type="int" value="10"/>
             <Property name="name" type="java.lang.String" value="viewGradingStandardsButton" noResource="true"/>
           </Properties>
           <Events>
@@ -385,7 +403,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane2" pref="458" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" pref="464" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
