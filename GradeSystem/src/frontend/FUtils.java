@@ -92,7 +92,6 @@ public class FUtils {
      * This method prints the code of the student passed in as the second parameter for the project
      * passed in as the first parameter on the printer passed in as the third parameter
      *
-     * //TODO: Rewrite to use Josh's bash console
      *
      * @param project
      * @param login
@@ -102,10 +101,8 @@ public class FUtils {
         if (printer == null) {
             printer = FUtils.getPrinter("Choose printer on which to print student code");
         }
-        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
-        System.out.println("pC is " + printCommand);
+        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " +Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
         Collection<String> ss = BashConsole.write(printCommand);
-        System.out.println("output: " + ss.toString());
     }
 
     /**

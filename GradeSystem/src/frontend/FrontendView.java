@@ -561,7 +561,7 @@ public class FrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_openButtonActionPerformed
 
     private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
-        FUtils.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue(), null, false);
+        FUtils.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue(), null, true);
 }//GEN-LAST:event_printButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
