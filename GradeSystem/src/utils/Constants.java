@@ -32,5 +32,5 @@ public class Constants {
     public static final int MINUTES_OF_LENIENCY = 10;
     public static final String DEDUCTIONS_LIST_FILENAME = "rubric.txt";
 
-    public static final String DATABASE_DIR = "/home/psastras/cs15db.db"; //COURSE_DIR + "tabin/gradesys/cs015Database.db";//"/home/psastras/cs15db.db";///COURSE_DIR + "tabin/gradesys/cs015Database.db";
+    public static final String DATABASE_DIR = COURSE_DIR + "tabin/gradesys/cs015Database.db";
 }

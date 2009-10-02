@@ -33,7 +33,7 @@ public class FileViewer extends JFrame implements ActionListener {
         super();  // Create the frame
             // Create the frame
       // Destroy the window when the user requests it
-      addWindowListener(new WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent e) { dispose(); }
        });
 

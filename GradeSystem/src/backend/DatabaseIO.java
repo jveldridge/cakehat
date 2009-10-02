@@ -33,7 +33,6 @@ public class DatabaseIO {
      * @throws SqlJetException
      */
     public static void open() throws SqlJetException {
-        System.out.println(Constants.DATABASE_DIR);
         db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
     }
 
