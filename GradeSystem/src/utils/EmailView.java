@@ -42,14 +42,10 @@ public class EmailView extends javax.swing.JFrame {
         } catch (Exception e) {
         }
         toBox.setText(Arrays.toString(to).replace("[", "").replace("]", ""));
-        System.out.println("set to with: " + toBox.getText());
         ccBox.setText(Arrays.toString(cc).replace("[", "").replace("]", ""));
         bccBox.setText(Arrays.toString(bcc).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        toBox.setText(Utils.getUserLogin() + Constants.EMAIL_DOMAIN);
-        System.out.println("later, to box is: " + toBox.getText());
-        fromBox.setText(Utils.getUserLogin() + Constants.EMAIL_DOMAIN);
-        ccBox.setText(Constants.GRADES_TA+"@"+Constants.EMAIL_DOMAIN + ", " + Constants.GRADES_HTA+"@"+Constants.EMAIL_DOMAIN);
+        fromBox.setText(Utils.getUserLogin() + "@" + Constants.EMAIL_DOMAIN);
         bodyText.setText(body);
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);
@@ -254,7 +250,7 @@ public class EmailView extends javax.swing.JFrame {
 }//GEN-LAST:event_subjectBoxActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Utils.sendMail(toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
+        // Utils.sendMail(toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
         jDialog1.setLocationRelativeTo(null);
         jDialog1.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed

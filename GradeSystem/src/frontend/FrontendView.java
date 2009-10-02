@@ -11,10 +11,12 @@
 package frontend;
 
 import backend.DatabaseIO;
+import frontend.fileviewer.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 import javax.imageio.ImageIO;
@@ -594,9 +596,12 @@ public class FrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_studentListKeyReleased
 
     private void viewGradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewGradingStandardsButtonActionPerformed
-        // TODO add your handling code here:
-        FileViewer f = new FileViewer(Utils.getProjectDirectory(Project.getInstance((String)assignmentList.getSelectedValue())), Constants.DEDUCTIONS_LIST_FILENAME);
-        f.setVisible(true);
+        //FileViewer f = new FileViewer(Utils.getProjectDirectory(Project.getInstance((String)assignmentList.getSelectedValue())), Constants.DEDUCTIONS_LIST_FILENAME);
+        //f.setVisible(true);
+        FileViewerView  fvv = new FileViewerView();
+        fvv.openFile(new File(Utils.getProjectDirectory(Project.getInstance((String)assignmentList.getSelectedValue())) + Constants.DEDUCTIONS_LIST_FILENAME));
+        fvv.setLocationRelativeTo(null);
+        fvv.setVisible(true);
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
     /**

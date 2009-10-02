@@ -179,9 +179,9 @@ public class FUtils {
         for (int i = 0; i < m.getSize(); i++) {
             bccStringBuilder += ((String) m.getElementAt(i)).trim() + "@cs.brown.edu,";
         }
-        EmailView eg = new EmailView(new String[0], new String[0], bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
+        EmailView eg = new EmailView(new String[] {Utils.getUserLogin() + "@" + Constants.EMAIL_DOMAIN}, new String[] {Constants.GRADES_TA + "@" + Constants.EMAIL_DOMAIN, Constants.GRADES_HTA + "@" + Constants.EMAIL_DOMAIN}, bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
         eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
-        eg.setTo(Constants.GRADES_TA); //need to notify grades TA when grading is complete
+         //need to notify grades TA when grading is complete
         //TODO: fix this (check with Paul)
 //        try {
 //            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));

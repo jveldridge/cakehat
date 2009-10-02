@@ -12,15 +12,13 @@ package frontend;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
 
 
-public class FileViewer extends Frame implements ActionListener {
+public class FileViewer extends JFrame implements ActionListener {
     String directory;  // The default directory to display in the FileDialog
-    TextArea textarea; // The area to display the file contents into
+    JTextArea textarea; // The area to display the file contents into
 
     /** Convenience constructor: file viewer starts out blank */
     public FileViewer() { this(null, null); }
@@ -40,7 +38,7 @@ public class FileViewer extends Frame implements ActionListener {
        });
 
         // Create a TextArea to display the contents of the file in
-        textarea = new TextArea("", 24, 80);
+        textarea = new JTextArea("", 24, 80);
         textarea.setFont(new Font("MonoSpaced", Font.PLAIN, 12));
         textarea.setEditable(false);
         this.add("Center", textarea);
