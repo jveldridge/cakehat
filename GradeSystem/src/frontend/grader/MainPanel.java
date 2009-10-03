@@ -201,7 +201,15 @@ class MainPanel extends JPanel
 			for(Detail detail : subsection.Details)
 			{
 				//The detail's name, and the point values associated with
-				JTextArea detailName = new JTextArea(detail.Name + " (" + detail.Value+" points)");
+                JTextArea detailName;
+                if(detail.Value == 0)
+                {
+                    detailName = new JTextArea(detail.Name);
+                }
+                else
+                {
+                    detailName = new JTextArea(detail.Name + " (" + detail.Value+" points)");
+                }
 				detailName.setSize(new Dimension(250,200));
 				detailName.setEditable(false);
 				detailName.setLineWrap(true);
