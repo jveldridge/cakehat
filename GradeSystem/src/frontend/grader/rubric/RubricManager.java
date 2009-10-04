@@ -489,8 +489,17 @@ public class RubricManager {
         }
     }
 
-    private static void writeDetail(Detail detail, BufferedWriter output) {
-        String msg = detail.Name + " (" + detail.Value + " points)";
+    private static void writeDetail(Detail detail, BufferedWriter output)
+    {
+        String msg;
+        if(detail.Value == 0)
+        {
+            msg = detail.Name;
+        }
+        else
+        {
+            msg = detail.Name + " (" + detail.Value + " points)";
+        }
         printWithinBounds(DETAIL_INDENT_WIDTH, SECTION_TEXT_WIDTH, msg, output);
         printEnd(null, null, output);
         writeLine("", output);
