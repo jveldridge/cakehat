@@ -190,27 +190,32 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="m_databaseButton" pref="313" max="32767" attributes="2"/>
-                          <Component id="m_histogramButton" alignment="0" pref="313" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="m_entergradesButton" pref="314" max="32767" attributes="2"/>
-                          <Component id="m_assgndistButton" alignment="0" pref="314" max="32767" attributes="2"/>
-                      </Group>
-                  </Group>
+                  <Component id="previewRubricButton" alignment="0" pref="645" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jButton5" pref="313" max="32767" attributes="2"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="m_databaseButton" pref="313" max="32767" attributes="2"/>
+                                  <Component id="m_histogramButton" alignment="0" pref="313" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="m_entergradesButton" pref="314" max="32767" attributes="2"/>
+                                  <Component id="m_assgndistButton" alignment="0" pref="314" max="32767" attributes="2"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jButton5" pref="313" max="32767" attributes="2"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="m_regenerateButton" pref="314" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="m_regenerateButton" pref="314" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -232,7 +237,9 @@
                   <Component id="m_regenerateButton" max="32767" attributes="3"/>
                   <Component id="jButton5" alignment="0" pref="63" max="32767" attributes="3"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="previewRubricButton" min="-2" pref="65" max="-2" attributes="1"/>
+              <EmptySpace pref="34" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -306,6 +313,12 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_regenerateButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="previewRubricButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" resourceKey="previewRubricButton.text"/>
+        <Property name="name" type="java.lang.String" value="previewRubricButton" noResource="true"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

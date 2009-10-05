@@ -38,6 +38,7 @@ public class FrontendView extends javax.swing.JFrame {
 
     /** Creates new form FrontendView */
     public FrontendView() {
+        System.out.println("course dir is " + Constants.COURSE_DIR);
         initComponents();
         try {
             switch ((int) (Math.random() * 5)) {
