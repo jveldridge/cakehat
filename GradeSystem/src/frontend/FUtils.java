@@ -155,8 +155,6 @@ public class FUtils {
         String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
         final String cmd = "kate " + path + "*.java";
 
-        System.out.println("PM.gSSD(): " + ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login));
-
         BashConsole.writeThreaded(cmd);
     }
 
