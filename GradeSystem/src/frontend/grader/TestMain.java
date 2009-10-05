@@ -5,6 +5,8 @@ public class TestMain
 {
 	public static void main(String[] args)
 	{
-		new Grader("Clock","spoletto","csstudent");
+		Grader g = new Grader(args[0],args[1],args[2]);
+        g.setLocationRelativeTo(null);
+        g.setVisible(true);
 	}
 }
