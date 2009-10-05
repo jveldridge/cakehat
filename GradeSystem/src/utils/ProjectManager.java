@@ -148,7 +148,8 @@ public class ProjectManager {
      */
     public static void execute(Project prj, String studentLogin) {
         String compileDir = getStudentSpecificDirectory(prj, studentLogin);
-        Utils.execute(compileDir, prj.getName() + ".App");
+        //Utils.execute(compileDir, prj.getName() + ".App"); //This executes without a terminal
+        Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
     }
 
     public static String getStudentSpecificDirectory(Project prj, String studentLogin) {

@@ -372,6 +372,34 @@ public class Utils {
         return true;
     }
 
+    /**
+     * Executes the java code in a separate thread.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * @param dirPath - the path to the package
+     * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
+     * @param termName - what the title bar of the terminal will display
+     */
+    public static void executeInVisibleTerminal(String dirPath, String javaArg, String termName) {
+        //Get the existing classpath, add dirPath to the classpath
+        String classPath = dirPath + ":" + getClassPath();
+
+        //TODO: Find a better way of creating the classpath
+        classPath = classPath.replace("/home/"+ Utils.getUserLogin() + "/course/cs015", "");
+
+        //Build command to call xterm to run the code
+        String javaLoc = "/usr/bin/java";
+        String javaCmd = javaLoc + " -classpath " + classPath + " " + javaArg;
+        String terminalCmd =  "/usr/bin/xterm -title " + "\"" + termName + "\""
+                                    + " -e " + "\"" + javaCmd + "; read" + "\"";
+        
+        //Execute the command in a seperate thread
+        BashConsole.writeThreaded(terminalCmd);
+    }
+
     public static String doubleToString(double value)
 	{
 		String text = Double.toString(value);
