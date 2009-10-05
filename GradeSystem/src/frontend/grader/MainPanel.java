@@ -14,6 +14,7 @@ import javax.swing.JTextArea;
 import javax.swing.SpringLayout;
 
 import frontend.grader.rubric.*;
+import utils.Utils;
 
 class MainPanel extends JPanel
 {
@@ -474,9 +475,9 @@ class MainPanel extends JPanel
 		{
 			Section section = _sections.elementAt(i);
 			NumberField score = _totals.elementAt(i);
-			score.setText(Double.toString(section.getSectionScore()));
+			score.setText(Utils.doubleToString(section.getSectionScore()));
 		}
-		_totalScoreField.setText(Double.toString(_rubric.getTotalScore()));
+		_totalScoreField.setText(Utils.doubleToString(_rubric.getTotalScore()));
 	}	
 	
 	public Vector<Component> getTabOrder()
