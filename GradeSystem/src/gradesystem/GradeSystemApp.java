@@ -15,6 +15,7 @@ import org.jdesktop.application.SingleFrameApplication;
 public class GradeSystemApp extends SingleFrameApplication {
 
     private static String[] _args;
+    public static boolean _testing; //I'm a sinner
 
     /**
      * At startup create and show the main frame of the application.
@@ -32,8 +33,11 @@ public class GradeSystemApp extends SingleFrameApplication {
                 fv.setLocationRelativeTo(null);
                 show(fv);
             }
-        } else{
+            _testing = false;
+        }
+        else{
             show(new GradeSystemView(this));
+            _testing = true;
         }
     }
 

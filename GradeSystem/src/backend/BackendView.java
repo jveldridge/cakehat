@@ -14,10 +14,17 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.histogram.HistogramView;
+import gradesystem.GradeSystemApp;
 import java.awt.Color;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
 import utils.ErrorView;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import utils.Constants;
+import java.util.Calendar;
+import utils.BashConsole;
+import utils.Utils;
 
 /**
  *
@@ -34,7 +41,18 @@ public class BackendView extends javax.swing.JFrame {
         } catch (Exception e) {
         }
         initComponents();
+
+        this.addWindowListener(new WindowAdapter() {
+
+            public void windowClosing(WindowEvent e) {
+                if (!GradeSystemApp._testing) {
+                    String cmd = "cp " + Constants.DATABASE_FILE + " " + Constants.DATABASE_BK_DIR + "cs015db_bk_" + Utils.getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
+                    BashConsole.writeThreaded(cmd);
+                }
+            }
+        });
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

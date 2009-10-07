@@ -33,7 +33,7 @@ public class DatabaseIO {
      * @throws SqlJetException
      */
     public static void open() throws SqlJetException {
-        db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+        db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
     }
 
 
@@ -77,7 +77,7 @@ public class DatabaseIO {
      * @throws SqlJetException
      */
     public static void resetTable(final String tableName) throws SqlJetException {
-        db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+        db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         db.runWriteTransaction(new ISqlJetTransaction() {
 
             public Object run(SqlJetDb arg0) throws SqlJetException {
@@ -254,7 +254,7 @@ public class DatabaseIO {
         try {
             LinkedList<String> ll = new LinkedList<String>();
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
             }
             ISqlJetCursor cursor = db.getTable(tableName).open();
             while (!cursor.eof()) {
@@ -291,7 +291,7 @@ public class DatabaseIO {
      */
     public static String[] getTableNames() throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         Set<String> s = db.getSchema().getTableNames();
         return s.toArray(new String[0]);
@@ -306,7 +306,7 @@ public class DatabaseIO {
     public static String[] getColumnNames(final String tableName) {
         try {
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
             }
             String[] s = new String[db.getSchema().getTable(tableName).getColumns().size()];
             for (int i = 0; i < s.length; i++) {
@@ -327,7 +327,7 @@ public class DatabaseIO {
      */
     public static ISqlJetCursor getAllData(final String tableName) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
 
         return db.getTable(tableName).open();
@@ -344,7 +344,7 @@ public class DatabaseIO {
      */
     public static ISqlJetCursor getData(final String tableName, final String indexName, final String lookupItem) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         return db.getTable(tableName).lookup(indexName, lookupItem);
     }
@@ -400,7 +400,7 @@ public class DatabaseIO {
      */
     public static void createTable(final String sqlNewTableString, final String sqlIndexString) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -436,7 +436,7 @@ public class DatabaseIO {
      */
     public static void removeDatum(final long rowid, final String tableName) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -463,7 +463,7 @@ public class DatabaseIO {
     public static boolean isValidTable(final String tableName) {
         try {
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
             }
             if (tableName == null) {
                 return false;
@@ -492,7 +492,7 @@ public class DatabaseIO {
      */
     public static long addDatum(final String tableName, final Object... data) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         return (Long) db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -509,7 +509,7 @@ public class DatabaseIO {
      */
     public static void dropTable(final String tableName) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -530,7 +530,7 @@ public class DatabaseIO {
      */
     public static void update(final long rowid, final String tableName, final Object... values) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -570,7 +570,7 @@ public class DatabaseIO {
     public static void regenerateDatabase() throws SqlJetException {
         //Remove the old data
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         for (String s : db.getSchema().getTableNames()) {
             db.dropTable(s);
@@ -636,7 +636,7 @@ public class DatabaseIO {
         //@TODO:tester...remove this when done
 
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_DIR), true);
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         for (Assignment a : ConfigurationManager.getAssignments()) {
             for (String ss : Utils.getCS015Students()) {
