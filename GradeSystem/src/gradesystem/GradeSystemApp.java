@@ -5,9 +5,18 @@ package gradesystem;
 
 import backend.BackendView;
 import frontend.FrontendView;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
+import org.jvnet.substance.api.skin.SubstanceGraphiteAquaLookAndFeel;
+import org.jvnet.substance.skin.SubstanceBusinessBlackSteelLookAndFeel;
+import org.jvnet.substance.skin.SubstanceCremeLookAndFeel;
+import org.jvnet.substance.skin.SubstanceMistSilverLookAndFeel;
+import org.jvnet.substance.skin.SubstanceModerateLookAndFeel;
+import org.jvnet.substance.skin.SubstanceNebulaLookAndFeel;
+import org.jvnet.substance.skin.SubstanceRavenGraphiteGlassLookAndFeel;
+import org.jvnet.substance.skin.SubstanceRavenGraphiteLookAndFeel;
 
 /**
  * The main class of the application.
@@ -22,20 +31,28 @@ public class GradeSystemApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-        setTheme();
-        if(_args!=null && _args.length == 1) {
-            if(_args[0].compareToIgnoreCase("backend") == 0) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                try {
+                    UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
+                } catch (Exception e) {
+                }
+
+            }
+        });
+        if (_args != null && _args.length == 1) {
+            if (_args[0].compareToIgnoreCase("backend") == 0) {
                 BackendView bv = new BackendView();
                 bv.setLocationRelativeTo(null);
                 show(bv);
-            } else if(_args[0].compareToIgnoreCase("frontend") == 0) {
+            } else if (_args[0].compareToIgnoreCase("frontend") == 0) {
                 FrontendView fv = new FrontendView();
                 fv.setLocationRelativeTo(null);
                 show(fv);
             }
             _testing = false;
-        }
-        else{
+        } else {
             show(new GradeSystemView(this));
             _testing = true;
         }
@@ -63,28 +80,10 @@ public class GradeSystemApp extends SingleFrameApplication {
      */
     public static void main(String[] args) {
         _args = args;
+
         launch(GradeSystemApp.class, args);
     }
 
     private static void setTheme() {
-        try {
-            UIManager.LookAndFeelInfo plafinfo[] = UIManager.getInstalledLookAndFeels();
-            boolean nimbusfound = false;
-            int nimbusindex = 0;
-            for (int look = 0; look < plafinfo.length; look++) {
-                if (plafinfo[look].getClassName().toLowerCase().contains("nimbus")) {
-                    nimbusfound = true;
-                    nimbusindex = look;
-                }
-            }
-
-            if (nimbusfound && !UIManager.getSystemLookAndFeelClassName().toLowerCase().contains("gtk") && !UIManager.getSystemLookAndFeelClassName().toLowerCase().contains("windows")) {
-                UIManager.setLookAndFeel(plafinfo[nimbusindex].getClassName());
-            } else {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
-
-        } catch (Exception e) {
-        }
     }
 }

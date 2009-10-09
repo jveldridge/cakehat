@@ -5,6 +5,7 @@
 package gradesystem;
 
 import backend.BackendView;
+import backend.DatabaseIO;
 import frontend.FrontendView;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
@@ -25,7 +26,6 @@ public class GradeSystemView extends FrameView {
 
     public GradeSystemView(SingleFrameApplication app) {
         super(app);
-        
         initComponents();
 
         // status bar initialization - message timeout, idle icon and busy animation, etc

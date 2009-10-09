@@ -36,7 +36,6 @@ public class DatabaseIO {
         db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
     }
 
-
     public static double getStudentDQScore(String assignmentName, String studentName) {
         try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studentName);
@@ -64,7 +63,7 @@ public class DatabaseIO {
                 cursor.next();
             }
             cursor.close();
-            return sum / (n *getAssignmentTotal(assignmentName)) * 100;
+            return sum / (n * getAssignmentTotal(assignmentName)) * 100;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,7 +121,7 @@ public class DatabaseIO {
         try {
             for (String s : getTableNames()) {
                 if (s.startsWith("grades_")) {
-                    if(getData(s, s.replaceFirst("grades_", "stud_login_"), studentName).getString("studLogins").trim().compareToIgnoreCase(studentName.trim()) == 0){
+                    if (getData(s, s.replaceFirst("grades_", "stud_login_"), studentName).getString("studLogins").trim().compareToIgnoreCase(studentName.trim()) == 0) {
                         continue;
                     }
                     String[] ss = new String[getColumnNames(s).length];
@@ -130,7 +129,7 @@ public class DatabaseIO {
                     ss[0] = studentName;
                     addDatum(s, (Object[]) ss);
                 } else if (s.compareToIgnoreCase("studlist") == 0) {
-                    if(getData(s, "studlist", studentName).getString("studLogin").trim().compareToIgnoreCase(studentName.trim()) == 0){
+                    if (getData(s, "studlist", studentName).getString("studLogin").trim().compareToIgnoreCase(studentName.trim()) == 0) {
                         continue;
                     }
                     addDatum("studlist", studentName);
@@ -520,6 +519,41 @@ public class DatabaseIO {
         });
     }
 
+    public static void runOnce() {
+        try {
+            if (db == null) {
+                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            }
+            if (!isValidTable("grades_References_bak")) {
+                db.createTable("create table grades_References_bak (studLogins text not null, ProjectPoints text)");
+                ISqlJetCursor c = getAllData("grades_References");
+                while (!c.eof()) {
+                    addDatum("grades_References_bak", c.getString("studLogins"), c.getString("ProjectPoints"));
+                    c.next();
+                }
+                c.close();
+            }
+
+            //c.delete();
+            db.dropTable("grades_References");
+            System.out.println(Arrays.toString((db.getSchema().getIndexNames()).toArray(new String[0])));
+//            db.dropIndex("stud_login_References");
+            db.createTable("create table grades_References (studLogins text not null, ProjectPoints text)");
+            db.createIndex("create index stud_login_References on grades_References (studLogins)");
+            ISqlJetCursor c2 = getAllData("grades_References_bak");
+            while (!c2.eof()) {
+                addDatum("grades_References", c2.getString("studLogins"), c2.getString("ProjectPoints"));
+                c2.next();
+            }
+            c2.close();
+            //c.delete();
+            db.dropTable("grades_References_bak");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Replaces the values in the specified table at the given row number.  Values
      * may be given as a list of arguments or as an array.
@@ -644,12 +678,12 @@ public class DatabaseIO {
                 if (a.Points.DQ == 0) {
                     data = new String[2];
                     data[0] = ss;
-                    data[1] = Integer.toString(a.Points.TOTAL - (int)(Math.random() * (a.Points.TOTAL >> 1)));
+                    data[1] = Integer.toString(a.Points.TOTAL - (int) (Math.random() * (a.Points.TOTAL >> 1)));
                 } else {
                     data = new String[3];
                     data[0] = ss;
-                    data[1] = Integer.toString(a.Points.DQ - (int)(Math.random() * (a.Points.DQ >> 1)));
-                    data[2] = Integer.toString(a.Points.TOTAL - a.Points.DQ - (int)(Math.random() * (a.Points.TOTAL >> 1)));
+                    data[1] = Integer.toString(a.Points.DQ - (int) (Math.random() * (a.Points.DQ >> 1)));
+                    data[2] = Integer.toString(a.Points.TOTAL - a.Points.DQ - (int) (Math.random() * (a.Points.TOTAL >> 1)));
                 }
                 addDatum("grades_" + a.Name, data);
             }
