@@ -13,6 +13,6 @@ public class TesterMain
 {
     public static void main(String[] args)
 	{
-		new Tester("Clock", "gkliger");
+		new TesterImpl("Clock", "gkliger");
 	}
 }
