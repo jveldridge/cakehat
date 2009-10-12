@@ -36,11 +36,7 @@ public class TesterImpl {
             }
 
             utils.ProjectManager.compile(prj, studentAcct);
-            try {
-                executeTester(prj, studentAcct);
-            } catch (Exception ex) {
-                throw new Error("Could not execute tester.");
-            }
+            executeTester(prj, studentAcct);
 
             new TesterGUI(asgnName, studentAcct);
 
