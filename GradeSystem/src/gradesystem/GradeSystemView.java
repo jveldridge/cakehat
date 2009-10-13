@@ -83,6 +83,7 @@ public class GradeSystemView extends FrameView {
         });
     }
 
+
     @Action
     public void showAboutBox() {
         if (aboutBox == null) {

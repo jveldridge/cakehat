@@ -141,8 +141,8 @@ public class GridView extends Table {
         this.removeAll();
         this.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
         DefaultTableModel m = (DefaultTableModel) this.getModel();
-        _textFilter = new TableRowSorter<TableModel>(m);
-        this.setRowSorter(_textFilter);
+//        _textFilter = new TableRowSorter<TableModel>(m);
+//        this.setRowSorter(_textFilter);
         try {
             String[] columnNames = DatabaseIO.getColumnNames(tableName);
             for (String s : columnNames) {
