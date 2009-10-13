@@ -35,6 +35,9 @@ public class FUtils {
      * @param project
      */
     public static void demoProject(String project) {
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
         Runtime r = Runtime.getRuntime();
         try {
             r.exec("cs015_runGradeDemo " + project);
@@ -73,6 +76,9 @@ public class FUtils {
      * @param assignmentList
      */
     public static void printAll(String project, JList studentList) {
+       if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
         Vector<String> studentLogins = new Vector<String>();
         int size = studentList.getModel().getSize();
         for (int i = 0; i < size; i++) {
@@ -98,6 +104,9 @@ public class FUtils {
      * @param printer
      */
     public static void printStudentProject(String project, String studentLogin, String printer, boolean first) {
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
         if (printer == null) {
             printer = FUtils.getPrinter("Choose printer on which to print student code");
         }
@@ -111,6 +120,9 @@ public class FUtils {
      * @param login
      */
     public static void compileStudentProject(String project, String login) {
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
         //remove old class files
         ProjectManager.deleteClassFiles(Project.getInstance(project), login);
 
@@ -124,6 +136,9 @@ public class FUtils {
      * @param login
      */
     public static void runStudentProject(String project, String login) {
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
         ProjectManager.execute(Project.getInstance(project), login);
     }
 
@@ -152,9 +167,11 @@ public class FUtils {
      */
     public static void openStudentProject(String project, String login) {
         //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
         String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
         final String cmd = "kate " + path + "*.java";
-
         BashConsole.writeThreaded(cmd);
     }
 
@@ -189,6 +206,9 @@ public class FUtils {
 
     public static void printGRDFiles(String assignment) {
         String printer = FUtils.getPrinter("Select printer to print .GRD files");
+        if (assignment.equals("TASafehouse")) {
+            assignment = "TASafeHouse";
+        }
         String printCommand = "lpr -P" + printer + " " + ProjectManager.getUserGradingDirectory() + assignment + "/*.grd";
 
         BashConsole.writeThreaded(printCommand);
@@ -209,6 +229,9 @@ public class FUtils {
     }
 
     public static void submitXMLFiles(String assignment) {
+        if (assignment.equals("TASafehouse")) {
+            assignment = "TASafeHouse";
+        }
         String dirPath = Constants.GRADER_SUBMIT_PATH + assignment + "/" + Utils.getUserLogin() + "/";
         createDirectory(dirPath);
         String copyCommand = "cp " + ProjectManager.getUserGradingDirectory() + assignment + "/*.xml " + dirPath;
