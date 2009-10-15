@@ -14,15 +14,22 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.histogram.HistogramView;
+import backend.visualizer.TemplateVisualizer;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
+import org.jdesktop.application.Action;
 import utils.ErrorView;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import utils.Constants;
 import java.util.Calendar;
+import java.util.Vector;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import utils.AssignmentType;
 import utils.BashConsole;
 import utils.Utils;
 
@@ -255,6 +262,8 @@ public class BackendView extends javax.swing.JFrame {
             }
         });
 
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getActionMap(BackendView.class, this);
+        previewRubricButton.setAction(actionMap.get("previewRubricButtonActionPerformed")); // NOI18N
         previewRubricButton.setText(resourceMap.getString("previewRubricButton.text")); // NOI18N
         previewRubricButton.setName("previewRubricButton"); // NOI18N
 
@@ -397,6 +406,20 @@ public class BackendView extends javax.swing.JFrame {
                 new BackendView().setVisible(true);
             }
         });
+    }
+
+    @Action
+    public void previewRubricButtonActionPerformed() {
+        Vector<Object> v = new Vector<Object>();
+        for(String s: DatabaseIO.getAssignmentNames()) {
+            if(DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
+                v.add(s);
+            }
+        }
+        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
+        String message = "Choose Project to Preview";
+        String project = (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, v.toArray(), null);
+        new TemplateVisualizer(project);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

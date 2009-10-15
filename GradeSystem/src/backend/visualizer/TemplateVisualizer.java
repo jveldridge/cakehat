@@ -20,11 +20,11 @@ public class TemplateVisualizer extends JFrame
 {
 
     public TemplateVisualizer(String asgn) {
-            super("Visualizer for " + asgn);
-            this.setVisible(false);
+            super("Rubric Preview for " + asgn);
+            this.setVisible(true);
 
             //Get grading rubric
-            final String XMLFilePath = Constants.COURSE_DIR + Constants.TEMPLATE_GRADE_SHEET_DIR + asgn + "/" + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
+            final String XMLFilePath = Constants.COURSE_DIR + "asgn/" + asgn + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
             System.out.println(XMLFilePath);
             final Rubric rubric = RubricManager.processXML(XMLFilePath);
             rubric.Status = "ON_TIME";

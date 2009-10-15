@@ -316,6 +316,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="previewRubricButton">
       <Properties>
+        <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+          <action class="backend.BackendView" id="previewRubricButtonActionPerformed" methodName="previewRubricButtonActionPerformed"/>
+        </Property>
         <Property name="text" type="java.lang.String" resourceKey="previewRubricButton.text"/>
         <Property name="name" type="java.lang.String" value="previewRubricButton" noResource="true"/>
       </Properties>
