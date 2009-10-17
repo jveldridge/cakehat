@@ -91,6 +91,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         mainTable = new backend.assignmentdist.AssignmentdistTable();
         setupGradingButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMcenu2 = new javax.swing.JMenu();
@@ -129,6 +130,13 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("check if dist empty");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
 
@@ -150,6 +158,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(generateDistButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(setupGradingButton)))
@@ -167,7 +177,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(generateDistButton)
-                    .addComponent(setupGradingButton))
+                    .addComponent(setupGradingButton)
+                    .addComponent(jButton1))
                 .addGap(14, 14, 14))
         );
 
@@ -182,11 +193,14 @@ public class AssignmentdistView extends javax.swing.JFrame {
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
 
         String[] studNames = ProjectManager.getHandinLogins(Project.getInstance((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
+        String[] taNames = ConfigurationManager.getGraderLogins();
+
+        int floor_avg = (int) Math.floor(studNames.length / taNames.length);
 
         List<String> shuffleList = Arrays.asList(studNames);
         Collections.shuffle(shuffleList);
         studNames = shuffleList.toArray(new String[0]);
-        String[] taNames = ConfigurationManager.getGraderLogins();
+        
         DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
         String[] studentsToGrade = new String[taNames.length];
         Arrays.fill(studentsToGrade, "");
@@ -245,6 +259,13 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
+        String asgn = (String)assignmentNameComboBox.getSelectedItem();
+        if(!DatabaseIO.isDistEmpty(asgn)) {
+            int n = JOptionPane.showConfirmDialog(new JFrame(),"A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?","Confirm Overwrite",JOptionPane.YES_NO_OPTION);
+            if (n == JOptionPane.NO_OPTION) {
+                return;
+            }
+        }
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");
         int minsLeniency = Constants.MINUTES_OF_LENIENCY;
@@ -259,6 +280,10 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
        }
 }//GEN-LAST:event_setupGradingButtonActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        System.out.println(DatabaseIO.isDistEmpty((String)assignmentNameComboBox.getSelectedItem()));
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private String getBlacklist(String taName) {
         try {
@@ -284,6 +309,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox assignmentNameComboBox;
     private javax.swing.JButton generateDistButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMcenu2;
     private javax.swing.JMenu jMenu1;

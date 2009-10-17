@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.Vector;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTransaction;
@@ -281,6 +282,17 @@ public class DatabaseIO {
             e.printStackTrace();
             return new String[0];
         }
+    }
+
+    public static boolean isDistEmpty(String asgn) {
+        boolean isDistEmpty = true;
+        for (String taLogin : ConfigurationManager.getGraderLogins()) {
+            String[] s = DatabaseIO.getStudentsToGrade(taLogin, asgn);
+            if (s.length != 0) {
+                isDistEmpty = false;
+            }
+        }
+        return isDistEmpty;
     }
 
     /**
