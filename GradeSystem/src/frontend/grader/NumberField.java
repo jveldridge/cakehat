@@ -51,22 +51,30 @@ class NumberField extends JFormattedTextField {
             public void insertUpdate(DocumentEvent e) {
                 try {
                     double newValue = Double.parseDouble(field.getText());
-                    if (newValue > field._subsection.OutOf)
-                    {
-                        field.setBackground(java.awt.Color.RED);
-                    }
-                    else
-                    {
-                        field.setBackground(java.awt.Color.WHITE);
-                    }
                     if (newValue != field._oldValue) {
                         field._oldValue = newValue;
                         field._stateManager.rubricChanged();
                     }
                     if (field._subsection != null) {
+                        if (newValue > field._subsection.OutOf)
+                        {
+                            field.setBackground(java.awt.Color.RED);
+                        }
+                        else
+                        {
+                            field.setBackground(java.awt.Color.WHITE);
+                        }
                         field._subsection.Score = newValue;
                         field._panel.updateTotals();
                     } else if (field._extraCredit != null) {
+                        if (newValue > field._extraCredit.OutOf)
+                        {
+                            field.setBackground(java.awt.Color.RED);
+                        }
+                        else
+                        {
+                            field.setBackground(java.awt.Color.WHITE);
+                        }
                         field._extraCredit.Score = newValue;
                         field._panel.updateTotals();
                     }
