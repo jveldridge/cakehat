@@ -97,7 +97,7 @@ public class TesterImpl {
             this.setVisible(false);
             this.setLayout(new BorderLayout());
 
-            TestResults toDisplay = TesterManager.readXML(asgnName, studentAcct);
+            TestResults toDisplay = XMLReader.readXML(asgnName, studentAcct);
             TesterPanel mp = new TesterPanel(toDisplay);
             this.add(mp, BorderLayout.CENTER);
 

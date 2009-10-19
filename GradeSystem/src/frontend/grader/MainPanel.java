@@ -403,7 +403,7 @@ class MainPanel extends JPanel
 		double sc = _rubric.getTotalOutOf();
 		//Score field
 		double statusPoints = status.getEarlyBonus(sc) + status.getLatePenalty(sc);
-		NumberField scoreField = NumberField.getAsUneditable(Double.valueOf(Double.toString((statusPoints))));
+		NumberField scoreField = NumberField.getAsUneditable(Double.valueOf(Utils.doubleToString(statusPoints)));
 		layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, extraCreditText);
 		layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, extraCreditText);
 		panel.add(scoreField);

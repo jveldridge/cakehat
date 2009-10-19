@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -402,45 +403,54 @@ public class Utils {
 
     public static String doubleToString(double value)
 	{
-		String text = Double.toString(value);
-		String prettyText = "";
-
-		char[] chars = text.toCharArray();
-		int dotIndex = text.indexOf(".");
-
-		int truncateLocation = dotIndex+2;
-		int end = chars.length-1;
-
-		if(truncateLocation < end)
-		{
-			int roundValue = Integer.valueOf(Character.toString(chars[truncateLocation+1]));
-			if (roundValue >= 5)
-			{
-				int oldInt = Integer.valueOf(Character.toString(chars[truncateLocation]));
-				int newInt = oldInt + 1;
-				chars[truncateLocation] = Integer.toString(newInt).charAt(0);
-			}
-		}
-
-		end = Math.min(end, truncateLocation);
-
-		for( ; end>=0; end--) {
-			if (chars[end] == '.') {
-				end--;
-				break;
-			}
-			if (chars[end] != '0') {
-				break;
-			}
-		}
-		for(int i=0; i<=end; i++) {
-			prettyText += chars[i];
-		}
+//		String text = Double.toString(value);
+//		String prettyText = "";
+//
+//		char[] chars = text.toCharArray();
+//		int dotIndex = text.indexOf(".");
+//
+//		int truncateLocation = dotIndex+2;
+//		int end = chars.length-1;
+//
+//		if(truncateLocation < end)
+//		{
+//			int roundValue = Integer.valueOf(Character.toString(chars[truncateLocation+1]));
+//			if (roundValue >= 5)
+//			{
+//				int oldInt = Integer.valueOf(Character.toString(chars[truncateLocation]));
+//				int newInt = oldInt + 1;
+//				chars[truncateLocation] = Integer.toString(newInt).charAt(0);
+//			}
+//		}
+//
+//		end = Math.min(end, truncateLocation);
+//
+//		for( ; end>=0; end--) {
+//			if (chars[end] == '.') {
+//				end--;
+//				break;
+//			}
+//			if (chars[end] != '0') {
+//				break;
+//			}
+//		}
+//		for(int i=0; i<=end; i++) {
+//			prettyText += chars[i];
+//		}
 		//split at the decimal if it has a decimal
 		//then remove trailing zeros after the decimal
 
-		return prettyText;
+
+        double roundedVal = Utils.round(value, 2);
+		return Double.toString(roundedVal);
 	}
+
+    public static double round(double d, int decimalPlace) {
+        BigDecimal bd = new BigDecimal(Double.toString(d));
+        bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+        return bd.doubleValue();
+  }
+
 
     /**
      * Returns the current java class path.
