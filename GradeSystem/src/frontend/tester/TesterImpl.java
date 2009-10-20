@@ -10,25 +10,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import javax.swing.JFrame;
-import utils.BashConsole;
 import utils.Constants;
 import utils.Project;
+import utils.Utils;
 
 /**
  *
  * @author spoletto
  */
-public class TesterImpl {
+public class TesterImpl extends JFrame {
 
     public TesterImpl(String asgnName, String studentAcct)
     {
             //Get tester.java file
-            final String TesterFilePath = Constants.TESTER_DIR + asgnName + "/tester.java";
+            final String TesterFilePath = Constants.TESTER_DIR + asgnName + "/Tester.java";
 
+            String testerName = TesterUtils.getTesterName(asgnName);
             Project prj = Project.getInstance(asgnName);
-            String StudentCodeDir = utils.ProjectManager.getStudentSpecificDirectory(prj, studentAcct) + asgnName;
-            String StudentTesterPath = StudentCodeDir + "/tester.java";
-
+            String StudentCodeDir = utils.ProjectManager.getStudentSpecificDirectory(prj, studentAcct) + testerName;
+            String StudentTesterPath = StudentCodeDir + "/Tester.java";
             try {
                 copyFile(new File(TesterFilePath), new File(StudentTesterPath));
             } catch (IOException e) {
@@ -78,10 +78,13 @@ public class TesterImpl {
 
         classPath = classPath.replace("/home/"+ utils.Utils.getUserLogin() + "/course/cs015", "");
 
-        String cmd = "java -classpath " + classPath + " " + prj.getName() + ".Tester";
+        String testerName = TesterUtils.getTesterName(prj.getName());
+
+        String cmd = "java -classpath " + classPath + " " + testerName + ".Tester";
 
         try {
-            BashConsole.write(cmd);
+            //BashConsole.write(cmd);
+            Utils.executeInVisibleTerminal(compileDir, testerName + ".Tester", studentLogin + "'s " + prj.getName());
         }
         catch(Exception e)
         {
@@ -93,25 +96,25 @@ public class TesterImpl {
     {
         private TesterGUI(String asgnName, String studentAcct)
         {
-            super("Testing " + studentAcct + "'s " + asgnName);
-            this.setVisible(false);
-            this.setLayout(new BorderLayout());
+              super("Testing " + studentAcct + "'s " + asgnName);
+              this.setVisible(false);
+              this.setLayout(new BorderLayout());
 
-            TestResults toDisplay = XMLReader.readXML(asgnName, studentAcct);
-            TesterPanel mp = new TesterPanel(toDisplay);
-            this.add(mp, BorderLayout.CENTER);
-
-            this.pack();
-
-            this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
-            //Open up a dialog on window close to save rubric data
-            this.addWindowListener(new WindowAdapter() {
-
-                public void windowClosing(WindowEvent e) {
-                    TesterGUI.this.dispose();
-                }
-            });
+//            TestResults toDisplay = XMLReader.readXML(asgnName, studentAcct);
+//            TesterPanel mp = new TesterPanel(toDisplay);
+//            this.add(mp, BorderLayout.CENTER);
+//
+//            this.pack();
+//
+//            this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+//
+//            //Open up a dialog on window close to save rubric data
+//            this.addWindowListener(new WindowAdapter() {
+//
+//                public void windowClosing(WindowEvent e) {
+//                    TesterGUI.this.dispose();
+//                }
+//            });
         }
 
     }

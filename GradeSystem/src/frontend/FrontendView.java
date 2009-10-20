@@ -14,6 +14,7 @@ import backend.DatabaseIO;
 import frontend.fileviewer.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
+import frontend.tester.TesterImpl;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -565,7 +566,10 @@ public class FrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_printButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
-        FUtils.runTester((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
+        //FUtils.runTester((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
+        TesterImpl t = new TesterImpl((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
+        //t.setLocationRelativeTo(null);
+        //t.setVisible(true);
 }//GEN-LAST:event_runTesterButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
