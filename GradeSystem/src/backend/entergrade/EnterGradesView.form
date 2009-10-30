@@ -165,7 +165,7 @@
                   <Group type="102" attributes="0">
                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="m_overallGradeLabel" pref="263" max="32767" attributes="0"/>
+                      <Component id="m_overallGradeLabel" pref="266" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -197,7 +197,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="m_scroll2" pref="329" max="32767" attributes="0"/>
+                  <Component id="m_scroll2" pref="355" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="m_studentText" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -205,7 +205,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="m_scroll1" alignment="0" pref="304" max="32767" attributes="0"/>
+                          <Component id="m_scroll1" alignment="0" pref="324" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="m_dqearnedText" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -391,7 +391,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="394" max="32767" attributes="0"/>
+                  <EmptySpace pref="397" max="32767" attributes="0"/>
                   <Component id="statusLabel" min="-2" pref="364" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

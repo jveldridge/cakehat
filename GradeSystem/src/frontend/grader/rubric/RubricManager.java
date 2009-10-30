@@ -770,7 +770,7 @@ public class RubricManager {
      * @param graderAcct The grader's login
      */
     public static void convertAllToGrd(String asgn, String graderAcct) {
-        String dirPath = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/";
+        String dirPath =  Constants.GRADER_PATH + graderAcct + "/" + asgn + "/";
 
         Collection<File> xmlFiles = Utils.getFiles(dirPath, "xml");
 
@@ -786,12 +786,21 @@ public class RubricManager {
         HashMap<String, Double> scoresTable = new HashMap<String, Double>();
         for (String g : ConfigurationManager.getGraderLogins()) {
             for (String s : DatabaseIO.getStudentsToGrade(g, asgn)) {
-                scoresTable.put(s, getTotalScore(asgn, g, s));
+                scoresTable.put(s, getTotalSubmittedScore(asgn, g, s));
             }
         }
         return scoresTable;
     }
 
+    public static double getTotalSubmittedScore(String asgn, String graderAcct, String studentAcct) {
+        String path = Constants.GRADER_SUBMIT_PATH + asgn + "/" + graderAcct + "/" + studentAcct;
+        String XMLFilePath = path + ".xml";
+        System.out.println("XMLFilePath is " + XMLFilePath);
+        Rubric rubric = processXML(XMLFilePath);
+        return rubric.getTotalScore();
+    }
+
+    //shouldn't need this method, but not deleting it yet just in case
     public static double getTotalScore(String asgn, String graderAcct, String studentAcct) {
         String path = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/" + studentAcct;
         String XMLFilePath = path + ".xml";
