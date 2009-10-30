@@ -274,7 +274,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
             String[] studsToGrade = DatabaseIO.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
-                //RubricManager.assignXMLToGrader(Project.getInstance((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseIO.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                RubricManager.assignXMLToGrader(Project.getInstance((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseIO.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
             }
        }
 }//GEN-LAST:event_setupGradingButtonActionPerformed
