@@ -43,6 +43,7 @@ class VizTextField extends JTextArea {
     public static VizTextField getAsNotesField(Section section) {
         VizTextField field = new VizTextField(section.Notes, false);
         //Set appearance and properties
+        field.setRows(4);
         field.setLineWrap(true);
         field.setWrapStyleWord(true);
         field.setEditable(false);

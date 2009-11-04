@@ -224,6 +224,8 @@ class VisualPanel extends JPanel
 			panel.add(notesLbl);
 
 			VizTextField notes = VizTextField.getAsNotesField(section);
+            notes.setSize(new Dimension(400,500));
+            JScrollPane scroll = new JScrollPane(notes);
 			notes.setFocusable(false);
 			vGap = 3;
 			layout.putConstraint(SpringLayout.NORTH, notes, vGap, SpringLayout.SOUTH, elemAbove);
