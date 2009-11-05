@@ -94,6 +94,22 @@ public class FUtils {
         }
     }
 
+        public static void printAllGFX(String project, JList studentList) {
+        Vector<String> studentLogins = new Vector<String>();
+        int size = studentList.getModel().getSize();
+        for (int i = 0; i < size; i++) {
+            studentLogins.add((String) studentList.getModel().getElementAt(i));
+        }
+        String printer = FUtils.getPrinter("Choose printer on which to print all students' code");
+        if (printer != null) {
+            boolean first = true;
+            for (String sL : studentLogins) {
+                printStudentProjectGFX(project, sL, printer, first);
+                first = false;
+            }
+        }
+    }
+
     /**
      * This method prints the code of the student passed in as the second parameter for the project
      * passed in as the first parameter on the printer passed in as the third parameter
@@ -111,6 +127,17 @@ public class FUtils {
             printer = FUtils.getPrinter("Choose printer on which to print student code");
         }
         String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " +Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
+        Collection<String> ss = BashConsole.write(printCommand);
+    }
+
+    public static void printStudentProjectGFX(String project, String studentLogin, String printer, boolean first) {
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
+        if (printer == null) {
+            printer = FUtils.getPrinter("Choose printer on which to print student code");
+        }
+        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " +Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/gfx/*.java");
         Collection<String> ss = BashConsole.write(printCommand);
     }
 
