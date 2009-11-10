@@ -53,14 +53,17 @@ public class DatabaseIO {
         try {
             ISqlJetCursor cursor = getAllData("grades_" + assignmentName);
             double sum = 0.0;
-            int i = getColumnNames("grades_" + assignmentName).length;
+            //int i = getColumnNames("grades_" + assignmentName).length;
             double n = 0;
             while (!cursor.eof()) {
-                sum += Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[1]));
-                if (i == 3) {
-                    sum += Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[0]));
+                double d = Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[1]));
+                sum += d;
+//                if (i == 3) {
+//                    sum += Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[0]));
+//                }
+                if (d != 0) { //zeros are probably students that have dropped
+                    n++;
                 }
-                n++;
                 cursor.next();
             }
             cursor.close();
@@ -187,6 +190,23 @@ public class DatabaseIO {
         }
     }
 
+    public static String[] getLabNames() {
+        try {
+            String[] assignNames = getColumnData("assignmentNames", "assignments");
+            String[] assignTypes = getColumnData("type", "assignments");
+            ArrayList<String> al = new ArrayList<String>();
+            for (int i = 0; i < assignNames.length; i++) {
+                if (assignTypes[i].compareToIgnoreCase("lab") == 0) {
+                    al.add(assignNames[i]);
+                }
+            }
+            return al.toArray(new String[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
     /**
      * Get the possible amount of points minus dq points
      * @param assignmentName
@@ -238,7 +258,7 @@ public class DatabaseIO {
      * @param studLogin
      * @return
      */
-    public static double getStudentProjectScore(final String assignmentName, final String studLogin) {
+    public static double getStudentEarnedScore(final String assignmentName, final String studLogin) {
         try {
             ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
             if (cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
@@ -374,6 +394,7 @@ public class DatabaseIO {
             for (int i = 0; i < o.length; i++) {
                 o[i] = cursor.getString(i);
             }
+            cursor.close();
             return o;
         } catch (Exception e) {
             return null;

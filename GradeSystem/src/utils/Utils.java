@@ -15,25 +15,51 @@ import javax.tools.ToolProvider;
 
 public class Utils {
 
-    public static boolean sendMail(String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
+    public static boolean sendMail(String from, String name, String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
         try {
-            String stringBuilder = "mutt -s \"" + subject + "\"";
+            String stringBuilder = "mutt -e \"set from='" + from + "'\" -e \"set realname='" + name + "'\" -e \"set content_type='text/html'\" -s \"" + subject + "\"";
             if (Arrays.toString(cc).length() > 2) {
-                stringBuilder += " -c " + Arrays.toString(cc).replace(",", "").replace("[", "").replace("]", "");
+                for (String s : cc) {
+                    stringBuilder += " -c " + s;
+                }
             }
             if (Arrays.toString(bcc).length() > 2) {
-                stringBuilder += " -b " + Arrays.toString(bcc).replace(",", "").replace("[", "").replace("]", "");
+                for (String s : bcc) {
+                    stringBuilder += " -b " + s;
+                }
             }
             if (Arrays.toString(attachmentNames).length() > 2) {
-                stringBuilder += " -a " + Arrays.toString(attachmentNames).replace(",", "").replace("[", "").replace("]", "");
+                for (String s : attachmentNames) {
+                    stringBuilder += " -a \"" + s + "\"";
+                }
             }
-            stringBuilder += " -- " + Arrays.toString(to).replace(",", " ").replace("[", "").replace("]", "") + " <<< \"" + body + "\"";
+            stringBuilder += " -- " + Arrays.toString(to).replace(",", " ").replace("[", "").replace("]", "") + " <<< \"<html>" + body + "</html>\"";
             String[] cmd = {"/bin/sh", "-c", stringBuilder};
+            System.out.println(stringBuilder);
             Runtime.getRuntime().exec(cmd);
         } catch (Exception e) {
             new ErrorView(e);
         }
         return false;
+    }
+
+    public static String readFile(File aFile) {
+        StringBuilder text = new StringBuilder();
+        try {
+            BufferedReader input = new BufferedReader(new FileReader(aFile));
+            try {
+                String line = null;
+                while ((line = input.readLine()) != null) {
+                    text.append(line);
+                    text.append(System.getProperty("line.separator"));
+                }
+            } finally {
+                input.close();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return text.toString();
     }
 
     /**
@@ -97,7 +123,7 @@ public class Utils {
     }
 
     public static String getProjectDirectory(Project p) {
-        String d = Constants.COURSE_DIR + "/asgn/"+ p.getName() + "/grade/";
+        String d = Constants.COURSE_DIR + "/asgn/" + p.getName() + "/grade/";
         return d;
     }
 
@@ -107,7 +133,7 @@ public class Utils {
      * @return
      */
     public static int getCurrentYear() {
-       // return 2008; //For testing purposes only
+        // return 2008; //For testing purposes only
         return Calendar.getInstance().get(Calendar.YEAR);
     }
 
@@ -131,8 +157,7 @@ public class Utils {
     }
 
     //For testing purposes only
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
     }
 
     /**
@@ -142,20 +167,18 @@ public class Utils {
      * @param entry
      * @return date and time formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND
      */
-    public static String getCalendarAsString(Calendar entry)
-    {
-        if (entry == null)
-        {
+    public static String getCalendarAsString(Calendar entry) {
+        if (entry == null) {
             return "";
         }
 
         String date = entry.get(Calendar.YEAR) +
-                      //Add to month as it is zero indexed
-                      "-" + ensureLeadingZero((entry.get(Calendar.MONTH) + 1)) +
-                      "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
+                //Add to month as it is zero indexed
+                "-" + ensureLeadingZero((entry.get(Calendar.MONTH) + 1)) +
+                "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
         String time = ensureLeadingZero(entry.get(Calendar.HOUR_OF_DAY)) +
-                      ":" + ensureLeadingZero(entry.get(Calendar.MINUTE)) +
-                      ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
+                ":" + ensureLeadingZero(entry.get(Calendar.MINUTE)) +
+                ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
 
         return date + " " + time;
     }
@@ -167,13 +190,11 @@ public class Utils {
      * @param number
      * @return
      */
-    private static String ensureLeadingZero(int number)
-    {
+    private static String ensureLeadingZero(int number) {
         String numberS = number + "";
 
-        if(numberS.length() != 2)
-        {
-            return  "0" + numberS;
+        if (numberS.length() != 2) {
+            return "0" + numberS;
         }
 
         return numberS;
@@ -186,8 +207,7 @@ public class Utils {
      * @param timestamp formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND or YEAR-MONTH-DAY
      * @return a calendar
      */
-    public static Calendar getCalendarFromString(String timestamp)
-    {
+    public static Calendar getCalendarFromString(String timestamp) {
         String year, month, day, time = "";
 
         //Try to split date from time
@@ -200,8 +220,7 @@ public class Utils {
         day = dateParts[2];
 
         //If it has a time part
-        if(parts.length == 2)
-        {
+        if (parts.length == 2) {
             time = parts[1];
         }
 
@@ -217,47 +236,40 @@ public class Utils {
      * @param time formated as HOUR:MINUTE:SECOND
      * @return
      */
-    public static Calendar getCalendar(String year, String month, String day, String time)
-	{
-		Calendar cal = new GregorianCalendar();
+    public static Calendar getCalendar(String year, String month, String day, String time) {
+        Calendar cal = new GregorianCalendar();
 
-		//Try to convert all of the entries
-		int yearI = 0, monthI = 0, dayI = 0, hourI = 0, minuteI = 0, secondI = 0;
-		try
-		{
-			if(year != null && year.length() != 0)
-			{
-				yearI = Integer.valueOf(year);
-			}
-			if(month != null && month.length() != 0)
-			{
-				monthI = Integer.valueOf(month);
-			}
-			if(day != null && day.length() != 0)
-			{
-				dayI = Integer.valueOf(day);
-			}
+        //Try to convert all of the entries
+        int yearI = 0, monthI = 0, dayI = 0, hourI = 0, minuteI = 0, secondI = 0;
+        try {
+            if (year != null && year.length() != 0) {
+                yearI = Integer.valueOf(year);
+            }
+            if (month != null && month.length() != 0) {
+                monthI = Integer.valueOf(month);
+            }
+            if (day != null && day.length() != 0) {
+                dayI = Integer.valueOf(day);
+            }
 
-			if(time != null)
-			{
-				String[] timeParts = time.split(":");
-				if(timeParts.length == 3)
-				{
-					hourI = Integer.valueOf(timeParts[0]);
-					minuteI = Integer.valueOf(timeParts[1]);
-					secondI = Integer.valueOf(timeParts[2]);
-				}
-			}
-		}
-		catch(Exception e) { }
+            if (time != null) {
+                String[] timeParts = time.split(":");
+                if (timeParts.length == 3) {
+                    hourI = Integer.valueOf(timeParts[0]);
+                    minuteI = Integer.valueOf(timeParts[1]);
+                    secondI = Integer.valueOf(timeParts[2]);
+                }
+            }
+        } catch (Exception e) {
+        }
 
-		//Set fields
-		monthI--; //Because months are zero indexed
-		cal.set(yearI, monthI, dayI, hourI, minuteI, secondI);
+        //Set fields
+        monthI--; //Because months are zero indexed
+        cal.set(yearI, monthI, dayI, hourI, minuteI, secondI);
 
-		return cal;
-	}
-    
+        return cal;
+    }
+
     /**
      * Returns a Calendar that represents the last modified date and time
      * of the file specified by the file path.
@@ -359,7 +371,7 @@ public class Utils {
         String classPath = dirPath + ":" + getClassPath();
 
         //TODO: Find a better way of creating the classpath
-        classPath = classPath.replace("/home/"+ Utils.getUserLogin() + "/course/cs015", "");
+        classPath = classPath.replace("/home/" + Utils.getUserLogin() + "/course/cs015", "");
 
         ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
 
@@ -389,20 +401,18 @@ public class Utils {
         String classPath = dirPath + ":" + getClassPath();
 
         //TODO: Find a better way of creating the classpath
-        classPath = classPath.replace("/home/"+ Utils.getUserLogin() + "/course/cs015", "");
+        classPath = classPath.replace("/home/" + Utils.getUserLogin() + "/course/cs015", "");
 
         //Build command to call xterm to run the code
         String javaLoc = "/usr/bin/java";
         String javaCmd = javaLoc + " -classpath " + classPath + " " + javaArg;
-        String terminalCmd =  "/usr/bin/xterm -title " + "\"" + termName + "\""
-                                    + " -e " + "\"" + javaCmd + "; read" + "\"";
-        
+        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
+
         //Execute the command in a seperate thread
         BashConsole.writeThreaded(terminalCmd);
     }
 
-    public static String doubleToString(double value)
-	{
+    public static String doubleToString(double value) {
 //		String text = Double.toString(value);
 //		String prettyText = "";
 //
@@ -437,20 +447,19 @@ public class Utils {
 //		for(int i=0; i<=end; i++) {
 //			prettyText += chars[i];
 //		}
-		//split at the decimal if it has a decimal
-		//then remove trailing zeros after the decimal
+        //split at the decimal if it has a decimal
+        //then remove trailing zeros after the decimal
 
 
         double roundedVal = Utils.round(value, 2);
-		return Double.toString(roundedVal);
-	}
+        return Double.toString(roundedVal);
+    }
 
     public static double round(double d, int decimalPlace) {
         BigDecimal bd = new BigDecimal(Double.toString(d));
         bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
         return bd.doubleValue();
-  }
-
+    }
 
     /**
      * Returns the current java class path.
@@ -547,10 +556,10 @@ public class Utils {
      * @param dirPath
      * @return success of deleting all files
      */
-    public static boolean deleteClassFiles(String dirPath){
+    public static boolean deleteClassFiles(String dirPath) {
         boolean success = true;
 
-        for(File file : getClassFiles(dirPath)){
+        for (File file : getClassFiles(dirPath)) {
             success &= file.delete();
         }
 
@@ -569,7 +578,7 @@ public class Utils {
         Vector<File> files = new Vector<File>();
 
         File dir = new File(dirPath);
-        if(dir == null || !dir.exists()){
+        if (dir == null || !dir.exists()) {
             return files;
         }
         for (String name : dir.list()) {

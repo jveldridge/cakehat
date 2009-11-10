@@ -54,7 +54,6 @@ public class ChartPanel extends JComponent {
         p.getRenderer().setBaseOutlinePaint(Color.white);
         p.setBackgroundPaint(Color.white);
         p.setRangeGridlinePaint(Color.darkGray);
-
         this.repaint();
     }
 

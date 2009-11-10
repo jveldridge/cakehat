@@ -36,4 +36,6 @@ public class Constants {
     public static final String DATABASE_BK_DIR = COURSE_DIR + "tabin/gradesys/bak/";
 
     public static final String TESTER_DIR = COURSE_DIR + "admin/grade/testers/";
+
+    public static final String LAB_DIR = COURSE_DIR + "labs/grades/current/";
 }

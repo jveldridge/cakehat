@@ -32,16 +32,19 @@ public class ChartDataPanel extends javax.swing.JPanel {
     public void updateChartData(String asgnName) {
         try {
             ISqlJetCursor cursor = DatabaseIO.getAllData("grades_" + asgnName);
-            int cols = DatabaseIO.getColumnNames("grades_" + asgnName).length;
+            //int cols = DatabaseIO.getColumnNames("grades_" + asgnName).length;
             double d = DatabaseIO.getAssignmentTotal(asgnName);
             List<Double> l = new ArrayList<Double>();
             while (!cursor.eof()) {
                 double earned = (cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]));
-//                if (cols == 3) {
-//                    earned += (cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[0]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[0]));
-//                }
-                l.add(earned / d * 100);
+                if (earned / d * 100 != 0) { //ignore zero handins
+                    l.add(earned / d * 100);
+                }
                 cursor.next();
+            }
+            if(l.size() == 0){
+                chartPanel1.loadData(asgnName, new double[]{});
+                return;
             }
             double[] data = new double[l.size()];
             for (int i = 0; i < data.length; i++) {

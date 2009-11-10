@@ -42,6 +42,7 @@ public class HistogramView extends javax.swing.JFrame {
     }
 
     private void domoreinit() {
+        //lol@this code
         String[] assignmentNames = DatabaseIO.getAssignmentNames();
         DefaultListModel model = new DefaultListModel();
         for (int i = 1; i < assignmentNames.length; i++) {

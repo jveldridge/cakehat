@@ -13,6 +13,7 @@ package backend;
 import backend.assignmentdist.AssignmentdistView;
 import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
+import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
 import backend.visualizer.TemplateVisualizer;
 import gradesystem.GradeSystemApp;
@@ -23,12 +24,19 @@ import org.jdesktop.application.Action;
 import utils.ErrorView;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Arrays;
 import utils.Constants;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.AssignmentType;
 import utils.BashConsole;
 import utils.Utils;
@@ -60,7 +68,6 @@ public class BackendView extends javax.swing.JFrame {
         });
     }
 
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -83,9 +90,10 @@ public class BackendView extends javax.swing.JFrame {
         m_assgndistButton = new javax.swing.JButton();
         m_histogramButton = new javax.swing.JButton();
         m_entergradesButton = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        m_gradeReportButton = new javax.swing.JButton();
         m_regenerateButton = new javax.swing.JButton();
         previewRubricButton = new javax.swing.JButton();
+        m_importLabsButton = new javax.swing.JButton();
         m_menu = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -203,7 +211,7 @@ public class BackendView extends javax.swing.JFrame {
 
         m_databaseButton.setIcon(resourceMap.getIcon("m_databaseButton.icon")); // NOI18N
         m_databaseButton.setText(resourceMap.getString("m_databaseButton.text")); // NOI18N
-        m_databaseButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+        m_databaseButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         m_databaseButton.setIconTextGap(20);
         m_databaseButton.setName("m_databaseButton"); // NOI18N
         m_databaseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -214,7 +222,7 @@ public class BackendView extends javax.swing.JFrame {
 
         m_assgndistButton.setIcon(resourceMap.getIcon("m_assgndistButton.icon")); // NOI18N
         m_assgndistButton.setText(resourceMap.getString("m_assgndistButton.text")); // NOI18N
-        m_assgndistButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+        m_assgndistButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         m_assgndistButton.setIconTextGap(20);
         m_assgndistButton.setName("m_assgndistButton"); // NOI18N
         m_assgndistButton.addActionListener(new java.awt.event.ActionListener() {
@@ -225,7 +233,7 @@ public class BackendView extends javax.swing.JFrame {
 
         m_histogramButton.setIcon(resourceMap.getIcon("m_histogramButton.icon")); // NOI18N
         m_histogramButton.setText(resourceMap.getString("m_histogramButton.text")); // NOI18N
-        m_histogramButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+        m_histogramButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         m_histogramButton.setIconTextGap(20);
         m_histogramButton.setName("m_histogramButton"); // NOI18N
         m_histogramButton.addActionListener(new java.awt.event.ActionListener() {
@@ -236,7 +244,7 @@ public class BackendView extends javax.swing.JFrame {
 
         m_entergradesButton.setIcon(resourceMap.getIcon("m_entergradesButton.icon")); // NOI18N
         m_entergradesButton.setText(resourceMap.getString("m_entergradesButton.text")); // NOI18N
-        m_entergradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+        m_entergradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         m_entergradesButton.setIconTextGap(20);
         m_entergradesButton.setName("m_entergradesButton"); // NOI18N
         m_entergradesButton.addActionListener(new java.awt.event.ActionListener() {
@@ -245,15 +253,20 @@ public class BackendView extends javax.swing.JFrame {
             }
         });
 
-        jButton5.setIcon(resourceMap.getIcon("jButton5.icon")); // NOI18N
-        jButton5.setText(resourceMap.getString("jButton5.text")); // NOI18N
-        jButton5.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        jButton5.setIconTextGap(20);
-        jButton5.setName("jButton5"); // NOI18N
+        m_gradeReportButton.setIcon(resourceMap.getIcon("m_gradeReportButton.icon")); // NOI18N
+        m_gradeReportButton.setText(resourceMap.getString("m_gradeReportButton.text")); // NOI18N
+        m_gradeReportButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        m_gradeReportButton.setIconTextGap(20);
+        m_gradeReportButton.setName("m_gradeReportButton"); // NOI18N
+        m_gradeReportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                m_gradeReportButtonActionPerformed(evt);
+            }
+        });
 
         m_regenerateButton.setIcon(resourceMap.getIcon("m_regenerateButton.icon")); // NOI18N
         m_regenerateButton.setText(resourceMap.getString("m_regenerateButton.text")); // NOI18N
-        m_regenerateButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
+        m_regenerateButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         m_regenerateButton.setIconTextGap(20);
         m_regenerateButton.setName("m_regenerateButton"); // NOI18N
         m_regenerateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -264,8 +277,22 @@ public class BackendView extends javax.swing.JFrame {
 
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getActionMap(BackendView.class, this);
         previewRubricButton.setAction(actionMap.get("previewRubricButtonActionPerformed")); // NOI18N
+        previewRubricButton.setIcon(resourceMap.getIcon("previewRubricButton.icon")); // NOI18N
         previewRubricButton.setText(resourceMap.getString("previewRubricButton.text")); // NOI18N
+        previewRubricButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        previewRubricButton.setIconTextGap(20);
         previewRubricButton.setName("previewRubricButton"); // NOI18N
+
+        m_importLabsButton.setIcon(resourceMap.getIcon("m_importLabsButton.icon")); // NOI18N
+        m_importLabsButton.setText(resourceMap.getString("m_importLabsButton.text")); // NOI18N
+        m_importLabsButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        m_importLabsButton.setIconTextGap(20);
+        m_importLabsButton.setName("m_importLabsButton"); // NOI18N
+        m_importLabsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                m_importLabsButtonActionPerformed(evt);
+            }
+        });
 
         m_menu.setName("m_menu"); // NOI18N
 
@@ -285,23 +312,18 @@ public class BackendView extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(m_gradeReportButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(m_databaseButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(m_histogramButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(previewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(previewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(m_databaseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                                    .addComponent(m_histogramButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(m_entergradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                                    .addComponent(m_assgndistButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_importLabsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_entergradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_assgndistButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -316,11 +338,13 @@ public class BackendView extends javax.swing.JFrame {
                     .addComponent(m_histogramButton, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
+                    .addComponent(m_importLabsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(previewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewRubricButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(m_gradeReportButton, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -396,6 +420,71 @@ public class BackendView extends javax.swing.JFrame {
         av.setVisible(true);
 }//GEN-LAST:event_m_assgndistButtonActionPerformed
 
+    private void m_gradeReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_gradeReportButtonActionPerformed
+//        EmailView ev = new EmailView(
+//                //String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames
+//                new String[] {""}, new String[] {""},new String[] {"psastras@psastras.com", "psastras@gmail.com", "psastras@cs.brown.edu", "bherila@bherila.net"}, "[cs015] Hello World", "Wheeeeeeeeee"
+//                );
+
+        GradeReportView grv = new GradeReportView();
+        grv.setLocationRelativeTo(null);
+        grv.setVisible(true);
+
+//        String body = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
+//                "<hr /><p>Below are your current grades for the course.  Please make sure that all grades are correct.  If you find an error please come see an HTA on hours as soon as possible.</p><p>Remember that in order to pass the course, you must finish each project with a passing grade.</p>" +
+//                "<p>- Your TAs</p><hr />" +
+//                "<table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>" +
+//                "<tr><td>Clock</td><td>100</td><td>100</td></tr>" +
+//                "<tr><td>LiteBrite</td><td>100</td><td>100</td></tr>" +
+//                "</tbody></table><img src='cid:cat' />" +
+//                "</body>";
+//        Utils.sendMail(new String[]{""}, new String[]{""}, new String[]{"psastras@gmail.com", "psastras@psastras.com"}, "[cs015] Grade Report", body,
+//                new String[]{"/course/cs123/data/image/cat.jpg"});
+    //ev.setVisible(true);
+}//GEN-LAST:event_m_gradeReportButtonActionPerformed
+
+    private void m_importLabsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_importLabsButtonActionPerformed
+        //THE LABS IN THE DATABASE MUST BE IN NUMERICAL ORDER OR THIS WILL NOT WORK
+
+        File labDir = new File(Constants.LAB_DIR);
+        File[] fileList = labDir.listFiles(new FileFilter() {
+
+            public boolean accept(File pathname) {
+                return pathname.getName().startsWith("lab") && pathname.getName().endsWith("txt");
+            }
+        });
+        //Make a comparator that will work for names such that lab10, lab11 > lab2..lab9
+        Comparator c = new Comparator() {
+
+            public int compare(Object o1, Object o2) {
+                int i1 = Integer.parseInt((((File) o1).getName()).replaceAll("[^0-9]", ""));
+                int i2 = Integer.parseInt((((File) o2).getName()).replaceAll("[^0-9]", ""));
+                return (i1 < i2) ? -1 : (i1 == i2) ? 0 : 1;
+            }
+        };
+        Arrays.sort(fileList, c);
+        //parse teh lab filez!
+        String[] labNames = DatabaseIO.getLabNames();
+        for (int i = 0; i < fileList.length; i++) {
+            String total =  String.valueOf(DatabaseIO.getAssignmentTotal(labNames[i]));
+            String[] logins = Utils.readFile(fileList[i]).replaceAll("\\s*-.*", "").split("\\n");
+            for (String s : logins) {
+                long row = DatabaseIO.getRowID("grades_" + labNames[i], "stud_login_" + labNames[i], s);
+                String[] data = (String[]) DatabaseIO.getDataRow("grades_" + labNames[i], row);
+                data[1] = total;
+                try {
+                    DatabaseIO.update(row, "grades_" + labNames[i], (Object[]) data);
+                } catch (Exception e) {
+                    ErrorView ev = new ErrorView(e);
+                    return;
+                }
+            }
+            System.out.print("Lab: " + labNames[i] + " - " + total + " - ");
+            System.out.println(Arrays.toString(logins));
+        }
+
+    }//GEN-LAST:event_m_importLabsButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -411,8 +500,8 @@ public class BackendView extends javax.swing.JFrame {
     @Action
     public void previewRubricButtonActionPerformed() {
         Vector<Object> v = new Vector<Object>();
-        for(String s: DatabaseIO.getAssignmentNames()) {
-            if(DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
+        for (String s : DatabaseIO.getAssignmentNames()) {
+            if (DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
                 v.add(s);
             }
         }
@@ -426,7 +515,6 @@ public class BackendView extends javax.swing.JFrame {
     private backend.components.ImagePanel imagePanel1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -437,7 +525,9 @@ public class BackendView extends javax.swing.JFrame {
     private javax.swing.JButton m_assgndistButton;
     private javax.swing.JButton m_databaseButton;
     private javax.swing.JButton m_entergradesButton;
+    private javax.swing.JButton m_gradeReportButton;
     private javax.swing.JButton m_histogramButton;
+    private javax.swing.JButton m_importLabsButton;
     private javax.swing.JMenuBar m_menu;
     private javax.swing.JButton m_regenerateButton;
     private javax.swing.JButton previewRubricButton;
