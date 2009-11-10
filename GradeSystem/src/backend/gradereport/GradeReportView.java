@@ -16,6 +16,7 @@ import backend.histogram.StudentDataPanel;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -32,7 +33,7 @@ import utils.Utils;
 public class GradeReportView extends javax.swing.JFrame {
 
     /** Creates new form GradeReportView */
-    private String[] _projectNames,  _projectPointsTotal,  _labNames,  _labPointsTotal,  _pointsEarned;
+    private String[] _projectNames,  _projectPointsTotal,  _labNames,  _labPointsTotal,  _homeworkNames,  _homeworkPointsTotal,  _pointsEarned;
 
     public GradeReportView() {
         initComponents();
@@ -42,13 +43,18 @@ public class GradeReportView extends javax.swing.JFrame {
         _projectList.setListData(_projectNames);
         _labNames = DatabaseIO.getLabNames();
         _labList.setListData(_labNames);
+        _homeworkNames = DatabaseIO.getHomeworkNames();
         _labPointsTotal = new String[_labNames.length];
         _projectPointsTotal = new String[_projectNames.length];
+        _homeworkPointsTotal = new String[_homeworkNames.length];
         for (int i = 0; i < _projectNames.length; i++) {
             _projectPointsTotal[i] = Integer.toString(DatabaseIO.getAssignmentTotal(_projectNames[i]));
         }
         for (int i = 0; i < _labNames.length; i++) {
             _labPointsTotal[i] = Integer.toString(DatabaseIO.getAssignmentTotal(_labNames[i]));
+        }
+        for (int i = 0; i < _homeworkNames.length; i++) {
+            _homeworkPointsTotal[i] = Integer.toString(DatabaseIO.getAssignmentTotal(_homeworkNames[i]));
         }
         //DatabaseIO.getAssignmentNames();
 
@@ -75,6 +81,13 @@ public class GradeReportView extends javax.swing.JFrame {
         for (int i = 0; i < labNames.length; i++) {
             labNames[i] = (String) labObjects[i];
         }
+//        Object[] homeworkObjects = DatabaseIO.getHomeworkNames();
+//        String[] homeworkNames = new String[homeworkObjects.length];
+//        for (int i = 0; i < homeworkNames.length; i++) {
+//            homeworkNames[i] = (String) homeworkObjects[i];
+//        }
+
+        //
 
         String[] projTotals = new String[projIndex.length];
         String[] projEarned = new String[projIndex.length];
@@ -88,22 +101,57 @@ public class GradeReportView extends javax.swing.JFrame {
             labTotals[i] = _labPointsTotal[labIndex[i]];
             labEarned[i] = "0";
         }
-        _previewPane.setText(htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals));
+
+        String[] homeworkEarned = new String[_homeworkNames.length];
+        Arrays.fill(homeworkEarned, "0");
+
+//        String[] homeworkTotals = new String[homeworkNames.length];
+
+//        DatabaseIO.getAssignmentTotal(assignmentName)
+//        String[] homeworkEarned = new String[homeworkNames.length];
+//        for (int i = 0; i < homeworkNames.length; i++) {
+//            homeworkTotals[i] =
+//        }
+        _previewPane.setText(htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal));
     }
 
     public String htmlBuilder(String body, String[] projectNames, String[] pointsEarned, String[] pointsTotal) {
-        String stringBuilder = "<html><body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
+        String stringBuilder = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
                 "<hr />" + body;
         stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>";
         for (int i = 0; i < projectNames.length; i++) {
             stringBuilder += "<tr><td>" + projectNames[i] + "</td><td>" + pointsEarned[i] + "</td><td>" + pointsTotal[i] + "</td></tr>";
         }
-        stringBuilder += "</tbody></table></body></html>";
+        stringBuilder += "</tbody></table></body>";
+        return stringBuilder;
+    }
+
+    public String htmlBuilder(String body, String[] projectNames, String[] projPointsEarned, String[] projPointsTotal, String[] labNames, String[] labPointsEarned, String[] labPointsTotal, String[] homeworkNames, String[] homeworkPointsEarned, String[] homeworkPointsTotal) {
+        String stringBuilder = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
+                "<hr />" + body;
+        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>";
+        for (int i = 0; i < projectNames.length; i++) {
+            stringBuilder += "<tr style='background:" + ((i % 2 == 0) ? "#FFFFFF" : "#FDFDFD") + "'><td>" + projectNames[i] + "</td><td>" + projPointsEarned[i] + "</td><td>" + projPointsTotal[i] + "</td></tr>";
+        }
+        stringBuilder += "</tbody></table>";
+
+        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Homework Name</td><td>Earned Points</td><td>Total Points</td></tr>";
+        for (int i = 0; i < homeworkNames.length; i++) {
+            stringBuilder += "<tr style='background:" + ((i % 2 == 0) ? "#FFFFFF" : "#FDFDFD") + "'><td>" + homeworkNames[i] + "</td><td>" + homeworkPointsEarned[i] + "</td><td>" + homeworkPointsTotal[i] + "</td></tr>";
+        }
+        stringBuilder += "</tbody></table>";
+
+        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Lab Name</td><td>Earned Points</td><td>Total Points</td></tr>";
+        for (int i = 0; i < labNames.length; i++) {
+            stringBuilder += "<tr style='background:" + ((i % 2 == 0) ? "#FFFFFF" : "#FDFDFD") + "'><td>" + labNames[i] + "</td><td>" + labPointsEarned[i] + "</td><td>" + labPointsTotal[i] + "</td></tr>";
+        }
+
+        stringBuilder += "</tbody></table><hr /></body>";
         return stringBuilder;
     }
 
     public String htmlBuilder(String body, String[] projectNames, String[] projPointsEarned, String[] projPointsTotal, String[] labNames, String[] labPointsEarned, String[] labPointsTotal) {
-        String stringBuilder = "<html><body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
+        String stringBuilder = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
                 "<hr />" + body;
         stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>";
         for (int i = 0; i < projectNames.length; i++) {
@@ -115,7 +163,7 @@ public class GradeReportView extends javax.swing.JFrame {
         for (int i = 0; i < labNames.length; i++) {
             stringBuilder += "<tr><td>" + labNames[i] + "</td><td>" + labPointsEarned[i] + "</td><td>" + labPointsTotal[i] + "</td></tr>";
         }
-        stringBuilder += "</tbody></table></body></html>";
+        stringBuilder += "</tbody></table></body>";
         return stringBuilder;
     }
 
@@ -389,6 +437,8 @@ public class GradeReportView extends javax.swing.JFrame {
             labTotals[i] = _labPointsTotal[labIndex[i]];
         //labEarned[i] = "0";
         }
+
+        String[] homeworkEarned = new String[_homeworkNames.length];
         try {
             for (int i = 0; i < projNames.length; i++) {
                 double d = Double.parseDouble(projTotals[i]);
@@ -429,15 +479,18 @@ public class GradeReportView extends javax.swing.JFrame {
                 for (int i = 0; i < labIndex.length; i++) {
                     labEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(labNames[i], s));
                 }
-               // Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals),
-               //         files.toArray(new String[0]));
-               // Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals),
-               //         files.toArray(new String[0]));
-               // Thread.sleep(2500);
+                for(int i = 0; i < homeworkEarned.length; i++){
+                    homeworkEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(_homeworkNames[i], s));
+                }
+//             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
+//                     files.toArray(new String[0]));
+             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
+                     files.toArray(new String[0]));
+             Thread.sleep(2500);
             }
             File dir1 = new File(".");
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");
-            
+
         } catch (Exception e) {
         }
     }//GEN-LAST:event__sendButtonActionPerformed
@@ -474,6 +527,9 @@ public class GradeReportView extends javax.swing.JFrame {
             labTotals[i] = _labPointsTotal[labIndex[i]];
             labEarned[i] = "0";
         }
+
+        String[] homeworkEarned = new String[_homeworkNames.length];
+        Arrays.fill(homeworkEarned, "0");
         try {
             for (int i = 0; i < projNames.length; i++) {
                 double d = Double.parseDouble(projTotals[i]);
@@ -502,7 +558,7 @@ public class GradeReportView extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals), fNames.toArray(new String[0]));
+        Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal), fNames.toArray(new String[0]));
         File dir1 = new File(".");
         try {
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");
@@ -518,7 +574,7 @@ public class GradeReportView extends javax.swing.JFrame {
 }//GEN-LAST:event__labListValueChanged
 
     private void _labListPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event__labListPropertyChange
-        updatePreview();
+//        updatePreview();
 }//GEN-LAST:event__labListPropertyChange
 
     /**

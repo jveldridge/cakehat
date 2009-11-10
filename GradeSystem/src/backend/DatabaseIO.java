@@ -207,6 +207,23 @@ public class DatabaseIO {
         }
     }
 
+    public static String[] getHomeworkNames() {
+        try {
+            String[] assignNames = getColumnData("assignmentNames", "assignments");
+            String[] assignTypes = getColumnData("type", "assignments");
+            ArrayList<String> al = new ArrayList<String>();
+            for (int i = 0; i < assignNames.length; i++) {
+                if (assignTypes[i].compareToIgnoreCase("homework") == 0) {
+                    al.add(assignNames[i]);
+                }
+            }
+            return al.toArray(new String[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
     /**
      * Get the possible amount of points minus dq points
      * @param assignmentName
