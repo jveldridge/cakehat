@@ -49,6 +49,24 @@ public class DatabaseIO {
         return 0.0;
     }
 
+        /**
+     *
+     * @param assignmentName
+     * @param studLogin
+     * @return
+     */
+    public static double getStudentProjectScore(final String assignmentName, final String studLogin) {
+        try {
+            ISqlJetCursor cursor = getData("grades_" + assignmentName, "stud_login_" + assignmentName, studLogin);
+            if (cursor.getString("studLogins").compareToIgnoreCase(studLogin) == 0) {
+                return Double.parseDouble(cursor.getString(GRADE_RUBRIC_FIELDS[1]));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
     public static double getAverage(String assignmentName) {
         try {
             ISqlJetCursor cursor = getAllData("grades_" + assignmentName);
