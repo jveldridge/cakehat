@@ -277,7 +277,7 @@ public class FUtils {
      * @return
      */
     private static String getPrinter(String message) {
-        Object[] printerChoices = {"bw3", "bw4", "bw5"};
+        Object[] printerChoices = {"bw2","bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }

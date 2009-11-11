@@ -16,7 +16,9 @@ import frontend.grader.rubric.RubricManager;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -69,7 +71,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             m.addColumn("TA Login");
             m.addColumn("Max Number to Grade");
             for (String s : taNames) {
-                m.addRow(new String[] {s, "-1"});
+                m.addRow(new String[] {s, "0"});
             }
 
         } catch (Exception e) {
@@ -181,61 +183,216 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        String asgn = (String)assignmentNameComboBox.getSelectedItem();
+               String asgn = (String)assignmentNameComboBox.getSelectedItem();
+
         if(!DatabaseIO.isDistEmpty(asgn)) {
             int n = JOptionPane.showConfirmDialog(new JFrame(),"A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?","Confirm Overwrite",JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.NO_OPTION) {
                 return;
-            }
-        }
+}
+}
 
         String[] studNames = ProjectManager.getHandinLogins(Project.getInstance((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
+
+        List<String> shuffledStudents = Arrays.asList(studNames);
+        Collections.shuffle(shuffledStudents);
+        studNames = shuffledStudents.toArray(new String[0]);
+
+        ArrayDeque<String> students = new ArrayDeque<String>();
+        for (String student : studNames) {
+            students.add(student);
+        }
+
+        System.out.println(students);
+
         String[] taNames = ConfigurationManager.getGraderLogins();
 
-        int floor_avg = (int) Math.floor(studNames.length / taNames.length);
+        HashMap<String,String> distribution = new HashMap<String,String>();
+        for (String grader : ConfigurationManager.getGraderLogins()) {
+            distribution.put(grader, new String());
+}
 
-        List<String> shuffleList = Arrays.asList(studNames);
-        Collections.shuffle(shuffleList);
-        studNames = shuffleList.toArray(new String[0]);
-        
+        double double_ceil_avg = Math.floor((double) studNames.length / (double) taNames.length);
+        int avg = (int) double_ceil_avg;
+
         DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
-        String[] studentsToGrade = new String[taNames.length];
-        Arrays.fill(studentsToGrade, "");
-        String[] tasWithBlacklist = DatabaseIO.getColumnData("taLogin", "blacklist");
-        ArrayDeque<String> ad = new ArrayDeque<String>();
-        for (String s : studNames) {
-            ad.add(s);
-        }
-        int index = (int) (Math.random() * taNames.length);
-        int loopCount = 0;
-        Arrays.sort(tasWithBlacklist);
-        while (!ad.isEmpty()) {
-            if (Arrays.binarySearch(tasWithBlacklist, taNames[index % studentsToGrade.length]) >= 0) {
-                String blacklistedStuds = getBlacklist(taNames[index % studentsToGrade.length]);
-                if (blacklistedStuds != null) {
-                    if (blacklistedStuds.contains(ad.peekLast())) {
-                        ad.addFirst(ad.pollLast());
-                        loopCount++;
-                        if (loopCount == ad.size()) {
-                            index++;
-                        }
-                        continue;
-                    }
+
+        Stack<String> gradeFewer = new Stack<String>();
+        Stack<String> gradeAvg = new Stack<String>();
+        Stack<String> gradeMore = new Stack<String>();
+
+        HashMap<String,Integer> numStudsToGrade = new HashMap<String,Integer>();
+        for (int rowCount = 0; rowCount < m.getRowCount(); rowCount++) {
+            String taLogin = (String) m.getValueAt(rowCount,0);
+            int numToGrade = (Integer) Integer.parseInt(m.getValueAt(rowCount, 1).toString()) + avg;
+
+            numStudsToGrade.put((String) m.getValueAt(rowCount, 0), numToGrade);
+            if (numToGrade < avg) {
+                gradeFewer.push(taLogin);
+}
+            else if (numToGrade > avg) {
+                gradeMore.push(taLogin);
+}
+            else {
+                gradeAvg.push(taLogin);
+}
+}
+
+        //String[] tasWithBlacklist = DatabaseIO.getColumnData("taLogin", "blacklist");
+
+        while (!gradeMore.isEmpty()) {
+            String ta = gradeMore.pop();
+            System.out.println("ta is " + ta);
+            String blacklist = this.getBlacklist(ta);
+            System.out.println("blacklist: " + blacklist);
+            if (blacklist == null) {
+                blacklist = "";
+            }
+            String[] blacklistedStuds = blacklist.split(",");
+            Arrays.sort(blacklistedStuds, new StringComparator());
+            int numAssigned = 0;
+            System.out.println("numToGrade is " + numStudsToGrade.get(ta));
+            System.out.println("students is " + students + " and blacklistedStuds is " + blacklistedStuds);
+            while (numAssigned <= numStudsToGrade.get(ta)) {
+                if (numAssigned != 0) {
+                    distribution.put(ta, distribution.get(ta) + ", ");
+                }
+                while (Arrays.binarySearch((String[]) blacklistedStuds, " " + ((String) students.peekFirst())) >= 0) {
+                    System.out.println("while loop 3");
+                    String s = students.removeFirst();
+                    students.addLast(s);
+                }
+                if (!students.isEmpty()) {
+                    distribution.put(ta, distribution.get(ta) + students.removeFirst());
+                    numAssigned++;
+                }
+                else {
+                    break;
                 }
             }
-
-            if (studentsToGrade[index % studentsToGrade.length].split(",").length == Integer.parseInt(m.getValueAt(index % studentsToGrade.length, 1).toString())) {
-                index++;
-                continue;
-            }
-            if (studentsToGrade[index % studentsToGrade.length].isEmpty()) {
-                studentsToGrade[index++ % studentsToGrade.length] += ad.pollLast();
-            } else {
-                studentsToGrade[index++ % studentsToGrade.length] += ", " + ad.pollLast();
-            }
-            loopCount = 0;
         }
+
+         while (!gradeAvg.isEmpty()) {
+            String ta = gradeAvg.pop();
+            System.out.println("ta is " + ta);
+            String blacklist = this.getBlacklist(ta);
+            System.out.println("blacklist: " + blacklist);
+            if (blacklist == null) {
+                blacklist = "";
+            }
+            String[] blacklistedStuds = blacklist.split(",");
+            Arrays.sort(blacklistedStuds, new StringComparator());
+            int numAssigned = 0;
+            System.out.println("numToGrade is " + numStudsToGrade.get(ta));
+            System.out.println("students is " + students + " and blacklistedStuds is " + blacklistedStuds);
+            while (numAssigned < numStudsToGrade.get(ta)) {
+                if (numAssigned != 0) {
+                    distribution.put(ta, distribution.get(ta) + ", ");
+                }
+                while (Arrays.binarySearch((String[]) blacklistedStuds, " " + ((String) students.peekFirst())) >= 0) {
+                    System.out.println("while loop 3");
+                    String s = students.removeFirst();
+                    students.addLast(s);
+                }
+                if (!students.isEmpty()) {
+                    distribution.put(ta, distribution.get(ta) + students.removeFirst());
+                    numAssigned++;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+         while (!gradeFewer.isEmpty()) {
+            String ta = gradeFewer.pop();
+            System.out.println("ta is " + ta);
+            String blacklist = this.getBlacklist(ta);
+            if (blacklist == null) {
+                blacklist = "";
+            }
+            System.out.println("blacklist: " + blacklist);
+            String[] blacklistedStuds = blacklist.split(",");
+            Arrays.sort(blacklistedStuds, new StringComparator());
+            int numAssigned = 0;
+            System.out.println("numToGrade is " + numStudsToGrade.get(ta));
+            System.out.println("students is " + students + " and blacklistedStuds is " + blacklistedStuds);
+            while (numAssigned <= numStudsToGrade.get(ta)) {
+                if (numAssigned != 0) {
+                    distribution.put(ta, distribution.get(ta) + ", ");
+                }
+                while (Arrays.binarySearch((String[]) blacklistedStuds, " " + ((String) students.peekFirst())) >= 0) {
+                    System.out.println("while loop 3");
+                    String s = students.removeFirst();
+                    students.addLast(s);
+                }
+                if (!students.isEmpty()) {
+                    distribution.put(ta, distribution.get(ta) + students.removeFirst());
+                    numAssigned++;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        System.out.println("distribution is " + distribution);
+        //convert the hashmap to an array of strings to be added to the database using Paul's code
+        String[] studentsToGrade = new String[taNames.length];
+        int j = 0;
+        for (String grader : ConfigurationManager.getGraderLogins()) {
+            String temp = distribution.get(grader);
+            studentsToGrade[j] = temp;
+            j++;
+        }
+
+
+//        String[] studentsToGrade = new String[taNames.length];
+//        Arrays.fill(studentsToGrade, "");
+//        String[] tasWithBlacklist = DatabaseIO.getColumnData("taLogin", "blacklist");
+//        System.out.println(tasWithBlacklist);
+//        ArrayDeque<String> ad = new ArrayDeque<String>();
+//        for (String s : studNames) {
+//            ad.add(s);
+//        }
+//        int index = (int) (Math.random() * taNames.length);
+//        int loopCount = 0;
+//        Arrays.sort(tasWithBlacklist);
+//        while (!ad.isEmpty()) {
+//            if (Arrays.binarySearch(tasWithBlacklist, taNames[index % studentsToGrade.length]) >= 0) {
+//                String blacklistedStuds = getBlacklist(taNames[index % studentsToGrade.length]);
+//                if (blacklistedStuds != null) {
+//                    if (blacklistedStuds.contains(ad.peekLast())) {
+//                        ad.addFirst(ad.pollLast());
+//                        loopCount++;
+//                        if (loopCount == ad.size()) {
+//                            index++;
+//                        }
+//                        continue;
+//                    }
+//                }
+//            }
+//
+//            if (studentsToGrade[index % studentsToGrade.length].split(",").length == numStudsToGrade.get(m.getValueAt(index % studentsToGrade.length, 0).toString())) {
+//                index++;
+//                continue;
+//            }
+////            if (studentsToGrade[index % studentsToGrade.length].split(",").length == Integer.parseInt(m.getValueAt(index % studentsToGrade.length, 1).toString())) {
+////                index++;
+////                continue;
+////            }
+//            if (studentsToGrade[index % studentsToGrade.length].isEmpty()) {
+//                studentsToGrade[index++ % studentsToGrade.length] += ad.pollLast();
+//            } else {
+//                studentsToGrade[index++ % studentsToGrade.length] += ", " + ad.pollLast();
+//            }
+//            loopCount = 0;
+//        }
+
+
+        //database part
         try {
+            System.out.println("hello!");
             String[] colNames = DatabaseIO.getColumnNames("assignment_dist");
             int colIndex = 0;
             for (int i = 0; i < colNames.length; i++, colIndex++) {
