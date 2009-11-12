@@ -202,6 +202,16 @@ public class FUtils {
         BashConsole.writeThreaded(cmd);
     }
 
+    public static void openGFX(String project, String login) {
+        //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
+        if (project.equals("TASafehouse")) {
+            project = "TASafeHouse";
+        }
+        String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + "gfx/";
+        final String cmd = "kate " + path + "*.java";
+        BashConsole.writeThreaded(cmd);
+    }
+
     public static void runTester(String asgn, String student) {
         final String testCommand;
         if (asgn.equals("PizzaDex")) {
