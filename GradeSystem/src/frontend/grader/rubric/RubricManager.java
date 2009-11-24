@@ -63,7 +63,7 @@ public class RubricManager {
             DocumentBuilder builder = factory.newDocumentBuilder();
             document = builder.parse(new File(XMLFilePath));
         } catch (Exception e) {
-            throw new Error("Could not create document from XML file. Be sure path specified is accurate.");
+            throw new Error("Could not create document from XML file. Be sure path specified is accurate.  Path is " + XMLFilePath);
         }
 
         return document;
@@ -540,7 +540,7 @@ public class RubricManager {
 
         closeFile(output);
 
-        System.out.println("File written");
+        System.out.println("File  written");
     }
 
     private static void printTotal(double studentScore, double availScore, BufferedWriter output) {
@@ -777,7 +777,7 @@ public class RubricManager {
         for (File file : xmlFiles) {
             String XMLFilePath = file.getAbsolutePath();
             String GRDFilePath = XMLFilePath.split("\\.")[0] + ".grd";
-
+            System.out.print("Processing: " + file.getName() + ". ");
             convertToGRD(XMLFilePath, GRDFilePath);
         }
     }
