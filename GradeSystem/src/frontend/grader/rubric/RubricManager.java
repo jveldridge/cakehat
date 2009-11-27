@@ -242,6 +242,27 @@ public class RubricManager {
         assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, designCheckScore);
     }
 
+    public static void reassignXML(Project prj, String oldGraderAcct, String studentAcct, String newGraderAcct) {
+
+        String XMLOriginalGraderPath = Constants.GRADER_PATH + oldGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
+        String XMLNewGraderPath = Constants.GRADER_PATH + newGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
+
+        reassignXML(XMLOriginalGraderPath, XMLNewGraderPath, newGraderAcct);
+    }
+
+    private static void reassignXML(String XMLOriginalGraderPath, String XMLNewGraderPath, String newGraderAcct) {
+        //Get rubric from the template
+        Rubric rubric = processXML(XMLOriginalGraderPath);
+
+        rubric.Grader.Name = Utils.getUserName(newGraderAcct);
+        rubric.Grader.Acct = newGraderAcct;
+
+        //Write to XML
+        System.out.println("from: " + XMLOriginalGraderPath);
+        System.out.println("to: " + XMLNewGraderPath);
+        writeToXML(rubric, XMLNewGraderPath);
+    }
+
     /**
      * Uses a template XML file and puts in the initial information and
      * writes a new XML file to the location specified by XMLGraderFilePath.
