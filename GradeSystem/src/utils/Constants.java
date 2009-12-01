@@ -41,7 +41,7 @@ public class Constants {
     public static final String LAB_DIR = COURSE_DIR + "labs/grades/current/";
 
     public static final String CURRENT_YEAR = Integer.toString(Utils.getCurrentYear()) + "/";
-    public static final String GRADER_PATH = COURSE_DIR + "grading/" + CURRENT_YEAR + "ta/";
+    public static final String GRADER_PATH = COURSE_DIR + "grading/ta/" + CURRENT_YEAR;
     public static final String CONFIG_FILE_PATH = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "config.xml";
     public static final String GRADER_SUBMIT_PATH = COURSE_DIR + "grading/submitted/" + CURRENT_YEAR;
     public static final String DATABASE_FILE = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "cs015Database.db";
