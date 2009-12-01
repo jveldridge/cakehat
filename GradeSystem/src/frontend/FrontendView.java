@@ -654,7 +654,7 @@ public class FrontendView extends javax.swing.JFrame {
             project = "TASafeHouse";
         }
         //fvv.openFile(new File(Utils.getProjectDirectory(Project.getInstance((String)assignmentList.getSelectedValue())) + Constants.DEDUCTIONS_LIST_FILENAME));
-        fvv.openFile(new File(Utils.getProjectDirectory(Project.getInstance(project)) + Constants.DEDUCTIONS_LIST_FILENAME));
+        fvv.openFile(new File(Constants.TEMPLATE_GRADE_SHEET_DIR + project + "/" + Constants.DEDUCTIONS_LIST_FILENAME));
         fvv.setLocationRelativeTo(null);
         fvv.setVisible(true);
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
