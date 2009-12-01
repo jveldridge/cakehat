@@ -449,6 +449,7 @@ public class DatabaseIO {
         try {
             if (cursor.goTo(rowid)) {
                 return cursor.getString(columnName);
+
             }
         } finally {
             cursor.close();
@@ -456,6 +457,7 @@ public class DatabaseIO {
         return null;
 
     }
+
 
     /**
      * Create a new table in the database.  You should never need to call this.
@@ -660,7 +662,6 @@ public class DatabaseIO {
      */
     public static ISqlJetCursor getItemWithFilter(final String tableName, final String indexName, final String filter) throws SqlJetException {
         return db.getTable(tableName).lookup(indexName, filter);
-
     }
 
     /**

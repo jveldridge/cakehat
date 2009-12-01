@@ -12,11 +12,11 @@
 package backend.assignmentdist;
 
 import backend.DatabaseIO;
-import frontend.grader.rubric.RubricManager;
+import java.util.Arrays;
+import java.util.Vector;
 import javax.swing.JList;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.ErrorView;
-import utils.Project;
 
 /**
  *
@@ -235,7 +235,50 @@ public class ReassignView extends javax.swing.JFrame {
     }//GEN-LAST:event_fromTAListMouseClicked
 
     private void reassignButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignButtonActionPerformed
-        RubricManager.reassignXML(Project.getInstance((String)assignmentList.getSelectedValue()), (String) fromTAList.getSelectedValue(), (String) fromStudentList.getSelectedValue(), (String) toTAList.getSelectedValue());
+        String oldTA = (String) fromTAList.getSelectedValue();
+        String newTA = (String) toTAList.getSelectedValue();
+        String student = (String) fromStudentList.getSelectedValue();
+
+        //modify database
+//        try {
+//            ISqlJetCursor cursor = DatabaseIO.getItemWithFilter("assignment_dist", "ta_login_dist", oldTA);
+//            if (cursor.eof()) {
+//                cursor.close();
+//                return;
+//            }
+//            try {
+//                String assignedStudents = cursor.getString((String) assignmentList.getSelectedValue());
+//                System.out.println("before: " + assignedStudents);
+//                if (assignedStudents == null) {
+//                    assignedStudents = "";
+//                    System.out.println("null");
+//                }
+//                String[] students = assignedStudents.split(", ");
+//                Vector studList = new Vector(Arrays.asList(students));
+//                studList.remove(student);
+//                String row[] = (String[]) DatabaseIO.getDataRow("assignment_dist", DatabaseIO.getRowID("assignment_dist", "ta_login_dist", oldTA));
+//                System.out.println("row is " + row);
+//                //Arrays.sort(row, new StringComparator());
+//                //System.out.println("sorted successfully");
+//                int i = 0;
+//                while (i < row.length) {
+//                    System.out.println(row[i]);
+//                    i++;
+//                }
+//                //Arrays.toString(studList.toArray());
+//                //DatabaseIO.update(DatabaseIO.getRowID("assignment_dist", "ta_login_dist", oldTA), "assignment_dist", Arrays.toString(studList.toArray()));
+//            } finally {
+//                cursor.close();
+//            }
+//        } catch (Exception e) {
+//            //new ErrorView(e);
+//            e.printStackTrace();
+//        }
+        
+        //update XML files
+        //RubricManager.reassignXML(Project.getInstance((String)assignmentList.getSelectedValue()), oldTA, student, newTA);
+
+        //still need to remove old XMLs
     }//GEN-LAST:event_reassignButtonActionPerformed
 
     private void toTAListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_toTAListMouseClicked
