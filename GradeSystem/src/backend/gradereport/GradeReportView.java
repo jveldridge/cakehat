@@ -479,14 +479,14 @@ public class GradeReportView extends javax.swing.JFrame {
                 for (int i = 0; i < labIndex.length; i++) {
                     labEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(labNames[i], s));
                 }
-                for(int i = 0; i < homeworkEarned.length; i++){
+                for (int i = 0; i < homeworkEarned.length; i++) {
                     homeworkEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(_homeworkNames[i], s));
                 }
 //             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
 //                     files.toArray(new String[0]));
-//             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
-//                     files.toArray(new String[0]));
-             Thread.sleep(2500);
+                Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
+                        files.toArray(new String[0]));
+                Thread.sleep(2500);
             }
             File dir1 = new File(".");
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");
