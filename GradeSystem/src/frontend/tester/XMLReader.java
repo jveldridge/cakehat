@@ -21,11 +21,17 @@ import utils.Project;
  */
 public class XMLReader {
 
+    /**
+     * @deprecated -- never used
+     * @param asgnName
+     * @param studentAcct
+     * @return
+     */
     public static TestResults readXML(String asgnName, String studentAcct)
     {
         TestResults results = new TestResults();
         results.Tests = new Vector<Test>();
-        final String XMLFilePath = utils.ProjectManager.getStudentSpecificDirectory(Project.getInstance(asgnName), studentAcct) + "testResults.xml";
+        final String XMLFilePath = utils.ProjectManager.getCodeStudentDirectory(Project.getInstance(asgnName), studentAcct) + "testResults.xml";
         Document document = getDocument(XMLFilePath);
         Node testerNode = getRootNode(document);
         assignRootAttributes(testerNode, results);

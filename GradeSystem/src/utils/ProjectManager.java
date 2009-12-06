@@ -64,12 +64,12 @@ public class ProjectManager {
     }
 
     /**
-     * Creates a directory for the code for this project.
+     * Creates a directory for the .code for this project.
      *
      * @param prj
      */
     public static void createCodeDirectory(Project prj) {
-        Utils.makeDirectory(getCodeDirectory(prj));
+        Utils.makeDirectory(getProjectCodeDirectory(prj));
     }
 
     /**
@@ -78,7 +78,7 @@ public class ProjectManager {
      * @param prj
      */
     public static void removeCodeDirectory(Project prj) {
-        Utils.removeDirectory(getCodeDirectory(prj));
+        Utils.removeDirectory(getProjectCodeDirectory(prj));
     }
 
     /**
@@ -107,7 +107,7 @@ public class ProjectManager {
         }
 
         //Create an empty folder for grading compiled student code
-        String compileDir = getCodeDirectory(prj) + studentLogin + "/"; //getStudentSpecificDirectory(prj, studentLogin);
+        String compileDir = getCodeStudentDirectory(prj, studentLogin);
         Utils.makeDirectory(compileDir);
 
         //untar student handin
@@ -123,7 +123,7 @@ public class ProjectManager {
      * @return success of deletion operation
      */
     public static boolean deleteClassFiles(Project prj, String studentLogin){
-        String compileDir = getStudentSpecificDirectory(prj, studentLogin);
+        String compileDir = getCodeStudentDirectory(prj, studentLogin);
         return Utils.deleteClassFiles(compileDir);
     }
 
@@ -135,7 +135,7 @@ public class ProjectManager {
      * @param studentLogin
      */
     public static void compile(Project prj, String studentLogin) {
-        String compileDir = getStudentSpecificDirectory(prj, studentLogin);
+        String compileDir = getCodeStudentDirectory(prj, studentLogin);
         Utils.compile(compileDir);
     }
 
@@ -147,21 +147,76 @@ public class ProjectManager {
      * @param studentLogin
      */
     public static void execute(Project prj, String studentLogin) {
-        String compileDir = getStudentSpecificDirectory(prj, studentLogin);
+        String compileDir = getCodeStudentDirectory(prj, studentLogin);
         //Utils.execute(compileDir, prj.getName() + ".App"); //This executes without a terminal
         Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
     }
 
+    /**
+     * @date 12/06/2009
+     * @param prj
+     * @param studentLogin
+     * @return path to the TA grading directory for the project package for the given project and student
+     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/<projectname>/
+     * @author jeldridg
+     */
+    public static String getStudentProjectDirectory(Project prj, String studentLogin) {
+        return getCodeStudentDirectory(prj, studentLogin) + prj.getName() + "/";
+    }
+
+    /**
+     * @date 12/06/2009
+     * @param prj
+     * @param studentLogin
+     * @return path to the TA grading directory for GFX for the given project and student
+     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/gfx/
+     * @author jeldridg
+     */
+    public static String getStudentGFXDirectory(Project prj, String studentLogin) {
+        return getCodeStudentDirectory(prj, studentLogin) + "gfx/";
+    }
+
+    /**
+     * @date 12/06/2009
+     * @param prj
+     * @param studentLogin
+     * @return path to the TA grading directory containing directories for all packages of a student's code for a particular project
+     *          (i.e., the project and gfx, if applicable)
+     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/
+     * @author jeldridg
+     */
+    public static String getCodeStudentDirectory(Project prj, String studentLogin) {
+        return getProjectCodeDirectory(prj) + studentLogin + "/";
+    }
     
-    public static String getStudentSpecificDirectory(Project prj, String studentLogin) {
-        return getCodeDirectory(prj) + studentLogin + "/" + prj.getName();
-        //return getUserGradingDirectory() + prj.getName() + "/" + studentLogin + "/";
+    /**
+     * @date 12/06/2009
+     * @param prj
+     * @return path to the directory in which code of the students the user TA must grade will be stored
+     *   currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/
+     * @author jeldridg
+     */
+    public static String getProjectCodeDirectory(Project prj) {
+        return getUserProjectDirectory(prj) + Constants.CODE_DIR;
     }
 
-    public static String getCodeDirectory(Project prj) {
-        return getUserGradingDirectory() + prj.getName() + "/" + Constants.CODE_DIR;
+
+    /**
+     * @date 12/06/2009
+     * @return path to a TA's grading directory for a particular project
+     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/
+     * @author jeldridg
+     */
+    public static String getUserProjectDirectory(Project prj) {
+        return getUserGradingDirectory() + prj.getName() + "/";
     }
 
+    /**
+     * @date 12/06/2009
+     * @return path to a TA's grading directory
+     *  currently, /course/cs015/grading/ta/2009/<talogin>/
+     * @author jeldridg
+     */
     public static String getUserGradingDirectory() {
         return Constants.GRADER_PATH + Utils.getUserLogin() + "/";
     }

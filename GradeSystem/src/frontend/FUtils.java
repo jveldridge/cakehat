@@ -70,7 +70,7 @@ public class FUtils {
      * the current project.  It opens a pop-up window that allows the TA to select which printer should
      * be used (only allows bw3, bw4, and bw5).
      *
-     * STABLE but non-idea, 9/19/09
+     * STABLE but non-ideal, 9/19/09
      *
      * @param project
      * @param assignmentList
@@ -126,18 +126,28 @@ public class FUtils {
         if (printer == null) {
             printer = FUtils.getPrinter("Choose printer on which to print student code");
         }
-        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " +Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/" + project + "/*.java");
+        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " + ProjectManager.getStudentProjectDirectory(Project.getInstance(project), studentLogin) + "*.java");
         Collection<String> ss = BashConsole.write(printCommand);
     }
 
-    public static void printStudentProjectGFX(String project, String studentLogin, String printer, boolean first) {
+    public static void printStudentProjectGFX(String project,
+                                              String studentLogin,
+                                              String printer,
+                                              boolean first)
+    {
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
         if (printer == null) {
             printer = FUtils.getPrinter("Choose printer on which to print student code");
         }
-        String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " +Constants.GRADER_PATH + Utils.getUserLogin() + "/" + project + "/.code/" + studentLogin + "/gfx/*.java");
+        String printCommand = new String("cs015_gradingPrint "
+                                          + printer + " "
+                                          + first + " "
+                                          + studentLogin + " "
+                                          + ProjectManager.getStudentGFXDirectory(Project.getInstance(project),
+                                                                                  studentLogin)
+                                          + "*.java");
         Collection<String> ss = BashConsole.write(printCommand);
     }
 
@@ -184,32 +194,34 @@ public class FUtils {
     }
 
     /**
-     * Opens the student's code in Kate
+     * Opens the current student's project code (not including GFX) in Kate
      *
      * @param project - the project name that should be opened
      * @param login - the login of the student whose project should be opened
-     * @throws IOException
-     *
-     * STABLE 9/19/09
+     * @author jeldridg
      */
     public static void openStudentProject(String project, String login) {
         //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
-        String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + "/";
-        //String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
+        String path = ProjectManager.getStudentProjectDirectory(Project.getInstance(project), login);
         final String cmd = "kate " + path + "*.java";
         BashConsole.writeThreaded(cmd);
     }
 
+    /**
+     * Opens the current student's GFX code using Kate
+     *
+     * @param project
+     * @param login
+     * @author jeldridg
+     */
     public static void openGFX(String project, String login) {
-        //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
-        String path = ProjectManager.getCodeDirectory(Project.getInstance(project)) + login + "/gfx/";
-        //String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + "gfx/";
+        String path = ProjectManager.getStudentGFXDirectory(Project.getInstance(project), login);
         final String cmd = "kate " + path + "*.java";
         BashConsole.writeThreaded(cmd);
     }
@@ -262,7 +274,7 @@ public class FUtils {
         boolean exists = file.exists();
         if (!exists) {
             file.mkdirs();
-            BashConsole.write("chmod 770 " + dir);
+            BashConsole.write("chmod 770 -R" + dir);
         } else {
         }
     }

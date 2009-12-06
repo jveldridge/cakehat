@@ -27,11 +27,9 @@ public class TesterImpl extends JFrame {
 
             String testerName = TesterUtils.getTesterName(asgnName);
             Project prj = Project.getInstance(asgnName);
-            String StudentCodeDir = utils.ProjectManager.getStudentSpecificDirectory(prj, studentAcct) + testerName;
+            String StudentCodeDir = utils.ProjectManager.getCodeStudentDirectory(prj, studentAcct) + testerName;
             String StudentTesterPath = StudentCodeDir + "/Tester.java";
             try {
-                System.out.println("TesterfP: " + TesterFilePath);
-                System.out.println("StudentFP: " + StudentTesterPath);
                 copyFile(new File(TesterFilePath), new File(StudentTesterPath));
             } catch (IOException e) {
                 throw new Error("Error copying tester to student code directory");
@@ -74,7 +72,7 @@ public class TesterImpl extends JFrame {
     }
 
     public static void executeTester(Project prj, String studentLogin) {
-        String compileDir = utils.ProjectManager.getStudentSpecificDirectory(prj, studentLogin);
+        String compileDir = utils.ProjectManager.getCodeStudentDirectory(prj, studentLogin);
 
         String classPath = compileDir + ":" + utils.Utils.getClassPath();
 
