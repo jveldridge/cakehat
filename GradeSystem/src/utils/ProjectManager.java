@@ -107,7 +107,7 @@ public class ProjectManager {
         }
 
         //Create an empty folder for grading compiled student code
-        String compileDir = getStudentSpecificDirectory(prj, studentLogin);
+        String compileDir = getCodeDirectory(prj) + studentLogin + "/"; //getStudentSpecificDirectory(prj, studentLogin);
         Utils.makeDirectory(compileDir);
 
         //untar student handin
@@ -152,8 +152,10 @@ public class ProjectManager {
         Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
     }
 
+    
     public static String getStudentSpecificDirectory(Project prj, String studentLogin) {
-        return getCodeDirectory(prj) + studentLogin + "/";
+        return getCodeDirectory(prj) + studentLogin + "/" + prj.getName();
+        //return getUserGradingDirectory() + prj.getName() + "/" + studentLogin + "/";
     }
 
     public static String getCodeDirectory(Project prj) {

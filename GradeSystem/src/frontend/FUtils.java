@@ -197,7 +197,8 @@ public class FUtils {
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
-        String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
+        String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + "/";
+        //String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + project + "/";
         final String cmd = "kate " + path + "*.java";
         BashConsole.writeThreaded(cmd);
     }
@@ -207,7 +208,8 @@ public class FUtils {
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
-        String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + "gfx/";
+        String path = ProjectManager.getCodeDirectory(Project.getInstance(project)) + login + "/gfx/";
+        //String path = ProjectManager.getStudentSpecificDirectory(Project.getInstance(project), login) + "gfx/";
         final String cmd = "kate " + path + "*.java";
         BashConsole.writeThreaded(cmd);
     }

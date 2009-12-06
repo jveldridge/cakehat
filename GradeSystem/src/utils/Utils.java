@@ -318,7 +318,7 @@ public class Utils {
      * @param destPath the directory the tar file will be expanded into
      */
     public static void untar(String tarPath, String destPath) {
-        String cmd = "tar -xf " + tarPath + " -C " + destPath;
+        String cmd = "tar -xf " + tarPath + " -C " + destPath; //" + "; rm -rf " + destPath + "*/.code/.*";
         try {
             Process proc = Runtime.getRuntime().exec(cmd);
             proc.waitFor();
