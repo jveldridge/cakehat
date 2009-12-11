@@ -484,7 +484,7 @@ public class GradeReportView extends javax.swing.JFrame {
                 }
 //             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
 //                     files.toArray(new String[0]));
-                Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
+                Utils.sendMail("cs015headtas@cs.brown.edu", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
                         files.toArray(new String[0]));
                 Thread.sleep(2500);
             }
@@ -558,7 +558,7 @@ public class GradeReportView extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal), fNames.toArray(new String[0]));
+        Utils.sendMail("cs015headtas@cs.brown.edu", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal), fNames.toArray(new String[0]));
         File dir1 = new File(".");
         try {
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");

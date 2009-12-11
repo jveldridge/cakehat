@@ -47,4 +47,18 @@ public class Constants {
     public static final String DATABASE_FILE = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "cs015Database.db";
     public static final String DATABASE_BK_DIR = COURSE_DIR + "grading/bin" + CURRENT_YEAR + "bak/";
     public static final String TEMPLATE_GRADE_SHEET_DIR = COURSE_DIR + "grading/asgn/" + CURRENT_YEAR;
+
+    // cs15's test account
+    public static final String EMAIL_ACCOUNT = "cs015000";
+    // ldap password for test account
+    public static final String EMAIL_PASSWORD = "andyCS15";
+    public static final String EMAIL_HOST = "smtps.cs.brown.edu";
+    public static final String EMAIL_PORT = "465";
+
+    // generated from the cs department certificate
+    // generated with "keytool -import -alias smtps.cs.brown.edu -file browncs-ca.crt -keystore browncscerts.cert"
+    public static final String EMAIL_CERT_PATH = "/course/cs015/grading/bin/smtp_certs/browncscerts.cert";
+    
+    // password added to the certificate by keytool
+    public static final String EMAIL_CERT_PASSWORD = "andyCS15";
 }

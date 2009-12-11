@@ -2,45 +2,104 @@ package utils;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Vector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import javax.mail.*;
+import javax.mail.internet.*;
+import java.util.*;
+import javax.activation.*;
 
 public class Utils {
 
-    public static boolean sendMail(String from, String name, String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
+    /**
+     * sends email through the cs department smtps server
+     * attaches a list of files to the email
+     *
+     * @author aunger 12/10/09
+     *
+     * @param from
+     * @param to array of addresses
+     * @param cc array of addresses
+     * @param bcc array of addresses
+     * @param subject
+     * @param body
+     * @param attachmentNames files paths to the attachments
+     */
+    public static void sendMail(String from, String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
+        System.setProperty("javax.net.ssl.trustStore", Constants.EMAIL_CERT_PATH);
+        System.setProperty("javax.net.ssl.trustStorePassword", Constants.EMAIL_CERT_PASSWORD);
+        Properties props = new Properties();
+        props.put("mail.transport.protocol", "smtps");
+        props.put("mail.smtps.host", Constants.EMAIL_HOST);
+        props.put("mail.smtps.user", Constants.EMAIL_ACCOUNT);
+        props.put("mail.smtp.host", Constants.EMAIL_HOST);
+        props.put("mail.smtp.port", Constants.EMAIL_PORT);
+        props.put("mail.smtp.ssl.enable", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.auth", "true");
+        //props.put("mail.smtp.debug", "true");
+        props.put("mail.smtp.socketFactory.port", Constants.EMAIL_PORT);
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.socketFactory.fallback", "false");
+
         try {
-            String stringBuilder = "mutt -e \"set from='" + from + "'\" -e \"set realname='" + name + "'\" -e \"set content_type='text/html'\" -s \"" + subject + "\"";
+            Authenticator auth = new javax.mail.Authenticator() {
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(Constants.EMAIL_ACCOUNT, Constants.EMAIL_PASSWORD);
+                }
+            };
+            Session session = Session.getInstance(props, auth);
+            //session.setDebug(true);
+
+            MimeMessage msg = new MimeMessage(session);
+            msg.setSubject(subject);
+            msg.setFrom(new InternetAddress(from));
+
+            if (Arrays.toString(to).length() > 2) { //checks that "to" array is not empty
+                for (String s : to) {
+                    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(s));
+                }
+            }
             if (Arrays.toString(cc).length() > 2) {
                 for (String s : cc) {
-                    stringBuilder += " -c " + s;
+                    msg.addRecipient(Message.RecipientType.CC, new InternetAddress(s));
                 }
             }
             if (Arrays.toString(bcc).length() > 2) {
                 for (String s : bcc) {
-                    stringBuilder += " -b " + s;
+                    msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(s));
                 }
             }
-            if (Arrays.toString(attachmentNames).length() > 2) {
+
+            // multi part message to add parts to
+            Multipart multipart = new MimeMultipart();
+
+            // add message text
+            MimeBodyPart mainTextPart = new MimeBodyPart();
+            mainTextPart.setContent("<html>" + body + "</html>", "text/html");
+            multipart.addBodyPart(mainTextPart);
+
+            //for each file to attach
+            if (Arrays.toString(attachmentNames).length() > 2) { //if not empty
                 for (String s : attachmentNames) {
-                    stringBuilder += " -a \"" + s + "\"";
+                    // add attachments
+                    MimeBodyPart attachmentPart = new MimeBodyPart();
+                    DataSource source = new FileDataSource(s);
+                    attachmentPart.setDataHandler(new DataHandler(source));
+                    attachmentPart.setFileName(s.substring(s.lastIndexOf("/")+1));
+                    multipart.addBodyPart(attachmentPart);
                 }
             }
-            stringBuilder += " -- " + Arrays.toString(to).replace(",", " ").replace("[", "").replace("]", "") + " <<< \"<html>" + body + "</html>\"";
-            String[] cmd = {"/bin/sh", "-c", stringBuilder};
-            System.out.println(stringBuilder);
-            Runtime.getRuntime().exec(cmd);
-        } catch (Exception e) {
-            new ErrorView(e);
+            // Put parts in message
+            msg.setContent(multipart);
+
+            // send message
+            Transport.send(msg);
+        } catch (Exception mex) {
+            mex.printStackTrace();
         }
-        return false;
     }
 
     public static String readFile(File aFile) {
@@ -318,11 +377,25 @@ public class Utils {
      * @param destPath the directory the tar file will be expanded into
      */
     public static void untar(String tarPath, String destPath) {
-        String cmd = "tar -xf " + tarPath + " -C " + destPath;// + "; rm -rf " + destPath + "*/.*";
+        String cmd = "tar -xf " + tarPath + " -C " + destPath;
         try {
             Process proc = Runtime.getRuntime().exec(cmd);
             proc.waitFor();
         } catch (Exception e) {
+        }
+
+        File destFolder = new File(destPath);
+        File subFolders[] = destFolder.listFiles(); // list all subfolders of .code/<studentLogin>/
+        for (File folder : subFolders) {
+            FilenameFilter filter = new FilenameFilter() { // make a filter for .*.java and .*.java~ files
+              public boolean accept(File dir, String name) {
+                  return (name.startsWith(".") && (name.endsWith(".java")  || name.endsWith(".java~")));
+              }
+            };
+            File toDelete[] = folder.listFiles(filter); // list all the files to delete
+            for (File delete : toDelete) {
+                delete.delete(); // remove the file
+            }
         }
     }
 
