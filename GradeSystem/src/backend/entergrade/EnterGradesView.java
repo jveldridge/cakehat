@@ -574,7 +574,7 @@ public class EnterGradesView extends javax.swing.JFrame {
         //Update dq fields
 
         if (DatabaseIO.getAssignmentDQ(asgn) == 0) {
-            m_dqearnedText.setText("" + DatabaseIO.getStudentProjectScore(asgn, m_studentText.getText()));
+            m_dqearnedText.setText("" + DatabaseIO.getStudentEarnedScore(asgn, m_studentText.getText()));
             m_dqtotalText.setText("" + DatabaseIO.getAssignmentTotal(asgn));
         } else {
             m_dqearnedText.setText("" + DatabaseIO.getStudentDQScore(asgn, m_studentText.getText()));
@@ -587,7 +587,7 @@ public class EnterGradesView extends javax.swing.JFrame {
         }
         //Update project fields
         if (DatabaseIO.getAssignmentType(asgn) == AssignmentType.PROJECT) {
-            m_prjpointsLabel.setText("" + (DatabaseIO.getStudentProjectScore(asgn, m_studentText.getText()) - Double.parseDouble(m_dqearnedText.getText())));
+            m_prjpointsLabel.setText("" + (DatabaseIO.getStudentEarnedScore(asgn, m_studentText.getText()) - Double.parseDouble(m_dqearnedText.getText())));
             m_prjtotalLabel.setText("" + DatabaseIO.getAssignmentPoints(asgn));
             m_prjscoreLabel.setText("" + ((Double.parseDouble(m_prjpointsLabel.getText()) / Double.parseDouble(m_prjtotalLabel.getText())) * 100));
         } else {
