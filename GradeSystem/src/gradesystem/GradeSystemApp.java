@@ -27,7 +27,9 @@ public class GradeSystemApp extends SingleFrameApplication {
          java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
+                    if(_args.length == 2 &&  _args[1].compareToIgnoreCase("ssh") != 0)  {
+                          UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
+                    }
                 } catch (Exception e) {
                 }
             }
