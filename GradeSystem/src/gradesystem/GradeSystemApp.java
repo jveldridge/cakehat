@@ -5,6 +5,8 @@ package gradesystem;
 
 import backend.BackendView;
 import frontend.FrontendView;
+import javax.swing.JDesktopPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.jdesktop.application.Application;
@@ -27,14 +29,19 @@ public class GradeSystemApp extends SingleFrameApplication {
          java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    if(_args.length == 2 &&  _args[1].compareToIgnoreCase("ssh") != 0)  {
+                    if(_args != null && _args.length >= 2 &&  _args[1].compareToIgnoreCase("ssh") != 0)  {
                           UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
+
+                    } else {
+                        System.setProperty("awt.useSystemAAFontSettings", "false");
+                        System.setProperty("swing.aatext","false");
+
                     }
                 } catch (Exception e) {
                 }
             }
         });
-        if (_args != null && _args.length == 1) {
+        if (_args != null && _args.length >= 1) {
             if (_args[0].compareToIgnoreCase("backend") == 0) {
                 BackendView bv = new BackendView();
                 bv.setLocationRelativeTo(null);
