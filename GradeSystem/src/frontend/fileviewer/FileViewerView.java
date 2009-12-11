@@ -40,6 +40,7 @@ public class FileViewerView extends javax.swing.JFrame {
             m_tabbedPane.setTitleAt(0, f.getName());
             this.setTitle(f.getName() + " - File Viewer");
             m_textArea.setText(contents.toString());
+
         } catch (Exception ex) {
             new ErrorView(ex);
         }

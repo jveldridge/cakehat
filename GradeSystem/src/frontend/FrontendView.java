@@ -15,6 +15,9 @@ import frontend.fileviewer.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
 import frontend.tester.TesterImpl;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -24,7 +27,6 @@ import javax.imageio.ImageIO;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Constants;
 import utils.ErrorView;
-import utils.Project;
 import utils.Utils;
 
 
@@ -681,6 +683,21 @@ public class FrontendView extends javax.swing.JFrame {
             }
         });
     }
+
+    @Override
+    public void paintComponents(Graphics g) {
+        super.paintComponents(g);
+        Graphics2D g2d = (Graphics2D)g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF );
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED );
+        g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+        g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+    }
+
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList assignmentList;
