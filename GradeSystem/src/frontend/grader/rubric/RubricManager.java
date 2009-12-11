@@ -798,7 +798,9 @@ public class RubricManager {
         for (File file : xmlFiles) {
             String XMLFilePath = file.getAbsolutePath();
             String GRDFilePath = XMLFilePath.split("\\.")[0] + ".grd";
-            System.out.print("Processing: " + file.getName() + ". ");
+            if(file.getAbsolutePath().contains(".metadata")) continue;
+            //@TODO: THIS IS A COMPLETE HACK FIX THIS!!!! - psastras
+            System.out.print("Processing: " + file.getAbsolutePath() + ". ");
             convertToGRD(XMLFilePath, GRDFilePath);
         }
     }

@@ -23,6 +23,7 @@ import frontend.grader.rubric.*;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JViewport;
 import utils.Constants;
 
 public class Grader extends JFrame {
@@ -50,6 +51,7 @@ public class Grader extends JFrame {
         saveButton.setEnabled(false);
         MainPanel mp = new MainPanel(rubric, stateManager);
         ScrollPane mainPane = new ScrollPane(mp);
+        mainPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         mainPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(mainPane, BorderLayout.CENTER);
         saveButton.addActionListener(new ActionListener() {
