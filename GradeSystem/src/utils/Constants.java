@@ -57,7 +57,7 @@ public class Constants {
 
     // generated from the cs department certificate
     // generated with "keytool -import -alias smtps.cs.brown.edu -file browncs-ca.crt -keystore browncscerts.cert"
-    public static final String EMAIL_CERT_PATH = "/course/cs015/grading/bin/smtp_certs/browncscerts.cert";
+    public static final String EMAIL_CERT_PATH = COURSE_DIR + "grading/bin/smtp_certs/browncscerts.cert";
     
     // password added to the certificate by keytool
     public static final String EMAIL_CERT_PASSWORD = "andyCS15";
