@@ -29,13 +29,11 @@ public class GradeSystemApp extends SingleFrameApplication {
          java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    if(_args != null && _args.length >= 2 &&  _args[1].compareToIgnoreCase("ssh") != 0)  {
+                    if((_args != null && _args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0) || _args ==null || _args.length < 2)  {
                           UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
-
                     } else {
                         System.setProperty("awt.useSystemAAFontSettings", "false");
                         System.setProperty("swing.aatext","false");
-
                     }
                 } catch (Exception e) {
                 }
