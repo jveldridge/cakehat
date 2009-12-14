@@ -2,13 +2,11 @@ package utils;
 
 public enum AssignmentType
 {
-	PROJECT, LAB, HOMEWORK;
+	FINAL, PROJECT, LAB, HOMEWORK;
 	
 	public static AssignmentType getInstance(String typeString)
-	{
-		AssignmentType[] types = { PROJECT, LAB, HOMEWORK };
-		
-		for(AssignmentType type : types)
+	{		
+		for(AssignmentType type : values())
 		{
 			if(typeString.toUpperCase().equals(type.toString()))
 			{
@@ -16,6 +14,8 @@ public enum AssignmentType
 			}
 		}
 		
-		throw new Error("Invalid type string");
+		throw new RuntimeException("Invalid input: " + typeString +
+                                   ", valid options are " +
+                                   java.util.Arrays.toString(values()));
 	}
 }

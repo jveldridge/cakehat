@@ -10,9 +10,11 @@
  */
 package utils;
 
-import java.io.BufferedOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -34,7 +36,20 @@ public class ErrorView extends javax.swing.JFrame {
 
     public ErrorView(Exception e) {
         this();
-        jTextArea1.setText(e.toString());
+
+        //For testing only
+        e.printStackTrace();
+        //End testing
+
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        try { stringWriter.close(); }
+        //Well...if we encounter an exception while trying to show an except
+        //we are just screwed so forget about doing anything about it
+        catch (IOException ex) { }
+
+        jTextArea1.setText(stringWriter.toString());
         jTextArea1.setCaretPosition(0);
     }
 

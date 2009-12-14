@@ -59,7 +59,8 @@ public class BashConsole
 		} 
 		if (proc != null)
 		{ 
-		   BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream())); 
+		   BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+           BufferedReader err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 		   PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true); 
 		   for(String line : input)
 		   {
@@ -72,9 +73,14 @@ public class BashConsole
 		      while ((line = in.readLine()) != null)
 		      { 
 		         output.add(line); 
-		      } 
+		      }
+              while ((line = err.readLine()) != null)
+              {
+                  output.add(line);
+              }
 		      proc.waitFor(); 
-		      in.close(); 
+		      in.close();
+              err.close();
 		      out.close(); 
 		      proc.destroy(); 
 		   } 

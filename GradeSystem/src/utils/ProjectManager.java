@@ -100,7 +100,7 @@ public class ProjectManager {
      * @param prj
      * @param studentLogin
      */
-    private static void untar(Project prj, String studentLogin) {
+    public static void untar(Project prj, String studentLogin) {
         //Check that the student actually has a handin
         if(prj.getHandin(studentLogin) == null){
             return;
@@ -149,6 +149,8 @@ public class ProjectManager {
     public static void execute(Project prj, String studentLogin) {
         String compileDir = getCodeStudentDirectory(prj, studentLogin);
         //Utils.execute(compileDir, prj.getName() + ".App"); //This executes without a terminal
+        //Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
+        //Utils.executeJ3D(compileDir,  prj.getName() + ".App");
         Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
     }
 

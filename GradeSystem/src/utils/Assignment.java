@@ -10,4 +10,9 @@ public class Assignment
 	
 	public Points Points = new Points();
 	public Calendar Outdate, Early, Ontime, Late;
+
+    public String toString()
+    {
+        return Name;
+    }
 }

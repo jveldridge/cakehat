@@ -2,6 +2,8 @@ package utils;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -473,8 +475,20 @@ public class Utils {
         //Get the existing classpath, add dirPath to the classpath
         String classPath = dirPath + ":" + getClassPath();
 
-        //TODO: Find a better way of creating the classpath
-        classPath = classPath.replace("/home/" + Utils.getUserLogin() + "/course/cs015", "");
+        //Build command to call xterm to run the code
+        String javaLoc = "/usr/bin/java";
+        String javaLibrary = " -Djava.library.path=" + Constants.LIBRARY_PATH;
+        String javaClassPath = " -classpath " + classPath;
+        String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
+        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
+
+        //Execute the command in a seperate thread
+        BashConsole.writeThreaded(terminalCmd);
+    }
+    /*
+    public static void executeInVisibleTerminal(String dirPath, String javaArg, String termName) {
+        //Get the existing classpath, add dirPath to the classpath
+        String classPath = dirPath + ":" + getClassPath();
 
         //Build command to call xterm to run the code
         String javaLoc = "/usr/bin/java";
@@ -484,46 +498,11 @@ public class Utils {
         //Execute the command in a seperate thread
         BashConsole.writeThreaded(terminalCmd);
     }
+     */
+
+
 
     public static String doubleToString(double value) {
-//		String text = Double.toString(value);
-//		String prettyText = "";
-//
-//		char[] chars = text.toCharArray();
-//		int dotIndex = text.indexOf(".");
-//
-//		int truncateLocation = dotIndex+2;
-//		int end = chars.length-1;
-//
-//		if(truncateLocation < end)
-//		{
-//			int roundValue = Integer.valueOf(Character.toString(chars[truncateLocation+1]));
-//			if (roundValue >= 5)
-//			{
-//				int oldInt = Integer.valueOf(Character.toString(chars[truncateLocation]));
-//				int newInt = oldInt + 1;
-//				chars[truncateLocation] = Integer.toString(newInt).charAt(0);
-//			}
-//		}
-//
-//		end = Math.min(end, truncateLocation);
-//
-//		for( ; end>=0; end--) {
-//			if (chars[end] == '.') {
-//				end--;
-//				break;
-//			}
-//			if (chars[end] != '0') {
-//				break;
-//			}
-//		}
-//		for(int i=0; i<=end; i++) {
-//			prettyText += chars[i];
-//		}
-        //split at the decimal if it has a decimal
-        //then remove trailing zeros after the decimal
-
-
         double roundedVal = Utils.round(value, 2);
         return Double.toString(roundedVal);
     }
@@ -540,10 +519,15 @@ public class Utils {
      * @return classPath
      */
     public static String getClassPath() {
+        //I give up, Netbeans sucks at this, just return the class path we need
+        return Constants.CLASSPATH;
+
         //When not running in Eclipse, only the line of code below is needed
         //return System.getProperty("java.class.path");
 
-        //Hack to make this work properly with Eclipse
+
+        //Hack to make this work properly with Eclipse/Netbeans
+        /*
         String classPath = System.getProperty("java.class.path");
 
         if (classPath.contains("cs015.jar")) {
@@ -561,6 +545,7 @@ public class Utils {
         } else {
             return "";
         }
+        */
     }
 
     /**

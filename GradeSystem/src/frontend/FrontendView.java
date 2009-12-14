@@ -88,11 +88,7 @@ public class FrontendView extends javax.swing.JFrame {
         this.populateStudentList();
 
         //must also inform Tester button of the newly selected current assignment
-        if (FUtils.hasTester((String) assignmentList.getSelectedValue())) {
-            runTesterButton.setEnabled(true);
-        } else {
-            runTesterButton.setEnabled(false);
-        }
+        runTesterButton.setEnabled(FUtils.hasTester((String) assignmentList.getSelectedValue()));
 
         //and untar all students' code for the newly selected current assignment
         FUtils.untar(assignmentList, studentList);
@@ -110,13 +106,8 @@ public class FrontendView extends javax.swing.JFrame {
         populateStudentList();
 
         /* check whether runTesterButton should be enabled (if the assignment selected on startup has
-         * a tester to run) or not
-         */
-        if (FUtils.hasTester((String) assignmentList.getSelectedValue())) {
-            runTesterButton.setEnabled(true);
-        } else {
-            runTesterButton.setEnabled(false);
-        }
+           a tester to run) or not */
+        runTesterButton.setEnabled(FUtils.hasTester((String) assignmentList.getSelectedValue()));
     }
 
     /**

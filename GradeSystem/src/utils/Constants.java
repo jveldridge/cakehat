@@ -2,7 +2,6 @@ package utils;
 
 public class Constants {
     //Course directory
-
     public static final String COURSE_DIR = "/course/cs015/";
     // XML Grading Sheets that will be modified while TAs are grading:
     // /course/cs015/admin/uta/grading/<talogin>/<assignment>/<studentlogin>.xml
@@ -33,6 +32,12 @@ public class Constants {
     public static final String EMAIL_DOMAIN = "cs.brown.edu";
     public static final int MINUTES_OF_LENIENCY = 10;
 
+    //Demoes
+    public static final String DEMO_DIR = COURSE_DIR + "project_demos/ordinary/";
+
+    //Final project representation in the database
+    public static final String FINAL_PROJECT = "Final";
+
     //public static final String DATABASE_FILE = COURSE_DIR + "tabin/gradesys/cs015Database.db";
     //public static final String DATABASE_BK_DIR = COURSE_DIR + "tabin/gradesys/bak/";
 
@@ -42,7 +47,8 @@ public class Constants {
 
     public static final String CURRENT_YEAR = Integer.toString(Utils.getCurrentYear()) + "/";
     public static final String GRADER_PATH = COURSE_DIR + "grading/ta/" + CURRENT_YEAR;
-    public static final String CONFIG_FILE_PATH = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "config.xml";
+    //TODO: Change to config.xml before pushing out to jar
+    public static final String CONFIG_FILE_PATH = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "config_new_test.xml";
     public static final String GRADER_SUBMIT_PATH = COURSE_DIR + "grading/submitted/" + CURRENT_YEAR;
     public static final String DATABASE_FILE = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "cs015Database.db";
     public static final String DATABASE_BK_DIR = COURSE_DIR + "grading/bin" + CURRENT_YEAR + "bak/";
@@ -61,4 +67,17 @@ public class Constants {
     
     // password added to the certificate by keytool
     public static final String EMAIL_CERT_PASSWORD = "andyCS15";
+
+    //Classpath
+    public static final String CLASSPATH = ":/course/cs015/lib/cs015.jar:" +
+            "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dcore.jar:" +
+            "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dutils.jar:" +
+            "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/vecmath.jar:";
+
+    //Library path - normally this wouldn't matter - but for Java3D it does (grr... I hate it!) - jak2
+    public static final String LIBRARY_PATH = "/usr/lib/jvm/java-6-sun-1.6.0.12/jre/lib/i386/server:" +
+                                              "/usr/lib/jvm/java-6-sun-1.6.0.12/jre/lib/i386:" +
+                                              "/usr/lib/jvm/java-6-sun-1.6.0.12/jre/../lib/i386::" +
+                                              "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/i386:" +
+                                              "/usr/java/packages/lib/i386:/lib:/usr/lib";
 }

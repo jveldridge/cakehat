@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
+import utils.Assignment;
 import utils.BashConsole;
 import utils.Constants;
 import utils.EmailView;
@@ -27,10 +28,9 @@ import utils.Utils;
 public class FUtils {
 
     /**
-     * This method runs a demo of the current project using the existing
-     * 'cs015_runDemo' script
+     * This method runs a demo. Directly executes the jar.
      *
-     * STABLE 9/18/09
+     * STABLE 12/13/09
      *
      * @param project
      */
@@ -38,12 +38,23 @@ public class FUtils {
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
-        Runtime r = Runtime.getRuntime();
+        
+        String cmd = "java -Djava.library.path=" + Constants.LIBRARY_PATH + " -jar " + Constants.DEMO_DIR + project + "/" + project + ".jar";
+
+        System.out.println(cmd);
+
+        Collection<String> output = BashConsole.write(cmd);
+
+        for(String line : output){
+            System.out.print("Output: " + line);
+        }
+        /*
         try {
-            r.exec("cs015_runGradeDemo " + project);
+            Runtime.getRuntime().exec(cmd);
         } catch (IOException e) {
             new ErrorView(e);
         }
+         */
     }
 
     /**

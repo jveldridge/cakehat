@@ -48,8 +48,9 @@ public class AssignmentdistView extends javax.swing.JFrame {
         }
 
         for(String s: DatabaseIO.getAssignmentNames()) {
-            if(DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT)
-            assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
+            if(DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
+                assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
+            }
         }
         for(String s: DatabaseIO.getAssignmentNames())
         if (assignmentNameComboBox.getItemCount() > 0) {

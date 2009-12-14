@@ -507,7 +507,7 @@ public class BackendView extends javax.swing.JFrame {
         }
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         String message = "Choose Project to Preview";
-        String project = (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, v.toArray(), null);
+        String project = (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Project", JOptionPane.PLAIN_MESSAGE, icon, v.toArray(), null);
         new TemplateVisualizer(project);
     }
 

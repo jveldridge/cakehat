@@ -3,8 +3,6 @@ package utils;
 import java.util.Collection;
 import java.util.HashMap;
 import java.io.File;
-import utils.Utils;
-import utils.Constants;
 
 public class Project {
 
@@ -47,6 +45,16 @@ public class Project {
 
     Collection<File> getHandins() {
         return HAND_INS;
+    }
+
+    public boolean containsStudent(String studentLogin){
+        for (File handin : getHandins()) {
+            if (handin.getName().equals(studentLogin + ".tar")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     File getHandin(String studentLogin) {
