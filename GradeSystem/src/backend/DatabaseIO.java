@@ -27,6 +27,7 @@ public class DatabaseIO {
 
     public static final String[] GRADE_RUBRIC_FIELDS = {"DQPoints", "ProjectPoints"};
     private static SqlJetDb db;
+    public static final String DISTRIBUTION_TABLE = "assignment_dist";
 
     /**
      * Open the database.
@@ -34,6 +35,36 @@ public class DatabaseIO {
      */
     public static void open() throws SqlJetException {
         db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+    }
+
+    /**
+     * Returns string array containing all the students currently assigned to
+     * be graded for the given project.  Returns empty string if proj not found.
+     * @return String[]
+     */
+    public static String[] getStudentsAssigned(String projectName) {
+        String[] columns = getColumnNames(DISTRIBUTION_TABLE);
+        Arrays.sort(columns);
+        int i = Arrays.binarySearch(columns, projectName);
+        if (i < 0) {
+            return new String[0];
+        }
+        try {
+            ISqlJetCursor cursor = getAllData(DISTRIBUTION_TABLE);
+            StringBuilder sb = new StringBuilder();
+            while (!cursor.eof()) {
+                String s = cursor.getString(columns[i]);
+                if (s != null) {
+                    sb.append(s + ",");
+                }
+                cursor.next();
+            }
+
+            cursor.close();
+            return sb.toString().replace(" ", "").split(",");
+        } catch (Exception e) {
+        }
+        return Arrays.toString(getColumnData(columns[i], DISTRIBUTION_TABLE)).replace(" ", "").split(",");
     }
 
     public static double getStudentDQScore(String assignmentName, String studentName) {
@@ -48,7 +79,7 @@ public class DatabaseIO {
         return 0.0;
     }
 
-        /**
+    /**
      *
      * @param assignmentName
      * @param studLogin
@@ -329,7 +360,7 @@ public class DatabaseIO {
      */
     public static String[] getStudentsToGrade(final String taLogin, final String assignmentName) {
         try {
-            ISqlJetCursor cursor = getData("assignment_dist", "ta_login_dist", taLogin);
+            ISqlJetCursor cursor = getData(DISTRIBUTION_TABLE, "ta_login_dist", taLogin);
             String s = cursor.getString(assignmentName);
             return (s == null || s.isEmpty() || cursor.getString("taLogin").compareToIgnoreCase(taLogin) != 0) ? new String[0] : s.replace(" ", "").split(",");
         } catch (Exception e) {
@@ -456,7 +487,6 @@ public class DatabaseIO {
         return null;
 
     }
-
 
     /**
      * Create a new table in the database.  You should never need to call this.
@@ -710,7 +740,7 @@ public class DatabaseIO {
         db.createTable(sqlCreateTableString1);
         db.createIndex("create index ta_login_dist on assignment_dist (taLogin)");
         for (String s : ConfigurationManager.getTALogins()) {
-            addDatum("assignment_dist", s);
+            addDatum(DISTRIBUTION_TABLE, s);
             addDatum("blacklist", s);
             addDatum("talist", new Object[]{s});
         }

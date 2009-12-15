@@ -486,7 +486,6 @@ public class GradeReportView extends javax.swing.JFrame {
 //                     files.toArray(new String[0]));
                 Utils.sendMail("cs015headtas@cs.brown.edu", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
                         files.toArray(new String[0]));
-                Thread.sleep(2500);
             }
             File dir1 = new File(".");
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");

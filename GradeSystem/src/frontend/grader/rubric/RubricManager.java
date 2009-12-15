@@ -28,6 +28,7 @@ import java.util.HashMap;
 import utils.Constants;
 import utils.Utils;
 import backend.DatabaseIO;
+import utils.BashConsole;
 import utils.ErrorView;
 
 public class RubricManager {
@@ -233,11 +234,38 @@ public class RubricManager {
      */
     public static void assignXMLToGrader(Project prj, String studentAcct, String graderAcct,
             double designCheckScore, int minutesOfLeniency) {
-        String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
-
+        //String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
+        String XMLTemplateFilePath = Constants.TEMPLATE_GRADE_SHEET_DIR + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
         String XMLGraderFilePath = Constants.GRADER_PATH + graderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
 
         TimeStatus status = ProjectManager.getTimeStatus(studentAcct, prj, minutesOfLeniency);
+
+        assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, designCheckScore);
+    }
+
+    /**
+     * Takes the template XML file from template and copies it into the directory
+     * for destination project for the grader.  Use only for Final Projects when
+     * destination name (Final) is different from template name (Othello, Sketchy Adventure)
+     * Fills in the student login and name, grader login and name, time status,
+     * and design check score.
+     * 
+     * @param templateProject
+     * @param destProject
+     * @param studentAcct
+     * @param graderAcct
+     * @param designCheckScore
+     * @param minutesOfLeniency
+     */
+    public static void assignXMLToGrader(Project templateProject, Project destProject, String studentAcct, String graderAcct,
+            double designCheckScore, int minutesOfLeniency) {
+        //String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + templateProject.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
+         String XMLTemplateFilePath = Constants.TEMPLATE_GRADE_SHEET_DIR + templateProject.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
+        
+
+        String XMLGraderFilePath = Constants.GRADER_PATH + graderAcct + "/" + destProject.getName() + "/" + studentAcct + ".xml";
+
+        TimeStatus status = ProjectManager.getTimeStatus(studentAcct, templateProject, minutesOfLeniency);
 
         assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, designCheckScore);
     }
@@ -410,14 +438,17 @@ public class RubricManager {
 
     private static void saveXMLFile(Document document, String XMLFilePath) {
         try {
+            File f = new File(XMLFilePath); //added to ensure auto directory creation
+            f.getParentFile().mkdirs();
             TransformerFactory tFactory = TransformerFactory.newInstance();
             Transformer transformer = tFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             DOMSource source = new DOMSource(document);
-            StreamResult result = new StreamResult(new File(XMLFilePath));
+            StreamResult result = new StreamResult(f);
             transformer.transform(source, result);
+            BashConsole.write("chmod 770 -R " + f.getParentFile().getAbsolutePath());
         } catch (Exception e) {
-            throw new Error("Exception thrown in saving document.");
+            new ErrorView(e);
         }
     }
     /**
@@ -510,15 +541,11 @@ public class RubricManager {
         }
     }
 
-    private static void writeDetail(Detail detail, BufferedWriter output)
-    {
+    private static void writeDetail(Detail detail, BufferedWriter output) {
         String msg;
-        if(detail.Value == 0)
-        {
+        if (detail.Value == 0) {
             msg = detail.Name;
-        }
-        else
-        {
+        } else {
             msg = detail.Name + " (" + detail.Value + " points)";
         }
         printWithinBounds(DETAIL_INDENT_WIDTH, SECTION_TEXT_WIDTH, msg, output);
@@ -791,14 +818,16 @@ public class RubricManager {
      * @param graderAcct The grader's login
      */
     public static void convertAllToGrd(String asgn, String graderAcct) {
-        String dirPath =  Constants.GRADER_PATH + graderAcct + "/" + asgn + "/";
+        String dirPath = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/";
 
         Collection<File> xmlFiles = Utils.getFiles(dirPath, "xml");
 
         for (File file : xmlFiles) {
             String XMLFilePath = file.getAbsolutePath();
             String GRDFilePath = XMLFilePath.split("\\.")[0] + ".grd";
-            if(file.getAbsolutePath().contains(".metadata")) continue;
+            if (file.getAbsolutePath().contains(".metadata")) {
+                continue;
+            }
             //@TODO: THIS IS A COMPLETE HACK FIX THIS!!!! - psastras
             System.out.print("Processing: " + file.getAbsolutePath() + ". ");
             convertToGRD(XMLFilePath, GRDFilePath);

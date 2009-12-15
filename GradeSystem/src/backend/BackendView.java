@@ -11,6 +11,7 @@
 package backend;
 
 import backend.assignmentdist.AssignmentdistView;
+import backend.assignmentdist.FinalProjectAssigner;
 import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.gradereport.GradeReportView;
@@ -24,8 +25,10 @@ import org.jdesktop.application.Action;
 import utils.ErrorView;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
 import java.util.Arrays;
 import utils.Constants;
 import java.util.Calendar;
@@ -34,6 +37,7 @@ import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
@@ -94,6 +98,8 @@ public class BackendView extends javax.swing.JFrame {
         m_regenerateButton = new javax.swing.JButton();
         previewRubricButton = new javax.swing.JButton();
         m_importLabsButton = new javax.swing.JButton();
+        m_gradeReportButton1 = new javax.swing.JButton();
+        m_gradeReportButton2 = new javax.swing.JButton();
         m_menu = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -294,6 +300,28 @@ public class BackendView extends javax.swing.JFrame {
             }
         });
 
+        m_gradeReportButton1.setIcon(resourceMap.getIcon("m_gradeReportButton1.icon")); // NOI18N
+        m_gradeReportButton1.setText(resourceMap.getString("m_gradeReportButton1.text")); // NOI18N
+        m_gradeReportButton1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        m_gradeReportButton1.setIconTextGap(20);
+        m_gradeReportButton1.setName("m_gradeReportButton1"); // NOI18N
+        m_gradeReportButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDatabase(evt);
+            }
+        });
+
+        m_gradeReportButton2.setIcon(resourceMap.getIcon("m_gradeReportButton2.icon")); // NOI18N
+        m_gradeReportButton2.setText(resourceMap.getString("m_gradeReportButton2.text")); // NOI18N
+        m_gradeReportButton2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        m_gradeReportButton2.setIconTextGap(20);
+        m_gradeReportButton2.setName("m_gradeReportButton2"); // NOI18N
+        m_gradeReportButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                m_gradeReportButton2ActionPerformed(evt);
+            }
+        });
+
         m_menu.setName("m_menu"); // NOI18N
 
         jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
@@ -312,17 +340,19 @@ public class BackendView extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(m_gradeReportButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                    .addComponent(m_databaseButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                    .addComponent(m_histogramButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                    .addComponent(previewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                    .addComponent(m_importLabsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                    .addComponent(m_entergradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                    .addComponent(m_assgndistButton, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE))
+                    .addComponent(m_gradeReportButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(m_databaseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(m_histogramButton, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(previewRubricButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                    .addComponent(m_gradeReportButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_importLabsButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_entergradesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_assgndistButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .addComponent(m_gradeReportButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -341,10 +371,14 @@ public class BackendView extends javax.swing.JFrame {
                     .addComponent(m_importLabsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(previewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(m_gradeReportButton, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(m_gradeReportButton, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
+                    .addComponent(m_gradeReportButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(m_regenerateButton, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
+                    .addComponent(m_gradeReportButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -466,7 +500,7 @@ public class BackendView extends javax.swing.JFrame {
         //parse teh lab filez!
         String[] labNames = DatabaseIO.getLabNames();
         for (int i = 0; i < fileList.length; i++) {
-            String total =  String.valueOf(DatabaseIO.getAssignmentTotal(labNames[i]));
+            String total = String.valueOf(DatabaseIO.getAssignmentTotal(labNames[i]));
             String[] logins = Utils.readFile(fileList[i]).replaceAll("\\s*-.*", "").split("\\n");
             for (String s : logins) {
                 long row = DatabaseIO.getRowID("grades_" + labNames[i], "stud_login_" + labNames[i], s);
@@ -484,6 +518,85 @@ public class BackendView extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_m_importLabsButtonActionPerformed
+
+    private void exportDatabase(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDatabase
+        JFileChooser fc = new JFileChooser(new File("~/" + Utils.getUserLogin()));
+        fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                return (f.getName().endsWith(".csv") || f.isDirectory());
+            }
+
+            @Override
+            public String getDescription() {
+                return "Comma separated values (.csv)";
+            }
+        });
+        fc.showSaveDialog(this);
+        File f = fc.getSelectedFile();
+        if (f == null) {
+            return;
+        }
+        if (!f.getName().endsWith(".csv")) { //append .csv extension if necessary
+            f = new File(f.getAbsolutePath() + ".csv");
+        }
+        if (f.exists()) { //Add confirmation dialog
+            Object[] options = {"Confirm", "Cancel"};
+            if (JOptionPane.showOptionDialog(this, "Are you sure you want to overwrite this file?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]) != 0) {
+                exportDatabase(evt);
+            }
+        }
+        try {
+            FileWriter fw = new FileWriter(f);
+            BufferedWriter bw = new BufferedWriter(fw);
+            StringBuilder sb = new StringBuilder();
+            String[] assignmentNames = DatabaseIO.getAssignmentNames();
+            String[] studList = DatabaseIO.getStudentNames();
+            int[] totals = new int[assignmentNames.length];
+            for(int i = 0; i < totals.length; i++) {
+                totals[i] = DatabaseIO.getAssignmentTotal(assignmentNames[i]);
+            }
+            Arrays.sort(studList);
+            sb.append("Login,");
+            for (int i = 0; i < assignmentNames.length; i++) {
+                sb.append(assignmentNames[i]);
+                if (i < assignmentNames.length - 1) {
+                    sb.append(",");
+                }
+            }
+            sb.append("\n");
+            sb.append("Total Points, ");
+            for(int i  = 0; i < totals.length; i++) {
+                sb.append(totals[i]);
+                if(i < totals.length - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append("\n\n");
+            for (String s : studList) {
+                sb.append(s + ",");
+                for(int i =0; i < assignmentNames.length;i++) {
+                    sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], s));
+                    if (i < assignmentNames.length - 1) {
+                        sb.append(",");
+                    }
+                }
+                sb.append("\n");
+            }
+            bw.write(sb.toString());
+            bw.close();
+            JOptionPane.showMessageDialog(this, "File written to " + f.getName() + ".", "File Written", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error while writing to file.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+}//GEN-LAST:event_exportDatabase
+
+    private void m_gradeReportButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_gradeReportButton2ActionPerformed
+        FinalProjectAssigner fpa = new FinalProjectAssigner();
+        fpa.setLocationRelativeTo(null);
+        fpa.setVisible(true);
+    }//GEN-LAST:event_m_gradeReportButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -526,6 +639,8 @@ public class BackendView extends javax.swing.JFrame {
     private javax.swing.JButton m_databaseButton;
     private javax.swing.JButton m_entergradesButton;
     private javax.swing.JButton m_gradeReportButton;
+    private javax.swing.JButton m_gradeReportButton1;
+    private javax.swing.JButton m_gradeReportButton2;
     private javax.swing.JButton m_histogramButton;
     private javax.swing.JButton m_importLabsButton;
     private javax.swing.JMenuBar m_menu;

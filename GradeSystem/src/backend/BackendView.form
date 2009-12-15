@@ -192,18 +192,20 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="m_gradeReportButton" pref="313" max="32767" attributes="2"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="m_gradeReportButton" alignment="1" pref="313" max="32767" attributes="2"/>
                   <Component id="m_databaseButton" alignment="0" pref="313" max="32767" attributes="2"/>
                   <Component id="m_histogramButton" alignment="0" pref="313" max="32767" attributes="0"/>
                   <Component id="previewRubricButton" alignment="1" pref="313" max="32767" attributes="0"/>
+                  <Component id="m_gradeReportButton2" alignment="0" pref="313" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="m_regenerateButton" pref="314" max="32767" attributes="0"/>
-                  <Component id="m_importLabsButton" pref="314" max="32767" attributes="0"/>
-                  <Component id="m_entergradesButton" pref="314" max="32767" attributes="2"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="m_regenerateButton" alignment="0" pref="314" max="32767" attributes="0"/>
+                  <Component id="m_importLabsButton" alignment="0" pref="314" max="32767" attributes="0"/>
+                  <Component id="m_entergradesButton" alignment="0" pref="314" max="32767" attributes="2"/>
                   <Component id="m_assgndistButton" alignment="0" pref="314" max="32767" attributes="2"/>
+                  <Component id="m_gradeReportButton1" alignment="1" pref="314" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -228,11 +230,16 @@
                   <Component id="previewRubricButton" alignment="0" pref="65" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="m_regenerateButton" max="32767" attributes="3"/>
-                  <Component id="m_gradeReportButton" alignment="0" pref="65" max="32767" attributes="3"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="m_gradeReportButton" alignment="3" pref="65" max="32767" attributes="3"/>
+                  <Component id="m_gradeReportButton1" alignment="3" pref="65" max="32767" attributes="3"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="m_regenerateButton" pref="65" max="32767" attributes="3"/>
+                  <Component id="m_gradeReportButton2" pref="65" max="32767" attributes="3"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -332,6 +339,30 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_importLabsButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="m_gradeReportButton1">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" resourceKey="m_gradeReportButton1.icon"/>
+        <Property name="text" type="java.lang.String" resourceKey="m_gradeReportButton1.text"/>
+        <Property name="horizontalAlignment" type="int" value="2"/>
+        <Property name="iconTextGap" type="int" value="20"/>
+        <Property name="name" type="java.lang.String" value="m_gradeReportButton1" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportDatabase"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="m_gradeReportButton2">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" resourceKey="m_gradeReportButton2.icon"/>
+        <Property name="text" type="java.lang.String" resourceKey="m_gradeReportButton2.text"/>
+        <Property name="horizontalAlignment" type="int" value="2"/>
+        <Property name="iconTextGap" type="int" value="20"/>
+        <Property name="name" type="java.lang.String" value="m_gradeReportButton2" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_gradeReportButton2ActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

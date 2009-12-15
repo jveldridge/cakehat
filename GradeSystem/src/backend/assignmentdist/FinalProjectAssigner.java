@@ -8,13 +8,27 @@
  *
  * Created on Nov 26, 2009, 7:48:08 PM
  */
-
 package backend.assignmentdist;
 
 import backend.DatabaseIO;
+import frontend.grader.rubric.RubricManager;
+import java.awt.TrayIcon.MessageType;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Assignment;
+import utils.AssignmentType;
+import utils.ConfigurationManager;
+import utils.Constants;
 import utils.ErrorView;
+import utils.Project;
+import utils.ProjectManager;
 
 /**
  *
@@ -22,11 +36,50 @@ import utils.ErrorView;
  */
 public class FinalProjectAssigner extends javax.swing.JFrame {
 
+    private String[] _tas;
+    private HashMap<String, String[]> _blists;
+    private HashMap<String, LinkedList<String>> _projHandins;
+    private String[] _projNames;
+    private int[] _projTotals;
+
     /** Creates new form ReassignView */
     public FinalProjectAssigner() {
         initComponents();
+        _tas = DatabaseIO.getTANames();
+        Arrays.sort(_tas);
+        _projNames = getFinalProjects().toArray(new String[0]);
+        _blists = new HashMap<String, String[]>(_tas.length);
+        try {
+            for (String name : _tas) {
+                ISqlJetCursor cursor = DatabaseIO.getData("blacklist", "ta_blist_logins", name);
+                String s = cursor.getString("studLogins");
+                if (s != null) {
+                    String[] blisted = cursor.getString("studLogins").replace(" ", "").split(",");
+                    Arrays.sort(blisted);
+                    _blists.put(name, blisted);
+                } else {
+                    _blists.put(name, new String[0]);
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            new ErrorView(e);
+        }
+
+        //add all of the submitted projects to the data structrure
+        _projHandins = new HashMap<String, LinkedList<String>>();
+        Collection allhandins = Arrays.asList(DatabaseIO.getStudentsAssigned("Final"));
+        _projTotals = new int[_projNames.length];
+        int i = 0;
+        for (String name : _projNames) {
+            Collection<String> c = ProjectManager.getHandinLogins(Project.getInstance(name));
+            _projTotals[i++] = c.size();
+            c.removeAll(allhandins); //Remove students already assigned to tas
+            _projHandins.put(name, new LinkedList<String>(c));
+        }
+        //System.out.print
         this.populateLists();
-        this.setVisible(true);
+        updateFormComponents();
     }
 
     /** This method is called from within the constructor to
@@ -48,19 +101,20 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         toStudentList = new javax.swing.JList();
         jLabel5 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
-        assignmentList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
+        assignmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         assignmentList.setName("assignmentList"); // NOI18N
         assignmentList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -83,11 +137,6 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
 
         jScrollPane4.setName("jScrollPane4"); // NOI18N
 
-        toTAList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         toTAList.setName("toTAList"); // NOI18N
         toTAList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -101,16 +150,26 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
 
         jScrollPane5.setName("jScrollPane5"); // NOI18N
 
-        toStudentList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         toStudentList.setName("toStudentList"); // NOI18N
         jScrollPane5.setViewportView(toStudentList);
 
         jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
         jLabel5.setName("jLabel5"); // NOI18N
+
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+
+        jLabel6.setText(resourceMap.getString("lbl_numassigned.text")); // NOI18N
+        jLabel6.setName("lbl_numassigned"); // NOI18N
+
+        jLabel2.setText(resourceMap.getString("lblStats.text")); // NOI18N
+        jLabel2.setName("lblStats"); // NOI18N
+
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+
+        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jList1.setName("jList1"); // NOI18N
+        jScrollPane2.setViewportView(jList1);
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
@@ -127,44 +186,54 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel4)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(reassignButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane5)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addComponent(jLabel6)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(reassignButton, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel1)
+                        .addComponent(jLabel5)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel5))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(6, 6, 6)
-                                        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(158, 158, 158)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(reassignButton)))
                 .addContainerGap())
         );
@@ -174,51 +243,43 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
 
     private void assignmentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentListMouseClicked
         this.updateFormComponents();
+
     }//GEN-LAST:event_assignmentListMouseClicked
 
     private void reassignButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignButtonActionPerformed
         String newTA = (String) toTAList.getSelectedValue();
-
-        //modify database
-//        try {
-//            ISqlJetCursor cursor = DatabaseIO.getItemWithFilter("assignment_dist", "ta_login_dist", oldTA);
-//            if (cursor.eof()) {
-//                cursor.close();
-//                return;
-//            }
-//            try {
-//                String assignedStudents = cursor.getString((String) assignmentList.getSelectedValue());
-//                System.out.println("before: " + assignedStudents);
-//                if (assignedStudents == null) {
-//                    assignedStudents = "";
-//                    System.out.println("null");
-//                }
-//                String[] students = assignedStudents.split(", ");
-//                Vector studList = new Vector(Arrays.asList(students));
-//                studList.remove(student);
-//                String row[] = (String[]) DatabaseIO.getDataRow("assignment_dist", DatabaseIO.getRowID("assignment_dist", "ta_login_dist", oldTA));
-//                System.out.println("row is " + row);
-//                //Arrays.sort(row, new StringComparator());
-//                //System.out.println("sorted successfully");
-//                int i = 0;
-//                while (i < row.length) {
-//                    System.out.println(row[i]);
-//                    i++;
-//                }
-//                //Arrays.toString(studList.toArray());
-//                //DatabaseIO.update(DatabaseIO.getRowID("assignment_dist", "ta_login_dist", oldTA), "assignment_dist", Arrays.toString(studList.toArray()));
-//            } finally {
-//                cursor.close();
-//            }
-//        } catch (Exception e) {
-//            //new ErrorView(e);
-//            e.printStackTrace();
-//        }
-        
-        //update XML files
-        //RubricManager.reassignXML(Project.getInstance((String)assignmentList.getSelectedValue()), oldTA, student, newTA);
-
-        //still need to remove old XMLs
+        String projName = (String) assignmentList.getSelectedValue();
+        LinkedList<String> logins = (LinkedList<String>) _projHandins.get(projName).clone();
+        if (logins.isEmpty()) {
+            return;
+        }
+        Collections.shuffle(logins);
+        while (!logins.isEmpty()) {
+            String studToAdd = logins.remove();
+            if (Arrays.binarySearch(_blists.get(newTA), studToAdd) < 0) { //not in the blacklist so exit
+                _projHandins.get(projName).remove(studToAdd); //remove the person!
+                try {
+                    ISqlJetCursor cursor = DatabaseIO.getData(DatabaseIO.DISTRIBUTION_TABLE, "ta_login_dist", newTA);
+                    if (cursor != null) {
+                        cursor.getRowId();
+                        String[] data = (String[])DatabaseIO.getDataRow(DatabaseIO.DISTRIBUTION_TABLE, cursor.getRowId());
+                        if(data[data.length - 1] != null || data[data.length - 1].trim().length() != 0) {
+                            data[data.length - 1] += ", ";
+                        }
+                        data[data.length - 1] += studToAdd;
+                        DatabaseIO.update(cursor.getRowId(), DatabaseIO.DISTRIBUTION_TABLE, (Object[])data);
+                        RubricManager.assignXMLToGrader(Project.getInstance("Adventure"), Project.getInstance("Final"),studToAdd, newTA, DatabaseIO.getStudentDQScore("Final", studToAdd), Constants.MINUTES_OF_LENIENCY);
+                    }
+                } catch (Exception e) {
+                    new ErrorView(e);
+                }
+                return;
+            }
+        }
+        if (logins.isEmpty()) { //if we couldn't add anyone because they're all blacklisted
+            JOptionPane.showMessageDialog(this, "The selected TA has blacklisted the remaining students, cannot add another student.", "Blacklisted", JOptionPane.INFORMATION_MESSAGE);
+        }
+        updateFormComponents();
     }//GEN-LAST:event_reassignButtonActionPerformed
 
     private void toTAListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_toTAListMouseClicked
@@ -226,23 +287,43 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
     }//GEN-LAST:event_toTAListMouseClicked
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new FinalProjectAssigner().setVisible(true);
             }
         });
     }
 
+    /**
+     * Returns a sorted list of final projects
+     * @return
+     */
+    private ArrayList<String> getFinalProjects() {
+        Assignment[] asgns = ConfigurationManager.getAssignments();
+        ArrayList<String> finalprojects = new ArrayList<String>();
+        for (Assignment a : asgns) {
+            if (a.Type.compareTo(AssignmentType.FINAL) == 0) {
+                finalprojects.add(a.Name);
+            }
+        }
+        Collections.sort(finalprojects);
+        return finalprojects;
+    }
+
     private void populateLists() {
-        assignmentList.setListData(DatabaseIO.getProjectNames());
+        Assignment[] asgns = ConfigurationManager.getAssignments();
+        String[] finalprojs = getFinalProjects().toArray(new String[0]);
+        assignmentList.setListData(finalprojs);
         if (assignmentList.getModel().getSize() > 0) {
             assignmentList.setSelectedIndex(0);
         }
 
-        toTAList.setListData(DatabaseIO.getTANames());
+
+        toTAList.setListData(_tas);
         if (toTAList.getModel().getSize() > 0) {
             toTAList.setSelectedIndex(0);
         }
@@ -251,53 +332,42 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
     }
 
     private void populateStudentList(JList list, String user) {
-        try {
-            ISqlJetCursor cursor = DatabaseIO.getItemWithFilter("assignment_dist", "ta_login_dist", user);
-            if (cursor.eof()) {
-                cursor.close();
-                return;
-            }
-            try {
-                String s = cursor.getString((String) assignmentList.getSelectedValue());
-                if (s == null) {
-                    s = "";
-                }
-                String[] ss = s.split(", ");
-                list.setListData(ss);
-                if (list.getModel().getSize() > 0) {
-                    list.setSelectedIndex(0);
-                }
-
-            } finally {
-                cursor.close();
-            }
-        } catch (Exception e) {
-            new ErrorView(e);
-        }
-
+        list.setListData(DatabaseIO.getStudentsToGrade(user, "Final"));
     }
 
     private void updateFormComponents() {
-//        assignmentList.setListData(DatabaseIO.getProjectNames());
-//        if (assignmentList.getModel().getSize() > 0) {
-//            assignmentList.setSelectedIndex(0);
-//        }
+        String[] studs =  _projHandins.get(assignmentList.getSelectedValue()).toArray(new String[0]);
+        Arrays.sort(studs);
+        jList1.setListData(studs);
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (String projName : _projNames) {
+            sb.append(projName);
+            sb.append(": ");
+            sb.append(_projHandins.get(projName).size() + " / " + _projTotals[i++]);
+            sb.append("<br />");
+        }
+        jLabel2.setText("<html>" + sb.toString() + "</html>");
         this.populateStudentList(toStudentList, (String) toTAList.getSelectedValue());
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList assignmentList;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JButton reassignButton;
     private javax.swing.JList toStudentList;
     private javax.swing.JList toTAList;
     // End of variables declaration//GEN-END:variables
-
 }

@@ -10,6 +10,8 @@
  */
 package frontend.fileviewer;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -40,6 +42,14 @@ public class FileViewerView extends javax.swing.JFrame {
             m_tabbedPane.setTitleAt(0, f.getName());
             this.setTitle(f.getName() + " - File Viewer");
             m_textArea.setText(contents.toString());
+            m_textArea.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    super.mouseClicked(e);
+                }
+                
+            });
 
         } catch (Exception ex) {
             new ErrorView(ex);

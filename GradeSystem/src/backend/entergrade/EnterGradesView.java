@@ -80,7 +80,7 @@ public class EnterGradesView extends javax.swing.JFrame {
             m = (DefaultTableModel) assignmentTable.getModel();
             m.addColumn("Assignments");
             for (String s : DatabaseIO.getAssignmentNames()) {
-                if (DatabaseIO.getAssignmentType(s) == AssignmentType.HOMEWORK || (DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT && DatabaseIO.getAssignmentDQ(s) != 0)) {
+                if (DatabaseIO.getAssignmentType(s) == AssignmentType.HOMEWORK || (DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT)) {
                     m.insertRow(assignmentTable.getRowCount(), new String[]{s});
                 }
             }
