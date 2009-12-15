@@ -22,6 +22,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Assignment;
@@ -577,7 +579,10 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
 
-    private void sendNotificationEmail() {
+    private void sendNotificationEmails() {
+        //find all the grd files
+
+        //File f = new File(pathname)
 
     }
 
@@ -587,18 +592,19 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         final Project finalProj = Project.getInstance("Final");
         RubricManager.convertAllToGrd(finalProj.getName(), Utils.getUserLogin());
         FUtils.submitXMLFiles("Final");
-
-//        }
-//        if (sd.printChecked()) {
-//            FUtils.printGRDFiles((String) assignmentList.getSelectedValue());
-//            if (sd.notifyChecked()) {
-//                FUtils.notifyStudents(assignmentList, studentList);
-//            }
-//        } else if (sd.notifyChecked()) {
-//            FUtils.notifyStudents(assignmentList, studentList);
-//        }
-        //TODO: Submit XMLs into the Final directory
-        //TODO: E-mail all students their grd files
+        String dirPath = Constants.GRADER_PATH + Utils.getUserLogin() + "/Final/";
+        ListModel m = studentList.getModel();
+        for (int i = 0; i < m.getSize(); i++) {
+            String studLogin = ((String) m.getElementAt(i)).trim();
+            Utils.sendMail(Utils.getUserLogin() + "@cs.brown.edu", new String[] {Utils.getUserLogin() + "@cs.brown.edu"}
+            , new String[0], new String[0]
+            , "[cs015] Final Project Grade for " + studLogin, "You final project has been graded and is attached to this email."
+            , new String[] {dirPath + studLogin + ".grd"});
+//            Utils.sendMail(Utils.getUserLogin() + "@cs.brown.edu", new String[] {studLogin + "@cs.brown.edu"}
+//            , new String[0], new String[0]
+//            , "[cs015] Final Project Grade", "You final project has been graded and is attached to this email."
+//            , new String[] {dirPath + studLogin + ".grd"});
+        }
 
 }//GEN-LAST:event_submitGradesButtonActionPerformed
 

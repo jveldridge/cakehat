@@ -52,6 +52,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
     public FinalProjectAssigner() {
 
         initComponents();
+        this.setTitle("Final Projects Distributorizer");
         _talogins = DatabaseIO.getTANames();
         _projNames = getFinalProjects().toArray(new String[0]);
         _blists = new HashMap<String, String[]>(_talogins.length);
