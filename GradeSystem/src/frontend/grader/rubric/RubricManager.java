@@ -258,16 +258,16 @@ public class RubricManager {
      * @param minutesOfLeniency
      */
     public static void assignXMLToGrader(Project templateProject, Project destProject, String studentAcct, String graderAcct,
-            double designCheckScore, int minutesOfLeniency) {
+            String studentName, String graderName, double designCheckScore, int minutesOfLeniency) {
         //String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + templateProject.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
          String XMLTemplateFilePath = Constants.TEMPLATE_GRADE_SHEET_DIR + templateProject.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
         
-
+         System.out.println(XMLTemplateFilePath);
         String XMLGraderFilePath = Constants.GRADER_PATH + graderAcct + "/" + destProject.getName() + "/" + studentAcct + ".xml";
 
         TimeStatus status = ProjectManager.getTimeStatus(studentAcct, templateProject, minutesOfLeniency);
 
-        assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, designCheckScore);
+        assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, studentName, graderName, designCheckScore);
     }
 
     public static void reassignXML(Project prj, String oldGraderAcct, String studentAcct, String newGraderAcct) {
@@ -315,6 +315,45 @@ public class RubricManager {
         rubric.Student.Acct = studentAcct;
 
         rubric.Grader.Name = Utils.getUserName(graderAcct);
+        rubric.Grader.Acct = graderAcct;
+
+        //Find the design check attribute if applicable, and store value
+        for (Section section : rubric.Sections) {
+            for (Subsection subsection : section.Subsections) {
+                if (subsection.Name.equals("Design Check")) {
+                    subsection.Score = designCheckScore;
+                }
+            }
+        }
+
+        //Write to XML
+        writeToXML(rubric, XMLGraderFilePath);
+    }
+
+    /**
+     * Uses a template XML file and puts in the initial information and
+     * writes a new XML file to the location specified by XMLGraderFilePath.
+     *
+     * @param XMLTemplateFilePath - path to the template XML file
+     * @param XMLGraderFilePath - path for the file to be created
+     * @param status - the time status of the handin
+     * @param studentAcct - student's account
+     * @param graderAcct - grader's account
+     * @param designCheckScore
+     */
+    private static void assignXMLToGrader(String XMLTemplateFilePath, String XMLGraderFilePath,
+            TimeStatus status, String studentAcct, String graderAcct, String studentName, String graderName,
+            double designCheckScore) {
+        //Get rubric from the template
+        Rubric rubric = processXML(XMLTemplateFilePath);
+
+        //Assign attributes based on what was passed in
+        rubric.Status = status.toString();
+
+        rubric.Student.Name = studentName;
+        rubric.Student.Acct = studentAcct;
+
+        rubric.Grader.Name = graderName;
         rubric.Grader.Acct = graderAcct;
 
         //Find the design check attribute if applicable, and store value

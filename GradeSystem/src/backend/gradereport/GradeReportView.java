@@ -387,7 +387,7 @@ public class GradeReportView extends javax.swing.JFrame {
     }//GEN-LAST:event__projectListValueChanged
 
     private void _projectListPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event__projectListPropertyChange
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event__projectListPropertyChange
 
     private void _messageTextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event__messageTextKeyReleased
