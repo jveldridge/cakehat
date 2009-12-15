@@ -871,6 +871,7 @@ public class RubricManager {
             System.out.print("Processing: " + file.getAbsolutePath() + ". ");
             convertToGRD(XMLFilePath, GRDFilePath);
         }
+        BashConsole.write("chmod 770 -R " + dirPath);
     }
 
     public static HashMap<String, Double> getAllScores(String asgn) {

@@ -576,16 +576,29 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         FUtils.demoProject(prj.getName());
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
+
+    private void sendNotificationEmail() {
+
+    }
+
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
         //Get the projects used
-        HashSet<Project> prjsTouched = new HashSet<Project>(_studentsToProjects.values());
+        //HashSet<Project> prjsTouched = new HashSet<Project>(_studentsToProjects.values());
+        final Project finalProj = Project.getInstance("Final");
+        RubricManager.convertAllToGrd(finalProj.getName(), Utils.getUserLogin());
+        FUtils.submitXMLFiles("Final");
 
-        //For each project
-        for (Project prj : prjsTouched) {
-            RubricManager.convertAllToGrd(prj.getName(), Utils.getUserLogin());
+//        }
+//        if (sd.printChecked()) {
+//            FUtils.printGRDFiles((String) assignmentList.getSelectedValue());
+//            if (sd.notifyChecked()) {
+//                FUtils.notifyStudents(assignmentList, studentList);
+//            }
+//        } else if (sd.notifyChecked()) {
+//            FUtils.notifyStudents(assignmentList, studentList);
+//        }
         //TODO: Submit XMLs into the Final directory
         //TODO: E-mail all students their grd files
-        }
 
 }//GEN-LAST:event_submitGradesButtonActionPerformed
 
@@ -594,7 +607,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         if (prj == null) {
             return;
         }
-
+        prj = Project.getInstance("Final");
         Grader g = new Grader(prj.getName(), Utils.getUserLogin(), getSelectedStudent());
         g.setLocationRelativeTo(null);
         g.setVisible(true);
