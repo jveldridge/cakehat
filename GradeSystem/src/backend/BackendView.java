@@ -33,16 +33,15 @@ import java.util.Arrays;
 import utils.Constants;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.AssignmentType;
 import utils.BashConsole;
+import utils.Project;
+import utils.ProjectManager;
 import utils.Utils;
 
 /**
@@ -455,26 +454,9 @@ public class BackendView extends javax.swing.JFrame {
 }//GEN-LAST:event_m_assgndistButtonActionPerformed
 
     private void m_gradeReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_gradeReportButtonActionPerformed
-//        EmailView ev = new EmailView(
-//                //String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames
-//                new String[] {""}, new String[] {""},new String[] {"psastras@psastras.com", "psastras@gmail.com", "psastras@cs.brown.edu", "bherila@bherila.net"}, "[cs015] Hello World", "Wheeeeeeeeee"
-//                );
-
         GradeReportView grv = new GradeReportView();
         grv.setLocationRelativeTo(null);
         grv.setVisible(true);
-
-//        String body = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
-//                "<hr /><p>Below are your current grades for the course.  Please make sure that all grades are correct.  If you find an error please come see an HTA on hours as soon as possible.</p><p>Remember that in order to pass the course, you must finish each project with a passing grade.</p>" +
-//                "<p>- Your TAs</p><hr />" +
-//                "<table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>" +
-//                "<tr><td>Clock</td><td>100</td><td>100</td></tr>" +
-//                "<tr><td>LiteBrite</td><td>100</td><td>100</td></tr>" +
-//                "</tbody></table><img src='cid:cat' />" +
-//                "</body>";
-//        Utils.sendMail(new String[]{""}, new String[]{""}, new String[]{"psastras@gmail.com", "psastras@psastras.com"}, "[cs015] Grade Report", body,
-//                new String[]{"/course/cs123/data/image/cat.jpg"});
-    //ev.setVisible(true);
 }//GEN-LAST:event_m_gradeReportButtonActionPerformed
 
     private void m_importLabsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_importLabsButtonActionPerformed
@@ -560,7 +542,7 @@ public class BackendView extends javax.swing.JFrame {
             Arrays.sort(studList);
             sb.append("Login,");
             for (int i = 0; i < assignmentNames.length; i++) {
-                sb.append(assignmentNames[i]);
+                sb.append(assignmentNames[i] + ",Status");
                 if (i < assignmentNames.length - 1) {
                     sb.append(",");
                 }
@@ -568,7 +550,7 @@ public class BackendView extends javax.swing.JFrame {
             sb.append("\n");
             sb.append("Total Points, ");
             for(int i  = 0; i < totals.length; i++) {
-                sb.append(totals[i]);
+                sb.append(totals[i] + ",");
                 if(i < totals.length - 1) {
                     sb.append(", ");
                 }
@@ -577,7 +559,11 @@ public class BackendView extends javax.swing.JFrame {
             for (String s : studList) {
                 sb.append(s + ",");
                 for(int i =0; i < assignmentNames.length;i++) {
-                    sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], s));
+                    sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], s) + ",");
+                    try {
+                        sb.append(ProjectManager.getTimeStatus(s, Project.getInstance(assignmentNames[i]), Constants.MINUTES_OF_LENIENCY).toString());
+                    } catch (Exception e) {;
+                    }
                     if (i < assignmentNames.length - 1) {
                         sb.append(",");
                     }

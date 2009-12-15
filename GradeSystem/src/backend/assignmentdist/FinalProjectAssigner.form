@@ -100,7 +100,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="278" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="277" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="reassignButton" min="-2" max="-2" attributes="0"/>
@@ -146,7 +146,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="reassignButton">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" resourceKey="reassignButton.icon"/>
         <Property name="text" type="java.lang.String" resourceKey="reassignButton.text"/>
+        <Property name="iconTextGap" type="int" value="10"/>
         <Property name="name" type="java.lang.String" value="reassignButton" noResource="true"/>
       </Properties>
       <Events>
@@ -242,6 +244,7 @@
               <StringArray count="0"/>
             </Property>
             <Property name="selectionMode" type="int" value="0"/>
+            <Property name="enabled" type="boolean" value="false"/>
             <Property name="name" type="java.lang.String" value="jList1" noResource="true"/>
           </Properties>
         </Component>

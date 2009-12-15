@@ -184,7 +184,9 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
 
+        reassignButton.setIcon(resourceMap.getIcon("reassignButton.icon")); // NOI18N
         reassignButton.setText(resourceMap.getString("reassignButton.text")); // NOI18N
+        reassignButton.setIconTextGap(10);
         reassignButton.setName("reassignButton"); // NOI18N
         reassignButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -225,6 +227,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
         jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jList1.setEnabled(false);
         jList1.setName("jList1"); // NOI18N
         jScrollPane2.setViewportView(jList1);
 
@@ -306,7 +309,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel6)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(reassignButton))
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -345,12 +348,12 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                         data[data.length - 1] += studLogin;
                         DatabaseIO.update(cursor.getRowId(), DatabaseIO.DISTRIBUTION_TABLE, (Object[]) data);
                         String taName = _tas.get(taLogin);
-                        if (taName == null) {// if null add to synchronized hash map
+                        if (taName == null || taName.trim().length() == 0) {// if null add to synchronized hash map
                             taName = Utils.getUserName(taLogin);
                             _tas.put(taLogin, taName);
                         }
                         String studName = _studs.get(studLogin);
-                        if (studName == null) { // if null add to synchronized hash map
+                        if (studName == null || studName.trim().length() == 0) { // if null add to synchronized hash map
                             studName = Utils.getUserName(studLogin);
                             _studs.put(studLogin, studName);
                         }
