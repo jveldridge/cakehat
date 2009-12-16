@@ -208,10 +208,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 
             public void run() {
                 DatabaseIO.open();
-                try {
-                    DatabaseIO.close();
-                } catch (Exception e) {
-                }
+
                 int index = studentList.getSelectedIndex();
                 studentList.setListData(DatabaseIO.getStudentsToGrade(Utils.getUserLogin(), "Final"));
                 if (index >= 0 && index < studentList.getModel().getSize()) {
@@ -226,7 +223,10 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 else{
                     currentInfo.setText("");
                 }
-
+                try {
+                    DatabaseIO.close();
+                } catch (Exception e) {
+                }
             }
         });
     }
