@@ -10,6 +10,7 @@ import backend.DatabaseIO;
 import backend.database.DatabaseWatch;
 import frontend.fileviewer.FileViewerView;
 import frontend.grader.Grader;
+import frontend.grader.rubric.RubricManager;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -76,7 +77,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 
         jLabel7.setText("Ready");
 
-        this.setTitle(Utils.getUserLogin() + " - cs015 Grader");
+        this.setTitle(Utils.getUserLogin() + " - cs015 Final Grader");
 
         this.addWindowListener(new WindowAdapter() {
 
@@ -581,6 +582,9 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         else{
+            RubricManager.convertAllToGrd(Constants.FINAL_PROJECT, Utils.getUserLogin());
+            FUtils.submitXMLFiles(Constants.FINAL_PROJECT);
+
             sendGRDFiles(students);
         }
 
@@ -591,19 +595,23 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         String login = Utils.getUserLogin();
         String grdPathBegin = Constants.GRADER_PATH + login + "/";
         String fromAddress = login + "@cs.brown.edu";
-        String[] toAddresses = { login + "@cs.brown.edu" }; //TESTING PURPOSES
+        //String[] toAddresses = { login + "@cs.brown.edu" }; //TESTING PURPOSES
         String[] ccAddresses = { "" };
         String[] bccAddresses = { "" };
         String subject = "[cs015] Final Project Grade";
-        String body = "Your final project has been graded. Attached to this email is a .grd file which " +
-                      "contains the grading rubric for this assignment. This file is just text, it can be " +
-                      "opened with Notepad (Windows) or TextEdit (Mac).";
+        String body = "Dear CS015 Student, <br><br>" +
+                      "Congratulations on handing in your final project! Your assignment has now been graded.<br>" +
+                      "Attached to this email is a .grd file which is the detailed breakdown of your final project grade. " +
+                      "This file is just text; it can be opened with Wordpad - not Notepad (Windows) or TextEdit (Mac)." +
+                      "Double clicking on the .grd file may cause it to be opened by the wrong program. Instead, start " +
+                      "an appropriate program and then open the .grd file.<br>" +
+                      "Good luck with the rest of your semester and have a great winter break! <br><br>" +
+                      " - " + login;
 
         for (String student : students) {
-            //String toAddresses = { student + "@cs.brown.edu" }; //WHEN NOT TESTING
-            Project prj = getStudentsProject(student);
+            String[] toAddresses = { student + "@cs.brown.edu" }; //WHEN NOT TESTING
 
-            String grdPath = grdPathBegin + prj.getName() + "/" + student + ".grd";
+            String grdPath = grdPathBegin + Constants.FINAL_PROJECT + "/" + student + ".grd";
             Utils.sendMail(fromAddress, toAddresses, ccAddresses, bccAddresses,
                            subject, body, new String[]{ grdPath });
         }

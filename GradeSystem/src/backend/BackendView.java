@@ -71,6 +71,8 @@ public class BackendView extends javax.swing.JFrame {
                 }
             }
         });
+
+        this.setTitle("Grading Backend");
     }
 
     /** This method is called from within the constructor to

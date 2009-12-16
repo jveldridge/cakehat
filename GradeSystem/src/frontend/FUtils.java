@@ -300,14 +300,6 @@ public class FUtils {
         BashConsole.write(copyCommand);
     }
 
-    public static void submitFinalXMFiles(String assignment) {
-        String dirPath = Constants.GRADER_SUBMIT_PATH + Constants.FINAL_PROJECT + "/" + Utils.getUserLogin() + "/";
-        createDirectory(dirPath);
-
-        String copyCommand = "cp " + ProjectManager.getUserGradingDirectory() + assignment + "/*.xml " + dirPath;
-        BashConsole.write(copyCommand);
-    }
-
     public static void removeCodeDirectories(Vector<String> _selected) {
         for (String s : _selected) {
             ProjectManager.removeCodeDirectory(Project.getInstance(s));
