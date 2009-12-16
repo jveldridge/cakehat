@@ -5,9 +5,7 @@ package gradesystem;
 
 import backend.BackendView;
 import frontend.FrontendView;
-import javax.swing.JDesktopPane;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
+import java.awt.Font;
 import javax.swing.UIManager;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
@@ -26,14 +24,30 @@ public class GradeSystemApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-         java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 try {
-                    if((_args != null && _args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0) || _args ==null || _args.length < 2)  {
-                          UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
+                    if ((_args != null && _args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0) || _args == null || _args.length < 2) {
+                        UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
+
+                        Font font = new Font("Deja Vu Sans", Font.TRUETYPE_FONT, 12);
+
+                        UIManager.put("MenuItem.font", font);
+                        UIManager.put("Menu.font", font);
+                        UIManager.put("Button.font", font);
+                        UIManager.put("ComboBox.font", font);
+                        UIManager.put("CheckBox.font", font);
+                        UIManager.put("Label.font", font);
+                        UIManager.put("TabbedPane.font", font);
+                        UIManager.put("TextField.font", font);
+                        UIManager.put("List.font", font);
+                        UIManager.put("RadioButton.font", font);
+                        System.setProperty("awt.useSystemAAFontSettings", "true");
+                        System.setProperty("swing.aatext", "true");
                     } else {
                         System.setProperty("awt.useSystemAAFontSettings", "false");
-                        System.setProperty("swing.aatext","false");
+                        System.setProperty("swing.aatext", "false");
                     }
                 } catch (Exception e) {
                 }

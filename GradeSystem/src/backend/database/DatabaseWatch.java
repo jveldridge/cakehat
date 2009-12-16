@@ -25,9 +25,9 @@ public abstract class DatabaseWatch extends TimerTask {
     }
 
     public final void run() {
-        long timeStamp = file.lastModified();
-        if (this.timeStamp != timeStamp) {
-            this.timeStamp = timeStamp;
+        long newTime = file.lastModified();
+        if (this.timeStamp != newTime) {
+            this.timeStamp = newTime;
             onChange(file);
         }
     }

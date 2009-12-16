@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /*
- * 
+ * @TODO: Clean this up.
  *
  * 
  */
@@ -15,6 +11,7 @@ import backend.database.DatabaseWatch;
 import frontend.fileviewer.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -22,25 +19,19 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Assignment;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
 import utils.Constants;
-import utils.ErrorView;
 import utils.Project;
 import utils.ProjectManager;
 import utils.Utils;
@@ -88,7 +79,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         } catch (IOException e) {
         }
 
-
+        jLabel7.setText("Ready");
 
         this.setTitle(Utils.getUserLogin() + " - cs015 Grader");
 
@@ -99,13 +90,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             }
         });
 
-        //Open database
-        try {
-            DatabaseIO.open();
-        } catch (SqlJetException ex) {
-            Logger.getLogger(FinalProjectFrontendView.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
         //Load final projects
         for (Assignment asgn : ConfigurationManager.getAssignments()) {
             if (asgn.Type == AssignmentType.FINAL) {
@@ -113,23 +97,20 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             }
         }
 
-        this.populateStudentList();
-
-        //untar all students' code for the initially selected project
-        this.untarCode();
-
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         initDatabaseWatch();
+        this.populateStudentList();
     }
 
     private void untarCode() {
         //Get logins
+
         Vector<String> studentLogins = new Vector<String>();
         int size = studentList.getModel().getSize();
-
         if (size == 0) {
+            updateStatus("Ready", 0, null);
             return;
         }
         for (int i = 0; i < size; i++) {
@@ -138,14 +119,34 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 studentLogins.add(login);
             }
         }
-
         //Untar all the code that has yet to be untarred
         for (String login : studentLogins) {
             if (!_studentsUntarred.contains(login)) {
                 ProjectManager.untar(getStudentsProject(login), login);
-                System.out.println("Untarring: " + login);
                 _studentsUntarred.add(login);
             }
+        }
+        updateStatus("Finished extracting", 2000, null);
+    }
+
+    public synchronized void updateStatus(String message, int timeout, Color c) {
+        jLabel7.setText(message);
+        if (c == null) {
+            c = java.awt.SystemColor.controlText;
+        }
+        jLabel7.setForeground(c);
+        Timer t = new Timer();
+        class NewTask extends TimerTask {
+
+            @Override
+            public void run() {
+                jLabel7.setText("Ready");
+                jLabel7.setForeground(java.awt.SystemColor.controlText);
+                this.cancel();
+            }
+        }
+        if (timeout > 0) {
+            t.schedule(new NewTask(), timeout);
         }
     }
 
@@ -155,7 +156,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -191,17 +191,13 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     private String getSelectedStudent() {
         return (String) studentList.getSelectedValue();
     }
-
     private Timer _dbTimer = new Timer();
 
     public void initDatabaseWatch() {
         TimerTask task = new DatabaseWatch(new File(Constants.DATABASE_FILE)) {
 
             protected void onChange(File file) {
-                removeDatabaseWatch();
                 populateStudentList();
-                untarCode();
-                initDatabaseWatch();
             }
         };
         _dbTimer.schedule(task, new Date(), 1000);
@@ -212,40 +208,32 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         _dbTimer.purge();
         _dbTimer = new Timer();
     }
-
     /*
      * This method populates the StudentList list with the logins of the students that the TA has been
      * assigned to grade (as recorded in the database) for the selected assignment.
      */
-    private void populateStudentList() {
-        String user = System.getProperty("user.name");
-        int index = studentList.getSelectedIndex();
-        try {
-            ISqlJetCursor cursor = DatabaseIO.getItemWithFilter("assignment_dist", "ta_login_dist", user);
-            if (cursor.eof()) {
-                cursor.close();
-                return;
-            }
-            try {
-                String s = cursor.getString(Constants.FINAL_PROJECT);
-                if (s == null) {
-                    s = "";
+
+    private synchronized void populateStudentList() {
+
+
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                DatabaseIO.open();
+                try {
+                    DatabaseIO.close();
+                } catch (Exception e) {
                 }
-                String[] ss = s.split(", ");
-                studentList.setListData(ss);
+                int index = studentList.getSelectedIndex();
+                studentList.setListData(DatabaseIO.getStudentsToGrade(Utils.getUserLogin(), "Final"));
                 if (index >= 0 && index < studentList.getModel().getSize()) {
                     studentList.setSelectedIndex(index);
                 } else if (studentList.getModel().getSize() > 0) {
                     studentList.setSelectedIndex(0);
                 }
-                updateCurrentInfo();
-            } finally {
-                cursor.close();
-            }
-        } catch (Exception e) {
-            new ErrorView(e);
-        }
 
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -274,6 +262,9 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         studentList = new javax.swing.JList();
         jButton1 = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         quitMenuItem = new javax.swing.JMenuItem();
@@ -397,32 +388,26 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(currentInfo)
+                    .addComponent(jLabel3)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(currentInfo)
-                        .addContainerGap(551, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addContainerGap(472, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(runDemoButton, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                                    .addComponent(openProjectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                                    .addComponent(opengfxButton, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(gradeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
-                                    .addComponent(runCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
-                                    .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(selectedStudentLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(generalCommandsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 461, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(submitGradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE))
-                        .addContainerGap())))
+                            .addComponent(runDemoButton, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(openProjectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(opengfxButton, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(gradeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                            .addComponent(runCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                            .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(selectedStudentLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(generalCommandsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 461, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(submitGradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -488,12 +473,11 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         studentListPanelLayout.setHorizontalGroup(
             studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(studentListPanelLayout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addContainerGap(72, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, studentListPanelLayout.createSequentialGroup()
-                .addGroup(studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
+                .addGroup(studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, studentListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         studentListPanelLayout.setVerticalGroup(
@@ -502,11 +486,26 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
                 .addContainerGap())
         );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel2.setFocusCycleRoot(true);
+        jPanel2.setName("jPanel2"); // NOI18N
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        jPanel3.setName("jPanel3"); // NOI18N
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
+        jLabel7.setFont(resourceMap.getFont("jLabel7.font")); // NOI18N
+        jLabel7.setText(resourceMap.getString("jLabel7.text")); // NOI18N
+        jLabel7.setName("jLabel7"); // NOI18N
+        jPanel3.add(jLabel7, java.awt.BorderLayout.CENTER);
+
+        jPanel2.add(jPanel3, java.awt.BorderLayout.CENTER);
 
         mainMenuBar.setName("mainMenuBar"); // NOI18N
 
@@ -537,17 +536,18 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 814, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(studentListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(studentListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -579,27 +579,27 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
 
-    private void sendNotificationEmails() {
-        //find all the grd files
-
-        //File f = new File(pathname)
-
-    }
-
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-        //Get the projects used
-        //HashSet<Project> prjsTouched = new HashSet<Project>(_studentsToProjects.values());
+
+        int select = JOptionPane.showConfirmDialog(this, "Are you sure you want to submit your grades?", "Confirm", JOptionPane.YES_NO_CANCEL_OPTION);
+        if (select != 0) {
+            return;
+        }
         final Project finalProj = Project.getInstance("Final");
         RubricManager.convertAllToGrd(finalProj.getName(), Utils.getUserLogin());
         FUtils.submitXMLFiles("Final");
+        select = JOptionPane.showConfirmDialog(this, "Would you like to send emails to the students?", "Email", JOptionPane.YES_NO_OPTION);
+        if (select != 0) {
+            return;
+        }
         String dirPath = Constants.GRADER_PATH + Utils.getUserLogin() + "/Final/";
         ListModel m = studentList.getModel();
         for (int i = 0; i < m.getSize(); i++) {
             String studLogin = ((String) m.getElementAt(i)).trim();
-            Utils.sendMail(Utils.getUserLogin() + "@cs.brown.edu", new String[] {Utils.getUserLogin() + "@cs.brown.edu"}
-            , new String[0], new String[0]
-            , "[cs015] Final Project Grade for " + studLogin, "You final project has been graded and is attached to this email."
-            , new String[] {dirPath + studLogin + ".grd"});
+            if (studLogin.length() == 0) {
+                continue;
+            }
+            Utils.sendMail(Utils.getUserLogin() + "@cs.brown.edu", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[0], new String[0], "[cs015] Final Project Grade for " + studLogin, "You final project has been graded and is attached to this email.", new String[]{dirPath + studLogin + ".grd"});
 //            Utils.sendMail(Utils.getUserLogin() + "@cs.brown.edu", new String[] {studLogin + "@cs.brown.edu"}
 //            , new String[0], new String[0]
 //            , "[cs015] Final Project Grade", "You final project has been graded and is attached to this email."
@@ -620,11 +620,15 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void runCodeButtonrunButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonrunButton
+        if (!_studentsUntarred.contains(getSelectedStudent())) {
+            ProjectManager.untar(getStudentsProject(getSelectedStudent()), getSelectedStudent());
+            updateStatus("Finished extracting", 2000, null);
+            _studentsUntarred.add(getSelectedStudent());
+        }
         Project prj = getSelectedStudentsProject();
         if (prj == null) {
             return;
         }
-
         FUtils.compileStudentProject(prj.getName(), getSelectedStudent());
         FUtils.runStudentProject(prj.getName(), getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonrunButton
@@ -669,7 +673,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 
     private void refreshButtonAcionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonAcionPerformed
         this.populateStudentList();
-        this.untarCode();
+        //this.untarCode();
     }//GEN-LAST:event_refreshButtonAcionPerformed
 
     /**
@@ -688,13 +692,13 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     public void paintComponents(Graphics g) {
         super.paintComponents(g);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-        g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
-        g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel currentInfo;
@@ -703,8 +707,11 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JButton openProjectButton;

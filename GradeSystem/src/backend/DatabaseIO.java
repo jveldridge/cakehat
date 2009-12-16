@@ -33,8 +33,12 @@ public class DatabaseIO {
      * Open the database.
      * @throws SqlJetException
      */
-    public static void open() throws SqlJetException {
-        db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+    public static void open() {
+        try {
+            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -792,8 +796,12 @@ public class DatabaseIO {
      * Closes the database.
      * @throws SqlJetException
      */
-    public static void close() throws SqlJetException {
-        db.close();
-        db = null;
+    public static void close() {
+        try {
+            db.close();
+            db = null;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }

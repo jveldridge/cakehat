@@ -672,7 +672,7 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_m_dqearnedTextFocusGained
 
     private void m_dqearnedTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_m_dqearnedTextMouseClicked
-        // TODO add your handling code here
+
 }//GEN-LAST:event_m_dqearnedTextMouseClicked
 
     private void m_studentTextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_m_studentTextKeyReleased
@@ -703,7 +703,7 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_m_studentTextKeyReleased
 
     private void assignmentTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_assignmentTableKeyReleased
-        // TODO add your handling code here:
+
 }//GEN-LAST:event_assignmentTableKeyReleased
 
     private void assignmentTableKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_assignmentTableKeyPressed
@@ -739,7 +739,7 @@ public class EnterGradesView extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void assignmentTableAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_assignmentTableAncestorAdded
-        // TODO add your handling code here:
+
 }//GEN-LAST:event_assignmentTableAncestorAdded
 
     private void m_xmlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_xmlButtonActionPerformed
