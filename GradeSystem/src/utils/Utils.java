@@ -1,7 +1,12 @@
 package utils;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaCompiler;
@@ -484,6 +489,77 @@ public class Utils {
 
         //Execute the command in a seperate thread
         BashConsole.writeThreaded(terminalCmd);
+    }
+
+    /**
+     * NOT STABLE - DOES NOT SUPPORT ADVENTURE.
+     * KNOWN ISSUE: ON CLOSE OF STUDENT CODE - CLOSES GRADING PROGRAM.
+     *
+     * Executes the java code in a separate thread.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * @param dirPath - the path to the package
+     * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
+     */
+    public static void executeWithClassLoader(String dirPath, String javaArg) {
+        ClassLoader prevCl = Thread.currentThread().getContextClassLoader();
+
+        //System.setProperty("java.library.path", Constants.LIBRARY_PATH);
+        System.load("/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/i386/libj3dcore-ogl.so");
+
+        // Create the class loader by using the given URL
+        // Use prevCl as parent to maintain current visibility
+        ClassLoader urlCl = null;
+
+        URL[] locations = null;
+        try {
+            locations = new URL[]
+            {   new URL("file:" + dirPath),
+                new URL("jar:file:///course/cs015/lib/cs015.jar!/"),
+                new URL("jar:file:///pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dcore.jar!/"),
+                new URL("jar:file:///pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dutils.jar!/"),
+                new URL("jar:file:///pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/vecmath.jar!/")
+            };
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+        
+        urlCl = URLClassLoader.newInstance(locations, prevCl);
+
+        try {
+            // Save the class loader so that you can restore it later
+            Thread.currentThread().setContextClassLoader(urlCl);
+
+            //Invoke main
+            Class[] argTypes = new Class[] { String[].class };
+            Method main = urlCl.loadClass(javaArg).getDeclaredMethod("main", argTypes);
+            main.invoke(null, (Object)null);
+
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+           Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            // Restore
+            Thread.currentThread().setContextClassLoader(prevCl);
+        }
     }
     /*
     public static void executeInVisibleTerminal(String dirPath, String javaArg, String termName) {

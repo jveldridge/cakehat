@@ -4,6 +4,7 @@
 package gradesystem;
 
 import backend.BackendView;
+import frontend.FinalProjectFrontendView;
 import frontend.FrontendView;
 import java.awt.Font;
 import javax.swing.UIManager;
@@ -62,6 +63,10 @@ public class GradeSystemApp extends SingleFrameApplication {
                 FrontendView fv = new FrontendView();
                 fv.setLocationRelativeTo(null);
                 show(fv);
+            } else if(_args[0].compareToIgnoreCase("final_frontend") == 0) {
+                FinalProjectFrontendView fpfv = new FinalProjectFrontendView();
+                fpfv.setLocationRelativeTo(null);
+                show(fpfv);
             }
             _testing = false;
         } else {

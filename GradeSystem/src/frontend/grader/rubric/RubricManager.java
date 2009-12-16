@@ -864,11 +864,13 @@ public class RubricManager {
         for (File file : xmlFiles) {
             String XMLFilePath = file.getAbsolutePath();
             String GRDFilePath = XMLFilePath.split("\\.")[0] + ".grd";
-            if (file.getAbsolutePath().contains(".metadata")) {
+            
+            //@TODO: THIS IS A COMPLETE HACK FIX THIS!!!! - psastras
+            if(file.getAbsolutePath().contains(".metadata")){
                 continue;
             }
-            //@TODO: THIS IS A COMPLETE HACK FIX THIS!!!! - psastras
             System.out.print("Processing: " + file.getAbsolutePath() + ". ");
+            
             convertToGRD(XMLFilePath, GRDFilePath);
         }
         BashConsole.write("chmod 770 -R " + dirPath);

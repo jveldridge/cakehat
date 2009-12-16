@@ -147,10 +147,7 @@ public class ProjectManager {
      * @param studentLogin
      */
     public static void execute(Project prj, String studentLogin) {
-        String compileDir = getCodeStudentDirectory(prj, studentLogin);
-        //Utils.execute(compileDir, prj.getName() + ".App"); //This executes without a terminal
-        //Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
-        //Utils.executeJ3D(compileDir,  prj.getName() + ".App");
+        String compileDir = getCodeStudentDirectory(prj, studentLogin);        
         Utils.executeInVisibleTerminal(compileDir, prj.getName() + ".App", studentLogin + "'s " + prj.getName());
     }
 

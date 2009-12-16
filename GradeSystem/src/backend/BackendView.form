@@ -295,8 +295,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="m_gradeReportButton">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" resourceKey="m_gradeReportButton.icon"/>
-        <Property name="text" type="java.lang.String" resourceKey="m_gradeReportButton.text"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="iconTextGap" type="int" value="20"/>
         <Property name="name" type="java.lang.String" value="m_gradeReportButton" noResource="true"/>
@@ -322,7 +320,6 @@
         <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
           <action class="backend.BackendView" id="previewRubricButtonActionPerformed" methodName="previewRubricButtonActionPerformed"/>
         </Property>
-        <Property name="icon" type="javax.swing.Icon" resourceKey="previewRubricButton.icon"/>
         <Property name="text" type="java.lang.String" resourceKey="previewRubricButton.text"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="iconTextGap" type="int" value="20"/>
@@ -331,8 +328,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="m_importLabsButton">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" resourceKey="m_importLabsButton.icon"/>
-        <Property name="text" type="java.lang.String" resourceKey="m_importLabsButton.text"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="iconTextGap" type="int" value="20"/>
         <Property name="name" type="java.lang.String" value="m_importLabsButton" noResource="true"/>

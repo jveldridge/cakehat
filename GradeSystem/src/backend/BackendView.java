@@ -38,8 +38,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import utils.Assignment;
 import utils.AssignmentType;
 import utils.BashConsole;
+import utils.ConfigurationManager;
 import utils.Project;
 import utils.ProjectManager;
 import utils.Utils;
@@ -602,6 +604,16 @@ public class BackendView extends javax.swing.JFrame {
         for (String s : DatabaseIO.getAssignmentNames()) {
             if (DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
                 v.add(s);
+            }
+        }
+        //Add Final projects based on data from config file
+        if(v.contains("Final")){
+            v.remove("Final");
+        }
+        //Todo: Store final project data in the database somehow?
+        for(Assignment asgn : ConfigurationManager.getAssignments()){
+            if(asgn.Type == AssignmentType.FINAL){
+                v.add(asgn.Name);
             }
         }
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
