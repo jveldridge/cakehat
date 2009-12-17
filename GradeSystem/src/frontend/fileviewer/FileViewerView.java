@@ -12,10 +12,9 @@ package frontend.fileviewer;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Event;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -28,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
+import javax.swing.text.Utilities;
 import utils.ErrorView;
 
 /**
@@ -38,17 +38,39 @@ public class FileViewerView extends javax.swing.JFrame {
 
     private final Color HCOLOR = new Color(255, 181, 84);
     private final Color HCCOLOR = new Color(201, 233, 255);
+    private final Color LHCOLOR = new Color(205, 233, 205);
     private Highlighter.HighlightPainter _highlighter = new Highlight(HCOLOR);
     private Highlighter.HighlightPainter _curhighlight = new Highlight(HCCOLOR);
+    private Highlighter.HighlightPainter _linehighlight = new LineHighlight(LHCOLOR);
     private LinkedList<Integer> _refs = new LinkedList<Integer>();
     private LinkedList<Integer> _pos = new LinkedList<Integer>();
+    private Object[] _linehighlighter;
 
     /** Creates new form FileViewerView */
     public FileViewerView() {
         initComponents();
 
         this.setTitle("File Viewer");
+        m_textArea.addKeyListener(new KeyListener() {
 
+            public void keyTyped(KeyEvent e) {
+                if (!e.isActionKey() && !e.isControlDown() && !e.isAltDown()) {
+                    e.consume();
+                }
+            }
+
+            public void keyPressed(KeyEvent e) {
+                if (!e.isActionKey() && !e.isControlDown() && !e.isAltDown()) {
+                    e.consume();
+                }
+            }
+
+            public void keyReleased(KeyEvent e) {
+                if (!e.isActionKey() && !e.isControlDown() && !e.isAltDown()) {
+                    e.consume();
+                }
+            }
+        });
         m_textArea.requestFocus();
     }
 
@@ -151,6 +173,7 @@ public class FileViewerView extends javax.swing.JFrame {
                 t = t.toLowerCase();
                 text = text.toLowerCase();
             }
+
             int p = 0, i = 0;
             boolean isScrolled = false;
             while ((p = t.indexOf(text, p)) >= 0) {
@@ -186,6 +209,32 @@ public class FileViewerView extends javax.swing.JFrame {
         highlightText(jTextField1.getText());
     }
 
+    public void highlightCurrentLine() {
+        Highlighter h = m_textArea.getHighlighter();
+        try {
+            int pos = m_textArea.getCaretPosition();
+            javax.swing.text.Element e = Utilities.getParagraphElement(m_textArea, pos);
+            int line = m_textArea.getLineOfOffset(pos);
+            if (_linehighlighter[line] == null) {
+                _linehighlighter[line] = h.addHighlight(e.getStartOffset(), e.getEndOffset(), _linehighlight);
+            } else {
+                h.removeHighlight(_linehighlighter[line]);
+                _linehighlighter[line] = null;
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public void removeLineHighlights() {
+        Highlighter h = m_textArea.getHighlighter();
+        for(int i = 0; i < _linehighlighter.length; i++) {
+            if(_linehighlighter[i] != null) {
+                h.removeHighlight(_linehighlighter[i]);
+                _linehighlighter[i] = null;
+            }
+        }
+    }
+
     public void openFile(File f) {
         StringBuilder contents = new StringBuilder();
         try {
@@ -211,11 +260,19 @@ public class FileViewerView extends javax.swing.JFrame {
             new ErrorView(ex);
         }
         m_textArea.setCaretPosition(0);
+        _linehighlighter = new Object[m_textArea.getLineCount()];
     }
 
     private class Highlight extends DefaultHighlighter.DefaultHighlightPainter {
 
         public Highlight(Color color) {
+            super(color);
+        }
+    }
+
+    private class LineHighlight extends DefaultHighlighter.DefaultHighlightPainter {
+
+        public LineHighlight(Color color) {
             super(color);
         }
     }
@@ -243,6 +300,8 @@ public class FileViewerView extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -255,7 +314,6 @@ public class FileViewerView extends javax.swing.JFrame {
         m_scrollPane.setName("m_scrollPane"); // NOI18N
 
         m_textArea.setColumns(20);
-        m_textArea.setEditable(false);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(FileViewerView.class);
         m_textArea.setFont(resourceMap.getFont("m_textArea.font")); // NOI18N
         m_textArea.setRows(5);
@@ -393,6 +451,26 @@ public class FileViewerView extends javax.swing.JFrame {
         });
         jMenu2.add(jMenuItem2);
 
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setText(resourceMap.getString("jMenuItem3.text")); // NOI18N
+        jMenuItem3.setName("jMenuItem3"); // NOI18N
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem3);
+
+        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem4.setText(resourceMap.getString("jMenuItem4.text")); // NOI18N
+        jMenuItem4.setName("jMenuItem4"); // NOI18N
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem4);
+
         m_menu.add(jMenu2);
 
         setJMenuBar(m_menu);
@@ -455,6 +533,14 @@ public class FileViewerView extends javax.swing.JFrame {
         highlightText(jTextField1.getText());
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        highlightCurrentLine();
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        removeLineHighlights();
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -475,6 +561,8 @@ public class FileViewerView extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField jTextField1;
