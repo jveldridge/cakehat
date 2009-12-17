@@ -147,6 +147,62 @@
         </Component>
       </SubComponents>
     </Container>
+    <Container class="javax.swing.JDialog" name="progressDialog">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="progressDialog" noResource="true"/>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="jProgressBar1" alignment="0" pref="644" max="32767" attributes="0"/>
+                      <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lbl_status" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jProgressBar1" pref="16" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="lbl_status" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JProgressBar" name="jProgressBar1">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="jProgressBar1" noResource="true"/>
+            <Property name="stringPainted" type="boolean" value="true"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel1">
+          <Properties>
+            <Property name="font" type="java.awt.Font" resourceKey="lbl_progress.font"/>
+            <Property name="text" type="java.lang.String" resourceKey="lbl_progress.text"/>
+            <Property name="name" type="java.lang.String" value="lbl_progress" noResource="true"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lbl_status">
+          <Properties>
+            <Property name="font" type="java.awt.Font" resourceKey="lbl_status.font"/>
+            <Property name="text" type="java.lang.String" resourceKey="lbl_status.text"/>
+            <Property name="name" type="java.lang.String" value="lbl_status" noResource="true"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
     <Menu class="javax.swing.JMenuBar" name="m_menu">
       <Properties>
         <Property name="name" type="java.lang.String" value="m_menu" noResource="true"/>
@@ -295,6 +351,8 @@
     </Component>
     <Component class="javax.swing.JButton" name="m_gradeReportButton">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" resourceKey="m_gradeReportButton.icon"/>
+        <Property name="text" type="java.lang.String" resourceKey="m_gradeReportButton.text"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="iconTextGap" type="int" value="20"/>
         <Property name="name" type="java.lang.String" value="m_gradeReportButton" noResource="true"/>
@@ -320,6 +378,7 @@
         <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
           <action class="backend.BackendView" id="previewRubricButtonActionPerformed" methodName="previewRubricButtonActionPerformed"/>
         </Property>
+        <Property name="icon" type="javax.swing.Icon" resourceKey="previewRubricButton.icon"/>
         <Property name="text" type="java.lang.String" resourceKey="previewRubricButton.text"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="iconTextGap" type="int" value="20"/>
@@ -328,6 +387,8 @@
     </Component>
     <Component class="javax.swing.JButton" name="m_importLabsButton">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" resourceKey="m_importLabsButton.icon"/>
+        <Property name="text" type="java.lang.String" resourceKey="m_importLabsButton.text"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="iconTextGap" type="int" value="20"/>
         <Property name="name" type="java.lang.String" value="m_importLabsButton" noResource="true"/>

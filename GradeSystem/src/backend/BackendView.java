@@ -19,6 +19,7 @@ import backend.histogram.HistogramView;
 import backend.visualizer.TemplateVisualizer;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
+import java.awt.Dialog.ModalityType;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
 import org.jdesktop.application.Action;
@@ -32,7 +33,12 @@ import java.io.FileWriter;
 import java.util.Arrays;
 import utils.Constants;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -93,6 +99,10 @@ public class BackendView extends javax.swing.JFrame {
         imagePanel1 = new backend.components.ImagePanel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        progressDialog = new javax.swing.JDialog();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        jLabel1 = new javax.swing.JLabel();
+        lbl_status = new javax.swing.JLabel();
         m_databaseButton = new javax.swing.JButton();
         m_assgndistButton = new javax.swing.JButton();
         m_histogramButton = new javax.swing.JButton();
@@ -213,6 +223,43 @@ public class BackendView extends javax.swing.JFrame {
                     .addComponent(jButton2)
                     .addComponent(jLabel4))
                 .addContainerGap())
+        );
+
+        progressDialog.setName("progressDialog"); // NOI18N
+
+        jProgressBar1.setName("jProgressBar1"); // NOI18N
+        jProgressBar1.setStringPainted(true);
+
+        jLabel1.setFont(resourceMap.getFont("lbl_progress.font")); // NOI18N
+        jLabel1.setText(resourceMap.getString("lbl_progress.text")); // NOI18N
+        jLabel1.setName("lbl_progress"); // NOI18N
+
+        lbl_status.setFont(resourceMap.getFont("lbl_status.font")); // NOI18N
+        lbl_status.setText(resourceMap.getString("lbl_status.text")); // NOI18N
+        lbl_status.setName("lbl_status"); // NOI18N
+
+        javax.swing.GroupLayout progressDialogLayout = new javax.swing.GroupLayout(progressDialog.getContentPane());
+        progressDialog.getContentPane().setLayout(progressDialogLayout);
+        progressDialogLayout.setHorizontalGroup(
+            progressDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(progressDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(progressDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE)
+                    .addComponent(jLabel1)
+                    .addComponent(lbl_status))
+                .addContainerGap())
+        );
+        progressDialogLayout.setVerticalGroup(
+            progressDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(progressDialogLayout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbl_status)
+                .addGap(22, 22, 22))
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -504,9 +551,34 @@ public class BackendView extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_m_importLabsButtonActionPerformed
+    private Thread _exportdb;
 
+    public synchronized void updateStatus(String message, int timeout, Color c) {
+        lbl_status.setText(message);
+        if (c == null) {
+            c = java.awt.SystemColor.controlText;
+        }
+        lbl_status.setForeground(c);
+        Timer t = new Timer();
+        class NewTask extends TimerTask {
+
+            @Override
+            public void run() {
+                lbl_status.setText("Ready");
+                lbl_status.setForeground(java.awt.SystemColor.controlText);
+                this.cancel();
+            }
+        }
+        if (timeout > 0) {
+            t.schedule(new NewTask(), timeout);
+        }
+    }
+    private Map<String, String> _studs = Collections.synchronizedMap(new HashMap<String, String>());
+
+    //@TODO FInish this stuff
     private void exportDatabase(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDatabase
-        JFileChooser fc = new JFileChooser(new File("~/" + Utils.getUserLogin()));
+
+        final JFileChooser fc = new JFileChooser(new File("~/" + Utils.getUserLogin()));
         fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
 
             @Override
@@ -533,53 +605,93 @@ public class BackendView extends javax.swing.JFrame {
                 exportDatabase(evt);
             }
         }
-        try {
-            FileWriter fw = new FileWriter(f);
-            BufferedWriter bw = new BufferedWriter(fw);
-            StringBuilder sb = new StringBuilder();
-            String[] assignmentNames = DatabaseIO.getAssignmentNames();
-            String[] studList = DatabaseIO.getStudentNames();
-            int[] totals = new int[assignmentNames.length];
-            for(int i = 0; i < totals.length; i++) {
-                totals[i] = DatabaseIO.getAssignmentTotal(assignmentNames[i]);
-            }
-            Arrays.sort(studList);
-            sb.append("Login,");
-            for (int i = 0; i < assignmentNames.length; i++) {
-                sb.append(assignmentNames[i] + ",Status");
-                if (i < assignmentNames.length - 1) {
-                    sb.append(",");
-                }
-            }
-            sb.append("\n");
-            sb.append("Total Points, ");
-            for(int i  = 0; i < totals.length; i++) {
-                sb.append(totals[i] + ",");
-                if(i < totals.length - 1) {
-                    sb.append(", ");
-                }
-            }
-            sb.append("\n\n");
-            for (String s : studList) {
-                sb.append(s + ",");
-                for(int i =0; i < assignmentNames.length;i++) {
-                    sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], s) + ",");
-                    try {
-                        sb.append(ProjectManager.getTimeStatus(s, Project.getInstance(assignmentNames[i]), Constants.MINUTES_OF_LENIENCY).toString());
-                    } catch (Exception e) {;
+
+        progressDialog.pack();
+        progressDialog.setLocationRelativeTo(null);
+        progressDialog.setVisible(true);
+        progressDialog.setModalityType(ModalityType.APPLICATION_MODAL);
+
+        //First snoop everyones names....this is gonna take ages
+        DatabaseIO.open();
+        final String[] studlogins = DatabaseIO.getStudentNames();
+        final File filetowrite = f;
+        _exportdb = new Thread(new Runnable() {
+
+            public void run() {
+                try {
+
+                    FileWriter fw = new FileWriter(filetowrite);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    float progress = 0, inc = 100.0f / (float) (studlogins.length);
+                    for (String name : studlogins) {
+
+                        updateStatus("Parsing student logins and names (" + name + ")", 0, null);
+                        if (_studs.get(name) == null) {
+                            _studs.put(name, Utils.getUserName(name));
+                        }
+                        jProgressBar1.setValue((int) (progress += inc));
+//                        if (Thread.currentThread().isInterrupted()) {
+//                            return;
+//
+//                        }
                     }
-                    if (i < assignmentNames.length - 1) {
-                        sb.append(",");
+                    jProgressBar1.setValue(100);
+                    updateStatus("Done", 0, null);
+                    jProgressBar1.setIndeterminate(true);
+                    updateStatus("Writing database to file", 0, null);
+
+                    StringBuilder sb = new StringBuilder();
+                    String[] assignmentNames = DatabaseIO.getAssignmentNames();
+                    String[] studList = DatabaseIO.getStudentNames();
+                    int[] totals = new int[assignmentNames.length];
+                    for (int i = 0; i < totals.length; i++) {
+                        totals[i] = DatabaseIO.getAssignmentTotal(assignmentNames[i]);
                     }
+                    Arrays.sort(studList);
+                    sb.append("Login,");
+                    for (int i = 0; i < assignmentNames.length; i++) {
+                        sb.append(assignmentNames[i] + ",Status");
+                        if (i < assignmentNames.length - 1) {
+                            sb.append(",");
+                        }
+                    }
+                    sb.append("\n");
+                    sb.append("Total Points, ");
+                    for (int i = 0; i < totals.length; i++) {
+                        sb.append(totals[i] + ",");
+                        if (i < totals.length - 1) {
+                            sb.append(", ");
+                        }
+                    }
+                    sb.append("\n\n");
+                    for (String s : studList) {
+                        sb.append(s + ",");
+                        for (int i = 0; i < assignmentNames.length; i++) {
+                            sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], s) + ",");
+                            try {
+                                sb.append(ProjectManager.getTimeStatus(s, Project.getInstance(assignmentNames[i]), Constants.MINUTES_OF_LENIENCY).toString());
+                            } catch (Exception e) {
+                                ;
+                            }
+                            if (i < assignmentNames.length - 1) {
+                                sb.append(",");
+                            }
+                        }
+                        sb.append("\n");
+                    }
+                    bw.write(sb.toString());
+                    bw.close();
+                    jProgressBar1.setIndeterminate(true);
+                    JOptionPane.showMessageDialog(progressDialog, "File written to " + filetowrite.getName() + ".", "File Written", JOptionPane.INFORMATION_MESSAGE);
+                    progressDialog.setVisible(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(progressDialog, "Error while writing to file.", "Error", JOptionPane.ERROR_MESSAGE);
+                    jProgressBar1.setIndeterminate(false);
                 }
-                sb.append("\n");
             }
-            bw.write(sb.toString());
-            bw.close();
-            JOptionPane.showMessageDialog(this, "File written to " + f.getName() + ".", "File Written", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error while writing to file.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        });
+        _exportdb.start();
+
 }//GEN-LAST:event_exportDatabase
 
     private void m_gradeReportButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_gradeReportButton2ActionPerformed
@@ -609,12 +721,12 @@ public class BackendView extends javax.swing.JFrame {
             }
         }
         //Add Final projects based on data from config file
-        if(v.contains("Final")){
+        if (v.contains("Final")) {
             v.remove("Final");
         }
         //Todo: Store final project data in the database somehow?
-        for(Assignment asgn : ConfigurationManager.getAssignments()){
-            if(asgn.Type == AssignmentType.FINAL){
+        for (Assignment asgn : ConfigurationManager.getAssignments()) {
+            if (asgn.Type == AssignmentType.FINAL) {
                 v.add(asgn.Name);
             }
         }
@@ -628,13 +740,16 @@ public class BackendView extends javax.swing.JFrame {
     private backend.components.ImagePanel imagePanel1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel lbl_status;
     private javax.swing.JButton m_assgndistButton;
     private javax.swing.JButton m_databaseButton;
     private javax.swing.JButton m_entergradesButton;
@@ -646,6 +761,7 @@ public class BackendView extends javax.swing.JFrame {
     private javax.swing.JMenuBar m_menu;
     private javax.swing.JButton m_regenerateButton;
     private javax.swing.JButton previewRubricButton;
+    private javax.swing.JDialog progressDialog;
     private javax.swing.JDialog warningDialog;
     // End of variables declaration//GEN-END:variables
 }
