@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import frontend.grader.rubric.*;
+import java.awt.Point;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;

@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.LinkedList;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
@@ -49,7 +50,10 @@ public class FileViewerView extends javax.swing.JFrame {
     /** Creates new form FileViewerView */
     public FileViewerView() {
         initComponents();
-
+        try {
+            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/text-x-generic.png")));
+        } catch (Exception e) {
+        }
         this.setTitle("File Viewer");
         m_textArea.addKeyListener(new KeyListener() {
 
@@ -227,8 +231,8 @@ public class FileViewerView extends javax.swing.JFrame {
 
     public void removeLineHighlights() {
         Highlighter h = m_textArea.getHighlighter();
-        for(int i = 0; i < _linehighlighter.length; i++) {
-            if(_linehighlighter[i] != null) {
+        for (int i = 0; i < _linehighlighter.length; i++) {
+            if (_linehighlighter[i] != null) {
                 h.removeHighlight(_linehighlighter[i]);
                 _linehighlighter[i] = null;
             }
