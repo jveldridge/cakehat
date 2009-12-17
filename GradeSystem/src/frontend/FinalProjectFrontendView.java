@@ -75,7 +75,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         } catch (IOException e) {
         }
 
-        jLabel7.setText("Ready");
 
         this.setTitle(Utils.getUserLogin() + " - cs015 Final Grader");
 
@@ -129,26 +128,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     }
      */
 
-    public synchronized void updateStatus(String message, int timeout, Color c) {
-        jLabel7.setText(message);
-        if (c == null) {
-            c = java.awt.SystemColor.controlText;
-        }
-        jLabel7.setForeground(c);
-        Timer t = new Timer();
-        class NewTask extends TimerTask {
-
-            @Override
-            public void run() {
-                jLabel7.setText("Ready");
-                jLabel7.setForeground(java.awt.SystemColor.controlText);
-                this.cancel();
-            }
-        }
-        if (timeout > 0) {
-            t.schedule(new NewTask(), timeout);
-        }
-    }
 
     private void removeCodeDirectories() {
         //Get the projects used
@@ -256,9 +235,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         studentList = new javax.swing.JList();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         quitMenuItem = new javax.swing.JMenuItem();
@@ -469,19 +445,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        jPanel2.setFocusCycleRoot(true);
-        jPanel2.setName("jPanel2"); // NOI18N
-        jPanel2.setLayout(new java.awt.BorderLayout());
-
-        jPanel3.setName("jPanel3"); // NOI18N
-        jPanel3.setLayout(new java.awt.BorderLayout());
-
-        jLabel7.setName("jLabel7"); // NOI18N
-        jPanel3.add(jLabel7, java.awt.BorderLayout.LINE_END);
-
-        jPanel2.add(jPanel3, java.awt.BorderLayout.CENTER);
-
         mainMenuBar.setName("mainMenuBar"); // NOI18N
 
         jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
@@ -511,7 +474,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -521,8 +483,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(studentListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         pack();
@@ -631,7 +592,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     private void runCodeButtonrunButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonrunButton
         if (!_studentsUntarred.contains(getSelectedStudent())) {
             ProjectManager.untar(getStudentsProject(getSelectedStudent()), getSelectedStudent());
-            updateStatus("Finished extracting", 2000, null);
             _studentsUntarred.add(getSelectedStudent());
         }
         Project prj = getSelectedStudentsProject();
@@ -710,11 +670,8 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     private javax.swing.JButton gradeButton;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JButton openProjectButton;
