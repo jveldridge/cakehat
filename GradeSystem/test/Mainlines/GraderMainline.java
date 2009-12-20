@@ -1,7 +1,9 @@
 
-package frontend.grader;
+package Mainlines;
 
-public class TestMain
+import frontend.grader.*;
+
+public class GraderMainline
 {
 	public static void main(String[] args)
 	{

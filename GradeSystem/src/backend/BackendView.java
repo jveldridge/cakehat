@@ -19,37 +19,26 @@ import backend.histogram.HistogramView;
 import backend.visualizer.TemplateVisualizer;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
-import java.awt.Dialog.ModalityType;
 import javax.imageio.ImageIO;
 import nl.captcha.Captcha;
 import org.jdesktop.application.Action;
 import utils.ErrorView;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.util.Arrays;
 import utils.Constants;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Vector;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import utils.Assignment;
 import utils.AssignmentType;
 import utils.BashConsole;
 import utils.ConfigurationManager;
-import utils.Project;
-import utils.ProjectManager;
 import utils.Utils;
 
 /**
@@ -70,6 +59,7 @@ public class BackendView extends javax.swing.JFrame {
 
         this.addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowClosing(WindowEvent e) {
                 if (!GradeSystemApp._testing) {
                     String cmd = "cp " + Constants.DATABASE_FILE + " " + Constants.DATABASE_BK_DIR + "cs015db_bk_" + Utils.getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");

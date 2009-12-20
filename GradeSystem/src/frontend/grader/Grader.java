@@ -20,10 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import frontend.grader.rubric.*;
-import java.awt.Point;
+import java.awt.Dimension;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import utils.Constants;
 
@@ -51,7 +52,12 @@ public class Grader extends JFrame {
         final StateManager stateManager = new StateManager(saveButton, true);
         saveButton.setEnabled(false);
         MainPanel mp = new MainPanel(rubric, stateManager);
-        ScrollPane mainPane = new ScrollPane(mp);
+        
+        JScrollPane mainPane = new JScrollPane(mp);
+        Dimension size = new Dimension(mp.getPreferredSize().width + 30, 800);
+		mainPane.setPreferredSize(size);
+		mainPane.setSize(size);
+
         mainPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         mainPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(mainPane, BorderLayout.CENTER);
@@ -92,7 +98,7 @@ public class Grader extends JFrame {
 
         Vector<Component> tabOrder = mp.getTabOrder();
         //tabOrder.add(saveButton);
-        this.setFocusTraversalPolicy(new MyOwnFocusTraversalPolicy(tabOrder, mainPane.getVerticalScrollBar()));
+        this.setFocusTraversalPolicy(new GraderFocusTraversalPolicy(tabOrder, mainPane.getVerticalScrollBar()));
 
         //add enter as forward tab key
         Set<AWTKeyStroke> forwardKeys = this.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);

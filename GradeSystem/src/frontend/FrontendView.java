@@ -11,7 +11,7 @@
 package frontend;
 
 import backend.DatabaseIO;
-import frontend.fileviewer.FileViewerView;
+import frontend.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
 import frontend.tester.TesterImpl;

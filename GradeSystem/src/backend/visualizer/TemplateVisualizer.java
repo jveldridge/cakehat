@@ -14,6 +14,8 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 import frontend.grader.rubric.*;
+import java.awt.Dimension;
+import javax.swing.JScrollPane;
 import utils.Constants;
 
 public class TemplateVisualizer extends JFrame
@@ -33,9 +35,14 @@ public class TemplateVisualizer extends JFrame
             this.setLayout(new BorderLayout());
 
             VisualPanel mp = new VisualPanel(rubric);
-            VizScrollPane mainPane = new VizScrollPane(mp);
-            mainPane.getVerticalScrollBar().setUnitIncrement(16);
-            this.add(mainPane, BorderLayout.CENTER);
+
+            JScrollPane vizScrollPane = new JScrollPane(mp);
+            Dimension size = new Dimension(mp.getPreferredSize().width + 30, 800);
+            vizScrollPane.setPreferredSize(size);
+            vizScrollPane.setSize(size);
+
+            vizScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            this.add(vizScrollPane, BorderLayout.CENTER);
             
             this.pack();
 

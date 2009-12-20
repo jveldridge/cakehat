@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Assignment;
 import utils.AssignmentType;

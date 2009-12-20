@@ -45,7 +45,7 @@ class TextField extends JTextArea {
         //Add listener to update rubric with data as it is typed
         field.addKeyListener(new KeyAdapter() {
 
-            public void keyTyped(KeyEvent e) {
+            public void keyReleased(KeyEvent e) {
                 field._manager.rubricChanged();
                 //Split on each new line
                 String[] lines = field.getText().split("\n");

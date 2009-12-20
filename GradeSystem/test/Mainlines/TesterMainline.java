@@ -3,13 +3,15 @@
  * and open the template in the editor.
  */
 
-package frontend.tester;
+package Mainlines;
+
+import frontend.tester.*;
 
 /**
  *
  * @author spoletto
  */
-public class TesterMain
+public class TesterMainline
 {
     public static void main(String[] args)
 	{

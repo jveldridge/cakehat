@@ -7,12 +7,12 @@ import java.util.Vector;
 
 import javax.swing.JScrollBar;
 
-class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy 
+class GraderFocusTraversalPolicy extends FocusTraversalPolicy
 {
 	private Vector<Component> _order;
 	private JScrollBar _scroll;
 
-	public MyOwnFocusTraversalPolicy(Vector<Component> order, JScrollBar scroll) 
+	public GraderFocusTraversalPolicy(Vector<Component> order, JScrollBar scroll)
 	{
 		_order = new Vector<Component>(order.size());
 		_order.addAll(order);

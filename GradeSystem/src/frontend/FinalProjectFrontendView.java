@@ -8,7 +8,7 @@ package frontend;
 
 import backend.DatabaseIO;
 import backend.database.DatabaseWatch;
-import frontend.fileviewer.FileViewerView;
+import frontend.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
 import java.awt.Color;
