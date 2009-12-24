@@ -1,7 +1,5 @@
 package frontend;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Vector;
@@ -10,29 +8,25 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
-import utils.Assignment;
 import utils.BashConsole;
 import utils.Constants;
 import utils.EmailView;
-import utils.ErrorView;
 import utils.Project;
 import utils.ProjectManager;
 import utils.Utils;
 
-/* GradingCommander.java
+/**
+ * This class provides functionality for the buttons in the standard and final project
+ * frontend graders.
  *
- * This class contains (static) methods that get called by the GradingCommanderGUI class
- * to actually provide the functionality its buttons promise.
- *
+ * @author jeldridg
  */
-public class FUtils {
+
+public class FrontendUtils {
 
     /**
-     * This method runs a demo. Directly executes the jar.
-     *
-     * STABLE 12/13/09
-     *
-     * @param project
+     * This method runs a project demo. Directly executes the jar.
+     * @param project- the project whose demo should be run
      */
     public static void demoProject(String project) {
         if (project.equals("TASafehouse")) {
@@ -45,26 +39,20 @@ public class FUtils {
 
         Collection<String> output = BashConsole.write(cmd);
 
+        //print out any messages output by the BashConsole's execution
         for(String line : output){
             System.out.print("Output: " + line);
         }
-        /*
-        try {
-            Runtime.getRuntime().exec(cmd);
-        } catch (IOException e) {
-            new ErrorView(e);
-        }
-         */
     }
 
     /**
-     * Untars each student's code for the given project
-     * @param assignmentList
-     * @param studentList
+     * Untars each student's code for the currently selected project
+     * from the handin directory to the appropriate .code directory
      *
-     * STABLE 9/19/09
+     * @param project- currently selected project
+     * @param studentList- list of students whose code must be untarred
      */
-    public static void untar(JList assignmentList, JList studentList) {
+    public static void untar(String project, JList studentList) {
         ArrayList<String> studentLogins = new ArrayList<String>();
         int size = studentList.getModel().getSize();
         if (size == 0) {
@@ -73,7 +61,7 @@ public class FUtils {
         for (int i = 0; i < size; i++) {
             studentLogins.add((String) studentList.getModel().getElementAt(i));
         }
-        ProjectManager.untar(Project.getInstance((String) assignmentList.getSelectedValue()), studentLogins);
+        ProjectManager.untar(Project.getInstance(project), studentLogins);
     }
 
     /**
@@ -81,10 +69,8 @@ public class FUtils {
      * the current project.  It opens a pop-up window that allows the TA to select which printer should
      * be used (only allows bw3, bw4, and bw5).
      *
-     * STABLE but non-ideal, 9/19/09
-     *
      * @param project
-     * @param assignmentList
+     * @param studentList
      */
     public static void printAll(String project, JList studentList) {
        if (project.equals("TASafehouse")) {
@@ -95,23 +81,28 @@ public class FUtils {
         for (int i = 0; i < size; i++) {
             studentLogins.add((String) studentList.getModel().getElementAt(i));
         }
-        String printer = FUtils.getPrinter("Choose printer on which to print all students' code");
+        String printer = FrontendUtils.getPrinter("Choose printer on which to print all students' code");
         if (printer != null) {
-            boolean first = true;
+            boolean print_cover_sheet = true;           //want to print cover sheet for first student's code
             for (String sL : studentLogins) {
-                printStudentProject(project, sL, printer, first);
-                first = false;
+                printStudentProject(project, sL, printer, print_cover_sheet);
+                print_cover_sheet = false;              //but not for subsequent students
             }
         }
     }
 
-        public static void printAllGFX(String project, JList studentList) {
+    /**
+     * to be removed (gfx code should always be printed--print everything in subdirectories)--will fix soon!
+     * @param project
+     * @param studentList
+     */
+    public static void printAllGFX(String project, JList studentList) {
         Vector<String> studentLogins = new Vector<String>();
         int size = studentList.getModel().getSize();
         for (int i = 0; i < size; i++) {
             studentLogins.add((String) studentList.getModel().getElementAt(i));
         }
-        String printer = FUtils.getPrinter("Choose printer on which to print all students' code");
+        String printer = FrontendUtils.getPrinter("Choose printer on which to print all students' code");
         if (printer != null) {
             boolean first = true;
             for (String sL : studentLogins) {
@@ -122,25 +113,30 @@ public class FUtils {
     }
 
     /**
-     * This method prints the code of the student passed in as the second parameter for the project
-     * passed in as the first parameter on the printer passed in as the third parameter
+     * Print particular student's code for a particular project on a particular printer
      *
-     *
-     * @param project
-     * @param login
-     * @param printer
+     * @param project- project for which the student's code should be printed
+     * @param login- login of student whose code should be printed
+     * @param printer- printer on which code should be printed
      */
     public static void printStudentProject(String project, String studentLogin, String printer, boolean first) {
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
         if (printer == null) {
-            printer = FUtils.getPrinter("Choose printer on which to print student code");
+            printer = FrontendUtils.getPrinter("Choose printer on which to print student code");
         }
         String printCommand = new String("cs015_gradingPrint " + printer + " " + first + " " + studentLogin + " " + ProjectManager.getStudentProjectDirectory(Project.getInstance(project), studentLogin) + "*.java");
         Collection<String> ss = BashConsole.write(printCommand);
     }
 
+    /**
+     * to be removed (gfx code should always be printed--print everything in subdirectories)--will fix soon!
+     * @param project
+     * @param studentLogin
+     * @param printer
+     * @param first
+     */
     public static void printStudentProjectGFX(String project,
                                               String studentLogin,
                                               String printer,
@@ -150,7 +146,7 @@ public class FUtils {
             project = "TASafeHouse";
         }
         if (printer == null) {
-            printer = FUtils.getPrinter("Choose printer on which to print student code");
+            printer = FrontendUtils.getPrinter("Choose printer on which to print student code");
         }
         String printCommand = new String("cs015_gradingPrint "
                                           + printer + " "
@@ -164,8 +160,8 @@ public class FUtils {
 
     /**
      * Compiles the currently selected student's code for the currently selected project
-     * @param project
-     * @param login
+     * @param project- project to compile
+     * @param login- login of student whose code will be compiled
      */
     public static void compileStudentProject(String project, String login) {
         if (project.equals("TASafehouse")) {
@@ -180,8 +176,8 @@ public class FUtils {
 
     /**
      * Runs the currently selected student's code for the currently selected project
-     * @param project
-     * @param login
+     * @param project- project to run
+     * @param login- login of student whose code will be run
      */
     public static void runStudentProject(String project, String login) {
         if (project.equals("TASafehouse")) {
@@ -194,7 +190,7 @@ public class FUtils {
      *  This is used to control whether the GUI's runTesterButton should be enabled or disabled
      *
      * @param asgn
-     * @return
+     * @return true if has tester, false otherwise
      */
     public static boolean hasTester(String asgn) {
         // TODO: change to get from some kind of config file
@@ -212,7 +208,6 @@ public class FUtils {
      * @author jeldridg
      */
     public static void openStudentProject(String project, String login) {
-        //TODO: need to add option to open GFX code (or figure out based on whether project uses it)
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
@@ -223,6 +218,7 @@ public class FUtils {
 
     /**
      * Opens the current student's GFX code using Kate
+     * to be removed (gfx code should always be opened--open everything in subdirectories)--will fix soon!
      *
      * @param project
      * @param login
@@ -237,69 +233,65 @@ public class FUtils {
         BashConsole.writeThreaded(cmd);
     }
 
-    public static void runTester(String asgn, String student) {
-        final String testCommand;
-        if (asgn.equals("PizzaDex")) {
-            testCommand = "cs015_pizzaTest " + student;
-        } else {
-            testCommand = "cs015_gfxTest " + student;
-        }
-
-        BashConsole.writeThreaded(testCommand);
-    }
-
-    public static void notifyStudents(JList assignmentList, JList studentList) {
+    /**
+     * Opens a new EmailView so that user TA can inform students that their assignment
+     * has been graded.  Default settigns:
+     *  FROM:    user TA
+     *  TO:      user TA
+     *  CC:      grades TA & grades HTA
+     *  BCC:     all students the user TA is assigned to grade for this assignment
+     *  SUBJECT: "[cs015] <Asgn> Graded"
+     *  MESSAGE: "<Asgn> has been graded and is available for pickup in the handback bin."
+     * 
+     * @param project
+     * @param studentList
+     */
+    public static void notifyStudents(String project, JList studentList) {
         ListModel m = studentList.getModel();
         String bccStringBuilder = "";
         for (int i = 0; i < m.getSize(); i++) {
             bccStringBuilder += ((String) m.getElementAt(i)).trim() + "@cs.brown.edu,";
         }
-        EmailView eg = new EmailView(new String[] {Utils.getUserLogin() + "@" + Constants.EMAIL_DOMAIN}, new String[] {Constants.GRADES_TA + "@" + Constants.EMAIL_DOMAIN, Constants.GRADES_HTA + "@" + Constants.EMAIL_DOMAIN}, bccStringBuilder.split(","), "[cs015] " + (String) assignmentList.getSelectedValue() + " Graded", (String) assignmentList.getSelectedValue() + " has been graded and is available for pickup in the handback bin.");
+        EmailView eg = new EmailView(new String[] {Utils.getUserLogin() + "@" + Constants.EMAIL_DOMAIN}, new String[] {Constants.GRADES_TA + "@" + Constants.EMAIL_DOMAIN, Constants.GRADES_HTA + "@" + Constants.EMAIL_DOMAIN}, bccStringBuilder.split(","), "[cs015] " + project + " Graded", project + " has been graded and is available for pickup in the handback bin.");
         eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
-         //need to notify grades TA when grading is complete
-        //TODO: fix this (check with Paul)
-//        try {
-//            eg.setIconImage(ImageIO.read(getClass().getResource("/GradingCommander/icons/submit.png")));
-//        } catch (IOException e) {
-//            new ErrorView(e);
-//        }
         eg.setVisible(true);
     }
 
+    /**
+     * Prints .GRD files for each student the user TA has graded
+     * Calls getPrinter(...) and then prints using lpr
+     * 
+     * @param assignment- assignment for which .GRD files should be printed
+     */
     public static void printGRDFiles(String assignment) {
-        String printer = FUtils.getPrinter("Select printer to print .GRD files");
+        String printer = FrontendUtils.getPrinter("Select printer to print .GRD files");
         if (assignment.equals("TASafehouse")) {
             assignment = "TASafeHouse";
         }
-        String printCommand = "lpr -P" + printer + " " + ProjectManager.getUserGradingDirectory() + assignment + "/*.grd";
-
+        
+        String printCommand = "lpr -P" + printer + " " + ProjectManager.getGRDFilePath(assignment);
         BashConsole.writeThreaded(printCommand);
     }
 
     /**
-     * Creates a directory iff it does not exist else does nothing
-     * @param dir
+     * NEEDS REVISION--will comment after fixed
+     * @param assignment
      */
-    public static void createDirectory(String dir) {
-        File file = new File(dir);
-        boolean exists = file.exists();
-        if (!exists) {
-            file.mkdirs();
-            BashConsole.write("chmod 770 -R" + dir);
-        } else {
-        }
-    }
-
     public static void submitXMLFiles(String assignment) {
         if (assignment.equals("TASafehouse")) {
             assignment = "TASafeHouse";
         }
         String dirPath = Constants.GRADER_SUBMIT_PATH + assignment + "/" + Utils.getUserLogin() + "/";
-        createDirectory(dirPath);
+        Utils.makeDirectory(dirPath);
         String copyCommand = "cp " + ProjectManager.getUserGradingDirectory() + assignment + "/*.xml " + dirPath;
         BashConsole.write(copyCommand);
     }
 
+    /**
+     * Removes all code directories created during this run of the frontend grading interface
+     *
+     * @param _selected- vector of projects for which code directories have been created
+     */
     public static void removeCodeDirectories(Vector<String> _selected) {
         for (String s : _selected) {
             ProjectManager.removeCodeDirectory(Project.getInstance(s));
@@ -309,10 +301,10 @@ public class FUtils {
     /**
      * Print dialogue for selecting printer.  Message passed in will be displayed as instructions to the user
      * @param message
-     * @return
+     * @return the name of the printer selected
      */
     private static String getPrinter(String message) {
-        Object[] printerChoices = {"bw2","bw3", "bw4", "bw5"};
+        Object[] printerChoices = {"bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }

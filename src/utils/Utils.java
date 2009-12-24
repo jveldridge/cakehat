@@ -407,12 +407,27 @@ public class Utils {
     }
 
     /**
+     * Makes a directory using the makeDirectoryHelper(...) method,
+     * then changes the permissions to 770
+     * @TODO: test this!!
+     * @param dirPath- directory to be created
+     * @return whether the directory creation was successful
+     */
+    public static boolean makeDirectory(String dirPath) {
+        boolean success = makeDirectoryHelper(dirPath);
+        if (success) {
+            BashConsole.write("chmod 770 -R" + dirPath);
+        }
+        return success;
+    }
+
+    /**
      * Makes a directory.
      *
      * @param dirPath
      * @return successful creation of directory
      */
-    public static boolean makeDirectory(String dirPath) {
+    private static boolean makeDirectoryHelper(String dirPath) {
         File dir = new File(dirPath);
         if (!dir.exists()) {
             return dir.mkdirs();

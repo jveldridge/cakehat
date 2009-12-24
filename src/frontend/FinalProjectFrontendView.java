@@ -500,7 +500,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        FUtils.openStudentProject(prj.getName(), getSelectedStudent());
+        FrontendUtils.openStudentProject(prj.getName(), getSelectedStudent());
 }//GEN-LAST:event_openProjectButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
@@ -511,7 +511,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        FUtils.demoProject(prj.getName());
+        FrontendUtils.demoProject(prj.getName());
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
 
@@ -544,7 +544,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         }
         else{
             RubricManager.convertAllToGrd(Constants.FINAL_PROJECT, Utils.getUserLogin());
-            FUtils.submitXMLFiles(Constants.FINAL_PROJECT);
+            FrontendUtils.submitXMLFiles(Constants.FINAL_PROJECT);
 
             sendGRDFiles(students);
         }
@@ -598,8 +598,8 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         if (prj == null) {
             return;
         }
-        FUtils.compileStudentProject(prj.getName(), getSelectedStudent());
-        FUtils.runStudentProject(prj.getName(), getSelectedStudent());
+        FrontendUtils.compileStudentProject(prj.getName(), getSelectedStudent());
+        FrontendUtils.runStudentProject(prj.getName(), getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonrunButton
 
     private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
@@ -637,7 +637,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        FUtils.openGFX(prj.getName(), getSelectedStudent());
+        FrontendUtils.openGFX(prj.getName(), getSelectedStudent());
 }//GEN-LAST:event_opengfxButtonActionPerformed
 
     /**

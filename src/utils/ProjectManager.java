@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.Vector;
 
 import frontend.grader.rubric.TimeStatus;
-import utils.Utils;
-import utils.Constants;
 
 public class ProjectManager {
 
@@ -218,5 +216,15 @@ public class ProjectManager {
      */
     public static String getUserGradingDirectory() {
         return Constants.GRADER_PATH + Utils.getUserLogin() + "/";
+    }
+
+    /**
+     * @date 12/24/2009
+     * @param assignment
+     * @return path to the GRD files to print for a particular directory
+     * @author jeldridg
+     */
+    public static String getGRDFilePath(String assignment) {
+        return ProjectManager.getUserGradingDirectory() + assignment + "/*.grd";
     }
 }
