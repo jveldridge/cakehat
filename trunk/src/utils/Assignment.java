@@ -2,17 +2,31 @@ package utils;
 
 import java.util.Calendar;
 
-public class Assignment
-{	
-	public String Name = "";
-	public int Number;
-	public AssignmentType Type;
-	
-	public Points Points = new Points();
-	public Calendar Outdate, Early, Ontime, Late;
+/**
+ * Represents an assignment as specified in the configuration file.
+ *
+ * @author jak2 (Joshua Kaplan)
+ */
+public class Assignment {
 
-    public String toString()
-    {
+    //Assignment name (e.g. Clock)
+    public String Name = "";
+    //Assignment number (e.g. 1)
+    public int Number;
+    //Assignment type (e.g. PROJECT)
+    public AssignmentType Type;
+    //Points for the assignment, broken down into total and design questions
+    public Points Points = new Points();
+    //Associated out and in dates for the assignment
+    public Calendar Outdate, Early, Ontime, Late;
+
+    /**
+     * Package private constructor so that this class is only
+     * ever constructed by the ConfigurationManager.
+     */
+    Assignment() { }
+
+    public String toString() {
         return Name;
     }
 }
