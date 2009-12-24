@@ -454,7 +454,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
      * @return
      */
     private ArrayList<String> getFinalProjects() {
-        Assignment[] asgns = ConfigurationManager.getAssignments();
+        Iterable<Assignment> asgns = ConfigurationManager.getAssignments();
         ArrayList<String> finalprojects = new ArrayList<String>();
         for (Assignment a : asgns) {
             if (a.Type.compareTo(AssignmentType.FINAL) == 0) {
