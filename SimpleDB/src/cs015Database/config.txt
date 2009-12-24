@@ -1,6 +1,0 @@
-//Configure this file each year before regenerating the database
-//Items may be added/removed using the database editor
-//@author: Paul Sastrasinh (psastras)
-assignment_names = Clock, LiteBrite, TASafeHouse, Cartoon, Swarm, Tetris, PizzaDex
-taLogins = Paul ,psastras, jeldridg
-studentLogins = andy, tree, dog, cat, fox, mouse, cookie, cake, shoe, sock, puppet, bird, fish, earth, sun, moon, sky, cloud, bee, honey, apple, orange, tomato
