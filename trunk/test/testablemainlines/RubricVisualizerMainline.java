@@ -1,4 +1,4 @@
-package Mainlines;
+package testablemainlines;
 
 import backend.visualizer.*;
 

@@ -1,5 +1,5 @@
 
-package Mainlines;
+package testablemainlines;
 
 import frontend.grader.*;
 
