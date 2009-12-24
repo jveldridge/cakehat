@@ -68,7 +68,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             mainTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
             mainTable.removeAll();
             DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
-            String[] taNames = ConfigurationManager.getGraderLogins();//DatabaseInterops.getTANames();
+            Iterable<String> taNames = ConfigurationManager.getGraderLogins();//DatabaseInterops.getTANames();
             m.addColumn("TA Login");
             m.addColumn("Max Number to Grade");
             for (String s : taNames) {
@@ -215,9 +215,11 @@ public class AssignmentdistView extends javax.swing.JFrame {
             students.add(student);
         }
 
-        System.out.println(students);
+        //System.out.println(students);
 
-        String[] taNames = ConfigurationManager.getGraderLogins();
+        //String[] taNames = ConfigurationManager.getGraderLogins();
+        String[] taNames = Arrays.asList(ConfigurationManager.getGraderLogins()).toArray(new String[0]);
+
 
         HashMap<String,String> distribution = new HashMap<String,String>();
         for (String grader : ConfigurationManager.getGraderLogins()) {
