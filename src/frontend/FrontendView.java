@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Constants;
 import utils.ErrorView;
@@ -626,20 +627,22 @@ public class FrontendView extends javax.swing.JFrame {
 
     //will be modified (possibly drastically) in near future, so passing on commenting for now
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-        RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Utils.getUserLogin());
-
         SubmitDialog sd = new SubmitDialog();
+        if (sd.showDialog() == JOptionPane.OK_OPTION) {
+            RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Utils.getUserLogin());
 
-        if (sd.submitChecked()) {
-            FrontendUtils.submitXMLFiles((String) assignmentList.getSelectedValue());
-        }
-        if (sd.printChecked()) {
-            FrontendUtils.printGRDFiles((String) assignmentList.getSelectedValue());
-            if (sd.notifyChecked()) {
+            if (sd.submitChecked()) {
+                FrontendUtils.submitXMLFiles((String) assignmentList.getSelectedValue());
+            }
+
+            if (sd.printChecked()) {
+                FrontendUtils.printGRDFiles((String) assignmentList.getSelectedValue());
+                if (sd.notifyChecked()) {
+                    FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), studentList);
+                }
+            } else if (sd.notifyChecked()) {
                 FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), studentList);
             }
-        } else if (sd.notifyChecked()) {
-            FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), studentList);
         }
 }//GEN-LAST:event_submitGradesButtonActionPerformed
 
