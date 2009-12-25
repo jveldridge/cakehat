@@ -14,6 +14,7 @@ import javax.swing.*;
 public class SubmitDialog {
 
     JCheckBox _submitXMLcb, _printGRDcb, _notifyStudentscb;
+    JPanel _panel;
 
     public SubmitDialog() {
         _submitXMLcb = new JCheckBox("Submit XML Files");
@@ -24,11 +25,14 @@ public class SubmitDialog {
         _printGRDcb.setSelected(true);
         _notifyStudentscb.setSelected(true);
 
-        JPanel panel = new JPanel();
-        panel.add(_submitXMLcb);
-        panel.add(_printGRDcb);
-        panel.add(_notifyStudentscb);
-        JOptionPane.showMessageDialog(null, panel);
+        _panel = new JPanel();
+        _panel.add(_submitXMLcb);
+        _panel.add(_printGRDcb);
+        _panel.add(_notifyStudentscb);
+    }
+
+    public int showDialog() {
+        return JOptionPane.showConfirmDialog(null, _panel, "Submit Options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
     }
 
     public boolean submitChecked() {
