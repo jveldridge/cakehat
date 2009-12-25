@@ -2,7 +2,6 @@ package frontend.grader.rubric;
 
 import utils.ConfigurationManager;
 import utils.Project;
-import utils.ProjectManager;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -25,9 +24,8 @@ import org.w3c.dom.NodeList;
 
 
 import java.util.HashMap;
-import utils.Constants;
-import utils.Utils;
 import backend.DatabaseIO;
+import utils.Allocator;
 import utils.BashConsole;
 import utils.ErrorView;
 
@@ -233,13 +231,12 @@ public class RubricManager {
      * @param minutesOfLeniency for determining if the assignment is early, on time, late, or nc late
      */
     public static void assignXMLToGrader(Project prj, String studentAcct, String graderAcct,
-            double designCheckScore, int minutesOfLeniency) {
-        //String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
-        String XMLTemplateFilePath = Constants.TEMPLATE_GRADE_SHEET_DIR + prj.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
-        String XMLGraderFilePath = Constants.GRADER_PATH + graderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
+                                         double designCheckScore, int minutesOfLeniency) {
+        String XMLTemplateFilePath = Allocator.getConstants().getAssignmentDir() + prj.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
+        String XMLGraderFilePath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
 
-        TimeStatus status = ProjectManager.getTimeStatus(studentAcct, prj, minutesOfLeniency);
-
+        TimeStatus status = prj.getTimeStatus(studentAcct, minutesOfLeniency);
+        
         assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, designCheckScore);
     }
 
@@ -258,22 +255,20 @@ public class RubricManager {
      * @param minutesOfLeniency
      */
     public static void assignXMLToGrader(Project templateProject, Project destProject, String studentAcct, String graderAcct,
-            String studentName, String graderName, double designCheckScore, int minutesOfLeniency) {
-        //String XMLTemplateFilePath = Constants.COURSE_DIR + "asgn/" + templateProject.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_DIR + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
-         String XMLTemplateFilePath = Constants.TEMPLATE_GRADE_SHEET_DIR + templateProject.getName() + "/" + Constants.TEMPLATE_GRADE_SHEET_FILENAME;
+                                         String studentName, String graderName, double designCheckScore, int minutesOfLeniency) {
+        String XMLTemplateFilePath = Allocator.getConstants().getAssignmentDir() + templateProject.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
         
-         System.out.println(XMLTemplateFilePath);
-        String XMLGraderFilePath = Constants.GRADER_PATH + graderAcct + "/" + destProject.getName() + "/" + studentAcct + ".xml";
+        String XMLGraderFilePath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + destProject.getName() + "/" + studentAcct + ".xml";
 
-        TimeStatus status = ProjectManager.getTimeStatus(studentAcct, templateProject, minutesOfLeniency);
+        TimeStatus status = templateProject.getTimeStatus(studentAcct, minutesOfLeniency);
 
         assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, studentName, graderName, designCheckScore);
     }
 
     public static void reassignXML(Project prj, String oldGraderAcct, String studentAcct, String newGraderAcct) {
 
-        String XMLOriginalGraderPath = Constants.GRADER_PATH + oldGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
-        String XMLNewGraderPath = Constants.GRADER_PATH + newGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
+        String XMLOriginalGraderPath = Allocator.getConstants().getGraderPath() + oldGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
+        String XMLNewGraderPath = Allocator.getConstants().getGraderPath() + newGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
 
         reassignXML(XMLOriginalGraderPath, XMLNewGraderPath, newGraderAcct);
     }
@@ -282,7 +277,7 @@ public class RubricManager {
         //Get rubric from the template
         Rubric rubric = processXML(XMLOriginalGraderPath);
 
-        rubric.Grader.Name = Utils.getUserName(newGraderAcct);
+        rubric.Grader.Name = Allocator.getGeneralUtilities().getUserName(newGraderAcct);
         rubric.Grader.Acct = newGraderAcct;
 
         //Write to XML
@@ -311,10 +306,10 @@ public class RubricManager {
         //Assign attributes based on what was passed in
         rubric.Status = status.toString();
 
-        rubric.Student.Name = Utils.getUserName(studentAcct);
+        rubric.Student.Name = Allocator.getGeneralUtilities().getUserName(studentAcct);
         rubric.Student.Acct = studentAcct;
 
-        rubric.Grader.Name = Utils.getUserName(graderAcct);
+        rubric.Grader.Name = Allocator.getGeneralUtilities().getUserName(graderAcct);
         rubric.Grader.Acct = graderAcct;
 
         //Find the design check attribute if applicable, and store value
@@ -611,8 +606,8 @@ public class RubricManager {
             }
         }
 
-        String stringScore = Utils.doubleToString(studentScore);
-        String stringOutOf = Utils.doubleToString(availScore);
+        String stringScore = Allocator.getGeneralUtilities().doubleToString(studentScore);
+        String stringOutOf = Allocator.getGeneralUtilities().doubleToString(availScore);
         printEnd(stringScore, stringOutOf, output);
         printDivider(output);
 
@@ -632,7 +627,7 @@ public class RubricManager {
 
     private static void printTotal(double studentScore, double availScore, BufferedWriter output) {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Final Grade", output);
-        printEnd(Utils.doubleToString(studentScore), Utils.doubleToString(availScore), output);
+        printEnd(Allocator.getGeneralUtilities().doubleToString(studentScore), Allocator.getGeneralUtilities().doubleToString(availScore), output);
         printWithinBounds(0, SECTION_TEXT_WIDTH, "", output);
         printEnd(null, null, output);
         writeLine("", output);
@@ -801,21 +796,21 @@ public class RubricManager {
 
     private static void printEndPlusMinus(double score, double outOf, BufferedWriter output) {
         if (score > 0) {
-            printEnd("+" + Utils.doubleToString(score), "+" + Utils.doubleToString(outOf), output);
+            printEnd("+" + Allocator.getGeneralUtilities().doubleToString(score), "+" + Allocator.getGeneralUtilities().doubleToString(outOf), output);
         } else if (score < 0) {
-            printEnd(Utils.doubleToString(score), Utils.doubleToString(outOf), output);
+            printEnd(Allocator.getGeneralUtilities().doubleToString(score), Allocator.getGeneralUtilities().doubleToString(outOf), output);
         } else {
             if (outOf < 0) {
-                printEnd(Utils.doubleToString(score), Utils.doubleToString(outOf), output);
+                printEnd(Allocator.getGeneralUtilities().doubleToString(score), Allocator.getGeneralUtilities().doubleToString(outOf), output);
             } else {
-                printEnd(Utils.doubleToString(score), "+" + Utils.doubleToString(outOf), output);
+                printEnd(Allocator.getGeneralUtilities().doubleToString(score), "+" + Allocator.getGeneralUtilities().doubleToString(outOf), output);
             }
         }
     }
 
     private static void printSectionTotal(double score, double outOf, BufferedWriter output) {
-        String stringScore = Utils.doubleToString(score);
-        String stringOutOf = Utils.doubleToString(outOf);
+        String stringScore = Allocator.getGeneralUtilities().doubleToString(score);
+        String stringOutOf = Allocator.getGeneralUtilities().doubleToString(outOf);
         printSpaces(SECTION_TEXT_WIDTH, output);
         printEnd(null, null, output);
         writeLine("", output);
@@ -843,7 +838,7 @@ public class RubricManager {
      * @param studentAcct The student's login
      */
     public static void convertToGRD(String asgn, String graderAcct, String studentAcct) {
-        String path = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/" + studentAcct;
+        String path = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/" + studentAcct;
         String XMLFilePath = path + ".xml";
         String GRDFilePath = path + ".grd";
 
@@ -857,9 +852,9 @@ public class RubricManager {
      * @param graderAcct The grader's login
      */
     public static void convertAllToGrd(String asgn, String graderAcct) {
-        String dirPath = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/";
+        String dirPath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/";
 
-        Collection<File> xmlFiles = Utils.getFiles(dirPath, "xml");
+        Collection<File> xmlFiles = Allocator.getGeneralUtilities().getFiles(dirPath, "xml");
 
         for (File file : xmlFiles) {
             String XMLFilePath = file.getAbsolutePath();
@@ -887,16 +882,16 @@ public class RubricManager {
     }
 
     public static double getTotalSubmittedScore(String asgn, String graderAcct, String studentAcct) {
-        String path = Constants.GRADER_SUBMIT_PATH + asgn + "/" + graderAcct + "/" + studentAcct;
+        String path = Allocator.getConstants().getGraderSubmitPath() + asgn + "/" + graderAcct + "/" + studentAcct;
         String XMLFilePath = path + ".xml";
-        System.out.println("XMLFilePath is " + XMLFilePath);
+        //System.out.println("XMLFilePath is " + XMLFilePath);
         Rubric rubric = processXML(XMLFilePath);
         return rubric.getTotalScore();
     }
 
     //shouldn't need this method, but not deleting it yet just in case
     public static double getTotalScore(String asgn, String graderAcct, String studentAcct) {
-        String path = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/" + studentAcct;
+        String path = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/" + studentAcct;
         String XMLFilePath = path + ".xml";
         Rubric rubric = processXML(XMLFilePath);
         return rubric.getTotalScore();

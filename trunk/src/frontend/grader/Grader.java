@@ -9,24 +9,27 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
+import java.awt.Dimension;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-
-import frontend.grader.rubric.*;
-import java.awt.Dimension;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
-import utils.Constants;
+
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
+
+import frontend.grader.rubric.*;
+
+import utils.Allocator;
 
 public class Grader extends JFrame {
 
@@ -38,7 +41,7 @@ public class Grader extends JFrame {
         } catch (IOException e) {
         }
         //Get grading rubric
-        final String XMLFilePath = Constants.GRADER_PATH + graderAcct + "/" + asgn + "/" + studentAcct + ".xml";
+        final String XMLFilePath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/" + studentAcct + ".xml";
         final Rubric rubric = RubricManager.processXML(XMLFilePath);
 
         //Configure basic properties

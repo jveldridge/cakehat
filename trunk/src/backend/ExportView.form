@@ -27,7 +27,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jProgressBar1" alignment="0" pref="627" max="32767" attributes="0"/>
+                  <Component id="jProgressBar1" alignment="0" pref="637" max="32767" attributes="0"/>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lbl_status" min="-2" max="-2" attributes="0"/>

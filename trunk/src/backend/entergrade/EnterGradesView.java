@@ -10,7 +10,6 @@
  */
 package backend.entergrade;
 
-import utils.Utils;
 import backend.DatabaseIO;
 import frontend.grader.rubric.RubricManager;
 import java.awt.event.KeyAdapter;
@@ -22,6 +21,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Allocator;
 import utils.AssignmentType;
 import utils.ErrorView;
 
@@ -84,7 +84,7 @@ public class EnterGradesView extends javax.swing.JFrame {
                     m.insertRow(assignmentTable.getRowCount(), new String[]{s});
                 }
             }
-            this.setTitle(Utils.getUserLogin() + " - Add Grades to Database");
+            this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - Add Grades to Database");
             studentTable.getSelectionModel().setSelectionInterval(0, 0);
             studentTable.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
             assignmentTable.getSelectionModel().setSelectionInterval(0, 0);

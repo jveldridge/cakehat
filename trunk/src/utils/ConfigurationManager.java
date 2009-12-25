@@ -49,7 +49,7 @@ public class ConfigurationManager {
      */
     private static Configuration getInstance() {
         if (_config == null) {
-            _config = processXML(Constants.CONFIG_FILE_PATH);
+            _config = processXML(Allocator.getConstants().getConfigFilePath());
         }
         return _config;
     }
@@ -262,7 +262,7 @@ public class ConfigurationManager {
             }
         }
 
-        return Utils.getCalendar(year, month, day, time);
+        return Allocator.getGeneralUtilities().getCalendar(year, month, day, time);
     }
 
     /**

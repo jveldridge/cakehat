@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package frontend.tester;
 
 import java.io.File;
@@ -13,7 +8,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import utils.Project;
+import utils.Allocator;
 
 /**
  *
@@ -31,7 +26,7 @@ public class XMLReader {
     {
         TestResults results = new TestResults();
         results.Tests = new Vector<Test>();
-        final String XMLFilePath = utils.ProjectManager.getCodeStudentDirectory(Project.getInstance(asgnName), studentAcct) + "testResults.xml";
+        final String XMLFilePath = Allocator.getProject(asgnName).getCodeStudentDirectory(studentAcct) + "testResults.xml";
         Document document = getDocument(XMLFilePath);
         Node testerNode = getRootNode(document);
         assignRootAttributes(testerNode, results);

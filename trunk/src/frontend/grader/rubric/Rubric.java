@@ -1,6 +1,6 @@
 package frontend.grader.rubric;
 
-import utils.Utils;
+import utils.Allocator;
 
 public class Rubric
 {
@@ -41,7 +41,7 @@ public class Rubric
 		{
 			score = 0.0;
 		}
-        score = Double.valueOf(Utils.doubleToString(score));
+        score = Double.valueOf(Allocator.getGeneralUtilities().doubleToString(score));
 		return score;
 	}
 	
@@ -55,7 +55,7 @@ public class Rubric
 				outOf += subsection.OutOf;
 			}
 		}
-        outOf = Double.valueOf(Utils.doubleToString(outOf));
+        outOf = Double.valueOf(Allocator.getGeneralUtilities().doubleToString(outOf));
 		return outOf;
 	}
 }

@@ -28,18 +28,17 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
-import utils.Constants;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import utils.Allocator;
 import utils.Assignment;
 import utils.AssignmentType;
 import utils.BashConsole;
 import utils.ConfigurationManager;
-import utils.Utils;
 
 /**
  *
@@ -62,7 +61,7 @@ public class BackendView extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 if (!GradeSystemApp._testing) {
-                    String cmd = "cp " + Constants.DATABASE_FILE + " " + Constants.DATABASE_BK_DIR + "cs015db_bk_" + Utils.getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
+                    String cmd = "cp " + Allocator.getConstants().getDatabaseFilePath() + " " + Allocator.getConstants().getDatabaseBackupDir() + "cs015db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
                     BashConsole.writeThreaded(cmd);
                 }
             }
@@ -462,7 +461,7 @@ public class BackendView extends javax.swing.JFrame {
     private void m_importLabsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_importLabsButtonActionPerformed
         //THE LABS IN THE DATABASE MUST BE IN NUMERICAL ORDER OR THIS WILL NOT WORK
 
-        File labDir = new File(Constants.LAB_DIR);
+        File labDir = new File(Allocator.getConstants().getLabsDir());
         File[] fileList = labDir.listFiles(new FileFilter() {
 
             public boolean accept(File pathname) {
@@ -483,7 +482,7 @@ public class BackendView extends javax.swing.JFrame {
         String[] labNames = DatabaseIO.getLabNames();
         for (int i = 0; i < fileList.length; i++) {
             String total = String.valueOf(DatabaseIO.getAssignmentTotal(labNames[i]));
-            String[] logins = Utils.readFile(fileList[i]).replaceAll("\\s*-.*", "").split("\\n");
+            String[] logins = Allocator.getGeneralUtilities().readFile(fileList[i]).replaceAll("\\s*-.*", "").split("\\n");
             for (String s : logins) {
                 long row = DatabaseIO.getRowID("grades_" + labNames[i], "stud_login_" + labNames[i], s);
                 String[] data = (String[]) DatabaseIO.getDataRow("grades_" + labNames[i], row);

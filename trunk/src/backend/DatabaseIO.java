@@ -7,7 +7,6 @@ package backend;
 import utils.ConfigurationManager;
 import utils.Assignment;
 import utils.AssignmentType;
-import utils.Constants;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +16,7 @@ import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTransaction;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
-import utils.Utils;
+import utils.Allocator;
 
 /**
  *
@@ -35,7 +34,7 @@ public class DatabaseIO {
      */
     public static void open() {
         try {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +131,7 @@ public class DatabaseIO {
      * @throws SqlJetException
      */
     public static void resetTable(final String tableName) throws SqlJetException {
-        db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+        db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         db.runWriteTransaction(new ISqlJetTransaction() {
 
             public Object run(SqlJetDb arg0) throws SqlJetException {
@@ -343,7 +342,7 @@ public class DatabaseIO {
         try {
             LinkedList<String> ll = new LinkedList<String>();
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+                db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
             }
             ISqlJetCursor cursor = db.getTable(tableName).open();
             while (!cursor.eof()) {
@@ -391,7 +390,7 @@ public class DatabaseIO {
      */
     public static String[] getTableNames() throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         Set<String> s = db.getSchema().getTableNames();
         return s.toArray(new String[0]);
@@ -406,7 +405,7 @@ public class DatabaseIO {
     public static String[] getColumnNames(final String tableName) {
         try {
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+                db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
             }
             String[] s = new String[db.getSchema().getTable(tableName).getColumns().size()];
             for (int i = 0; i < s.length; i++) {
@@ -427,7 +426,7 @@ public class DatabaseIO {
      */
     public static ISqlJetCursor getAllData(final String tableName) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
 
         return db.getTable(tableName).open();
@@ -444,7 +443,7 @@ public class DatabaseIO {
      */
     public static ISqlJetCursor getData(final String tableName, final String indexName, final String lookupItem) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         return db.getTable(tableName).lookup(indexName, lookupItem);
     }
@@ -502,7 +501,7 @@ public class DatabaseIO {
      */
     public static void createTable(final String sqlNewTableString, final String sqlIndexString) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -538,7 +537,7 @@ public class DatabaseIO {
      */
     public static void removeDatum(final long rowid, final String tableName) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -565,7 +564,7 @@ public class DatabaseIO {
     public static boolean isValidTable(final String tableName) {
         try {
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+                db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
             }
             if (tableName == null) {
                 return false;
@@ -594,7 +593,7 @@ public class DatabaseIO {
      */
     public static long addDatum(final String tableName, final Object... data) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         return (Long) db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -611,7 +610,7 @@ public class DatabaseIO {
      */
     public static void dropTable(final String tableName) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -625,7 +624,7 @@ public class DatabaseIO {
     public static void runOnce() {
         try {
             if (db == null) {
-                db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+                db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
             }
             if (!isValidTable("grades_References_bak")) {
                 db.createTable("create table grades_References_bak (studLogins text not null, ProjectPoints text)");
@@ -667,7 +666,7 @@ public class DatabaseIO {
      */
     public static void update(final long rowid, final String tableName, final Object... values) throws SqlJetException {
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         db.runWriteTransaction(new ISqlJetTransaction() {
 
@@ -706,7 +705,7 @@ public class DatabaseIO {
     public static void regenerateDatabase() throws SqlJetException {
         //Remove the old data
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         for (String s : db.getSchema().getTableNames()) {
             db.dropTable(s);
@@ -722,12 +721,12 @@ public class DatabaseIO {
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
         db.createTable("create table talist (taLogin text not null)");
-        for (String s : Utils.getStudentLogins()) {
+        for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
             addDatum("studlist", s);
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            addDatum("assignments", a.Name, a.Type.toString(), Utils.getCalendarAsString(a.Early), Utils.getCalendarAsString(a.Ontime), Utils.getCalendarAsString(a.Late), "" + ((a.Points.DQ == 0) ? "" : a.Points.DQ), "" + a.Points.TOTAL);
+            addDatum("assignments", a.Name, a.Type.toString(), Allocator.getGeneralUtilities().getCalendarAsString(a.Early), Allocator.getGeneralUtilities().getCalendarAsString(a.Ontime), Allocator.getGeneralUtilities().getCalendarAsString(a.Late), "" + ((a.Points.DQ == 0) ? "" : a.Points.DQ), "" + a.Points.TOTAL);
             String sqlCreateTableString2 = "create table grades_" + a.Name + " (studLogins text not null";
             if (a.Points.DQ != 0) {
                 sqlCreateTableString2 += ", " + GRADE_RUBRIC_FIELDS[0] + " text";
@@ -750,7 +749,7 @@ public class DatabaseIO {
         }
         //autoPopulate();
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            for (String ss : Utils.getStudentLogins()) {
+            for (String ss : Allocator.getGeneralUtilities().getStudentLogins()) {
                 Object[] data;
                 if (a.Points.DQ == 0) {
                     data = new String[2];
@@ -772,10 +771,10 @@ public class DatabaseIO {
         //@TODO:tester...remove this when done
 
         if (db == null) {
-            db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
+            db = SqlJetDb.open(new File(Allocator.getConstants().getDatabaseFilePath()), true);
         }
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            for (String ss : Utils.getStudentLogins()) {
+            for (String ss : Allocator.getGeneralUtilities().getStudentLogins()) {
                 Object[] data;
                 if (a.Points.DQ == 0) {
                     data = new String[2];
