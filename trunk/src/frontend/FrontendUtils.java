@@ -1,5 +1,6 @@
 package frontend;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Vector;
@@ -211,27 +212,14 @@ public class FrontendUtils {
         if (project.equals("TASafehouse")) {
             project = "TASafeHouse";
         }
-        String path = ProjectManager.getStudentProjectDirectory(Project.getInstance(project), login);
+        
+        //additional */ is to open code in all directories handin in
+        String path = ProjectManager.getCodeStudentDirectory(Project.getInstance(project), login) + "*/";
+        
         final String cmd = "kate " + path + "*.java";
         BashConsole.writeThreaded(cmd);
     }
 
-    /**
-     * Opens the current student's GFX code using Kate
-     * to be removed (gfx code should always be opened--open everything in subdirectories)--will fix soon!
-     *
-     * @param project
-     * @param login
-     * @author jeldridg
-     */
-    public static void openGFX(String project, String login) {
-        if (project.equals("TASafehouse")) {
-            project = "TASafeHouse";
-        }
-        String path = ProjectManager.getStudentGFXDirectory(Project.getInstance(project), login);
-        final String cmd = "kate " + path + "*.java";
-        BashConsole.writeThreaded(cmd);
-    }
 
     /**
      * Opens a new EmailView so that user TA can inform students that their assignment
