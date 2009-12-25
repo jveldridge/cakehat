@@ -15,18 +15,16 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
-import utils.Constants;
+import utils.Allocator;
 import utils.ErrorView;
-import utils.Utils;
-
 
 /**
  * This class provides the frontend iterface for TAs when grading.  From here,
  * TAs can open, run, test, and grade student code, etc.
  *
  * @author jeldridg
+ * @author jak2
  */
-
 public class FrontendView extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -64,18 +62,36 @@ public class FrontendView extends javax.swing.JFrame {
         _selected = new Vector<String>();                             //vector that keeps track of assignments that have been selected
         _selected.add((String) assignmentList.getSelectedValue());    //in order to remove .code directories for those assignments when frontend is closed
 
-        this.setTitle(Utils.getUserLogin() + " - cs015 Grader");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - cs015 Grader");
 
         //untar all students' code for the initially selected project
-        FrontendUtils.untar((String) assignmentList.getSelectedValue(), studentList);
+        Allocator.getFrontendUtilities().untar(getSelectedAssignment(), studentList);
 
 
         this.addWindowListener(new WindowAdapter() {
             @Override //remove code directories when frontend is closed
             public void windowClosing(WindowEvent e) {
-                FrontendUtils.removeCodeDirectories(_selected);
+                Allocator.getFrontendUtilities().removeCodeDirectories(_selected);
             }
         });
+    }
+
+    /**
+     * Returns the currently selected assignment as a String.
+     * 
+     * @return
+     */
+    private String getSelectedAssignment(){
+        return (String) assignmentList.getSelectedValue();
+    }
+
+    /**
+     * Returns the currently selected student as a String.
+     *
+     * @return
+     */
+    private String getSelectedStudent(){
+        return (String) studentList.getSelectedValue();
     }
 
     /**
@@ -85,10 +101,10 @@ public class FrontendView extends javax.swing.JFrame {
         this.populateStudentList();
 
         //must also inform Tester button of the newly selected current assignment
-        runTesterButton.setEnabled(FrontendUtils.hasTester((String) assignmentList.getSelectedValue()));
+        runTesterButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
 
         //and untar all students' code for the newly selected current assignment
-        FrontendUtils.untar((String) assignmentList.getSelectedValue(), studentList);
+        Allocator.getFrontendUtilities().untar(this.getSelectedAssignment(), studentList);
 
         //and add this current assignment to the vector of assignments that have been selected
         _selected.add((String) assignmentList.getSelectedValue());
@@ -107,7 +123,7 @@ public class FrontendView extends javax.swing.JFrame {
 
         //check whether runTesterButton should be enabled
         //(if the assignment selected on startup has a tester to run) or not
-        runTesterButton.setEnabled(FrontendUtils.hasTester((String) assignmentList.getSelectedValue()));
+        runTesterButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
     }
 
     /**
@@ -116,7 +132,7 @@ public class FrontendView extends javax.swing.JFrame {
      */
     private void populateStudentList() {
 
-        String user = Utils.getUserLogin();
+        String user = Allocator.getGeneralUtilities().getUserLogin();
         try {
             ISqlJetCursor cursor = DatabaseIO.getItemWithFilter("assignment_dist", "ta_login_dist", user);
             if (cursor.eof()) {
@@ -555,7 +571,7 @@ public class FrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        FrontendUtils.removeCodeDirectories(_selected);
+        Allocator.getFrontendUtilities().removeCodeDirectories(_selected);
         System.exit(0);
 }//GEN-LAST:event_quitMenuItemActionPerformed
 
@@ -581,71 +597,68 @@ public class FrontendView extends javax.swing.JFrame {
 
     /**
      * actionPerformed method for openButton
-     * Calls method in FrontendUtils to open the code of the currently selected student
+     * Calls method in FrontendUtilities to open the code of the currently selected student
      * for the currently selected project
      * @param evt
      */
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        FrontendUtils.openStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
+        Allocator.getFrontendUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
 }//GEN-LAST:event_openButtonActionPerformed
 
     /**
      * actionPerformed method for printButton
-     * Calls method in FrontendUtils to print the code of the currently selected student
+     * Calls method in FrontendUtilities to print the code of the currently selected student
      * for the currently selected project
      * @param evt
      */
     private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
-        FrontendUtils.printStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue(), null, true);
+        Allocator.getFrontendUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
 }//GEN-LAST:event_printButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
-        //FUtils.runTester((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
-        TesterImpl t = new TesterImpl((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
-        //t.setLocationRelativeTo(null);
-        //t.setVisible(true);
+        TesterImpl t = new TesterImpl(this.getSelectedAssignment(), this.getSelectedStudent());
 }//GEN-LAST:event_runTesterButtonActionPerformed
 
     /**
      * actionPerformed method for runDemoButton
-     * Calls method in FrontendUtils to demo the currently selected project
+     * Calls method in FrontendUtilities to demo the currently selected project
      * @param evt
      */
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
-        FrontendUtils.demoProject((String) assignmentList.getSelectedValue());
+        Allocator.getFrontendUtilities().demoProject(this.getSelectedAssignment());
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
     /**
      * actionPerformed method for printAllButton
-     * Calls method in FrontendUtils to print code for all students assgined to the
+     * Calls method in FrontendUtilities to print code for all students assgined to the
      * user TA to grade for the currently selected project
      * @param evt
      */
     private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
-        FrontendUtils.printAll((String) assignmentList.getSelectedValue(), studentList);
+        Allocator.getFrontendUtilities().printAll(this.getSelectedAssignment(), studentList);
 }//GEN-LAST:event_printAllButtonActionPerformed
 
     /**
      * Creates a new SubmitDialog to allow user to choose grade submitting options.
-     * Calls appropriate methods on FrontendUtils based on the options selected.
+     * Calls appropriate methods on FrontendUtilities based on the options selected.
      * @param evt
      */
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
         SubmitDialog sd = new SubmitDialog(studentList);
         if (sd.showDialog() == JOptionPane.OK_OPTION) {
-            RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Utils.getUserLogin());
+            RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
             Vector<String> selectedStudents = sd.getSelectedStudents();
 
             if (sd.submitChecked()) {
-                FrontendUtils.submitXMLFiles((String) assignmentList.getSelectedValue());
+                Allocator.getFrontendUtilities().submitXMLFiles(this.getSelectedAssignment());
             }
 
             if (sd.printChecked()) {
-                FrontendUtils.printGRDFiles((String) assignmentList.getSelectedValue());
+                Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedAssignment());
             }
 
             if (sd.notifyChecked()) {
-                FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), selectedStudents);
+                Allocator.getFrontendUtilities().notifyStudents(this.getSelectedAssignment(), selectedStudents);
             }
         }
 }//GEN-LAST:event_submitGradesButtonActionPerformed
@@ -677,29 +690,25 @@ public class FrontendView extends javax.swing.JFrame {
     private void viewGradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewGradingStandardsButtonActionPerformed
         FileViewerView  fvv = new FileViewerView();
         String project = (String) assignmentList.getSelectedValue();
-        if (project.equals("TASafehouse")) {
-            project = "TASafeHouse";
-        }
-        fvv.openFile(new File(Constants.TEMPLATE_GRADE_SHEET_DIR + project + "/" + Constants.DEDUCTIONS_LIST_FILENAME));
+ 
+        fvv.openFile(new File(Allocator.getConstants().getAssignmentDir() + project + "/" + Allocator.getConstants().getDeductionsListFilename()));
         fvv.setLocationRelativeTo(null);
         fvv.setVisible(true);
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
-    //to be incorporated into regular printing
+    //TODO: incorporate into regular printing
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         //print GFX code
-        FrontendUtils.printAllGFX((String) assignmentList.getSelectedValue(), studentList);
+        Allocator.getFrontendUtilities().printAllGFX(this.getSelectedAssignment(), studentList);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    //to be incoroprated into regular opening
     /**
      * actionPerformed method for runButton; first compiles and then runs the currently
      * selected student's code for the currently selected project
      * @param evt
      */
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        FrontendUtils.compileStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
-        FrontendUtils.runStudentProject((String) assignmentList.getSelectedValue(), (String) studentList.getSelectedValue());
+        Allocator.getFrontendUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
     }//GEN-LAST:event_runButtonActionPerformed
 
     /**
@@ -709,7 +718,7 @@ public class FrontendView extends javax.swing.JFrame {
      */
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
         //TODO: prevent users from opening more than one grading GUI
-        Grader g = new Grader((String) assignmentList.getSelectedValue(), Utils.getUserLogin(), (String) studentList.getSelectedValue());
+        Grader g = new Grader((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin(), (String) studentList.getSelectedValue());
         g.setLocationRelativeTo(null);
         g.setVisible(true);
     }//GEN-LAST:event_gradeButtonActionPerformed

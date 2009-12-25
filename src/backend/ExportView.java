@@ -20,10 +20,7 @@ import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import utils.Utils;
-import utils.Constants;
-import utils.Project;
-import utils.ProjectManager;
+import utils.Allocator;
 
 /**
  *
@@ -66,7 +63,7 @@ public class ExportView extends javax.swing.JFrame {
 
     public void start() {
 
-        final JFileChooser fc = new JFileChooser(new File("~/" + Utils.getUserLogin()));
+        final JFileChooser fc = new JFileChooser(new File("~/" + Allocator.getGeneralUtilities().getUserLogin()));
         fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
 
             @Override
@@ -128,7 +125,7 @@ public class ExportView extends javax.swing.JFrame {
                     for (int i = 0; i < studlogins.length; i++) { // change max to logins_names.length
 
                         //if (logins_names[i] == null) {
-                        String fullName = Utils.getUserName(studlogins[i]);
+                        String fullName = Allocator.getGeneralUtilities().getUserName(studlogins[i]);
                         int splitpos = fullName.lastIndexOf(" ");
                         String first = fullName.substring(0, splitpos);
                         String last = fullName.substring(splitpos + 1, fullName.length());
@@ -172,7 +169,7 @@ public class ExportView extends javax.swing.JFrame {
                         for (int i = 0; i < assignmentNames.length; i++) {
                             sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], logins_names[j]._login) + ",");
                             try {
-                                sb.append(ProjectManager.getTimeStatus(logins_names[j]._login, Project.getInstance(assignmentNames[i]), Constants.MINUTES_OF_LENIENCY).toString());
+                                sb.append(Allocator.getProject(assignmentNames[i]).getTimeStatus(logins_names[j]._login, Allocator.getConstants().getMinutesOfLeniency()));
                             } catch (Exception e) {
                             }
                             if (i < assignmentNames.length - 1) {

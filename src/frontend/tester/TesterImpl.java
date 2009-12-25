@@ -2,17 +2,15 @@
 package frontend.tester;
 
 import java.awt.BorderLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import javax.swing.JFrame;
-import utils.Constants;
+import utils.Allocator;
 import utils.Project;
-import utils.Utils;
+import utils.CS015Project;
 
 /**
  *
@@ -23,11 +21,11 @@ public class TesterImpl extends JFrame {
     public TesterImpl(String asgnName, String studentAcct)
     {
             //Get tester.java file
-            final String TesterFilePath = Constants.TESTER_DIR + asgnName + "/Tester.java";
+            final String TesterFilePath = Allocator.getConstants().getTesterDir() + asgnName + "/Tester.java";
 
             String testerName = TesterUtils.getTesterName(asgnName);
-            Project prj = Project.getInstance(asgnName);
-            String StudentCodeDir = utils.ProjectManager.getCodeStudentDirectory(prj, studentAcct) + testerName;
+            Project prj = Allocator.getProject(asgnName);
+            String StudentCodeDir = prj.getCodeStudentDirectory(studentAcct) + testerName;
             String StudentTesterPath = StudentCodeDir + "/Tester.java";
             try {
                 copyFile(new File(TesterFilePath), new File(StudentTesterPath));
@@ -35,7 +33,8 @@ public class TesterImpl extends JFrame {
                 throw new Error("Error copying tester to student code directory");
             }
 
-            utils.ProjectManager.compile(prj, studentAcct);
+            //TODO: Make this tester generic so that it can work for any course / any language
+            ((CS015Project) prj).compile(studentAcct); //TODO: Total hack for tester support
             executeTester(prj, studentAcct);
 
             new TesterGUI(asgnName, studentAcct);
@@ -72,9 +71,13 @@ public class TesterImpl extends JFrame {
     }
 
     public static void executeTester(Project prj, String studentLogin) {
-        String compileDir = utils.ProjectManager.getCodeStudentDirectory(prj, studentLogin);
+        String compileDir = prj.getCodeStudentDirectory(studentLogin);
         String testerName = TesterUtils.getTesterName(prj.getName());
-        Utils.executeInVisibleTerminal(compileDir, testerName + ".Tester", "Testing " + studentLogin + "'s " + prj.getName());
+
+        //TODO: Make this generalizable (perhaps each Project subclass will be responsible for running a tester)
+        Allocator.getGeneralUtilities().executeJavaInVisibleTerminal(compileDir, testerName + ".Tester",
+                                                                     CS015Project.CLASSPATH, CS015Project.LIBRARY_PATH,
+                                                                     "Testing " + studentLogin + "'s " + prj.getName());
     }
 
     private class TesterGUI extends JFrame

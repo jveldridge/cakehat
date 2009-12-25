@@ -17,8 +17,8 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
-import utils.Utils;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Allocator;
 import utils.AssignmentType;
 import utils.ErrorView;
 
@@ -93,7 +93,7 @@ public class HistogramView extends javax.swing.JFrame {
             new ErrorView(e);
         }
         table1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.setTitle(Utils.getUserLogin() + " - cs015 Grade Report Generator");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - cs015 Grade Report Generator");
         updateCharts();
     }
 

@@ -1,28 +1,36 @@
 package utils;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.*;
 import javax.activation.*;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
-public class Utils {
+/**
+ * Utilities that are useful for any course.
+ */
+public class GeneralUtilities {
 
     /**
-     * sends email through the cs department smtps server
-     * attaches a list of files to the email
+     * @date 12/06/2009
+     * @return path to a TA's grading directory.
+     *         currently, /course/cs015/grading/ta/2009/<talogin>/
+     * @author jeldridg
+     */
+    public String getUserGradingDirectory() {
+        return Allocator.getConstants().getGraderPath() + Allocator.getGeneralUtilities().getUserLogin() + "/";
+    }
+
+    /**
+     * TODO: Allow for passing in null for cc, bcc, and attachmentNames parameters.
+     *
+     * Sends email through the cs department smtps server
+     * Attaches a list of files to the email
      *
      * @author aunger 12/10/09
      *
@@ -34,27 +42,28 @@ public class Utils {
      * @param body
      * @param attachmentNames files paths to the attachments
      */
-    public static void sendMail(String from, String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
-        System.setProperty("javax.net.ssl.trustStore", Constants.EMAIL_CERT_PATH);
-        System.setProperty("javax.net.ssl.trustStorePassword", Constants.EMAIL_CERT_PASSWORD);
+    public void sendMail(String from, String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
+        System.setProperty("javax.net.ssl.trustStore", Allocator.getConstants().getEmailCertPath());
+        System.setProperty("javax.net.ssl.trustStorePassword", Allocator.getConstants().getEmailCertPassword());
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtps");
-        props.put("mail.smtps.host", Constants.EMAIL_HOST);
-        props.put("mail.smtps.user", Constants.EMAIL_ACCOUNT);
-        props.put("mail.smtp.host", Constants.EMAIL_HOST);
-        props.put("mail.smtp.port", Constants.EMAIL_PORT);
+        props.put("mail.smtps.host", Allocator.getConstants().getEmailHost());
+        props.put("mail.smtps.user", Allocator.getConstants().getEmailAccount());
+        props.put("mail.smtp.host", Allocator.getConstants().getEmailHost());
+        props.put("mail.smtp.port", Allocator.getConstants().getEmailPort());
         props.put("mail.smtp.ssl.enable", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
         //props.put("mail.smtp.debug", "true");
-        props.put("mail.smtp.socketFactory.port", Constants.EMAIL_PORT);
+        props.put("mail.smtp.socketFactory.port", Allocator.getConstants().getEmailPort());
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.socketFactory.fallback", "false");
 
         try {
             Authenticator auth = new javax.mail.Authenticator() {
                 public PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(Constants.EMAIL_ACCOUNT, Constants.EMAIL_PASSWORD);
+                    return new PasswordAuthentication(Allocator.getConstants().getEmailAccount(),
+                                                      Allocator.getConstants().getEmailPassword());
                 }
             };
             Session session = Session.getInstance(props, auth);
@@ -64,6 +73,7 @@ public class Utils {
             msg.setSubject(subject);
             msg.setFrom(new InternetAddress(from));
 
+            //TODO: Fix this to something less hacky
             if (Arrays.toString(to).length() > 2) { //checks that "to" array is not empty
                 for (String s : to) {
                     msg.addRecipient(Message.RecipientType.TO, new InternetAddress(s));
@@ -109,10 +119,16 @@ public class Utils {
         }
     }
 
-    public static String readFile(File aFile) {
+    /**
+     * Reads a text file into a String.
+     *
+     * @param the file to read
+     * @return a String of the text in teh file
+     */
+    public String readFile(File file) {
         StringBuilder text = new StringBuilder();
         try {
-            BufferedReader input = new BufferedReader(new FileReader(aFile));
+            BufferedReader input = new BufferedReader(new FileReader(file));
             try {
                 String line = null;
                 while ((line = input.readLine()) != null) {
@@ -133,7 +149,7 @@ public class Utils {
      *
      * @return user login
      */
-    public static String getUserLogin() {
+    public String getUserLogin() {
         return System.getProperty("user.name");
     }
 
@@ -143,12 +159,8 @@ public class Utils {
      * @param login the user's login
      * @return user name
      */
-    public static String getUserName(String login) {
-        Vector<String> toExecute = new Vector<String>();
-
-        toExecute.add("snoop " + login);
-
-        Collection<String> output = BashConsole.write(toExecute);
+    public String getUserName(String login) {
+        Collection<String> output = BashConsole.write("snoop " + login);
 
         for (String line : output) {
             if (line.startsWith("Name")) {
@@ -165,20 +177,22 @@ public class Utils {
      *
      * @return
      */
-    public static Iterable<String> getStudentLogins() {
-        List<String> list = Arrays.asList(getMembers(Constants.STUDENT_GROUP));
-        Vector<String> vector = new Vector<String>(list);
-        vector.remove(Constants.TEST_ACCOUNT);
-        return vector;
+    public Iterable<String> getStudentLogins() {
+        //Get list of members to the student group
+        List<String> list = Arrays.asList(getMembers(Allocator.getConstants().getStudentGroup()));
+        //Remove test account from list
+        list.remove(Allocator.getConstants().getTestAccount());
+        
+        return list;
     }
 
-        /**
+    /**
      * Returns all members of a given group
      *
      * @param group
      * @return array of all of the logins of a given group
      */
-    private static String[] getMembers(String group) {
+    private String[] getMembers(String group) {
         Collection<String> output = BashConsole.write("members " + group);
 
         String result = output.iterator().next();
@@ -192,7 +206,7 @@ public class Utils {
      *
      * @return
      */
-    public static int getCurrentYear() {
+    public int getCurrentYear() {
         // return 2009; //For testing purposes only
         return Calendar.getInstance().get(Calendar.YEAR);
     }
@@ -204,7 +218,7 @@ public class Utils {
      * @param entry
      * @return date and time formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND
      */
-    public static String getCalendarAsString(Calendar entry) {
+    public String getCalendarAsString(Calendar entry) {
         if (entry == null) {
             return "";
         }
@@ -227,7 +241,7 @@ public class Utils {
      * @param number
      * @return
      */
-    private static String ensureLeadingZero(int number) {
+    private String ensureLeadingZero(int number) {
         String numberS = number + "";
 
         if (numberS.length() != 2) {
@@ -244,7 +258,7 @@ public class Utils {
      * @param timestamp formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND or YEAR-MONTH-DAY
      * @return a calendar
      */
-    public static Calendar getCalendarFromString(String timestamp) {
+    public Calendar getCalendarFromString(String timestamp) {
         String year, month, day, time = "";
 
         //Try to split date from time
@@ -273,7 +287,7 @@ public class Utils {
      * @param time formated as HOUR:MINUTE:SECOND
      * @return
      */
-    public static Calendar getCalendar(String year, String month, String day, String time) {
+    public Calendar getCalendar(String year, String month, String day, String time) {
         Calendar cal = new GregorianCalendar();
 
         //Try to convert all of the entries
@@ -314,7 +328,7 @@ public class Utils {
      * @param filePath
      * @return last modified date
      */
-    public static Calendar getModifiedDate(String filePath) {
+    public Calendar getModifiedDate(String filePath) {
         return getModifiedDate(new File(filePath));
     }
 
@@ -325,7 +339,7 @@ public class Utils {
      * @param file
      * @return last modified date
      */
-    public static Calendar getModifiedDate(File file) {
+    public Calendar getModifiedDate(File file) {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTimeInMillis(file.lastModified());
 
@@ -341,7 +355,7 @@ public class Utils {
      * @param minutesOfLeniency the amount of leniency in minutes to be granted after the deadline
      * @return
      */
-    public static boolean isBeforeDeadline(Calendar toCheck, Calendar deadline, int minutesOfLeniency) {
+    public boolean isBeforeDeadline(Calendar toCheck, Calendar deadline, int minutesOfLeniency) {
         deadline = ((Calendar) deadline.clone());
         deadline.add(Calendar.MINUTE, minutesOfLeniency);
 
@@ -349,7 +363,7 @@ public class Utils {
     }
 
     /**
-     * TODO: Generalize this code so it doesn't just relate to java files
+     * TODO: Generalize this code so it doesn't just relate to java files.
      * TODO: Look into extracting using Java instead of the Linux tar command.
      *
      * Extracts a tar file.
@@ -357,7 +371,7 @@ public class Utils {
      * @param tarPath the absolute path of the tar file
      * @param destPath the directory the tar file will be expanded into
      */
-    public static void untar(String tarPath, String destPath) {
+    public void untar(String tarPath, String destPath) {
         String cmd = "tar -xf " + tarPath + " -C " + destPath;
         try {
             Process proc = Runtime.getRuntime().exec(cmd);
@@ -390,7 +404,7 @@ public class Utils {
      * @param dirPath- directory to be created
      * @return whether the directory creation was successful
      */
-    public static boolean makeDirectory(String dirPath) {
+    public boolean makeDirectory(String dirPath) {
         //Make directory if necessary
         boolean madeDir = false;
 
@@ -417,7 +431,7 @@ public class Utils {
      *
      * @param dirPath
      */
-    public static void removeDirectory(String dirPath) {
+    public void removeDirectory(String dirPath) {
         String cmd = "rm -rf " + dirPath;
 
         try {
@@ -428,42 +442,14 @@ public class Utils {
     }
 
     /**
-     * TODO: Rearchitect so this can be used for executing code in languages besides Java.
-     *
-     * Executes the java code in a separate visible terminal.
-     *
-     * If you were attempting to execute TASafeHouse and the main class
-     * was located at /course/cs015/demos/TASafeHouse/App.class then
-     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
-     *
-     * @param dirPath - the path to the package
-     * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
-     * @param termName - what the title bar of the terminal will display
-     */
-    public static void executeInVisibleTerminal(String dirPath, String javaArg, String termName) {
-        //Get the existing classpath, add dirPath to the classpath
-        String classPath = dirPath + ":" + Constants.CLASSPATH;
-
-        //Build command to call xterm to run the code
-        String javaLoc = "/usr/bin/java";
-        String javaLibrary = " -Djava.library.path=" + Constants.LIBRARY_PATH;
-        String javaClassPath = " -classpath " + classPath;
-        String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
-        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
-
-        //Execute the command in a seperate thread
-        BashConsole.writeThreaded(terminalCmd);
-    }
-
-    /**
      * Takes a double and returns it as a String rounded to 2
      * decimal places.
      *
      * @param value
      * @return the double as a String rounded to 2 decimal places
      */
-    public static String doubleToString(double value) {
-        double roundedVal = Utils.round(value, 2);
+    public String doubleToString(double value) {
+        double roundedVal = round(value, 2);
         return Double.toString(roundedVal);
     }
 
@@ -474,32 +460,116 @@ public class Utils {
      * @param decimalPlace the number of decimal places to round to
      * @return the rounded double
      */
-    public static double round(double d, int decimalPlace) {
+    public double round(double d, int decimalPlace) {
         BigDecimal bd = new BigDecimal(Double.toString(d));
         bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
         return bd.doubleValue();
     }
 
     /**
+     * Convenience method that uses getFiles(String dirPath, String extension)
+     * to return all source files in directory path passed in.
+     *
+     * @param dirPath
+     * @return the source files in the directory and subdirectories
+     */
+    public Collection<File> getSourceFiles(String dirPath) {
+        Vector<File> files = new Vector<File>();
+
+        for(String srcExt : Allocator.getConstants().getSourceFileExtensions()){
+            files.addAll(getFiles(dirPath, srcExt));
+        }
+
+        return files;
+    }
+
+    /**
+     * Convenience method that uses getFiles(String dirPath, String extension)
+     * to return all compiled files in directory path passed in.
+     *
+     * @param dirPath
+     * @return the compiled files in the directory and subdirectories
+     */
+    public Collection<File> getCompiledFiles(String dirPath) {
+        Vector<File> files = new Vector<File>();
+
+        for(String compExt : Allocator.getConstants().getCompiledFiledExtensions()){
+            files.addAll(getFiles(dirPath, compExt));
+        }
+
+        return files;
+    }
+
+    /**
+     * Convience method that deletes all compiled files in the
+     * directory passed. Recurses into subdirectories.
+     *
+     * @param dirPath
+     * @return success of deleting all files
+     */
+    public boolean deleteCompiledFiles(String dirPath) {
+        boolean success = true;
+
+        for (File file : getCompiledFiles(dirPath)) {
+            success &= file.delete();
+        }
+
+        return success;
+    }
+
+    /**
+     * Returns all files in a directory, recursing into subdirectories, that
+     * contain files with the specified extension.
+     *
+     * @param dirPath starting directory
+     * @param extension the file extension, e.g. java or class
+     * @return the files found with the specified extension
+     */
+    public Collection<File> getFiles(String dirPath, String extension) {
+        Vector<File> files = new Vector<File>();
+
+        File dir = new File(dirPath);
+        if (dir == null || !dir.exists()) {
+            return files;
+        }
+        for (String name : dir.list()) {
+            File entry = new File(dir.getAbsolutePath() + "/" + name);
+            //If it is a directory, recursively explore and add files ending with the extension
+            if (entry.isDirectory()) {
+                files.addAll(getFiles(entry.getAbsolutePath(), extension));
+            }
+            //Add if this entry is a file ending with the extension
+            if (entry.isFile() && name.endsWith("." + extension)) {
+                files.add(entry);
+            }
+        }
+
+        return files;
+    }
+
+    /**
      * Compiles java code, returns whether the code compiled successfully.
      * Pass in the top level directory, subdirectories containing
      * java files will also be compiled.
-     * 
+     *
      * Any compiler errors or other messages will be printed to the console
      * that this grading system program was executed from.
      *
-     * @param dirPath
+     * Compiles with respect to the classpath defined by the Constants subclass
+     * used in the allocator.
+     *
+     * @param dirPath The directory and its subdirectories to look for Java files to compile
+     * @param classpath The classpath to compile this code with
      * @return success of compilation
      */
-    public static boolean compile(String dirPath) {
+    public boolean compileJava(String dirPath, String classpath) {
         //Get java compiler and file manager
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 
-        //Set the class path to be the same as the one specified in CLASSPATH
-        //That is, the one that would be used if a person used the terminal
+        //Tell the compiler to use the class path passed in
         Collection<String> options = new Vector<String>();
-        options.addAll(Arrays.asList("-classpath", Constants.CLASSPATH));
+        options.addAll(Arrays.asList("-classpath", classpath));
 
         //Get all of the java files in dirPath
         Collection<File> files = getSourceFiles(dirPath);
@@ -523,84 +593,37 @@ public class Utils {
     }
 
     /**
-     * Convenience method that uses getFiles(String dirPath, String extension)
-     * to return all source files in directory path passed in.
+     * Executes Java code in a separate visible terminal.
      *
-     * @param dirPath
-     * @return the source files in the directory and subdirectories
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * Runs the code with respect to the classpath and librarypath specified
+     * in the subclass of Constants allocated in the Allocator.
+     *
+     * @param dirPath the path to the package
+     * @param javaArg the part to come after java (ex. java TASafeHouse.App)
+     * @param classpath the classpath to run this code with respect to
+     * @param libraryPath the library path to run this code with respect to
+     * @param termName what the title bar of the terminal will display
      */
-    public static Collection<File> getSourceFiles(String dirPath) {
-        Vector<File> files = new Vector<File>();
+    public void executeJavaInVisibleTerminal(String dirPath, String javaArg,
+                                             String classpath, String libraryPath,
+                                             String termName) {
+        //Adds the dirPath to the classpath
+        classpath = dirPath + ":" +  classpath;
 
-        for(String srcExt : Constants.SOURCE_FILE_EXTENSIONS){
-            files.addAll(getFiles(dirPath, srcExt));
-        }
+        //Build command to call xterm to run the code
+        String javaLoc = "/usr/bin/java";
+        String javaLibrary = " -Djava.library.path=" + libraryPath;
+        String javaClassPath = " -classpath " + classpath;
+        String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
+        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
 
-        return files;
+        //Execute the command in a seperate thread
+        BashConsole.writeThreaded(terminalCmd);
     }
 
-    /**
-     * Convenience method that uses getFiles(String dirPath, String extension)
-     * to return all compiled files in directory path passed in.
-     *
-     * @param dirPath
-     * @return the compiled files in the directory and subdirectories
-     */
-    public static Collection<File> getCompiledFiles(String dirPath) {
-        Vector<File> files = new Vector<File>();
-
-        for(String compExt : Constants.COMPILED_FILE_EXTENSIONS){
-            files.addAll(getFiles(dirPath, compExt));
-        }
-
-        return files;
-    }
-
-    /**
-     * Convience method that deletes all compiled files in the
-     * directory passed. Recurses into subdirectories.
-     *
-     * @param dirPath
-     * @return success of deleting all files
-     */
-    public static boolean deleteCompiledFiles(String dirPath) {
-        boolean success = true;
-
-        for (File file : getCompiledFiles(dirPath)) {
-            success &= file.delete();
-        }
-
-        return success;
-    }
-
-    /**
-     * Returns all files in a directory, recursing into subdirectories, that
-     * contain files with the specified extension.
-     *
-     * @param dirPath starting directory
-     * @param extension the file extension, e.g. java or class
-     * @return the files found with the specified extension
-     */
-    public static Collection<File> getFiles(String dirPath, String extension) {
-        Vector<File> files = new Vector<File>();
-
-        File dir = new File(dirPath);
-        if (dir == null || !dir.exists()) {
-            return files;
-        }
-        for (String name : dir.list()) {
-            File entry = new File(dir.getAbsolutePath() + "/" + name);
-            //If it is a directory, recursively explore and add files ending with the extension
-            if (entry.isDirectory()) {
-                files.addAll(getFiles(entry.getAbsolutePath(), extension));
-            }
-            //Add if this entry is a file ending with the extension
-            if (entry.isFile() && name.endsWith("." + extension)) {
-                files.add(entry);
-            }
-        }
-
-        return files;
-    }
-
+    //TODO: Add methods to compile and execute C, C++, and MatLab code
 }

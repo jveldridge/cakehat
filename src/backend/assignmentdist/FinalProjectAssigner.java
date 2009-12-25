@@ -25,14 +25,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JList;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Allocator;
 import utils.Assignment;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
-import utils.Constants;
 import utils.ErrorView;
-import utils.Project;
-import utils.ProjectManager;
-import utils.Utils;
 
 /**
  *
@@ -82,7 +79,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
         _handinsTograde = Collections.synchronizedCollection(new LinkedList<String>());
         int i = 0;
         for (String name : _projNames) {
-            Collection<String> c = ProjectManager.getHandinLogins(Project.getInstance(name));
+            Collection<String> c = Allocator.getProject(name).getHandinLogins();
             _projTotals[i++] = c.size();
             c.removeAll(allhandins); //Remove students already assigned to tas
             _handinsTograde.addAll(c);
@@ -100,7 +97,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                 for (int i = 0; i < _talogins.length; i++) {
                     updateStatus("Parsing ta logins and names (" + _talogins[i] + ")", 0, null);
                     if (_tas.get(_talogins[i]) == null) {
-                        _tas.put(_talogins[i], Utils.getUserName(_talogins[i]));
+                        _tas.put(_talogins[i], Allocator.getGeneralUtilities().getUserName(_talogins[i]));
                     }
                     jProgressBar1.setValue((int) (progress += inc));
                 }
@@ -114,7 +111,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                     String name = (String) i.next();
                     updateStatus("Parsing student logins and names (" + name + ")", 0, null);
                     if (_studs.get(name) == null) {
-                        _studs.put(name, Utils.getUserName(name));
+                        _studs.put(name, Allocator.getGeneralUtilities().getUserName(name));
                     }
                     jProgressBar1.setValue((int) (progress += inc));
                 }
@@ -402,15 +399,15 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                             DatabaseIO.update(cursor.getRowId(), DatabaseIO.DISTRIBUTION_TABLE, (Object[]) data);
                             String taName = _tas.get(taLogin);
                             if (taName == null || taName.trim().length() == 0) {// if null add to synchronized hash map
-                                taName = Utils.getUserName(taLogin);
+                                taName = Allocator.getGeneralUtilities().getUserName(taLogin);
                                 _tas.put(taLogin, taName);
                             }
                             String studName = _studs.get(studLogin);
                             if (studName == null || studName.trim().length() == 0) { // if null add to synchronized hash map
-                                studName = Utils.getUserName(studLogin);
+                                studName = Allocator.getGeneralUtilities().getUserName(studLogin);
                                 _studs.put(studLogin, studName);
                             }
-                            RubricManager.assignXMLToGrader(Project.getInstance(projName), Project.getInstance("Final"), studLogin, taLogin, studName, taName, DatabaseIO.getStudentDQScore("Final", studLogin), Constants.MINUTES_OF_LENIENCY);
+                            RubricManager.assignXMLToGrader(Allocator.getProject(projName), Allocator.getProject("Final"), studLogin, taLogin, studName, taName, DatabaseIO.getStudentDQScore("Final", studLogin), Allocator.getConstants().getMinutesOfLeniency());
                         }
                     } catch (Exception e) {
                         new ErrorView(e);

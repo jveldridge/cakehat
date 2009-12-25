@@ -8,10 +8,8 @@ package frontend;
 
 import backend.DatabaseIO;
 import backend.database.DatabaseWatch;
-import frontend.FileViewerView;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -28,13 +26,11 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
+import utils.Allocator;
 import utils.Assignment;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
-import utils.Constants;
 import utils.Project;
-import utils.ProjectManager;
-import utils.Utils;
 
 /**
  *
@@ -76,7 +72,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         }
 
 
-        this.setTitle(Utils.getUserLogin() + " - cs015 Final Grader");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - cs015 Final Grader");
 
         this.addWindowListener(new WindowAdapter() {
 
@@ -88,7 +84,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         //Load final projects
         for (Assignment asgn : ConfigurationManager.getAssignments()) {
             if (asgn.Type == AssignmentType.FINAL) {
-                _finalProjects.add(Project.getInstance(asgn.Name));
+                _finalProjects.add(Allocator.getProject(asgn.Name));
             }
         }
 
@@ -100,41 +96,12 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         this.populateStudentList();
     }
 
-    /*
-    private void untarCode() {
-        //Get logins
-        Vector<String> studentLogins = new Vector<String>();
-        int size = studentList.getModel().getSize();
-        if (size == 0) {
-            updateStatus("Ready", 0, null);
-            return;
-        }
-        for (int i = 0; i < size; i++) {
-            String student = (String) studentList.getModel().getElementAt(i);
-            if(student.length() > 2){
-                studentLogins.add(student);
-            }
-        }
-        //Untar all the code that has yet to be untarred
-        for (String login : studentLogins) {
-            if (!_studentsUntarred.contains(login)) {
-                ProjectManager.untar(getStudentsProject(login), login);
-                 _studentsUntarred.add(login);
-
-            }
-        }
-        
-        updateStatus("Finished extracting", 2000, null);
-    }
-     */
-
-
     private void removeCodeDirectories() {
         //Get the projects used
         HashSet<Project> prjsTouched = new HashSet<Project>(_studentsToProjects.values());
 
         for (Project prj : prjsTouched) {
-            ProjectManager.removeCodeDirectory(prj);
+            prj.removeCodeDirectory();
         }
     }
 
@@ -164,8 +131,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     private Timer _dbTimer = new Timer();
 
     public void initDatabaseWatch() {
-        TimerTask task = new DatabaseWatch(new File(Constants.DATABASE_FILE)) {
-
+        TimerTask task = new DatabaseWatch(new File(Allocator.getConstants().getDatabaseFilePath())) {
             protected void onChange(File file) {
                 populateStudentList();
             }
@@ -189,7 +155,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 DatabaseIO.open();
 
                 int index = studentList.getSelectedIndex();
-                studentList.setListData(DatabaseIO.getStudentsToGrade(Utils.getUserLogin(), "Final"));
+                studentList.setListData(DatabaseIO.getStudentsToGrade(Allocator.getGeneralUtilities().getUserLogin(), "Final"));
                 if (index >= 0 && index < studentList.getModel().getSize()) {
                     studentList.setSelectedIndex(index);
                     updateCurrentInfo();
@@ -481,7 +447,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        FrontendUtils.openStudentProject(prj.getName(), getSelectedStudent());
+        Allocator.getFrontendUtilities().openStudentProject(prj.getName(), this.getSelectedStudent());
 }//GEN-LAST:event_openProjectButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
@@ -492,7 +458,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        FrontendUtils.demoProject(prj.getName());
+        Allocator.getFrontendUtilities().demoProject(prj.getName());
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
 
@@ -524,18 +490,18 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         else{
-            RubricManager.convertAllToGrd(Constants.FINAL_PROJECT, Utils.getUserLogin());
-            FrontendUtils.submitXMLFiles(Constants.FINAL_PROJECT);
+            RubricManager.convertAllToGrd(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin());
+            Allocator.getFrontendUtilities().submitXMLFiles(Allocator.getConstants().getFinal());
 
-            sendGRDFiles(students);
+            this.sendGRDFiles(students);
         }
 
 }//GEN-LAST:event_submitGradesButtonActionPerformed
 
     private void sendGRDFiles(Iterable<String> students){
         //Build email content
-        String login = Utils.getUserLogin();
-        String grdPathBegin = Constants.GRADER_PATH + login + "/";
+        String login = Allocator.getGeneralUtilities().getUserLogin();
+        String grdPathBegin = Allocator.getConstants().getGraderPath() + login + "/";
         String fromAddress = login + "@cs.brown.edu";
         //String[] toAddresses = { login + "@cs.brown.edu" }; //TESTING PURPOSES
         String[] ccAddresses = { "" };
@@ -553,8 +519,8 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         for (String student : students) {
             String[] toAddresses = { student + "@cs.brown.edu" }; //WHEN NOT TESTING
 
-            String grdPath = grdPathBegin + Constants.FINAL_PROJECT + "/" + student + ".grd";
-            Utils.sendMail(fromAddress, toAddresses, ccAddresses, bccAddresses,
+            String grdPath = grdPathBegin + Allocator.getConstants().getFinal() + "/" + student + ".grd";
+            Allocator.getGeneralUtilities().sendMail(fromAddress, toAddresses, ccAddresses, bccAddresses,
                            subject, body, new String[]{ grdPath });
         }
     }
@@ -564,23 +530,22 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         if (prj == null) {
             return;
         }
-        prj = Project.getInstance("Final");
-        Grader g = new Grader(prj.getName(), Utils.getUserLogin(), getSelectedStudent());
+        
+        Grader g = new Grader(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin(), getSelectedStudent());
         g.setLocationRelativeTo(null);
         g.setVisible(true);
 }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void runCodeButtonrunButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonrunButton
         if (!_studentsUntarred.contains(getSelectedStudent())) {
-            ProjectManager.untar(getStudentsProject(getSelectedStudent()), getSelectedStudent());
+            getSelectedStudentsProject().untar(getSelectedStudent());
             _studentsUntarred.add(getSelectedStudent());
         }
         Project prj = getSelectedStudentsProject();
         if (prj == null) {
             return;
         }
-        FrontendUtils.compileStudentProject(prj.getName(), getSelectedStudent());
-        FrontendUtils.runStudentProject(prj.getName(), getSelectedStudent());
+        Allocator.getFrontendUtilities().runStudentProject(prj.getName(), getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonrunButton
 
     private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
@@ -607,7 +572,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         }
 
         FileViewerView fvv = new FileViewerView();
-        fvv.openFile(new File(Constants.TEMPLATE_GRADE_SHEET_DIR + prj.getName() + "/" + Constants.DEDUCTIONS_LIST_FILENAME));
+        fvv.openFile(new File(Allocator.getConstants().getAssignmentDir() + prj.getName() + "/" + Allocator.getConstants().getDeductionsListFilename()));
         fvv.setLocationRelativeTo(null);
         fvv.setVisible(true);
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed

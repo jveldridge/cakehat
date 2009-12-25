@@ -25,13 +25,10 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Allocator;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
-import utils.Constants;
 import utils.ErrorView;
-import utils.Project;
-import utils.ProjectManager;
-import utils.Utils;
 
 /**
  *
@@ -195,7 +192,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-               String asgn = (String)assignmentNameComboBox.getSelectedItem();
+        String asgn = (String)assignmentNameComboBox.getSelectedItem();
 
         if(!DatabaseIO.isDistEmpty(asgn)) {
             int n = JOptionPane.showConfirmDialog(new JFrame(),"A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?","Confirm Overwrite",JOptionPane.YES_NO_OPTION);
@@ -204,7 +201,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
 }
 }
 
-        String[] studNames = ProjectManager.getHandinLogins(Project.getInstance((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
+        String[] studNames = Allocator.getProject(asgn).getHandinLogins().toArray(new String[0]);
+        //ProjectManager.getHandinLogins(Project.getInstance((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
 
         List<String> shuffledStudents = Arrays.asList(studNames);
         Collections.shuffle(shuffledStudents);
@@ -431,13 +429,13 @@ public class AssignmentdistView extends javax.swing.JFrame {
 
         //create grading directories if they do not exist
         for (String taLogin : ConfigurationManager.getTALogins()) {
-            String directoryPath = Constants.GRADER_PATH + taLogin + "/" + asgn;
-            Utils.makeDirectory(directoryPath);
+            String directoryPath = Allocator.getConstants().getGraderPath() + taLogin + "/" + asgn;
+            Allocator.getGeneralUtilities().makeDirectory(directoryPath);
         }
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");
-        int minsLeniency = Constants.MINUTES_OF_LENIENCY;
+        int minsLeniency = Allocator.getConstants().getMinutesOfLeniency();
         if ((input != null) && (input.length() != 0)) {
             minsLeniency = Integer.parseInt(input);
         }
@@ -445,7 +443,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
             String[] studsToGrade = DatabaseIO.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
-                RubricManager.assignXMLToGrader(Project.getInstance((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseIO.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseIO.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
             }
        }
 }//GEN-LAST:event_setupGradingButtonActionPerformed

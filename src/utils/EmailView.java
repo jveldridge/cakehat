@@ -23,12 +23,12 @@ public class EmailView extends javax.swing.JFrame {
     /** Creates new form EmailGUI */
     public EmailView() {
         initComponents();
-        this.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
         } catch (Exception e) {
         }
-        fromBox.setText(Utils.getUserLogin() + "@cs.brown.edu");
+        fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu");
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);
         SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
@@ -36,7 +36,7 @@ public class EmailView extends javax.swing.JFrame {
 
     public EmailView(String[] to, String[] cc, String[] bcc, String subject, String body) {
         initComponents();
-        this.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
         } catch (Exception e) {
@@ -45,7 +45,7 @@ public class EmailView extends javax.swing.JFrame {
         ccBox.setText(Arrays.toString(cc).replace("[", "").replace("]", ""));
         bccBox.setText(Arrays.toString(bcc).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Utils.getUserLogin() + "@" + Constants.EMAIL_DOMAIN);
+        fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain());
         bodyText.setText(body);
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);
@@ -250,7 +250,7 @@ public class EmailView extends javax.swing.JFrame {
 }//GEN-LAST:event_subjectBoxActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        Utils.sendMail(fromBox.getText(), toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
+        Allocator.getGeneralUtilities().sendMail(fromBox.getText(), toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
         jDialog1.setLocationRelativeTo(null);
         jDialog1.setVisible(true);
 }//GEN-LAST:event_sendButtonActionPerformed

@@ -11,7 +11,7 @@ import javax.swing.event.DocumentListener;
 
 import frontend.grader.rubric.ExtraCredit;
 import frontend.grader.rubric.Subsection;
-import utils.Utils;
+import utils.Allocator;
 
 /**
  * When an editable instance is returned it directly
@@ -29,7 +29,7 @@ class NumberField extends JFormattedTextField {
 
     private NumberField(double value, boolean editable) {
         super(NumberFormat.getNumberInstance());
-        this.setText(Utils.doubleToString(value));
+        this.setText(Allocator.getGeneralUtilities().doubleToString(value));
         this.setEditable(editable);
         this.setColumns(5);
 
