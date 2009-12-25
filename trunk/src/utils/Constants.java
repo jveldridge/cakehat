@@ -2,7 +2,8 @@ package utils;
 
 public class Constants {
     //Course directory
-    public static final String COURSE_DIR = "/course/cs015/";
+    public static final String COURSE = "cs015";
+    public static final String COURSE_DIR = "/course/"+COURSE+"/";
     // XML Grading Sheets that will be modified while TAs are grading:
     // /course/cs015/admin/uta/grading/<talogin>/<assignment>/<studentlogin>.xml
     // Text (.grd) Grading Sheets generated after grading is submitted:
@@ -32,7 +33,13 @@ public class Constants {
     public static final String EMAIL_DOMAIN = "cs.brown.edu";
     public static final int MINUTES_OF_LENIENCY = 10;
 
-    //Demoes
+    public static final String[] SOURCE_FILE_EXTENSIONS = { "java" };
+    public static final String[] COMPILED_FILE_EXTENSIONS = { "class" };
+
+    //Student group
+    public static final String STUDENT_GROUP = COURSE+"student";
+
+    //Demos
     public static final String DEMO_DIR = COURSE_DIR + "project_demos/ordinary/";
 
     //Final project representation in the database
@@ -47,6 +54,7 @@ public class Constants {
 
     public static final String CURRENT_YEAR = Integer.toString(Utils.getCurrentYear()) + "/";
     public static final String GRADER_PATH = COURSE_DIR + "grading/ta/" + CURRENT_YEAR;
+
     //TODO: Change to config.xml before pushing out to jar
     public static final String CONFIG_FILE_PATH = COURSE_DIR + "grading/bin/" + CURRENT_YEAR + "config_new_test.xml";
     public static final String GRADER_SUBMIT_PATH = COURSE_DIR + "grading/submitted/" + CURRENT_YEAR;
