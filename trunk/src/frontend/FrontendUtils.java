@@ -234,11 +234,12 @@ public class FrontendUtils {
      * @param project
      * @param studentList
      */
-    public static void notifyStudents(String project, JList studentList) {
-        ListModel m = studentList.getModel();
+    public static void notifyStudents(String project, Vector<String> students) {
+       // ListModel m = studentList.getModel();
         String bccStringBuilder = "";
-        for (int i = 0; i < m.getSize(); i++) {
-            bccStringBuilder += ((String) m.getElementAt(i)).trim() + "@cs.brown.edu,";
+        //for (int i = 0; i < m.getSize(); i++) {
+        for (String student: students) {
+            bccStringBuilder += student + "@cs.brown.edu,";
         }
         EmailView eg = new EmailView(new String[] {Utils.getUserLogin() + "@" + Constants.EMAIL_DOMAIN}, new String[] {Constants.GRADES_TA + "@" + Constants.EMAIL_DOMAIN, Constants.GRADES_HTA + "@" + Constants.EMAIL_DOMAIN}, bccStringBuilder.split(","), "[cs015] " + project + " Graded", project + " has been graded and is available for pickup in the handback bin.");
         eg.setTitle(Utils.getUserLogin() + "@cs.brown.edu - Send Email");

@@ -625,11 +625,16 @@ public class FrontendView extends javax.swing.JFrame {
         FrontendUtils.printAll((String) assignmentList.getSelectedValue(), studentList);
 }//GEN-LAST:event_printAllButtonActionPerformed
 
-    //will be modified (possibly drastically) in near future, so passing on commenting for now
+    /**
+     * Creates a new SubmitDialog to allow user to choose grade submitting options.
+     * Calls appropriate methods on FrontendUtils based on the options selected.
+     * @param evt
+     */
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
-        SubmitDialog sd = new SubmitDialog();
+        SubmitDialog sd = new SubmitDialog(studentList);
         if (sd.showDialog() == JOptionPane.OK_OPTION) {
             RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Utils.getUserLogin());
+            Vector<String> selectedStudents = sd.getSelectedStudents();
 
             if (sd.submitChecked()) {
                 FrontendUtils.submitXMLFiles((String) assignmentList.getSelectedValue());
@@ -637,11 +642,10 @@ public class FrontendView extends javax.swing.JFrame {
 
             if (sd.printChecked()) {
                 FrontendUtils.printGRDFiles((String) assignmentList.getSelectedValue());
-                if (sd.notifyChecked()) {
-                    FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), studentList);
-                }
-            } else if (sd.notifyChecked()) {
-                FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), studentList);
+            }
+
+            if (sd.notifyChecked()) {
+                FrontendUtils.notifyStudents((String) assignmentList.getSelectedValue(), selectedStudents);
             }
         }
 }//GEN-LAST:event_submitGradesButtonActionPerformed
