@@ -160,37 +160,31 @@ public class Utils {
     }
 
     /**
-     * Returns the logins of all CS015 students.
+     * Returns the logins of all students in the class's student group.
+     * Removes the test account login.
      *
      * @return
      */
-    public static String[] getCS015Students() {
-        List<String> l = Arrays.asList(getMembers("cs015student"));
-        Vector<String> v = new Vector<String>(l);
-        v.remove(Constants.TEST_ACCOUNT);
-        return v.toArray(new String[0]);
+    public static Iterable<String> getStudentLogins() {
+        List<String> list = Arrays.asList(getMembers(Constants.STUDENT_GROUP));
+        Vector<String> vector = new Vector<String>(list);
+        vector.remove(Constants.TEST_ACCOUNT);
+        return vector;
     }
 
-    /**
-     * Returns if the current user is a CS015 HTA.
+        /**
+     * Returns all members of a given group
      *
-     * @return
+     * @param group
+     * @return array of all of the logins of a given group
      */
-    public static boolean isUserCS015HTA() {
-        String login = getUserLogin();
+    private static String[] getMembers(String group) {
+        Collection<String> output = BashConsole.write("members " + group);
 
-        for (String htaLogin : getMembers("cs015hta")) {
-            if (htaLogin.equals(login)) {
-                return true;
-            }
-        }
+        String result = output.iterator().next();
+        String[] logins = result.split(" ");
 
-        return false;
-    }
-
-    public static String getProjectDirectory(Project p) {
-        String d = Constants.COURSE_DIR + "/asgn/" + p.getName() + "/grade/";
-        return d;
+        return logins;
     }
 
     /**
@@ -199,31 +193,8 @@ public class Utils {
      * @return
      */
     public static int getCurrentYear() {
-        // return 2008; //For testing purposes only
+        // return 2009; //For testing purposes only
         return Calendar.getInstance().get(Calendar.YEAR);
-    }
-
-    /**
-     * Returns all members of a given group
-     * @param group
-     * @return
-     */
-    private static String[] getMembers(String group) {
-        Vector<String> toExecute = new Vector<String>();
-
-        toExecute.add("members " + group);
-
-        Collection<String> output = BashConsole.write(toExecute);
-
-        String result = output.iterator().next();
-
-        String[] logins = result.split(" ");
-
-        return logins;
-    }
-
-    //For testing purposes only
-    public static void main(String[] args) {
     }
 
     /**
@@ -326,8 +297,8 @@ public class Utils {
                     secondI = Integer.valueOf(timeParts[2]);
                 }
             }
-        } catch (Exception e) {
         }
+        catch (Exception e) { }
 
         //Set fields
         monthI--; //Because months are zero indexed
@@ -378,6 +349,9 @@ public class Utils {
     }
 
     /**
+     * TODO: Generalize this code so it doesn't just relate to java files
+     * TODO: Look into extracting using Java instead of the Linux tar command.
+     *
      * Extracts a tar file.
      *
      * @param tarPath the absolute path of the tar file
@@ -409,34 +383,36 @@ public class Utils {
     /**
      * Makes a directory using the makeDirectoryHelper(...) method,
      * then changes the permissions to 770
-     * @TODO: test this!!
+     *
+     * TODO: Check if changing the directory permission is working properly.
+     *       In particular, check what it is considering the group (ugrad or TA group)
+     *
      * @param dirPath- directory to be created
      * @return whether the directory creation was successful
      */
     public static boolean makeDirectory(String dirPath) {
-        boolean success = makeDirectoryHelper(dirPath);
-        if (success) {
+        //Make directory if necessary
+        boolean madeDir = false;
+
+        File dir = new File(dirPath);
+        if(!dir.exists()){
+            madeDir = dir.mkdirs();
+        }
+
+        //If directory was made, change permissions to be totally accessible by user and group
+        if(madeDir){
             BashConsole.write("chmod 770 -R" + dirPath);
         }
-        return success;
+
+        //Return if the directory now exists
+        return dir.exists();
     }
 
     /**
-     * Makes a directory.
+     * TODO: Look into doing this with Java. Java has the ability to delete an empty directory
+     *       but there seems to be no method to recursively delete a directory and its contents
+     *       the way rm -rf does.
      *
-     * @param dirPath
-     * @return successful creation of directory
-     */
-    private static boolean makeDirectoryHelper(String dirPath) {
-        File dir = new File(dirPath);
-        if (!dir.exists()) {
-            return dir.mkdirs();
-        }
-
-        return true;
-    }
-
-    /**
      * Removes a directory and all of its files and subdirectories.
      *
      * @param dirPath
@@ -446,42 +422,15 @@ public class Utils {
 
         try {
             Runtime.getRuntime().exec(cmd);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
         }
     }
 
     /**
-     * Executes the java code in a separate thread.
+     * TODO: Rearchitect so this can be used for executing code in languages besides Java.
      *
-     * If you were attempting to execute TASafeHouse and the main class
-     * was located at /course/cs015/demos/TASafeHouse/App.class then
-     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
-     *
-     * @param dirPath - the path to the package
-     * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
-     * @return whether the code was successfully executed
-     */
-    public static boolean execute(String dirPath, String javaArg) {
-        //Get the existing classpath, add dirPath to the classpath
-        String classPath = dirPath + ":" + getClassPath();
-
-        //TODO: Find a better way of creating the classpath
-        classPath = classPath.replace("/home/" + Utils.getUserLogin() + "/course/cs015", "");
-
-        ProcessBuilder pb = new ProcessBuilder("java", "-classpath", classPath, javaArg);
-
-        //Attempt to execute code
-        try {
-            pb.start();
-        } catch (IOException e) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Executes the java code in a separate thread.
+     * Executes the java code in a separate visible terminal.
      *
      * If you were attempting to execute TASafeHouse and the main class
      * was located at /course/cs015/demos/TASafeHouse/App.class then
@@ -493,7 +442,7 @@ public class Utils {
      */
     public static void executeInVisibleTerminal(String dirPath, String javaArg, String termName) {
         //Get the existing classpath, add dirPath to the classpath
-        String classPath = dirPath + ":" + getClassPath();
+        String classPath = dirPath + ":" + Constants.CLASSPATH;
 
         //Build command to call xterm to run the code
         String javaLoc = "/usr/bin/java";
@@ -507,97 +456,24 @@ public class Utils {
     }
 
     /**
-     * NOT STABLE - DOES NOT SUPPORT ADVENTURE.
-     * KNOWN ISSUE: ON CLOSE OF STUDENT CODE - CLOSES GRADING PROGRAM.
+     * Takes a double and returns it as a String rounded to 2
+     * decimal places.
      *
-     * Executes the java code in a separate thread.
-     *
-     * If you were attempting to execute TASafeHouse and the main class
-     * was located at /course/cs015/demos/TASafeHouse/App.class then
-     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
-     *
-     * @param dirPath - the path to the package
-     * @param javaArg - the part to come after java (ex. java TASafeHouse.App)
+     * @param value
+     * @return the double as a String rounded to 2 decimal places
      */
-    public static void executeWithClassLoader(String dirPath, String javaArg) {
-        ClassLoader prevCl = Thread.currentThread().getContextClassLoader();
-
-        //System.setProperty("java.library.path", Constants.LIBRARY_PATH);
-        System.load("/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/i386/libj3dcore-ogl.so");
-
-        // Create the class loader by using the given URL
-        // Use prevCl as parent to maintain current visibility
-        ClassLoader urlCl = null;
-
-        URL[] locations = null;
-        try {
-            locations = new URL[]
-            {   new URL("file:" + dirPath),
-                new URL("jar:file:///course/cs015/lib/cs015.jar!/"),
-                new URL("jar:file:///pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dcore.jar!/"),
-                new URL("jar:file:///pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dutils.jar!/"),
-                new URL("jar:file:///pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/vecmath.jar!/")
-            };
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
-        }        
-        
-        urlCl = URLClassLoader.newInstance(locations, prevCl);
-
-        try {
-            // Save the class loader so that you can restore it later
-            Thread.currentThread().setContextClassLoader(urlCl);
-
-            //Invoke main
-            Class[] argTypes = new Class[] { String[].class };
-            Method main = urlCl.loadClass(javaArg).getDeclaredMethod("main", argTypes);
-            main.invoke(null, (Object)null);
-
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
-        } catch (NoSuchMethodException e) {
-            // TODO Auto-generated catch block
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-           Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, e);
-        } finally {
-            // Restore
-            Thread.currentThread().setContextClassLoader(prevCl);
-        }
-    }
-    /*
-    public static void executeInVisibleTerminal(String dirPath, String javaArg, String termName) {
-        //Get the existing classpath, add dirPath to the classpath
-        String classPath = dirPath + ":" + getClassPath();
-
-        //Build command to call xterm to run the code
-        String javaLoc = "/usr/bin/java";
-        String javaCmd = javaLoc + " -classpath " + classPath + " " + javaArg;
-        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
-
-        //Execute the command in a seperate thread
-        BashConsole.writeThreaded(terminalCmd);
-    }
-     */
-
-
-
     public static String doubleToString(double value) {
         double roundedVal = Utils.round(value, 2);
         return Double.toString(roundedVal);
     }
 
+    /**
+     * Rounds a double to the number of decimal places specified.
+     *
+     * @param d the double to round
+     * @param decimalPlace the number of decimal places to round to
+     * @return the rounded double
+     */
     public static double round(double d, int decimalPlace) {
         BigDecimal bd = new BigDecimal(Double.toString(d));
         bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
@@ -605,44 +481,12 @@ public class Utils {
     }
 
     /**
-     * Returns the current java class path.
-     *
-     * @return classPath
-     */
-    public static String getClassPath() {
-        //I give up, Netbeans sucks at this, just return the class path we need
-        return Constants.CLASSPATH;
-
-        //When not running in Eclipse, only the line of code below is needed
-        //return System.getProperty("java.class.path");
-
-
-        //Hack to make this work properly with Eclipse/Netbeans
-        /*
-        String classPath = System.getProperty("java.class.path");
-
-        if (classPath.contains("cs015.jar")) {
-            return classPath;
-        }
-
-        Vector<String> toExecute = new Vector<String>();
-
-        toExecute.add("echo $CLASSPATH");
-
-        Collection<String> output = BashConsole.write(toExecute);
-
-        if (output.size() > 0) {
-            return output.iterator().next();
-        } else {
-            return "";
-        }
-        */
-    }
-
-    /**
-     * Compiles code, returns whether the code compiled successfully.
+     * Compiles java code, returns whether the code compiled successfully.
      * Pass in the top level directory, subdirectories containing
      * java files will also be compiled.
+     * 
+     * Any compiler errors or other messages will be printed to the console
+     * that this grading system program was executed from.
      *
      * @param dirPath
      * @return success of compilation
@@ -655,10 +499,10 @@ public class Utils {
         //Set the class path to be the same as the one specified in CLASSPATH
         //That is, the one that would be used if a person used the terminal
         Collection<String> options = new Vector<String>();
-        options.addAll(Arrays.asList("-classpath", getClassPath()));
+        options.addAll(Arrays.asList("-classpath", Constants.CLASSPATH));
 
         //Get all of the java files in dirPath
-        Collection<File> files = getJavaFiles(dirPath);
+        Collection<File> files = getSourceFiles(dirPath);
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
         //Attempt to compile
@@ -668,47 +512,61 @@ public class Utils {
 
             if (success != null) {
                 return success;
-            } else {
+            }
+            else {
                 return false;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }
 
     /**
      * Convenience method that uses getFiles(String dirPath, String extension)
-     * to return all .java files in directory path passed in.
+     * to return all source files in directory path passed in.
      *
      * @param dirPath
-     * @return the .java files in the directory and subdirectories
+     * @return the source files in the directory and subdirectories
      */
-    public static Collection<File> getJavaFiles(String dirPath) {
-        return getFiles(dirPath, "java");
+    public static Collection<File> getSourceFiles(String dirPath) {
+        Vector<File> files = new Vector<File>();
+
+        for(String srcExt : Constants.SOURCE_FILE_EXTENSIONS){
+            files.addAll(getFiles(dirPath, srcExt));
+        }
+
+        return files;
     }
 
     /**
      * Convenience method that uses getFiles(String dirPath, String extension)
-     * to return all .class files in directory path passed in.
+     * to return all compiled files in directory path passed in.
      *
      * @param dirPath
-     * @return the .class files in the directory and subdirectories
+     * @return the compiled files in the directory and subdirectories
      */
-    public static Collection<File> getClassFiles(String dirPath) {
-        return getFiles(dirPath, "class");
+    public static Collection<File> getCompiledFiles(String dirPath) {
+        Vector<File> files = new Vector<File>();
+
+        for(String compExt : Constants.COMPILED_FILE_EXTENSIONS){
+            files.addAll(getFiles(dirPath, compExt));
+        }
+
+        return files;
     }
 
     /**
-     * Convience method that deletes all .class files in the
+     * Convience method that deletes all compiled files in the
      * directory passed. Recurses into subdirectories.
      *
      * @param dirPath
      * @return success of deleting all files
      */
-    public static boolean deleteClassFiles(String dirPath) {
+    public static boolean deleteCompiledFiles(String dirPath) {
         boolean success = true;
 
-        for (File file : getClassFiles(dirPath)) {
+        for (File file : getCompiledFiles(dirPath)) {
             success &= file.delete();
         }
 
@@ -744,13 +602,5 @@ public class Utils {
 
         return files;
     }
-    /*
-    public static void printProperties()
-    {
-    for(Object key : System.getProperties().keySet())
-    {
-    System.out.println(key + " - " + System.getProperties().get(key));
-    }
-    }
-     */
+
 }

@@ -122,7 +122,7 @@ public class ProjectManager {
      */
     public static boolean deleteClassFiles(Project prj, String studentLogin){
         String compileDir = getCodeStudentDirectory(prj, studentLogin);
-        return Utils.deleteClassFiles(compileDir);
+        return Utils.deleteCompiledFiles(compileDir);
     }
 
     /**

@@ -73,23 +73,8 @@ public class TesterImpl extends JFrame {
 
     public static void executeTester(Project prj, String studentLogin) {
         String compileDir = utils.ProjectManager.getCodeStudentDirectory(prj, studentLogin);
-
-        String classPath = compileDir + ":" + utils.Utils.getClassPath();
-
-        classPath = classPath.replace("/home/"+ utils.Utils.getUserLogin() + "/course/cs015", "");
-
         String testerName = TesterUtils.getTesterName(prj.getName());
-
-        String cmd = "java -classpath " + classPath + " " + testerName + ".Tester";
-
-        try {
-            //BashConsole.write(cmd);
-            Utils.executeInVisibleTerminal(compileDir, testerName + ".Tester", studentLogin + "'s " + prj.getName());
-        }
-        catch(Exception e)
-        {
-            throw new Error("Failed to run tester.");
-        }
+        Utils.executeInVisibleTerminal(compileDir, testerName + ".Tester", "Testing " + studentLogin + "'s " + prj.getName());
     }
 
     private class TesterGUI extends JFrame

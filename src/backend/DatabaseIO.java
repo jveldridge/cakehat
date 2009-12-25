@@ -722,7 +722,7 @@ public class DatabaseIO {
         db.createTable("create table studlist (studLogin text not null)");
         db.createIndex("create index stud_logins on studlist (studLogin)");
         db.createTable("create table talist (taLogin text not null)");
-        for (String s : Utils.getCS015Students()) {
+        for (String s : Utils.getStudentLogins()) {
             addDatum("studlist", s);
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
@@ -750,7 +750,7 @@ public class DatabaseIO {
         }
         //autoPopulate();
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            for (String ss : Utils.getCS015Students()) {
+            for (String ss : Utils.getStudentLogins()) {
                 Object[] data;
                 if (a.Points.DQ == 0) {
                     data = new String[2];
@@ -775,7 +775,7 @@ public class DatabaseIO {
             db = SqlJetDb.open(new File(Constants.DATABASE_FILE), true);
         }
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            for (String ss : Utils.getCS015Students()) {
+            for (String ss : Utils.getStudentLogins()) {
                 Object[] data;
                 if (a.Points.DQ == 0) {
                     data = new String[2];
