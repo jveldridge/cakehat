@@ -87,9 +87,10 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="gradeButton" alignment="1" pref="548" max="32767" attributes="3"/>
                       <Component id="currentInfo" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="generalCommandsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -103,15 +104,9 @@
                       </Group>
                       <Component id="selectedStudentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="opengfxButton" pref="261" max="32767" attributes="3"/>
-                              <Component id="openProjectButton" alignment="0" min="-2" pref="261" max="-2" attributes="3"/>
-                          </Group>
+                          <Component id="openProjectButton" min="-2" pref="261" max="-2" attributes="3"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="runCodeButton" pref="281" max="32767" attributes="3"/>
-                              <Component id="gradeButton" alignment="0" pref="281" max="32767" attributes="3"/>
-                          </Group>
+                          <Component id="runCodeButton" pref="281" max="32767" attributes="3"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -140,12 +135,9 @@
                       <Component id="openProjectButton" alignment="3" min="-2" pref="53" max="-2" attributes="1"/>
                       <Component id="runCodeButton" alignment="3" pref="52" max="32767" attributes="1"/>
                   </Group>
-                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="opengfxButton" alignment="3" min="-2" pref="54" max="-2" attributes="1"/>
-                      <Component id="gradeButton" alignment="3" min="-2" pref="55" max="-2" attributes="1"/>
-                  </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="gradeButton" min="-2" pref="55" max="-2" attributes="1"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -246,20 +238,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="viewGradingStandardsButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="opengfxButton">
-          <Properties>
-            <Property name="icon" type="javax.swing.Icon" resourceKey="opengfxButton.icon"/>
-            <Property name="mnemonic" type="int" value="79"/>
-            <Property name="text" type="java.lang.String" resourceKey="opengfxButton.text"/>
-            <Property name="focusable" type="boolean" value="false"/>
-            <Property name="horizontalAlignment" type="int" value="2"/>
-            <Property name="iconTextGap" type="int" value="10"/>
-            <Property name="name" type="java.lang.String" value="opengfxButton" noResource="true"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="opengfxButtonActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel3">

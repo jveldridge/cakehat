@@ -228,7 +228,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         gradeButton = new javax.swing.JButton();
         runCodeButton = new javax.swing.JButton();
         viewGradingStandardsButton = new javax.swing.JButton();
-        opengfxButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         currentInfo = new javax.swing.JLabel();
         studentListPanel = new javax.swing.JPanel();
@@ -331,19 +330,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             }
         });
 
-        opengfxButton.setIcon(resourceMap.getIcon("opengfxButton.icon")); // NOI18N
-        opengfxButton.setMnemonic('O');
-        opengfxButton.setText(resourceMap.getString("opengfxButton.text")); // NOI18N
-        opengfxButton.setFocusable(false);
-        opengfxButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        opengfxButton.setIconTextGap(10);
-        opengfxButton.setName("opengfxButton"); // NOI18N
-        opengfxButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                opengfxButtonActionPerformed(evt);
-            }
-        });
-
         jLabel3.setFont(resourceMap.getFont("jLabel3.font")); // NOI18N
         jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
         jLabel3.setName("jLabel3"); // NOI18N
@@ -355,27 +341,24 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(currentInfo)
-                    .addComponent(jLabel3)
-                    .addComponent(generalCommandsLabel)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(gradeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
+                    .addComponent(currentInfo, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
                             .addComponent(runDemoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(viewGradingStandardsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addComponent(submitGradesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 548, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(selectedStudentLabel)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(opengfxButton, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                            .addComponent(openProjectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(selectedStudentLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(openProjectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(runCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-                            .addComponent(gradeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))))
+                        .addComponent(runCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -398,11 +381,9 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(openProjectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(runCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))
-                .addGap(6, 6, 6)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(opengfxButton, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(gradeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gradeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         studentListPanel.setName("studentListPanel"); // NOI18N
@@ -631,15 +612,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         fvv.setVisible(true);
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
-    private void opengfxButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opengfxButtonActionPerformed
-        Project prj = getSelectedStudentsProject();
-        if (prj == null) {
-            return;
-        }
-
-        FrontendUtils.openGFX(prj.getName(), getSelectedStudent());
-}//GEN-LAST:event_opengfxButtonActionPerformed
-
     /**
      * @param args the command line arguments
      */
@@ -675,7 +647,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JButton openProjectButton;
-    private javax.swing.JButton opengfxButton;
     private javax.swing.JMenuItem quitMenuItem;
     private javax.swing.JButton runCodeButton;
     private javax.swing.JButton runDemoButton;
