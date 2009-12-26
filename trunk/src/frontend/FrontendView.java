@@ -66,7 +66,6 @@ public class FrontendView extends javax.swing.JFrame {
         //untar all students' code for the initially selected project
         Allocator.getFrontendUtilities().untar(getSelectedAssignment(), studentList);
 
-
         this.addWindowListener(new WindowAdapter() {
             @Override //remove code directories when frontend is closed
             public void windowClosing(WindowEvent e) {
