@@ -26,7 +26,7 @@ public class XMLReader {
     {
         TestResults results = new TestResults();
         results.Tests = new Vector<Test>();
-        final String XMLFilePath = Allocator.getProject(asgnName).getCodeStudentDirectory(studentAcct) + "testResults.xml";
+        final String XMLFilePath = Allocator.getProject(asgnName).getStudentCodeDirectory(studentAcct) + "testResults.xml";
         Document document = getDocument(XMLFilePath);
         Node testerNode = getRootNode(document);
         assignRootAttributes(testerNode, results);

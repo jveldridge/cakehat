@@ -67,7 +67,7 @@ public class CS015Project extends Project {
      * @param studentLogin
      */
     public void compile(String studentLogin) {
-        String compileDir = this.getCodeStudentDirectory(studentLogin);
+        String compileDir = this.getStudentCodeDirectory(studentLogin);
         Allocator.getGeneralUtilities().compileJava(compileDir, CLASSPATH);
     }
 
@@ -78,7 +78,7 @@ public class CS015Project extends Project {
      * @param studentLogin
      */
     private void execute(String studentLogin) {
-        String compileDir = this.getCodeStudentDirectory(studentLogin);
+        String compileDir = this.getStudentCodeDirectory(studentLogin);
         Allocator.getGeneralUtilities().executeJavaInVisibleTerminal(compileDir, this.getName() + ".App",
                                                                      CLASSPATH, LIBRARY_PATH,
                                                                      studentLogin + "'s " + this.getName());
