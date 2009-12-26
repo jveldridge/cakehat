@@ -54,14 +54,6 @@ public class CS015Constants extends Constants {
         return 10;
     }
 
-    public String[] getSourceFileExtensions(){
-        return new String[]{ "java" };
-    }
-
-    public String[] getCompiledFiledExtensions(){
-        return new String[]{ "class" };
-    }
-
     public String getStudentGroup(){
         return getCourse() + "student";
     }
