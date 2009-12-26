@@ -19,7 +19,7 @@ public class CS015Project extends Project {
     //First line is the cs015 support jar
     //The next three lines are used by Java3D
     private static final String CLASSPATH =
-        ":/course/cs015/lib/cs015.jar:" +
+        "/course/cs015/lib/cs015.jar:" +
         "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dcore.jar:" +
         "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/j3dutils.jar:" +
         "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/ext/vecmath.jar:";
@@ -133,8 +133,7 @@ public class CS015Project extends Project {
         String compileDir = this.getStudentCodeDirectory(studentLogin);
         String testerName = relativePath.replace("/", ".").replace(".java","");
         Allocator.getGeneralUtilities().executeJavaInVisibleTerminal(compileDir, testerName,
-                                                                     CLASSPATH, LIBRARY_PATH,
-                                                                     "Testing " + studentLogin + "'s " + this.getName());
+                                                                     CLASSPATH, "Testing " + studentLogin + "'s " + this.getName());
     }
 
     public void runDemo(){

@@ -617,10 +617,41 @@ public class GeneralUtilities {
      *
      * If you were attempting to execute TASafeHouse and the main class
      * was located at /course/cs015/demos/TASafeHouse/App.class then
-     * pathToPackage = /course/cs015/demos and javaArg = TASafeHouse.App
+     * dirPath = /course/cs015/demos and javaArg = TASafeHouse.App
      *
-     * Runs the code with respect to the classpath and librarypath specified
-     * in the subclass of Constants allocated in the Allocator.
+     * @param dirPath the path to the package
+     * @param javaArg the part to come after java (ex. java TASafeHouse.App)
+     * @param termName what the title bar of the terminal will display
+     */
+    public void executeJavaInVisibleTerminal(String dirPath, String javaArg,
+                                             String termName) {
+        this.executeJavaInVisibleTerminal(dirPath, javaArg, "", termName);
+    }
+
+    /**
+     * Executes Java code in a separate visible terminal.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * dirPath = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * @param dirPath the path to the package
+     * @param javaArg the part to come after java (ex. java TASafeHouse.App)
+     * @param classpath the classpath to run this code with respect to
+     * @param termName what the title bar of the terminal will display
+     */
+    public void executeJavaInVisibleTerminal(String dirPath, String javaArg,
+                                             String classpath, String termName) {
+        this.executeJavaInVisibleTerminal(dirPath, javaArg, classpath, null, termName);
+    }
+
+    /**
+     * Executes Java code in a separate visible terminal.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * dirPath = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
      *
      * @param dirPath the path to the package
      * @param javaArg the part to come after java (ex. java TASafeHouse.App)
@@ -635,10 +666,19 @@ public class GeneralUtilities {
         classpath = dirPath + ":" +  classpath;
 
         //Build command to call xterm to run the code
+        //Location of java
         String javaLoc = "/usr/bin/java";
-        String javaLibrary = " -Djava.library.path=" + libraryPath;
+        //Add java.library.path component if an arguement was passed in
+        String javaLibrary = "";
+        if(libraryPath != null && !libraryPath.isEmpty()){
+            javaLibrary= " -Djava.library.path=" + libraryPath;
+        }
+        //Add classpath
         String javaClassPath = " -classpath " + classpath;
+        //Put together entire java comand
         String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
+
+        //Combine java command into command to launch an xterm window
         String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
 
         //Execute the command in a seperate thread
