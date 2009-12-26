@@ -3,7 +3,6 @@ package frontend;
 import backend.DatabaseIO;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
-import frontend.tester.TesterImpl;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -107,7 +106,7 @@ public class FrontendView extends javax.swing.JFrame {
         Allocator.getFrontendUtilities().untar(this.getSelectedAssignment(), studentList);
 
         //and add this current assignment to the vector of assignments that have been selected
-        _selected.add((String) assignmentList.getSelectedValue());
+        _selected.add(this.getSelectedAssignment());
     }
 
     /**
@@ -616,7 +615,7 @@ public class FrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_printButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
-        TesterImpl t = new TesterImpl(this.getSelectedAssignment(), this.getSelectedStudent());
+        Allocator.getFrontendUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
 }//GEN-LAST:event_runTesterButtonActionPerformed
 
     /**

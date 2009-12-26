@@ -75,7 +75,7 @@ public class CS015Constants extends Constants {
     }
 
     public String getTesterDir(){
-        return getCourseDir() + "admin/grade/testers/";
+        return getCourseDir() + "grading/testers/";
     }
 
     public String getLabsDir(){

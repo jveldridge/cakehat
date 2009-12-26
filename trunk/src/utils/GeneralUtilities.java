@@ -2,6 +2,7 @@ package utils;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.nio.channels.FileChannel;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.*;
@@ -15,6 +16,76 @@ import javax.tools.ToolProvider;
  * Utilities that are useful for any course.
  */
 public class GeneralUtilities {
+
+    /**
+     * Copies the source file to the destination file. If the destination file
+     * does not exist it will be created. If it already exists, it will be
+     * overwritten. If permissions do not allow this copy then it will fail
+     * and false will be returned.
+     *
+     * @param sourceFile
+     * @param destFile
+     * @return success of copying file
+     */
+    public boolean copyFile(File sourceFile, File destFile) {
+        if(!sourceFile.exists()){
+            return false;
+        }
+        try {
+             if(!destFile.exists()) {
+                destFile.createNewFile();
+             }
+
+             FileChannel source = null;
+             FileChannel destination = null;
+             try {
+                destination = new FileOutputStream(destFile).getChannel();
+                source = new FileInputStream(sourceFile).getChannel();
+                destination.transferFrom(source, 0, source.size());
+             }
+             finally {
+                 if(source != null) {
+                    source.close();
+                 }
+                 if(destination != null) {
+                    destination.close();
+                 }
+            }
+        }
+        catch(IOException e){
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Copies the source file to the destination file. If the destination file
+     * does not exist it will be created. If it already exists, it will be
+     * overwritten. If permissions do not allow this copy then it will fail
+     * and false will be returned.
+     *
+     * @param sourcePath
+     * @param destPath
+     * @return success of copying file
+     */
+    public boolean copyFile(String sourcePath, String destPath) {
+         return copyFile(new File(sourcePath), new File(destPath));
+    }
+
+    /**
+     * Copies the source file to the destination file. If the destination file
+     * does not exist it will be created. If it already exists, it will be
+     * overwritten. If permissions do not allow this copy then it will fail
+     * and false will be returned.
+     *
+     * @param sourceFile
+     * @param destPath
+     * @return success of copying file
+     */
+    public boolean copyFile(File sourceFile, String destPath) {
+        return copyFile(sourceFile, new File(destPath));
+    }
 
     /**
      * @date 12/06/2009
