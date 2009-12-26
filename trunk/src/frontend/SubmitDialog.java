@@ -1,6 +1,7 @@
 package frontend;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -36,12 +37,14 @@ public class SubmitDialog{
         _panel.setLayout(new BorderLayout());
 
         JPanel optionsPanel = new JPanel();
+        optionsPanel.setLayout(new GridLayout(0,1));
         optionsPanel.add(new JLabel("<html><b>Select submit options: </b></html>"));
         optionsPanel.add(_submitXMLcb);
         optionsPanel.add(_printGRDcb);
         optionsPanel.add(_notifyStudentscb);
 
         JPanel studentPanel = new JPanel();
+        studentPanel.setLayout(new GridLayout(0,1));
         _studentBoxes = new Vector<JCheckBox>();
 
         Vector<String> studentLogins = new Vector<String>();
@@ -77,10 +80,10 @@ public class SubmitDialog{
 
         });
 
-        bottomPanel.add(toggleAllButton);
+        optionsPanel.add(toggleAllButton);
 
-        _panel.add(optionsPanel, BorderLayout.NORTH);
-        _panel.add(bottomPanel, BorderLayout.SOUTH);
+        _panel.add(optionsPanel, BorderLayout.WEST);
+        _panel.add(bottomPanel, BorderLayout.EAST);
     }
 
     /**
