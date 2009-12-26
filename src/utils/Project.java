@@ -2,7 +2,6 @@ package utils;
 
 import frontend.grader.rubric.TimeStatus;
 import java.util.Collection;
-import java.util.HashMap;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Vector;
@@ -187,7 +186,7 @@ public abstract class Project {
         }
 
         //Create an empty folder for grading compiled student code
-        String compileDir = getCodeStudentDirectory(studentLogin);
+        String compileDir = getStudentCodeDirectory(studentLogin);
         Allocator.getGeneralUtilities().makeDirectory(compileDir);
 
         //untar student handin
@@ -202,7 +201,7 @@ public abstract class Project {
      * @return success of deletion operation
      */
     public boolean deleteCompiledFiles(String studentLogin){
-        String compileDir = getCodeStudentDirectory(studentLogin);
+        String compileDir = getStudentCodeDirectory(studentLogin);
         return Allocator.getGeneralUtilities().deleteCompiledFiles(compileDir);
     }
 
@@ -236,7 +235,7 @@ public abstract class Project {
      * @author jeldridg
      */
     public String getStudentProjectDirectory(String studentLogin) {
-        return getCodeStudentDirectory(studentLogin) + this.getName() + "/";
+        return getStudentCodeDirectory(studentLogin) + this.getName() + "/";
     }
 
     /**
@@ -249,7 +248,7 @@ public abstract class Project {
      * @author jeldridg
      */
     public String getStudentGFXDirectory(String studentLogin) {
-        return getCodeStudentDirectory(studentLogin) + "gfx/";
+        return getStudentCodeDirectory(studentLogin) + "gfx/";
     }
 
     /**
@@ -260,7 +259,7 @@ public abstract class Project {
      *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/
      * @author jeldridg
      */
-    public String getCodeStudentDirectory(String studentLogin) {
+    public String getStudentCodeDirectory(String studentLogin) {
         return getProjectCodeDirectory() + studentLogin + "/";
     }
 

@@ -25,7 +25,7 @@ public class TesterImpl extends JFrame {
 
             String testerName = TesterUtils.getTesterName(asgnName);
             Project prj = Allocator.getProject(asgnName);
-            String StudentCodeDir = prj.getCodeStudentDirectory(studentAcct) + testerName;
+            String StudentCodeDir = prj.getStudentCodeDirectory(studentAcct) + testerName;
             String StudentTesterPath = StudentCodeDir + "/Tester.java";
             try {
                 copyFile(new File(TesterFilePath), new File(StudentTesterPath));
@@ -71,7 +71,7 @@ public class TesterImpl extends JFrame {
     }
 
     public static void executeTester(Project prj, String studentLogin) {
-        String compileDir = prj.getCodeStudentDirectory(studentLogin);
+        String compileDir = prj.getStudentCodeDirectory(studentLogin);
         String testerName = TesterUtils.getTesterName(prj.getName());
 
         //TODO: Make this generalizable (perhaps each Project subclass will be responsible for running a tester)

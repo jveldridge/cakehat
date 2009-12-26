@@ -29,7 +29,11 @@ public class GradeSystemApp extends SingleFrameApplication {
 
             public void run() {
                 try {
-                    if ((_args != null && _args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0) || _args == null || _args.length < 2) {
+                    if(_testing){
+                        System.setProperty("awt.useSystemAAFontSettings", "false");
+                        System.setProperty("swing.aatext", "false");
+                    }
+                    else if ((_args != null && _args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0) || _args == null || _args.length < 2) {
                         UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
 
                         Font font = new Font("Deja Vu Sans", Font.TRUETYPE_FONT, 12);

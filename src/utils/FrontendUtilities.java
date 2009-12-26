@@ -187,17 +187,16 @@ public class FrontendUtilities {
 
     /**
      * TODO: Change this to open all types of source code, not just .java
-     * TODO: Change this to open all source files recursively
      *
-     * Opens the current student's project code (not including GFX) in Kate
+     * Opens the current student's project code in Kate
      *
-     * @param project - the project name that should be opened
-     * @param login - the login of the student whose project should be opened
+     * @param project the project name that should be opened
+     * @param login the login of the student whose project should be opened
      * @author jeldridg
      */
     public void openStudentProject(String project, String login) {
         //additional */ is to open code in all directories handin in
-        String path = Allocator.getProject(project).getCodeStudentDirectory(login) + "*/";
+        String path = Allocator.getProject(project).getStudentCodeDirectory(login) + "*/";
 
         String cmd = "kate " + path + "*.java";
         
