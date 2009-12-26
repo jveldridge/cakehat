@@ -95,20 +95,6 @@ public abstract class Constants {
     public abstract int getMinutesOfLeniency();
 
     /**
-     * Source files extensions
-     *
-     * @return
-     */
-    public abstract String[] getSourceFileExtensions();
-
-    /**
-     * Compiled file extensions
-     *
-     * @return
-     */
-    public abstract String[] getCompiledFiledExtensions();
-
-    /**
      * Student group
      *
      * @return

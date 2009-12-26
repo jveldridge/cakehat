@@ -160,6 +160,28 @@ public class CS015Project extends Project {
     }
 
     /**
+     * Deletes all compiled files in a student's project. It is safe to run
+     * even if there are no compiled files in the project.
+     *
+     * @param studentLogin
+     * @return success of deletion operation
+     */
+    private boolean deleteCompiledFiles(String studentLogin){
+        //Get all compiled files for this project for the specified student
+        String compileDir = getStudentCodeDirectory(studentLogin);
+        Collection<File> compiledFiles = Allocator.getGeneralUtilities().getFiles(compileDir, "class");
+
+        //Keep track of success of deleting all of the files
+        boolean success = true;
+
+        for (File file : compiledFiles) {
+            success &= file.delete();
+        }
+
+        return success;
+    }
+
+    /**
      * Compiles a student project. Do not run until untar has been
      * run on it.
      *

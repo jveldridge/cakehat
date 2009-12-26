@@ -538,57 +538,6 @@ public class GeneralUtilities {
     }
 
     /**
-     * Convenience method that uses getFiles(String dirPath, String extension)
-     * to return all source files in directory path passed in.
-     *
-     * @param dirPath
-     * @return the source files in the directory and subdirectories
-     */
-    public Collection<File> getSourceFiles(String dirPath) {
-        Vector<File> files = new Vector<File>();
-
-        for(String srcExt : Allocator.getConstants().getSourceFileExtensions()){
-            files.addAll(getFiles(dirPath, srcExt));
-        }
-
-        return files;
-    }
-
-    /**
-     * Convenience method that uses getFiles(String dirPath, String extension)
-     * to return all compiled files in directory path passed in.
-     *
-     * @param dirPath
-     * @return the compiled files in the directory and subdirectories
-     */
-    public Collection<File> getCompiledFiles(String dirPath) {
-        Vector<File> files = new Vector<File>();
-
-        for(String compExt : Allocator.getConstants().getCompiledFiledExtensions()){
-            files.addAll(getFiles(dirPath, compExt));
-        }
-
-        return files;
-    }
-
-    /**
-     * Convience method that deletes all compiled files in the
-     * directory passed. Recurses into subdirectories.
-     *
-     * @param dirPath
-     * @return success of deleting all files
-     */
-    public boolean deleteCompiledFiles(String dirPath) {
-        boolean success = true;
-
-        for (File file : getCompiledFiles(dirPath)) {
-            success &= file.delete();
-        }
-
-        return success;
-    }
-
-    /**
      * Returns all files in a directory, recursing into subdirectories, that
      * contain files with the specified extension.
      *
@@ -643,7 +592,7 @@ public class GeneralUtilities {
         options.addAll(Arrays.asList("-classpath", classpath));
 
         //Get all of the java files in dirPath
-        Collection<File> files = getSourceFiles(dirPath);
+        Collection<File> files = getFiles(dirPath, "java");
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
         //Attempt to compile

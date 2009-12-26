@@ -192,18 +192,6 @@ public abstract class Project {
         //untar student handin
         Allocator.getGeneralUtilities().untar(this.getHandin(studentLogin).getAbsolutePath(), compileDir);
     }
-
-    /**
-     * Deletes all compiled files in a student's project. It is safe to run
-     * even if there are no compiled files in the project.
-     *
-     * @param studentLogin
-     * @return success of deletion operation
-     */
-    public boolean deleteCompiledFiles(String studentLogin){
-        String compileDir = getStudentCodeDirectory(studentLogin);
-        return Allocator.getGeneralUtilities().deleteCompiledFiles(compileDir);
-    }
     
     /**
      * Runs the handin of this project turned by the student login.

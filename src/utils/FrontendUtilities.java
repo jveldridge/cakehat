@@ -254,6 +254,8 @@ public class FrontendUtilities {
 
     /**
      * TODO: NEEDS REVISION--will comment after fixed
+     * TODO: Copy files using GeneralUtilities's copy command. This uses pure Java to copy files.
+     *
      * @param assignment
      */
     public void submitXMLFiles(String assignment) {
