@@ -139,7 +139,6 @@ public class FrontendUtilities {
 
     /**
      * TODO: remove (gfx code should always be printed--print everything in subdirectories)--will fix soon!
-     * TODO: Print source files as specified by constants, not just *.java
      *
      * @param project
      * @param studentLogin
@@ -171,18 +170,23 @@ public class FrontendUtilities {
     }
 
     /**
-     * TODO: change to get information from config file or file system
+     * Runs the tester on the student's code.
      * 
+     * @param project
+     * @param login
+     */
+    public void runTester(String project, String login) {
+        Allocator.getProject(project).runTester(login);
+    }
+
+    /**
      * This method indicates whether there is a tester for the currently selected project.
      *
      * @param asgn
      * @return true if has tester, false otherwise
      */
-    public boolean hasTester(String asgn) {
-        if (asgn.equals("Cartoon") || asgn.equals("Swarm") || asgn.equals("Tetris") || asgn.equals("PizzaDex")) {
-            return true;
-        }
-        return false;
+    public boolean hasTester(String project) {
+       return Allocator.getProject(project).hasTester();
     }
 
     /**

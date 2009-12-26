@@ -204,16 +204,7 @@ public abstract class Project {
         String compileDir = getStudentCodeDirectory(studentLogin);
         return Allocator.getGeneralUtilities().deleteCompiledFiles(compileDir);
     }
-
-    /**
-     * Compiles a student's handin. If the language this handin is
-     * written in has no form of compilation, then this method
-     * does nothing.
-     *
-     * @param studentLogin
-     */
-    public abstract void compile(String studentLogin);
-
+    
     /**
      * Runs the handin of this project turned by the student login.
      * Do not call this method until untar has been run on it.
@@ -221,6 +212,20 @@ public abstract class Project {
      * @param studentLogin
      */
     public abstract void run(String studentLogin);
+
+    /**
+     * Whether or not this project has a tester.
+     *
+     * @return tester's existance
+     */
+    public abstract boolean hasTester();
+
+    /**
+     * Runs the tester for this project on the student's handin.
+     *
+     * @param studentLogin
+     */
+    public abstract void runTester(String studentLogin);
 
     /**
      * Runs a demo version of this project.
