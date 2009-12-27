@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="jMenuBar1" noResource="true"/>
+      </Properties>
+      <SubComponents>
+        <Menu class="javax.swing.JMenu" name="jMenu1">
+          <Properties>
+            <Property name="text" type="java.lang.String" resourceKey="jMenu1.text"/>
+            <Property name="name" type="java.lang.String" value="jMenu1" noResource="true"/>
+          </Properties>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="jMenu2">
+          <Properties>
+            <Property name="text" type="java.lang.String" resourceKey="jMenu2.text"/>
+            <Property name="name" type="java.lang.String" value="jMenu2" noResource="true"/>
+          </Properties>
+        </Menu>
+      </SubComponents>
+    </Menu>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="3"/>
+    <Property name="title" type="java.lang.String" resourceKey="Form.title"/>
+    <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="jSplitPane1" alignment="0" pref="1095" max="32767" attributes="0"/>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="jSplitPane1" alignment="0" pref="553" max="32767" attributes="0"/>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JSplitPane" name="jSplitPane1">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="jSplitPane1" noResource="true"/>
+      </Properties>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="leftPanel">
+          <Properties>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[350, 0]"/>
+            </Property>
+            <Property name="name" type="java.lang.String" value="leftPanel" noResource="true"/>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[350, 522]"/>
+            </Property>
+          </Properties>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+              <JSplitPaneConstraints position="left"/>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane1" pref="154" max="32767" attributes="1"/>
+                          <Component id="assignmentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="asgnTypeComboBox" alignment="0" pref="154" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="asgnSelectLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="asgnSelectAllButton" pref="40" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="asgnSelectNoneButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane2" pref="160" max="32767" attributes="1"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="studentSelectLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="27" max="32767" attributes="0"/>
+                              <Component id="studentSelectAllButton" min="-2" pref="37" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="studentSelectNoneButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="studentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="studentFilter" alignment="0" pref="160" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="assignmentsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="studentsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                              <Component id="studentSelectNoneButton" alignment="3" min="-2" pref="23" max="-2" attributes="0"/>
+                              <Component id="studentSelectAllButton" alignment="3" min="-2" pref="23" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                              <Component id="asgnSelectLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="asgnSelectNoneButton" alignment="3" min="-2" pref="23" max="-2" attributes="0"/>
+                              <Component id="asgnSelectAllButton" alignment="3" min="-2" pref="23" max="-2" attributes="0"/>
+                              <Component id="studentSelectLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="asgnTypeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="studentFilter" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane2" pref="444" max="32767" attributes="1"/>
+                          <Component id="jScrollPane1" alignment="0" pref="444" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="jScrollPane2" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JList" name="studentList">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                      <StringArray count="5">
+                        <StringItem index="0" value="Item 1"/>
+                        <StringItem index="1" value="Item 2"/>
+                        <StringItem index="2" value="Item 3"/>
+                        <StringItem index="3" value="Item 4"/>
+                        <StringItem index="4" value="Item 5"/>
+                      </StringArray>
+                    </Property>
+                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[160, 95]"/>
+                    </Property>
+                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[140, 95]"/>
+                    </Property>
+                    <Property name="name" type="java.lang.String" value="studentList" noResource="true"/>
+                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[150, 95]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JTextField" name="studentFilter">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="studentFilter.text"/>
+                <Property name="name" type="java.lang.String" value="studentFilter" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="assignmentsLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="assignmentsLabel.text"/>
+                <Property name="name" type="java.lang.String" value="assignmentsLabel" noResource="true"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="jScrollPane1" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JList" name="assignmentList">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                      <StringArray count="5">
+                        <StringItem index="0" value="Item 1"/>
+                        <StringItem index="1" value="Item 2"/>
+                        <StringItem index="2" value="Item 3"/>
+                        <StringItem index="3" value="Item 4"/>
+                        <StringItem index="4" value="Item 5"/>
+                      </StringArray>
+                    </Property>
+                    <Property name="name" type="java.lang.String" value="assignmentList" noResource="true"/>
+                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[140, 95]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JLabel" name="studentsLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="studentsLabel.text"/>
+                <Property name="name" type="java.lang.String" value="studentsLabel" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="asgnSelectAllButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="asgnSelectAllButton.text"/>
+                <Property name="name" type="java.lang.String" value="asgnSelectAllButton" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="asgnSelectAllButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="studentSelectAllButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="studentSelectAllButton.text"/>
+                <Property name="name" type="java.lang.String" value="studentSelectAllButton" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="studentSelectAllButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="asgnTypeComboBox">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="4">
+                    <StringItem index="0" value="Select Type"/>
+                    <StringItem index="1" value="Item 2"/>
+                    <StringItem index="2" value="Item 3"/>
+                    <StringItem index="3" value="Item 4"/>
+                  </StringArray>
+                </Property>
+                <Property name="name" type="java.lang.String" value="asgnTypeComboBox" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="asgnSelectLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="asgnSelectLabel.text"/>
+                <Property name="name" type="java.lang.String" value="asgnSelectLabel" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="asgnSelectNoneButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="asgnSelectNoneButton.text"/>
+                <Property name="name" type="java.lang.String" value="asgnSelectNoneButton" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="asgnSelectNoneButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="studentSelectNoneButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="studentSelectNoneButton.text"/>
+                <Property name="name" type="java.lang.String" value="studentSelectNoneButton" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="studentSelectNoneButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="studentSelectLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="studentSelectLabel.text"/>
+                <Property name="name" type="java.lang.String" value="studentSelectLabel" noResource="true"/>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="jPanel2">
+          <Properties>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[750, 32767]"/>
+            </Property>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[750, 0]"/>
+            </Property>
+            <Property name="name" type="java.lang.String" value="jPanel2" noResource="true"/>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[750, 561]"/>
+            </Property>
+          </Properties>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+              <JSplitPaneConstraints position="right"/>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Component id="cardPanel" min="-2" pref="330" max="-2" attributes="0"/>
+                      <EmptySpace pref="397" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="jSplitPane2" alignment="0" pref="739" max="32767" attributes="0"/>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="152" max="-2" attributes="0"/>
+                      <Component id="cardPanel" pref="368" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jSplitPane2" min="-2" pref="549" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="cardPanel">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="cardPanel" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="cardPanel.setLayout(new CardLayout());"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="singleSelectedPanel">
+                  <Properties>
+                    <Property name="name" type="java.lang.String" value="singlePanel" noResource="true"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                      <CardConstraints cardName="single_student"/>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <EmptySpace min="0" pref="330" max="32767" attributes="0"/>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <EmptySpace min="0" pref="368" max="32767" attributes="0"/>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                </Container>
+                <Container class="javax.swing.JPanel" name="multiSelectedPanel">
+                  <Properties>
+                    <Property name="name" type="java.lang.String" value="multiPanel" noResource="true"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                      <CardConstraints cardName="multiPanel"/>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="126" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="351" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="jLabel4">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="jLabel4.text"/>
+                        <Property name="name" type="java.lang.String" value="jLabel4" noResource="true"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JSplitPane" name="jSplitPane2">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="jSplitPane2" noResource="true"/>
+              </Properties>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="centerPanel">
+                  <Properties>
+                    <Property name="name" type="java.lang.String" value="centerPanel" noResource="true"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                      <JSplitPaneConstraints position="left"/>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="selectedAsgnLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="printCodeButton" min="-2" pref="170" max="-2" attributes="1"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="372" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="printRubricButton" alignment="1" pref="170" max="32767" attributes="1"/>
+                                          <Component id="viewRubricButton" alignment="0" pref="170" max="32767" attributes="1"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="generateDistButton" max="32767" attributes="3"/>
+                                              <Component id="previewRubricButton" alignment="0" max="32767" attributes="1"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="viewGradingStandardsButton" max="32767" attributes="1"/>
+                                              <Component id="reassignGradingButton" alignment="0" min="-2" pref="180" max="-2" attributes="3"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <EmptySpace min="-2" pref="233" max="-2" attributes="0"/>
+                                          <Component id="jSeparator1" min="-2" pref="50" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="69" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="demoButton" pref="170" max="32767" attributes="1"/>
+                                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                          <Component id="testCodeButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="runCodeButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="openButton" alignment="0" max="32767" attributes="3"/>
+                                          <Component id="exemptionButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="extensionButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="sendGradesButton" alignment="0" max="32767" attributes="3"/>
+                                          <Component id="statisticsButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="importGradesButton" alignment="0" max="32767" attributes="1"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="selectedAsgnLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="379" max="-2" attributes="0"/>
+                              <Component id="printCodeButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="viewRubricButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                              <Component id="printRubricButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="32" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="48" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="generateDistButton" alignment="3" min="-2" pref="29" max="-2" attributes="2"/>
+                                      <Component id="importGradesButton" alignment="3" min="-2" max="-2" attributes="1"/>
+                                      <Component id="reassignGradingButton" alignment="3" min="-2" pref="29" max="-2" attributes="2"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="previewRubricButton" alignment="0" min="-2" pref="29" max="-2" attributes="1"/>
+                                      <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                          <Component id="viewGradingStandardsButton" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                                          <Component id="demoButton" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                                  <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="statisticsButton" min="-2" max="-2" attributes="2"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="sendGradesButton" min="-2" max="-2" attributes="3"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Component id="extensionButton" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="exemptionButton" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Component id="openButton" min="-2" max="-2" attributes="1"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="runCodeButton" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="testCodeButton" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="148" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="selectedAsgnLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="selectedAsgnLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="selectedAsgnLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="generateDistButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="generateDistButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="generateDistButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="generateDistButton" noResource="true"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateDistButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="previewRubricButton">
+                      <Properties>
+                        <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+                          <action class="backend.BackendView" id="previewRubricButtonActionPerformed" methodName="previewRubricButtonActionPerformed"/>
+                        </Property>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="previewRubricButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="previewRubricButton.text"/>
+                        <Property name="toolTipText" type="java.lang.String" resourceKey="previewRubricButton.toolTipText"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="previewRubricButton" noResource="true"/>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[170, 29]"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="reassignGradingButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="reassignGradingButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="reassignGradingButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="reassignGradingButton" noResource="true"/>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[170, 29]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reassignGradingButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="statisticsButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="statisticsButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="statisticsButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="statisticsButton" noResource="true"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="statisticsButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JSeparator" name="jSeparator1">
+                      <Properties>
+                        <Property name="name" type="java.lang.String" value="jSeparator1" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="viewGradingStandardsButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="viewGradingStandardsButton.icon"/>
+                        <Property name="mnemonic" type="int" value="86"/>
+                        <Property name="text" type="java.lang.String" resourceKey="viewGradingStandardsButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[175, 29]"/>
+                        </Property>
+                        <Property name="name" type="java.lang.String" value="viewGradingStandardsButton" noResource="true"/>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[170, 29]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="viewGradingStandardsButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="sendGradesButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="sendGradesButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="sendGradesButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="sendGradesButton" noResource="true"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendGradesButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="openButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="openButton.icon"/>
+                        <Property name="mnemonic" type="int" value="79"/>
+                        <Property name="text" type="java.lang.String" resourceKey="openButton.text"/>
+                        <Property name="focusable" type="boolean" value="false"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="openButton" noResource="true"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="importGradesButton">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="importGradesButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="importGradesButton" noResource="true"/>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[170, 29]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="importGradesButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="runCodeButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="runCodeButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="runCodeButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="runCodeButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="testCodeButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="testCodeButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="testCodeButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="testCodeButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="viewRubricButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="viewRubricButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="viewRubricButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="viewRubricButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="extensionButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="extensionButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="extensionButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="extensionButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="exemptionButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="exemptionButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="exemptionButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="exemptionButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="demoButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="demoButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="demoButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="demoButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="printCodeButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="printCodeButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="printCodeButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="printCodeButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="printRubricButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="printRubricButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="printRubricButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="printRubricButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="rightPanel">
+                  <Properties>
+                    <Property name="name" type="java.lang.String" value="rightPanel" noResource="true"/>
+                  </Properties>
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                      <JSplitPaneConstraints position="right"/>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="jButton11" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="exportDBButton" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="configButton" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="blacklistButton" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="jLabel5" alignment="0" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace pref="21" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="blacklistButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="configButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="exportDBButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jButton11" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="332" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="jLabel5">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="jLabel5.text"/>
+                        <Property name="name" type="java.lang.String" value="jLabel5" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="blacklistButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="blacklistButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="blacklistButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="blacklistButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="configButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="configButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="configButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="configButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="exportDBButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="exportDBButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="exportDBButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="exportDBButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="jButton11">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="jButton11.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="jButton11.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="jButton11" noResource="true"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>
