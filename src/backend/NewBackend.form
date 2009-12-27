@@ -182,6 +182,9 @@
                       <Dimension value="[150, 95]"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="studentListMouseClicked"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -223,6 +226,9 @@
                       <Dimension value="[140, 95]"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="assignmentListMouseClicked"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -363,15 +369,290 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <EmptySpace min="0" pref="330" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="writtenEarnedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="writtenTotalLabel" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="writtenScoreLabel" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="1" attributes="0">
+                                                  <Component id="writtenScoreValue" alignment="1" pref="200" max="32767" attributes="0"/>
+                                                  <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
+                                                      <Component id="writtenTotalText" alignment="1" max="32767" attributes="1"/>
+                                                      <Component id="writtenEarnedText" alignment="1" pref="73" max="32767" attributes="1"/>
+                                                  </Group>
+                                              </Group>
+                                          </Group>
+                                          <Component id="writtenComponentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="codeComponentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                                                      <Component id="codeScoreLabel" min="-2" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <Component id="overallLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                                                      <Group type="103" groupAlignment="0" attributes="0">
+                                                          <Component id="overalTotalLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="overallEarnedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="overallScoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                      </Group>
+                                                  </Group>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                                                      <Group type="103" groupAlignment="0" attributes="0">
+                                                          <Component id="codeEarnedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="totalEarnedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                      </Group>
+                                                  </Group>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="1" attributes="0">
+                                                  <Component id="codeScoreValue" alignment="1" pref="191" max="32767" attributes="0"/>
+                                                  <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
+                                                      <Component id="codeTotalText" alignment="1" max="32767" attributes="1"/>
+                                                      <Component id="codeEarnedText" alignment="1" pref="71" max="32767" attributes="1"/>
+                                                  </Group>
+                                                  <Component id="overallEarnedValue" alignment="1" pref="191" max="32767" attributes="0"/>
+                                                  <Component id="overallTotalValue" alignment="1" pref="191" max="32767" attributes="0"/>
+                                                  <Component id="overallScoreValue" alignment="1" pref="191" max="32767" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="107" max="-2" attributes="0"/>
+                                      <Component id="submitGradeButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <EmptySpace min="0" pref="368" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="writtenComponentLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="writtenEarnedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="writtenEarnedText" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="writtenTotalLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="writtenTotalText" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="writtenScoreLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="writtenScoreValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="129" max="-2" attributes="0"/>
+                                      <Component id="codeComponentLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="codeEarnedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="codeEarnedText" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="totalEarnedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="codeTotalText" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="codeScoreLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="codeScoreValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="overallLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="overallEarnedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="overallEarnedValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="overalTotalLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="overallTotalValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="overallScoreLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="overallScoreValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="submitGradeButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="61" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                   </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="writtenComponentLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" resourceKey="writtenComponentLabel.font"/>
+                        <Property name="text" type="java.lang.String" resourceKey="writtenComponentLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="writtenComponentLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="writtenEarnedLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="writtenEarnedLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="writtenEarnedLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="writtenEarnedText">
+                      <Properties>
+                        <Property name="name" type="java.lang.String" value="writtenEarnedText" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="writtenTotalLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="writtenTotalLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="writtenTotalLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="writtenTotalText">
+                      <Properties>
+                        <Property name="editable" type="boolean" value="false"/>
+                        <Property name="focusable" type="boolean" value="false"/>
+                        <Property name="name" type="java.lang.String" value="writtenTotalText" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="writtenScoreLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="writtenScoreLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="writtenScoreLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="codeComponentLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" resourceKey="codeComponentLabel.font"/>
+                        <Property name="text" type="java.lang.String" resourceKey="codeComponentLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="codeComponentLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overallLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" resourceKey="overallLabel.font"/>
+                        <Property name="text" type="java.lang.String" resourceKey="overallLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="overallLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overallScoreValue">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" resourceKey="overallScoreValue.text"/>
+                        <Property name="horizontalTextPosition" type="int" value="4"/>
+                        <Property name="name" type="java.lang.String" value="overallScoreValue" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="writtenScoreValue">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" resourceKey="writtenScoreValue.text"/>
+                        <Property name="name" type="java.lang.String" value="writtenScoreValue" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overallEarnedLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="overallEarnedLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="overallEarnedLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overalTotalLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="overalTotalLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="overalTotalLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overallScoreLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="overallScoreLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="overallScoreLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="codeEarnedLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="codeEarnedLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="codeEarnedLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="codeEarnedText">
+                      <Properties>
+                        <Property name="name" type="java.lang.String" value="codeEarnedText" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="totalEarnedLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="totalEarnedLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="totalEarnedLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="codeTotalText">
+                      <Properties>
+                        <Property name="editable" type="boolean" value="false"/>
+                        <Property name="focusable" type="boolean" value="false"/>
+                        <Property name="name" type="java.lang.String" value="codeTotalText" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="codeScoreLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="codeScoreLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="codeScoreLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="codeScoreValue">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" resourceKey="codeScoreValue.text"/>
+                        <Property name="name" type="java.lang.String" value="codeScoreValue" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overallEarnedValue">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" resourceKey="overallEarnedValue.text"/>
+                        <Property name="horizontalTextPosition" type="int" value="4"/>
+                        <Property name="name" type="java.lang.String" value="overallEarnedValue" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="overallTotalValue">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="4"/>
+                        <Property name="text" type="java.lang.String" resourceKey="overallTotalValue.text"/>
+                        <Property name="horizontalTextPosition" type="int" value="4"/>
+                        <Property name="name" type="java.lang.String" value="overallTotalValue" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="submitGradeButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="submitGradeButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="submitGradeButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="submitGradeButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="multiSelectedPanel">
                   <Properties>
@@ -386,29 +667,15 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="126" max="32767" attributes="0"/>
-                          </Group>
+                          <EmptySpace min="0" pref="330" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="351" max="32767" attributes="0"/>
-                          </Group>
+                          <EmptySpace min="0" pref="368" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
-                  <SubComponents>
-                    <Component class="javax.swing.JLabel" name="jLabel4">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" resourceKey="jLabel4.text"/>
-                        <Property name="name" type="java.lang.String" value="jLabel4" noResource="true"/>
-                      </Properties>
-                    </Component>
-                  </SubComponents>
                 </Container>
               </SubComponents>
             </Container>
@@ -438,16 +705,24 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="selectedAsgnLabel" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="printCodeButton" min="-2" pref="170" max="-2" attributes="1"/>
-                                  </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="372" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="printRubricButton" alignment="1" pref="170" max="32767" attributes="1"/>
                                           <Component id="viewRubricButton" alignment="0" pref="170" max="32767" attributes="1"/>
                                       </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="selectedStudsLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="printCodeButton" min="-2" pref="170" max="-2" attributes="1"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <EmptySpace min="-2" pref="372" max="-2" attributes="0"/>
+                                      <Component id="openButton" pref="170" max="32767" attributes="1"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -480,7 +755,6 @@
                                       <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                                           <Component id="testCodeButton" alignment="0" max="32767" attributes="1"/>
                                           <Component id="runCodeButton" alignment="0" max="32767" attributes="1"/>
-                                          <Component id="openButton" alignment="0" max="32767" attributes="3"/>
                                           <Component id="exemptionButton" alignment="0" max="32767" attributes="1"/>
                                           <Component id="extensionButton" alignment="0" max="32767" attributes="1"/>
                                           <Component id="sendGradesButton" alignment="0" max="32767" attributes="3"/>
@@ -498,7 +772,11 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="selectedAsgnLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="379" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="107" max="-2" attributes="0"/>
+                              <Component id="selectedStudsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="147" max="-2" attributes="0"/>
+                              <Component id="openButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="79" max="-2" attributes="0"/>
                               <Component id="printCodeButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="viewRubricButton" min="-2" max="-2" attributes="0"/>
@@ -532,9 +810,7 @@
                                   <Component id="extensionButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="exemptionButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Component id="openButton" min="-2" max="-2" attributes="1"/>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
                                   <Component id="runCodeButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="testCodeButton" min="-2" max="-2" attributes="0"/>
@@ -545,6 +821,12 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
+                    <Component class="javax.swing.JLabel" name="selectedStudsLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="selectedStudsLabel.text"/>
+                        <Property name="name" type="java.lang.String" value="selectedStudsLabel" noResource="true"/>
+                      </Properties>
+                    </Component>
                     <Component class="javax.swing.JLabel" name="selectedAsgnLabel">
                       <Properties>
                         <Property name="text" type="java.lang.String" resourceKey="selectedAsgnLabel.text"/>
@@ -642,22 +924,9 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendGradesButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="openButton">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" resourceKey="openButton.icon"/>
-                        <Property name="mnemonic" type="int" value="79"/>
-                        <Property name="text" type="java.lang.String" resourceKey="openButton.text"/>
-                        <Property name="focusable" type="boolean" value="false"/>
-                        <Property name="horizontalAlignment" type="int" value="2"/>
-                        <Property name="iconTextGap" type="int" value="5"/>
-                        <Property name="name" type="java.lang.String" value="openButton" noResource="true"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openButtonActionPerformed"/>
-                      </Events>
-                    </Component>
                     <Component class="javax.swing.JButton" name="importGradesButton">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="importGradesButton.icon"/>
                         <Property name="text" type="java.lang.String" resourceKey="importGradesButton.text"/>
                         <Property name="horizontalAlignment" type="int" value="2"/>
                         <Property name="iconTextGap" type="int" value="5"/>
@@ -740,6 +1009,15 @@
                         <Property name="horizontalAlignment" type="int" value="2"/>
                         <Property name="iconTextGap" type="int" value="5"/>
                         <Property name="name" type="java.lang.String" value="printRubricButton" noResource="true"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="openButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" resourceKey="openButton.icon"/>
+                        <Property name="text" type="java.lang.String" resourceKey="openButton.text"/>
+                        <Property name="horizontalAlignment" type="int" value="2"/>
+                        <Property name="iconTextGap" type="int" value="5"/>
+                        <Property name="name" type="java.lang.String" value="openButton" noResource="true"/>
                       </Properties>
                     </Component>
                   </SubComponents>

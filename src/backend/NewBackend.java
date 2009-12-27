@@ -17,6 +17,10 @@ import backend.histogram.HistogramView;
 import frontend.FileViewerView;
 import java.awt.CardLayout;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Vector;
+import javax.swing.JButton;
 import utils.Allocator;
 
 /**
@@ -25,9 +29,21 @@ import utils.Allocator;
  */
 public class NewBackend extends javax.swing.JFrame {
 
+    ArrayList<JButton> _asgnButtons, _studButtons;
+    ArrayList<JButton> _multiStudButtons;
+    ArrayList<JButton> _multiAsgnButtons;
+    
     /** Creates new form NewJFrame */
     public NewBackend() {
         initComponents();
+
+        _asgnButtons = new ArrayList(Arrays.asList(generateDistButton, previewRubricButton, reassignGradingButton,
+                                                    viewGradingStandardsButton, demoButton, importGradesButton));
+        _studButtons = new ArrayList(Arrays.asList(statisticsButton, sendGradesButton, openButton, runCodeButton,
+                                                    testCodeButton, extensionButton, exemptionButton, printCodeButton,
+                                                    printRubricButton, viewRubricButton));
+        _multiStudButtons = new ArrayList(Arrays.asList(statisticsButton, sendGradesButton, extensionButton, exemptionButton));
+        _multiAsgnButtons = new ArrayList(Arrays.asList(importGradesButton));
 
         //populate assignment list
         assignmentList.setListData(DatabaseIO.getProjectNames());
@@ -35,7 +51,7 @@ public class NewBackend extends javax.swing.JFrame {
         //populate student list
         studentList.setListData(DatabaseIO.getStudentNames());
 
-        
+        this.updateGUI();
 
         CardLayout cl = (CardLayout) cardPanel.getLayout();
         cl.show(cardPanel, singleSelectedPanel.getName());
@@ -72,10 +88,32 @@ public class NewBackend extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         cardPanel = new javax.swing.JPanel();
         singleSelectedPanel = new javax.swing.JPanel();
+        writtenComponentLabel = new javax.swing.JLabel();
+        writtenEarnedLabel = new javax.swing.JLabel();
+        writtenEarnedText = new javax.swing.JTextField();
+        writtenTotalLabel = new javax.swing.JLabel();
+        writtenTotalText = new javax.swing.JTextField();
+        writtenScoreLabel = new javax.swing.JLabel();
+        codeComponentLabel = new javax.swing.JLabel();
+        overallLabel = new javax.swing.JLabel();
+        overallScoreValue = new javax.swing.JLabel();
+        writtenScoreValue = new javax.swing.JLabel();
+        overallEarnedLabel = new javax.swing.JLabel();
+        overalTotalLabel = new javax.swing.JLabel();
+        overallScoreLabel = new javax.swing.JLabel();
+        codeEarnedLabel = new javax.swing.JLabel();
+        codeEarnedText = new javax.swing.JTextField();
+        totalEarnedLabel = new javax.swing.JLabel();
+        codeTotalText = new javax.swing.JTextField();
+        codeScoreLabel = new javax.swing.JLabel();
+        codeScoreValue = new javax.swing.JLabel();
+        overallEarnedValue = new javax.swing.JLabel();
+        overallTotalValue = new javax.swing.JLabel();
+        submitGradeButton = new javax.swing.JButton();
         multiSelectedPanel = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
         jSplitPane2 = new javax.swing.JSplitPane();
         centerPanel = new javax.swing.JPanel();
+        selectedStudsLabel = new javax.swing.JLabel();
         selectedAsgnLabel = new javax.swing.JLabel();
         generateDistButton = new javax.swing.JButton();
         previewRubricButton = new javax.swing.JButton();
@@ -84,7 +122,6 @@ public class NewBackend extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         viewGradingStandardsButton = new javax.swing.JButton();
         sendGradesButton = new javax.swing.JButton();
-        openButton = new javax.swing.JButton();
         importGradesButton = new javax.swing.JButton();
         runCodeButton = new javax.swing.JButton();
         testCodeButton = new javax.swing.JButton();
@@ -94,6 +131,7 @@ public class NewBackend extends javax.swing.JFrame {
         demoButton = new javax.swing.JButton();
         printCodeButton = new javax.swing.JButton();
         printRubricButton = new javax.swing.JButton();
+        openButton = new javax.swing.JButton();
         rightPanel = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         blacklistButton = new javax.swing.JButton();
@@ -126,6 +164,11 @@ public class NewBackend extends javax.swing.JFrame {
         studentList.setMinimumSize(new java.awt.Dimension(140, 95));
         studentList.setName("studentList"); // NOI18N
         studentList.setPreferredSize(new java.awt.Dimension(150, 95));
+        studentList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                studentListMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(studentList);
 
         studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
@@ -143,6 +186,11 @@ public class NewBackend extends javax.swing.JFrame {
         });
         assignmentList.setName("assignmentList"); // NOI18N
         assignmentList.setPreferredSize(new java.awt.Dimension(140, 95));
+        assignmentList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                assignmentListMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(assignmentList);
 
         studentsLabel.setText(resourceMap.getString("studentsLabel.text")); // NOI18N
@@ -259,37 +307,206 @@ public class NewBackend extends javax.swing.JFrame {
 
         singleSelectedPanel.setName("singlePanel"); // NOI18N
 
+        writtenComponentLabel.setFont(resourceMap.getFont("writtenComponentLabel.font")); // NOI18N
+        writtenComponentLabel.setText(resourceMap.getString("writtenComponentLabel.text")); // NOI18N
+        writtenComponentLabel.setName("writtenComponentLabel"); // NOI18N
+
+        writtenEarnedLabel.setText(resourceMap.getString("writtenEarnedLabel.text")); // NOI18N
+        writtenEarnedLabel.setName("writtenEarnedLabel"); // NOI18N
+
+        writtenEarnedText.setName("writtenEarnedText"); // NOI18N
+
+        writtenTotalLabel.setText(resourceMap.getString("writtenTotalLabel.text")); // NOI18N
+        writtenTotalLabel.setName("writtenTotalLabel"); // NOI18N
+
+        writtenTotalText.setEditable(false);
+        writtenTotalText.setFocusable(false);
+        writtenTotalText.setName("writtenTotalText"); // NOI18N
+
+        writtenScoreLabel.setText(resourceMap.getString("writtenScoreLabel.text")); // NOI18N
+        writtenScoreLabel.setName("writtenScoreLabel"); // NOI18N
+
+        codeComponentLabel.setFont(resourceMap.getFont("codeComponentLabel.font")); // NOI18N
+        codeComponentLabel.setText(resourceMap.getString("codeComponentLabel.text")); // NOI18N
+        codeComponentLabel.setName("codeComponentLabel"); // NOI18N
+
+        overallLabel.setFont(resourceMap.getFont("overallLabel.font")); // NOI18N
+        overallLabel.setText(resourceMap.getString("overallLabel.text")); // NOI18N
+        overallLabel.setName("overallLabel"); // NOI18N
+
+        overallScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        overallScoreValue.setText(resourceMap.getString("overallScoreValue.text")); // NOI18N
+        overallScoreValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        overallScoreValue.setName("overallScoreValue"); // NOI18N
+
+        writtenScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        writtenScoreValue.setText(resourceMap.getString("writtenScoreValue.text")); // NOI18N
+        writtenScoreValue.setName("writtenScoreValue"); // NOI18N
+
+        overallEarnedLabel.setText(resourceMap.getString("overallEarnedLabel.text")); // NOI18N
+        overallEarnedLabel.setName("overallEarnedLabel"); // NOI18N
+
+        overalTotalLabel.setText(resourceMap.getString("overalTotalLabel.text")); // NOI18N
+        overalTotalLabel.setName("overalTotalLabel"); // NOI18N
+
+        overallScoreLabel.setText(resourceMap.getString("overallScoreLabel.text")); // NOI18N
+        overallScoreLabel.setName("overallScoreLabel"); // NOI18N
+
+        codeEarnedLabel.setText(resourceMap.getString("codeEarnedLabel.text")); // NOI18N
+        codeEarnedLabel.setName("codeEarnedLabel"); // NOI18N
+
+        codeEarnedText.setName("codeEarnedText"); // NOI18N
+
+        totalEarnedLabel.setText(resourceMap.getString("totalEarnedLabel.text")); // NOI18N
+        totalEarnedLabel.setName("totalEarnedLabel"); // NOI18N
+
+        codeTotalText.setEditable(false);
+        codeTotalText.setFocusable(false);
+        codeTotalText.setName("codeTotalText"); // NOI18N
+
+        codeScoreLabel.setText(resourceMap.getString("codeScoreLabel.text")); // NOI18N
+        codeScoreLabel.setName("codeScoreLabel"); // NOI18N
+
+        codeScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        codeScoreValue.setText(resourceMap.getString("codeScoreValue.text")); // NOI18N
+        codeScoreValue.setName("codeScoreValue"); // NOI18N
+
+        overallEarnedValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        overallEarnedValue.setText(resourceMap.getString("overallEarnedValue.text")); // NOI18N
+        overallEarnedValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        overallEarnedValue.setName("overallEarnedValue"); // NOI18N
+
+        overallTotalValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        overallTotalValue.setText(resourceMap.getString("overallTotalValue.text")); // NOI18N
+        overallTotalValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        overallTotalValue.setName("overallTotalValue"); // NOI18N
+
+        submitGradeButton.setIcon(resourceMap.getIcon("submitGradeButton.icon")); // NOI18N
+        submitGradeButton.setText(resourceMap.getString("submitGradeButton.text")); // NOI18N
+        submitGradeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        submitGradeButton.setIconTextGap(5);
+        submitGradeButton.setName("submitGradeButton"); // NOI18N
+
         javax.swing.GroupLayout singleSelectedPanelLayout = new javax.swing.GroupLayout(singleSelectedPanel);
         singleSelectedPanel.setLayout(singleSelectedPanelLayout);
         singleSelectedPanelLayout.setHorizontalGroup(
             singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 330, Short.MAX_VALUE)
+            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, singleSelectedPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(writtenEarnedLabel)
+                                    .addComponent(writtenTotalLabel)
+                                    .addComponent(writtenScoreLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(writtenScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                                    .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(writtenTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(writtenEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))))
+                            .addComponent(writtenComponentLabel)
+                            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(codeComponentLabel)
+                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                        .addGap(12, 12, 12)
+                                        .addComponent(codeScoreLabel))
+                                    .addComponent(overallLabel)
+                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                        .addGap(12, 12, 12)
+                                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(overalTotalLabel)
+                                            .addComponent(overallEarnedLabel)
+                                            .addComponent(overallScoreLabel)))
+                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                        .addGap(12, 12, 12)
+                                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(codeEarnedLabel)
+                                            .addComponent(totalEarnedLabel))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(codeScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                    .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(codeTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(codeEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                                    .addComponent(overallEarnedValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                    .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                    .addComponent(overallScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)))))
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addGap(107, 107, 107)
+                        .addComponent(submitGradeButton)))
+                .addContainerGap())
         );
         singleSelectedPanelLayout.setVerticalGroup(
             singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 368, Short.MAX_VALUE)
+            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(writtenComponentLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(writtenEarnedLabel)
+                            .addComponent(writtenEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(7, 7, 7)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(writtenTotalLabel)
+                            .addComponent(writtenTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(writtenScoreLabel)
+                            .addComponent(writtenScoreValue)))
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addGap(129, 129, 129)
+                        .addComponent(codeComponentLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(codeEarnedLabel)
+                    .addComponent(codeEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(totalEarnedLabel)
+                    .addComponent(codeTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(codeScoreLabel)
+                    .addComponent(codeScoreValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(overallLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(overallEarnedLabel)
+                    .addComponent(overallEarnedValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(overalTotalLabel)
+                    .addComponent(overallTotalValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(overallScoreLabel)
+                    .addComponent(overallScoreValue))
+                .addGap(18, 18, 18)
+                .addComponent(submitGradeButton)
+                .addGap(61, 61, 61))
         );
 
         cardPanel.add(singleSelectedPanel, "single_student");
 
         multiSelectedPanel.setName("multiPanel"); // NOI18N
 
-        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
-        jLabel4.setName("jLabel4"); // NOI18N
-
         javax.swing.GroupLayout multiSelectedPanelLayout = new javax.swing.GroupLayout(multiSelectedPanel);
         multiSelectedPanel.setLayout(multiSelectedPanelLayout);
         multiSelectedPanelLayout.setHorizontalGroup(
             multiSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(multiSelectedPanelLayout.createSequentialGroup()
-                .addComponent(jLabel4)
-                .addContainerGap(126, Short.MAX_VALUE))
+            .addGap(0, 330, Short.MAX_VALUE)
         );
         multiSelectedPanelLayout.setVerticalGroup(
             multiSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(multiSelectedPanelLayout.createSequentialGroup()
-                .addComponent(jLabel4)
-                .addContainerGap(351, Short.MAX_VALUE))
+            .addGap(0, 368, Short.MAX_VALUE)
         );
 
         cardPanel.add(multiSelectedPanel, "multiPanel");
@@ -297,6 +514,9 @@ public class NewBackend extends javax.swing.JFrame {
         jSplitPane2.setName("jSplitPane2"); // NOI18N
 
         centerPanel.setName("centerPanel"); // NOI18N
+
+        selectedStudsLabel.setText(resourceMap.getString("selectedStudsLabel.text")); // NOI18N
+        selectedStudsLabel.setName("selectedStudsLabel"); // NOI18N
 
         selectedAsgnLabel.setText(resourceMap.getString("selectedAsgnLabel.text")); // NOI18N
         selectedAsgnLabel.setName("selectedAsgnLabel"); // NOI18N
@@ -372,19 +592,7 @@ public class NewBackend extends javax.swing.JFrame {
             }
         });
 
-        openButton.setIcon(resourceMap.getIcon("openButton.icon")); // NOI18N
-        openButton.setMnemonic('O');
-        openButton.setText(resourceMap.getString("openButton.text")); // NOI18N
-        openButton.setFocusable(false);
-        openButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        openButton.setIconTextGap(5);
-        openButton.setName("openButton"); // NOI18N
-        openButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openButtonActionPerformed(evt);
-            }
-        });
-
+        importGradesButton.setIcon(resourceMap.getIcon("importGradesButton.icon")); // NOI18N
         importGradesButton.setText(resourceMap.getString("importGradesButton.text")); // NOI18N
         importGradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         importGradesButton.setIconTextGap(5);
@@ -444,6 +652,12 @@ public class NewBackend extends javax.swing.JFrame {
         printRubricButton.setIconTextGap(5);
         printRubricButton.setName("printRubricButton"); // NOI18N
 
+        openButton.setIcon(resourceMap.getIcon("openButton.icon")); // NOI18N
+        openButton.setText(resourceMap.getString("openButton.text")); // NOI18N
+        openButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        openButton.setIconTextGap(5);
+        openButton.setName("openButton"); // NOI18N
+
         javax.swing.GroupLayout centerPanelLayout = new javax.swing.GroupLayout(centerPanel);
         centerPanel.setLayout(centerPanelLayout);
         centerPanelLayout.setHorizontalGroup(
@@ -453,14 +667,20 @@ public class NewBackend extends javax.swing.JFrame {
                     .addGroup(centerPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(selectedAsgnLabel))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(printCodeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(centerPanelLayout.createSequentialGroup()
                         .addGap(372, 372, 372)
                         .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(printRubricButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                            .addComponent(viewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))))
+                            .addComponent(viewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)))
+                    .addGroup(centerPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(selectedStudsLabel))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(printCodeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
+                        .addGap(372, 372, 372)
+                        .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(centerPanelLayout.createSequentialGroup()
@@ -485,7 +705,6 @@ public class NewBackend extends javax.swing.JFrame {
                         .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(testCodeButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(runCodeButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(openButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(exemptionButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(extensionButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(sendGradesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -498,7 +717,11 @@ public class NewBackend extends javax.swing.JFrame {
             .addGroup(centerPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(selectedAsgnLabel)
-                .addGap(379, 379, 379)
+                .addGap(107, 107, 107)
+                .addComponent(selectedStudsLabel)
+                .addGap(147, 147, 147)
+                .addComponent(openButton)
+                .addGap(79, 79, 79)
                 .addComponent(printCodeButton)
                 .addGap(18, 18, 18)
                 .addComponent(viewRubricButton)
@@ -528,9 +751,7 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(extensionButton)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(exemptionButton)
-                    .addGap(18, 18, 18)
-                    .addComponent(openButton)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGap(53, 53, 53)
                     .addComponent(runCodeButton)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(testCodeButton)
@@ -680,38 +901,59 @@ public class NewBackend extends javax.swing.JFrame {
         grv.setVisible(true);
 }//GEN-LAST:event_sendGradesButtonActionPerformed
 
-    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        Allocator.getFrontendUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
-}//GEN-LAST:event_openButtonActionPerformed
-
     private void importGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importGradesButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_importGradesButtonActionPerformed
 
     private void asgnSelectAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnSelectAllButtonActionPerformed
         assignmentList.setSelectionInterval(0, assignmentList.getModel().getSize() - 1);
+        this.updateGUI();
     }//GEN-LAST:event_asgnSelectAllButtonActionPerformed
 
     private void studentSelectAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_studentSelectAllButtonActionPerformed
         studentList.setSelectionInterval(0, studentList.getModel().getSize() - 1);
+        this.updateGUI();
     }//GEN-LAST:event_studentSelectAllButtonActionPerformed
 
     private void studentSelectNoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_studentSelectNoneButtonActionPerformed
         studentList.clearSelection();
+        this.updateGUI();
     }//GEN-LAST:event_studentSelectNoneButtonActionPerformed
 
     private void asgnSelectNoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnSelectNoneButtonActionPerformed
         assignmentList.clearSelection();
+        this.updateGUI();
     }//GEN-LAST:event_asgnSelectNoneButtonActionPerformed
+
+    private void assignmentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentListMouseClicked
+        this.updateGUI();
+    }//GEN-LAST:event_assignmentListMouseClicked
+
+    private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
+        this.updateGUI();
+    }//GEN-LAST:event_studentListMouseClicked
 
    /**
      * Returns the currently selected assignment as a String.
      *
      * @return
      */
-    private String[] getSelectedAssignments(){
-        return (String[]) assignmentList.getSelectedValues();
+    private Vector<String> getSelectedAssignments(){
+        Vector<String> result = new Vector<String>();
+        for (Object o : assignmentList.getSelectedValues()) {
+            result.add((String) o);
+        }
+        return result;
     }
+
+    private Vector<String> getSelectedStudents(){
+        Vector<String> result = new Vector<String>();
+        for (Object o : studentList.getSelectedValues()) {
+            result.add((String) o);
+        }
+        return result;
+    }
+
 
     private String getSelectedAssignment(){
         return (String) assignmentList.getSelectedValue();
@@ -724,6 +966,74 @@ public class NewBackend extends javax.swing.JFrame {
      */
     private String getSelectedStudent(){
         return (String) studentList.getSelectedValue();
+    }
+
+    private boolean singleStudentSelected() {
+        return (studentList.getSelectedValues().length == 1);
+    }
+
+    private boolean singleAssignmentSelected() {
+        return (assignmentList.getSelectedValues().length == 1);
+    }
+
+    private void updateGUI() {
+        //enable/disable appropriate buttons
+        if (this.singleAssignmentSelected()) {              //case for single asgn selected
+            //enable all assignment buttons
+            for (JButton button : _asgnButtons) {
+                button.setEnabled(true);
+            }
+
+            //update the current assignment label
+            selectedAsgnLabel.setText("<html><b>Current Assignment: </b>" + this.getSelectedAssignment() + "</html>");
+
+            //update student buttons
+            if (this.singleStudentSelected()) {
+                for (JButton button : _studButtons) {
+                    button.setEnabled(true);
+                }
+
+                //update the current student label
+                selectedStudsLabel.setText("<html><b>Current Student: </b>" + this.getSelectedStudent());
+            }
+            else {
+                for (JButton button : _studButtons) {
+                    button.setEnabled(false);
+                }
+                for (JButton button : _multiStudButtons) {
+                    button.setEnabled(true);
+                }
+
+                //update the current student label
+                selectedStudsLabel.setText("<html><b>Current Assignment: </b>" + this.getSelectedStudents().size() + " students selected");
+            }
+        }
+        else {                                              //case for multiple assignments selected
+            //update assignment buttons
+            for (JButton button : _asgnButtons) {
+                button.setEnabled(false);
+            }
+            for (JButton button : _multiAsgnButtons) {
+                button.setEnabled(true);
+            }
+
+            //update the current assignment label
+            selectedAsgnLabel.setText("<html><b>Current Assignment: </b>" + this.getSelectedAssignments().size() + " assignments selected </html>");
+
+            //update student buttons
+            for (JButton button : _studButtons) {
+                    button.setEnabled(false);
+                }
+                for (JButton button : _multiStudButtons) {
+                    button.setEnabled(true);
+                }
+
+            //update the current student label
+            selectedStudsLabel.setText("<html><b>Current Assignment: </b>" + this.getSelectedStudents().size() + " students selected");
+        }
+
+        
+
     }
 
     /**
@@ -747,6 +1057,12 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JButton blacklistButton;
     private javax.swing.JPanel cardPanel;
     private javax.swing.JPanel centerPanel;
+    private javax.swing.JLabel codeComponentLabel;
+    private javax.swing.JLabel codeEarnedLabel;
+    private javax.swing.JTextField codeEarnedText;
+    private javax.swing.JLabel codeScoreLabel;
+    private javax.swing.JLabel codeScoreValue;
+    private javax.swing.JTextField codeTotalText;
     private javax.swing.JButton configButton;
     private javax.swing.JButton demoButton;
     private javax.swing.JButton exemptionButton;
@@ -755,7 +1071,6 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JButton generateDistButton;
     private javax.swing.JButton importGradesButton;
     private javax.swing.JButton jButton11;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -769,6 +1084,13 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel multiSelectedPanel;
     private javax.swing.JButton openButton;
+    private javax.swing.JLabel overalTotalLabel;
+    private javax.swing.JLabel overallEarnedLabel;
+    private javax.swing.JLabel overallEarnedValue;
+    private javax.swing.JLabel overallLabel;
+    private javax.swing.JLabel overallScoreLabel;
+    private javax.swing.JLabel overallScoreValue;
+    private javax.swing.JLabel overallTotalValue;
     private javax.swing.JButton previewRubricButton;
     private javax.swing.JButton printCodeButton;
     private javax.swing.JButton printRubricButton;
@@ -776,6 +1098,7 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JPanel rightPanel;
     private javax.swing.JButton runCodeButton;
     private javax.swing.JLabel selectedAsgnLabel;
+    private javax.swing.JLabel selectedStudsLabel;
     private javax.swing.JButton sendGradesButton;
     private javax.swing.JPanel singleSelectedPanel;
     private javax.swing.JButton statisticsButton;
@@ -785,9 +1108,18 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JLabel studentSelectLabel;
     private javax.swing.JButton studentSelectNoneButton;
     private javax.swing.JLabel studentsLabel;
+    private javax.swing.JButton submitGradeButton;
     private javax.swing.JButton testCodeButton;
+    private javax.swing.JLabel totalEarnedLabel;
     private javax.swing.JButton viewGradingStandardsButton;
     private javax.swing.JButton viewRubricButton;
+    private javax.swing.JLabel writtenComponentLabel;
+    private javax.swing.JLabel writtenEarnedLabel;
+    private javax.swing.JTextField writtenEarnedText;
+    private javax.swing.JLabel writtenScoreLabel;
+    private javax.swing.JLabel writtenScoreValue;
+    private javax.swing.JLabel writtenTotalLabel;
+    private javax.swing.JTextField writtenTotalText;
     // End of variables declaration//GEN-END:variables
 
 }
