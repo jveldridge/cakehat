@@ -12,6 +12,7 @@
 package backend;
 
 import backend.assignmentdist.AssignmentdistView;
+import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
 import java.awt.CardLayout;
@@ -898,13 +899,11 @@ public class NewBackend extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        AssignmentdistView av = new AssignmentdistView();
-        av.setLocationRelativeTo(null);
-        av.setVisible(true);
+        new AssignmentdistView(this.getSelectedAssignment());
 }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void reassignGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignGradingButtonActionPerformed
-        // TODO add your handling code here:
+        new ReassignView(this.getSelectedAssignment());
     }//GEN-LAST:event_reassignGradingButtonActionPerformed
 
     private void statisticsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsButtonActionPerformed

@@ -37,7 +37,7 @@ import utils.ErrorView;
 public class AssignmentdistView extends javax.swing.JFrame {
 
     /** Creates new form AssignmentDistributorGUI */
-    public AssignmentdistView() {
+    public AssignmentdistView(String asgn) {
         initComponents();
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/accessories-text-editor.png")));
@@ -49,13 +49,15 @@ public class AssignmentdistView extends javax.swing.JFrame {
                 assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
             }
         }
-        for(String s: DatabaseIO.getAssignmentNames())
-        if (assignmentNameComboBox.getItemCount() > 0) {
-            assignmentNameComboBox.setSelectedIndex(0);
-            this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
-        }
+
+        //create dist for assignment passed in as parameter
+        assignmentNameComboBox.setSelectedItem(asgn);
+
+        this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
         fillTable();
+
         this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 
     private void fillTable() {
@@ -92,7 +94,6 @@ public class AssignmentdistView extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         mainTable = new backend.assignmentdist.AssignmentdistTable();
         setupGradingButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMcenu2 = new javax.swing.JMenu();
@@ -131,13 +132,6 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("ReAssign Grading");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
 
@@ -159,8 +153,6 @@ public class AssignmentdistView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 263, Short.MAX_VALUE)
                         .addComponent(generateDistButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(setupGradingButton)))
@@ -178,8 +170,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(generateDistButton)
-                    .addComponent(setupGradingButton)
-                    .addComponent(jButton1))
+                    .addComponent(setupGradingButton))
                 .addGap(14, 14, 14))
         );
 
@@ -448,10 +439,6 @@ public class AssignmentdistView extends javax.swing.JFrame {
        }
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        new ReassignView();
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private String getBlacklist(String taName) {
         try {
             ISqlJetCursor cursor = DatabaseIO.getData("blacklist", "ta_blist_logins", taName);
@@ -462,21 +449,9 @@ public class AssignmentdistView extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new AssignmentdistView().setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox assignmentNameComboBox;
     private javax.swing.JButton generateDistButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMcenu2;
     private javax.swing.JMenu jMenu1;
