@@ -16,7 +16,7 @@ import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
-import backend.visualizer.TemplateVisualizer;
+import utils.basicXMLviewer.TemplateVisualizer;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
 import javax.imageio.ImageIO;

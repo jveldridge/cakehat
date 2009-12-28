@@ -1,4 +1,4 @@
-package backend.visualizer;
+package utils.basicXMLviewer;
 
 /**
  * Class used to visualize XML stencils created for
