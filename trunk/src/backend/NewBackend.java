@@ -15,11 +15,13 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
+import frontend.grader.rubric.RubricManager;
 import java.awt.CardLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.JButton;
+import utils.Allocator;
 
 /**
  *
@@ -144,8 +146,7 @@ public class NewBackend extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NewBackend.class);
-        setTitle(resourceMap.getString("Form.title")); // NOI18N
+        setTitle("Cakehat - Backend - " + Allocator.getGeneralUtilities().getUserLogin());
         setName("Form"); // NOI18N
 
         jSplitPane1.setName("jSplitPane1"); // NOI18N
@@ -154,6 +155,7 @@ public class NewBackend extends javax.swing.JFrame {
         leftPanel.setName("leftPanel"); // NOI18N
         leftPanel.setPreferredSize(new java.awt.Dimension(350, 522));
 
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NewBackend.class);
         studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
         studentFilter.setName("studentFilter"); // NOI18N
 
@@ -624,12 +626,22 @@ public class NewBackend extends javax.swing.JFrame {
         runCodeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         runCodeButton.setIconTextGap(5);
         runCodeButton.setName("runCodeButton"); // NOI18N
+        runCodeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runCodeButtonActionPerformed(evt);
+            }
+        });
 
         testCodeButton.setIcon(resourceMap.getIcon("testCodeButton.icon")); // NOI18N
         testCodeButton.setText(resourceMap.getString("testCodeButton.text")); // NOI18N
         testCodeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         testCodeButton.setIconTextGap(5);
         testCodeButton.setName("testCodeButton"); // NOI18N
+        testCodeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testCodeButtonActionPerformed(evt);
+            }
+        });
 
         viewRubricButton.setIcon(resourceMap.getIcon("viewRubricButton.icon")); // NOI18N
         viewRubricButton.setText(resourceMap.getString("viewRubricButton.text")); // NOI18N
@@ -654,24 +666,44 @@ public class NewBackend extends javax.swing.JFrame {
         demoButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         demoButton.setIconTextGap(5);
         demoButton.setName("demoButton"); // NOI18N
+        demoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                demoButtonActionPerformed(evt);
+            }
+        });
 
         printCodeButton.setIcon(resourceMap.getIcon("printCodeButton.icon")); // NOI18N
         printCodeButton.setText(resourceMap.getString("printCodeButton.text")); // NOI18N
         printCodeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         printCodeButton.setIconTextGap(5);
         printCodeButton.setName("printCodeButton"); // NOI18N
+        printCodeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printCodeButtonActionPerformed(evt);
+            }
+        });
 
         printRubricButton.setIcon(resourceMap.getIcon("printRubricButton.icon")); // NOI18N
         printRubricButton.setText(resourceMap.getString("printRubricButton.text")); // NOI18N
         printRubricButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         printRubricButton.setIconTextGap(5);
         printRubricButton.setName("printRubricButton"); // NOI18N
+        printRubricButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printRubricButtonActionPerformed(evt);
+            }
+        });
 
         openButton.setIcon(resourceMap.getIcon("openButton.icon")); // NOI18N
         openButton.setText(resourceMap.getString("openButton.text")); // NOI18N
         openButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         openButton.setIconTextGap(5);
         openButton.setName("openButton"); // NOI18N
+        openButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openButtonActionPerformed(evt);
+            }
+        });
 
         previewRubricButton.setIcon(resourceMap.getIcon("previewRubricButton.icon")); // NOI18N
         previewRubricButton.setText(resourceMap.getString("previewRubricButton.text")); // NOI18N
@@ -950,6 +982,31 @@ public class NewBackend extends javax.swing.JFrame {
         this.updateGUI();
 }//GEN-LAST:event_studentListMouseClicked
 
+    private void demoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_demoButtonActionPerformed
+        Allocator.getFrontendUtilities().demoProject(this.getSelectedAssignment());
+    }//GEN-LAST:event_demoButtonActionPerformed
+
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+        Allocator.getFrontendUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+    }//GEN-LAST:event_openButtonActionPerformed
+
+    private void runCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonActionPerformed
+        Allocator.getFrontendUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+    }//GEN-LAST:event_runCodeButtonActionPerformed
+
+    private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
+        Allocator.getFrontendUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
+    }//GEN-LAST:event_testCodeButtonActionPerformed
+
+    private void printCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printCodeButtonActionPerformed
+        Allocator.getFrontendUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
+    }//GEN-LAST:event_printCodeButtonActionPerformed
+
+    private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
+        RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
+        Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedAssignment());
+    }//GEN-LAST:event_printRubricButtonActionPerformed
+
    /**
      * Returns the currently selected assignment as a String.
      *
@@ -1031,8 +1088,14 @@ public class NewBackend extends javax.swing.JFrame {
                 //update the current student label
                 selectedStudsLabel.setText("<html><b>Current Student: </b>" + this.getSelectedStudent());
 
+                //untar selected student's code
+                Allocator.getProject(this.getSelectedAssignment()).untar(this.getSelectedStudent());
+
                 //change card to single student and single assignment
                 cl.show(cardPanel, "singlePanel");
+
+                //set Tester button to be enabled or not depending on whether project has a tester
+                testCodeButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
             }
             else {
                 for (JButton button : _studButtons) {
