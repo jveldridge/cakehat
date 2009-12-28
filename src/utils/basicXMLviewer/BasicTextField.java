@@ -8,10 +8,11 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
 
-class VizTextField extends JTextArea {
+public class BasicTextField extends JTextArea {
 
-    private VizTextField(Vector<Entry> text, boolean spellCheckEnabled) {
+    public BasicTextField(Vector<Entry> text, boolean spellCheckEnabled) {
         //lol spellchecking - psastras
+        spellCheckEnabled = false;      //added temporarily b/c Jonathan's VM doesn't have enough memory
         if (spellCheckEnabled) {
             SpellChecker.register(this);
             SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
@@ -27,8 +28,8 @@ class VizTextField extends JTextArea {
         this.setText(storedText);
     }
 
-    public static VizTextField getAsCommentField(final Section section) {
-        final VizTextField field = new VizTextField(section.Comments, true);
+    public static BasicTextField getAsCommentField(final Section section) {
+        final BasicTextField field = new BasicTextField(section.Comments, true);
 
         //Set appearance
         field.setRows(4);
@@ -40,10 +41,9 @@ class VizTextField extends JTextArea {
         return field;
     }
 
-    public static VizTextField getAsNotesField(Section section) {
-        VizTextField field = new VizTextField(section.Notes, false);
+    public static BasicTextField getAsNotesField(Section section) {
+        BasicTextField field = new BasicTextField(section.Notes, false);
         //Set appearance and properties
-        field.setRows(4);
         field.setLineWrap(true);
         field.setWrapStyleWord(true);
         field.setEditable(false);

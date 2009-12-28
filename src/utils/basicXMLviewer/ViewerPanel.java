@@ -16,45 +16,52 @@ import javax.swing.JTextArea;
 import javax.swing.SpringLayout;
 
 import frontend.grader.rubric.*;
+import java.awt.Component;
+import java.util.Vector;
 
-class VisualPanel extends JPanel
+public class ViewerPanel extends JPanel
 {
-	private Rubric _rubric;
-	private SpringLayout _mainLayout;
-	private JPanel _abovePanel = null;
-	private int _height = 0;
+	protected Rubric _rubric;
+	protected SpringLayout _mainLayout;
+	protected JPanel _abovePanel = null;
+	protected int _height = 0;
 
-	public VisualPanel(Rubric rubric)
+        //instance variables below used only by subclass (frontend.grader.MainPanel)
+	protected java.util.Vector<BasicNumberField> _totals = new java.util.Vector<BasicNumberField>();
+	protected java.util.Vector<Section> _sections = new java.util.Vector<Section>();
+	protected BasicNumberField _totalScoreField;
+	protected Vector<Component> _tabOrder = new Vector<Component>(7);
+
+	public ViewerPanel(Rubric rubric)
 	{
-		_rubric = rubric;
-		this.setBackground(Color.white);
+            _rubric = rubric;
+            this.setBackground(Color.white);
 
-		//Set width
-		//height will be set after everything else is populated
-		Dimension size = new Dimension(600,0);
-		this.setSize(size);
-		this.setPreferredSize(size);
+            //Set width
+            //height will be set after everything else is populated
+            Dimension size = new Dimension(600,0);
+            this.setSize(size);
+            this.setPreferredSize(size);
 
-		//Create the layout
-		_mainLayout = new SpringLayout();
-		this.setLayout(_mainLayout);
+            //Create the layout
+            _mainLayout = new SpringLayout();
+            this.setLayout(_mainLayout);
 
-		//Display the elements of the rubric
-		displayAssignment();
-		displayStudentAndGrader();
-		for(Section section : _rubric.Sections)
-		{
-			this.displaySection(section);
-		}
+            //Display the elements of the rubric
+            displayAssignment();
+            displayStudentAndGrader();
+            for(Section section : _rubric.Sections) {
+                this.displaySection(section);
+            }
 
-		this.displayStatus(_rubric);
+            this.displayStatus(_rubric);
 
-		this.displayExtraCredit(_rubric);
+            this.displayExtraCredit(_rubric);
 
-		this.displayTotalScore();
+            this.displayTotalScore();
 
-		//Adjust the height based on the panels added
-		this.setPreferredSize(new Dimension(this.getWidth(), _height));
+            //Adjust the height based on the panels added
+            this.setPreferredSize(new Dimension(this.getWidth(), _height));
 
 	}
 
@@ -67,7 +74,7 @@ class VisualPanel extends JPanel
 	 * @param panel
 	 */
 
-	public void addPanelBelow(JPanel panel)
+	protected void addPanelBelow(JPanel panel)
 	{
 		int vGap = 5;
 		_height += panel.getPreferredSize().height + vGap;
@@ -88,7 +95,7 @@ class VisualPanel extends JPanel
 		_abovePanel = panel;
 	}
 
-	private void displayAssignment()
+	protected void displayAssignment()
 	{
 		JPanel panel = new JPanel();
 
@@ -99,7 +106,7 @@ class VisualPanel extends JPanel
 		this.addPanelBelow(panel);
 	}
 
-	private void displayStudentAndGrader()
+	protected void displayStudentAndGrader()
 	{
 		int height = 0;
 		int vGap = 0;
@@ -136,7 +143,7 @@ class VisualPanel extends JPanel
 		this.addPanelBelow(panel);
 	}
 
-	private void displaySection(Section section)
+	protected void displaySection(Section section)
 	{
 		int height = 0;
 
@@ -170,23 +177,23 @@ class VisualPanel extends JPanel
 			height += subsectionName.getPreferredSize().height + vGap;
 
 			//Score field
-			VizNumberField scoreField;
+			BasicNumberField scoreField;
 			if(subsection.Name.equals("Design Check"))
 			{
 				//Design check score should not be modifiable
-				scoreField = VizNumberField.getAsUneditable(subsection.Score);
+				scoreField = BasicNumberField.getAsUneditable(subsection.Score);
 				scoreField.setFocusable(false);
 			}
 			else
 			{
-				scoreField = VizNumberField.getAsScore(subsection);
+				scoreField = BasicNumberField.getAsScore(subsection);
 			}
 			layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, subsectionName);
 			layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, subsectionName);
 			panel.add(scoreField);
 
 			//OutOf field
-			VizNumberField outOfField = VizNumberField.getAsUneditable(subsection.OutOf);
+			BasicNumberField outOfField = BasicNumberField.getAsUneditable(subsection.OutOf);
 			outOfField.setFocusable(false);
 			layout.putConstraint(SpringLayout.WEST, outOfField, 2, SpringLayout.EAST, scoreField);
 			layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, subsectionName);
@@ -222,7 +229,7 @@ class VisualPanel extends JPanel
 			height += notesLbl.getPreferredSize().height + vGap;
 			panel.add(notesLbl);
 
-			VizTextField notes = VizTextField.getAsNotesField(section);
+			BasicTextField notes = BasicTextField.getAsNotesField(section);
             notes.setSize(new Dimension(400,500));
             JScrollPane scroll = new JScrollPane(notes);
 			notes.setFocusable(false);
@@ -243,7 +250,7 @@ class VisualPanel extends JPanel
 		height += commentLbl.getPreferredSize().height + vGap;
 		panel.add(commentLbl);
 
-		VizTextField comments = VizTextField.getAsCommentField(section);
+		BasicTextField comments = BasicTextField.getAsCommentField(section);
 		comments.setSize(new Dimension(400,500));
 		JScrollPane scroll = new JScrollPane(comments);
 		vGap = 3;
@@ -268,14 +275,14 @@ class VisualPanel extends JPanel
 		height += sectionTotal.getPreferredSize().height + vGap + 5;
 
 		//Score field
-		VizNumberField scoreField = VizNumberField.getAsUneditable(section.getSectionScore());
+		BasicNumberField scoreField = BasicNumberField.getAsUneditable(section.getSectionScore());
 		scoreField.setFocusable(false);
 		layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, sectionTotal);
 		layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, sectionTotal);
 		panel.add(scoreField);
 
 		//OutOf field
-		VizNumberField outOfField = VizNumberField.getAsUneditable(section.getSectionOutOf());
+		BasicNumberField outOfField = BasicNumberField.getAsUneditable(section.getSectionOutOf());
 		outOfField.setFocusable(false);
 		layout.putConstraint(SpringLayout.WEST, outOfField, 2, SpringLayout.EAST, scoreField);
 		layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, sectionTotal);
@@ -285,7 +292,7 @@ class VisualPanel extends JPanel
 		this.addPanelBelow(panel);
 	}
 
-	private void displayExtraCredit(Rubric rubric)
+	protected void displayExtraCredit(Rubric rubric)
 	{
 		int height = 0;
 
@@ -327,21 +334,21 @@ class VisualPanel extends JPanel
 			height += extraCreditText.getPreferredSize().height + vGap + 5;
 
 			//Score field
-			VizNumberField scoreField;
+			BasicNumberField scoreField;
 			if(editable)
 			{
-				scoreField = VizNumberField.getAsScore(extraCredit);
+				scoreField = BasicNumberField.getAsScore(extraCredit);
 			}
 			else
 			{
-				scoreField = VizNumberField.getAsUneditable(0.0);
+				scoreField = BasicNumberField.getAsUneditable(0.0);
 			}
 			layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, extraCreditText);
 			layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, extraCreditText);
 			panel.add(scoreField);
 
 			//OutOf field
-			VizNumberField outOfField = VizNumberField.getAsUneditable(extraCredit.OutOf);
+			BasicNumberField outOfField = BasicNumberField.getAsUneditable(extraCredit.OutOf);
 			outOfField.setFocusable(false);
 			layout.putConstraint(SpringLayout.WEST, outOfField, 2, SpringLayout.EAST, scoreField);
 			layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, extraCreditText);
@@ -353,7 +360,7 @@ class VisualPanel extends JPanel
 		this.addPanelBelow(panel);
 	}
 
-	private void displayStatus(Rubric rubric)
+	protected void displayStatus(Rubric rubric)
 	{
 		int height = 0;
 
@@ -388,13 +395,13 @@ class VisualPanel extends JPanel
 		double sc = _rubric.getTotalOutOf();
 		//Score field
 		double statusPoints = status.getEarlyBonus(sc) + status.getLatePenalty(sc);
-		VizNumberField scoreField = VizNumberField.getAsUneditable(Double.valueOf(Double.toString((statusPoints))));
+		BasicNumberField scoreField = BasicNumberField.getAsUneditable(Double.valueOf(Double.toString((statusPoints))));
 		layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, extraCreditText);
 		layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, extraCreditText);
 		panel.add(scoreField);
 
 		//OutOf field
-		VizNumberField outOfField = VizNumberField.getAsUneditable(0.0);
+		BasicNumberField outOfField = BasicNumberField.getAsUneditable(0.0);
 		outOfField.setFocusable(false);
 		layout.putConstraint(SpringLayout.WEST, outOfField, 2, SpringLayout.EAST, scoreField);
 		layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, extraCreditText);
@@ -405,7 +412,7 @@ class VisualPanel extends JPanel
 		this.addPanelBelow(panel);
 	}
 
-	private void displayTotalScore()
+	protected void displayTotalScore()
 	{
 		int height = 0;
 
@@ -436,7 +443,7 @@ class VisualPanel extends JPanel
 		height += sectionTotal.getPreferredSize().height + vGap + 15;
 
 		//Score field
-		VizNumberField scoreField = VizNumberField.getAsUneditable(_rubric.getTotalScore());
+		BasicNumberField scoreField = BasicNumberField.getAsUneditable(_rubric.getTotalScore());
 		scoreField.setFocusable(false);
 		
 		layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, sectionTotal);
@@ -444,7 +451,7 @@ class VisualPanel extends JPanel
 		panel.add(scoreField);
 
 		//OutOf field
-		VizNumberField outOfField = VizNumberField.getAsUneditable(_rubric.getTotalOutOf());
+		BasicNumberField outOfField = BasicNumberField.getAsUneditable(_rubric.getTotalOutOf());
 		outOfField.setFocusable(false);
 		layout.putConstraint(SpringLayout.WEST, outOfField, 2, SpringLayout.EAST, scoreField);
 		layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, sectionTotal);

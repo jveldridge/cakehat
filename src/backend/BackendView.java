@@ -16,7 +16,7 @@ import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
-import utils.basicXMLviewer.TemplateVisualizer;
+import utils.basicXMLviewer.BasicXMLViewer;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
 import javax.imageio.ImageIO;
@@ -545,7 +545,7 @@ public class BackendView extends javax.swing.JFrame {
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         String message = "Choose Project to Preview";
         String project = (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Project", JOptionPane.PLAIN_MESSAGE, icon, v.toArray(), null);
-        new TemplateVisualizer(project);
+        new BasicXMLViewer(project);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

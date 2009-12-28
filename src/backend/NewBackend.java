@@ -15,6 +15,7 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
+import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
 import java.awt.CardLayout;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.JButton;
 import utils.Allocator;
+import utils.basicXMLviewer.BasicXMLViewer;
 
 /**
  *
@@ -648,6 +650,11 @@ public class NewBackend extends javax.swing.JFrame {
         viewRubricButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         viewRubricButton.setIconTextGap(5);
         viewRubricButton.setName("viewRubricButton"); // NOI18N
+        viewRubricButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewRubricButtonActionPerformed(evt);
+            }
+        });
 
         extensionButton.setIcon(resourceMap.getIcon("extensionButton.icon")); // NOI18N
         extensionButton.setText(resourceMap.getString("extensionButton.text")); // NOI18N
@@ -710,6 +717,11 @@ public class NewBackend extends javax.swing.JFrame {
         previewRubricButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         previewRubricButton.setIconTextGap(5);
         previewRubricButton.setName("previewRubricButton"); // NOI18N
+        previewRubricButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                previewRubricButtonActionPerformed(evt);
+            }
+        });
 
         gradingStandardsButton.setIcon(resourceMap.getIcon("gradingStandardsButton.icon")); // NOI18N
         gradingStandardsButton.setText(resourceMap.getString("gradingStandardsButton.text")); // NOI18N
@@ -1006,6 +1018,14 @@ public class NewBackend extends javax.swing.JFrame {
         RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
         Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedAssignment());
     }//GEN-LAST:event_printRubricButtonActionPerformed
+
+    private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
+        new Grader(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
+    }//GEN-LAST:event_viewRubricButtonActionPerformed
+
+    private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
+        new BasicXMLViewer(this.getSelectedAssignment());
+    }//GEN-LAST:event_previewRubricButtonActionPerformed
 
    /**
      * Returns the currently selected assignment as a String.

@@ -995,6 +995,9 @@
                         <Property name="iconTextGap" type="int" value="5"/>
                         <Property name="name" type="java.lang.String" value="viewRubricButton" noResource="true"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="viewRubricButtonActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="extensionButton">
                       <Properties>
@@ -1070,6 +1073,9 @@
                         <Property name="iconTextGap" type="int" value="5"/>
                         <Property name="name" type="java.lang.String" value="previewRubricButton" noResource="true"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="previewRubricButtonActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="gradingStandardsButton">
                       <Properties>

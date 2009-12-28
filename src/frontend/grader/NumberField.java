@@ -2,16 +2,13 @@ package frontend.grader;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.text.NumberFormat;
 
-import javax.swing.JFormattedTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import frontend.grader.rubric.ExtraCredit;
 import frontend.grader.rubric.Subsection;
-import utils.Allocator;
 
 /**
  * When an editable instance is returned it directly
@@ -19,7 +16,7 @@ import utils.Allocator;
  * 
  * @author jak2
  */
-class NumberField extends JFormattedTextField {
+class NumberField extends utils.basicXMLviewer.BasicNumberField {
 
     private Subsection _subsection = null;
     private ExtraCredit _extraCredit = null;
@@ -28,14 +25,7 @@ class NumberField extends JFormattedTextField {
     private double _oldValue;
 
     private NumberField(double value, boolean editable) {
-        super(NumberFormat.getNumberInstance());
-        this.setText(Allocator.getGeneralUtilities().doubleToString(value));
-        this.setEditable(editable);
-        this.setColumns(5);
-
-        this.setHorizontalAlignment(CENTER);
-
-        //this.setBackground(java.awt.Color.white);
+        super(value, editable);
 
         _oldValue = value;
     }
@@ -123,12 +113,6 @@ class NumberField extends JFormattedTextField {
         return field;
     }
 
-    public static NumberField getAsUneditable(double value) {
-        NumberField toReturn = new NumberField(value, false);
-        toReturn.setBackground(java.awt.Color.LIGHT_GRAY);
-        return toReturn;
-    }
-
     public static NumberField getAsScore(Subsection subsection, MainPanel panel, StateManager manager) {
         NumberField field = getAsEditable(subsection.Score);
         field._subsection = subsection;
@@ -144,4 +128,5 @@ class NumberField extends JFormattedTextField {
         field._stateManager = manager;
         return field;
     }
+    
 }
