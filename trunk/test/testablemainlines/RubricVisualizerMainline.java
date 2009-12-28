@@ -1,6 +1,6 @@
 package testablemainlines;
 
-import utils.basicXMLviewer.TemplateVisualizer;
+import utils.basicXMLviewer.BasicXMLViewer;
 import utils.basicXMLviewer.*;
 
 /**
@@ -11,7 +11,7 @@ public class RubricVisualizerMainline {
     
     public static void main(String[] args)
 	{
-		new TemplateVisualizer("Clock");
+		new BasicXMLViewer("Clock");
 	}
 
 }

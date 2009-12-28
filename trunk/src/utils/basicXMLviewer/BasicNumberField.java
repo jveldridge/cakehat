@@ -13,10 +13,9 @@ import frontend.grader.rubric.Subsection;
  * 
  * @author jak2
  */
-class VizNumberField extends JFormattedTextField {
+public class BasicNumberField extends JFormattedTextField {
 
-
-    private VizNumberField(double value, boolean editable) {
+    public BasicNumberField(double value, boolean editable) {
         super(NumberFormat.getNumberInstance());
         this.setText(Double.toString(value));
         this.setEditable(editable);
@@ -26,24 +25,24 @@ class VizNumberField extends JFormattedTextField {
 
     }
 
-    private static VizNumberField getAsEditable(double value) {
-        final VizNumberField field = new VizNumberField(value, true);
+    private static BasicNumberField getAsEditable(double value) {
+        final BasicNumberField field = new BasicNumberField(value, true);
         return field;
     }
 
-    public static VizNumberField getAsUneditable(double value) {
-        VizNumberField toReturn = new VizNumberField(value, false);
+    public static BasicNumberField getAsUneditable(double value) {
+        BasicNumberField toReturn = new BasicNumberField(value, false);
         toReturn.setBackground(java.awt.Color.LIGHT_GRAY);
         return toReturn;
     }
 
-    public static VizNumberField getAsScore(Subsection subsection) {
-        VizNumberField field = getAsEditable(subsection.Score);
+    public static BasicNumberField getAsScore(Subsection subsection) {
+        BasicNumberField field = getAsEditable(subsection.Score);
         return field;
     }
 
-    public static VizNumberField getAsScore(ExtraCredit ec) {
-        VizNumberField field = getAsEditable(ec.Score);
+    public static BasicNumberField getAsScore(ExtraCredit ec) {
+        BasicNumberField field = getAsEditable(ec.Score);
         return field;
     }
 }

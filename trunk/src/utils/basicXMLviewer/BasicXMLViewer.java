@@ -18,10 +18,10 @@ import java.awt.Dimension;
 import javax.swing.JScrollPane;
 import utils.Allocator;
 
-public class TemplateVisualizer extends JFrame
+public class BasicXMLViewer extends JFrame
 {
 
-    public TemplateVisualizer(String asgn) {
+    public BasicXMLViewer(String asgn) {
             super("Rubric Preview for " + asgn);
             this.setVisible(true);
 
@@ -34,7 +34,7 @@ public class TemplateVisualizer extends JFrame
             //Configure basic properties
             this.setLayout(new BorderLayout());
 
-            VisualPanel mp = new VisualPanel(rubric);
+            ViewerPanel mp = new ViewerPanel(rubric);
 
             JScrollPane vizScrollPane = new JScrollPane(mp);
             Dimension size = new Dimension(mp.getPreferredSize().width + 30, 800);
@@ -52,7 +52,7 @@ public class TemplateVisualizer extends JFrame
             this.addWindowListener(new WindowAdapter() {
 
                 public void windowClosing(WindowEvent e) {
-                    TemplateVisualizer.this.dispose();
+                    BasicXMLViewer.this.dispose();
                 }
             });
 
