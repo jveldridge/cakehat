@@ -1,5 +1,5 @@
 
-package backend.visualizer;
+package utils.basicXMLviewer;
 
 /**
  *

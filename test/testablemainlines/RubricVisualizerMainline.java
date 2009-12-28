@@ -1,6 +1,7 @@
 package testablemainlines;
 
-import backend.visualizer.*;
+import utils.basicXMLviewer.TemplateVisualizer;
+import utils.basicXMLviewer.*;
 
 /**
  *

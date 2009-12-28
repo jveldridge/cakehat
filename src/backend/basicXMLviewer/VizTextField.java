@@ -1,4 +1,4 @@
-package backend.visualizer;
+package utils.basicXMLviewer;
 
 import com.inet.jortho.SpellChecker;
 import frontend.grader.rubric.Section;
