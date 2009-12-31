@@ -6,7 +6,7 @@
  */
 package frontend;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import backend.database.DatabaseWatch;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
@@ -152,10 +152,10 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                DatabaseIO.open();
+                OldDatabaseOps.open();
 
                 int index = studentList.getSelectedIndex();
-                studentList.setListData(DatabaseIO.getStudentsToGrade(Allocator.getGeneralUtilities().getUserLogin(), "Final"));
+                studentList.setListData(OldDatabaseOps.getStudentsToGrade(Allocator.getGeneralUtilities().getUserLogin(), "Final"));
                 if (index >= 0 && index < studentList.getModel().getSize()) {
                     studentList.setSelectedIndex(index);
                     updateCurrentInfo();
@@ -169,7 +169,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
                     currentInfo.setText("");
                 }
                 try {
-                    DatabaseIO.close();
+                    OldDatabaseOps.close();
                 } catch (Exception e) {
                 }
             }

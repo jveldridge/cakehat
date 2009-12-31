@@ -10,7 +10,7 @@
  */
 package backend.histogram;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +31,12 @@ public class ChartDataPanel extends javax.swing.JPanel {
 
     public void updateChartData(String asgnName) {
         try {
-            ISqlJetCursor cursor = DatabaseIO.getAllData("grades_" + asgnName);
+            ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + asgnName);
             //int cols = DatabaseIO.getColumnNames("grades_" + asgnName).length;
-            double d = DatabaseIO.getAssignmentTotal(asgnName);
+            double d = OldDatabaseOps.getAssignmentTotal(asgnName);
             List<Double> l = new ArrayList<Double>();
             while (!cursor.eof()) {
-                double earned = (cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]));
+                double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
                 if (earned / d * 100 != 0) { //ignore zero handins
                     l.add(earned / d * 100);
                 }

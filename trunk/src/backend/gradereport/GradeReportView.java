@@ -10,7 +10,7 @@
  */
 package backend.gradereport;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import backend.histogram.ChartPanel;
 import backend.histogram.StudentDataPanel;
 import java.io.File;
@@ -39,22 +39,22 @@ public class GradeReportView extends javax.swing.JFrame {
         initComponents();
         HTMLEditorKit k = new HTMLEditorKit();
         //_projectList = new JList(DatabaseIO.getAssignmentNames());
-        _projectNames = DatabaseIO.getProjectNames();
+        _projectNames = OldDatabaseOps.getProjectNames();
         _projectList.setListData(_projectNames);
-        _labNames = DatabaseIO.getLabNames();
+        _labNames = OldDatabaseOps.getLabNames();
         _labList.setListData(_labNames);
-        _homeworkNames = DatabaseIO.getHomeworkNames();
+        _homeworkNames = OldDatabaseOps.getHomeworkNames();
         _labPointsTotal = new String[_labNames.length];
         _projectPointsTotal = new String[_projectNames.length];
         _homeworkPointsTotal = new String[_homeworkNames.length];
         for (int i = 0; i < _projectNames.length; i++) {
-            _projectPointsTotal[i] = Integer.toString(DatabaseIO.getAssignmentTotal(_projectNames[i]));
+            _projectPointsTotal[i] = Integer.toString(OldDatabaseOps.getAssignmentTotal(_projectNames[i]));
         }
         for (int i = 0; i < _labNames.length; i++) {
-            _labPointsTotal[i] = Integer.toString(DatabaseIO.getAssignmentTotal(_labNames[i]));
+            _labPointsTotal[i] = Integer.toString(OldDatabaseOps.getAssignmentTotal(_labNames[i]));
         }
         for (int i = 0; i < _homeworkNames.length; i++) {
-            _homeworkPointsTotal[i] = Integer.toString(DatabaseIO.getAssignmentTotal(_homeworkNames[i]));
+            _homeworkPointsTotal[i] = Integer.toString(OldDatabaseOps.getAssignmentTotal(_homeworkNames[i]));
         }
         //DatabaseIO.getAssignmentNames();
 
@@ -397,13 +397,13 @@ public class GradeReportView extends javax.swing.JFrame {
 
     private void _sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__sendButtonActionPerformed
 
-        String[] studNames = DatabaseIO.getStudentNames();
+        String[] studNames = OldDatabaseOps.getStudentNames();
 
         //JOptionPane.showMessageDialog(this, "Generating histograms and sending emails...", "Please Wait", JOptionPane.INFORMATION_MESSAGE);
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                JOptionPane.showMessageDialog(null, new String("Finished sending " + DatabaseIO.getStudentNames().length + " emails.  Make sure to delete your sent file or you fail next login."));
+                JOptionPane.showMessageDialog(null, new String("Finished sending " + OldDatabaseOps.getStudentNames().length + " emails.  Make sure to delete your sent file or you fail next login."));
             }
         });
 
@@ -443,9 +443,9 @@ public class GradeReportView extends javax.swing.JFrame {
             for (int i = 0; i < projNames.length; i++) {
                 double d = Double.parseDouble(projTotals[i]);
                 List<Double> l = new ArrayList<Double>();
-                ISqlJetCursor cursor = DatabaseIO.getAllData("grades_" + projNames[i]);
+                ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + projNames[i]);
                 while (!cursor.eof()) {
-                    double earned = (cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]));
+                    double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
                     if (earned / d * 100 != 0) { //ignore zero handins
                         l.add(earned / d * 100);
                     }
@@ -474,13 +474,13 @@ public class GradeReportView extends javax.swing.JFrame {
                 ArrayList<String> files = new ArrayList<String>(histogramFileNames);
                 files.add(".tmpdata/" + s + ".png");
                 for (int i = 0; i < projIndex.length; i++) {
-                    projEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(projNames[i], s));
+                    projEarned[i] = Double.toString(OldDatabaseOps.getStudentEarnedScore(projNames[i], s));
                 }
                 for (int i = 0; i < labIndex.length; i++) {
-                    labEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(labNames[i], s));
+                    labEarned[i] = Double.toString(OldDatabaseOps.getStudentEarnedScore(labNames[i], s));
                 }
                 for (int i = 0; i < homeworkEarned.length; i++) {
-                    homeworkEarned[i] = Double.toString(DatabaseIO.getStudentEarnedScore(_homeworkNames[i], s));
+                    homeworkEarned[i] = Double.toString(OldDatabaseOps.getStudentEarnedScore(_homeworkNames[i], s));
                 }
 //             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
 //                     files.toArray(new String[0]));
@@ -533,9 +533,9 @@ public class GradeReportView extends javax.swing.JFrame {
             for (int i = 0; i < projNames.length; i++) {
                 double d = Double.parseDouble(projTotals[i]);
                 List<Double> l = new ArrayList<Double>();
-                ISqlJetCursor cursor = DatabaseIO.getAllData("grades_" + projNames[i]);
+                ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + projNames[i]);
                 while (!cursor.eof()) {
-                    double earned = (cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]));
+                    double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
                     if (earned / d * 100 != 0) { //ignore zero handins
                         l.add(earned / d * 100);
                     }
