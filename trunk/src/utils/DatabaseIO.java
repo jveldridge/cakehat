@@ -51,8 +51,6 @@ public interface DatabaseIO {
 
     public Calendar getExtension(String studentLogin, String assignmentName);
 
-    public Calendar getExemption(String studentLogin, String assignmentName);
-
     public String getExtensionNote(String studentLogin, String assignmentName);
 
     public String getExemptionNote(String studentLogin, String assignmentName);
