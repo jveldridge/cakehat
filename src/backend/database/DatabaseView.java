@@ -10,7 +10,7 @@
  */
 package backend.database;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import backend.components.GridView;
 import java.util.Arrays;
 import java.util.Timer;
@@ -246,7 +246,7 @@ public class DatabaseView extends javax.swing.JFrame {
     private void updateFormComponents() {
         updateStatus("Synchronizing...");
         try {
-            String[] tableNames = DatabaseIO.getTableNames();
+            String[] tableNames = OldDatabaseOps.getTableNames();
             m_tableSelector.removeAllItems();
             Arrays.sort(tableNames);
             for (String s : tableNames) {

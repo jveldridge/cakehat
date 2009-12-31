@@ -22,7 +22,7 @@ import utils.Allocator;
  *
  * @author psastras
  */
-public class DatabaseIO {
+public class OldDatabaseOps {
 
     public static final String[] GRADE_RUBRIC_FIELDS = {"DQPoints", "ProjectPoints"};
     private static SqlJetDb db;
@@ -375,7 +375,7 @@ public class DatabaseIO {
     public static boolean isDistEmpty(String asgn) {
         boolean isDistEmpty = true;
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
-            String[] s = DatabaseIO.getStudentsToGrade(taLogin, asgn);
+            String[] s = OldDatabaseOps.getStudentsToGrade(taLogin, asgn);
             if (s.length != 0) {
                 isDistEmpty = false;
             }

@@ -1,6 +1,6 @@
 package frontend;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import frontend.grader.Grader;
 import frontend.grader.rubric.RubricManager;
 import java.awt.Graphics;
@@ -112,7 +112,7 @@ public class FrontendView extends javax.swing.JFrame {
      * Called on startup to initalize assignmentList and studentList
      */
     private void updateFormComponents() {
-        assignmentList.setListData(DatabaseIO.getProjectNames());
+        assignmentList.setListData(OldDatabaseOps.getProjectNames());
         if (assignmentList.getModel().getSize() > 0) {
             assignmentList.setSelectedIndex(0);
         }
@@ -132,7 +132,7 @@ public class FrontendView extends javax.swing.JFrame {
 
         String user = Allocator.getGeneralUtilities().getUserLogin();
         try {
-            ISqlJetCursor cursor = DatabaseIO.getItemWithFilter("assignment_dist", "ta_login_dist", user);
+            ISqlJetCursor cursor = OldDatabaseOps.getItemWithFilter("assignment_dist", "ta_login_dist", user);
             if (cursor.eof()) {
                 cursor.close();
                 return;

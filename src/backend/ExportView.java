@@ -92,8 +92,8 @@ public class ExportView extends javax.swing.JFrame {
         }
 
         //First snoop everyones names....this is gonna take ages
-        DatabaseIO.open();
-        final String[] studlogins = DatabaseIO.getStudentNames();
+        OldDatabaseOps.open();
+        final String[] studlogins = OldDatabaseOps.getStudentNames();
 
         final File filetowrite = f;
         setVisible(true);
@@ -142,10 +142,10 @@ public class ExportView extends javax.swing.JFrame {
 
 
                     StringBuilder sb = new StringBuilder();
-                    String[] assignmentNames = DatabaseIO.getAssignmentNames();
+                    String[] assignmentNames = OldDatabaseOps.getAssignmentNames();
                     int[] totals = new int[assignmentNames.length];
                     for (int i = 0; i < totals.length; i++) {
-                        totals[i] = DatabaseIO.getAssignmentTotal(assignmentNames[i]);
+                        totals[i] = OldDatabaseOps.getAssignmentTotal(assignmentNames[i]);
                     }
 
                     sb.append("Last,First,Login,");
@@ -167,7 +167,7 @@ public class ExportView extends javax.swing.JFrame {
                     for (int j = 0; j < logins_names.length; j++) {
                         sb.append(logins_names[j]._lname + "," + logins_names[j]._fname + "," + logins_names[j]._login + ",");
                         for (int i = 0; i < assignmentNames.length; i++) {
-                            sb.append(DatabaseIO.getStudentEarnedScore(assignmentNames[i], logins_names[j]._login) + ",");
+                            sb.append(OldDatabaseOps.getStudentEarnedScore(assignmentNames[i], logins_names[j]._login) + ",");
                             try {
                                 sb.append(Allocator.getProject(assignmentNames[i]).getTimeStatus(logins_names[j]._login, Allocator.getConstants().getMinutesOfLeniency()));
                             } catch (Exception e) {

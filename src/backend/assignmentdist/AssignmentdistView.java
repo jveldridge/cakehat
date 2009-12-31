@@ -11,7 +11,7 @@
 package backend.assignmentdist;
 
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import frontend.grader.rubric.RubricManager;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -44,8 +44,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
         } catch (Exception e) {
         }
 
-        for(String s: DatabaseIO.getAssignmentNames()) {
-            if(DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
+        for(String s: OldDatabaseOps.getAssignmentNames()) {
+            if(OldDatabaseOps.getAssignmentType(s) == AssignmentType.PROJECT) {
                 assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
             }
         }
@@ -185,7 +185,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
         String asgn = (String)assignmentNameComboBox.getSelectedItem();
 
-        if(!DatabaseIO.isDistEmpty(asgn)) {
+        if(!OldDatabaseOps.isDistEmpty(asgn)) {
             int n = JOptionPane.showConfirmDialog(new JFrame(),"A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?","Confirm Overwrite",JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.NO_OPTION) {
                 return;
@@ -396,7 +396,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         //database part
         try {
             System.out.println("hello!");
-            String[] colNames = DatabaseIO.getColumnNames("assignment_dist");
+            String[] colNames = OldDatabaseOps.getColumnNames("assignment_dist");
             int colIndex = 0;
             for (int i = 0; i < colNames.length; i++, colIndex++) {
                 if (colNames[i].compareToIgnoreCase((String) assignmentNameComboBox.getSelectedItem()) == 0) {
@@ -404,10 +404,10 @@ public class AssignmentdistView extends javax.swing.JFrame {
                 }
             }
             for (int i = 0; i < taNames.length; i++) {
-                long rowid = DatabaseIO.getRowID("assignment_dist", "ta_login_dist", taNames[i]);
-                Object[] o = DatabaseIO.getDataRow("assignment_dist", rowid);
+                long rowid = OldDatabaseOps.getRowID("assignment_dist", "ta_login_dist", taNames[i]);
+                Object[] o = OldDatabaseOps.getDataRow("assignment_dist", rowid);
                 o[colIndex] = studentsToGrade[i];
-                DatabaseIO.update(rowid, "assignment_dist", o);
+                OldDatabaseOps.update(rowid, "assignment_dist", o);
             }
             JOptionPane.showMessageDialog(this, "Assignments have been successfully distributed to the grading TAs.", "Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
@@ -432,16 +432,16 @@ public class AssignmentdistView extends javax.swing.JFrame {
         }
 
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
-            String[] studsToGrade = DatabaseIO.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
+            String[] studsToGrade = OldDatabaseOps.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
-                RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, DatabaseIO.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, OldDatabaseOps.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
             }
        }
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
     private String getBlacklist(String taName) {
         try {
-            ISqlJetCursor cursor = DatabaseIO.getData("blacklist", "ta_blist_logins", taName);
+            ISqlJetCursor cursor = OldDatabaseOps.getData("blacklist", "ta_blist_logins", taName);
             return cursor.getString("studLogins");
         } catch (Exception e) {
             new ErrorView(e);

@@ -10,7 +10,7 @@
  */
 package backend.entergrade;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import frontend.grader.rubric.RubricManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -73,14 +73,14 @@ public class EnterGradesView extends javax.swing.JFrame {
 //            this.setIconImage(ImageIO.read(getClass().getResource("/cs015Database/accessories-calculator.png")));
             DefaultTableModel m = (DefaultTableModel) studentTable.getModel();
             m.addColumn("Students");
-            for (String s : DatabaseIO.getStudentNames()) {
+            for (String s : OldDatabaseOps.getStudentNames()) {
                 m.insertRow(studentTable.getRowCount(), new String[]{s});
             }
             m.insertRow(0, new String[]{""});
             m = (DefaultTableModel) assignmentTable.getModel();
             m.addColumn("Assignments");
-            for (String s : DatabaseIO.getAssignmentNames()) {
-                if (DatabaseIO.getAssignmentType(s) == AssignmentType.HOMEWORK || (DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT)) {
+            for (String s : OldDatabaseOps.getAssignmentNames()) {
+                if (OldDatabaseOps.getAssignmentType(s) == AssignmentType.HOMEWORK || (OldDatabaseOps.getAssignmentType(s) == AssignmentType.PROJECT)) {
                     m.insertRow(assignmentTable.getRowCount(), new String[]{s});
                 }
             }
@@ -543,7 +543,7 @@ public class EnterGradesView extends javax.swing.JFrame {
     private void update() {
         //determine whether the add XML grades button should be enabled
         m_xmlButton.setEnabled(false);
-        for (String s : DatabaseIO.getProjectNames()) {
+        for (String s : OldDatabaseOps.getProjectNames()) {
             if (s.equalsIgnoreCase((String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0))) {
                 m_xmlButton.setEnabled(true);
                 break;
@@ -559,10 +559,10 @@ public class EnterGradesView extends javax.swing.JFrame {
         if (studentTable.getRowCount() == 0 || ((String) studentTable.getValueAt(studentTable.getSelectedRow(), studentTable.getSelectedColumn())).length() == 0) {
             m_dqearnedText.setText("");
             m_dqscoreText.setText("");
-            if (DatabaseIO.getAssignmentDQ(asgn) == 0) {
-                m_dqtotalText.setText("" + DatabaseIO.getAssignmentTotal(asgn));
+            if (OldDatabaseOps.getAssignmentDQ(asgn) == 0) {
+                m_dqtotalText.setText("" + OldDatabaseOps.getAssignmentTotal(asgn));
             } else {
-                m_dqtotalText.setText("" + DatabaseIO.getAssignmentDQ(asgn));
+                m_dqtotalText.setText("" + OldDatabaseOps.getAssignmentDQ(asgn));
             }
             return;
         }
@@ -573,12 +573,12 @@ public class EnterGradesView extends javax.swing.JFrame {
         m_studentText.setSelectionEnd(m_studentText.getText().length());
         //Update dq fields
 
-        if (DatabaseIO.getAssignmentDQ(asgn) == 0) {
-            m_dqearnedText.setText("" + DatabaseIO.getStudentEarnedScore(asgn, m_studentText.getText()));
-            m_dqtotalText.setText("" + DatabaseIO.getAssignmentTotal(asgn));
+        if (OldDatabaseOps.getAssignmentDQ(asgn) == 0) {
+            m_dqearnedText.setText("" + OldDatabaseOps.getStudentEarnedScore(asgn, m_studentText.getText()));
+            m_dqtotalText.setText("" + OldDatabaseOps.getAssignmentTotal(asgn));
         } else {
-            m_dqearnedText.setText("" + DatabaseIO.getStudentDQScore(asgn, m_studentText.getText()));
-            m_dqtotalText.setText("" + DatabaseIO.getAssignmentDQ(asgn));
+            m_dqearnedText.setText("" + OldDatabaseOps.getStudentDQScore(asgn, m_studentText.getText()));
+            m_dqtotalText.setText("" + OldDatabaseOps.getAssignmentDQ(asgn));
         }
         if (m_dqearnedText.getText().length() > 0 && m_dqtotalText.getText().length() > 0) {
             m_dqscoreText.setText("" + (Double.parseDouble(m_dqearnedText.getText()) / Double.parseDouble(m_dqtotalText.getText()) * 100));
@@ -586,9 +586,9 @@ public class EnterGradesView extends javax.swing.JFrame {
             m_dqscoreText.setText("");
         }
         //Update project fields
-        if (DatabaseIO.getAssignmentType(asgn) == AssignmentType.PROJECT) {
-            m_prjpointsLabel.setText("" + (DatabaseIO.getStudentEarnedScore(asgn, m_studentText.getText()) - Double.parseDouble(m_dqearnedText.getText())));
-            m_prjtotalLabel.setText("" + DatabaseIO.getAssignmentPoints(asgn));
+        if (OldDatabaseOps.getAssignmentType(asgn) == AssignmentType.PROJECT) {
+            m_prjpointsLabel.setText("" + (OldDatabaseOps.getStudentEarnedScore(asgn, m_studentText.getText()) - Double.parseDouble(m_dqearnedText.getText())));
+            m_prjtotalLabel.setText("" + OldDatabaseOps.getAssignmentPoints(asgn));
             m_prjscoreLabel.setText("" + ((Double.parseDouble(m_prjpointsLabel.getText()) / Double.parseDouble(m_prjtotalLabel.getText())) * 100));
         } else {
             m_prjpointsLabel.setText("0");
@@ -640,14 +640,14 @@ public class EnterGradesView extends javax.swing.JFrame {
         try {
             String assignmentName = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn());
             String studentLogin = m_studentText.getText();
-            long row = DatabaseIO.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
-            if (DatabaseIO.getDataCell("grades_" + assignmentName, row, "studLogins").compareToIgnoreCase(studentLogin) == 0) {
-                String[] s = (String[]) DatabaseIO.getDataRow("grades_" + assignmentName, row);
+            long row = OldDatabaseOps.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
+            if (OldDatabaseOps.getDataCell("grades_" + assignmentName, row, "studLogins").compareToIgnoreCase(studentLogin) == 0) {
+                String[] s = (String[]) OldDatabaseOps.getDataRow("grades_" + assignmentName, row);
                 s[1] = m_dqearnedText.getText();
                 if(s.length==3) {
                     s[2] = m_dqearnedText.getText();
                 }
-                DatabaseIO.update(row, "grades_" + assignmentName, (Object[]) s);
+                OldDatabaseOps.update(row, "grades_" + assignmentName, (Object[]) s);
                 updateStatus("Written to database");
             } else {
                 jLabel7.setText("<html>The selected student <b>" + m_studentText.getText() + "</b> was not found.<br />Add the student to the database?");
@@ -711,14 +711,14 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_assignmentTableKeyPressed
 
     private void addStudentConfirmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStudentConfirmButtonActionPerformed
-        DatabaseIO.addStudent(m_studentText.getText());
+        OldDatabaseOps.addStudent(m_studentText.getText());
         String assignmentName = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), assignmentTable.getSelectedColumn());
         String studentLogin = m_studentText.getText();
-        long row = DatabaseIO.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
-        String[] s = (String[]) DatabaseIO.getDataRow("grades_" + assignmentName, row);
+        long row = OldDatabaseOps.getRowID("grades_" + assignmentName, "stud_login_" + assignmentName, studentLogin);
+        String[] s = (String[]) OldDatabaseOps.getDataRow("grades_" + assignmentName, row);
         s[1] = m_dqearnedText.getText();
         try {
-            DatabaseIO.update(row, "grades_" + assignmentName, (Object[]) s);
+            OldDatabaseOps.update(row, "grades_" + assignmentName, (Object[]) s);
             updateStatus("Written to database");
         } catch (Exception e) {
             new ErrorView(e);
@@ -748,12 +748,12 @@ public class EnterGradesView extends javax.swing.JFrame {
         System.out.println(hm.size());
         try {
             for (Object o : hm.keySet()) {
-                ISqlJetCursor c = DatabaseIO.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
-                String[] data = (String[]) DatabaseIO.getDataRow("grades_" + asgn, c.getRowId());
+                ISqlJetCursor c = OldDatabaseOps.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
+                String[] data = (String[]) OldDatabaseOps.getDataRow("grades_" + asgn, c.getRowId());
                 if (data[0].trim().compareToIgnoreCase(((String) o).trim()) != 0) {
-                    DatabaseIO.addStudent(((String) o).trim());
-                    c = DatabaseIO.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
-                    data = (String[]) DatabaseIO.getDataRow("grades_" + asgn, c.getRowId());
+                    OldDatabaseOps.addStudent(((String) o).trim());
+                    c = OldDatabaseOps.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
+                    data = (String[]) OldDatabaseOps.getDataRow("grades_" + asgn, c.getRowId());
                     System.out.println("Student " + (String) o + " added.");
                 }
                 data[data.length - 1] = Double.toString(hm.get(o));

@@ -1,6 +1,6 @@
 package backend.components;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -68,7 +68,7 @@ public class GridView extends Table {
             for (int i = 0; i < data.length; i++) {
                 data[i] = this.getValueAt(this.getSelectedRow(), i);
             }
-            DatabaseIO.update(rowId, _tableName, data);
+            OldDatabaseOps.update(rowId, _tableName, data);
             if (_refreshTable) {
                 _refreshTable = false;
                 refresh(_tableName);
@@ -87,7 +87,7 @@ public class GridView extends Table {
             for (int i = 0; i < this.getSelectedRows().length; i++) {
 
                 long rowId = Long.parseLong(m.getValueAt(this.convertRowIndexToModel(this.getSelectedRow()), m.getColumnCount() - 1).toString());
-                DatabaseIO.removeDatum(rowId, tableName);
+                OldDatabaseOps.removeDatum(rowId, tableName);
             }
             m.removeRow(this.convertRowIndexToModel(this.getSelectedRow()));
         } catch (Exception e) {
@@ -101,10 +101,10 @@ public class GridView extends Table {
      */
     public void addRow(String tableName) {
         try {
-            Object[] data1 = new Object[DatabaseIO.getColumnNames(tableName).length];
+            Object[] data1 = new Object[OldDatabaseOps.getColumnNames(tableName).length];
             data1[0] = "";
             Object[] data2 = new Object[data1.length + 1];
-            data2[data1.length] = DatabaseIO.addDatum(tableName, data1);
+            data2[data1.length] = OldDatabaseOps.addDatum(tableName, data1);
             DefaultTableModel m = (DefaultTableModel) this.getModel();
             m.insertRow(this.getRowCount(), data2);
         } catch (Exception e) {
@@ -134,7 +134,7 @@ public class GridView extends Table {
 //            new ErrorView(e);
 //        }
         this.setVisible(false);
-        if (!DatabaseIO.isValidTable(tableName)) {
+        if (!OldDatabaseOps.isValidTable(tableName)) {
             return;
         }
         _tableName = tableName;
@@ -144,13 +144,13 @@ public class GridView extends Table {
 //        _textFilter = new TableRowSorter<TableModel>(m);
 //        this.setRowSorter(_textFilter);
         try {
-            String[] columnNames = DatabaseIO.getColumnNames(tableName);
+            String[] columnNames = OldDatabaseOps.getColumnNames(tableName);
             for (String s : columnNames) {
                 m.addColumn(s);
             }
             m.addColumn("rowID"); //Hidden rowId information
             this.removeColumn(this.getColumnModel().getColumn(this.getColumnCount() - 1));
-            ISqlJetCursor cursor = DatabaseIO.getAllData(tableName);
+            ISqlJetCursor cursor = OldDatabaseOps.getAllData(tableName);
             if (cursor == null) {
                 return;
             }
@@ -182,13 +182,13 @@ public class GridView extends Table {
      */
     public void save(String tableName) {
         try {
-            DatabaseIO.resetTable(tableName);
+            OldDatabaseOps.resetTable(tableName);
             Object[] rowData = new Object[(this.getColumnCount()) - 1];
             for (int i = 0; i < this.getRowCount(); i++) {
                 for (int j = 0; j < this.getColumnCount() - 1; j++) {
                     rowData[j] = this.getValueAt(i, j);
                 }
-                DatabaseIO.addDatum(tableName, rowData);
+                OldDatabaseOps.addDatum(tableName, rowData);
             }
         } catch (SqlJetException e) {
             new ErrorView(e);

@@ -10,7 +10,7 @@
  */
 package backend.histogram;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -49,15 +49,15 @@ public class StudentDataPanel extends javax.swing.JPanel {
         double[][] avgData = new double[2][assignments.length];
         for (int i = 0; i < assignments.length; i++) {
             avgData[0][i] = i;
-            avgData[1][i] = DatabaseIO.getAverage(assignments[i]);
+            avgData[1][i] = OldDatabaseOps.getAverage(assignments[i]);
             if (assignments[i].compareTo("") != 0 && assignments[i].compareTo("None") != 0) {
                 try {
-                    ISqlJetCursor cursor = DatabaseIO.getAllData("grades_" + assignments[i]);
+                    ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + assignments[i]);
                     data[0][i] = i;
                     while (!cursor.eof()) {
                         if (cursor.getString("studLogins").compareToIgnoreCase(studName) == 0) {
-                            double earned = (cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(DatabaseIO.GRADE_RUBRIC_FIELDS[1]));
-                            data[1][i] = earned / DatabaseIO.getAssignmentTotal(assignments[i]) * 100;
+                            double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
+                            data[1][i] = earned / OldDatabaseOps.getAssignmentTotal(assignments[i]) * 100;
                             break;
                         }
                         cursor.next();

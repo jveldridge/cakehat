@@ -24,7 +24,7 @@ import org.w3c.dom.NodeList;
 
 
 import java.util.HashMap;
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import utils.Allocator;
 import utils.BashConsole;
 import utils.ErrorView;
@@ -874,7 +874,7 @@ public class RubricManager {
     public static HashMap<String, Double> getAllScores(String asgn) {
         HashMap<String, Double> scoresTable = new HashMap<String, Double>();
         for (String g : ConfigurationManager.getGraderLogins()) {
-            for (String s : DatabaseIO.getStudentsToGrade(g, asgn)) {
+            for (String s : OldDatabaseOps.getStudentsToGrade(g, asgn)) {
                 scoresTable.put(s, getTotalSubmittedScore(asgn, g, s));
             }
         }

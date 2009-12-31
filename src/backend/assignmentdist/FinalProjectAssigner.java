@@ -10,7 +10,7 @@
  */
 package backend.assignmentdist;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import frontend.grader.rubric.RubricManager;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -52,12 +52,12 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
 
         initComponents();
         this.setTitle("Final Projects Distributorizer");
-        _talogins = DatabaseIO.getTANames();
+        _talogins = OldDatabaseOps.getTANames();
         _projNames = getFinalProjects().toArray(new String[0]);
         _blists = new HashMap<String, String[]>(_talogins.length);
         try {
             for (String name : _talogins) {
-                ISqlJetCursor cursor = DatabaseIO.getData("blacklist", "ta_blist_logins", name);
+                ISqlJetCursor cursor = OldDatabaseOps.getData("blacklist", "ta_blist_logins", name);
                 String s = cursor.getString("studLogins");
                 if (s != null) {
                     String[] blisted = cursor.getString("studLogins").replace(" ", "").split(",");
@@ -74,7 +74,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
 
         //add all of the submitted projects to the data structrure
         _projHandins = new HashMap<String, LinkedList<String>>();
-        Collection allhandins = Arrays.asList(DatabaseIO.getStudentsAssigned("Final"));
+        Collection allhandins = Arrays.asList(OldDatabaseOps.getStudentsAssigned("Final"));
         _projTotals = new int[_projNames.length];
         _handinsTograde = Collections.synchronizedCollection(new LinkedList<String>());
         int i = 0;
@@ -388,15 +388,15 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                 if (Arrays.binarySearch(_blists.get(taLogin), studLogin) < 0) { //not in the blacklist so exit
                     _projHandins.get(projName).remove(studLogin); //remove the person!
                     try {
-                        ISqlJetCursor cursor = DatabaseIO.getData(DatabaseIO.DISTRIBUTION_TABLE, "ta_login_dist", taLogin);
+                        ISqlJetCursor cursor = OldDatabaseOps.getData(OldDatabaseOps.DISTRIBUTION_TABLE, "ta_login_dist", taLogin);
                         if (cursor != null) {
                             cursor.getRowId();
-                            String[] data = (String[]) DatabaseIO.getDataRow(DatabaseIO.DISTRIBUTION_TABLE, cursor.getRowId());
+                            String[] data = (String[]) OldDatabaseOps.getDataRow(OldDatabaseOps.DISTRIBUTION_TABLE, cursor.getRowId());
                             if (data[data.length - 1] != null && data[data.length - 1].trim().length() > 1) {
                                 data[data.length - 1] += ", ";
                             }
                             data[data.length - 1] += studLogin;
-                            DatabaseIO.update(cursor.getRowId(), DatabaseIO.DISTRIBUTION_TABLE, (Object[]) data);
+                            OldDatabaseOps.update(cursor.getRowId(), OldDatabaseOps.DISTRIBUTION_TABLE, (Object[]) data);
                             String taName = _tas.get(taLogin);
                             if (taName == null || taName.trim().length() == 0) {// if null add to synchronized hash map
                                 taName = Allocator.getGeneralUtilities().getUserName(taLogin);
@@ -407,7 +407,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                                 studName = Allocator.getGeneralUtilities().getUserName(studLogin);
                                 _studs.put(studLogin, studName);
                             }
-                            RubricManager.assignXMLToGrader(Allocator.getProject(projName), Allocator.getProject("Final"), studLogin, taLogin, studName, taName, DatabaseIO.getStudentDQScore("Final", studLogin), Allocator.getConstants().getMinutesOfLeniency());
+                            RubricManager.assignXMLToGrader(Allocator.getProject(projName), Allocator.getProject("Final"), studLogin, taLogin, studName, taName, OldDatabaseOps.getStudentDQScore("Final", studLogin), Allocator.getConstants().getMinutesOfLeniency());
                         }
                     } catch (Exception e) {
                         new ErrorView(e);
@@ -476,7 +476,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
     }
 
     private void populateStudentList(JList list, String user) {
-        list.setListData(DatabaseIO.getStudentsToGrade(user, "Final"));
+        list.setListData(OldDatabaseOps.getStudentsToGrade(user, "Final"));
     }
 
     private void updateFormComponents() {

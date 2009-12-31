@@ -10,7 +10,7 @@
  */
 package backend.histogram;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -43,10 +43,10 @@ public class HistogramView extends javax.swing.JFrame {
 
     private void domoreinit() {
         //lol@this code
-        String[] assignmentNames = DatabaseIO.getAssignmentNames();
+        String[] assignmentNames = OldDatabaseOps.getAssignmentNames();
         DefaultListModel model = new DefaultListModel();
         for (int i = 1; i < assignmentNames.length; i++) {
-            if (DatabaseIO.getAssignmentType(assignmentNames[i]) != AssignmentType.LAB) {
+            if (OldDatabaseOps.getAssignmentType(assignmentNames[i]) != AssignmentType.LAB) {
                 model.add(i - 1, assignmentNames[i]);
             }
         }
@@ -83,7 +83,7 @@ public class HistogramView extends javax.swing.JFrame {
         try {
             DefaultTableModel m = (DefaultTableModel) table1.getModel();
             m.addColumn("Students");
-            ISqlJetCursor cursor = DatabaseIO.getAllData("studList");
+            ISqlJetCursor cursor = OldDatabaseOps.getAllData("studList");
             while (!cursor.eof()) {
                 String data[] = {cursor.getString("studLogin")};
                 m.insertRow(table1.getRowCount(), data);

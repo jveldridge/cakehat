@@ -48,10 +48,10 @@ public class NewBackend extends javax.swing.JFrame {
         _multiAsgnButtons = new ArrayList(Arrays.asList(importGradesButton));
 
         //populate assignment list
-        assignmentList.setListData(DatabaseIO.getProjectNames());
+        assignmentList.setListData(OldDatabaseOps.getProjectNames());
 
         //populate student list
-        studentList.setListData(DatabaseIO.getStudentNames());
+        studentList.setListData(OldDatabaseOps.getStudentNames());
 
         this.updateGUI();
 

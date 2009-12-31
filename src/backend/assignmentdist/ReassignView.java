@@ -11,7 +11,7 @@
 
 package backend.assignmentdist;
 
-import backend.DatabaseIO;
+import backend.OldDatabaseOps;
 import frontend.grader.rubric.RubricManager;
 import javax.swing.JList;
 import utils.Allocator;
@@ -260,7 +260,7 @@ public class ReassignView extends javax.swing.JFrame {
             //remove XML for old grader--TODO
             
             //create blank XML for new grader
-            RubricManager.assignXMLToGrader(Allocator.getProject(_asgn), student, newTA, DatabaseIO.getStudentDQScore(_asgn, student), 10);
+            RubricManager.assignXMLToGrader(Allocator.getProject(_asgn), student, newTA, OldDatabaseOps.getStudentDQScore(_asgn, student), 10);
         }
 
         //still need to remove old XMLs
@@ -273,12 +273,12 @@ public class ReassignView extends javax.swing.JFrame {
 
     private void populateLists() {
 
-        fromTAList.setListData(DatabaseIO.getTANames());
+        fromTAList.setListData(OldDatabaseOps.getTANames());
         if (fromTAList.getModel().getSize() > 0) {
             fromTAList.setSelectedIndex(0);
         }
 
-        toTAList.setListData(DatabaseIO.getTANames());
+        toTAList.setListData(OldDatabaseOps.getTANames());
         if (toTAList.getModel().getSize() > 0) {
             toTAList.setSelectedIndex(0);
         }

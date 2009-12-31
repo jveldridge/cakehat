@@ -428,7 +428,7 @@ public class BackendView extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if (_captcha.isCorrect(jTextField1.getText())) {
             try {
-                DatabaseIO.regenerateDatabase();
+                OldDatabaseOps.regenerateDatabase();
             } catch (Exception e) {
                 new ErrorView(e);
             }
@@ -479,16 +479,16 @@ public class BackendView extends javax.swing.JFrame {
         };
         Arrays.sort(fileList, c);
         //parse teh lab filez!
-        String[] labNames = DatabaseIO.getLabNames();
+        String[] labNames = OldDatabaseOps.getLabNames();
         for (int i = 0; i < fileList.length; i++) {
-            String total = String.valueOf(DatabaseIO.getAssignmentTotal(labNames[i]));
+            String total = String.valueOf(OldDatabaseOps.getAssignmentTotal(labNames[i]));
             String[] logins = Allocator.getGeneralUtilities().readFile(fileList[i]).replaceAll("\\s*-.*", "").split("\\n");
             for (String s : logins) {
-                long row = DatabaseIO.getRowID("grades_" + labNames[i], "stud_login_" + labNames[i], s);
-                String[] data = (String[]) DatabaseIO.getDataRow("grades_" + labNames[i], row);
+                long row = OldDatabaseOps.getRowID("grades_" + labNames[i], "stud_login_" + labNames[i], s);
+                String[] data = (String[]) OldDatabaseOps.getDataRow("grades_" + labNames[i], row);
                 data[1] = total;
                 try {
-                    DatabaseIO.update(row, "grades_" + labNames[i], (Object[]) data);
+                    OldDatabaseOps.update(row, "grades_" + labNames[i], (Object[]) data);
                 } catch (Exception e) {
                     new ErrorView(e);
                     return;
@@ -527,8 +527,8 @@ public class BackendView extends javax.swing.JFrame {
     @Action
     public void previewRubricButtonActionPerformed() {
         Vector<Object> v = new Vector<Object>();
-        for (String s : DatabaseIO.getAssignmentNames()) {
-            if (DatabaseIO.getAssignmentType(s) == AssignmentType.PROJECT) {
+        for (String s : OldDatabaseOps.getAssignmentNames()) {
+            if (OldDatabaseOps.getAssignmentType(s) == AssignmentType.PROJECT) {
                 v.add(s);
             }
         }
