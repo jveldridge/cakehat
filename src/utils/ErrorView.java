@@ -13,8 +13,6 @@ package utils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -37,10 +35,6 @@ public class ErrorView extends javax.swing.JFrame {
     public ErrorView(Exception e) {
         this();
 
-        //For testing only
-        e.printStackTrace();
-        //End testing
-
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         e.printStackTrace(printWriter);
@@ -50,6 +44,12 @@ public class ErrorView extends javax.swing.JFrame {
         catch (IOException ex) { }
 
         jTextArea1.setText(stringWriter.toString());
+        jTextArea1.setCaretPosition(0);
+    }
+
+    public ErrorView(Exception e, String customMessage) {
+        this(e);
+        jTextArea1.insert(customMessage, 0);
         jTextArea1.setCaretPosition(0);
     }
 
