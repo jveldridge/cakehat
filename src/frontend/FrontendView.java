@@ -716,9 +716,7 @@ public class FrontendView extends javax.swing.JFrame {
      */
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
         //TODO: prevent users from opening more than one grading GUI
-        GradingVisualizer g = new GradingVisualizer((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin(), (String) studentList.getSelectedValue());
-        g.setLocationRelativeTo(null);
-        g.setVisible(true);
+        new GradingVisualizer((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_gradeButtonActionPerformed
 
 

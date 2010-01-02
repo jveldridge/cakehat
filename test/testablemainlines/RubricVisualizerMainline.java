@@ -1,17 +1,15 @@
 package testablemainlines;
 
-import utils.basicXMLviewer.BasicXMLViewer;
-import utils.basicXMLviewer.*;
+import rubric.visualizers.PreviewVisualizer;
 
 /**
  *
  * @author spoletto
  */
-public class RubricVisualizerMainline {
-    
+public class RubricVisualizerMainline
+{    
     public static void main(String[] args)
-	{
-		new BasicXMLViewer("Clock");
-	}
-
+    {
+        new PreviewVisualizer("Clock");
+    }
 }

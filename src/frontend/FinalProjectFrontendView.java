@@ -531,9 +531,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         
-        GradingVisualizer g = new GradingVisualizer(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin(), getSelectedStudent());
-        g.setLocationRelativeTo(null);
-        g.setVisible(true);
+        new GradingVisualizer(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin(), getSelectedStudent());
 }//GEN-LAST:event_gradeButtonActionPerformed
 
     private void runCodeButtonrunButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonrunButton

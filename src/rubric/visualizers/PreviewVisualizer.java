@@ -24,7 +24,6 @@ public class PreviewVisualizer extends JFrame
     public PreviewVisualizer(String asgn)
     {
         super("Rubric Preview for " + asgn);
-        this.setVisible(true);
 
         //Get grading rubric
         String XMLFilePath = Allocator.getConstants().getAssignmentDir() + asgn + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
@@ -44,9 +43,6 @@ public class PreviewVisualizer extends JFrame
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        //Fit everything together
-        this.pack();
-
         //Handle closing
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -58,6 +54,13 @@ public class PreviewVisualizer extends JFrame
                 PreviewVisualizer.this.dispose();
             }
         });
+        
+        //Fit everything together
+        this.pack();
+
+        //Show
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
-    
+   
 }
