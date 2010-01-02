@@ -43,6 +43,15 @@ public class Allocator {
 
         return FRONTEND_UTILITIES;
     }
+
+    //DatabaseIO
+    private static DatabaseIO DATABASE_IO = null;
+    public static DatabaseIO getDatabaseIO() {
+        if (DATABASE_IO == null) {
+            DATABASE_IO = new DBWrapper();
+        }
+        return DATABASE_IO;
+    }
     
     //Projects
     //All projects that have been loaded so far, to avoid loading a project more than once
