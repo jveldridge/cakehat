@@ -1,20 +1,24 @@
 package utils;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import rubric.TimeStatus;
 
 /**
  * all DB accessor and mutator methods for cakehat
  * @author alexku
  */
-public class DBWrapper {
+public class DBWrapper implements DatabaseIO {
 
     private static Connection _connection;
     private static Statement _statement;
@@ -58,7 +62,7 @@ public class DBWrapper {
      * @param asgn - string of assignment name
      * @param distribution - hashmap of ta login to arraylist of student logins
      */
-    public static void setAsgnDist(JFrame messageFrame, String asgn, HashMap<String,ArrayList<String>> distribution) {
+    public void setAsgnDist(JFrame messageFrame, String asgn, Map<String,ArrayList<String>> distribution) {
         //add the distribution to the DB
         openConnection();
         try {
@@ -105,7 +109,7 @@ public class DBWrapper {
      * @param taLogin - string of single TA's login
      * @return list of student logins that have been blacklisted by the ta
      */
-    public static ArrayList<String> getBlacklist(JFrame messageFrame, String taLogin) {
+    public ArrayList<String> getTABlacklist(JFrame messageFrame, String taLogin) {
         openConnection();
         try {
             ArrayList<String> blackList = new ArrayList<String>();
@@ -134,7 +138,7 @@ public class DBWrapper {
      * @param assignmentName
      * @return
      */
-    public static boolean addAssignment(String assignmentName) {
+    public boolean addAssignment(String assignmentName) {
         openConnection();
         try {
             ResultSet rs = _statement.executeQuery("INSERT INTO asgn " +
@@ -151,7 +155,7 @@ public class DBWrapper {
         }
     }
 
-    public static boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
+    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
         openConnection();
         try {
             ResultSet rs = _statement.executeQuery("INSERT INTO student " +
@@ -170,7 +174,7 @@ public class DBWrapper {
         }
     }
 
-    public static boolean disableStudent(String studentLogin) {
+    public boolean disableStudent(String studentLogin) {
         openConnection();
         try {
             ResultSet rs = _statement.executeQuery("UPDATE student " +
@@ -187,7 +191,7 @@ public class DBWrapper {
         }
     }
 
-    public static boolean enableStudent(String studentLogin) {
+    public boolean enableStudent(String studentLogin) {
         openConnection();
         try {
             ResultSet rs = _statement.executeQuery("UPDATE student " +
@@ -202,5 +206,77 @@ public class DBWrapper {
             closeConnection();
             return false;
         }
+    }
+
+    public boolean addGrader(String taLogin, String taName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Map<String, String> getStudents() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean blacklistStudent(String studentLogin, String taLogin) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isDistEmpty(String asgn) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Iterable<String> getBlacklistedStudents() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean assignStudentToGrader(String studentLogin, String assignmentName, String taLogin) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean unassignStudentFromGrader(String studentLogin, String assignmentName, String taLogin) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Iterable<String> getStudentsAssigned(String assignmentName, String taLogin) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean grantExtension(String studentLogin, String assignmentName, Calendar newDate, String note) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean grantExemption(String studentLogin, String assignmentName, String note) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Calendar getExtension(String studentLogin, String assignmentName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getExtensionNote(String studentLogin, String assignmentName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getExemptionNote(String studentLogin, String assignmentName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean enterGrade(String studentLogin, String assignmentName, double score, TimeStatus status) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getStudentScore(String studentLogin, String assignmentName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getNumberOfGrades(String assignmentName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean exportDatabase(File exportFile) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean resetDatabase() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

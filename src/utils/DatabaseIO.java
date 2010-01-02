@@ -2,8 +2,10 @@ package utils;
 
 import rubric.TimeStatus;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
+import javax.swing.JFrame;
 
 /**
  * Interface to be implemented by classes providing database interaction; mandates
@@ -19,7 +21,7 @@ public interface DatabaseIO {
 
     public boolean addGrader(String taLogin, String taName);
 
-    public boolean addStudent(String studentLogin, String studentName);
+    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName);
 
     public boolean disableStudent(String studentLogin);
 
@@ -33,13 +35,13 @@ public interface DatabaseIO {
 
     public Iterable<String> getBlacklistedStudents();
 
-    public Iterable<String> getTABlacklist(String taLogin);
+    public Iterable<String> getTABlacklist(JFrame messageFrame, String taLogin);
 
     public boolean assignStudentToGrader(String studentLogin, String assignmentName, String taLogin);
 
     public boolean unassignStudentFromGrader(String studentLogin, String assignmentName, String taLogin);
 
-    //may add public boolean putDistribution(Map<String,String> distribution, String assignmentName);
+    public void setAsgnDist(JFrame messageFrame, String assignmentName, Map<String,ArrayList<String>> distribution);
 
     public Iterable<String> getStudentsAssigned(String assignmentName, String taLogin);
 
