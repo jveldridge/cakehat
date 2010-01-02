@@ -90,7 +90,7 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="gradeButton" alignment="1" pref="548" max="32767" attributes="3"/>
+                      <Component id="gradeButton" alignment="1" pref="550" max="32767" attributes="3"/>
                       <Component id="currentInfo" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="generalCommandsLabel" alignment="0" min="-2" max="-2" attributes="0"/>

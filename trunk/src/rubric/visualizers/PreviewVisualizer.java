@@ -1,4 +1,4 @@
-package rubric.visualizer;
+package rubric.visualizers;
 
 /**
  * Class used to visualize XML stencils created for

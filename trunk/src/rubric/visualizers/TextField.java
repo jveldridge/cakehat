@@ -1,4 +1,4 @@
-package rubric.visualizer;
+package rubric.visualizers;
 
 import com.inet.jortho.SpellChecker;
 import java.awt.event.KeyAdapter;

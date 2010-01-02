@@ -109,7 +109,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="studentFilter" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" pref="283" max="32767" attributes="1"/>
+                              <Component id="jScrollPane3" pref="291" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>
@@ -134,7 +134,7 @@
               <Component id="keepXMLRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="newXMLRadioButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="154" max="32767" attributes="0"/>
+              <EmptySpace pref="161" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
