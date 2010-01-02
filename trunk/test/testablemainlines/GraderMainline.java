@@ -1,14 +1,12 @@
 
 package testablemainlines;
 
-import frontend.grader.*;
+import rubric.visualizers.GradingVisualizer;
 
 public class GraderMainline
 {
-	public static void main(String[] args)
-	{
-		Grader g = new Grader(args[0],args[1],args[2]);
-        g.setLocationRelativeTo(null);
-        g.setVisible(true);
-	}
+    public static void main(String[] args)
+    {
+	new GradingVisualizer(args[0],args[1],args[2]);
+    }
 }

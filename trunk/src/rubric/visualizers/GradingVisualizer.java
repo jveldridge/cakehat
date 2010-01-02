@@ -35,8 +35,6 @@ public class GradingVisualizer extends JFrame
     {
         super("Grading " + studentAcct + "'s " + asgn);
 
-        this.setVisible(false);
-
         //Load window icon
         try
         {
@@ -126,5 +124,9 @@ public class GradingVisualizer extends JFrame
         Set<AWTKeyStroke> newForwardKeys = new HashSet(forwardKeys);
         newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
+
+        //Show
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 }
