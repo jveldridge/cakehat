@@ -1,4 +1,4 @@
-package rubric.visualizer;
+package rubric.visualizers;
 
 import javax.swing.JButton;
 

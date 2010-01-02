@@ -11,7 +11,7 @@
 package backend.assignmentdist;
 
 import backend.OldDatabaseOps;
-import frontend.grader.rubric.RubricManager;
+import rubric.RubricManager;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;

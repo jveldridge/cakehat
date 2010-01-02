@@ -12,7 +12,7 @@
 package backend.assignmentdist;
 
 import backend.OldDatabaseOps;
-import frontend.grader.rubric.RubricManager;
+import rubric.RubricManager;
 import javax.swing.JList;
 import utils.Allocator;
 import utils.GeneralUtilities;

@@ -12,7 +12,7 @@ package backend.assignmentdist;
 
 
 import backend.OldDatabaseOps;
-import frontend.grader.rubric.RubricManager;
+import rubric.RubricManager;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;

@@ -15,15 +15,15 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
-import frontend.grader.Grader;
-import frontend.grader.rubric.RubricManager;
+import rubric.visualizers.GradingVisualizer;
+import rubric.RubricManager;
 import java.awt.CardLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.JButton;
+import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
-import utils.basicXMLviewer.BasicXMLViewer;
 
 /**
  *
@@ -1020,11 +1020,11 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_printRubricButtonActionPerformed
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
-        new Grader(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
+        new GradingVisualizer(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
     }//GEN-LAST:event_viewRubricButtonActionPerformed
 
     private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
-        new BasicXMLViewer(this.getSelectedAssignment());
+        new PreviewVisualizer(this.getSelectedAssignment());
     }//GEN-LAST:event_previewRubricButtonActionPerformed
 
    /**

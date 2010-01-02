@@ -1,8 +1,8 @@
 package frontend;
 
 import backend.OldDatabaseOps;
-import frontend.grader.Grader;
-import frontend.grader.rubric.RubricManager;
+import rubric.visualizers.GradingVisualizer;
+import rubric.RubricManager;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -716,7 +716,7 @@ public class FrontendView extends javax.swing.JFrame {
      */
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
         //TODO: prevent users from opening more than one grading GUI
-        Grader g = new Grader((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin(), (String) studentList.getSelectedValue());
+        GradingVisualizer g = new GradingVisualizer((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin(), (String) studentList.getSelectedValue());
         g.setLocationRelativeTo(null);
         g.setVisible(true);
     }//GEN-LAST:event_gradeButtonActionPerformed

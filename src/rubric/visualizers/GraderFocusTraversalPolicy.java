@@ -1,4 +1,4 @@
-package rubric.visualizer;
+package rubric.visualizers;
 
 import java.awt.Component;
 import java.awt.Container;

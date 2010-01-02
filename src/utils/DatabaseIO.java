@@ -1,6 +1,6 @@
 package utils;
 
-import frontend.grader.rubric.TimeStatus;
+import rubric.TimeStatus;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Map;

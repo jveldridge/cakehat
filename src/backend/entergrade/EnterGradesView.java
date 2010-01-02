@@ -11,7 +11,7 @@
 package backend.entergrade;
 
 import backend.OldDatabaseOps;
-import frontend.grader.rubric.RubricManager;
+import rubric.RubricManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;

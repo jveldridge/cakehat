@@ -8,8 +8,8 @@ package frontend;
 
 import backend.OldDatabaseOps;
 import backend.database.DatabaseWatch;
-import frontend.grader.Grader;
-import frontend.grader.rubric.RubricManager;
+import rubric.visualizers.GradingVisualizer;
+import rubric.RubricManager;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -531,7 +531,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         
-        Grader g = new Grader(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin(), getSelectedStudent());
+        GradingVisualizer g = new GradingVisualizer(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin(), getSelectedStudent());
         g.setLocationRelativeTo(null);
         g.setVisible(true);
 }//GEN-LAST:event_gradeButtonActionPerformed
