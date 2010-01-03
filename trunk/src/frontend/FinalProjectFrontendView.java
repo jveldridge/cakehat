@@ -77,8 +77,9 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 
         this.addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowClosing(WindowEvent e) {
-                removeCodeDirectories();
+                Allocator.getGeneralUtilities().removeUserGradingDirectory();
             }
         });
 
@@ -95,15 +96,6 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         initDatabaseWatch();
         this.populateStudentList();
-    }
-
-    private void removeCodeDirectories() {
-        //Get the projects used
-        HashSet<Project> prjsTouched = new HashSet<Project>(_studentsToProjects.values());
-
-        for (Project prj : prjsTouched) {
-            prj.removeCodeDirectory();
-        }
     }
 
     private Project getSelectedStudentsProject() {
@@ -438,7 +430,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        removeCodeDirectories();
+        Allocator.getGeneralUtilities().removeUserGradingDirectory();
         System.exit(0);
 }//GEN-LAST:event_quitMenuItemActionPerformed
 

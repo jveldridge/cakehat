@@ -149,20 +149,6 @@ public abstract class Project {
     }
 
     /**
-     * Creates a directory for the .code for this project.
-     */
-    public void createCodeDirectory() {
-        Allocator.getGeneralUtilities().makeDirectory(getProjectCodeDirectory());
-    }
-
-    /**
-     * Removes the directory created by createCodeDirectory()
-     */
-    public void removeCodeDirectory() {
-        Allocator.getGeneralUtilities().removeDirectory(getProjectCodeDirectory());
-    }
-
-    /**
      * Untars all of the handins for the specified student logins.
      *
      * @param studentLogins
@@ -223,56 +209,13 @@ public abstract class Project {
     /**
      * @date 12/06/2009
      * @param studentLogin
-     * @return path to the TA grading directory for the project package for the given project and student
-     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/<projectname>/
-     * @author jeldridg
-     */
-    public String getStudentProjectDirectory(String studentLogin) {
-        return getStudentCodeDirectory(studentLogin) + this.getName() + "/";
-    }
-
-    /**
-     * TODO: Remove this method and any need for it. GFX should not be special cased.
-     * 
-     * @date 12/06/2009
-     * @param studentLogin
-     * @return path to the TA grading directory for GFX for the given project and student
-     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/gfx/
-     * @author jeldridg
-     */
-    public String getStudentGFXDirectory(String studentLogin) {
-        return getStudentCodeDirectory(studentLogin) + "gfx/";
-    }
-
-    /**
-     * @date 12/06/2009
-     * @param studentLogin
      * @return path to the TA grading directory containing directories for all packages of a student's code for a particular project
      *          (i.e., the project and gfx, if applicable)
-     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/<studentlogin>/
+     *          currently, /course/cs015/grading/.<talogin>/<projectname>/<studentLogin>/
      * @author jeldridg
      */
     public String getStudentCodeDirectory(String studentLogin) {
-        return getProjectCodeDirectory() + studentLogin + "/";
+        return Allocator.getGeneralUtilities().getUserGradingDirectory() + this.getName() + "/" + studentLogin + "/";
     }
 
-    /**
-     * @date 12/06/2009
-     * @return path to the directory in which code of the students the user TA must grade will be stored
-     *   currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/.code/
-     * @author jeldridg
-     */
-    public String getProjectCodeDirectory() {
-        return getUserProjectDirectory() + Allocator.getConstants().getCodeDir();
-    }
-
-    /**
-     * @date 12/06/2009
-     * @return path to a TA's grading directory for a particular project
-     *          currently, /course/cs015/grading/ta/2009/<talogin>/<projectname>/
-     * @author jeldridg
-     */
-    public String getUserProjectDirectory() {
-        return Allocator.getGeneralUtilities().getUserGradingDirectory() + this.getName() + "/";
-    }
 }

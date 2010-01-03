@@ -48,6 +48,9 @@ public class NewBackend extends javax.swing.JFrame {
 
         CardLayout cl = (CardLayout) cardPanel.getLayout();
         cl.show(cardPanel, "instructionCard");
+
+        //make the user's temporary grading directory
+        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGeneralUtilities().getUserGradingDirectory());
         
         this.setVisible(true);
     }

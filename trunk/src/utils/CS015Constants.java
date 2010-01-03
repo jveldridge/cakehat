@@ -75,7 +75,7 @@ public class CS015Constants extends Constants {
     }
 
     public String getGraderPath(){
-        return getCourseDir() + "grading/ta/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
+        return getCourseDir() + "grading/";
     }
 
     //TODO: Change back to config.xml
