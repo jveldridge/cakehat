@@ -73,24 +73,31 @@ public class NewBackend extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
-        leftPanel = new javax.swing.JPanel();
-        studentFilter = new javax.swing.JTextField();
-        assignmentsLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        assignmentList = new javax.swing.JList();
-        studentsLabel = new javax.swing.JLabel();
-        asgnSelectAllButton = new javax.swing.JButton();
-        studentSelectAllButton = new javax.swing.JButton();
-        asgnTypeComboBox = new javax.swing.JComboBox();
-        asgnSelectLabel = new javax.swing.JLabel();
-        asgnSelectNoneButton = new javax.swing.JButton();
-        studentSelectNoneButton = new javax.swing.JButton();
-        studentSelectLabel = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        studentList = new javax.swing.JList();
-        jPanel2 = new javax.swing.JPanel();
+        centerPanel = new javax.swing.JPanel();
+        selectedStudsLabel = new javax.swing.JLabel();
+        selectedAsgnLabel = new javax.swing.JLabel();
+        generateDistButton = new javax.swing.JButton();
+        reassignGradingButton = new javax.swing.JButton();
+        statisticsButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        importGradesButton = new javax.swing.JButton();
+        runCodeButton = new javax.swing.JButton();
+        testCodeButton = new javax.swing.JButton();
+        viewRubricButton = new javax.swing.JButton();
+        extensionButton = new javax.swing.JButton();
+        exemptionButton = new javax.swing.JButton();
+        demoButton = new javax.swing.JButton();
+        printCodeButton = new javax.swing.JButton();
+        printRubricButton = new javax.swing.JButton();
+        openButton = new javax.swing.JButton();
+        previewRubricButton = new javax.swing.JButton();
+        gradingStandardsButton = new javax.swing.JButton();
         cardPanel = new javax.swing.JPanel();
+        multiSelectedPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        instructionsPanel = new javax.swing.JPanel();
+        welcomeLabel = new javax.swing.JLabel();
+        instructionsLabel = new javax.swing.JLabel();
         singleSelectedPanel = new javax.swing.JPanel();
         writtenComponentLabel = new javax.swing.JLabel();
         writtenEarnedLabel = new javax.swing.JLabel();
@@ -114,32 +121,20 @@ public class NewBackend extends javax.swing.JFrame {
         overallEarnedValue = new javax.swing.JLabel();
         overallTotalValue = new javax.swing.JLabel();
         submitGradeButton = new javax.swing.JButton();
-        multiSelectedPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        instructionsPanel = new javax.swing.JPanel();
-        welcomeLabel = new javax.swing.JLabel();
-        instructionsLabel = new javax.swing.JLabel();
-        jSplitPane2 = new javax.swing.JSplitPane();
-        centerPanel = new javax.swing.JPanel();
-        selectedStudsLabel = new javax.swing.JLabel();
-        selectedAsgnLabel = new javax.swing.JLabel();
-        generateDistButton = new javax.swing.JButton();
-        reassignGradingButton = new javax.swing.JButton();
-        statisticsButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         sendGradesButton = new javax.swing.JButton();
-        importGradesButton = new javax.swing.JButton();
-        runCodeButton = new javax.swing.JButton();
-        testCodeButton = new javax.swing.JButton();
-        viewRubricButton = new javax.swing.JButton();
-        extensionButton = new javax.swing.JButton();
-        exemptionButton = new javax.swing.JButton();
-        demoButton = new javax.swing.JButton();
-        printCodeButton = new javax.swing.JButton();
-        printRubricButton = new javax.swing.JButton();
-        openButton = new javax.swing.JButton();
-        previewRubricButton = new javax.swing.JButton();
-        gradingStandardsButton = new javax.swing.JButton();
+        leftPanel = new javax.swing.JPanel();
+        studentFilter = new javax.swing.JTextField();
+        assignmentsLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        assignmentList = new javax.swing.JList();
+        studentsLabel = new javax.swing.JLabel();
+        asgnSelectAllButton = new javax.swing.JButton();
+        studentSelectAllButton = new javax.swing.JButton();
+        asgnTypeComboBox = new javax.swing.JComboBox();
+        asgnSelectNoneButton = new javax.swing.JButton();
+        studentSelectNoneButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        studentList = new javax.swing.JList();
         rightPanel = new javax.swing.JPanel();
         generalCommandsLabel = new javax.swing.JLabel();
         blacklistButton = new javax.swing.JButton();
@@ -155,424 +150,9 @@ public class NewBackend extends javax.swing.JFrame {
         setTitle("Cakehat - Backend - " + Allocator.getGeneralUtilities().getUserLogin());
         setName("Form"); // NOI18N
 
-        jSplitPane1.setName("jSplitPane1"); // NOI18N
-
-        leftPanel.setMinimumSize(new java.awt.Dimension(350, 0));
-        leftPanel.setName("leftPanel"); // NOI18N
-        leftPanel.setPreferredSize(new java.awt.Dimension(350, 522));
-
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NewBackend.class);
-        studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
-        studentFilter.setName("studentFilter"); // NOI18N
-        studentFilter.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                studentFilterKeyPressed(evt);
-            }
-        });
-
-        assignmentsLabel.setText(resourceMap.getString("assignmentsLabel.text")); // NOI18N
-        assignmentsLabel.setName("assignmentsLabel"); // NOI18N
-
-        jScrollPane1.setName("jScrollPane1"); // NOI18N
-
-        assignmentList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        assignmentList.setName("assignmentList"); // NOI18N
-        assignmentList.setPreferredSize(null);
-        assignmentList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                assignmentListMouseClicked(evt);
-            }
-        });
-        jScrollPane1.setViewportView(assignmentList);
-
-        studentsLabel.setText(resourceMap.getString("studentsLabel.text")); // NOI18N
-        studentsLabel.setName("studentsLabel"); // NOI18N
-
-        asgnSelectAllButton.setText(resourceMap.getString("asgnSelectAllButton.text")); // NOI18N
-        asgnSelectAllButton.setName("asgnSelectAllButton"); // NOI18N
-        asgnSelectAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asgnSelectAllButtonActionPerformed(evt);
-            }
-        });
-
-        studentSelectAllButton.setText(resourceMap.getString("studentSelectAllButton.text")); // NOI18N
-        studentSelectAllButton.setName("studentSelectAllButton"); // NOI18N
-        studentSelectAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                studentSelectAllButtonActionPerformed(evt);
-            }
-        });
-
-        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Type: All", "Type: Code", "Type: Written", "Type: Combination", "Type: Lab" }));
-        asgnTypeComboBox.setSelectedItem("Type: Code");
-        asgnTypeComboBox.setName("asgnTypeComboBox"); // NOI18N
-        asgnTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asgnTypeComboBoxActionPerformed(evt);
-            }
-        });
-
-        asgnSelectLabel.setText(resourceMap.getString("asgnSelectLabel.text")); // NOI18N
-        asgnSelectLabel.setName("asgnSelectLabel"); // NOI18N
-
-        asgnSelectNoneButton.setText(resourceMap.getString("asgnSelectNoneButton.text")); // NOI18N
-        asgnSelectNoneButton.setName("asgnSelectNoneButton"); // NOI18N
-        asgnSelectNoneButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asgnSelectNoneButtonActionPerformed(evt);
-            }
-        });
-
-        studentSelectNoneButton.setText(resourceMap.getString("studentSelectNoneButton.text")); // NOI18N
-        studentSelectNoneButton.setName("studentSelectNoneButton"); // NOI18N
-        studentSelectNoneButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                studentSelectNoneButtonActionPerformed(evt);
-            }
-        });
-
-        studentSelectLabel.setText(resourceMap.getString("studentSelectLabel.text")); // NOI18N
-        studentSelectLabel.setName("studentSelectLabel"); // NOI18N
-
-        jScrollPane2.setName("jScrollPane2"); // NOI18N
-
-        studentList.setMaximumSize(new java.awt.Dimension(160, 95));
-        studentList.setMinimumSize(new java.awt.Dimension(140, 95));
-        studentList.setName("studentList"); // NOI18N
-        studentList.setPreferredSize(null);
-        studentList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                studentListMouseClicked(evt);
-            }
-        });
-        jScrollPane2.setViewportView(studentList);
-
-        javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
-        leftPanel.setLayout(leftPanelLayout);
-        leftPanelLayout.setHorizontalGroup(
-            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(leftPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(assignmentsLabel)
-                    .addComponent(asgnTypeComboBox, 0, 156, Short.MAX_VALUE)
-                    .addGroup(leftPanelLayout.createSequentialGroup()
-                        .addComponent(asgnSelectLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(asgnSelectAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(asgnSelectNoneButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
-                        .addComponent(studentSelectLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
-                        .addComponent(studentSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(studentSelectNoneButton))
-                    .addComponent(studentsLabel)
-                    .addComponent(studentFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        leftPanelLayout.setVerticalGroup(
-            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(leftPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(assignmentsLabel)
-                    .addComponent(studentsLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(studentSelectNoneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(studentSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(asgnSelectLabel)
-                        .addComponent(asgnSelectNoneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(asgnSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(studentSelectLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(asgnTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-
-        jSplitPane1.setLeftComponent(leftPanel);
-
-        jPanel2.setMaximumSize(new java.awt.Dimension(750, 32767));
-        jPanel2.setMinimumSize(new java.awt.Dimension(750, 0));
-        jPanel2.setName("jPanel2"); // NOI18N
-        jPanel2.setPreferredSize(new java.awt.Dimension(750, 561));
-
-        cardPanel.setName("cardPanel"); // NOI18N
-        cardPanel.setLayout(new CardLayout());
-        cardPanel.setLayout(new java.awt.CardLayout());
-
-        singleSelectedPanel.setName(""); // NOI18N
-
-        writtenComponentLabel.setFont(resourceMap.getFont("writtenComponentLabel.font")); // NOI18N
-        writtenComponentLabel.setText(resourceMap.getString("writtenComponentLabel.text")); // NOI18N
-        writtenComponentLabel.setName("writtenComponentLabel"); // NOI18N
-
-        writtenEarnedLabel.setText(resourceMap.getString("writtenEarnedLabel.text")); // NOI18N
-        writtenEarnedLabel.setName("writtenEarnedLabel"); // NOI18N
-
-        writtenEarnedText.setName("writtenEarnedText"); // NOI18N
-
-        writtenTotalLabel.setText(resourceMap.getString("writtenTotalLabel.text")); // NOI18N
-        writtenTotalLabel.setName("writtenTotalLabel"); // NOI18N
-
-        writtenTotalText.setEditable(false);
-        writtenTotalText.setFocusable(false);
-        writtenTotalText.setName("writtenTotalText"); // NOI18N
-
-        writtenScoreLabel.setText(resourceMap.getString("writtenScoreLabel.text")); // NOI18N
-        writtenScoreLabel.setName("writtenScoreLabel"); // NOI18N
-
-        codeComponentLabel.setFont(resourceMap.getFont("codeComponentLabel.font")); // NOI18N
-        codeComponentLabel.setText(resourceMap.getString("codeComponentLabel.text")); // NOI18N
-        codeComponentLabel.setName("codeComponentLabel"); // NOI18N
-
-        overallLabel.setFont(resourceMap.getFont("overallLabel.font")); // NOI18N
-        overallLabel.setText(resourceMap.getString("overallLabel.text")); // NOI18N
-        overallLabel.setName("overallLabel"); // NOI18N
-
-        overallScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        overallScoreValue.setText(resourceMap.getString("overallScoreValue.text")); // NOI18N
-        overallScoreValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        overallScoreValue.setName("overallScoreValue"); // NOI18N
-
-        writtenScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        writtenScoreValue.setText(resourceMap.getString("writtenScoreValue.text")); // NOI18N
-        writtenScoreValue.setName("writtenScoreValue"); // NOI18N
-
-        overallEarnedLabel.setText(resourceMap.getString("overallEarnedLabel.text")); // NOI18N
-        overallEarnedLabel.setName("overallEarnedLabel"); // NOI18N
-
-        overalTotalLabel.setText(resourceMap.getString("overalTotalLabel.text")); // NOI18N
-        overalTotalLabel.setName("overalTotalLabel"); // NOI18N
-
-        overallScoreLabel.setText(resourceMap.getString("overallScoreLabel.text")); // NOI18N
-        overallScoreLabel.setName("overallScoreLabel"); // NOI18N
-
-        codeEarnedLabel.setText(resourceMap.getString("codeEarnedLabel.text")); // NOI18N
-        codeEarnedLabel.setName("codeEarnedLabel"); // NOI18N
-
-        codeEarnedText.setName("codeEarnedText"); // NOI18N
-
-        totalEarnedLabel.setText(resourceMap.getString("totalEarnedLabel.text")); // NOI18N
-        totalEarnedLabel.setName("totalEarnedLabel"); // NOI18N
-
-        codeTotalText.setEditable(false);
-        codeTotalText.setFocusable(false);
-        codeTotalText.setName("codeTotalText"); // NOI18N
-
-        codeScoreLabel.setText(resourceMap.getString("codeScoreLabel.text")); // NOI18N
-        codeScoreLabel.setName("codeScoreLabel"); // NOI18N
-
-        codeScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        codeScoreValue.setText(resourceMap.getString("codeScoreValue.text")); // NOI18N
-        codeScoreValue.setName("codeScoreValue"); // NOI18N
-
-        overallEarnedValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        overallEarnedValue.setText(resourceMap.getString("overallEarnedValue.text")); // NOI18N
-        overallEarnedValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        overallEarnedValue.setName("overallEarnedValue"); // NOI18N
-
-        overallTotalValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        overallTotalValue.setText(resourceMap.getString("overallTotalValue.text")); // NOI18N
-        overallTotalValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        overallTotalValue.setName("overallTotalValue"); // NOI18N
-
-        submitGradeButton.setIcon(resourceMap.getIcon("submitGradeButton.icon")); // NOI18N
-        submitGradeButton.setText(resourceMap.getString("submitGradeButton.text")); // NOI18N
-        submitGradeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        submitGradeButton.setIconTextGap(5);
-        submitGradeButton.setName("submitGradeButton"); // NOI18N
-
-        javax.swing.GroupLayout singleSelectedPanelLayout = new javax.swing.GroupLayout(singleSelectedPanel);
-        singleSelectedPanel.setLayout(singleSelectedPanelLayout);
-        singleSelectedPanelLayout.setHorizontalGroup(
-            singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, singleSelectedPanelLayout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(writtenEarnedLabel)
-                                    .addComponent(writtenTotalLabel)
-                                    .addComponent(writtenScoreLabel))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(writtenScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                    .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(writtenTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(writtenEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))))
-                            .addComponent(writtenComponentLabel)
-                            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(codeComponentLabel)
-                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
-                                        .addComponent(codeScoreLabel))
-                                    .addComponent(overallLabel)
-                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
-                                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(overalTotalLabel)
-                                            .addComponent(overallEarnedLabel)
-                                            .addComponent(overallScoreLabel)))
-                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
-                                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(codeEarnedLabel)
-                                            .addComponent(totalEarnedLabel))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(codeScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
-                                    .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(codeTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(codeEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
-                                    .addComponent(overallEarnedValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
-                                    .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
-                                    .addComponent(overallScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)))))
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addGap(107, 107, 107)
-                        .addComponent(submitGradeButton)))
-                .addContainerGap())
-        );
-        singleSelectedPanelLayout.setVerticalGroup(
-            singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(writtenComponentLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(writtenEarnedLabel)
-                            .addComponent(writtenEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(7, 7, 7)
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(writtenTotalLabel)
-                            .addComponent(writtenTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(writtenScoreLabel)
-                            .addComponent(writtenScoreValue)))
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addGap(129, 129, 129)
-                        .addComponent(codeComponentLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(codeEarnedLabel)
-                    .addComponent(codeEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(totalEarnedLabel)
-                    .addComponent(codeTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(codeScoreLabel)
-                    .addComponent(codeScoreValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(overallLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(overallEarnedLabel)
-                    .addComponent(overallEarnedValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(overalTotalLabel)
-                    .addComponent(overallTotalValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(overallScoreLabel)
-                    .addComponent(overallScoreValue))
-                .addGap(18, 18, 18)
-                .addComponent(submitGradeButton)
-                .addGap(61, 61, 61))
-        );
-
-        cardPanel.add(singleSelectedPanel, "singlePanel");
-
-        multiSelectedPanel.setName(""); // NOI18N
-
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
-        jLabel1.setName("jLabel1"); // NOI18N
-
-        javax.swing.GroupLayout multiSelectedPanelLayout = new javax.swing.GroupLayout(multiSelectedPanel);
-        multiSelectedPanel.setLayout(multiSelectedPanelLayout);
-        multiSelectedPanelLayout.setHorizontalGroup(
-            multiSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(multiSelectedPanelLayout.createSequentialGroup()
-                .addGap(126, 126, 126)
-                .addComponent(jLabel1)
-                .addContainerGap(152, Short.MAX_VALUE))
-        );
-        multiSelectedPanelLayout.setVerticalGroup(
-            multiSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(multiSelectedPanelLayout.createSequentialGroup()
-                .addGap(125, 125, 125)
-                .addComponent(jLabel1)
-                .addContainerGap(226, Short.MAX_VALUE))
-        );
-
-        cardPanel.add(multiSelectedPanel, "multiPanel");
-
-        instructionsPanel.setName("instructionsPanel"); // NOI18N
-
-        welcomeLabel.setFont(resourceMap.getFont("welcomeLabel.font")); // NOI18N
-        welcomeLabel.setText(resourceMap.getString("welcomeLabel.text")); // NOI18N
-        welcomeLabel.setName("welcomeLabel"); // NOI18N
-
-        instructionsLabel.setText(resourceMap.getString("instructionsLabel.text")); // NOI18N
-        instructionsLabel.setName("instructionsLabel"); // NOI18N
-
-        javax.swing.GroupLayout instructionsPanelLayout = new javax.swing.GroupLayout(instructionsPanel);
-        instructionsPanel.setLayout(instructionsPanelLayout);
-        instructionsPanelLayout.setHorizontalGroup(
-            instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(instructionsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(instructionsPanelLayout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(instructionsLabel))
-                    .addComponent(welcomeLabel))
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-        instructionsPanelLayout.setVerticalGroup(
-            instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(instructionsPanelLayout.createSequentialGroup()
-                .addGap(40, 40, 40)
-                .addComponent(welcomeLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(instructionsLabel)
-                .addContainerGap(235, Short.MAX_VALUE))
-        );
-
-        cardPanel.add(instructionsPanel, "instructionCard");
-
-        jSplitPane2.setName("jSplitPane2"); // NOI18N
-
         centerPanel.setName("centerPanel"); // NOI18N
 
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NewBackend.class);
         selectedStudsLabel.setText(resourceMap.getString("selectedStudsLabel.text")); // NOI18N
         selectedStudsLabel.setName("selectedStudsLabel"); // NOI18N
 
@@ -614,17 +194,6 @@ public class NewBackend extends javax.swing.JFrame {
         });
 
         jSeparator1.setName("jSeparator1"); // NOI18N
-
-        sendGradesButton.setIcon(resourceMap.getIcon("sendGradesButton.icon")); // NOI18N
-        sendGradesButton.setText(resourceMap.getString("sendGradesButton.text")); // NOI18N
-        sendGradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        sendGradesButton.setIconTextGap(5);
-        sendGradesButton.setName("sendGradesButton"); // NOI18N
-        sendGradesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sendGradesButtonActionPerformed(evt);
-            }
-        });
 
         importGradesButton.setIcon(resourceMap.getIcon("importGradesButton.icon")); // NOI18N
         importGradesButton.setText(resourceMap.getString("importGradesButton.text")); // NOI18N
@@ -743,6 +312,271 @@ public class NewBackend extends javax.swing.JFrame {
         gradingStandardsButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         gradingStandardsButton.setIconTextGap(5);
         gradingStandardsButton.setName("gradingStandardsButton"); // NOI18N
+        gradingStandardsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gradingStandardsButtonActionPerformed(evt);
+            }
+        });
+
+        cardPanel.setName("cardPanel"); // NOI18N
+        cardPanel.setLayout(new CardLayout());
+        cardPanel.setLayout(new java.awt.CardLayout());
+
+        multiSelectedPanel.setName(""); // NOI18N
+
+        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setName("jLabel1"); // NOI18N
+
+        javax.swing.GroupLayout multiSelectedPanelLayout = new javax.swing.GroupLayout(multiSelectedPanel);
+        multiSelectedPanel.setLayout(multiSelectedPanelLayout);
+        multiSelectedPanelLayout.setHorizontalGroup(
+            multiSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(multiSelectedPanelLayout.createSequentialGroup()
+                .addGap(126, 126, 126)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(151, Short.MAX_VALUE))
+        );
+        multiSelectedPanelLayout.setVerticalGroup(
+            multiSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(multiSelectedPanelLayout.createSequentialGroup()
+                .addGap(125, 125, 125)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(227, Short.MAX_VALUE))
+        );
+
+        cardPanel.add(multiSelectedPanel, "multiPanel");
+
+        instructionsPanel.setName("instructionsPanel"); // NOI18N
+
+        welcomeLabel.setFont(resourceMap.getFont("welcomeLabel.font")); // NOI18N
+        welcomeLabel.setText(resourceMap.getString("welcomeLabel.text")); // NOI18N
+        welcomeLabel.setName("welcomeLabel"); // NOI18N
+
+        instructionsLabel.setText(resourceMap.getString("instructionsLabel.text")); // NOI18N
+        instructionsLabel.setName("instructionsLabel"); // NOI18N
+
+        javax.swing.GroupLayout instructionsPanelLayout = new javax.swing.GroupLayout(instructionsPanel);
+        instructionsPanel.setLayout(instructionsPanelLayout);
+        instructionsPanelLayout.setHorizontalGroup(
+            instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(instructionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(instructionsPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(instructionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(welcomeLabel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        instructionsPanelLayout.setVerticalGroup(
+            instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(instructionsPanelLayout.createSequentialGroup()
+                .addGap(40, 40, 40)
+                .addComponent(welcomeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(instructionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(234, Short.MAX_VALUE))
+        );
+
+        cardPanel.add(instructionsPanel, "instructionCard");
+
+        singleSelectedPanel.setName(""); // NOI18N
+
+        writtenComponentLabel.setFont(resourceMap.getFont("writtenComponentLabel.font")); // NOI18N
+        writtenComponentLabel.setText(resourceMap.getString("writtenComponentLabel.text")); // NOI18N
+        writtenComponentLabel.setName("writtenComponentLabel"); // NOI18N
+
+        writtenEarnedLabel.setText(resourceMap.getString("writtenEarnedLabel.text")); // NOI18N
+        writtenEarnedLabel.setName("writtenEarnedLabel"); // NOI18N
+
+        writtenEarnedText.setName("writtenEarnedText"); // NOI18N
+
+        writtenTotalLabel.setText(resourceMap.getString("writtenTotalLabel.text")); // NOI18N
+        writtenTotalLabel.setName("writtenTotalLabel"); // NOI18N
+
+        writtenTotalText.setEditable(false);
+        writtenTotalText.setFocusable(false);
+        writtenTotalText.setName("writtenTotalText"); // NOI18N
+
+        writtenScoreLabel.setText(resourceMap.getString("writtenScoreLabel.text")); // NOI18N
+        writtenScoreLabel.setName("writtenScoreLabel"); // NOI18N
+
+        codeComponentLabel.setFont(resourceMap.getFont("codeComponentLabel.font")); // NOI18N
+        codeComponentLabel.setText(resourceMap.getString("codeComponentLabel.text")); // NOI18N
+        codeComponentLabel.setName("codeComponentLabel"); // NOI18N
+
+        overallLabel.setFont(resourceMap.getFont("overallLabel.font")); // NOI18N
+        overallLabel.setText(resourceMap.getString("overallLabel.text")); // NOI18N
+        overallLabel.setName("overallLabel"); // NOI18N
+
+        overallScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        overallScoreValue.setText(resourceMap.getString("overallScoreValue.text")); // NOI18N
+        overallScoreValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        overallScoreValue.setName("overallScoreValue"); // NOI18N
+
+        writtenScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        writtenScoreValue.setText(resourceMap.getString("writtenScoreValue.text")); // NOI18N
+        writtenScoreValue.setName("writtenScoreValue"); // NOI18N
+
+        overallEarnedLabel.setText(resourceMap.getString("overallEarnedLabel.text")); // NOI18N
+        overallEarnedLabel.setName("overallEarnedLabel"); // NOI18N
+
+        overalTotalLabel.setText(resourceMap.getString("overalTotalLabel.text")); // NOI18N
+        overalTotalLabel.setName("overalTotalLabel"); // NOI18N
+
+        overallScoreLabel.setText(resourceMap.getString("overallScoreLabel.text")); // NOI18N
+        overallScoreLabel.setName("overallScoreLabel"); // NOI18N
+
+        codeEarnedLabel.setText(resourceMap.getString("codeEarnedLabel.text")); // NOI18N
+        codeEarnedLabel.setName("codeEarnedLabel"); // NOI18N
+
+        codeEarnedText.setName("codeEarnedText"); // NOI18N
+
+        totalEarnedLabel.setText(resourceMap.getString("totalEarnedLabel.text")); // NOI18N
+        totalEarnedLabel.setName("totalEarnedLabel"); // NOI18N
+
+        codeTotalText.setEditable(false);
+        codeTotalText.setFocusable(false);
+        codeTotalText.setName("codeTotalText"); // NOI18N
+
+        codeScoreLabel.setText(resourceMap.getString("codeScoreLabel.text")); // NOI18N
+        codeScoreLabel.setName("codeScoreLabel"); // NOI18N
+
+        codeScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        codeScoreValue.setText(resourceMap.getString("codeScoreValue.text")); // NOI18N
+        codeScoreValue.setName("codeScoreValue"); // NOI18N
+
+        overallEarnedValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        overallEarnedValue.setText(resourceMap.getString("overallEarnedValue.text")); // NOI18N
+        overallEarnedValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        overallEarnedValue.setName("overallEarnedValue"); // NOI18N
+
+        overallTotalValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        overallTotalValue.setText(resourceMap.getString("overallTotalValue.text")); // NOI18N
+        overallTotalValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        overallTotalValue.setName("overallTotalValue"); // NOI18N
+
+        submitGradeButton.setIcon(resourceMap.getIcon("submitGradeButton.icon")); // NOI18N
+        submitGradeButton.setText(resourceMap.getString("submitGradeButton.text")); // NOI18N
+        submitGradeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        submitGradeButton.setIconTextGap(5);
+        submitGradeButton.setName("submitGradeButton"); // NOI18N
+
+        javax.swing.GroupLayout singleSelectedPanelLayout = new javax.swing.GroupLayout(singleSelectedPanel);
+        singleSelectedPanel.setLayout(singleSelectedPanelLayout);
+        singleSelectedPanelLayout.setHorizontalGroup(
+            singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, singleSelectedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(submitGradeButton)
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(writtenEarnedLabel)
+                            .addComponent(writtenTotalLabel)
+                            .addComponent(writtenScoreLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(writtenScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                            .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(writtenTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(writtenEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))))
+                    .addComponent(writtenComponentLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(codeComponentLabel)
+                            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addComponent(codeScoreLabel))
+                            .addComponent(overallLabel)
+                            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(overalTotalLabel)
+                                    .addComponent(overallEarnedLabel)
+                                    .addComponent(overallScoreLabel)))
+                            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(codeEarnedLabel)
+                                    .addComponent(totalEarnedLabel))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(codeScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                            .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(codeTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(codeEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                            .addComponent(overallEarnedValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                            .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                            .addComponent(overallScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))))
+                .addGap(113, 113, 113))
+        );
+        singleSelectedPanelLayout.setVerticalGroup(
+            singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(writtenComponentLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(writtenEarnedLabel)
+                            .addComponent(writtenEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(7, 7, 7)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(writtenTotalLabel)
+                            .addComponent(writtenTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(writtenScoreLabel)
+                            .addComponent(writtenScoreValue)))
+                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
+                        .addGap(129, 129, 129)
+                        .addComponent(codeComponentLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(codeEarnedLabel)
+                    .addComponent(codeEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(totalEarnedLabel)
+                    .addComponent(codeTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(codeScoreLabel)
+                    .addComponent(codeScoreValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(overallLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(overallEarnedLabel)
+                    .addComponent(overallEarnedValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(overalTotalLabel)
+                    .addComponent(overallTotalValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(overallScoreLabel)
+                    .addComponent(overallScoreValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(submitGradeButton)
+                .addGap(72, 72, 72))
+        );
+
+        cardPanel.add(singleSelectedPanel, "singlePanel");
+
+        sendGradesButton.setIcon(resourceMap.getIcon("sendGradesButton.icon")); // NOI18N
+        sendGradesButton.setText(resourceMap.getString("sendGradesButton.text")); // NOI18N
+        sendGradesButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        sendGradesButton.setIconTextGap(5);
+        sendGradesButton.setName("sendGradesButton"); // NOI18N
+        sendGradesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendGradesButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout centerPanelLayout = new javax.swing.GroupLayout(centerPanel);
         centerPanel.setLayout(centerPanelLayout);
@@ -752,99 +586,234 @@ public class NewBackend extends javax.swing.JFrame {
                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(centerPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(selectedAsgnLabel))
-                    .addGroup(centerPanelLayout.createSequentialGroup()
-                        .addGap(372, 372, 372)
                         .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(printRubricButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                            .addComponent(viewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)))
+                            .addGroup(centerPanelLayout.createSequentialGroup()
+                                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(previewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(generateDistButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(27, 27, 27)
+                                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(gradingStandardsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(reassignGradingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(demoButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(importGradesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(selectedAsgnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(centerPanelLayout.createSequentialGroup()
+                                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(selectedStudsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(printRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(viewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(printCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(testCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(runCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(statisticsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(sendGradesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(extensionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(exemptionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(centerPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(selectedStudsLabel))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(printCodeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                        .addGap(372, 372, 372)
-                        .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
-                    .addGroup(centerPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(previewRubricButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(gradingStandardsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(demoButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)))
+                        .addGap(95, 95, 95)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
-            .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(centerPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(centerPanelLayout.createSequentialGroup()
-                            .addGap(233, 233, 233)
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(69, 69, 69))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                            .addComponent(generateDistButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(reassignGradingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(6, 6, 6)))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(testCodeButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(runCodeButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(exemptionButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(extensionButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sendGradesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(statisticsButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(importGradesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addContainerGap()))
         );
         centerPanelLayout.setVerticalGroup(
             centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(centerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(selectedAsgnLabel)
-                .addGap(51, 51, 51)
-                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(previewRubricButton)
-                    .addComponent(demoButton)
-                    .addComponent(gradingStandardsButton))
-                .addGap(27, 27, 27)
-                .addComponent(selectedStudsLabel)
-                .addGap(147, 147, 147)
-                .addComponent(openButton)
-                .addGap(79, 79, 79)
-                .addComponent(printCodeButton)
-                .addGap(18, 18, 18)
-                .addComponent(viewRubricButton)
-                .addGap(4, 4, 4)
-                .addComponent(printRubricButton)
-                .addContainerGap(32, Short.MAX_VALUE))
-            .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(centerPanelLayout.createSequentialGroup()
-                    .addGap(48, 48, 48)
-                    .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(selectedAsgnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(centerPanelLayout.createSequentialGroup()
                         .addComponent(generateDistButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(previewRubricButton))
+                    .addGroup(centerPanelLayout.createSequentialGroup()
+                        .addComponent(reassignGradingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(gradingStandardsButton))
+                    .addGroup(centerPanelLayout.createSequentialGroup()
                         .addComponent(importGradesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(reassignGradingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(45, 45, 45)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(statisticsButton)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(sendGradesButton)
-                    .addGap(18, 18, 18)
-                    .addComponent(extensionButton)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(exemptionButton)
-                    .addGap(53, 53, 53)
-                    .addComponent(runCodeButton)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(testCodeButton)
-                    .addContainerGap(148, Short.MAX_VALUE)))
+                        .addGap(4, 4, 4)
+                        .addComponent(demoButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19)
+                .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(centerPanelLayout.createSequentialGroup()
+                        .addComponent(statisticsButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(sendGradesButton))
+                    .addGroup(centerPanelLayout.createSequentialGroup()
+                        .addComponent(selectedStudsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(centerPanelLayout.createSequentialGroup()
+                                .addGap(58, 58, 58)
+                                .addComponent(extensionButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(exemptionButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(openButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(runCodeButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(testCodeButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(printCodeButton)
+                                .addGap(42, 42, 42)
+                                .addComponent(viewRubricButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(printRubricButton))
+                            .addGroup(centerPanelLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
 
-        jSplitPane2.setLeftComponent(centerPanel);
+        leftPanel.setMinimumSize(new java.awt.Dimension(350, 0));
+        leftPanel.setName("leftPanel"); // NOI18N
+        leftPanel.setPreferredSize(new java.awt.Dimension(350, 522));
+
+        studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
+        studentFilter.setName("studentFilter"); // NOI18N
+        studentFilter.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                studentFilterKeyPressed(evt);
+            }
+        });
+
+        assignmentsLabel.setText(resourceMap.getString("assignmentsLabel.text")); // NOI18N
+        assignmentsLabel.setName("assignmentsLabel"); // NOI18N
+
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        assignmentList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        assignmentList.setName("assignmentList"); // NOI18N
+        assignmentList.setPreferredSize(null);
+        assignmentList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                assignmentListMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(assignmentList);
+
+        studentsLabel.setText(resourceMap.getString("studentsLabel.text")); // NOI18N
+        studentsLabel.setName("studentsLabel"); // NOI18N
+
+        asgnSelectAllButton.setText(resourceMap.getString("asgnSelectAllButton.text")); // NOI18N
+        asgnSelectAllButton.setName("asgnSelectAllButton"); // NOI18N
+        asgnSelectAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asgnSelectAllButtonActionPerformed(evt);
+            }
+        });
+
+        studentSelectAllButton.setText(resourceMap.getString("studentSelectAllButton.text")); // NOI18N
+        studentSelectAllButton.setName("studentSelectAllButton"); // NOI18N
+        studentSelectAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                studentSelectAllButtonActionPerformed(evt);
+            }
+        });
+
+        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Type: All", "Type: Code", "Type: Written", "Type: Combination", "Type: Lab" }));
+        asgnTypeComboBox.setSelectedItem("Type: Code");
+        asgnTypeComboBox.setName("asgnTypeComboBox"); // NOI18N
+        asgnTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asgnTypeComboBoxActionPerformed(evt);
+            }
+        });
+
+        asgnSelectNoneButton.setText(resourceMap.getString("asgnSelectNoneButton.text")); // NOI18N
+        asgnSelectNoneButton.setName("asgnSelectNoneButton"); // NOI18N
+        asgnSelectNoneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asgnSelectNoneButtonActionPerformed(evt);
+            }
+        });
+
+        studentSelectNoneButton.setText(resourceMap.getString("studentSelectNoneButton.text")); // NOI18N
+        studentSelectNoneButton.setName("studentSelectNoneButton"); // NOI18N
+        studentSelectNoneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                studentSelectNoneButtonActionPerformed(evt);
+            }
+        });
+
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+
+        studentList.setMaximumSize(new java.awt.Dimension(160, 95));
+        studentList.setMinimumSize(new java.awt.Dimension(140, 95));
+        studentList.setName("studentList"); // NOI18N
+        studentList.setPreferredSize(null);
+        studentList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                studentListMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(studentList);
+
+        javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
+        leftPanel.setLayout(leftPanelLayout);
+        leftPanelLayout.setHorizontalGroup(
+            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(leftPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(assignmentsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
+                        .addComponent(asgnSelectAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(asgnSelectNoneButton))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                    .addComponent(asgnTypeComboBox, 0, 185, Short.MAX_VALUE))
+                .addGap(10, 10, 10)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(studentsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(studentFilter, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                            .addGroup(leftPanelLayout.createSequentialGroup()
+                                .addComponent(studentSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(studentSelectNoneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
+                        .addGap(15, 15, 15)))
+                .addGap(25, 25, 25))
+        );
+        leftPanelLayout.setVerticalGroup(
+            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(leftPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(assignmentsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(studentsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(studentSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(asgnSelectNoneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(asgnSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(studentSelectNoneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(asgnTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
+                .addContainerGap())
+        );
 
         rightPanel.setName("rightPanel"); // NOI18N
 
@@ -856,12 +825,22 @@ public class NewBackend extends javax.swing.JFrame {
         blacklistButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         blacklistButton.setIconTextGap(5);
         blacklistButton.setName("blacklistButton"); // NOI18N
+        blacklistButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                blacklistButtonActionPerformed(evt);
+            }
+        });
 
         configButton.setIcon(resourceMap.getIcon("configButton.icon")); // NOI18N
         configButton.setText(resourceMap.getString("configButton.text")); // NOI18N
         configButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         configButton.setIconTextGap(5);
         configButton.setName("configButton"); // NOI18N
+        configButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configButtonActionPerformed(evt);
+            }
+        });
 
         exportDBButton.setIcon(resourceMap.getIcon("exportDBButton.icon")); // NOI18N
         exportDBButton.setText(resourceMap.getString("exportDBButton.text")); // NOI18N
@@ -886,14 +865,14 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(exportDBButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(configButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(blacklistButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(21, Short.MAX_VALUE))
+                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(generalCommandsLabel)
+                .addComponent(generalCommandsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(blacklistButton)
                 .addGap(18, 18, 18)
@@ -902,32 +881,8 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(exportDBButton)
                 .addGap(18, 18, 18)
                 .addComponent(resetDatabaseButton)
-                .addContainerGap(332, Short.MAX_VALUE))
+                .addContainerGap(313, Short.MAX_VALUE))
         );
-
-        jSplitPane2.setRightComponent(rightPanel);
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 739, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(152, 152, 152)
-                .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                .addGap(41, 41, 41))
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jSplitPane1.setRightComponent(jPanel2);
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
@@ -956,40 +911,25 @@ public class NewBackend extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1095, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(leftPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 446, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(centerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addComponent(rightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(leftPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
+                    .addComponent(rightPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(centerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        new AssignmentdistView(this.getSelectedAssignment());
-}//GEN-LAST:event_generateDistButtonActionPerformed
-
-    private void reassignGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignGradingButtonActionPerformed
-        new ReassignView(this.getSelectedAssignment());
-    }//GEN-LAST:event_reassignGradingButtonActionPerformed
-
-    private void statisticsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsButtonActionPerformed
-        HistogramView hv = new HistogramView();
-        hv.setLocationRelativeTo(null);
-        hv.setVisible(true);
-}//GEN-LAST:event_statisticsButtonActionPerformed
-
-    private void sendGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendGradesButtonActionPerformed
-        GradeReportView grv = new GradeReportView();
-        grv.setLocationRelativeTo(null);
-        grv.setVisible(true);
-}//GEN-LAST:event_sendGradesButtonActionPerformed
-
-    private void importGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importGradesButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_importGradesButtonActionPerformed
 
     private void asgnSelectAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnSelectAllButtonActionPerformed
         assignmentList.setSelectionInterval(0, assignmentList.getModel().getSize() - 1);
@@ -1019,39 +959,6 @@ public class NewBackend extends javax.swing.JFrame {
         this.updateGUI();
 }//GEN-LAST:event_studentListMouseClicked
 
-    private void demoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_demoButtonActionPerformed
-        Allocator.getFrontendUtilities().demoProject(this.getSelectedAssignment());
-    }//GEN-LAST:event_demoButtonActionPerformed
-
-    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        Allocator.getFrontendUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
-    }//GEN-LAST:event_openButtonActionPerformed
-
-    private void runCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonActionPerformed
-        Allocator.getFrontendUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
-    }//GEN-LAST:event_runCodeButtonActionPerformed
-
-    private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
-        Allocator.getFrontendUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
-    }//GEN-LAST:event_testCodeButtonActionPerformed
-
-    private void printCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printCodeButtonActionPerformed
-        Allocator.getFrontendUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
-    }//GEN-LAST:event_printCodeButtonActionPerformed
-
-    private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
-        RubricManager.convertAllToGrd(this.getSelectedStudents(), (String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
-        Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedStudents(), this.getSelectedAssignment());
-    }//GEN-LAST:event_printRubricButtonActionPerformed
-
-    private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
-        new GradingVisualizer(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
-    }//GEN-LAST:event_viewRubricButtonActionPerformed
-
-    private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
-        new PreviewVisualizer(this.getSelectedAssignment());
-    }//GEN-LAST:event_previewRubricButtonActionPerformed
-
     private void asgnTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnTypeComboBoxActionPerformed
         if (asgnTypeComboBox.getSelectedItem().equals("Type: All")) {
             assignmentList.setListData(OldDatabaseOps.getAssignmentNames());
@@ -1075,6 +982,75 @@ public class NewBackend extends javax.swing.JFrame {
         Allocator.getGeneralUtilities().removeUserGradingDirectory();
         System.exit(0);
     }//GEN-LAST:event_quitMenuItemActionPerformed
+
+    private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
+        new PreviewVisualizer(this.getSelectedAssignment());
+}//GEN-LAST:event_previewRubricButtonActionPerformed
+
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+        Allocator.getFrontendUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+}//GEN-LAST:event_openButtonActionPerformed
+
+    private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
+        RubricManager.convertAllToGrd(this.getSelectedStudents(), (String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
+        Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedStudents(), this.getSelectedAssignment());
+}//GEN-LAST:event_printRubricButtonActionPerformed
+
+    private void printCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printCodeButtonActionPerformed
+        Allocator.getFrontendUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
+}//GEN-LAST:event_printCodeButtonActionPerformed
+
+    private void demoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_demoButtonActionPerformed
+        Allocator.getFrontendUtilities().demoProject(this.getSelectedAssignment());
+}//GEN-LAST:event_demoButtonActionPerformed
+
+    private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
+        new GradingVisualizer(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
+}//GEN-LAST:event_viewRubricButtonActionPerformed
+
+    private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
+        Allocator.getFrontendUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
+}//GEN-LAST:event_testCodeButtonActionPerformed
+
+    private void runCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonActionPerformed
+        Allocator.getFrontendUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+}//GEN-LAST:event_runCodeButtonActionPerformed
+
+    private void importGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importGradesButtonActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_importGradesButtonActionPerformed
+
+    private void sendGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendGradesButtonActionPerformed
+        GradeReportView grv = new GradeReportView();
+        grv.setLocationRelativeTo(null);
+        grv.setVisible(true);
+}//GEN-LAST:event_sendGradesButtonActionPerformed
+
+    private void statisticsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsButtonActionPerformed
+        HistogramView hv = new HistogramView();
+        hv.setLocationRelativeTo(null);
+        hv.setVisible(true);
+}//GEN-LAST:event_statisticsButtonActionPerformed
+
+    private void reassignGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignGradingButtonActionPerformed
+        new ReassignView(this.getSelectedAssignment());
+}//GEN-LAST:event_reassignGradingButtonActionPerformed
+
+    private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
+        new AssignmentdistView(this.getSelectedAssignment());
+}//GEN-LAST:event_generateDistButtonActionPerformed
+
+    private void gradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradingStandardsButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_gradingStandardsButtonActionPerformed
+
+    private void blacklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blacklistButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_blacklistButtonActionPerformed
+
+    private void configButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_configButtonActionPerformed
 
    /**
      * Returns the currently selected assignment as a String.
@@ -1225,7 +1201,6 @@ public class NewBackend extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton asgnSelectAllButton;
-    private javax.swing.JLabel asgnSelectLabel;
     private javax.swing.JButton asgnSelectNoneButton;
     private javax.swing.JComboBox asgnTypeComboBox;
     private javax.swing.JList assignmentList;
@@ -1254,12 +1229,9 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JPanel instructionsPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel multiSelectedPanel;
     private javax.swing.JButton openButton;
@@ -1286,7 +1258,6 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JTextField studentFilter;
     private javax.swing.JList studentList;
     private javax.swing.JButton studentSelectAllButton;
-    private javax.swing.JLabel studentSelectLabel;
     private javax.swing.JButton studentSelectNoneButton;
     private javax.swing.JLabel studentsLabel;
     private javax.swing.JButton submitGradeButton;
