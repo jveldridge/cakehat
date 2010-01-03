@@ -475,18 +475,18 @@
                               </Group>
                               <Component id="welcomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="306" max="32767" attributes="0"/>
+                          <EmptySpace pref="46" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                          <Component id="welcomeLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Component id="welcomeLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="instructionsLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="351" max="32767" attributes="0"/>
+                          <EmptySpace pref="282" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -494,11 +494,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="welcomeLabel">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="welcomeLabel.font"/>
+                    <Property name="text" type="java.lang.String" resourceKey="welcomeLabel.text"/>
                     <Property name="name" type="java.lang.String" value="welcomeLabel" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="instructionsLabel">
                   <Properties>
+                    <Property name="text" type="java.lang.String" resourceKey="instructionsLabel.text"/>
                     <Property name="name" type="java.lang.String" value="instructionsLabel" noResource="true"/>
                   </Properties>
                 </Component>

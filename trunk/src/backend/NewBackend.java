@@ -343,8 +343,11 @@ public class NewBackend extends javax.swing.JFrame {
 
         instructionsPanel.setName("instructionsPanel"); // NOI18N
 
+        welcomeLabel.setFont(resourceMap.getFont("welcomeLabel.font")); // NOI18N
+        welcomeLabel.setText(resourceMap.getString("welcomeLabel.text")); // NOI18N
         welcomeLabel.setName("welcomeLabel"); // NOI18N
 
+        instructionsLabel.setText(resourceMap.getString("instructionsLabel.text")); // NOI18N
         instructionsLabel.setName("instructionsLabel"); // NOI18N
 
         javax.swing.GroupLayout instructionsPanelLayout = new javax.swing.GroupLayout(instructionsPanel);
@@ -358,16 +361,16 @@ public class NewBackend extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(instructionsLabel))
                     .addComponent(welcomeLabel))
-                .addContainerGap(306, Short.MAX_VALUE))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
         instructionsPanelLayout.setVerticalGroup(
             instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(instructionsPanelLayout.createSequentialGroup()
-                .addGap(40, 40, 40)
+                .addContainerGap()
                 .addComponent(welcomeLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(instructionsLabel)
-                .addContainerGap(351, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
 
         cardPanel.add(instructionsPanel, "instructionCard");
