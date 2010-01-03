@@ -483,7 +483,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         else{
-            RubricManager.convertAllToGrd(this.getCurrentStudents(), Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin());
+            RubricManager.convertAllToGrd(this.getCurrentStudents(), Allocator.getConstants().getFinal());
             this.sendGRDFiles(students);
         }
 
