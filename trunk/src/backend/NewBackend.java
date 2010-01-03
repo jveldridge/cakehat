@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
 import rubric.visualizers.PreviewVisualizer;
@@ -29,6 +30,7 @@ public class NewBackend extends javax.swing.JFrame {
     ArrayList<JButton> _asgnButtons, _studButtons;
     ArrayList<JButton> _multiStudButtons;
     ArrayList<JButton> _multiAsgnButtons;
+    private String[] _studentLogins;
     
     /** Creates new form NewJFrame */
     public NewBackend() {
@@ -46,9 +48,9 @@ public class NewBackend extends javax.swing.JFrame {
         assignmentList.setListData(OldDatabaseOps.getProjectNames());
 
         //populate student list
-        String[] studentNames = OldDatabaseOps.getStudentNames();
-        Arrays.sort(studentNames);
-        studentList.setListData(studentNames);
+        _studentLogins = OldDatabaseOps.getStudentNames();
+        Arrays.sort(_studentLogins);
+        studentList.setListData(_studentLogins);
 
         this.updateGUI();
 
@@ -700,8 +702,8 @@ public class NewBackend extends javax.swing.JFrame {
 
         studentFilter.setName("studentFilter"); // NOI18N
         studentFilter.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                studentFilterKeyPressed(evt);
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                studentFilterKeyReleased(evt);
             }
         });
 
@@ -990,10 +992,6 @@ public class NewBackend extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_asgnTypeComboBoxActionPerformed
 
-    private void studentFilterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyPressed
-        
-    }//GEN-LAST:event_studentFilterKeyPressed
-
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
         Allocator.getGeneralUtilities().removeUserGradingDirectory();
         System.exit(0);
@@ -1080,6 +1078,29 @@ public class NewBackend extends javax.swing.JFrame {
             Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedStudents(), asgn);
         }
     }//GEN-LAST:event_printRubricButtonActionPerformed
+
+    private void studentFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyReleased
+        //term to filter against
+        String filterTerm = studentFilter.getText();
+
+        List<String> matchingLogins;
+        //if no filter term, include all logins
+        if(filterTerm.isEmpty()) {
+            matchingLogins = Arrays.asList(_studentLogins);
+        }
+        //otherwise compared against beginning of each login
+        else {
+            matchingLogins = new Vector<String>();
+            for(String login : _studentLogins){
+                if(login.startsWith(filterTerm)){
+                    matchingLogins.add(login);
+                }
+            }
+        }
+
+        //display matching logins
+        studentList.setListData(matchingLogins.toArray());
+    }//GEN-LAST:event_studentFilterKeyReleased
 
    /**
      * Returns the currently selected assignment as a String.
