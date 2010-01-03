@@ -209,19 +209,17 @@ public class FrontendUtilities {
 
 
     /**
-     * TODO: Make generalizable for any course.
-     *
      * Opens a new EmailView so that user TA can inform students that their assignment
-     * has been graded.  Default settigns:
+     * has been graded.  Default settings:
      *  FROM:    user TA
      *  TO:      user TA
      *  CC:      grades TA & grades HTA
-     *  BCC:     all students the user TA is assigned to grade for this assignment
-     *  SUBJECT: "[cs015] <Asgn> Graded"
-     *  MESSAGE: "<Asgn> has been graded and is available for pickup in the handback bin."
+     *  BCC:     students the user TA is assigned to grade for this assignment, as selected
+     *  SUBJECT: "[<course code>] <project> Graded"
+     *  MESSAGE: "<project> has been graded and is available for pickup in the handback bin."
      *
      * @param project
-     * @param studentList
+     * @param students
      */
     public void notifyStudents(String project, Vector<String> students) {
         String bccStringBuilder = "";
@@ -229,14 +227,14 @@ public class FrontendUtilities {
             bccStringBuilder += student + "@cs.brown.edu,";
         }
 
-        EmailView eg = new EmailView(new String[] {Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain()},
+        EmailView ev = new EmailView(new String[] {Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain()},
                                      new String[] {Allocator.getConstants().getGradesTA() + "@" + Allocator.getConstants().getEmailDomain(),
-                                     Allocator.getConstants().getGradesHTA() + "@" + Allocator.getConstants().getEmailDomain()},
+                                                   Allocator.getConstants().getGradesHTA() + "@" + Allocator.getConstants().getEmailDomain()},
                                      bccStringBuilder.split(","),
-                                     "[cs015] " + project + " Graded",
+                                     "[" + Allocator.getConstants().getCourse() + "] " + project + " Graded",
                                      project + " has been graded and is available for pickup in the handback bin.");
-        eg.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
-        eg.setVisible(true);
+        ev.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
+        ev.setVisible(true);
     }
 
     /**
