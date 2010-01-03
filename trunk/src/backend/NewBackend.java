@@ -7,6 +7,8 @@ import backend.histogram.HistogramView;
 import rubric.visualizers.GradingVisualizer;
 import rubric.RubricManager;
 import java.awt.CardLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
@@ -51,6 +53,13 @@ public class NewBackend extends javax.swing.JFrame {
 
         //make the user's temporary grading directory
         Allocator.getGeneralUtilities().makeDirectory(Allocator.getGeneralUtilities().getUserGradingDirectory());
+
+        this.addWindowListener(new WindowAdapter() {
+            @Override //remove user grading directory when backend is closed
+            public void windowClosing(WindowEvent e) {
+                Allocator.getGeneralUtilities().removeUserGradingDirectory();
+            }
+        });
         
         this.setVisible(true);
     }
@@ -138,8 +147,9 @@ public class NewBackend extends javax.swing.JFrame {
         exportDBButton = new javax.swing.JButton();
         resetDatabaseButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
+        fileMenu = new javax.swing.JMenu();
+        quitMenuItem = new javax.swing.JMenuItem();
+        helpMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cakehat - Backend - " + Allocator.getGeneralUtilities().getUserLogin());
@@ -921,13 +931,23 @@ public class NewBackend extends javax.swing.JFrame {
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
-        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu1.setName("jMenu1"); // NOI18N
-        jMenuBar1.add(jMenu1);
+        fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
+        fileMenu.setName("fileMenu"); // NOI18N
 
-        jMenu2.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu2.setName("jMenu2"); // NOI18N
-        jMenuBar1.add(jMenu2);
+        quitMenuItem.setText(resourceMap.getString("quitMenuItem.text")); // NOI18N
+        quitMenuItem.setName("quitMenuItem"); // NOI18N
+        quitMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                quitMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(quitMenuItem);
+
+        jMenuBar1.add(fileMenu);
+
+        helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
+        helpMenu.setName("helpMenu"); // NOI18N
+        jMenuBar1.add(helpMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -1050,6 +1070,11 @@ public class NewBackend extends javax.swing.JFrame {
     private void studentFilterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyPressed
         
     }//GEN-LAST:event_studentFilterKeyPressed
+
+    private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
+        Allocator.getGeneralUtilities().removeUserGradingDirectory();
+        System.exit(0);
+    }//GEN-LAST:event_quitMenuItemActionPerformed
 
    /**
      * Returns the currently selected assignment as a String.
@@ -1219,15 +1244,15 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JButton exemptionButton;
     private javax.swing.JButton exportDBButton;
     private javax.swing.JButton extensionButton;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel generalCommandsLabel;
     private javax.swing.JButton generateDistButton;
     private javax.swing.JButton gradingStandardsButton;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JButton importGradesButton;
     private javax.swing.JLabel instructionsLabel;
     private javax.swing.JPanel instructionsPanel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1248,6 +1273,7 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JButton previewRubricButton;
     private javax.swing.JButton printCodeButton;
     private javax.swing.JButton printRubricButton;
+    private javax.swing.JMenuItem quitMenuItem;
     private javax.swing.JButton reassignGradingButton;
     private javax.swing.JButton resetDatabaseButton;
     private javax.swing.JPanel rightPanel;
