@@ -11,9 +11,15 @@ import javax.swing.event.DocumentListener;
 
 import rubric.ExtraCredit;
 import rubric.Subsection;
+import utils.Allocator;
 
 /**
- * When a managed instance is returned it directly updates the rubric.
+ * A text field specifically meant for numbers. This class cannot be directly
+ * constructed, instead use one of its public static methods to get an instance.
+ *
+ * Instances can be retrieved as either managed or non-managed. If managed, when
+ * its value changes it directly updates the rubric and informs the StateManager
+ * which keeps track of the save state.
  * 
  * @author jak2
  */
@@ -29,14 +35,44 @@ class NumberField extends JFormattedTextField
     {
         super(NumberFormat.getNumberInstance());
 
-        this.setText(Double.toString(value));
+        this.setValue(value);
+        _oldValue = value;
+
         this.setEditable(editable);
         this.setColumns(5);
         this.setHorizontalAlignment(CENTER);
-
-        _oldValue = value;
     }
 
+    /**
+     * Sets the value of this NumberField while making sure it looks nice by
+     * displaying as an integer value if it has no decimal part, and otherwise
+     * rounding as specified by the GeneralUtilities's doubleToString(...)
+     * method.
+     *
+     * @param value value to display
+     */
+    public void setValue(double value)
+    {
+        String text;
+        if(value == (int) value)
+        {
+            text = (int) value + "";
+        }
+        else
+        {
+            text = Allocator.getGeneralUtilities().doubleToString(value);
+        }
+        this.setText(text);
+    }
+
+    /**
+     * Returns an editable NumberField with the specified value.
+     *
+     * @param value value to display
+     * @param managed   whether it should be listen for changes and report them
+     *                  to a StateManager
+     * @return editable NumberField with the specified value
+     */
     private static NumberField getAsEditable(double value, boolean managed)
     {
         final NumberField field = new NumberField(value, true);
@@ -141,11 +177,23 @@ class NumberField extends JFormattedTextField
         return field;
     }
 
-    public static NumberField getAsScore(Subsection subsection, RubricPanel panel, StateManager manager) {
+    /**
+     * Returns a NumberField that displays a Subsection's score.
+     *
+     * @param subsection Subsection whose score will be displayed
+     * @param panel Containing panel, if not managed pass in null
+     * @param manager StateManager that keeps track of this field's state, if this
+     *                NumberField is not meant to be managed, pass in null
+     * @return
+     */
+    public static NumberField getAsScore(Subsection subsection, RubricPanel panel, StateManager manager)
+    {
         //If manager was passed in then this field is managed
         NumberField field = getAsEditable(subsection.Score, manager != null);
+
         //If managed, add data
-        if(manager != null){
+        if(manager != null)
+        {
             field._subsection = subsection;
             field._panel = panel;
             field._stateManager = manager;
@@ -154,11 +202,23 @@ class NumberField extends JFormattedTextField
         return field;
     }
 
-    public static NumberField getAsScore(ExtraCredit ec, RubricPanel panel, StateManager manager) {
+    /**
+     * Returns a NumberField that displays an ExtraCredit's score.
+     *
+     * @param subsection ExtraCredit whose score will be displayed
+     * @param panel Containing panel, if not managed pass in null
+     * @param manager StateManager that keeps track of this field's state, if this
+     *                NumberField is not meant to be managed, pass in null
+     * @return
+     */
+    public static NumberField getAsScore(ExtraCredit ec, RubricPanel panel, StateManager manager)
+    {
         //If manager was passed in then this field is managed
         NumberField field = getAsEditable(ec.Score, manager != null);
+
         //If managed, add data
-        if(manager != null){
+        if(manager != null)
+        {
             field._extraCredit = ec;
             field._panel = panel;
             field._stateManager = manager;
@@ -167,9 +227,18 @@ class NumberField extends JFormattedTextField
         return field;
     }
 
-    public static NumberField getAsUneditable(double value) {
-        NumberField toReturn = new NumberField(value, false);
-        toReturn.setBackground(java.awt.Color.LIGHT_GRAY);
-        return toReturn;
+    /**
+     * Returns an uneditable NumberField. Given a light gray background to
+     * visually represent it's uneditable nature.
+     * 
+     * @param value
+     * @return
+     */
+    public static NumberField getAsUneditable(double value)
+    {
+        NumberField field = new NumberField(value, false);
+        field.setBackground(java.awt.Color.LIGHT_GRAY);
+
+        return field;
     }
 }
