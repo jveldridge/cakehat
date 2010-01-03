@@ -87,14 +87,23 @@ public class GeneralUtilities {
         return copyFile(sourceFile, new File(destPath));
     }
 
+    public void makeUserGradingDirectory() {
+        this.makeDirectory(this.getUserGradingDirectory());
+    }
+
+    public void removeUserGradingDirectory() {
+        this.removeDirectory(this.getUserGradingDirectory());
+    }
+
     /**
      * @date 12/06/2009
-     * @return path to a TA's grading directory.
-     *         currently, /course/cs015/grading/ta/2009/<talogin>/
+     * @return path to a TA's temporary grading directory.
+     *         currently, /course/cs015/grading/.<talogin>/
+     *         this directory is erased when the user closes the grader
      * @author jeldridg
      */
     public String getUserGradingDirectory() {
-        return Allocator.getConstants().getGraderPath() + Allocator.getGeneralUtilities().getUserLogin() + "/";
+        return Allocator.getConstants().getGraderPath() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
     }
 
     /**

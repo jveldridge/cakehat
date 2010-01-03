@@ -85,24 +85,6 @@ public class FrontendUtilities {
     }
 
     /**
-     * TODO: remove (gfx code should always be printed--print everything in subdirectories)--will fix soon!
-     * @param project
-     * @param studentList
-     */
-    public void printAllGFX(String project, JList studentList) {
-        String printer = this.getPrinter("Choose printer on which to print all students' code");
-        if (printer != null) {
-            Vector<String> studentLogins = getJListAsVector(studentList);
-
-            boolean first = true;
-            for (String sL : studentLogins) {
-                printStudentProjectGFX(project, sL, printer, first);
-                first = false;
-            }
-        }
-    }
-
-    /**
      * TODO: Replace with printing code that is Java instead of Python.
      * TODO: Print source files as specified by constants, not just *.java
      *
@@ -121,32 +103,10 @@ public class FrontendUtilities {
                                          + printer + " "
                                          + first + " "
                                          + studentLogin
-                                         + " " + Allocator.getProject(project).getStudentProjectDirectory(studentLogin)
-                                         + "*.java");
+                                         + " " + Allocator.getProject(project).getStudentCodeDirectory(studentLogin)
+                                         + "/*/*.java");
 
         BashConsole.write(printCommand);
-    }
-
-    /**
-     * TODO: remove (gfx code should always be printed--print everything in subdirectories)--will fix soon!
-     *
-     * @param project
-     * @param studentLogin
-     * @param printer
-     * @param first
-     */
-    public void printStudentProjectGFX(String project, String studentLogin, String printer, boolean first) {
-        if (printer == null) {
-            printer = this.getPrinter("Choose printer on which to print student code");
-        }
-        
-        String printCommand = new String("cs015_gradingPrint "
-                                          + printer + " "
-                                          + first + " "
-                                          + studentLogin + " "
-                                          + Allocator.getProject(project).getStudentProjectDirectory(studentLogin)
-                                          + "*.java");
-        Collection<String> ss = BashConsole.write(printCommand);
     }
 
     /**
@@ -256,17 +216,6 @@ public class FrontendUtilities {
         }
 
         
-    }
-
-    /**
-     * Removes all code directories created during this run of the frontend grading interface.
-     *
-     * @param selected vector of projects for which code directories have been created
-     */
-    public void removeCodeDirectories(Vector<String> selected) {
-        for (String s : selected) {
-            Allocator.getProject(s).removeCodeDirectory();
-        }
     }
 
     /**
