@@ -28,7 +28,6 @@ public class NewBackend extends javax.swing.JFrame {
     ArrayList<JButton> _asgnButtons, _studButtons;
     ArrayList<JButton> _multiStudButtons;
     ArrayList<JButton> _multiAsgnButtons;
-    private String _lastSelectedStud = "", _lastSelectedAsgn = "";
     
     /** Creates new form NewJFrame */
     public NewBackend() {
@@ -39,7 +38,7 @@ public class NewBackend extends javax.swing.JFrame {
         _studButtons = new ArrayList(Arrays.asList(statisticsButton, sendGradesButton, openButton, runCodeButton,
                                                     testCodeButton, extensionButton, exemptionButton, printCodeButton,
                                                     printRubricButton, viewRubricButton, toggleEnabledButton));
-        _multiStudButtons = new ArrayList(Arrays.asList(toggleEnabledButton, printRubricButton, statisticsButton, sendGradesButton, extensionButton, exemptionButton));
+        _multiStudButtons = new ArrayList(Arrays.asList(printRubricButton, statisticsButton, sendGradesButton, extensionButton, exemptionButton));
         _multiAsgnButtons = new ArrayList(Arrays.asList(importGradesButton));
 
         //populate assignment list
@@ -1056,23 +1055,11 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_configButtonActionPerformed
 
     private void assignmentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_assignmentListValueChanged
-        //to prevent this from occurring twice on a mouse click because for some
-        //reason a mouse click triggers this event twice
-        if(!_lastSelectedAsgn.equals(this.getSelectedAssignment())){
-            this.updateGUI();
-            _lastSelectedAsgn = this.getSelectedAssignment();
-        }
-
+        this.updateGUI();
     }//GEN-LAST:event_assignmentListValueChanged
 
     private void studentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_studentListValueChanged
-        //to prevent this from occurring twice on a mouse click because for some
-        //reason a mouse click triggers this event twice
-        if(!_lastSelectedStud.equals(this.getSelectedStudent())){
-            this.updateGUI();
-            _lastSelectedStud = this.getSelectedStudent();
-        }
-
+        this.updateGUI();
     }//GEN-LAST:event_studentListValueChanged
 
    /**
@@ -1212,11 +1199,18 @@ public class NewBackend extends javax.swing.JFrame {
 
             //update student buttons
             for (JButton button : _studButtons) {
-                    button.setEnabled(false);
-                }
-                for (JButton button : _multiStudButtons) {
-                    button.setEnabled(true);
-                }
+                button.setEnabled(false);
+            }
+            for (JButton button : _multiStudButtons) {
+                button.setEnabled(true);
+            }
+
+            if (this.singleStudentSelected()) {
+                toggleEnabledButton.setEnabled(true);
+            }
+            else {
+                toggleEnabledButton.setEnabled(false);
+            }
 
             //update the current student label
             selectedStudsLabel.setText("<html><b>Current Student: </b>" + this.getSelectedStudents().size() + " students selected");
