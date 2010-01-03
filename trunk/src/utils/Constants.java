@@ -143,12 +143,12 @@ public abstract class Constants {
      */
     public abstract String getConfigFilePath();
 
-    /**
-     * Path to where the grader's completed XML files will be submitted
+     /**
+     * Path to the directory where student rubrics are stored
      *
      * @return
      */
-    public abstract String getGraderSubmitPath();
+    public abstract String getRubricDirectoryPath();
 
     /**
      * Path to the database file

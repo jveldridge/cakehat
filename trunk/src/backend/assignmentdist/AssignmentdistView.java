@@ -418,11 +418,9 @@ public class AssignmentdistView extends javax.swing.JFrame {
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
         String asgn = (String)assignmentNameComboBox.getSelectedItem();
 
-        //create grading directories if they do not exist
-        for (String taLogin : ConfigurationManager.getTALogins()) {
-            String directoryPath = Allocator.getConstants().getGraderPath() + taLogin + "/" + asgn;
-            Allocator.getGeneralUtilities().makeDirectory(directoryPath);
-        }
+        //create rubric directory if it does not exist
+        String directoryPath = Allocator.getConstants().getRubricDirectoryPath() + asgn + "/";
+        Allocator.getGeneralUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");

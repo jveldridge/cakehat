@@ -44,7 +44,7 @@ public class GradingVisualizer extends JFrame
         catch (IOException e) { }
 
         //Get grading rubric
-        final String XMLFilePath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/" + studentAcct + ".xml";
+        final String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studentAcct);
         final Rubric rubric = RubricManager.processXML(XMLFilePath);
 
         //Saving and state manager

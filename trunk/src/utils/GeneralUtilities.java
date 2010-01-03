@@ -98,6 +98,22 @@ public class GeneralUtilities {
     }
 
     /**
+     * @date 01/02/2010
+     * @return path to student's rubric for a particular project
+     *          Note: this is independent of the TA who graded the student
+     *         currently, /course/cs015/grading/rubrics/2009/<assignmentName>/<studentLogin>.xml
+     * @author jeldridg
+     */
+    public String getStudentRubricPath(String assignmentName, String studentLogin) {
+        return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".xml";
+    }
+
+    //will be changed so that GRD files are removed
+    public String getStudentGRDPath(String assignmentName, String studentLogin) {
+        return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".grd";
+    }
+
+    /**
      * TODO: Allow for passing in null for cc, bcc, and attachmentNames parameters.
      *
      * Sends email through the cs department smtps server

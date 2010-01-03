@@ -17,16 +17,6 @@ import javax.swing.ListModel;
 public class FrontendUtilities {
 
     /**
-     * @date 12/24/2009
-     * @param assignment
-     * @return path to the GRD files to print for a particular directory
-     * @author jeldridg
-     */
-    public String getGRDFilePath(String assignment) {
-        return Allocator.getGeneralUtilities().getUserGradingDirectory() + assignment + "/*.grd";
-    }
-
-    /**
      * Takes each entry of a JList as a String and places them into a Vector.
      *
      * @param list the JList to iterate through
@@ -243,25 +233,29 @@ public class FrontendUtilities {
      *
      * @param assignment assignment for which .GRD files should be printed
      */
-    public void printGRDFiles(String assignment) {
+    public void printGRDFiles(Iterable<String> studentLogins, String assignment) {
         String printer = this.getPrinter("Select printer to print .GRD files");
 
-        String printCommand = "lpr -P" + printer + " " + this.getGRDFilePath(assignment);
-        BashConsole.writeThreaded(printCommand);
-    }
+        if (printer != null) {
+            //want to print cover sheet for first student's code
+            boolean print_cover_sheet = true;
 
-    /**
-     * TODO: NEEDS REVISION--will comment after fixed
-     * TODO: Copy files using GeneralUtilities's copy command. This uses pure Java to copy files.
-     *
-     * @param assignment
-     */
-    public void submitXMLFiles(String assignment) {
-        String dirPath = Allocator.getConstants().getGraderSubmitPath() + assignment + "/"
-                         + Allocator.getGeneralUtilities().getUserLogin() + "/";
-        Allocator.getGeneralUtilities().makeDirectory(dirPath);
-        String copyCommand = "cp " + Allocator.getGeneralUtilities().getUserGradingDirectory() + assignment + "/*.xml " + dirPath;
-        BashConsole.write(copyCommand);
+            for (String sL : studentLogins) {
+                String printCommand;
+                if (print_cover_sheet) {
+                    printCommand = "lpr -P" + printer + " " + Allocator.getGeneralUtilities().getStudentGRDPath(assignment, sL);
+
+                    //but not for subsequent students
+                    print_cover_sheet = false;
+                }
+                else {
+                    printCommand = "lpr -h -P" + printer + " " + Allocator.getGeneralUtilities().getStudentGRDPath(assignment, sL);                    
+                }
+                BashConsole.writeThreaded(printCommand);
+            }
+        }
+
+        
     }
 
     /**
