@@ -28,7 +28,6 @@ import utils.ErrorView;
 public class FrontendView extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
-    private Vector<String> _selected;
 
     /** Creates new form FrontendView */
     public FrontendView() {
@@ -58,9 +57,6 @@ public class FrontendView extends javax.swing.JFrame {
         } catch (IOException e) {
         }
         updateFormComponents();
-
-        _selected = new Vector<String>();                             //vector that keeps track of assignments that have been selected
-        _selected.add((String) assignmentList.getSelectedValue());    //in order to remove .code directories for those assignments when frontend is closed
 
         this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - cs015 Grader");
 
@@ -104,9 +100,6 @@ public class FrontendView extends javax.swing.JFrame {
 
         //and untar all students' code for the newly selected current assignment
         Allocator.getFrontendUtilities().untar(this.getSelectedAssignment(), studentList);
-
-        //and add this current assignment to the vector of assignments that have been selected
-        _selected.add(this.getSelectedAssignment());
     }
 
     /**

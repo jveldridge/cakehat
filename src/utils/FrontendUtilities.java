@@ -1,6 +1,5 @@
 package utils;
 
-import java.util.Collection;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
