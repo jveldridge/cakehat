@@ -117,9 +117,8 @@ public class GeneralUtilities {
         return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".xml";
     }
 
-    //will be changed so that GRD files are removed
     public String getStudentGRDPath(String assignmentName, String studentLogin) {
-        return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".grd";
+        return this.getUserGradingDirectory() + assignmentName + "/" + studentLogin + ".grd";
     }
 
     /**
