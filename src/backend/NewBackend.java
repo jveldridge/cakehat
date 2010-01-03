@@ -9,6 +9,7 @@ import rubric.RubricManager;
 import java.awt.CardLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
@@ -27,6 +28,7 @@ public class NewBackend extends javax.swing.JFrame {
     ArrayList<JButton> _asgnButtons, _studButtons;
     ArrayList<JButton> _multiStudButtons;
     ArrayList<JButton> _multiAsgnButtons;
+    private String _lastSelectedStud = "", _lastSelectedAsgn = "";
     
     /** Creates new form NewJFrame */
     public NewBackend() {
@@ -615,12 +617,11 @@ public class NewBackend extends javax.swing.JFrame {
                                     .addComponent(extensionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(exemptionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(viewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(printRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addGap(12, 12, 12))
+                                    .addComponent(printRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                     .addGroup(centerPanelLayout.createSequentialGroup()
                         .addGap(95, 95, 95)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addGap(12, 12, 12))
         );
         centerPanelLayout.setVerticalGroup(
             centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -695,9 +696,9 @@ public class NewBackend extends javax.swing.JFrame {
         });
         assignmentList.setName("assignmentList"); // NOI18N
         assignmentList.setPreferredSize(null);
-        assignmentList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                assignmentListMouseClicked(evt);
+        assignmentList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                assignmentListValueChanged(evt);
             }
         });
         jScrollPane1.setViewportView(assignmentList);
@@ -751,9 +752,9 @@ public class NewBackend extends javax.swing.JFrame {
         studentList.setMinimumSize(new java.awt.Dimension(140, 95));
         studentList.setName("studentList"); // NOI18N
         studentList.setPreferredSize(null);
-        studentList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                studentListMouseClicked(evt);
+        studentList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                studentListValueChanged(evt);
             }
         });
         jScrollPane2.setViewportView(studentList);
@@ -967,14 +968,6 @@ public class NewBackend extends javax.swing.JFrame {
         this.updateGUI();
     }//GEN-LAST:event_asgnSelectNoneButtonActionPerformed
 
-    private void assignmentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assignmentListMouseClicked
-        this.updateGUI();
-    }//GEN-LAST:event_assignmentListMouseClicked
-
-    private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
-        this.updateGUI();
-}//GEN-LAST:event_studentListMouseClicked
-
     private void asgnTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnTypeComboBoxActionPerformed
         if (asgnTypeComboBox.getSelectedItem().equals("Type: All")) {
             assignmentList.setListData(OldDatabaseOps.getAssignmentNames());
@@ -1068,6 +1061,26 @@ public class NewBackend extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_configButtonActionPerformed
 
+    private void assignmentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_assignmentListValueChanged
+        //to prevent this from occurring twice on a mouse click because for some
+        //reason a mouse click triggers this event twice
+        if(!_lastSelectedAsgn.equals(this.getSelectedAssignment())){
+            this.updateGUI();
+            _lastSelectedAsgn = this.getSelectedAssignment();
+        }
+
+    }//GEN-LAST:event_assignmentListValueChanged
+
+    private void studentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_studentListValueChanged
+        //to prevent this from occurring twice on a mouse click because for some
+        //reason a mouse click triggers this event twice
+        if(!_lastSelectedStud.equals(this.getSelectedStudent())){
+            this.updateGUI();
+            _lastSelectedStud = this.getSelectedStudent();
+        }
+
+    }//GEN-LAST:event_studentListValueChanged
+
    /**
      * Returns the currently selected assignment as a String.
      *
@@ -1149,14 +1162,32 @@ public class NewBackend extends javax.swing.JFrame {
                 //update the current student label
                 selectedStudsLabel.setText("<html><b>Current Student: </b>" + this.getSelectedStudent());
 
-                //untar selected student's code
-                Allocator.getProject(this.getSelectedAssignment()).untar(this.getSelectedStudent());
-
                 //change card to single student and single assignment
                 cl.show(cardPanel, "singlePanel");
 
                 //set Tester button to be enabled or not depending on whether project has a tester
                 testCodeButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
+
+                //if there is a handin, untar the student's code
+                if(Allocator.getProject(this.getSelectedAssignment()).containsStudent(this.getSelectedStudent())){
+                    Allocator.getProject(this.getSelectedAssignment()).untar(this.getSelectedStudent());
+                }
+                //disable handin related buttons
+                else {
+                    openButton.setEnabled(false);
+                    runCodeButton.setEnabled(false);
+                    testCodeButton.setEnabled(false);
+                    printCodeButton.setEnabled(false);
+                }
+
+                //if there is no rubric, disable rubric related buttons
+                String rubricPath = Allocator.getConstants().getRubricDirectoryPath() +
+                                    this.getSelectedAssignment() + "/" + this.getSelectedStudent() + ".xml";
+                if(!new File(rubricPath).exists()) {
+                    viewRubricButton.setEnabled(false);
+                    printRubricButton.setEnabled(false);
+                }
+
             }
             else {
                 for (JButton button : _studButtons) {
