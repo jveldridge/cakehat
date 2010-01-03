@@ -817,6 +817,9 @@
             <Property name="iconTextGap" type="int" value="5"/>
             <Property name="name" type="java.lang.String" value="printRubricButton" noResource="true"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="printRubricButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="toggleEnabledButton">
           <Properties>

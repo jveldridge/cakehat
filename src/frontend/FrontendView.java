@@ -626,8 +626,7 @@ public class FrontendView extends javax.swing.JFrame {
         SubmitDialog sd = new SubmitDialog(studentList);
         if (sd.showDialog() == JOptionPane.OK_OPTION) {
             RubricManager.convertAllToGrd(this.getCurrentStudents(), 
-                                            (String) assignmentList.getSelectedValue(),
-                                            Allocator.getGeneralUtilities().getUserLogin());
+                                            (String) assignmentList.getSelectedValue());
             Vector<String> selectedStudents = sd.getSelectedStudents();
 
             if (sd.printChecked()) {

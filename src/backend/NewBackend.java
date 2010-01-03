@@ -574,6 +574,11 @@ public class NewBackend extends javax.swing.JFrame {
         printRubricButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         printRubricButton.setIconTextGap(5);
         printRubricButton.setName("printRubricButton"); // NOI18N
+        printRubricButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printRubricButtonActionPerformed(evt);
+            }
+        });
 
         toggleEnabledButton.setIcon(resourceMap.getIcon("toggleEnabledButton.icon")); // NOI18N
         toggleEnabledButton.setText(resourceMap.getString("toggleEnabledButton.text")); // NOI18N
@@ -1061,6 +1066,13 @@ public class NewBackend extends javax.swing.JFrame {
     private void studentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_studentListValueChanged
         this.updateGUI();
     }//GEN-LAST:event_studentListValueChanged
+
+    private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
+        for (String asgn : this.getSelectedAssignments()) {
+            RubricManager.convertAllToGrd(this.getSelectedStudents(), asgn);
+            Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedStudents(), asgn);
+        }
+    }//GEN-LAST:event_printRubricButtonActionPerformed
 
    /**
      * Returns the currently selected assignment as a String.

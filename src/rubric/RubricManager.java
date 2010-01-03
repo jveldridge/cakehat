@@ -838,7 +838,7 @@ public class RubricManager {
      * @param asgn Assignment name
      * @param graderAcct The grader's login
      */
-    public static void convertAllToGrd(Iterable<String> studLogins, String asgn, String graderAcct) {
+    public static void convertAllToGrd(Iterable<String> studLogins, String asgn) {
         for (String studLogin : studLogins) {
             String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studLogin);
             String GRDFilePath = Allocator.getGeneralUtilities().getStudentGRDPath(asgn, studLogin);
