@@ -37,7 +37,7 @@ public class Rubric
 		TimeStatus status = TimeStatus.getStatus(this.Status);
 		score += status.getEarlyBonus(getTotalOutOf());
 		score += status.getLatePenalty(getTotalOutOf());
-		if (status.getPrettyPrintName().toUpperCase().equals("NC LATE"))
+		if (status == TimeStatus.NC_LATE)
 		{
 			score = 0.0;
 		}

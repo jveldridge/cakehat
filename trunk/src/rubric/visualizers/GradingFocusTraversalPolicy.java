@@ -3,19 +3,19 @@ package rubric.visualizers;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+
 import java.util.Vector;
 
 import javax.swing.JScrollBar;
 
-class GraderFocusTraversalPolicy extends FocusTraversalPolicy
+class GradingFocusTraversalPolicy extends FocusTraversalPolicy
 {
     private Vector<Component> _order;
     private JScrollBar _scroll;
 
-    public GraderFocusTraversalPolicy(Vector<Component> order, JScrollBar scroll)
+    public GradingFocusTraversalPolicy(Vector<Component> order, JScrollBar scroll)
     {
-        _order = new Vector<Component>(order.size());
-        _order.addAll(order);
+        _order = order;
         _scroll = scroll;
     }
 	
@@ -32,7 +32,6 @@ class GraderFocusTraversalPolicy extends FocusTraversalPolicy
 
             return toReturn;
         }
-
         else
         {
             return _order.lastElement();
@@ -51,16 +50,18 @@ class GraderFocusTraversalPolicy extends FocusTraversalPolicy
         {
             toReturn = _order.get(idx);
         }
+
         if(toReturn.getY() + toReturn.getParent().getY() < _scroll.getValue())
         {
             _scroll.setValue(_scroll.getValue() - _scroll.getBlockIncrement(-1));
         }
+        
         return toReturn;
     }
 
     public Component getDefaultComponent(Container focusCycleRoot)
     {
-        return _order.get(0);
+        return _order.firstElement();
     }
 
     public Component getLastComponent(Container focusCycleRoot)
@@ -70,6 +71,6 @@ class GraderFocusTraversalPolicy extends FocusTraversalPolicy
 
     public Component getFirstComponent(Container focusCycleRoot)
     {
-        return _order.get(0);
+        return _order.firstElement();
     }
 }

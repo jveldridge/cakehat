@@ -10,6 +10,12 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
 
+/**
+ * A custom text field for comment and note sections. Cannot be directly
+ * constructed, instead use this class's public static methods.
+ *
+ * @author jak2
+ */
 class TextField extends JTextArea
 {
     private TextField(Vector<Entry> text)
@@ -27,18 +33,33 @@ class TextField extends JTextArea
         this.setText(storedText);
     }
 
+    /**
+     * Turns on spell checking for this field.
+     *
+     * TODO: Is this really necessary / useful? Lots of code references will
+     * be considered improper spelling.
+     */
     private void enableSpellChecking()
     {
         SpellChecker.register(this);
         SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
     }
 
+    /**
+     * Creates a comment field for a given section. If a StateManager is passed
+     * in then each time the field is changed the section passed in is updated
+     * and the StateManager is notified.
+     *
+     * @param section Section to display a comment for
+     * @param manager StateManager governing this field, can pass in null for
+     * updates to this field to have no effect on the section
+     * @return
+     */
     public static TextField getAsCommentField(final Section section, final StateManager manager)
     {
         final TextField field = new TextField(section.Comments);
         
         //commented out temporarily b/c Jonathan's VM doesn't have enough memory
-        //TODO: Do we really want spell checking? Plus it sounds like it eats up resources.
         //field.enableSpellChecking();
 
         //Set appearance
@@ -55,7 +76,9 @@ class TextField extends JTextArea
             {
                 public void keyReleased(KeyEvent e)
                 {
+                    //Inform manager
                     manager.rubricChanged();
+
                     //Split on each new line
                     String[] lines = field.getText().split("\n");
 
@@ -74,6 +97,13 @@ class TextField extends JTextArea
         return field;
     }
 
+    /**
+     * Displays a notes field for the Section passed in. This field is not
+     * editable.
+     *
+     * @param section Section to display notes for
+     * @return
+     */
     public static TextField getAsNotesField(Section section)
     {
         TextField field = new TextField(section.Notes);
@@ -82,6 +112,7 @@ class TextField extends JTextArea
         field.setLineWrap(true);
         field.setWrapStyleWord(true);
         field.setEditable(false);
+
         return field;
     }
 }

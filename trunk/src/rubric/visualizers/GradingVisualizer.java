@@ -10,6 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.Dimension;
 
+import java.awt.Point;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -62,10 +63,10 @@ public class GradingVisualizer extends JFrame
 
         RubricPanel rubricPanel = new RubricPanel(rubric, stateManager);
 
-        JScrollPane scrollPane = new JScrollPane(rubricPanel);
+        final JScrollPane scrollPane = new JScrollPane(rubricPanel);
         Dimension size = new Dimension(rubricPanel.getPreferredSize().width + 30, 800);
         scrollPane.setPreferredSize(size);
-	scrollPane.setSize(size);
+        scrollPane.setSize(size);
         scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
@@ -117,13 +118,22 @@ public class GradingVisualizer extends JFrame
         });
 
         //Add custom focus traversal policy
-        this.setFocusTraversalPolicy(new GraderFocusTraversalPolicy(rubricPanel.getTabOrder(), scrollPane.getVerticalScrollBar()));
+        this.setFocusTraversalPolicy(new GradingFocusTraversalPolicy(rubricPanel.getTabOrder(), scrollPane.getVerticalScrollBar()));
 
         //Add enter as forward tab key
         Set<AWTKeyStroke> forwardKeys = this.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         Set<AWTKeyStroke> newForwardKeys = new HashSet(forwardKeys);
         newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
+
+        //On window open, scroll to top
+        this.addWindowListener(new WindowAdapter()
+        {
+            public void windowOpened(WindowEvent e)
+            {
+                scrollPane.getViewport().setViewPosition(new Point(0,0));
+            }
+        });
 
         //Show
         this.setLocationRelativeTo(null);
