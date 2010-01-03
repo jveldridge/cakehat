@@ -667,7 +667,7 @@ public class FrontendView extends javax.swing.JFrame {
         FileViewerView  fvv = new FileViewerView();
         String project = (String) assignmentList.getSelectedValue();
  
-        fvv.openFile(new File(Allocator.getConstants().getAssignmentDir() + project + "/" + Allocator.getConstants().getDeductionsListFilename()));
+        fvv.openFile(new File(Allocator.getGeneralUtilities().getDeductionsListPath(project)));
         fvv.setLocationRelativeTo(null);
         fvv.setVisible(true);
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed

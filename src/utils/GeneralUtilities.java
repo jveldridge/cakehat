@@ -95,6 +95,10 @@ public class GeneralUtilities {
         this.removeDirectory(this.getUserGradingDirectory());
     }
 
+    public String getDeductionsListPath(String asgn) {
+        return Allocator.getConstants().getAssignmentDir() + asgn + "/" + Allocator.getConstants().getDeductionsListFilename();
+    }
+
     /**
      * @date 12/06/2009
      * @return path to a TA's temporary grading directory.
