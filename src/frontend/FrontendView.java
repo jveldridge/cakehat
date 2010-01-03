@@ -10,6 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -644,15 +645,13 @@ public class FrontendView extends javax.swing.JFrame {
     private void submitGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitGradesButtonActionPerformed
         SubmitDialog sd = new SubmitDialog(studentList);
         if (sd.showDialog() == JOptionPane.OK_OPTION) {
-            RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
+            RubricManager.convertAllToGrd(this.getCurrentStudents(), 
+                                            (String) assignmentList.getSelectedValue(),
+                                            Allocator.getGeneralUtilities().getUserLogin());
             Vector<String> selectedStudents = sd.getSelectedStudents();
 
-            if (sd.submitChecked()) {
-                Allocator.getFrontendUtilities().submitXMLFiles(this.getSelectedAssignment());
-            }
-
             if (sd.printChecked()) {
-                Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedAssignment());
+                Allocator.getFrontendUtilities().printGRDFiles(this.getCurrentStudents(), this.getSelectedAssignment());
             }
 
             if (sd.notifyChecked()) {
@@ -719,6 +718,13 @@ public class FrontendView extends javax.swing.JFrame {
         new GradingVisualizer((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin(), (String) studentList.getSelectedValue());
     }//GEN-LAST:event_gradeButtonActionPerformed
 
+    private Iterable<String> getCurrentStudents() {
+        ArrayList<String> studs = new ArrayList<String>();
+        for (int i = 0; i < studentList.getModel().getSize(); i++) {
+            studs.add((String) studentList.getModel().getElementAt(i));
+        }
+        return studs;
+    }
 
     @Override
     public void paintComponents(Graphics g) {

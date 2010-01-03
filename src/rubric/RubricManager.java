@@ -232,12 +232,12 @@ public class RubricManager {
      */
     public static void assignXMLToGrader(Project prj, String studentAcct, String graderAcct,
                                          double designCheckScore, int minutesOfLeniency) {
-        String XMLTemplateFilePath = Allocator.getConstants().getAssignmentDir() + prj.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
-        String XMLGraderFilePath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
+        String RubricTemplateFilePath = Allocator.getConstants().getAssignmentDir() + prj.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
+        String StudentRubricFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(prj.getName(), studentAcct);
 
         TimeStatus status = prj.getTimeStatus(studentAcct, minutesOfLeniency);
         
-        assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, designCheckScore);
+        assignXMLToGrader(RubricTemplateFilePath, StudentRubricFilePath, status, studentAcct, graderAcct, designCheckScore);
     }
 
     /**
@@ -256,34 +256,21 @@ public class RubricManager {
      */
     public static void assignXMLToGrader(Project templateProject, Project destProject, String studentAcct, String graderAcct,
                                          String studentName, String graderName, double designCheckScore, int minutesOfLeniency) {
-        String XMLTemplateFilePath = Allocator.getConstants().getAssignmentDir() + templateProject.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
+        String RubricTemplateFilePath = Allocator.getConstants().getAssignmentDir() + templateProject.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
         
-        String XMLGraderFilePath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + destProject.getName() + "/" + studentAcct + ".xml";
+        String StudentRubricFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(destProject.getName(), studentName);
 
         TimeStatus status = templateProject.getTimeStatus(studentAcct, minutesOfLeniency);
 
-        assignXMLToGrader(XMLTemplateFilePath, XMLGraderFilePath, status, studentAcct, graderAcct, studentName, graderName, designCheckScore);
+        assignXMLToGrader(RubricTemplateFilePath, StudentRubricFilePath, status, studentAcct, graderAcct, studentName, graderName, designCheckScore);
     }
 
     public static void reassignXML(Project prj, String oldGraderAcct, String studentAcct, String newGraderAcct) {
-
-        String XMLOriginalGraderPath = Allocator.getConstants().getGraderPath() + oldGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
-        String XMLNewGraderPath = Allocator.getConstants().getGraderPath() + newGraderAcct + "/" + prj.getName() + "/" + studentAcct + ".xml";
-
-        reassignXML(XMLOriginalGraderPath, XMLNewGraderPath, newGraderAcct);
+        //TODO
     }
 
     private static void reassignXML(String XMLOriginalGraderPath, String XMLNewGraderPath, String newGraderAcct) {
-        //Get rubric from the template
-        Rubric rubric = processXML(XMLOriginalGraderPath);
-
-        rubric.Grader.Name = Allocator.getGeneralUtilities().getUserName(newGraderAcct);
-        rubric.Grader.Acct = newGraderAcct;
-
-        //Write to XML
-        System.out.println("from: " + XMLOriginalGraderPath);
-        System.out.println("to: " + XMLNewGraderPath);
-        writeToXML(rubric, XMLNewGraderPath);
+        //TODO
     }
 
     /**
@@ -838,9 +825,9 @@ public class RubricManager {
      * @param studentAcct The student's login
      */
     public static void convertToGRD(String asgn, String graderAcct, String studentAcct) {
-        String path = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/" + studentAcct;
-        String XMLFilePath = path + ".xml";
-        String GRDFilePath = path + ".grd";
+        String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studentAcct);
+        //TODO: fix this (when dealing w/removing .GRD files after sending)
+        String GRDFilePath = "/course/cs015/grading/ta/" + graderAcct + "/" + asgn + "/" + studentAcct + ".grd";
 
         convertToGRD(XMLFilePath, GRDFilePath);
     }
@@ -851,49 +838,28 @@ public class RubricManager {
      * @param asgn Assignment name
      * @param graderAcct The grader's login
      */
-    public static void convertAllToGrd(String asgn, String graderAcct) {
-        String dirPath = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/";
-
-        Collection<File> xmlFiles = Allocator.getGeneralUtilities().getFiles(dirPath, "xml");
-
-        for (File file : xmlFiles) {
-            String XMLFilePath = file.getAbsolutePath();
-            String GRDFilePath = XMLFilePath.split("\\.")[0] + ".grd";
-            
-            //@TODO: THIS IS A COMPLETE HACK FIX THIS!!!! - psastras
-            if(file.getAbsolutePath().contains(".metadata")){
-                continue;
-            }
-            System.out.print("Processing: " + file.getAbsolutePath() + ". ");
-            
+    public static void convertAllToGrd(Iterable<String> studLogins, String asgn, String graderAcct) {
+        for (String studLogin : studLogins) {
+            String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studLogin);
+            String GRDFilePath = Allocator.getGeneralUtilities().getStudentGRDPath(asgn, studLogin);
             convertToGRD(XMLFilePath, GRDFilePath);
         }
-        BashConsole.write("chmod 770 -R " + dirPath);
     }
 
     public static HashMap<String, Double> getAllScores(String asgn) {
         HashMap<String, Double> scoresTable = new HashMap<String, Double>();
         for (String g : ConfigurationManager.getGraderLogins()) {
             for (String s : OldDatabaseOps.getStudentsToGrade(g, asgn)) {
-                scoresTable.put(s, getTotalSubmittedScore(asgn, g, s));
+                scoresTable.put(s, getTotalScore(asgn, g, s));
             }
         }
         return scoresTable;
     }
 
-    public static double getTotalSubmittedScore(String asgn, String graderAcct, String studentAcct) {
-        String path = Allocator.getConstants().getGraderSubmitPath() + asgn + "/" + graderAcct + "/" + studentAcct;
-        String XMLFilePath = path + ".xml";
-        //System.out.println("XMLFilePath is " + XMLFilePath);
+    public static double getTotalScore(String asgn, String graderAcct, String studentAcct) {
+        String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studentAcct);
         Rubric rubric = processXML(XMLFilePath);
         return rubric.getTotalScore();
     }
 
-    //shouldn't need this method, but not deleting it yet just in case
-    public static double getTotalScore(String asgn, String graderAcct, String studentAcct) {
-        String path = Allocator.getConstants().getGraderPath() + graderAcct + "/" + asgn + "/" + studentAcct;
-        String XMLFilePath = path + ".xml";
-        Rubric rubric = processXML(XMLFilePath);
-        return rubric.getTotalScore();
-    }
 }

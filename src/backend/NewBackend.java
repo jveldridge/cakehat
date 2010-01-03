@@ -1,14 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * NewJFrame.java
- *
- * Created on Dec 26, 2009, 6:29:58 PM
- */
-
 package backend;
 
 import backend.assignmentdist.AssignmentdistView;
@@ -26,8 +15,10 @@ import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
 
 /**
- *
+ * Backend interface.
+ * 
  * @author jeldridg
+ * Created on Dec 26, 2009, 6:29:58 PM
  */
 public class NewBackend extends javax.swing.JFrame {
 
@@ -44,7 +35,7 @@ public class NewBackend extends javax.swing.JFrame {
         _studButtons = new ArrayList(Arrays.asList(statisticsButton, sendGradesButton, openButton, runCodeButton,
                                                     testCodeButton, extensionButton, exemptionButton, printCodeButton,
                                                     printRubricButton, viewRubricButton));
-        _multiStudButtons = new ArrayList(Arrays.asList(statisticsButton, sendGradesButton, extensionButton, exemptionButton));
+        _multiStudButtons = new ArrayList(Arrays.asList(printRubricButton, statisticsButton, sendGradesButton, extensionButton, exemptionButton));
         _multiAsgnButtons = new ArrayList(Arrays.asList(importGradesButton));
 
         //populate assignment list
@@ -160,6 +151,11 @@ public class NewBackend extends javax.swing.JFrame {
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NewBackend.class);
         studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
         studentFilter.setName("studentFilter"); // NOI18N
+        studentFilter.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                studentFilterKeyPressed(evt);
+            }
+        });
 
         assignmentsLabel.setText(resourceMap.getString("assignmentsLabel.text")); // NOI18N
         assignmentsLabel.setName("assignmentsLabel"); // NOI18N
@@ -199,8 +195,14 @@ public class NewBackend extends javax.swing.JFrame {
             }
         });
 
-        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Select Type", "Item 2", "Item 3", "Item 4" }));
+        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Type: All", "Type: Code", "Type: Written", "Type: Combination", "Type: Lab" }));
+        asgnTypeComboBox.setSelectedItem("Type: Code");
         asgnTypeComboBox.setName("asgnTypeComboBox"); // NOI18N
+        asgnTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asgnTypeComboBoxActionPerformed(evt);
+            }
+        });
 
         asgnSelectLabel.setText(resourceMap.getString("asgnSelectLabel.text")); // NOI18N
         asgnSelectLabel.setName("asgnSelectLabel"); // NOI18N
@@ -245,25 +247,25 @@ public class NewBackend extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(assignmentsLabel)
-                    .addComponent(asgnTypeComboBox, 0, 144, Short.MAX_VALUE)
+                    .addComponent(asgnTypeComboBox, 0, 156, Short.MAX_VALUE)
                     .addGroup(leftPanelLayout.createSequentialGroup()
                         .addComponent(asgnSelectLabel)
                         .addGap(18, 18, 18)
-                        .addComponent(asgnSelectAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                        .addComponent(asgnSelectAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(asgnSelectNoneButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
                         .addComponent(studentSelectLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
                         .addComponent(studentSelectAllButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(studentSelectNoneButton))
                     .addComponent(studentsLabel)
-                    .addComponent(studentFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
+                    .addComponent(studentFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
                 .addContainerGap())
         );
         leftPanelLayout.setVerticalGroup(
@@ -908,7 +910,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
                 .addGap(41, 41, 41))
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 549, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1015,8 +1017,8 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_printCodeButtonActionPerformed
 
     private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
-        RubricManager.convertAllToGrd((String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
-        Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedAssignment());
+        RubricManager.convertAllToGrd(this.getSelectedStudents(), (String) assignmentList.getSelectedValue(), Allocator.getGeneralUtilities().getUserLogin());
+        Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedStudents(), this.getSelectedAssignment());
     }//GEN-LAST:event_printRubricButtonActionPerformed
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
@@ -1026,6 +1028,25 @@ public class NewBackend extends javax.swing.JFrame {
     private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
         new PreviewVisualizer(this.getSelectedAssignment());
     }//GEN-LAST:event_previewRubricButtonActionPerformed
+
+    private void asgnTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnTypeComboBoxActionPerformed
+        if (asgnTypeComboBox.getSelectedItem().equals("Type: All")) {
+            assignmentList.setListData(OldDatabaseOps.getAssignmentNames());
+        }
+        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Lab")) {
+            assignmentList.setListData(OldDatabaseOps.getLabNames());
+        }
+        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Code")) {
+            assignmentList.setListData(OldDatabaseOps.getProjectNames());
+        }
+        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Combination")) {
+            assignmentList.setListData(OldDatabaseOps.getProjectNames());
+        }
+    }//GEN-LAST:event_asgnTypeComboBoxActionPerformed
+
+    private void studentFilterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyPressed
+        
+    }//GEN-LAST:event_studentFilterKeyPressed
 
    /**
      * Returns the currently selected assignment as a String.

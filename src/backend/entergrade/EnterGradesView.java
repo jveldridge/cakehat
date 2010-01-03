@@ -541,6 +541,7 @@ public class EnterGradesView extends javax.swing.JFrame {
     }
 
     private void update() {
+        System.out.println("update called");
         //determine whether the add XML grades button should be enabled
         m_xmlButton.setEnabled(false);
         for (String s : OldDatabaseOps.getProjectNames()) {
@@ -604,7 +605,6 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_m_studentTextFocusLost
 
     private void m_studentTextKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_m_studentTextKeyPressed
-
         if (evt.getKeyCode() == 38 && studentTable.getSelectedRow() != 0) { //up
             studentTable.getSelectionModel().setSelectionInterval(studentTable.getSelectedRow() - 1, studentTable.getSelectedRow() - 1);
         //update();
@@ -676,6 +676,7 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_m_dqearnedTextMouseClicked
 
     private void m_studentTextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_m_studentTextKeyReleased
+
         if (evt.getKeyCode() == 27) { //Esc key
             studentTable.applyFilterSorter();
             studentTable.filter("");

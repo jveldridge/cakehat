@@ -17,6 +17,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -490,18 +491,23 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         else{
-            RubricManager.convertAllToGrd(Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin());
-            Allocator.getFrontendUtilities().submitXMLFiles(Allocator.getConstants().getFinal());
-
+            RubricManager.convertAllToGrd(this.getCurrentStudents(), Allocator.getConstants().getFinal(), Allocator.getGeneralUtilities().getUserLogin());
             this.sendGRDFiles(students);
         }
 
 }//GEN-LAST:event_submitGradesButtonActionPerformed
 
+    private Iterable<String> getCurrentStudents() {
+        ArrayList<String> studs = new ArrayList<String>();
+        for (int i = 0; i < studentList.getModel().getSize(); i++) {
+            studs.add((String) studentList.getModel().getElementAt(i));
+        }
+        return studs;
+    }
+
     private void sendGRDFiles(Iterable<String> students){
         //Build email content
         String login = Allocator.getGeneralUtilities().getUserLogin();
-        String grdPathBegin = Allocator.getConstants().getGraderPath() + login + "/";
         String fromAddress = login + "@cs.brown.edu";
         //String[] toAddresses = { login + "@cs.brown.edu" }; //TESTING PURPOSES
         String[] ccAddresses = { "" };
@@ -519,7 +525,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         for (String student : students) {
             String[] toAddresses = { student + "@cs.brown.edu" }; //WHEN NOT TESTING
 
-            String grdPath = grdPathBegin + Allocator.getConstants().getFinal() + "/" + student + ".grd";
+            String grdPath = Allocator.getGeneralUtilities().getStudentGRDPath(Allocator.getConstants().getFinal(),  student);
             Allocator.getGeneralUtilities().sendMail(fromAddress, toAddresses, ccAddresses, bccAddresses,
                            subject, body, new String[]{ grdPath });
         }

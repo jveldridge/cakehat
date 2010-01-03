@@ -83,8 +83,8 @@ public class CS015Constants extends Constants {
         return getCourseDir() + "grading/bin/" + Allocator.getGeneralUtilities().getCurrentYear() + "/" + "config_new_test.xml";
     }
 
-    public String getGraderSubmitPath(){
-        return getCourseDir() + "grading/submitted/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
+    public String getRubricDirectoryPath() {
+        return getCourseDir() + "grading/rubrics/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
     }
 
     public String getDatabaseFilePath(){
