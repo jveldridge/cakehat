@@ -207,6 +207,21 @@ public abstract class Project {
     public abstract void runDemo();
 
     /**
+     * Prints a student's code for this assignment.
+     *
+     * @param studentLogin
+     */
+    public abstract void print(String studentLogin, String printer);
+
+    /**
+     * Prints the students' code for this assignment.
+     *
+     * @param studentLogins
+     */
+    public abstract void print(Iterable<String> studentLogins, String printer);
+
+
+    /**
      * @date 12/06/2009
      * @param studentLogin
      * @return path to the TA grading directory containing directories for all packages of a student's code for a particular project
@@ -214,8 +229,7 @@ public abstract class Project {
      *          currently, /course/cs015/grading/.<talogin>/<projectname>/<studentLogin>/
      * @author jeldridg
      */
-    public String getStudentCodeDirectory(String studentLogin) {
+    protected String getStudentCodeDirectory(String studentLogin) {
         return Allocator.getGeneralUtilities().getUserGradingDirectory() + this.getName() + "/" + studentLogin + "/";
     }
-
 }

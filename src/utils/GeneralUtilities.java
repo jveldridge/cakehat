@@ -708,7 +708,7 @@ public class GeneralUtilities {
 
         //Combine java command into command to launch an xterm window
         String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
-
+        
         //Execute the command in a seperate thread
         BashConsole.writeThreaded(terminalCmd);
     }
