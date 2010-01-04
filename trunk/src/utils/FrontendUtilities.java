@@ -1,6 +1,10 @@
 package utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -68,6 +72,8 @@ public class FrontendUtilities {
     public void printAll(String project, JList studentList) {
         String printer = this.getPrinter("Choose printer on which to print all students' code");
 
+        Allocator.getProject(project).print(getJListAsVector(studentList), printer);
+        /*
         if (printer != null) {
             Vector<String> studentLogins = getJListAsVector(studentList);
 
@@ -81,6 +87,7 @@ public class FrontendUtilities {
                 print_cover_sheet = false;              
             }
         }
+        */
     }
 
     /**
@@ -97,15 +104,16 @@ public class FrontendUtilities {
         if (printer == null) {
             printer = this.getPrinter("Choose printer on which to print student code");
         }
-        
-        String printCommand = new String("cs015_gradingPrint "
-                                         + printer + " "
-                                         + first + " "
-                                         + studentLogin
-                                         + " " + Allocator.getProject(project).getStudentCodeDirectory(studentLogin)
-                                         + "/*/*.java");
 
-        BashConsole.write(printCommand);
+        Allocator.getProject(project).print(studentLogin, printer);
+        //String printCommand = new String("cs015_gradingPrint "
+        //                                 + printer + " "
+        //                                 + first + " "
+        //                                 + studentLogin
+        //                                 + " " + Allocator.getProject(project).getStudentCodeDirectory(studentLogin)
+        //                                 + "/*/*.java");
+
+        //BashConsole.write(printCommand);
     }
 
     /**
@@ -195,6 +203,22 @@ public class FrontendUtilities {
     public void printGRDFiles(Iterable<String> studentLogins, String assignment) {
         String printer = this.getPrinter("Select printer to print .GRD files");
 
+        String taLogin = Allocator.getGeneralUtilities().getUserLogin();
+        Vector<PrintRequest> requests = new Vector<PrintRequest>();
+        for(String studentLogin : studentLogins){
+           String filePath = Allocator.getGeneralUtilities().getStudentGRDPath(assignment, studentLogin);
+           File file = new File(filePath);
+            try{
+                requests.add(new PrintRequest(file, taLogin, studentLogin));
+            }
+            catch (FileNotFoundException ex) {
+                new ErrorView(ex);
+            }
+        }
+        Allocator.getVerticalPrinter().print(requests, printer);
+
+        
+        /*
         if (printer != null) {
             //want to print cover sheet for first student's code
             boolean print_cover_sheet = true;
@@ -213,8 +237,7 @@ public class FrontendUtilities {
                 BashConsole.writeThreaded(printCommand);
             }
         }
-
-        
+        */
     }
 
     /**

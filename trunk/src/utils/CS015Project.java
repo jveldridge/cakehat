@@ -1,7 +1,11 @@
 package utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Subclass of Project specific to CS015
@@ -31,7 +35,6 @@ public class CS015Project extends Project {
                                               "/usr/lib/jvm/java-6-sun-1.6.0.12/jre/../lib/i386::" +
                                               "/pro/java/linux/software/java3d/j3d-1_5_2-linux-i586/lib/i386:" +
                                               "/usr/java/packages/lib/i386:/lib:/usr/lib";
-
 
     CS015Project(String name){
         super(name);
@@ -143,6 +146,42 @@ public class CS015Project extends Project {
 
 
         BashConsole.writeThreaded(cmd);
+    }
+
+    public void print(String studentLogin, String printer){
+        Collection<File> sourceFiles = Allocator.getGeneralUtilities().getFiles(
+                             this.getStudentCodeDirectory(studentLogin), "java");
+
+        PrintRequest request = null;
+        try {
+            request = new PrintRequest(sourceFiles,
+                      Allocator.getGeneralUtilities().getUserLogin(), studentLogin);
+        }
+        catch (FileNotFoundException ex) {
+            new ErrorView(ex);
+        }
+
+        Allocator.getHorizontalPrinter().print(request, printer);
+    }
+
+    public void print(Iterable<String> studentLogins, String printer){
+        Vector<PrintRequest> requests = new Vector<PrintRequest>();
+
+        for(String studentLogin : studentLogins) {
+            Collection<File> sourceFiles = Allocator.getGeneralUtilities().getFiles(
+                                this.getStudentCodeDirectory(studentLogin), "java");
+
+            try {
+                PrintRequest request = new PrintRequest(sourceFiles,
+                                           Allocator.getGeneralUtilities().getUserLogin(), studentLogin);
+                requests.add(request);
+             }
+            catch (FileNotFoundException ex) {
+                new ErrorView(ex);
+            }
+        }
+
+        Allocator.getHorizontalPrinter().print(requests, printer);
     }
 
     /**

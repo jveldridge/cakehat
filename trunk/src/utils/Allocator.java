@@ -52,6 +52,24 @@ public class Allocator {
         }
         return DATABASE_IO;
     }
+
+    //Horizontal Printer
+    private static Printer HORIZONTAL_PRINTER = null;
+    public static Printer getHorizontalPrinter() {
+        if(HORIZONTAL_PRINTER == null){
+            HORIZONTAL_PRINTER = new EnscriptPrinter();
+        }
+        return HORIZONTAL_PRINTER;
+    }
+
+    //Vertical Printer
+    private static Printer VERTICAL_PRINTER = null;
+    public static Printer getVerticalPrinter() {
+        if(VERTICAL_PRINTER == null){
+            VERTICAL_PRINTER = new LprPrinter();
+        }
+        return VERTICAL_PRINTER;
+    }
     
     //Projects
     //All projects that have been loaded so far, to avoid loading a project more than once
