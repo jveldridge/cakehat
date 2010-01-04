@@ -27,8 +27,8 @@ public class EnscriptPrinter extends Printer
             File tmpFile = convertRequest(request);
 
             //Build command
-            String cmd = "enscript --header=" + request.getStudentLogin() + "|" +
-                         request.getTALogin() + "|" + PAGE_NUMBER_FORMATTING +
+            String cmd = "enscript --header=" + request.getStudentLogin() + "\\|" +
+                         request.getTALogin() + "\\|" + PAGE_NUMBER_FORMATTING +
 		         " --header-font=Courier5 -q -P" + printer + " -2 -r --ps-level=1 " +
                          tmpFile.getAbsolutePath();
 
