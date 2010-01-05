@@ -1,5 +1,8 @@
 package utils;
 
+import utils.printing.EnscriptPrinter;
+import utils.printing.Printer;
+import utils.printing.LprPrinter;
 import java.io.File;
 import java.util.HashMap;
 
@@ -53,22 +56,22 @@ public class Allocator {
         return DATABASE_IO;
     }
 
-    //Horizontal Printer
-    private static Printer HORIZONTAL_PRINTER = null;
-    public static Printer getHorizontalPrinter() {
-        if(HORIZONTAL_PRINTER == null){
-            HORIZONTAL_PRINTER = new EnscriptPrinter();
+    //Landscape Printer
+    private static Printer LANDSCAPE_PRINTER = null;
+    public static Printer getLandscapePrinter() {
+        if(LANDSCAPE_PRINTER == null){
+            LANDSCAPE_PRINTER = new EnscriptPrinter();
         }
-        return HORIZONTAL_PRINTER;
+        return LANDSCAPE_PRINTER;
     }
 
-    //Vertical Printer
-    private static Printer VERTICAL_PRINTER = null;
-    public static Printer getVerticalPrinter() {
-        if(VERTICAL_PRINTER == null){
-            VERTICAL_PRINTER = new LprPrinter();
+    //Portrait Printer
+    private static Printer PORTRAIT_PRINTER = null;
+    public static Printer getPortraitPrinter() {
+        if(PORTRAIT_PRINTER == null){
+            PORTRAIT_PRINTER = new LprPrinter();
         }
-        return VERTICAL_PRINTER;
+        return PORTRAIT_PRINTER;
     }
     
     //Projects

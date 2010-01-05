@@ -1,4 +1,4 @@
-package utils;
+package utils.printing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,8 +8,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import utils.Allocator;
+import utils.BashConsole;
 
 /**
+ * Uses enscript to print the PrintRequest in landscape with a small font, and
+ * two columns per page.
  *
  * @author jak2
  */
@@ -42,9 +46,10 @@ public class EnscriptPrinter extends Printer
     }
 
     /**
+     * Converts a request into a text file that combines all files of the request.
      *
      * @param request
-     * @return the temporary file created
+     * @return the file created
      */
     private File convertRequest(PrintRequest request)
     {
@@ -87,6 +92,13 @@ public class EnscriptPrinter extends Printer
         return tmpFile;
     }
 
+    /**
+     * Combines the entire PrintRequest into one String with each file having
+     * a header before it.
+     *
+     * @param request
+     * @return
+     */
     private String getFilesAsCombinedString(PrintRequest request)
     {
         String text = "";
@@ -105,6 +117,14 @@ public class EnscriptPrinter extends Printer
         return text;
     }
 
+    /**
+     * Creates a header for a file. Based on the filepath of file, but removes
+     * everything up to the student login directory that their code exists in.
+     *
+     * @param file
+     * @param studentLogin
+     * @return
+     */
     private String getHeader(File file, String studentLogin)
     {
         String filePath = file.getAbsolutePath();

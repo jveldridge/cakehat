@@ -1,5 +1,6 @@
 package utils;
 
+import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Vector;
@@ -215,7 +216,7 @@ public class FrontendUtilities {
                 new ErrorView(ex);
             }
         }
-        Allocator.getVerticalPrinter().print(requests, printer);
+        Allocator.getPortraitPrinter().print(requests, printer);
 
         
         /*

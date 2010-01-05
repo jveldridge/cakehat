@@ -1,22 +1,32 @@
-package utils;
+package utils.printing;
 
-/**
- * 
- *
- * @author jak2
- */
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Vector;
 
+/**
+ * A request to be submitted to a Printer. Each file added to the request should
+ * be a plain text file.
+ *
+ * Can have an associated TA Login and Student Login that may or may not be used
+ * by the printer that the PrintRequest is submitted to.
+ *
+ * @author jak2
+ */
 public class PrintRequest
 {
     private Vector<File> _files = new Vector<File>();
     private String _taLogin = "", _studentLogin = "";
 
-    public PrintRequest() { }
-
+    /**
+     * A request of text files.
+     *
+     * @param file
+     * @param taLogin
+     * @param studentLogin
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
     public PrintRequest(File file, String taLogin, String studentLogin)
                                                         throws FileNotFoundException
     {
@@ -25,6 +35,14 @@ public class PrintRequest
         _studentLogin = studentLogin;
     }
 
+    /**
+     * A request of text files.
+     *
+     * @param files
+     * @param taLogin
+     * @param studentLogin
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
     public PrintRequest(Collection<File> files, String taLogin, String studentLogin)
                                                         throws FileNotFoundException
     {
@@ -33,11 +51,23 @@ public class PrintRequest
         _studentLogin = studentLogin;
     }
 
+    /**
+     * A request of text files.
+     *
+     * @param files
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
     public PrintRequest(Collection<File> files) throws FileNotFoundException
     {
         this.addFiles(files);
     }
 
+    /**
+     * Adds a file to the request.
+     *
+     * @param file
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
     public void addFile(File file) throws FileNotFoundException
     {
         if(!file.exists())
@@ -50,6 +80,12 @@ public class PrintRequest
         }
     }
 
+    /**
+     * Adds files to the request.
+     *
+     * @param files
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
     public void addFiles(Iterable<File> files) throws FileNotFoundException
     {
         for(File file : files)
@@ -78,7 +114,12 @@ public class PrintRequest
         return _studentLogin;
     }
 
-    public Iterable<File> getFiles()
+    /**
+     * The files in this PrintRequest.
+     *
+     * @return
+     */
+    Iterable<File> getFiles()
     {
         return _files;
     }
