@@ -78,7 +78,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="centerPanel" max="32767" attributes="1"/>
                   </Group>
-                  <Component id="leftPanel" alignment="0" pref="581" max="32767" attributes="0"/>
+                  <Component id="leftPanel" alignment="0" pref="605" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -123,30 +123,17 @@
                                   </Group>
                                   <EmptySpace pref="18" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Group type="102" alignment="1" attributes="1">
-                                          <Component id="printCodeButton" max="32767" attributes="1"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                      </Group>
+                                      <Component id="printCodeButton" alignment="1" max="32767" attributes="1"/>
                                       <Component id="testCodeButton" alignment="1" max="32767" attributes="1"/>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="runCodeButton" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="openButton" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="exemptionButton" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="extensionButton" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="sendGradesButton" alignment="1" max="32767" attributes="3"/>
-                                              <Component id="statisticsButton" alignment="1" max="32767" attributes="1"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Group type="103" groupAlignment="1" attributes="0">
-                                              <Component id="printRubricButton" alignment="0" pref="185" max="32767" attributes="0"/>
-                                              <Component id="viewRubricButton" alignment="1" max="32767" attributes="1"/>
-                                              <Component id="toggleEnabledButton" alignment="0" pref="185" max="32767" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                      </Group>
+                                      <Component id="runCodeButton" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="openButton" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="exemptionButton" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="extensionButton" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="sendGradesButton" alignment="1" max="32767" attributes="3"/>
+                                      <Component id="statisticsButton" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="printRubricButton" alignment="0" pref="185" max="32767" attributes="0"/>
+                                      <Component id="viewRubricButton" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="toggleEnabledButton" alignment="0" pref="185" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -212,7 +199,7 @@
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="toggleEnabledButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="cardPanel" alignment="0" pref="397" max="32767" attributes="0"/>
+                      <Component id="cardPanel" alignment="0" pref="399" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -440,7 +427,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="272" max="32767" attributes="0"/>
+                          <EmptySpace pref="274" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -475,7 +462,7 @@
                               </Group>
                               <Component id="welcomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="46" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -486,7 +473,7 @@
                           <Component id="welcomeLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="instructionsLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="282" max="32767" attributes="0"/>
+                          <EmptySpace pref="271" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -907,8 +894,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jScrollPane1" pref="477" max="32767" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="1" pref="477" max="32767" attributes="1"/>
+                      <Component id="jScrollPane1" pref="474" max="32767" attributes="1"/>
+                      <Component id="jScrollPane2" alignment="1" pref="474" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -1082,7 +1069,7 @@
                   <Component id="exportDBButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="resetDatabaseButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="378" max="32767" attributes="0"/>
+                  <EmptySpace pref="385" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

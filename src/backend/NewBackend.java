@@ -4,7 +4,7 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
-import frontend.FileViewerView;
+import utils.FileViewerView;
 import rubric.visualizers.GradingVisualizer;
 import rubric.RubricManager;
 import java.awt.CardLayout;
@@ -1050,10 +1050,7 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void gradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradingStandardsButtonActionPerformed
-        FileViewerView  fvv = new FileViewerView();
-        fvv.openFile(new File(Allocator.getGeneralUtilities().getDeductionsListPath(this.getSelectedAssignment())));
-        fvv.setLocationRelativeTo(null);
-        fvv.setVisible(true);
+        Allocator.getFrontendUtilities().viewDeductionList(this.getSelectedAssignment());
     }//GEN-LAST:event_gradingStandardsButtonActionPerformed
 
     private void blacklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blacklistButtonActionPerformed
