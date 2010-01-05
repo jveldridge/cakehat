@@ -1,11 +1,10 @@
 package utils;
 
+import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Subclass of Project specific to CS015
@@ -161,7 +160,7 @@ public class CS015Project extends Project {
             new ErrorView(ex);
         }
 
-        Allocator.getHorizontalPrinter().print(request, printer);
+        Allocator.getLandscapePrinter().print(request, printer);
     }
 
     public void print(Iterable<String> studentLogins, String printer){
@@ -181,7 +180,7 @@ public class CS015Project extends Project {
             }
         }
 
-        Allocator.getHorizontalPrinter().print(requests, printer);
+        Allocator.getLandscapePrinter().print(requests, printer);
     }
 
     /**
