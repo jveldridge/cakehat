@@ -567,10 +567,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        FileViewerView fvv = new FileViewerView();
-        fvv.openFile(new File(Allocator.getGeneralUtilities().getDeductionsListPath(prj.getName())));
-        fvv.setLocationRelativeTo(null);
-        fvv.setVisible(true);
+        Allocator.getFrontendUtilities().viewDeductionList(prj.getName());
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
     /**

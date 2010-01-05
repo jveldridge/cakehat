@@ -4,8 +4,6 @@ import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -251,5 +249,15 @@ public class FrontendUtilities {
         Object[] printerChoices = {"bw3", "bw4", "bw5"};
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
+    }
+
+    /**
+     * Displays the deduction list for the specified assignment.
+     *
+     * @param asgn
+     */
+    public void viewDeductionList(String asgn) {
+        FileViewerView fv = new FileViewerView(new File(Allocator.getGeneralUtilities().getDeductionsListPath(asgn)));
+        fv.setTitle(asgn + " Deductions List");
     }
 }

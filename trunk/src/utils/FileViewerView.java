@@ -1,17 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * FileViewerView.java
  *
  * Created on Oct 1, 2009, 8:51:12 PM
  */
-package frontend;
+package utils;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -48,7 +44,7 @@ public class FileViewerView extends javax.swing.JFrame {
     private Object[] _linehighlighter;
 
     /** Creates new form FileViewerView */
-    public FileViewerView() {
+    private FileViewerView() {
         initComponents();
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/text-x-generic.png")));
@@ -76,6 +72,19 @@ public class FileViewerView extends javax.swing.JFrame {
             }
         });
         m_textArea.requestFocus();
+    }
+
+    public FileViewerView(File file) {
+        this();
+
+        this.openFile(file);
+        
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+
+        Dimension size = new Dimension(640,500);
+        this.setSize(size);
+        this.setPreferredSize(size);
     }
 
     private class ReferencesPanel extends JPanel {
@@ -157,7 +166,7 @@ public class FileViewerView extends javax.swing.JFrame {
      * Highlights all occurrences of the input string
      * @param text
      */
-    public void highlightText(String text) {
+    private void highlightText(String text) {
         _refs.clear();
         _pos.clear();
         Highlighter h = m_textArea.getHighlighter();
@@ -208,12 +217,12 @@ public class FileViewerView extends javax.swing.JFrame {
         jPanel2.repaint();
     }
 
-    public void highlightNext() {
+    private void highlightNext() {
         _curindex++;
         highlightText(jTextField1.getText());
     }
 
-    public void highlightCurrentLine() {
+    private void highlightCurrentLine() {
         Highlighter h = m_textArea.getHighlighter();
         try {
             int pos = m_textArea.getCaretPosition();
@@ -229,7 +238,7 @@ public class FileViewerView extends javax.swing.JFrame {
         }
     }
 
-    public void removeLineHighlights() {
+    private void removeLineHighlights() {
         Highlighter h = m_textArea.getHighlighter();
         for (int i = 0; i < _linehighlighter.length; i++) {
             if (_linehighlighter[i] != null) {
@@ -239,7 +248,7 @@ public class FileViewerView extends javax.swing.JFrame {
         }
     }
 
-    public void openFile(File f) {
+    private void openFile(File f) {
         StringBuilder contents = new StringBuilder();
         try {
             BufferedReader input = new BufferedReader(new FileReader(f));
@@ -381,7 +390,7 @@ public class FileViewerView extends javax.swing.JFrame {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 388, Short.MAX_VALUE)
+            .addGap(0, 379, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -392,14 +401,13 @@ public class FileViewerView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(m_scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                        .addComponent(m_scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jCheckBox1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -418,7 +426,7 @@ public class FileViewerView extends javax.swing.JFrame {
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(m_scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                    .addComponent(m_scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
