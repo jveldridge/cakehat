@@ -44,7 +44,12 @@ public class ConfigurationParser
                                 RUN = "RUN", DEMO = "DEMO", TESTER = "TESTER", MODE = "MODE",
                                 PROPERTY = "PROPERTY", KEY = "KEY";
 
-
+    /**
+     * Parses the configuration file. 
+     *
+     * @return config
+     * @throws ConfigurationException
+     */
     static Configuration parse() throws ConfigurationException
     {
         Configuration config = new Configuration();
@@ -62,8 +67,8 @@ public class ConfigurationParser
     }
 
     /**
-     * Indicates whether a node should be skipped or not. A node should not be processed if it
-     * is a text node or a comment node.
+     * Indicates whether a node should be skipped or not. A node should not be
+     * processed if it is a text node or a comment node.
      *
      * @param node
      * @return whether a node should be skipped
@@ -73,13 +78,14 @@ public class ConfigurationParser
         return (node.getNodeName().equals(TEXT_NODE) || node.getNodeName().equals(COMMENT_NODE));
     }
 
-        /**
-     * Takes in the root node of the XML and the Configuration object that will represent
-     * the markup and then takes the data from the XML and places it into the Configuration
-     * object.
+    /**
+     * Takes in the root node of the XML and the Configuration object that will
+     * represent the markup and then takes the data from the XML and places it
+     * into the Configuration object.
      *
      * @param configNode the root configuration node of the XML documentt
      * @param config the Configuration object that will represent the config XML
+     * @throws ConfigurationException
      */
     private static void assignChildrenAttributes(Node configNode, Configuration config) throws ConfigurationException
     {
@@ -110,6 +116,13 @@ public class ConfigurationParser
         }
     }
 
+    /**
+     * Parses out the TA information.
+     * 
+     * @param taNodes
+     * @param config
+     * @throws ConfigurationException
+     */
     private static void processTAs(NodeList taNodes, Configuration config) throws ConfigurationException
     {
         for (int i = 0; i < taNodes.getLength(); i++)
@@ -177,6 +190,7 @@ public class ConfigurationParser
      *
      * @param assignmentNodes NodeList of the assignment nodes
      * @param config the Configuration object that will represent the config XML
+     * @throws ConfigurationException
      */
     private static void processAssignments(NodeList assignmentNodes, Configuration config) throws ConfigurationException
     {
@@ -204,6 +218,7 @@ public class ConfigurationParser
      *
      * @param asgnNode Node of an assignment
      * @param config the Configuration object that will represent the config XML
+     * @throws ConfigurationException
      */
     private static void addAssignment(Node asgnNode, Configuration config) throws ConfigurationException
     {
@@ -248,6 +263,14 @@ public class ConfigurationParser
         config.addAssignment(asgn);
     }
 
+    /**
+     * Adds a part to the assignment. Supports PARTs of
+     * TYPE: NON-CODE, CODE, & LAB
+     *
+     * @param partNode
+     * @param asgn
+     * @throws ConfigurationException
+     */
     private static void processPart(Node partNode, Assignment asgn) throws ConfigurationException
     {
         String name = partNode.getAttributes().getNamedItem(NAME).getNodeValue();
@@ -274,6 +297,15 @@ public class ConfigurationParser
         }
     }
 
+    /**
+     * Parses out a code part. Currently supports Java, C, C++, & Matlab.
+     *
+     * @param partNode
+     * @param asgn
+     * @param name
+     * @param points
+     * @throws ConfigurationException
+     */
     private static void processCodePart(Node partNode, Assignment asgn, String name, int points) throws ConfigurationException
     {
         CodePart part = null;
@@ -287,15 +319,15 @@ public class ConfigurationParser
         }
         else if(language.equalsIgnoreCase("C"))
         {
-            throw new UnsupportedOperationException("C is not yet supported");
+            part = new CPart(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("C++"))
         {
-            throw new UnsupportedOperationException("C++ is not yet supported");
+            part = new CPPPart(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("Matlab"))
         {
-            throw new UnsupportedOperationException("Matlab is not yet supported");
+            part = new MatlabPart(asgn, name, points);
         }
         else
         {
@@ -414,14 +446,19 @@ public class ConfigurationParser
         asgn.addCodePart(part);
     }
 
+    /**
+     * Processes the LATE-POLICY tag information.
+     *
+     * @param timeNode
+     * @param part
+     * @throws ConfigurationException
+     */
     private static void processTimeInfo(Node timeNode, CodePart part) throws ConfigurationException
     {
         LatePolicy policy = LatePolicy.valueOf(timeNode.getAttributes().getNamedItem(TYPE).getNodeValue());
         GradeUnits units = GradeUnits.valueOf(timeNode.getAttributes().getNamedItem(UNITS).getNodeValue());
 
-        TimeInformation timeInfo = new TimeInformation();
-        timeInfo.setGradeUnits(units);
-        timeInfo.setLatePolicy(policy);
+        TimeInformation timeInfo = new TimeInformation(policy, units);
 
         NodeList childrenNodes = timeNode.getChildNodes();
         for (int i = 0; i < childrenNodes.getLength(); i++)
@@ -435,20 +472,17 @@ public class ConfigurationParser
             else if (childNode.getNodeName().equals(EARLY))
             {
                 CalendarValue calval = getTimeFromNode(childNode);
-                timeInfo.setEarlyDate(calval.cal);
-                timeInfo.setEarlyValue(calval.val);
+                timeInfo.setEarly(calval.cal, calval.val);
             }
             else if (childNode.getNodeName().equals(ONTIME))
             {
                 CalendarValue calval = getTimeFromNode(childNode);
-                timeInfo.setOntimeDate(calval.cal);
-                timeInfo.setOntimeValue(calval.val);
+                timeInfo.setOntime(calval.cal, calval.val);
             }
             else if (childNode.getNodeName().equals(LATE))
             {
                 CalendarValue calval = getTimeFromNode(childNode);
-                timeInfo.setLateDate(calval.cal);
-                timeInfo.setLateValue(calval.val);
+                timeInfo.setLate(calval.cal, calval.val);
             }
             else
             {
@@ -460,6 +494,9 @@ public class ConfigurationParser
     }
 
 
+    /**
+     * A simple data structure that holds a Calendar and an integer value
+     */
     private static class CalendarValue
     {
         Calendar cal;
@@ -474,8 +511,8 @@ public class ConfigurationParser
 
 
     /**
-     * Parses the date information out of a node that has date information
-     * and returns a Calendar that represents
+     * Parses the date information out of a node that has date and value
+     * information and returns a Calendar and integer value that represents
      * this.
      *
      * @param node Node with date information

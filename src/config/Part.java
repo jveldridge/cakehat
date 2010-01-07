@@ -1,6 +1,7 @@
 package config;
 
 /**
+ * A part of an assignment.
  *
  * @author jak2
  */
@@ -10,7 +11,7 @@ public abstract class Part
     private int _points;
     private Assignment _asgn;
 
-    public Part(Assignment asgn, String name, int points)
+    protected Part(Assignment asgn, String name, int points)
     {
         _asgn = asgn;
         _name = name;
@@ -31,5 +32,4 @@ public abstract class Part
     {
         return _points;
     }
-
 }

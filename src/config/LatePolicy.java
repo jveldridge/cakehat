@@ -1,6 +1,7 @@
 package config;
 
 /**
+ * The late policy applied to an assignment.
  *
  * @author jak2
  */

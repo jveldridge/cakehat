@@ -3,6 +3,8 @@ package config;
 import java.util.Vector;
 
 /**
+ * Object representation of the XML config file. Only meant to be used by
+ * ConfigurationParser and ConfigurationManager.
  *
  * @author jak2
  */
@@ -11,7 +13,7 @@ class Configuration
     private Vector<Assignment> _assignments = new Vector<Assignment>();
     private Vector<TA> _tas = new Vector<TA>();
 
-    Vector<Assignment> getAssigments()
+    Iterable<Assignment> getAssigments()
     {
         return _assignments;
     }
@@ -27,7 +29,7 @@ class Configuration
         _tas.add(ta);
     }
 
-    Vector<TA> getTAs()
+    Iterable<TA> getTAs()
     {
         return _tas;
     }

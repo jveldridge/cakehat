@@ -3,6 +3,7 @@ package config;
 import java.util.Calendar;
 
 /**
+ * Represents the time information a CodePart has.
  *
  * @author jak2
  */
@@ -13,14 +14,15 @@ public class TimeInformation
     private Calendar _early, _ontime, _late;
     private int _earlyValue, _ontimeValue, _lateValue;
 
+    TimeInformation(LatePolicy policy, GradeUnits units)
+    {
+        _latePolicy = policy;
+        _units = units;
+    }
+
     public LatePolicy getLatePolicy()
     {
         return _latePolicy;
-    }
-
-    void setLatePolicy(LatePolicy policy)
-    {
-        _latePolicy = policy;
     }
 
     public GradeUnits getGradeUnits()
@@ -28,9 +30,12 @@ public class TimeInformation
         return _units;
     }
 
-    void setGradeUnits(GradeUnits units)
+    // EARLY
+
+    void setEarly(Calendar cal, int value)
     {
-        _units = units;
+        _early = cal;
+        _earlyValue = value;
     }
 
     public int getEarlyValue()
@@ -38,19 +43,17 @@ public class TimeInformation
         return _earlyValue;
     }
 
-    void setEarlyValue(int value)
-    {
-        _earlyValue = value;
-    }
-
     public Calendar getEarlyDate()
     {
         return _early;
     }
 
-    void setEarlyDate(Calendar date)
+    // ONTIME
+
+    void setOntime(Calendar cal, int value)
     {
-        _early = date;
+        _ontime = cal;
+        _ontimeValue = value;
     }
 
     public int getOntimeValue()
@@ -58,28 +61,16 @@ public class TimeInformation
         return _ontimeValue;
     }
 
-    void setOntimeValue(int value)
-    {
-        _ontimeValue = value;
-    }
-
     public Calendar getOntimeDate()
     {
         return _ontime;
     }
 
-    void setOntimeDate(Calendar date)
-    {
-        _ontime = date;
-    }
+    // LATE
 
-    public int getLateValue()
+    void setLate(Calendar cal, int value)
     {
-        return _lateValue;
-    }
-
-    void setLateValue(int value)
-    {
+        _late = cal;
         _lateValue = value;
     }
 
@@ -87,10 +78,9 @@ public class TimeInformation
     {
         return _late;
     }
-
-    void setLateDate(Calendar date)
+    public int getLateValue()
     {
-        _late = date;
+        return _lateValue;
     }
     
 }

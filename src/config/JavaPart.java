@@ -37,7 +37,7 @@ import utils.BashConsole;
  *
  * @author jak2
  */
-public class JavaPart extends CodePart
+class JavaPart extends CodePart
 {
     public JavaPart(Assignment asgn, String name, int points)
     {
