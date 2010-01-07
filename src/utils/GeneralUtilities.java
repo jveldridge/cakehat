@@ -603,11 +603,9 @@ public class GeneralUtilities {
      * Any compiler errors or other messages will be printed to the console
      * that this grading system program was executed from.
      *
-     * Compiles with respect to the classpath defined by the Constants subclass
-     * used in the allocator.
      *
      * @param dirPath The directory and its subdirectories to look for Java files to compile
-     * @param classpath The classpath to compile this code with
+     * @param classpath The classpath to compile this code with, null or an empty String may be passed in
      * @return success of compilation
      */
     public boolean compileJava(String dirPath, String classpath) {
@@ -615,9 +613,12 @@ public class GeneralUtilities {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 
-        //Tell the compiler to use the class path passed in
-        Collection<String> options = new Vector<String>();
-        options.addAll(Arrays.asList("-classpath", classpath));
+        //Tell the compiler to use the classpath if one was passed in
+        Collection<String> options = null;
+        if(classpath != null && !classpath.isEmpty()) {
+            options = new Vector<String>();
+            options.addAll(Arrays.asList("-classpath", classpath));
+        }
 
         //Get all of the java files in dirPath
         Collection<File> files = getFiles(dirPath, "java");

@@ -23,14 +23,10 @@ import utils.Allocator;
  */
 public class PreviewVisualizer extends JFrame
 {
-    
-    public PreviewVisualizer(String asgn)
+    public PreviewVisualizer(Rubric rubric, String asgn)
     {
         super("Rubric Preview for " + asgn);
 
-        //Get grading rubric
-        String XMLFilePath = Allocator.getConstants().getAssignmentDir() + asgn + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
-        Rubric rubric = RubricManager.processXML(XMLFilePath);
         //Preview status as if on time (necessary as visualizer expects a status)
         rubric.Status = "ON_TIME";
 
@@ -57,7 +53,7 @@ public class PreviewVisualizer extends JFrame
                 PreviewVisualizer.this.dispose();
             }
         });
-        
+
         //Fit everything together
         this.pack();
 
@@ -73,6 +69,18 @@ public class PreviewVisualizer extends JFrame
         //Show
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+    }
+
+    /**
+     * TODO: After new configuration/assignment code is incorporated, remove this constructor
+     *
+     * @param asgn
+     */
+    public PreviewVisualizer(String asgn)
+    {
+        this(RubricManager.processXML(Allocator.getConstants().getAssignmentDir() + asgn +
+                                      "/" + Allocator.getConstants().getTemplateGradeSheetFilename()),
+                                      asgn);
     }
    
 }
