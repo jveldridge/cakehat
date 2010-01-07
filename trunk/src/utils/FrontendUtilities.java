@@ -239,6 +239,10 @@ public class FrontendUtilities {
         */
     }
 
+    public String getPrinter() {
+        return this.getPrinter("Choose printer on which to print all students' code");
+    }
+
     /**
      * Print dialogue for selecting printer.  Message passed in will be displayed as instructions to the user
      * 
