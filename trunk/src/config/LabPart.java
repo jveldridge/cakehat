@@ -8,7 +8,7 @@ public class LabPart extends Part
 {
     private int _labNumber;
 
-    public LabPart(Assignment asgn, String name, int points, int labNumber)
+    LabPart(Assignment asgn, String name, int points, int labNumber)
     {
         super(asgn, name, points);
 

@@ -1,6 +1,7 @@
 package config;
 
 /**
+ * Exception resulting from an error in parsing the configuration file.
  *
  * @author jak2
  */

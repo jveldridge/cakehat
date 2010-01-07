@@ -24,7 +24,7 @@ public abstract class CodePart extends Part
     private Collection<File> _handins = null;
     protected HashSet<String> _untarredStudents = new HashSet<String>();
 
-    public CodePart(Assignment asgn, String name, int points)
+    protected CodePart(Assignment asgn, String name, int points)
     {
         super(asgn, name, points);
     }

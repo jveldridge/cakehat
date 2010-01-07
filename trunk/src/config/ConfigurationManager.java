@@ -26,17 +26,7 @@ public class ConfigurationManager
         
         return _config;
     }
-
-    public static void main(String[] args)
-    {
-        Configuration config = getConfiguration();
-
-        for(Assignment asgn : config.getAssigments())
-        {
-            System.out.println(asgn.getName());
-        }
-    }
-
+    
     public static Iterable<Assignment> getAssignments()
     {
         return getConfiguration().getAssigments();

@@ -23,7 +23,7 @@ public class Assignment
     private Vector<LabPart> _labParts = new Vector<LabPart>();
     private CodePart _codePart;
 
-    public Assignment(String name, int number)
+    Assignment(String name, int number)
     {
         _name = name;
         _number = number;
@@ -162,7 +162,7 @@ public class Assignment
         return points;
     }
 
-
+    @Override
     public String toString()
     {
         return _name;
