@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import rubric.TimeStatus;
 
@@ -37,7 +37,7 @@ public class DBWrapper implements DatabaseIO {
             _statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
         } catch (Exception e) {
-            new ErrorView(e,"Could not open a connection to the DB.");
+            new ErrorView(e, "Could not open a connection to the DB.");
         }
 
     }
@@ -47,13 +47,13 @@ public class DBWrapper implements DatabaseIO {
      * @param messageFrame - frame in which errors will show up
      */
     private static void closeConnection() {
-            try {
-                if (_connection != null) {
-                    _connection.close();
-                }
-            } catch (SQLException e) {
-                new ErrorView(e,"Could not close connection to the DB.");
+        try {
+            if (_connection != null) {
+                _connection.close();
             }
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not close connection to the DB.");
+        }
     }
 
     /**
@@ -62,12 +62,12 @@ public class DBWrapper implements DatabaseIO {
      * @param asgn - string of assignment name
      * @param distribution - hashmap of ta login to arraylist of student logins
      */
-    public void setAsgnDist(JFrame messageFrame, String asgn, Map<String,ArrayList<String>> distribution) {
+    public void setAsgnDist(String asgn, Map<String, ArrayList<String>> distribution) {
         //add the distribution to the DB
         openConnection();
         try {
-            HashMap<String,Integer> studentIDs = new HashMap<String,Integer>();
-            HashMap<String,Integer> taIDs = new HashMap<String,Integer>();
+            HashMap<String, Integer> studentIDs = new HashMap<String, Integer>();
+            HashMap<String, Integer> taIDs = new HashMap<String, Integer>();
             int asgnID;
 
             ResultSet rs = _statement.executeQuery("SELECT s.login, s.sid FROM student AS s");
@@ -78,11 +78,11 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 taIDs.put(rs.getString("login"), rs.getInt("tid"));
             }
-            rs = _statement.executeQuery("SELECT a.aid FROM asgn AS a WHERE a.name == '"+asgn+"'");
+            rs = _statement.executeQuery("SELECT a.aid FROM asgn AS a WHERE a.name == '" + asgn + "'");
             rs.first();
             asgnID = rs.getInt("tid");
 
-            rs = _statement.executeQuery("DELETE FROM asgn WHERE name == '"+asgn+"'");
+            rs = _statement.executeQuery("DELETE FROM asgn WHERE name == '" + asgn + "'");
 
             String insertCommand = "INSERT INTO distribution ('aid', 'sid', 'tid') VALUES"; //start of insert command
             for (String ta : distribution.keySet()) {
@@ -95,10 +95,10 @@ public class DBWrapper implements DatabaseIO {
                 insertCommand = insertCommand.substring(0, insertCommand.length() - 1);
             }
             rs = _statement.executeQuery(insertCommand);
-            JOptionPane.showMessageDialog(messageFrame, "Assignments have been successfully distributed to the grading TAs.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Assignments have been successfully distributed to the grading TAs.", "Success", JOptionPane.INFORMATION_MESSAGE);
             closeConnection();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(messageFrame, "There was an error distributing the assignments to the grading TAs.", "Error", JOptionPane.ERROR_MESSAGE);
+            new ErrorView(e, "There was an error distributing the assignments to the grading TAs.");
             closeConnection();
         }
     }
@@ -109,18 +109,18 @@ public class DBWrapper implements DatabaseIO {
      * @param taLogin - string of single TA's login
      * @return list of student logins that have been blacklisted by the ta
      */
-    public ArrayList<String> getTABlacklist(JFrame messageFrame, String taLogin) {
+    public Collection<String> getTABlacklist(String taLogin) {
         openConnection();
         try {
             ArrayList<String> blackList = new ArrayList<String>();
 
-            ResultSet rs = _statement.executeQuery("SELECT s.login " +
-                                                  "FROM student AS s " +
-                                                  "INNER JOIN distribution AS d " +
-                                                    "ON d.sid == s.sid " +
-                                                  "INNER JOIN ta AS t " +
-                                                    "ON d.tid == t.tid " +
-                                                  "WHERE t.login == " + taLogin);
+            ResultSet rs = _statement.executeQuery("SELECT s.login "
+                    + "FROM student AS s "
+                    + "INNER JOIN distribution AS d "
+                    + "ON d.sid == s.sid "
+                    + "INNER JOIN ta AS t "
+                    + "ON d.tid == t.tid "
+                    + "WHERE t.login == " + taLogin);
             while (rs.next()) {
                 blackList.add(rs.getString("login"));
             }
@@ -134,98 +134,222 @@ public class DBWrapper implements DatabaseIO {
     }
 
     /**
-     *
-     * @param assignmentName
-     * @return
+     * Inserts a new assignment into the DB (not checking if that assignment already exists)
+     * @param assignmentName - String of name
+     * @return status
      */
     public boolean addAssignment(String assignmentName) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("INSERT INTO asgn " +
-                                                    "('name') " +
-                                                  "VALUES " +
-                                                    "('" + assignmentName +
-                                                    "')");
+            ResultSet rs = _statement.executeQuery("INSERT INTO asgn "
+                    + "('name') "
+                    + "VALUES "
+                    + "('" + assignmentName
+                    + "')");
             closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e,"Could not insert new row for assignment.");
+            new ErrorView(e, "Could not insert new row for assignment.");
             closeConnection();
             return false;
         }
     }
 
+    /**
+     * Inserts a new student into the DB (not check if already exists)
+     * @param studentLogin - String login
+     * @param studentFirstName - String First Name
+     * @param studentLastName - String Last Name
+     * @return status
+     */
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("INSERT INTO student " +
-                                                    "('login', 'firstname', 'lastname') " +
-                                                   "VALUES " +
-                                                    "('" + studentLogin +
-                                                    "', '" + studentFirstName +
-                                                    "', '" + studentLastName +
-                                                    "')");
+            ResultSet rs = _statement.executeQuery("INSERT INTO student "
+                    + "('login', 'firstname', 'lastname') "
+                    + "VALUES "
+                    + "('" + studentLogin
+                    + "', '" + studentFirstName
+                    + "', '" + studentLastName
+                    + "')");
             closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e,"Could not insert new row for student.");
+            new ErrorView(e, "Could not insert new row for student.");
             closeConnection();
             return false;
         }
     }
 
+    /**
+     * Set enabled to 0 for student passed in
+     * @param studentLogin - String Student Login
+     * @return status
+     */
     public boolean disableStudent(String studentLogin) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("UPDATE student " +
-                                                   "SET " +
-                                                     "enabled=0 " +
-                                                   "WHERE " +
-                                                     "login == '" + studentLogin + "'");
+            ResultSet rs = _statement.executeQuery("UPDATE student "
+                    + "SET "
+                    + "enabled=0 "
+                    + "WHERE "
+                    + "login == '" + studentLogin + "'");
             closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e,"Could not update student "+studentLogin+" to be disabled.");
+            new ErrorView(e, "Could not update student " + studentLogin + " to be disabled.");
             closeConnection();
             return false;
         }
     }
 
+    /**
+     * Set enabled to 1 for student passed in
+     * @param studentLogin - String Student Login
+     * @return status
+     */
     public boolean enableStudent(String studentLogin) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("UPDATE student " +
-                                                   "SET " +
-                                                     "enabled=1 " +
-                                                   "WHERE " +
-                                                     "login == '" + studentLogin + "'");
+            ResultSet rs = _statement.executeQuery("UPDATE student "
+                    + "SET "
+                    + "enabled=1 "
+                    + "WHERE "
+                    + "login == '" + studentLogin + "'");
             closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e,"Could not update student "+studentLogin+" to be enabled.");
+            new ErrorView(e, "Could not update student " + studentLogin + " to be enabled.");
             closeConnection();
             return false;
         }
     }
 
-    public boolean addGrader(String taLogin, String taName) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * Checks to see if TA already exists. If does not exist then inserts TA to DB
+     * @param taLogin - String TA Login
+     * @param taFirstName - String TA First Name
+     * @param taLastName - String TA Last Name
+     * @param type - String HTA or UTA
+     * @return status
+     */
+    public boolean addTA(String taLogin, String taFirstName, String taLastName, String type) {
+        openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount, "
+                    + "FROM ta AS t "
+                    + "WHERE t.login == '" + taLogin + "'");
+            rs.first();
+            int rows = rs.getInt("rowcount");
+            if (rows == 0) {
+                rs = _statement.executeQuery("INSERT INTO ta "
+                        + "('login', 'firstname', 'lastname', 'type') "
+                        + "VALUES "
+                        + "('" + taLogin
+                        + "', '" + taFirstName
+                        + "', '" + taLastName
+                        + "', '" + type
+                        + "')");
+            }
+            closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not insert new row for ta: " + taLogin);
+            closeConnection();
+            return false;
+        }
     }
 
     public Map<String, String> getStudents() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Check to see if TA has already BlackListed Student. If has not then adds Student to TA's blacklist
+     * @param studentLogin - String Student
+     * @param taLogin - String TA
+     * @return status
+     */
     public boolean blacklistStudent(String studentLogin, String taLogin) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(b.sid) AS rowcount, "
+                    + "b.tid AS taid, "
+                    + "b.sid AS studentid"
+                    + "FROM backlist AS b "
+                    + "INNER JOIN student AS s "
+                    + "ON s.sid == b.sid "
+                    + "INNER JOIN ta AS t "
+                    + "ON t.tid == b.tid "
+                    + "WHERE s.login == '" + studentLogin + "' "
+                    + "AND t.login == '" + taLogin + "'");
+            rs.first();
+            int rows = rs.getInt("rowcount");
+            int studentID = rs.getInt("studentid");
+            int taID = rs.getInt("taid");
+            if (rows == 0) {
+                rs = _statement.executeQuery("INSERT INTO blacklist "
+                        + "('sid', 'tid') "
+                        + "VALUES "
+                        + "(" + studentID
+                        + ", " + taID
+                        + ")");
+            }
+            closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not blacklist the student: " + studentLogin + " for ta: " + taLogin);
+            closeConnection();
+            return false;
+        }
     }
 
+    /**
+     * Checks to see if the dist for an assignment is empty. If yes return true.
+     * @param asgn - String Asgn Name
+     * @return Boolean - Empty = true, Not = false
+     */
     public boolean isDistEmpty(String asgn) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(d.sid) AS rowcount " +
+                                                   "FROM distribution AS d " +
+                                                   "INNER JOIN asgn AS a " +
+                                                    "ON a.aid == d.aid " +
+                                                   "WHERE a.name == " + asgn);
+            rs.first();
+            int rows = rs.getInt("rowcount");
+            closeConnection();
+            return rows == 0;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not determine the size of the dist for: " + asgn);
+            closeConnection();
+            return false;
+        }
     }
 
-    public Iterable<String> getBlacklistedStudents() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * Return all students on any TA's blacklist
+     * @return Collection - strings of all the student logins
+     */
+    public Collection<String> getBlacklistedStudents() {
+        openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin " +
+                                                   "FROM student AS s " +
+                                                   "INNER JOIN blacklist AS b " +
+                                                    "ON b.sid == s.sid");
+            ArrayList<String> result = new ArrayList<String>();
+            while (rs.next()) {
+                result.add(rs.getString("student"));
+            }
+            closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get BlackListed Students from DB");
+            closeConnection();
+            return new ArrayList<String>();
+        }
     }
 
     public boolean assignStudentToGrader(String studentLogin, String assignmentName, String taLogin) {
@@ -236,8 +360,37 @@ public class DBWrapper implements DatabaseIO {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Iterable<String> getStudentsAssigned(String assignmentName, String taLogin) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * Get all the logins of the students assigned to a particular TA for an assignment.
+     * Dist could be empty and will then return empty ArrayList
+     * @param assignmentName - String Name of asgn
+     * @param taLogin - String TA Login
+     * @return Collection - list of student logins
+     */
+    public Collection<String> getStudentsAssigned(String assignmentName, String taLogin) {
+        openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin " +
+                                                   "FROM student AS s " +
+                                                   "INNER JOIN distribution AS d " +
+                                                    "ON d.sid == s.sid " +
+                                                   "INNER JOIN ta AS t " +
+                                                    "ON d.tid == t.tid " +
+                                                   "INNER JOIN assignment AS a " +
+                                                    "ON d.aid == a.aid " +
+                                                   "WHERE t.login == '" + taLogin + "' " +
+                                                    "AND a.name == '" + assignmentName + "'");
+            ArrayList<String> result = new ArrayList<String>();
+            while (rs.next()) {
+                result.add(rs.getString("studlogin"));
+            }
+            closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get students assigned to ta: " + taLogin + " for assignment: " + assignmentName);
+            closeConnection();
+            return new ArrayList<String>();
+        }
     }
 
     public boolean grantExtension(String studentLogin, String assignmentName, Calendar newDate, String note) {

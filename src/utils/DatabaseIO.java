@@ -4,8 +4,8 @@ import rubric.TimeStatus;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Map;
-import javax.swing.JFrame;
 
 /**
  * Interface to be implemented by classes providing database interaction; mandates
@@ -19,7 +19,7 @@ public interface DatabaseIO {
 
     //may add: public boolean addAssignmentPart(String assignmentName, String partName);
 
-    public boolean addGrader(String taLogin, String taName);
+    public boolean addTA(String taLogin, String taFirstName, String taLastName, String type);
 
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName);
 
@@ -33,17 +33,17 @@ public interface DatabaseIO {
 
     public boolean isDistEmpty(String asgn);
 
-    public Iterable<String> getBlacklistedStudents();
+    public Collection<String> getBlacklistedStudents();
 
-    public Iterable<String> getTABlacklist(JFrame messageFrame, String taLogin);
+    public Collection<String> getTABlacklist(String taLogin);
 
     public boolean assignStudentToGrader(String studentLogin, String assignmentName, String taLogin);
 
     public boolean unassignStudentFromGrader(String studentLogin, String assignmentName, String taLogin);
 
-    public void setAsgnDist(JFrame messageFrame, String assignmentName, Map<String,ArrayList<String>> distribution);
+    public void setAsgnDist(String assignmentName, Map<String,ArrayList<String>> distribution);
 
-    public Iterable<String> getStudentsAssigned(String assignmentName, String taLogin);
+    public Collection<String> getStudentsAssigned(String assignmentName, String taLogin);
 
     //may add: public Map<String,String> getDistribution(String assignmentName);
 
