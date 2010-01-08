@@ -27,6 +27,18 @@ public class Allocator {
         return CONSTANTS;
     }
 
+    //New constants
+    //TODO: Eventually remove above Constants and replace with this
+    private static config.Constants NEW_CONSTANTS = null;
+    public static config.Constants getNewConstants(){
+        if(NEW_CONSTANTS == null){
+            NEW_CONSTANTS = new config.Constants();
+        }
+
+        return NEW_CONSTANTS;
+    }
+
+
     //General Utilities
     private static GeneralUtilities GENERAL_UTILITIES = null;
     public static GeneralUtilities getGeneralUtilities(){

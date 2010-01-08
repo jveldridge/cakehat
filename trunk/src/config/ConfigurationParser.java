@@ -26,14 +26,16 @@ public class ConfigurationParser
 
                                 CONFIG = "CONFIG",
           
-                                ASSIGNMENTS = "ASSIGNMENTS", TAS = "TAS",
+                                ASSIGNMENTS = "ASSIGNMENTS", DEFAULTS = "DEFAULTS", EMAIL = "EMAIL",
 
-                                TA = "TA", LOGIN = "LOGIN", DEFAULT_GRADER = "DEFAULT-GRADER", ADMIN = "ADMIN",
-                                BLACKLIST = "BLACKLIST", STUDENT = "STUDENT",
+                                COURSE = "COURSE", LENIENCY = "LENIENCY",
+
+                                NOTIFY = "NOTIFY", ADDRESS = "ADDRESS",
+                                SEND_FROM = "SEND-FROM", LOGIN = "LOGIN", PASSWORD = "PASSWORD",
+                                CERT_PATH = "CERT-PATH", CERT_PASSWORD = "CERT-PASSWORD",
 
                                 ASSIGNMENT = "ASSIGNMENT", NAME = "NAME", NUMBER = "NUMBER",
                                 RUBRIC="RUBRIC", DEDUCTIONS="DEDUCTIONS", LOCATION = "LOCATION",
-
 
                                 PART = "PART", LAB_NUMBER="LAB-NUMBER", TYPE="TYPE", POINTS="POINTS", LANGUAGE="LANGUAGE",
                                 LATE_POLICY="LATE-POLICY", UNITS="UNITS",
@@ -103,85 +105,128 @@ public class ConfigurationParser
             {
                 processAssignments(currNode.getChildNodes(), config);
             }
-            //TAs
-            else if (currNode.getNodeName().equals(TAS))
+            //DEFAULTS
+            else if (currNode.getNodeName().equals(DEFAULTS))
             {
-                processTAs(currNode.getChildNodes(), config);
+                processDefaults(currNode.getChildNodes(), config);
+            }
+            //EMAIL
+            else if (currNode.getNodeName().equals(EMAIL))
+            {
+                processEmail(currNode.getChildNodes(), config);
             }
             else
             {
-                throw new ConfigurationException("Unknown CONFIG child: "+ currNode.getNodeName() +
-                                                 ", supported children are " + ASSIGNMENTS + " and " + TAS);
+                throw new ConfigurationException(CONFIG, currNode, ASSIGNMENTS, DEFAULTS, EMAIL);
             }
         }
     }
 
-    /**
-     * Parses out the TA information.
-     * 
-     * @param taNodes
-     * @param config
-     * @throws ConfigurationException
-     */
-    private static void processTAs(NodeList taNodes, Configuration config) throws ConfigurationException
+    private static void processDefaults(NodeList defaultNodes, Configuration config) throws ConfigurationException
     {
-        for (int i = 0; i < taNodes.getLength(); i++)
+        for (int i = 0; i < defaultNodes.getLength(); i++)
         {
-            Node taNode = taNodes.item(i);
+            Node defaultNode = defaultNodes.item(i);
 
             //Skip if appropriate
-            if(skipNode(taNode))
+            if(skipNode(defaultNode))
             {
                 continue;
             }
-
-            String taLogin = taNode.getAttributes().getNamedItem(LOGIN).getNodeValue();
-            boolean isDefaultGrader = Boolean.getBoolean(taNode.getAttributes().getNamedItem(DEFAULT_GRADER).getNodeValue());
-            boolean isAdmin = Boolean.getBoolean(taNode.getAttributes().getNamedItem(ADMIN).getNodeValue());
-
-            TA ta = new TA(taLogin, isDefaultGrader, isAdmin);
-
-            NodeList childNodes = taNode.getChildNodes();
-            for(int j = 0; j < childNodes.getLength(); j++)
+            else if (defaultNode.getNodeName().equals(COURSE))
             {
-                Node childNode = childNodes.item(j);
+                String course = defaultNode.getFirstChild().getNodeValue();
+                config.setCourse(course);
+            }
+            else if (defaultNode.getNodeName().equals(LENIENCY))
+            {
+                int leniency = Integer.parseInt(defaultNode.getFirstChild().getNodeValue());
+                config.setLeniency(leniency);
+            }
+            else
+            {
+                throw new ConfigurationException(DEFAULTS, defaultNode, COURSE, LENIENCY);
+            }
+        }
+    }
 
-                //Skip if appropriate
-                if(skipNode(childNode))
+    private static void processEmail(NodeList emailNodes, Configuration config) throws ConfigurationException
+    {
+        for (int i = 0; i < emailNodes.getLength(); i++)
+        {
+            Node emailNode = emailNodes.item(i);
+
+            //Skip if appropriate
+            if(skipNode(emailNode))
+            {
+                continue;
+            }
+            else if (emailNode.getNodeName().equals(NOTIFY))
+            {
+                NodeList notifyNodes = emailNode.getChildNodes();
+                for(int j = 0; j < notifyNodes.getLength(); j++)
                 {
-                    continue;
-                }
-                //Blacklist
-                else if (childNode.getNodeName().equals(BLACKLIST))
-                {
-                    NodeList blacklistNodes = childNode.getChildNodes();
-                    for(int k = 0; k < blacklistNodes.getLength(); k++)
+                    Node notifyNode = notifyNodes.item(j);
+                    if(skipNode(notifyNode))
                     {
-                        Node blacklistChildNode = blacklistNodes.item(k);
-
-                        //Skip if appropriate
-                        if(skipNode(blacklistChildNode))
-                        {
-                            continue;
-                        }
-                        else if(blacklistChildNode.getNodeName().equals(STUDENT))
-                        {
-                            String studentLogin = blacklistChildNode.getAttributes().getNamedItem(LOGIN).getNodeValue();
-                            ta.addStudentToBlacklist(studentLogin);
-                        }
-                        else
-                        {
-                            throw new ConfigurationException("Unknown BLACKLIST child: " + blacklistChildNode.getNodeName() + ", only " + STUDENT + " is a supported child.");
-                        }
+                        continue;
+                    }
+                    else if(notifyNode.getNodeName().equals(ADDRESS))
+                    {
+                        String address = notifyNode.getFirstChild().getNodeValue();
+                        config.addNotifyAddress(address);
+                    }
+                    else
+                    {
+                        throw new ConfigurationException(NOTIFY, notifyNode, ADDRESS);
                     }
                 }
-                else
-                {
-                    throw new ConfigurationException("Unknown TA child: " + childNode.getNodeName() + ", only " + BLACKLIST + " is a supported child.");
-                }
             }
+            else if (emailNode.getNodeName().equals(SEND_FROM))
+            {
+                EmailAccount account = new EmailAccount();
 
-            config.addTA(ta);
+                NodeList sendFromNodes = emailNode.getChildNodes();
+                for(int j = 0; j < sendFromNodes.getLength(); j++)
+                {
+                    Node sendFromNode = sendFromNodes.item(j);
+
+                    if(skipNode(sendFromNode))
+                    {
+                        continue;
+                    }
+                    else if(sendFromNode.getNodeName().equals(LOGIN))
+                    {
+                        String login = sendFromNode.getFirstChild().getNodeValue();
+                        account.setLogin(login);
+                    }
+                    else if(sendFromNode.getNodeName().equals(PASSWORD))
+                    {
+                        String password = sendFromNode.getFirstChild().getNodeValue();
+                        account.setPassword(password);
+                    }
+                    else if(sendFromNode.getNodeName().equals(CERT_PATH))
+                    {
+                        String certPath = sendFromNode.getFirstChild().getNodeValue();
+                        account.setCertPath(certPath);
+                    }
+                    else if(sendFromNode.getNodeName().equals(CERT_PASSWORD))
+                    {
+                        String certPass = sendFromNode.getFirstChild().getNodeValue();
+                        account.setCertPassword(certPass);
+                    }
+                    else
+                    {
+                        throw new ConfigurationException(SEND_FROM, sendFromNode, LOGIN, PASSWORD, SEND_FROM);
+                    }
+                }
+
+                config.setEmailAccount(account);
+            }
+            else
+            {
+                throw new ConfigurationException(EMAIL, emailNode, NOTIFY, SEND_FROM);
+            }
         }
     }
 
@@ -207,8 +252,7 @@ public class ConfigurationParser
             }
             else
             {
-                throw new ConfigurationException("Unsupported ASSIGNMENTS child: " + currNode.getNodeName() +
-                                                 ", only " + ASSIGNMENT + " is supported.");
+                throw new ConfigurationException(ASSIGNMENTS, currNode, ASSIGNMENT);
             }
         }
     }
@@ -254,9 +298,7 @@ public class ConfigurationParser
             }
             else
             {
-                throw new ConfigurationException("Unsupported ASSIGNMENT child: " + currNode.getNodeName() +
-                                                 ", supported children are: " + RUBRIC + ", " + DEDUCTIONS +
-                                                 ", and " + PART);
+                throw new ConfigurationException(ASSIGNMENT, currNode, RUBRIC, DEDUCTIONS, PART);
             }
         }
 
@@ -293,7 +335,7 @@ public class ConfigurationParser
         }
         else
         {
-            throw new ConfigurationException("Encountered PART of unsupported TYPE = " + type);
+            throw new ConfigurationException("Encountered " + PART + " of unsupported "+ TYPE + ": " + type);
         }
     }
 
@@ -331,7 +373,7 @@ public class ConfigurationParser
         }
         else
         {
-            throw new ConfigurationException("Encountered CODE PART of unsupported LANGUAGE = " + language);
+            throw new ConfigurationException("Encountered CODE PART of unsupported" + LANGUAGE + ": " + language);
         }
 
         //Process out LATE-POLICY, RUN, DEMO, TESTER tags
@@ -374,8 +416,7 @@ public class ConfigurationParser
                     }
                     else
                     {
-                        throw new ConfigurationException("RUN may only have children of type PROPERTY," +
-                                                         "encountered tag of " + propertyNode.getNodeName());
+                        throw new ConfigurationException(RUN, propertyNode, PROPERTY);
                     }
                 }
 
@@ -405,8 +446,7 @@ public class ConfigurationParser
                     }
                     else
                     {
-                        throw new ConfigurationException("DEMO may only have children of type PROPERTY," +
-                                                         "encountered tag of " + propertyNode.getNodeName());
+                        throw new ConfigurationException(DEMO, propertyNode, PROPERTY);
                     }
                 }
 
@@ -436,10 +476,13 @@ public class ConfigurationParser
                     }
                     else
                     {
-                        throw new ConfigurationException("TESTER may only have children of type PROPERTY," +
-                                                         "encountered tag of " + propertyNode.getNodeName());
+                        throw new ConfigurationException(TESTER, propertyNode, PROPERTY);
                     }
                 }
+            }
+            else
+            {
+                throw new ConfigurationException(PART, childNode, LATE_POLICY, RUN, DEMO, TESTER);
             }
         }
         
@@ -486,7 +529,7 @@ public class ConfigurationParser
             }
             else
             {
-                throw new ConfigurationException("Encountered unknown time tag of = " + childNode.getNodeName());
+                throw new ConfigurationException(LATE_POLICY, childNode, EARLY, ONTIME, LATE);
             }
         }
 
@@ -566,6 +609,14 @@ public class ConfigurationParser
      */
     private static Document getDocument(String XMLFilePath) throws ConfigurationException
     {
+        //Check if file exists
+        File file = new File(XMLFilePath);
+        if(!file.exists())
+        {
+            throw new ConfigurationException("Configuration could not be read, location specified: " + XMLFilePath);
+        }
+
+        //Parse document
         Document document = null;
         try
         {
