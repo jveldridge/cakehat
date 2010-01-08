@@ -81,7 +81,7 @@ public class DBWrapper implements DatabaseIO {
             rs = _statement.executeQuery("SELECT a.aid FROM asgn AS a WHERE a.name == '" + asgn + "'");
             asgnID = rs.getInt("tid");
 
-            rs = _statement.executeQuery("DELETE FROM asgn WHERE name == '" + asgn + "'");
+            _statement.executeQuery("DELETE FROM asgn WHERE name == '" + asgn + "'");
 
             String insertCommand = "INSERT INTO distribution ('aid', 'sid', 'tid') VALUES"; //start of insert command
             for (String ta : distribution.keySet()) {
@@ -93,7 +93,7 @@ public class DBWrapper implements DatabaseIO {
             if (insertCommand.endsWith(",")) { //cut off trailing comma
                 insertCommand = insertCommand.substring(0, insertCommand.length() - 1);
             }
-            rs = _statement.executeQuery(insertCommand);
+            _statement.executeUpdate(insertCommand);
             JOptionPane.showMessageDialog(null, "Assignments have been successfully distributed to the grading TAs.", "Success", JOptionPane.INFORMATION_MESSAGE);
             closeConnection();
         } catch (Exception e) {
@@ -140,7 +140,7 @@ public class DBWrapper implements DatabaseIO {
     public boolean addAssignment(String assignmentName) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("INSERT INTO asgn "
+            _statement.executeUpdate("INSERT INTO asgn "
                     + "('name') "
                     + "VALUES "
                     + "('" + assignmentName
@@ -164,7 +164,7 @@ public class DBWrapper implements DatabaseIO {
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("INSERT INTO student "
+            _statement.executeUpdate("INSERT INTO student "
                     + "('login', 'firstname', 'lastname') "
                     + "VALUES "
                     + "('" + studentLogin
@@ -188,7 +188,7 @@ public class DBWrapper implements DatabaseIO {
     public boolean disableStudent(String studentLogin) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("UPDATE student "
+            _statement.executeUpdate("UPDATE student "
                     + "SET "
                     + "enabled=0 "
                     + "WHERE "
@@ -210,7 +210,7 @@ public class DBWrapper implements DatabaseIO {
     public boolean enableStudent(String studentLogin) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("UPDATE student "
+            _statement.executeUpdate("UPDATE student "
                     + "SET "
                     + "enabled=1 "
                     + "WHERE "
@@ -240,7 +240,7 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE t.login == '" + taLogin + "'");
             int rows = rs.getInt("rowcount");
             if (rows == 0) {
-                rs = _statement.executeQuery("INSERT INTO ta "
+                _statement.executeUpdate("INSERT INTO ta "
                         + "('login', 'firstname', 'lastname', 'type') "
                         + "VALUES "
                         + "('" + taLogin
@@ -285,7 +285,7 @@ public class DBWrapper implements DatabaseIO {
             int studentID = rs.getInt("studentid");
             int taID = rs.getInt("taid");
             if (rows == 0) {
-                rs = _statement.executeQuery("INSERT INTO blacklist "
+                _statement.executeUpdate("INSERT INTO blacklist "
                         + "('sid', 'tid') "
                         + "VALUES "
                         + "(" + studentID
