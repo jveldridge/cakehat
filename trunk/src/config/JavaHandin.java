@@ -37,9 +37,9 @@ import utils.BashConsole;
  *
  * @author jak2
  */
-class JavaCodePart extends CodeHandin
+class JavaHandin extends CodeHandin
 {
-    public JavaCodePart(Assignment asgn, String name, int points)
+    public JavaHandin(Assignment asgn, String name, int points)
     {
         super(asgn, name, points);
     }

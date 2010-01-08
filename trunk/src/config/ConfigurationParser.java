@@ -421,7 +421,7 @@ public class ConfigurationParser
         //Create the appropriate subclass of CodePart based on the language
         if(language.equalsIgnoreCase("Java"))
         {
-            part = new JavaCodePart(asgn, name, points);
+            part = new JavaHandin(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("C"))
         {
@@ -429,11 +429,11 @@ public class ConfigurationParser
         }
         else if(language.equalsIgnoreCase("C++"))
         {
-            part = new CPPCodePart(asgn, name, points);
+            part = new CPPHandin(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("Matlab"))
         {
-            part = new MatlabCodePart(asgn, name, points);
+            part = new MatlabHandin(asgn, name, points);
         }
         else
         {
