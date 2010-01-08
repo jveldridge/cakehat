@@ -1,5 +1,6 @@
 package config;
 
+import java.util.Collection;
 import java.util.Vector;
 
 /**
@@ -11,26 +12,58 @@ import java.util.Vector;
 class Configuration
 {
     private Vector<Assignment> _assignments = new Vector<Assignment>();
-    private Vector<TA> _tas = new Vector<TA>();
+    private Vector<String> _notifyAddresses = new Vector<String>();
+    private EmailAccount _emailAccount;
+    private String _course;
+    private int _leniency;
 
-    Iterable<Assignment> getAssigments()
+    void setEmailAccount(EmailAccount account)
     {
-        return _assignments;
+        _emailAccount = account;
     }
-    
+
+    EmailAccount getEmailAccount()
+    {
+        return _emailAccount;
+    }
+
+    void addNotifyAddress(String address)
+    {
+        _notifyAddresses.add(address);
+    }
+
+    Collection<String> getNotifyAddresses()
+    {
+       return _notifyAddresses;
+    }
+
+    void setCourse(String course)
+    {
+        _course = course;
+    }
+
+    String getCourse()
+    {
+        return _course;
+    }
+
+    void setLeniency(int minutes)
+    {
+        _leniency = minutes;
+    }
+
+    int getLeniency()
+    {
+        return _leniency;
+    }
+
     void addAssignment(Assignment asgn)
     {
         _assignments.add(asgn);
     }
-    
 
-    void addTA(TA ta)
+    Collection<Assignment> getAssigments()
     {
-        _tas.add(ta);
-    }
-
-    Iterable<TA> getTAs()
-    {
-        return _tas;
+        return _assignments;
     }
 }

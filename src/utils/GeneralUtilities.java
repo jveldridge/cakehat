@@ -126,7 +126,7 @@ public class GeneralUtilities {
     }
 
     /**
-     * TODO: Allow for passing in null for cc, bcc, and attachmentNames parameters.
+     * @deprecated use config.EmailAccount's sendMail methods.
      *
      * Sends email through the cs department smtps server
      * Attaches a list of files to the email
@@ -253,6 +253,9 @@ public class GeneralUtilities {
     }
 
     /**
+     * TODO: See if there is a command that just returns user's name instead of
+     *       having to parse snoop's output.
+     *
      * Gets a user's name.
      *
      * @param login the user's login
@@ -520,25 +523,53 @@ public class GeneralUtilities {
         //Return if the directory now exists
         return dir.exists();
     }
-
     /**
-     * TODO: Look into doing this with Java. Java has the ability to delete an empty directory
-     *       but there seems to be no method to recursively delete a directory and its contents
-     *       the way rm -rf does.
      *
      * Removes a directory and all of its files and subdirectories.
      *
+     * @author jak2
+     * @date 1/8/2010
+     *
      * @param dirPath
+     * @return success of deletion
      */
-    public void removeDirectory(String dirPath) {
-        String cmd = "rm -rf " + dirPath;
-
-        try {
-            Runtime.getRuntime().exec(cmd);
-        }
-        catch (IOException e) {
-        }
+    public boolean removeDirectory(String dirPath) {
+        return removeDirectory(new File(dirPath));
     }
+
+    /**
+     *
+     * Removes a directory and all of its files and subdirectories.
+     *
+     * @author jak2
+     * @date 1/8/2010
+     *
+     * @param dirPath
+     * @return success of deletion
+     */
+    public boolean removeDirectory(File dirPath) {
+        //only proceed if directory exists
+        if(dirPath.exists() && dirPath.isDirectory()) {
+            //for each directory and file in directory
+            for(File file : dirPath.listFiles()) {
+                //if directory, recursively delete files and directories inside
+                if(file.isDirectory()) {
+                    removeDirectory(file);
+                }
+                //if file, just delete the file
+                else {
+                    file.delete();
+                }
+            }
+
+            //return success of deleting directory
+            return dirPath.delete();
+        }
+
+        //if the directory didn't exist, report failure
+        return false;
+    }
+
 
     /**
      * Takes a double and returns it as a String rounded to 2

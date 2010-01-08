@@ -2,7 +2,6 @@ package frontend;
 
 import backend.OldDatabaseOps;
 import config.Assignment;
-import config.ConfigurationManager;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -119,7 +118,7 @@ public class NewFrontendView extends javax.swing.JFrame {
         //Populate assignment list with all those that have any functionality
         //relating to the frontend
         Vector<Assignment> assignments = new Vector<Assignment>();
-        for(Assignment asgn : ConfigurationManager.getAssignments()){
+        for(Assignment asgn : Allocator.getNewConstants().getAssignments()){
             if(asgn.hasCodePart()){
                 assignments.add(asgn);
             }
