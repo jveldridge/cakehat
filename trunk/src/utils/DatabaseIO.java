@@ -41,7 +41,7 @@ public interface DatabaseIO {
 
     public boolean unassignStudentFromGrader(String studentLogin, String assignmentName, String taLogin);
 
-    public void setAsgnDist(String assignmentName, Map<String,ArrayList<String>> distribution);
+    public boolean setAsgnDist(String assignmentName, Map<String,ArrayList<String>> distribution);
 
     public Collection<String> getStudentsAssigned(String assignmentName, String taLogin);
 
