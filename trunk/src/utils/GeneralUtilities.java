@@ -465,7 +465,6 @@ public class GeneralUtilities {
     }
 
     /**
-     * TODO: Generalize this code so it doesn't just relate to java files.
      * TODO: Look into extracting using Java instead of the Linux tar command.
      *
      * Extracts a tar file.
@@ -478,21 +477,9 @@ public class GeneralUtilities {
         try {
             Process proc = Runtime.getRuntime().exec(cmd);
             proc.waitFor();
-        } catch (Exception e) {
         }
-
-        File destFolder = new File(destPath);
-        File subFolders[] = destFolder.listFiles(); // list all subfolders of .code/<studentLogin>/
-        for (File folder : subFolders) {
-            FilenameFilter filter = new FilenameFilter() { // make a filter for .*.java and .*.java~ files
-              public boolean accept(File dir, String name) {
-                  return (name.startsWith(".") && (name.endsWith(".java")  || name.endsWith(".java~")));
-              }
-            };
-            File toDelete[] = folder.listFiles(filter); // list all the files to delete
-            for (File delete : toDelete) {
-                delete.delete(); // remove the file
-            }
+        catch (Exception e) {
+            new ErrorView(e);
         }
     }
 
@@ -617,8 +604,8 @@ public class GeneralUtilities {
             if (entry.isDirectory()) {
                 files.addAll(getFiles(entry.getAbsolutePath(), extension));
             }
-            //Add if this entry is a file ending with the extension
-            if (entry.isFile() && name.endsWith("." + extension)) {
+            //Add if this entry is a file ending with the extension and not a hidden file
+            if (entry.isFile() && name.endsWith("." + extension) && !name.startsWith(".")) {
                 files.add(entry);
             }
         }
