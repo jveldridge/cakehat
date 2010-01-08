@@ -87,7 +87,7 @@ public class DBWrapper implements DatabaseIO {
             for (String ta : distribution.keySet()) {
                 ArrayList<String> distributedStudents = distribution.get(ta);
                 for (String student : distributedStudents) {
-                    insertCommand += " (" + asgnID + ", " + student + ", " + ta + "),";
+                    insertCommand += " (" + asgnID + ", '" + student + "', '" + ta + "'),";
                 }
             }
             if (insertCommand.endsWith(",")) { //cut off trailing comma
@@ -119,7 +119,7 @@ public class DBWrapper implements DatabaseIO {
                     + "ON d.sid == s.sid "
                     + "INNER JOIN ta AS t "
                     + "ON d.tid == t.tid "
-                    + "WHERE t.login == " + taLogin);
+                    + "WHERE t.login == '" + taLogin + "'");
             while (rs.next()) {
                 blackList.add(rs.getString("login"));
             }
@@ -190,7 +190,7 @@ public class DBWrapper implements DatabaseIO {
         try {
             _statement.executeUpdate("UPDATE student "
                     + "SET "
-                    + "enabled=0 "
+                    + "enabled = 0 "
                     + "WHERE "
                     + "login == '" + studentLogin + "'");
             closeConnection();
@@ -212,7 +212,7 @@ public class DBWrapper implements DatabaseIO {
         try {
             _statement.executeUpdate("UPDATE student "
                     + "SET "
-                    + "enabled=1 "
+                    + "enabled = 1 "
                     + "WHERE "
                     + "login == '" + studentLogin + "'");
             closeConnection();
@@ -273,7 +273,7 @@ public class DBWrapper implements DatabaseIO {
         try {
             ResultSet rs = _statement.executeQuery("SELECT COUNT(b.sid) AS rowcount, "
                     + "b.tid AS taid, "
-                    + "b.sid AS studentid"
+                    + "b.sid AS studentid "
                     + "FROM backlist AS b "
                     + "INNER JOIN student AS s "
                     + "ON s.sid == b.sid "
@@ -313,7 +313,7 @@ public class DBWrapper implements DatabaseIO {
                                                    "FROM distribution AS d " +
                                                    "INNER JOIN asgn AS a " +
                                                     "ON a.aid == d.aid " +
-                                                   "WHERE a.name == " + asgn);
+                                                   "WHERE a.name == '" + asgn + "'");
             int rows = rs.getInt("rowcount");
             closeConnection();
             return rows == 0;
