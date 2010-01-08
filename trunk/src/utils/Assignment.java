@@ -3,6 +3,7 @@ package utils;
 import java.util.Calendar;
 
 /**
+ * @deprecated to be replaced by config.Assignment
  * Represents an assignment as specified in the configuration file.
  *
  * @author jak2 (Joshua Kaplan)

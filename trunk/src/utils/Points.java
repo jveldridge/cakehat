@@ -1,6 +1,7 @@
 package utils;
 
 /**
+ * @deprecated
  * Represents the points an assignment may have.
  *
  * @author jak2 (Joshua Kaplan)

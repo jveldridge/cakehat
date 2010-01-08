@@ -1,5 +1,10 @@
 package utils;
 
+/**
+ * @deprecated To be replaced by config.CourseInfo
+ *
+ * @author jak2
+ */
 public class CS015Constants extends Constants {
 
     /**

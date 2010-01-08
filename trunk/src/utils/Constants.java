@@ -1,6 +1,8 @@
 package utils;
 
 /**
+ * @deprecated to be replaced by config.CourseInfo
+ *
  * Constants that are used throughout the grading system.
  *
  * @author jak2 (Joshua Kaplan)
