@@ -259,7 +259,24 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public Map<String, String> getStudents() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, " +
+                                                    "s.firstname AS fname, " +
+                                                    "s.lastname AS lname " +
+                                                   "FROM student AS s " +
+                                                   "WHERE enabled == 1");
+            HashMap<String, String> result = new HashMap<String, String>();
+            while (rs.next()) {
+                result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
+            }
+            closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get All Enabled Students from DB");
+            closeConnection();
+            return new HashMap<String, String>();
+        }
     }
 
     /**
@@ -337,7 +354,7 @@ public class DBWrapper implements DatabaseIO {
                                                     "ON b.sid == s.sid");
             ArrayList<String> result = new ArrayList<String>();
             while (rs.next()) {
-                result.add(rs.getString("student"));
+                result.add(rs.getString("studlogin"));
             }
             closeConnection();
             return result;
