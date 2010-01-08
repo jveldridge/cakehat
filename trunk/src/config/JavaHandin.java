@@ -1,7 +1,13 @@
 package config;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Vector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 import utils.Allocator;
 import utils.BashConsole;
 
@@ -104,8 +110,7 @@ class JavaHandin extends CodeHandin
      */
     private void compile(String studentLogin)
     {
-        Allocator.getGeneralUtilities().compileJava
-                (this.getStudentHandinDirectory(studentLogin), this.getRunProperty("classpath"));
+        compileJava(this.getStudentHandinDirectory(studentLogin), this.getRunProperty("classpath"));
     }
 
     /**
@@ -132,10 +137,9 @@ class JavaHandin extends CodeHandin
             return;
         }
 
-        Allocator.getGeneralUtilities().executeJavaInVisibleTerminal
-                (this.getStudentHandinDirectory(studentLogin), main,
-                 this.getRunProperty("classpath"), this.getRunProperty("librarypath"),
-                 studentLogin + "'s " + this.getAssignment().getName());
+        executeJavaInVisibleTerminal(this.getStudentHandinDirectory(studentLogin), main,
+                                     this.getRunProperty("classpath"), this.getRunProperty("librarypath"),
+                                     studentLogin + "'s " + this.getAssignment().getName());
     }
 
     /**
@@ -262,11 +266,9 @@ class JavaHandin extends CodeHandin
 
         //Run tester
         String main = this.getTesterProperty("package") + "." + testerName.replace(".java", "");
-        Allocator.getGeneralUtilities().executeJavaInVisibleTerminal
-                                         (this.getStudentHandinDirectory(studentLogin),
-                                          main,
-                                          this.getRunProperty("classpath"),
-                                          "Testing " + studentLogin + "'s " + this.getAssignment().getName());
+        executeJavaInVisibleTerminal(this.getStudentHandinDirectory(studentLogin),
+                                     main,this.getRunProperty("classpath"),
+                                     "Testing " + studentLogin + "'s " + this.getAssignment().getName());
     }
 
     /**
@@ -287,5 +289,126 @@ class JavaHandin extends CodeHandin
     {
         return _sourceFileTypes;
     }
+
+
+    /**
+     * Compiles java code, returns whether the code compiled successfully.
+     * Pass in the top level directory, subdirectories containing
+     * java files will also be compiled.
+     *
+     * Any compiler errors or other messages will be printed to the console
+     * that this grading system program was executed from.
+     *
+     *
+     * @param dirPath The directory and its subdirectories to look for Java files to compile
+     * @param classpath The classpath to compile this code with, null or an empty String may be passed in
+     * @return success of compilation
+     */
+    private boolean compileJava(String dirPath, String classpath) {
+        //Get java compiler and file manager
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+
+        //Tell the compiler to use the classpath if one was passed in
+        Collection<String> options = null;
+        if(classpath != null && !classpath.isEmpty()) {
+            options = new Vector<String>();
+            options.addAll(Arrays.asList("-classpath", classpath));
+        }
+
+        //Get all of the java files in dirPath
+        Collection<File> files = Allocator.getGeneralUtilities().getFiles(dirPath, "java");
+        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+
+        //Attempt to compile
+        try {
+            Boolean success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
+            fileManager.close();
+
+            if (success != null) {
+                return success;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Executes Java code in a separate visible terminal.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * dirPath = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * @param dirPath the path to the package
+     * @param javaArg the part to come after java (ex. java TASafeHouse.App)
+     * @param termName what the title bar of the terminal will display
+     */
+    private void executeJavaInVisibleTerminal(String dirPath, String javaArg,
+                                             String termName) {
+        this.executeJavaInVisibleTerminal(dirPath, javaArg, "", termName);
+    }
+
+    /**
+     * Executes Java code in a separate visible terminal.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * dirPath = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     * @param dirPath the path to the package
+     * @param javaArg the part to come after java (ex. java TASafeHouse.App)
+     * @param classpath the classpath to run this code with respect to
+     * @param termName what the title bar of the terminal will display
+     */
+    private void executeJavaInVisibleTerminal(String dirPath, String javaArg,
+                                             String classpath, String termName) {
+        this.executeJavaInVisibleTerminal(dirPath, javaArg, classpath, null, termName);
+    }
+
+    /**
+     * Executes Java code in a separate visible terminal.
+     *
+     * If you were attempting to execute TASafeHouse and the main class
+     * was located at /course/cs015/demos/TASafeHouse/App.class then
+     * dirPath = /course/cs015/demos and javaArg = TASafeHouse.App
+     *
+     *
+     * @param dirPath the path to the package
+     * @param javaArg the part to come after java (ex. java TASafeHouse.App)
+     * @param classpath the classpath to run this code with respect to
+     * @param libraryPath the library path to run this code with respect to
+     * @param termName what the title bar of the terminal will display
+     */
+    private void executeJavaInVisibleTerminal(String dirPath, String javaArg,
+                                             String classpath, String libraryPath,
+                                             String termName) {
+        //Adds the dirPath to the classpath
+        classpath = dirPath + ":" +  classpath;
+
+        //Build command to call xterm to run the code
+        //Location of java
+        String javaLoc = "/usr/bin/java";
+        //Add java.library.path component if an arguement was passed in
+        String javaLibrary = "";
+        if(libraryPath != null && !libraryPath.isEmpty()){
+            javaLibrary= " -Djava.library.path=" + libraryPath;
+        }
+        //Add classpath
+        String javaClassPath = " -classpath " + classpath;
+        //Put together entire java comand
+        String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
+
+        //Combine java command into command to launch an xterm window
+        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
+
+        //Execute the command in a seperate thread
+        BashConsole.writeThreaded(terminalCmd);
+    }
+
 
 }
