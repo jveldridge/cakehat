@@ -428,15 +428,15 @@ public class DBWrapper implements DatabaseIO {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean grantExtension(String studentLogin, HandinPart part, Calendar newDate, String note) {
+    public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean grantExemption(String studentLogin, HandinPart part, String note) {
+    public boolean grantExemption(String studentLogin, Part part, String note) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Calendar getExtension(String studentLogin, HandinPart part) {
+    public Calendar getExtension(String studentLogin, Part part) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
