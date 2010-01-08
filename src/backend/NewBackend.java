@@ -4,10 +4,11 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
-import utils.FileViewerView;
 import rubric.visualizers.GradingVisualizer;
 import rubric.RubricManager;
 import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -1097,6 +1098,11 @@ public class NewBackend extends javax.swing.JFrame {
 
         //display matching logins
         studentList.setListData(matchingLogins.toArray());
+        studentList.setSelectedIndex(0);
+
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            studentFilter.setText(matchingLogins.get(0));
+        }
     }//GEN-LAST:event_studentFilterKeyReleased
 
    /**
