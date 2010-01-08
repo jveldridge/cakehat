@@ -37,9 +37,9 @@ import utils.BashConsole;
  *
  * @author jak2
  */
-class JavaPart extends CodePart
+class JavaCodePart extends CodeHandin
 {
-    public JavaPart(Assignment asgn, String name, int points)
+    public JavaCodePart(Assignment asgn, String name, int points)
     {
         super(asgn, name, points);
     }
@@ -53,7 +53,7 @@ class JavaPart extends CodePart
         //Open in Kate
         
         //additional */ is to open code in all directories handin in
-        String path = this.getStudentCodeDirectory(studentLogin) + "*/";
+        String path = this.getStudentHandinDirectory(studentLogin) + "*/";
 
         String cmd = "kate " + path + "*.java";
 
@@ -83,7 +83,7 @@ class JavaPart extends CodePart
     {
         //Get all compiled files for this project for the specified student
         Collection<File> compiledFiles = Allocator.getGeneralUtilities().getFiles
-                                            (this.getStudentCodeDirectory(studentLogin), "class");
+                                            (this.getStudentHandinDirectory(studentLogin), "class");
 
         //Keep track of success of deleting all of the files
         boolean success = true;
@@ -105,7 +105,7 @@ class JavaPart extends CodePart
     private void compile(String studentLogin)
     {
         Allocator.getGeneralUtilities().compileJava
-                (this.getStudentCodeDirectory(studentLogin), this.getRunProperty("classpath"));
+                (this.getStudentHandinDirectory(studentLogin), this.getRunProperty("classpath"));
     }
 
     /**
@@ -133,7 +133,7 @@ class JavaPart extends CodePart
         }
 
         Allocator.getGeneralUtilities().executeJavaInVisibleTerminal
-                (this.getStudentCodeDirectory(studentLogin), main,
+                (this.getStudentHandinDirectory(studentLogin), main,
                  this.getRunProperty("classpath"), this.getRunProperty("librarypath"),
                  studentLogin + "'s " + this.getAssignment().getName());
     }
@@ -243,7 +243,7 @@ class JavaPart extends CodePart
         String testerPath = this.getTesterProperty("tester-loc");
         String testerName = testerPath.substring(testerPath.lastIndexOf("/")+1);
 
-        String copyPath = this.getStudentCodeDirectory(studentLogin) +
+        String copyPath = this.getStudentHandinDirectory(studentLogin) +
                           this.getTesterProperty("package").replace(".", "/") + "/" + testerName;
 
         //Copy file into student's code directory, print error and bail if copy fails
@@ -263,7 +263,7 @@ class JavaPart extends CodePart
         //Run tester
         String main = this.getTesterProperty("package") + "." + testerName.replace(".java", "");
         Allocator.getGeneralUtilities().executeJavaInVisibleTerminal
-                                         (this.getStudentCodeDirectory(studentLogin),
+                                         (this.getStudentHandinDirectory(studentLogin),
                                           main,
                                           this.getRunProperty("classpath"),
                                           "Testing " + studentLogin + "'s " + this.getAssignment().getName());

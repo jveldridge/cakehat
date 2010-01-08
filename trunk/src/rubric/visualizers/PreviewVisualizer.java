@@ -23,9 +23,16 @@ import utils.Allocator;
  */
 public class PreviewVisualizer extends JFrame
 {
-    public PreviewVisualizer(Rubric rubric, String asgn)
+    /**
+     * Views an assignment's template rubric.
+     *
+     * @param asgn
+     */
+    public PreviewVisualizer(config.HandinPart part)
     {
-        super("Rubric Preview for " + asgn);
+        super("Rubric Preview for " + part.getAssignment().getName());
+
+        Rubric rubric = part.getRubric();
 
         //Preview status as if on time (necessary as visualizer expects a status)
         rubric.Status = "ON_TIME";
@@ -78,9 +85,52 @@ public class PreviewVisualizer extends JFrame
      */
     public PreviewVisualizer(String asgn)
     {
-        this(RubricManager.processXML(Allocator.getConstants().getAssignmentDir() + asgn +
-                                      "/" + Allocator.getConstants().getTemplateGradeSheetFilename()),
-                                      asgn);
+        super("Rubric Preview for " + asgn);
+
+        Rubric rubric = RubricManager.processXML(Allocator.getConstants().getAssignmentDir() + asgn +
+                                      "/" + Allocator.getConstants().getTemplateGradeSheetFilename());
+        
+        //Preview status as if on time (necessary as visualizer expects a status)
+        rubric.Status = "ON_TIME";
+
+        //Layout
+        this.setLayout(new BorderLayout());
+
+        //Panels
+        RubricPanel rubricPanel = new RubricPanel(rubric, null);
+        final JScrollPane scrollPane = new JScrollPane(rubricPanel);
+        Dimension size = new Dimension(rubricPanel.getPreferredSize().width + 30, 800);
+        scrollPane.setPreferredSize(size);
+        scrollPane.setSize(size);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        this.add(scrollPane, BorderLayout.CENTER);
+
+        //Handle closing
+        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        //Open up a dialog on window close to save rubric data
+        this.addWindowListener(new WindowAdapter()
+        {
+            public void windowClosing(WindowEvent e)
+            {
+                PreviewVisualizer.this.dispose();
+            }
+        });
+
+        //Fit everything together
+        this.pack();
+
+                //On window open, scroll to top
+        this.addWindowListener(new WindowAdapter()
+        {
+            public void windowOpened(WindowEvent e)
+            {
+                scrollPane.getViewport().setViewPosition(new Point(0,0));
+            }
+        });
+
+        //Show
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
-   
 }

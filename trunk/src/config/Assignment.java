@@ -1,13 +1,6 @@
 package config;
 
-import java.io.File;
 import java.util.Vector;
-import rubric.Rubric;
-import rubric.RubricManager;
-import rubric.visualizers.GradingVisualizer;
-import rubric.visualizers.PreviewVisualizer;
-import utils.Allocator;
-import utils.FileViewerView;
 
 /**
  *
@@ -17,11 +10,9 @@ public class Assignment
 {
     private String _name;
     private int _number;
-    private File _deductionsFile, _rubricFile;
-    private Rubric _rubric;
-    private Vector<NonCodePart> _nonCodeParts = new Vector<NonCodePart>();
+    private Vector<NonHandinPart> _nonCodeParts = new Vector<NonHandinPart>();
     private Vector<LabPart> _labParts = new Vector<LabPart>();
-    private CodePart _codePart;
+    private HandinPart _handinPart;
 
     Assignment(String name, int number)
     {
@@ -39,68 +30,14 @@ public class Assignment
         return _number;
     }
 
-    //Deduction List
-
-    void setDeductionList(String filePath)
-    {
-        _deductionsFile = new File(filePath);
-    }
-
-    public boolean hasDeductionList()
-    {
-        boolean exists = (_deductionsFile != null) && (_deductionsFile.exists());
-
-        return exists;
-    }
-
-    public void viewDeductionList()
-    {
-        FileViewerView fv = new FileViewerView(_deductionsFile);
-        fv.setTitle(_name + " Deductions List");
-    }
-
-    //Rubric
-
-    void setRubric(String filePath)
-    {
-        _rubricFile = new File(filePath);
-    }
-
-    public boolean hasRubric()
-    {
-        boolean exists = (_rubricFile != null) && (_rubricFile.exists());
-
-        return exists;
-    }
-
-    Rubric getRubric()
-    {
-        if(_rubric == null)
-        {
-            _rubric = RubricManager.processXML(_rubricFile.getAbsolutePath());
-        }
-
-        return _rubric;
-    }
-
-    public void previewRubric()
-    {
-        new PreviewVisualizer(this.getRubric(), this.getName());
-    }
-
-    public void viewRubric(String studentLogin)
-    {
-        new GradingVisualizer(this.getName(), Allocator.getGeneralUtilities().getUserLogin(), studentLogin);
-    }
-
     // Parts
 
-    void addNonCodePart(NonCodePart part)
+    void addNonCodePart(NonHandinPart part)
     {
         _nonCodeParts.add(part);
     }
 
-    public Iterable<NonCodePart> getNoncodeParts()
+    public Iterable<NonHandinPart> getNoncodeParts()
     {
         return _nonCodeParts;
     }
@@ -125,19 +62,19 @@ public class Assignment
         return !_labParts.isEmpty();
     }
 
-    void addCodePart(CodePart codePart)
+    void addHandinPart(HandinPart codePart)
     {
-        _codePart = codePart;
+        _handinPart = codePart;
     }
 
-    public CodePart getCodePart()
+    public HandinPart getHandinPart()
     {
-        return _codePart;
+        return _handinPart;
     }
 
-    public boolean hasCodePart()
+    public boolean hasHandinPart()
     {
-        return (_codePart != null);
+        return (_handinPart != null);
     }
 
     // Points
@@ -154,9 +91,9 @@ public class Assignment
         {
             points += part.getPoints();
         }
-        if(this.hasCodePart())
+        if(this.hasHandinPart())
         {
-            points += _codePart.getPoints();
+            points += _handinPart.getPoints();
         }
 
         return points;

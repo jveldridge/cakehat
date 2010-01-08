@@ -1,6 +1,7 @@
 package config;
 
 import java.util.Collection;
+import java.util.Vector;
 import utils.Allocator;
 import utils.ErrorView;
 
@@ -38,6 +39,21 @@ public class Constants
     public Collection<Assignment> getAssignments()
     {
         return _config.getAssigments();
+    }
+
+    public Collection<Assignment> getHandinAssignments()
+    {
+        Vector<Assignment> asgns = new Vector<Assignment>();
+
+        for(Assignment asgn : getAssignments())
+        {
+            if(asgn.hasHandinPart())
+            {
+                asgns.add(asgn);
+            }
+        }
+
+        return asgns;
     }
 
     public EmailAccount getEmailAccount()

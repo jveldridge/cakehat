@@ -115,21 +115,8 @@ public class NewFrontendView extends javax.swing.JFrame {
      * Called on startup to initalize assignmentList and studentList
      */
     private void updateFormComponents() {
-        //Populate assignment list with all those that have any functionality
-        //relating to the frontend
-        Vector<Assignment> assignments = new Vector<Assignment>();
-        for(Assignment asgn : Allocator.getNewConstants().getAssignments()){
-            if(asgn.hasCodePart()){
-                assignments.add(asgn);
-            }
-            else if(asgn.hasDeductionList()){
-                assignments.add(asgn);
-            }
-            else if(asgn.hasRubric()){
-                assignments.add(asgn);
-            }
-        }
-        assignmentList.setListData(assignments);
+        //Populate assignment list with all those that have handins
+        assignmentList.setListData(Allocator.getNewConstants().getHandinAssignments().toArray());
         if (assignmentList.getModel().getSize() > 0) {
             assignmentList.setSelectedIndex(0);
         }
@@ -146,18 +133,18 @@ public class NewFrontendView extends javax.swing.JFrame {
      */
     private void updateButtonStates() {
         for(JButton button : _codeButtons) {
-            button.setEnabled(this.getSelectedAssignment().hasCodePart());
+            button.setEnabled(this.getSelectedAssignment().getHandinPart().hasCode());
         }
 
-        if(this.getSelectedAssignment().hasCodePart()) {
-            runTesterButton.setEnabled(this.getSelectedAssignment().getCodePart().hasTester());
+        if(this.getSelectedAssignment().getHandinPart().hasCode()) {
+            runTesterButton.setEnabled(this.getSelectedAssignment().getHandinPart().hasTester());
         }
 
         for(JButton button : _rubricButtons){
-            button.setEnabled(this.getSelectedAssignment().hasRubric());
+            button.setEnabled(this.getSelectedAssignment().getHandinPart().hasRubric());
         }
 
-        viewGradingStandardsButton.setEnabled(this.getSelectedAssignment().hasDeductionList());
+        viewGradingStandardsButton.setEnabled(this.getSelectedAssignment().getHandinPart().hasDeductionList());
 
         //If no student is selected, disable all student buttons
         if(this.getSelectedStudent() == null){
@@ -183,9 +170,10 @@ public class NewFrontendView extends javax.swing.JFrame {
                 return;
             }
             try {
-                //TODO: Hack because CS015 database has Final instead of Adventure, Othello, & Sketchy
+                //TODO: Hack because CS015 database has Final instead of Adventure, Othello, Indy, & Sketchy
                 String prjName = this.getSelectedAssignment().getName();
-                if(prjName.equals("Sketchy") || prjName.equals("Adventure") || prjName.equals("Othello")){
+                if(prjName.equals("Sketchy") || prjName.equals("Adventure")
+                   || prjName.equals("Othello") || prjName.equals("Indy")){
                     prjName = "Final";
                 }
 
@@ -640,7 +628,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        this.getSelectedAssignment().getCodePart().openCode(this.getSelectedStudent());
+        this.getSelectedAssignment().getHandinPart().openCode(this.getSelectedStudent());
 }//GEN-LAST:event_openButtonActionPerformed
 
     /**
@@ -653,11 +641,11 @@ public class NewFrontendView extends javax.swing.JFrame {
         String student = this.getSelectedStudent();
         Assignment asgn = this.getSelectedAssignment();
 
-        asgn.getCodePart().printCode(student, Allocator.getFrontendUtilities().getPrinter());
+        asgn.getHandinPart().printCode(student, Allocator.getFrontendUtilities().getPrinter());
 }//GEN-LAST:event_printButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
-        this.getSelectedAssignment().getCodePart().runTester(this.getSelectedStudent());
+        this.getSelectedAssignment().getHandinPart().runTester(this.getSelectedStudent());
 }//GEN-LAST:event_runTesterButtonActionPerformed
 
     /**
@@ -666,7 +654,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
-        this.getSelectedAssignment().getCodePart().runDemo();
+        this.getSelectedAssignment().getHandinPart().runDemo();
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
     /**
@@ -676,7 +664,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
-        this.getSelectedAssignment().getCodePart().printCode(this.getCurrentStudents(),
+        this.getSelectedAssignment().getHandinPart().printCode(this.getCurrentStudents(),
                                                              Allocator.getFrontendUtilities().getPrinter());
 }//GEN-LAST:event_printAllButtonActionPerformed
 
@@ -730,7 +718,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void viewGradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewGradingStandardsButtonActionPerformed
-        this.getSelectedAssignment().viewDeductionList();
+        this.getSelectedAssignment().getHandinPart().viewDeductionList();
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
     /**
@@ -739,7 +727,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        this.getSelectedAssignment().getCodePart().run(this.getSelectedStudent());
+        this.getSelectedAssignment().getHandinPart().run(this.getSelectedStudent());
     }//GEN-LAST:event_runButtonActionPerformed
 
     /**
@@ -750,7 +738,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void gradeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeButtonActionPerformed
-        this.getSelectedAssignment().viewRubric(this.getSelectedStudent());
+        this.getSelectedAssignment().getHandinPart().viewRubric(this.getSelectedStudent());
     }//GEN-LAST:event_gradeButtonActionPerformed
 
     private Iterable<String> getCurrentStudents() {

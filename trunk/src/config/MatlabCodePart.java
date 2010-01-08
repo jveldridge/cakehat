@@ -4,9 +4,9 @@ package config;
  *
  * @author <author-here>
  */
-class CPPPart extends CodePart
+class MatlabCodePart extends CodeHandin
 {
-    CPPPart(Assignment asgn, String name, int points)
+    MatlabCodePart(Assignment asgn, String name, int points)
     {
         super(asgn,name,points);
     }
