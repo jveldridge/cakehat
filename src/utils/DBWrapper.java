@@ -79,7 +79,6 @@ public class DBWrapper implements DatabaseIO {
                 taIDs.put(rs.getString("login"), rs.getInt("tid"));
             }
             rs = _statement.executeQuery("SELECT a.aid FROM asgn AS a WHERE a.name == '" + asgn + "'");
-            rs.first();
             asgnID = rs.getInt("tid");
 
             rs = _statement.executeQuery("DELETE FROM asgn WHERE name == '" + asgn + "'");
@@ -236,10 +235,9 @@ public class DBWrapper implements DatabaseIO {
     public boolean addTA(String taLogin, String taFirstName, String taLastName, String type) {
         openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount, "
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount "
                     + "FROM ta AS t "
                     + "WHERE t.login == '" + taLogin + "'");
-            rs.first();
             int rows = rs.getInt("rowcount");
             if (rows == 0) {
                 rs = _statement.executeQuery("INSERT INTO ta "
@@ -283,7 +281,6 @@ public class DBWrapper implements DatabaseIO {
                     + "ON t.tid == b.tid "
                     + "WHERE s.login == '" + studentLogin + "' "
                     + "AND t.login == '" + taLogin + "'");
-            rs.first();
             int rows = rs.getInt("rowcount");
             int studentID = rs.getInt("studentid");
             int taID = rs.getInt("taid");
@@ -317,7 +314,6 @@ public class DBWrapper implements DatabaseIO {
                                                    "INNER JOIN asgn AS a " +
                                                     "ON a.aid == d.aid " +
                                                    "WHERE a.name == " + asgn);
-            rs.first();
             int rows = rs.getInt("rowcount");
             closeConnection();
             return rows == 0;
