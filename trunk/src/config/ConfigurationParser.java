@@ -310,7 +310,7 @@ public class ConfigurationParser
 
         if(type.equalsIgnoreCase("NON-HANDIN"))
         {
-            asgn.addNonCodePart(new NonHandinPart(asgn, name, points));
+            asgn.addNonHandinPart(new NonHandinPart(asgn, name, points));
         }
         else if(type.equalsIgnoreCase("HANDIN"))
         {

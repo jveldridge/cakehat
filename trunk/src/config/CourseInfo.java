@@ -36,24 +36,14 @@ public class CourseInfo
 
     //           Directly from configuration
 
+    /**
+     * Returns a collection of all assignments.
+     *
+     * @return
+     */
     public Collection<Assignment> getAssignments()
     {
         return _config.getAssigments();
-    }
-
-    public Collection<Assignment> getHandinAssignments()
-    {
-        Vector<Assignment> asgns = new Vector<Assignment>();
-
-        for(Assignment asgn : getAssignments())
-        {
-            if(asgn.hasHandinPart())
-            {
-                asgns.add(asgn);
-            }
-        }
-
-        return asgns;
     }
 
     public EmailAccount getEmailAccount()
@@ -77,6 +67,81 @@ public class CourseInfo
     }
 
     //             Built from configuration data
+
+    private Collection<Assignment> _handinAssignments = null;
+    /**
+     * Returns a collection of all assignments that have a handin part.
+     * 
+     * @return
+     */
+    public Collection<Assignment> getHandinAssignments()
+    {
+        if(_handinAssignments == null)
+        {
+            _handinAssignments = new Vector<Assignment>();
+
+            for(Assignment asgn : getAssignments())
+            {
+                if(asgn.hasHandinPart())
+                {
+                    _handinAssignments.add(asgn);
+                }
+            }
+        }
+
+
+        return _handinAssignments;
+    }
+
+    private Collection<Assignment> _nonHandinAssignments = null;
+    /**
+     * Returns a collection of all assignment that have a nonhandin part.
+     *
+     * @return
+     */
+    public Collection<Assignment> getNonHandinAssignments()
+    {
+        if(_nonHandinAssignments == null)
+        {
+            _nonHandinAssignments = new Vector<Assignment>();
+
+            for(Assignment asgn : getAssignments())
+            {
+                if(asgn.hasNonHandinParts())
+                {
+                    _nonHandinAssignments.add(asgn);
+                }
+            }
+        }
+
+
+        return _nonHandinAssignments;
+    }
+
+    private Collection<Assignment> _labAssignments = null;
+    /**
+     * Returns a collection of all assignments that have a lab part.
+     *
+     * @return
+     */
+    public Collection<Assignment> getLabAssignments()
+    {
+        if(_labAssignments == null)
+        {
+            _labAssignments = new Vector<Assignment>();
+
+            for(Assignment asgn : getAssignments())
+            {
+                if(asgn.hasLabParts())
+                {
+                    _labAssignments.add(asgn);
+                }
+            }
+        }
+
+
+        return _labAssignments;
+    }
 
     public String getTestAccount(){
         return getCourse() + "000";
