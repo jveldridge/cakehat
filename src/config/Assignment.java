@@ -10,7 +10,7 @@ public class Assignment
 {
     private String _name;
     private int _number;
-    private Vector<NonHandinPart> _nonCodeParts = new Vector<NonHandinPart>();
+    private Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
     private Vector<LabPart> _labParts = new Vector<LabPart>();
     private HandinPart _handinPart;
 
@@ -32,19 +32,19 @@ public class Assignment
 
     // Parts
 
-    void addNonCodePart(NonHandinPart part)
+    void addNonHandinPart(NonHandinPart part)
     {
-        _nonCodeParts.add(part);
+        _nonHandinParts.add(part);
     }
 
-    public Iterable<NonHandinPart> getNoncodeParts()
+    public Iterable<NonHandinPart> getNonHandinParts()
     {
-        return _nonCodeParts;
+        return _nonHandinParts;
     }
 
-    public boolean hasNoncodeParts()
+    public boolean hasNonHandinParts()
     {
-        return !_nonCodeParts.isEmpty();
+        return !_nonHandinParts.isEmpty();
     }
 
     void addLabPart(LabPart part)
@@ -83,7 +83,7 @@ public class Assignment
     {
         int points = 0;
 
-        for(Part part : _nonCodeParts)
+        for(Part part : _nonHandinParts)
         {
             points += part.getPoints();
         }
