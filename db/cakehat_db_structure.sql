@@ -4,7 +4,6 @@ CREATE TABLE "distribution" ("did" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL 
 CREATE TABLE "exemption" ("xid" INTEGER PRIMARY KEY  NOT NULL , "sid" INTEGER NOT NULL , "aid" INTEGER NOT NULL , "note" TEXT);
 CREATE TABLE "extension" ("eid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , "sid" INTEGER NOT NULL , "aid" INTEGER NOT NULL , "ontime" DATETIME NOT NULL , "note" TEXT);
 CREATE TABLE "grade" ("gid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , "sid" INTEGER NOT NULL , "aid" INTEGER NOT NULL , "score" DOUBLE NOT NULL , "status" VARCHAR NOT NULL );
-CREATE TABLE sqlite_sequence(name,seq);
 CREATE TABLE "student" ("sid" INTEGER PRIMARY KEY  NOT NULL ,"login" VARCHAR NOT NULL ,"firstname" VARCHAR NOT NULL ,"lastname" VARCHAR NOT NULL ,"enabled" INTEGER NOT NULL  DEFAULT 1 );
 CREATE TABLE "ta" ("tid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , "login" VARCHAR NOT NULL , "firstname" VARCHAR NOT NULL , "lastname" VARCHAR NOT NULL, "type" VARCHAR NOT NULL );
 CREATE UNIQUE INDEX "asgn_name" ON "asgn" ("name" ASC);
@@ -18,5 +17,5 @@ CREATE INDEX extension_asgn ON extension (aid);
 CREATE INDEX extension_student ON extension (sid);
 CREATE INDEX grade_asgn ON grade (aid);
 CREATE INDEX grade_student ON grade (sid);
-CREATE INDEX ta_login ON ta (login);
+CREATE UNIQUE INDEX ta_login ON ta (login);
 CREATE INDEX ta_type ON ta (type);
