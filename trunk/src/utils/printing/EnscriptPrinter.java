@@ -55,7 +55,7 @@ public class EnscriptPrinter extends Printer
     {
         //Create temp file that combines the entire request into one file
         String tmpFilePath =
-                Allocator.getGeneralUtilities().getUserGradingDirectory() +
+                Allocator.getGradingUtilities().getUserGradingDirectory() +
                 ".print_temp_"+System.currentTimeMillis()+".tmp";
         File tmpFile = new File(tmpFilePath);
 

@@ -14,9 +14,48 @@ import javax.swing.ListModel;
  * This class provides functionality for the buttons in the standard and final project
  * frontend graders.
  *
+ * @author jeldridg
  * @author jak2
  */
-public class FrontendUtilities {
+public class GradingUtilities {
+
+    public void makeUserGradingDirectory() {
+        Allocator.getGeneralUtilities().makeDirectory(this.getUserGradingDirectory());
+    }
+
+    public void removeUserGradingDirectory() {
+        Allocator.getGeneralUtilities().removeDirectory(this.getUserGradingDirectory());
+    }
+
+    public String getDeductionsListPath(String asgn) {
+        return Allocator.getConstants().getAssignmentDir() + asgn + "/" + Allocator.getConstants().getDeductionsListFilename();
+    }
+
+    /**
+     * @date 12/06/2009
+     * @return path to a TA's temporary grading directory.
+     *         currently, /course/cs015/grading/.<talogin>/
+     *         this directory is erased when the user closes the grader
+     * @author jeldridg
+     */
+    public String getUserGradingDirectory() {
+        return Allocator.getConstants().getGraderPath() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
+    }
+
+    /**
+     * @date 01/02/2010
+     * @return path to student's rubric for a particular project
+     *          Note: this is independent of the TA who graded the student
+     *         currently, /course/cs015/grading/rubrics/2009/<assignmentName>/<studentLogin>.xml
+     * @author jeldridg
+     */
+    public String getStudentRubricPath(String assignmentName, String studentLogin) {
+        return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".xml";
+    }
+
+    public String getStudentGRDPath(String assignmentName, String studentLogin) {
+        return this.getUserGradingDirectory() + assignmentName + "/" + studentLogin + ".grd";
+    }
 
     /**
      * Takes each entry of a JList as a String and places them into a Vector.
@@ -205,7 +244,7 @@ public class FrontendUtilities {
         String taLogin = Allocator.getGeneralUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
         for(String studentLogin : studentLogins){
-           String filePath = Allocator.getGeneralUtilities().getStudentGRDPath(assignment, studentLogin);
+           String filePath = this.getStudentGRDPath(assignment, studentLogin);
            File file = new File(filePath);
             try{
                 requests.add(new PrintRequest(file, taLogin, studentLogin));
@@ -261,7 +300,7 @@ public class FrontendUtilities {
      * @param asgn
      */
     public void viewDeductionList(String asgn) {
-        FileViewerView fv = new FileViewerView(new File(Allocator.getGeneralUtilities().getDeductionsListPath(asgn)));
+        FileViewerView fv = new FileViewerView(new File(this.getDeductionsListPath(asgn)));
         fv.setTitle(asgn + " Deductions List");
     }
 }

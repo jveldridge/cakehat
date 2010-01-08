@@ -230,6 +230,6 @@ public abstract class Project {
      * @author jeldridg
      */
     protected String getStudentCodeDirectory(String studentLogin) {
-        return Allocator.getGeneralUtilities().getUserGradingDirectory() + this.getName() + "/" + studentLogin + "/";
+        return Allocator.getGradingUtilities().getUserGradingDirectory() + this.getName() + "/" + studentLogin + "/";
     }
 }

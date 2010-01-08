@@ -79,7 +79,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                Allocator.getGeneralUtilities().removeUserGradingDirectory();
+                Allocator.getGradingUtilities().removeUserGradingDirectory();
             }
         });
 
@@ -430,7 +430,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        Allocator.getGeneralUtilities().removeUserGradingDirectory();
+        Allocator.getGradingUtilities().removeUserGradingDirectory();
         System.exit(0);
 }//GEN-LAST:event_quitMenuItemActionPerformed
 
@@ -440,7 +440,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        Allocator.getFrontendUtilities().openStudentProject(prj.getName(), this.getSelectedStudent());
+        Allocator.getGradingUtilities().openStudentProject(prj.getName(), this.getSelectedStudent());
 }//GEN-LAST:event_openProjectButtonActionPerformed
 
     private void runDemoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDemoButtonActionPerformed
@@ -451,7 +451,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        Allocator.getFrontendUtilities().demoProject(prj.getName());
+        Allocator.getGradingUtilities().demoProject(prj.getName());
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
 
@@ -517,7 +517,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         for (String student : students) {
             String[] toAddresses = { student + "@cs.brown.edu" }; //WHEN NOT TESTING
 
-            String grdPath = Allocator.getGeneralUtilities().getStudentGRDPath(Allocator.getConstants().getFinal(),  student);
+            String grdPath = Allocator.getGradingUtilities().getStudentGRDPath(Allocator.getConstants().getFinal(),  student);
             Allocator.getGeneralUtilities().sendMail(fromAddress, toAddresses, ccAddresses, bccAddresses,
                            subject, body, new String[]{ grdPath });
         }
@@ -541,7 +541,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
         if (prj == null) {
             return;
         }
-        Allocator.getFrontendUtilities().runStudentProject(prj.getName(), getSelectedStudent());
+        Allocator.getGradingUtilities().runStudentProject(prj.getName(), getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonrunButton
 
     private void studentListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studentListMouseClicked
@@ -567,7 +567,7 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
 
-        Allocator.getFrontendUtilities().viewDeductionList(prj.getName());
+        Allocator.getGradingUtilities().viewDeductionList(prj.getName());
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
     /**

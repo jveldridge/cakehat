@@ -61,12 +61,12 @@ public class FrontendView extends javax.swing.JFrame {
         this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getConstants().getCourse() + " Grader");
 
         //untar all students' code for the initially selected project
-        Allocator.getFrontendUtilities().untar(getSelectedAssignment(), studentList);
+        Allocator.getGradingUtilities().untar(getSelectedAssignment(), studentList);
 
         this.addWindowListener(new WindowAdapter() {
             @Override //remove user grading directory when frontend is closed
             public void windowClosing(WindowEvent e) {
-                Allocator.getGeneralUtilities().removeUserGradingDirectory();
+                Allocator.getGradingUtilities().removeUserGradingDirectory();
             }
         });
     }
@@ -96,10 +96,10 @@ public class FrontendView extends javax.swing.JFrame {
         this.populateStudentList();
 
         //must also inform Tester button of the newly selected current assignment
-        runTesterButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
+        runTesterButton.setEnabled(Allocator.getGradingUtilities().hasTester(this.getSelectedAssignment()));
 
         //and untar all students' code for the newly selected current assignment
-        Allocator.getFrontendUtilities().untar(this.getSelectedAssignment(), studentList);
+        Allocator.getGradingUtilities().untar(this.getSelectedAssignment(), studentList);
     }
 
     /**
@@ -115,7 +115,7 @@ public class FrontendView extends javax.swing.JFrame {
 
         //check whether runTesterButton should be enabled
         //(if the assignment selected on startup has a tester to run) or not
-        runTesterButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
+        runTesterButton.setEnabled(Allocator.getGradingUtilities().hasTester(this.getSelectedAssignment()));
     }
 
     /**
@@ -552,7 +552,7 @@ public class FrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        Allocator.getGeneralUtilities().removeUserGradingDirectory();
+        Allocator.getGradingUtilities().removeUserGradingDirectory();
         System.exit(0);
 }//GEN-LAST:event_quitMenuItemActionPerformed
 
@@ -587,7 +587,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
         
         if(selectedStudent != null && selectedAssignment != null){
-            Allocator.getFrontendUtilities().openStudentProject(selectedAssignment, selectedStudent);
+            Allocator.getGradingUtilities().openStudentProject(selectedAssignment, selectedStudent);
         }
 }//GEN-LAST:event_openButtonActionPerformed
 
@@ -602,7 +602,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
         
         if(selectedStudent != null && selectedAssignment != null){
-            Allocator.getFrontendUtilities().printStudentProject(selectedAssignment, selectedStudent, null, true);
+            Allocator.getGradingUtilities().printStudentProject(selectedAssignment, selectedStudent, null, true);
         }
 }//GEN-LAST:event_printButtonActionPerformed
 
@@ -611,7 +611,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedStudent != null && selectedAssignment != null){
-            Allocator.getFrontendUtilities().runTester(selectedAssignment, selectedStudent);
+            Allocator.getGradingUtilities().runTester(selectedAssignment, selectedStudent);
         }
 }//GEN-LAST:event_runTesterButtonActionPerformed
 
@@ -624,7 +624,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedAssignment != null){
-            Allocator.getFrontendUtilities().demoProject(selectedAssignment);
+            Allocator.getGradingUtilities().demoProject(selectedAssignment);
         }
 }//GEN-LAST:event_runDemoButtonActionPerformed
 
@@ -638,7 +638,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedAssignment != null){
-            Allocator.getFrontendUtilities().printAll(selectedAssignment, studentList);
+            Allocator.getGradingUtilities().printAll(selectedAssignment, studentList);
         }
 }//GEN-LAST:event_printAllButtonActionPerformed
 
@@ -655,11 +655,11 @@ public class FrontendView extends javax.swing.JFrame {
                 Vector<String> selectedStudents = sd.getSelectedStudents();
 
                 if (sd.printChecked()) {
-                    Allocator.getFrontendUtilities().printGRDFiles(this.getCurrentStudents(), this.getSelectedAssignment());
+                    Allocator.getGradingUtilities().printGRDFiles(this.getCurrentStudents(), this.getSelectedAssignment());
                 }
 
                 if (sd.notifyChecked()) {
-                    Allocator.getFrontendUtilities().notifyStudents(this.getSelectedAssignment(), selectedStudents);
+                    Allocator.getGradingUtilities().notifyStudents(this.getSelectedAssignment(), selectedStudents);
                 }
             }
         }
@@ -693,7 +693,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedAssignment != null){
-            Allocator.getFrontendUtilities().viewDeductionList(selectedAssignment);
+            Allocator.getGradingUtilities().viewDeductionList(selectedAssignment);
         }
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
@@ -707,7 +707,7 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedStudent != null && selectedAssignment != null){
-            Allocator.getFrontendUtilities().runStudentProject(selectedAssignment, selectedStudent);
+            Allocator.getGradingUtilities().runStudentProject(selectedAssignment, selectedStudent);
         }
     }//GEN-LAST:event_runButtonActionPerformed
 

@@ -59,12 +59,12 @@ public class NewBackend extends javax.swing.JFrame {
         cl.show(cardPanel, "instructionCard");
 
         //make the user's temporary grading directory
-        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGeneralUtilities().getUserGradingDirectory());
+        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory());
 
         this.addWindowListener(new WindowAdapter() {
             @Override //remove user grading directory when backend is closed
             public void windowClosing(WindowEvent e) {
-                Allocator.getGeneralUtilities().removeUserGradingDirectory();
+                Allocator.getGradingUtilities().removeUserGradingDirectory();
             }
         });
 
@@ -994,7 +994,7 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_asgnTypeComboBoxActionPerformed
 
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        Allocator.getGeneralUtilities().removeUserGradingDirectory();
+        Allocator.getGradingUtilities().removeUserGradingDirectory();
         System.exit(0);
     }//GEN-LAST:event_quitMenuItemActionPerformed
 
@@ -1003,15 +1003,15 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_previewRubricButtonActionPerformed
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        Allocator.getFrontendUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+        Allocator.getGradingUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
 }//GEN-LAST:event_openButtonActionPerformed
 
     private void printCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printCodeButtonActionPerformed
-        Allocator.getFrontendUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
+        Allocator.getGradingUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
 }//GEN-LAST:event_printCodeButtonActionPerformed
 
     private void demoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_demoButtonActionPerformed
-        Allocator.getFrontendUtilities().demoProject(this.getSelectedAssignment());
+        Allocator.getGradingUtilities().demoProject(this.getSelectedAssignment());
 }//GEN-LAST:event_demoButtonActionPerformed
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
@@ -1019,11 +1019,11 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_viewRubricButtonActionPerformed
 
     private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
-        Allocator.getFrontendUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
+        Allocator.getGradingUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
 }//GEN-LAST:event_testCodeButtonActionPerformed
 
     private void runCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonActionPerformed
-        Allocator.getFrontendUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+        Allocator.getGradingUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonActionPerformed
 
     private void importGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importGradesButtonActionPerformed
@@ -1051,7 +1051,7 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void gradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradingStandardsButtonActionPerformed
-        Allocator.getFrontendUtilities().viewDeductionList(this.getSelectedAssignment());
+        Allocator.getGradingUtilities().viewDeductionList(this.getSelectedAssignment());
     }//GEN-LAST:event_gradingStandardsButtonActionPerformed
 
     private void blacklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blacklistButtonActionPerformed
@@ -1073,7 +1073,7 @@ public class NewBackend extends javax.swing.JFrame {
     private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
         for (String asgn : this.getSelectedAssignments()) {
             RubricManager.convertAllToGrd(this.getSelectedStudents(), asgn);
-            Allocator.getFrontendUtilities().printGRDFiles(this.getSelectedStudents(), asgn);
+            Allocator.getGradingUtilities().printGRDFiles(this.getSelectedStudents(), asgn);
         }
     }//GEN-LAST:event_printRubricButtonActionPerformed
 
@@ -1190,7 +1190,7 @@ public class NewBackend extends javax.swing.JFrame {
                 cl.show(cardPanel, "singlePanel");
 
                 //set Tester button to be enabled or not depending on whether project has a tester
-                testCodeButton.setEnabled(Allocator.getFrontendUtilities().hasTester(this.getSelectedAssignment()));
+                testCodeButton.setEnabled(Allocator.getGradingUtilities().hasTester(this.getSelectedAssignment()));
 
                 //if there is a handin, untar the student's code
                 if(Allocator.getProject(this.getSelectedAssignment()).containsStudent(this.getSelectedStudent())){
