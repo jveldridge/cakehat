@@ -171,7 +171,7 @@ public interface DatabaseIO {
      * @param note
      * @return
      */
-    public boolean grantExtension(String studentLogin, HandinPart part, Calendar newDate, String note);
+    public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note);
 
     /**
      * Grants an extension for the student with login studentLogin for the HandinPart
@@ -185,7 +185,7 @@ public interface DatabaseIO {
      * @param note
      * @return
      */
-    public boolean grantExemption(String studentLogin, HandinPart part, String note);
+    public boolean grantExemption(String studentLogin, Part part, String note);
 
     /**
      * Returns the Calendar representing the date when the HandinPart part is due
@@ -196,7 +196,7 @@ public interface DatabaseIO {
      * @param assignmentName
      * @return
      */
-    public Calendar getExtension(String studentLogin, HandinPart part);
+    public Calendar getExtension(String studentLogin, Part part);
 
     /**
      * Returns a string containing a message to indicate why the student with login
