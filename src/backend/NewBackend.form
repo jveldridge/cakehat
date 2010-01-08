@@ -78,7 +78,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="centerPanel" max="32767" attributes="1"/>
                   </Group>
-                  <Component id="leftPanel" alignment="0" pref="621" max="32767" attributes="0"/>
+                  <Component id="leftPanel" alignment="0" pref="642" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -427,7 +427,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="305" max="32767" attributes="0"/>
+                          <EmptySpace pref="311" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -462,7 +462,7 @@
                               </Group>
                               <Component id="welcomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="14" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -520,7 +520,7 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="writtenScoreValue" alignment="1" pref="99" max="32767" attributes="0"/>
+                                      <Component id="writtenScoreValue" alignment="1" pref="102" max="32767" attributes="0"/>
                                       <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="writtenTotalText" alignment="1" max="32767" attributes="1"/>
                                           <Component id="writtenEarnedText" alignment="1" pref="73" max="32767" attributes="1"/>
@@ -607,7 +607,7 @@
                               <Component id="totalEarnedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="codeTotalText" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="12" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="codeScoreLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="codeScoreValue" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -894,8 +894,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jScrollPane1" pref="512" max="32767" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="1" pref="512" max="32767" attributes="1"/>
+                      <Component id="jScrollPane1" pref="511" max="32767" attributes="1"/>
+                      <Component id="jScrollPane2" alignment="1" pref="511" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -1069,7 +1069,7 @@
                   <Component id="exportDBButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="resetDatabaseButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="404" max="32767" attributes="0"/>
+                  <EmptySpace pref="422" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

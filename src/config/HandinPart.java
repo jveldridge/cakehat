@@ -175,7 +175,7 @@ public abstract class HandinPart extends Part
      */
     protected String getStudentHandinDirectory(String studentLogin)
     {
-        return Allocator.getGeneralUtilities().getUserGradingDirectory() +
+        return Allocator.getGradingUtilities().getUserGradingDirectory() +
                this.getAssignment().getName() + "/" + studentLogin + "/";
     }
 

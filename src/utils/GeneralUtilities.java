@@ -7,10 +7,6 @@ import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.*;
 import javax.activation.*;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 
 /**
  * Utilities that are useful for any course.
@@ -85,44 +81,6 @@ public class GeneralUtilities {
      */
     public boolean copyFile(File sourceFile, String destPath) {
         return copyFile(sourceFile, new File(destPath));
-    }
-
-    public void makeUserGradingDirectory() {
-        this.makeDirectory(this.getUserGradingDirectory());
-    }
-
-    public void removeUserGradingDirectory() {
-        this.removeDirectory(this.getUserGradingDirectory());
-    }
-
-    public String getDeductionsListPath(String asgn) {
-        return Allocator.getConstants().getAssignmentDir() + asgn + "/" + Allocator.getConstants().getDeductionsListFilename();
-    }
-
-    /**
-     * @date 12/06/2009
-     * @return path to a TA's temporary grading directory.
-     *         currently, /course/cs015/grading/.<talogin>/
-     *         this directory is erased when the user closes the grader
-     * @author jeldridg
-     */
-    public String getUserGradingDirectory() {
-        return Allocator.getConstants().getGraderPath() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
-    }
-
-    /**
-     * @date 01/02/2010
-     * @return path to student's rubric for a particular project
-     *          Note: this is independent of the TA who graded the student
-     *         currently, /course/cs015/grading/rubrics/2009/<assignmentName>/<studentLogin>.xml
-     * @author jeldridg
-     */
-    public String getStudentRubricPath(String assignmentName, String studentLogin) {
-        return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".xml";
-    }
-
-    public String getStudentGRDPath(String assignmentName, String studentLogin) {
-        return this.getUserGradingDirectory() + assignmentName + "/" + studentLogin + ".grd";
     }
 
     /**

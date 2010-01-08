@@ -49,14 +49,14 @@ public class Allocator {
         return GENERAL_UTILITIES;
     }
 
-    //Frontend Utilities
-    private static FrontendUtilities FRONTEND_UTILITIES = null;
-    public static FrontendUtilities getFrontendUtilities(){
-        if(FRONTEND_UTILITIES == null){
-            FRONTEND_UTILITIES = new FrontendUtilities();
+    //Grading Utilities
+    private static GradingUtilities GRADING_UTILITIES = null;
+    public static GradingUtilities getGradingUtilities(){
+        if(GRADING_UTILITIES == null){
+            GRADING_UTILITIES = new GradingUtilities();
         }
 
-        return FRONTEND_UTILITIES;
+        return GRADING_UTILITIES;
     }
 
     //DatabaseIO

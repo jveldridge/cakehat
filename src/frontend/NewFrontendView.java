@@ -63,7 +63,7 @@ public class NewFrontendView extends javax.swing.JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override //remove user grading directory when frontend is closed
             public void windowClosing(WindowEvent e) {
-                Allocator.getGeneralUtilities().removeUserGradingDirectory();
+                Allocator.getGradingUtilities().removeUserGradingDirectory();
             }
         });
 
@@ -597,7 +597,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void quitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitMenuItemActionPerformed
-        Allocator.getGeneralUtilities().removeUserGradingDirectory();
+        Allocator.getGradingUtilities().removeUserGradingDirectory();
         System.exit(0);
 }//GEN-LAST:event_quitMenuItemActionPerformed
 
@@ -641,7 +641,7 @@ public class NewFrontendView extends javax.swing.JFrame {
         String student = this.getSelectedStudent();
         Assignment asgn = this.getSelectedAssignment();
 
-        asgn.getHandinPart().printCode(student, Allocator.getFrontendUtilities().getPrinter());
+        asgn.getHandinPart().printCode(student, Allocator.getGradingUtilities().getPrinter());
 }//GEN-LAST:event_printButtonActionPerformed
 
     private void runTesterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runTesterButtonActionPerformed
@@ -665,7 +665,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      */
     private void printAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printAllButtonActionPerformed
         this.getSelectedAssignment().getHandinPart().printCode(this.getCurrentStudents(),
-                                                             Allocator.getFrontendUtilities().getPrinter());
+                                                             Allocator.getGradingUtilities().getPrinter());
 }//GEN-LAST:event_printAllButtonActionPerformed
 
     /**
@@ -683,11 +683,11 @@ public class NewFrontendView extends javax.swing.JFrame {
                 Vector<String> selectedStudents = sd.getSelectedStudents();
 
                 if (sd.printChecked()) {
-                    Allocator.getFrontendUtilities().printGRDFiles(this.getCurrentStudents(), asgnName);
+                    Allocator.getGradingUtilities().printGRDFiles(this.getCurrentStudents(), asgnName);
                 }
 
                 if (sd.notifyChecked()) {
-                    Allocator.getFrontendUtilities().notifyStudents(asgnName, selectedStudents);
+                    Allocator.getGradingUtilities().notifyStudents(asgnName, selectedStudents);
                 }
             }
         }

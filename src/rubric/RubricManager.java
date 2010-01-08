@@ -234,7 +234,7 @@ public class RubricManager {
     public static void assignXMLToGrader(Project prj, String studentAcct, String graderAcct,
                                          double designCheckScore, int minutesOfLeniency) {
         String RubricTemplateFilePath = Allocator.getConstants().getAssignmentDir() + prj.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
-        String StudentRubricFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(prj.getName(), studentAcct);
+        String StudentRubricFilePath = Allocator.getGradingUtilities().getStudentRubricPath(prj.getName(), studentAcct);
 
         TimeStatus status = prj.getTimeStatus(studentAcct, minutesOfLeniency);
         
@@ -259,7 +259,7 @@ public class RubricManager {
                                          String studentName, String graderName, double designCheckScore, int minutesOfLeniency) {
         String RubricTemplateFilePath = Allocator.getConstants().getAssignmentDir() + templateProject.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
         
-        String StudentRubricFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(destProject.getName(), studentName);
+        String StudentRubricFilePath = Allocator.getGradingUtilities().getStudentRubricPath(destProject.getName(), studentName);
 
         TimeStatus status = templateProject.getTimeStatus(studentAcct, minutesOfLeniency);
 
@@ -826,7 +826,7 @@ public class RubricManager {
      * @param studentAcct The student's login
      */
     public static void convertToGRD(String asgn, String graderAcct, String studentAcct) {
-        String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studentAcct);
+        String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(asgn, studentAcct);
         //TODO: fix this (when dealing w/removing .GRD files after sending)
         String GRDFilePath = "/course/cs015/grading/ta/" + graderAcct + "/" + asgn + "/" + studentAcct + ".grd";
 
@@ -841,8 +841,8 @@ public class RubricManager {
      */
     public static void convertAllToGrd(Iterable<String> studLogins, String asgn) {
         for (String studLogin : studLogins) {
-            String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studLogin);
-            String GRDFilePath = Allocator.getGeneralUtilities().getStudentGRDPath(asgn, studLogin);
+            String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(asgn, studLogin);
+            String GRDFilePath = Allocator.getGradingUtilities().getStudentGRDPath(asgn, studLogin);
             convertToGRD(XMLFilePath, GRDFilePath);
         }
     }
@@ -858,7 +858,7 @@ public class RubricManager {
     }
 
     public static double getTotalScore(String asgn, String graderAcct, String studentAcct) {
-        String XMLFilePath = Allocator.getGeneralUtilities().getStudentRubricPath(asgn, studentAcct);
+        String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(asgn, studentAcct);
         Rubric rubric = processXML(XMLFilePath);
         return rubric.getTotalScore();
     }
