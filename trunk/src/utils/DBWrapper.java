@@ -1,5 +1,7 @@
 package utils;
 
+import config.HandinPart;
+import config.Part;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +14,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
-import rubric.TimeStatus;
 
 /**
  * all DB accessor and mutator methods for cakehat
@@ -80,7 +81,7 @@ public class DBWrapper implements DatabaseIO {
      * @param asgn - string of assignment name
      * @param distribution - hashmap of ta login to arraylist of student logins
      */
-    public boolean setAsgnDist(String asgn, Map<String, ArrayList<String>> distribution) {
+    public boolean setAsgnDist(String asgn, Map<String, Collection<String>> distribution) {
         //add the distribution to the DB
         this.openConnection();
         try {
@@ -103,7 +104,7 @@ public class DBWrapper implements DatabaseIO {
 
             String insertCommand = "INSERT INTO distribution ('aid', 'sid', 'tid') VALUES"; //start of insert command
             for (String ta : distribution.keySet()) {
-                ArrayList<String> distributedStudents = distribution.get(ta);
+                Collection<String> distributedStudents = distribution.get(ta);
                 for (String student : distributedStudents) {
                     _statement.addBatch(insertCommand + " (" + asgnID + ", '" + student + "', '" + ta + "')");
                 }
@@ -154,13 +155,13 @@ public class DBWrapper implements DatabaseIO {
      * @param assignmentName - String of name
      * @return status
      */
-    public boolean addAssignment(String assignmentName) {
+    public boolean addAssignmentPart(Part part) {
         this.openConnection();
         try {
             _statement.executeUpdate("INSERT INTO asgn "
                     + "('name') "
                     + "VALUES "
-                    + "('" + assignmentName
+                    + "('" + part.getName()
                     + "')");
             this.closeConnection();
             return true;
@@ -275,7 +276,7 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    public Map<String, String> getStudents() {
+    public Map<String, String> getEnabledStudents() {
         this.openConnection();
         try {
             ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, " +
@@ -340,19 +341,19 @@ public class DBWrapper implements DatabaseIO {
      * @param asgn - String Asgn Name
      * @return Boolean - Empty = true, Not = false
      */
-    public boolean isDistEmpty(String asgn) {
+    public boolean isDistEmpty(HandinPart part) {
         this.openConnection();
         try {
             ResultSet rs = _statement.executeQuery("SELECT COUNT(d.sid) AS rowcount " +
                                                    "FROM distribution AS d " +
                                                    "INNER JOIN asgn AS a " +
                                                     "ON a.aid == d.aid " +
-                                                   "WHERE a.name == '" + asgn + "'");
+                                                   "WHERE a.name == '" + part.getName() + "'");
             int rows = rs.getInt("rowcount");
             this.closeConnection();
             return rows == 0;
         } catch (Exception e) {
-            new ErrorView(e, "Could not determine the size of the dist for: " + asgn);
+            new ErrorView(e, "Could not determine the size of the dist for: " + part.getName());
             this.closeConnection();
             return false;
         }
@@ -382,14 +383,6 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    public boolean assignStudentToGrader(String studentLogin, String assignmentName, String taLogin) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean unassignStudentFromGrader(String studentLogin, String assignmentName, String taLogin) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     /**
      * Get all the logins of the students assigned to a particular TA for an assignment.
      * Dist could be empty and will then return empty ArrayList
@@ -397,7 +390,7 @@ public class DBWrapper implements DatabaseIO {
      * @param taLogin - String TA Login
      * @return Collection - list of student logins
      */
-    public Collection<String> getStudentsAssigned(String assignmentName, String taLogin) {
+    public Collection<String> getStudentsAssigned(HandinPart part, String taLogin) {
         this.openConnection();
         try {
             ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin " +
@@ -409,7 +402,7 @@ public class DBWrapper implements DatabaseIO {
                                                    "INNER JOIN assignment AS a " +
                                                     "ON d.aid == a.aid " +
                                                    "WHERE t.login == '" + taLogin + "' " +
-                                                    "AND a.name == '" + assignmentName + "'");
+                                                    "AND a.name == '" + part.getName() + "'");
             ArrayList<String> result = new ArrayList<String>();
             while (rs.next()) {
                 result.add(rs.getString("studlogin"));
@@ -417,41 +410,49 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection();
             return result;
         } catch (Exception e) {
-            new ErrorView(e, "Could not get students assigned to ta: " + taLogin + " for assignment: " + assignmentName);
+            new ErrorView(e, "Could not get students assigned to ta: " + taLogin + " for assignment: " + part.getName());
             this.closeConnection();
             return new ArrayList<String>();
         }
     }
 
-    public boolean grantExtension(String studentLogin, String assignmentName, Calendar newDate, String note) {
+    public boolean assignStudentToGrader(String studentLogin, HandinPart part, String taLogin) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean grantExemption(String studentLogin, String assignmentName, String note) {
+    public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, String taLogin) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Calendar getExtension(String studentLogin, String assignmentName) {
+    public boolean setAsgnDist(HandinPart part, Map<String, Collection<String>> distribution) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getExtensionNote(String studentLogin, String assignmentName) {
+    public boolean grantExtension(String studentLogin, HandinPart part, Calendar newDate, String note) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getExemptionNote(String studentLogin, String assignmentName) {
+    public boolean grantExemption(String studentLogin, HandinPart part, String note) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean enterGrade(String studentLogin, String assignmentName, double score, TimeStatus status) {
+    public Calendar getExtension(String studentLogin, HandinPart part) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public double getStudentScore(String studentLogin, String assignmentName) {
+    public String getExtensionNote(String studentLogin, HandinPart part) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public int getNumberOfGrades(String assignmentName) {
+    public String getExemptionNote(String studentLogin, Part part) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean enterGrade(String studentLogin, Part part, double score) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getStudentScore(String studentLogin, Part part) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -462,4 +463,5 @@ public class DBWrapper implements DatabaseIO {
     public boolean resetDatabase() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }
