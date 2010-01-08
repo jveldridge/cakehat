@@ -29,13 +29,13 @@ public class Allocator {
 
     //New constants
     //TODO: Eventually remove above Constants and replace with this
-    private static config.Constants NEW_CONSTANTS = null;
-    public static config.Constants getNewConstants(){
-        if(NEW_CONSTANTS == null){
-            NEW_CONSTANTS = new config.Constants();
+    private static config.CourseInfo COURSE_INFO = null;
+    public static config.CourseInfo getCourseInfo(){
+        if(COURSE_INFO == null){
+            COURSE_INFO = new config.CourseInfo();
         }
 
-        return NEW_CONSTANTS;
+        return COURSE_INFO;
     }
 
 

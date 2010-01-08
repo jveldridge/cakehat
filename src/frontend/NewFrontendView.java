@@ -73,7 +73,7 @@ public class NewFrontendView extends javax.swing.JFrame {
         OldDatabaseOps.open();
         this.updateFormComponents();
 
-        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getConstants().getCourse() + " Grader");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getCourseInfo().getCourse() + " Grader");
         this.setLocationRelativeTo(null);
         this.setVisible(true);
     }
@@ -116,7 +116,7 @@ public class NewFrontendView extends javax.swing.JFrame {
      */
     private void updateFormComponents() {
         //Populate assignment list with all those that have handins
-        assignmentList.setListData(Allocator.getNewConstants().getHandinAssignments().toArray());
+        assignmentList.setListData(Allocator.getCourseInfo().getHandinAssignments().toArray());
         if (assignmentList.getModel().getSize() > 0) {
             assignmentList.setSelectedIndex(0);
         }

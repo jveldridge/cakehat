@@ -11,7 +11,7 @@ import utils.ErrorView;
  *
  * @author jak2
  */
-public class Constants
+public class CourseInfo
 {
     //Just in case this class is created multiple times, only parse once
     private static Configuration _config = null;
@@ -19,7 +19,7 @@ public class Constants
     /**
      * Don't directly create this class, access it via util.Allocator
      */
-    public Constants()
+    public CourseInfo()
     {
         if(_config == null)
         {
