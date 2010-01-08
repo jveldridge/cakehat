@@ -4,9 +4,9 @@ package config;
  *
  * @author <author-here>
  */
-class CPart extends CodePart
+class CPPCodePart extends CodeHandin
 {
-    CPart(Assignment asgn, String name, int points)
+    CPPCodePart(Assignment asgn, String name, int points)
     {
         super(asgn,name,points);
     }

@@ -62,6 +62,7 @@ public class RubricManager {
             DocumentBuilder builder = factory.newDocumentBuilder();
             document = builder.parse(new File(XMLFilePath));
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Error("Could not create document from XML file. Be sure path specified is accurate.  Path is " + XMLFilePath);
         }
 

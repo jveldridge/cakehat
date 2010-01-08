@@ -4,9 +4,9 @@ package config;
  *
  * @author <author-here>
  */
-class MatlabPart extends CodePart
+class CHandin extends CodeHandin
 {
-    MatlabPart(Assignment asgn, String name, int points)
+    CHandin(Assignment asgn, String name, int points)
     {
         super(asgn,name,points);
     }

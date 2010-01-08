@@ -5,6 +5,7 @@ import java.util.Calendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import utils.Allocator;
@@ -279,18 +280,6 @@ public class ConfigurationParser
             {
                 continue;
             }
-            //Rubric
-            else if (currNode.getNodeName().equals(RUBRIC))
-            {
-                String location = currNode.getAttributes().getNamedItem(LOCATION).getNodeValue();
-                asgn.setRubric(location);
-            }
-            //Deduction list
-            else if (currNode.getNodeName().equals(DEDUCTIONS))
-            {
-                String location = currNode.getAttributes().getNamedItem(LOCATION).getNodeValue();
-                asgn.setDeductionList(location);
-            }
             //Part
             else if (currNode.getNodeName().equals(PART))
             {
@@ -319,13 +308,13 @@ public class ConfigurationParser
         int points = Integer.valueOf(partNode.getAttributes().getNamedItem(POINTS).getNodeValue());
         String type = partNode.getAttributes().getNamedItem(TYPE).getNodeValue();
 
-        if(type.equalsIgnoreCase("NON-CODE"))
+        if(type.equalsIgnoreCase("NON-HANDIN"))
         {
-            asgn.addNonCodePart(new NonCodePart(asgn, name, points));
+            asgn.addNonCodePart(new NonHandinPart(asgn, name, points));
         }
-        else if(type.equalsIgnoreCase("CODE"))
+        else if(type.equalsIgnoreCase("HANDIN"))
         {
-            processCodePart(partNode, asgn, name, points);
+            processHandinPart(partNode, asgn, name, points);
         }
         else if(type.equalsIgnoreCase("LAB"))
         {
@@ -339,6 +328,81 @@ public class ConfigurationParser
         }
     }
 
+    private static void processHandinPart(Node partNode, Assignment asgn, String name, int points) throws ConfigurationException
+    {
+        String language = null;
+
+        //Look for language tag
+        NamedNodeMap attributes = partNode.getAttributes();
+        for(int i = 0; i < attributes.getLength(); i++)
+        {
+            Node attribute = attributes.item(i);
+
+            if(skipNode(attribute))
+            {
+                continue;
+            }
+            else if(attribute.getNodeName().equals(LANGUAGE))
+            {
+                language = attribute.getNodeValue();
+            }
+        }
+
+        HandinPart part = null;
+        
+        //Create CodePart
+        if(language != null)
+        {
+            part = processCodePart(partNode, language, asgn, name, points);
+        }
+        //Create NonCodePart
+        else
+        {
+            part = new NonCodeHandin(asgn, name, points);
+        }
+
+        //Find rubric and deduction list
+        NodeList childNodes = partNode.getChildNodes();
+        for(int i = 0; i < childNodes.getLength(); i++)
+        {
+            Node currNode = childNodes.item(i);
+
+            if(skipNode(currNode))
+            {
+                continue;
+            }
+            //Time information (LATE-POLICY)
+            else if(currNode.getNodeName().equals(LATE_POLICY))
+            {
+                processTimeInfo(currNode, part);
+            }
+            //Rubric
+            else if (currNode.getNodeName().equals(RUBRIC))
+            {
+                String location = currNode.getAttributes().getNamedItem(LOCATION).getNodeValue();
+                part.setRubric(location);
+            }
+            //Deduction list
+            else if (currNode.getNodeName().equals(DEDUCTIONS))
+            {
+                String location = currNode.getAttributes().getNamedItem(LOCATION).getNodeValue();
+                part.setDeductionList(location);
+            }
+            else if(language != null && currNode.getNodeName().equals(RUN)) {}
+            else if(language != null && currNode.getNodeName().equals(DEMO)) {}
+            else if(language != null && currNode.getNodeName().equals(TESTER)) {}
+            else
+            {
+                throw new ConfigurationException("HANDIN node only supports children of types " +
+                                                 RUBRIC + " and " + DEDUCTIONS + ". Encountered node:" +
+                                                 currNode.getNodeName());
+            }
+        }
+
+        asgn.addHandinPart(part);
+
+    }
+
     /**
      * Parses out a code part. Currently supports Java, C, C++, & Matlab.
      *
@@ -348,28 +412,28 @@ public class ConfigurationParser
      * @param points
      * @throws ConfigurationException
      */
-    private static void processCodePart(Node partNode, Assignment asgn, String name, int points) throws ConfigurationException
+    private static HandinPart processCodePart(Node partNode, String language, Assignment asgn, String name, int points) throws ConfigurationException
     {
-        CodePart part = null;
+        CodeHandin part = null;
         
-        String language = partNode.getAttributes().getNamedItem(LANGUAGE).getNodeValue();
+        //String language = partNode.getAttributes().getNamedItem(LANGUAGE).getNodeValue();
 
         //Create the appropriate subclass of CodePart based on the language
         if(language.equalsIgnoreCase("Java"))
         {
-            part = new JavaPart(asgn, name, points);
+            part = new JavaCodePart(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("C"))
         {
-            part = new CPart(asgn, name, points);
+            part = new CHandin(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("C++"))
         {
-            part = new CPPPart(asgn, name, points);
+            part = new CPPCodePart(asgn, name, points);
         }
         else if(language.equalsIgnoreCase("Matlab"))
         {
-            part = new MatlabPart(asgn, name, points);
+            part = new MatlabCodePart(asgn, name, points);
         }
         else
         {
@@ -385,11 +449,6 @@ public class ConfigurationParser
             if(skipNode(childNode))
             {
                 continue;
-            }
-            //Time information (LATE-POLICY)
-            else if(childNode.getNodeName().equals(LATE_POLICY))
-            {
-                processTimeInfo(childNode, part);
             }
             //RUN
             else if(childNode.getNodeName().equals(RUN))
@@ -480,13 +539,16 @@ public class ConfigurationParser
                     }
                 }
             }
+            else if(childNode.getNodeName().equals(RUBRIC)) {}
+            else if(childNode.getNodeName().equals(DEDUCTIONS)) {}
+            else if(childNode.getNodeName().equals(LATE_POLICY)) {}
             else
             {
-                throw new ConfigurationException(PART, childNode, LATE_POLICY, RUN, DEMO, TESTER);
+                throw new ConfigurationException(PART, childNode, LATE_POLICY, RUN, DEMO, TESTER, RUBRIC, DEDUCTIONS);
             }
         }
         
-        asgn.addCodePart(part);
+        return part;
     }
 
     /**
@@ -496,7 +558,7 @@ public class ConfigurationParser
      * @param part
      * @throws ConfigurationException
      */
-    private static void processTimeInfo(Node timeNode, CodePart part) throws ConfigurationException
+    private static void processTimeInfo(Node timeNode, HandinPart part) throws ConfigurationException
     {
         LatePolicy policy = LatePolicy.valueOf(timeNode.getAttributes().getNamedItem(TYPE).getNodeValue());
         GradeUnits units = GradeUnits.valueOf(timeNode.getAttributes().getNamedItem(UNITS).getNodeValue());

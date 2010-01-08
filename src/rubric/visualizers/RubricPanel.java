@@ -265,7 +265,7 @@ class RubricPanel extends JPanel
         JPanel panel = new JPanel(layout);
 
         //ExtraCredit header
-        JLabel extraCreditName = new JLabel("Extra Credit");
+        JLabel extraCreditName = new JLabel("<html><b>Extra Credit</b></html>");
         int vGap = 10;
         layout.putConstraint(SpringLayout.NORTH, extraCreditName, vGap, SpringLayout.NORTH, panel);
         layout.putConstraint(SpringLayout.WEST, extraCreditName, 2, SpringLayout.WEST, panel);
@@ -441,7 +441,7 @@ class RubricPanel extends JPanel
         JPanel panel = new JPanel(layout);
 
         //Handin status
-        JLabel handinStatusLabel = new JLabel("Handin Status");
+        JLabel handinStatusLabel = new JLabel("<html><b>Handin Status</b></html>");
         int vGap = 10;
         layout.putConstraint(SpringLayout.NORTH, handinStatusLabel, vGap, SpringLayout.NORTH, panel);
         layout.putConstraint(SpringLayout.WEST, handinStatusLabel, 2, SpringLayout.WEST, panel);
