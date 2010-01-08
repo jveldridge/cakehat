@@ -3,6 +3,7 @@ package utils;
 import java.util.Vector;
 
 /**
+ * @deprecated
  * A representation of the config.xml file.
  * Used by ConfigurationManager. Not visible to other packages.
  *

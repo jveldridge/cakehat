@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 
 //TODO: Have better error management. Currently throwing Error, which is a rather dirty hack.
 /**
+ * @deprecated to be replaced by config.CourseInfo
  * Allows retrieval of data from the config file.
  *
  * @author jak2 (Joshua Kaplan)

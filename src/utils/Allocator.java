@@ -8,10 +8,6 @@ import java.util.HashMap;
 
 /**
  * Used to statically get references to utility classes.
- * 
- * This class will need to be modified for each CS course so
- * that makes use of the appropriate subclasses that are specific
- * to that course and the programming languages it uses.
  *
  * @author jak2 (Joshua Kaplan)
  */
@@ -19,6 +15,10 @@ public class Allocator {
 
     //Constants
     private static Constants CONSTANTS = null;
+    /**
+     * @deprecated To be replaced by Allocator.getCourseInfo();
+     * @return
+     */
     public static Constants getConstants(){
         if(CONSTANTS == null){
             CONSTANTS = new CS015Constants(); //Change as appropriate
@@ -91,7 +91,7 @@ public class Allocator {
     private static HashMap<String, Project> PROJECTS = new HashMap<String, Project>();
 
     /**
-     * TODO: Consider having this method throw a ProjectNotFoundException instead of returning null if a project isn't found
+     * @deprecated  To be replaced by getting Assignments from config.CourseInfo
      *
      * Only way to get an instance of Project - there is no public constructor.
      * If a name has been passed in that does not have a directory in the course's

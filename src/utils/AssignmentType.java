@@ -1,6 +1,7 @@
 package utils;
 
 /**
+ * @deprecated to be removed, see config.Assignment
  * Supports the various types of assignments a course may have:
  *      PROJECT, LAB, HOMEWORK, and FINAL
  *

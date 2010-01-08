@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Vector;
 
 /**
+ * @deprecated to be replaced by config.CodeHandin subclasses
  * Represents a code project that exists in the handin directory for a course.
  *
  * @author jak2 (Joshua Kaplan)
