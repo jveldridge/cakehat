@@ -665,7 +665,7 @@ public class FrontendView extends javax.swing.JFrame {
                 }
 
                 if (sd.notifyChecked()) {
-                    Allocator.getGradingUtilities().notifyStudents(this.getSelectedAssignment(), selectedStudents);
+                    Allocator.getGradingUtilities().notifyStudents(this.getSelectedAssignment(), selectedStudents, false);
                 }
             }
         }
