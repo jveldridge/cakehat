@@ -31,12 +31,9 @@ public interface DatabaseIO {
      * in the database.
      * 
      * @param taLogin
-     * @param taFirstName
-     * @param taLastName
-     * @param type
      * @return status
      */
-    public boolean addTA(String taLogin, String taFirstName, String taLastName, String type);
+    public boolean addTA(String taLogin);
 
     /**
      * Checks to see if the student already exists. If not, creates new entry
