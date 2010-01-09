@@ -216,15 +216,23 @@ public class GradingUtilities {
      * @param project
      * @param students
      */
-    public void notifyStudents(String project, Vector<String> students) {
+    public void notifyStudents(String project, Vector<String> students, boolean emailRubrics) {
+        
+        Map<String,String> attachments = null;
+        if (emailRubrics) {
+            attachments = new HashMap<String,String>();
+            for (String student : students) {
+                attachments.put(student, Allocator.getGradingUtilities().getStudentGRDPath(project, student));
+            }
+        }
+        
         for (int i = 0; i < students.size(); i++) {
             students.setElementAt(students.get(i)+"@"+Allocator.getCourseInfo().getEmailDomain(), i);  //login -> email
         }
 
-        Map<String,String> attachments = new HashMap<String,String>();
         new EmailView(students, Allocator.getCourseInfo().getNotifyAddresses(), 
                         "[" + Allocator.getCourseInfo().getCourse() + "] " + project + " Graded",
-                         project + " has been graded and is available for pickup in the handback bin.", null);
+                         project + " has been graded and is available for pickup in the handback bin.", attachments);
                 
     }
 

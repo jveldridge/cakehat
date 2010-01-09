@@ -20,15 +20,26 @@ import javax.swing.*;
 
 public class SubmitDialog{
 
-    JCheckBox _printGRDcb, _notifyStudentscb;
+    JCheckBox _printGRDcb, _emailGRDcb, _notifyStudentscb;
     JPanel _panel;
     Vector<JCheckBox> _studentBoxes;
 
     public SubmitDialog(JList studentList) {
         _printGRDcb = new JCheckBox("Print GRD Files");
+        _emailGRDcb = new JCheckBox("Email GRD Files");
         _notifyStudentscb = new JCheckBox("Notify Students");
         
-        _printGRDcb.setSelected(true);
+        //if emailGRDcb is selected, notifyStudentscb must be as well
+        _emailGRDcb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (_emailGRDcb.isSelected())
+                    _notifyStudentscb.setSelected(true);
+            }
+            
+        });
+        
+        _printGRDcb.setSelected(false);
+        _emailGRDcb.setSelected(true);
         _notifyStudentscb.setSelected(true);
 
         _panel = new JPanel();
@@ -37,8 +48,9 @@ public class SubmitDialog{
         JPanel optionsPanel = new JPanel();
         optionsPanel.setLayout(new GridLayout(0,1));
         optionsPanel.add(new JLabel("<html><b>Select submit options: </b></html>"));
-        optionsPanel.add(_printGRDcb);
         optionsPanel.add(_notifyStudentscb);
+        optionsPanel.add(_emailGRDcb);
+        optionsPanel.add(_printGRDcb);
 
         JPanel studentPanel = new JPanel();
         studentPanel.setLayout(new GridLayout(0,1));
@@ -96,6 +108,13 @@ public class SubmitDialog{
      */
     public boolean printChecked() {
         return _printGRDcb.isSelected();
+    }
+    
+    /**
+     * @return whether the _printGRDcb checkbox is selected
+     */
+    public boolean emailChecked() {
+        return _emailGRDcb.isSelected();
     }
 
     /**
