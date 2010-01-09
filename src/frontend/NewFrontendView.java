@@ -72,6 +72,9 @@ public class NewFrontendView extends javax.swing.JFrame {
         _rubricButtons = new JButton[]{ gradeButton, submitGradesButton };
         _studentButtons = new JButton[]{ openButton, printButton, runTesterButton, runButton, gradeButton };
         OldDatabaseOps.open();
+        
+        Allocator.getGradingUtilities().makeUserGradingDirectory();
+        
         this.updateFormComponents();
 
         this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getCourseInfo().getCourse() + " Grader");
@@ -107,6 +110,11 @@ public class NewFrontendView extends javax.swing.JFrame {
      * Called when a different assignment is selected from the assignmentList to update other GUI components
      */
     private void updateAssignmentList() {
+        //need to create directory for the assignment so GRD files can be created
+        //even if no assignments have been untarred
+        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory() 
+                                                        + this.getSelectedAssignment().getName());
+        
         this.populateStudentList();
 
         this.updateButtonStates();
@@ -120,11 +128,12 @@ public class NewFrontendView extends javax.swing.JFrame {
         assignmentList.setListData(Allocator.getCourseInfo().getHandinAssignments().toArray());
         if (assignmentList.getModel().getSize() > 0) {
             assignmentList.setSelectedIndex(0);
+            Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory() 
+                                                        + this.getSelectedAssignment().getName());
         }
-        this.updateButtonStates();
-        
-
         this.populateStudentList();
+        
+        this.updateButtonStates();
     }
 
     /**
