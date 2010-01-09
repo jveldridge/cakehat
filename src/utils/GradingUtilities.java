@@ -32,25 +32,23 @@ public class GradingUtilities {
     }
 
     /**
-     * @date 12/06/2009
+     * @date 01/08/2009
      * @return path to a TA's temporary grading directory.
      *         currently, /course/cs015/grading/.<talogin>/
      *         this directory is erased when the user closes the grader
-     * @author jeldridg
      */
     public String getUserGradingDirectory() {
-        return Allocator.getConstants().getGraderPath() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
+        return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
     }
 
     /**
-     * @date 01/02/2010
+     * @date 01/08/2010
      * @return path to student's rubric for a particular project
      *          Note: this is independent of the TA who graded the student
      *         currently, /course/cs015/grading/rubrics/2009/<assignmentName>/<studentLogin>.xml
-     * @author jeldridg
      */
     public String getStudentRubricPath(String assignmentName, String studentLogin) {
-        return Allocator.getConstants().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".xml";
+        return Allocator.getCourseInfo().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".xml";
     }
 
     public String getStudentGRDPath(String assignmentName, String studentLogin) {

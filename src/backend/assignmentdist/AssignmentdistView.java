@@ -12,6 +12,7 @@ package backend.assignmentdist;
 
 
 import backend.OldDatabaseOps;
+import config.Assignment;
 import rubric.RubricManager;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -37,7 +38,7 @@ import utils.ErrorView;
 public class AssignmentdistView extends javax.swing.JFrame {
 
     /** Creates new form AssignmentDistributorGUI */
-    public AssignmentdistView(String asgn) {
+    public AssignmentdistView(Assignment asgn) {
         initComponents();
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/accessories-text-editor.png")));

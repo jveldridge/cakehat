@@ -4,10 +4,9 @@ import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
-import rubric.visualizers.GradingVisualizer;
+import config.Assignment;
 import rubric.RubricManager;
 import java.awt.CardLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -46,7 +45,7 @@ public class NewBackend extends javax.swing.JFrame {
         _multiAsgnButtons = new ArrayList(Arrays.asList(importGradesButton));
 
         //populate assignment list
-        assignmentList.setListData(OldDatabaseOps.getProjectNames());
+        assignmentList.setListData(Allocator.getCourseInfo().getHandinAssignments().toArray());
 
         //populate student list
         _studentLogins = OldDatabaseOps.getStudentNames();
@@ -59,7 +58,7 @@ public class NewBackend extends javax.swing.JFrame {
         cl.show(cardPanel, "instructionCard");
 
         //make the user's temporary grading directory
-        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory());
+        Allocator.getGradingUtilities().makeUserGradingDirectory();
 
         this.addWindowListener(new WindowAdapter() {
             @Override //remove user grading directory when backend is closed
@@ -339,7 +338,7 @@ public class NewBackend extends javax.swing.JFrame {
             .addGroup(multiSelectedPanelLayout.createSequentialGroup()
                 .addGap(125, 125, 125)
                 .addComponent(jLabel1)
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addContainerGap(347, Short.MAX_VALUE))
         );
 
         cardPanel.add(multiSelectedPanel, "multiPanel");
@@ -364,7 +363,7 @@ public class NewBackend extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(instructionsLabel))
                     .addComponent(welcomeLabel))
-                .addContainerGap(46, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
         instructionsPanelLayout.setVerticalGroup(
             instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -373,7 +372,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(welcomeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(instructionsLabel)
-                .addContainerGap(282, Short.MAX_VALUE))
+                .addContainerGap(360, Short.MAX_VALUE))
         );
 
         cardPanel.add(instructionsPanel, "instructionCard");
@@ -476,7 +475,7 @@ public class NewBackend extends javax.swing.JFrame {
                             .addComponent(writtenScoreLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(writtenScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                            .addComponent(writtenScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
                             .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(writtenTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addComponent(writtenEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))))
@@ -501,13 +500,13 @@ public class NewBackend extends javax.swing.JFrame {
                                     .addComponent(totalEarnedLabel))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(codeScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                            .addComponent(codeScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
                             .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(codeTotalText, javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addComponent(codeEarnedText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
-                            .addComponent(overallEarnedValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
-                            .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
-                            .addComponent(overallScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))))
+                            .addComponent(overallEarnedValue, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
+                            .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
+                            .addComponent(overallScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE))))
                 .addGap(113, 113, 113))
         );
         singleSelectedPanelLayout.setVerticalGroup(
@@ -540,7 +539,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(totalEarnedLabel)
                     .addComponent(codeTotalText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 53, Short.MAX_VALUE)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(codeScoreLabel)
                     .addComponent(codeScoreValue))
@@ -622,25 +621,17 @@ public class NewBackend extends javax.swing.JFrame {
                                     .addComponent(selectedStudsLabel))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                                        .addComponent(printCodeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                                    .addComponent(printCodeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(testCodeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                                        .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(runCodeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(openButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(exemptionButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(extensionButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(sendGradesButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(statisticsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, centerPanelLayout.createSequentialGroup()
-                                        .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(printRubricButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                                            .addComponent(viewRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(toggleEnabledButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))))))
+                                    .addComponent(runCodeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(openButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(exemptionButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(extensionButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(sendGradesButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(statisticsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(printRubricButton, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                                    .addComponent(viewRubricButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(toggleEnabledButton, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)))))
                     .addGroup(centerPanelLayout.createSequentialGroup()
                         .addGap(95, 95, 95)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -693,7 +684,7 @@ public class NewBackend extends javax.swing.JFrame {
                         .addComponent(printRubricButton)
                         .addGap(18, 18, 18)
                         .addComponent(toggleEnabledButton))
-                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
+                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -742,8 +733,8 @@ public class NewBackend extends javax.swing.JFrame {
             }
         });
 
-        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Type: All", "Type: Code", "Type: Written", "Type: Combination", "Type: Lab" }));
-        asgnTypeComboBox.setSelectedItem("Type: Code");
+        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Type: All", "Type: With Handin", "Type: Without Handin", "Type: Lab" }));
+        asgnTypeComboBox.setSelectedItem("Type: With Handin");
         asgnTypeComboBox.setName("asgnTypeComboBox"); // NOI18N
         asgnTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -835,8 +826,8 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -906,7 +897,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(exportDBButton)
                 .addGap(18, 18, 18)
                 .addComponent(resetDatabaseButton)
-                .addContainerGap(378, Short.MAX_VALUE))
+                .addContainerGap(436, Short.MAX_VALUE))
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -951,7 +942,7 @@ public class NewBackend extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(centerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(leftPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))
+                    .addComponent(leftPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -980,16 +971,16 @@ public class NewBackend extends javax.swing.JFrame {
 
     private void asgnTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnTypeComboBoxActionPerformed
         if (asgnTypeComboBox.getSelectedItem().equals("Type: All")) {
-            assignmentList.setListData(OldDatabaseOps.getAssignmentNames());
+            assignmentList.setListData(Allocator.getCourseInfo().getAssignments().toArray());
+        }
+        else if (asgnTypeComboBox.getSelectedItem().equals("Type: With Handin")) {
+            assignmentList.setListData(Allocator.getCourseInfo().getHandinAssignments().toArray());
+        }
+        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Without Handin")) {
+            assignmentList.setListData(Allocator.getCourseInfo().getNonHandinAssignments().toArray());
         }
         else if (asgnTypeComboBox.getSelectedItem().equals("Type: Lab")) {
-            assignmentList.setListData(OldDatabaseOps.getLabNames());
-        }
-        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Code")) {
-            assignmentList.setListData(OldDatabaseOps.getProjectNames());
-        }
-        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Combination")) {
-            assignmentList.setListData(OldDatabaseOps.getProjectNames());
+            assignmentList.setListData(Allocator.getCourseInfo().getLabAssignments().toArray());
         }
     }//GEN-LAST:event_asgnTypeComboBoxActionPerformed
 
@@ -999,31 +990,38 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_quitMenuItemActionPerformed
 
     private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
-        new PreviewVisualizer(this.getSelectedAssignment());
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasRubric())
+            new PreviewVisualizer(this.getSelectedAssignment().getHandinPart());
 }//GEN-LAST:event_previewRubricButtonActionPerformed
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        Allocator.getGradingUtilities().openStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasCode())
+            this.getSelectedAssignment().getHandinPart().openCode(this.getSelectedStudent());
 }//GEN-LAST:event_openButtonActionPerformed
 
     private void printCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printCodeButtonActionPerformed
-        Allocator.getGradingUtilities().printStudentProject(this.getSelectedAssignment(), this.getSelectedStudent(), null, true);
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasCode())
+            this.getSelectedAssignment().getHandinPart().printCode(this.getSelectedStudent(),
+                                                                    Allocator.getGradingUtilities().getPrinter());
 }//GEN-LAST:event_printCodeButtonActionPerformed
 
     private void demoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_demoButtonActionPerformed
-        Allocator.getGradingUtilities().demoProject(this.getSelectedAssignment());
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasDemo())
+            this.getSelectedAssignment().getHandinPart().runDemo();
 }//GEN-LAST:event_demoButtonActionPerformed
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
-        new GradingVisualizer(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
+        //new GradingVisualizer(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
 }//GEN-LAST:event_viewRubricButtonActionPerformed
 
     private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
-        Allocator.getGradingUtilities().runTester(this.getSelectedAssignment(), this.getSelectedStudent());
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasTester())
+            this.getSelectedAssignment().getHandinPart().runTester(this.getSelectedStudent());
 }//GEN-LAST:event_testCodeButtonActionPerformed
 
     private void runCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonActionPerformed
-        Allocator.getGradingUtilities().runStudentProject(this.getSelectedAssignment(), this.getSelectedStudent());
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasCode())
+            this.getSelectedAssignment().getHandinPart().run(this.getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonActionPerformed
 
     private void importGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importGradesButtonActionPerformed
@@ -1051,7 +1049,7 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void gradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradingStandardsButtonActionPerformed
-        Allocator.getGradingUtilities().viewDeductionList(this.getSelectedAssignment());
+        Allocator.getGradingUtilities().viewDeductionList(this.getSelectedAssignment().getName());
     }//GEN-LAST:event_gradingStandardsButtonActionPerformed
 
     private void blacklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blacklistButtonActionPerformed
@@ -1126,9 +1124,8 @@ public class NewBackend extends javax.swing.JFrame {
         return result;
     }
 
-
-    private String getSelectedAssignment(){
-        return (String) assignmentList.getSelectedValue();
+    private Assignment getSelectedAssignment(){
+        return (Assignment) assignmentList.getSelectedValue();
     }
 
     /**
@@ -1190,14 +1187,15 @@ public class NewBackend extends javax.swing.JFrame {
                 cl.show(cardPanel, "singlePanel");
 
                 //set Tester button to be enabled or not depending on whether project has a tester
-                testCodeButton.setEnabled(Allocator.getGradingUtilities().hasTester(this.getSelectedAssignment()));
-
-                //if there is a handin, untar the student's code
-                if(Allocator.getProject(this.getSelectedAssignment()).containsStudent(this.getSelectedStudent())){
-                    Allocator.getProject(this.getSelectedAssignment()).untar(this.getSelectedStudent());
+                if (this.getSelectedAssignment().hasHandinPart()) {
+                    testCodeButton.setEnabled(this.getSelectedAssignment().getHandinPart().hasTester());
                 }
-                //disable handin related buttons
                 else {
+                    testCodeButton.setEnabled(false);
+                }
+
+                //if there is no handin, disable handin-realted buttons
+                if(!this.getSelectedAssignment().getHandinPart().hasHandin(this.getSelectedStudent())){
                     openButton.setEnabled(false);
                     runCodeButton.setEnabled(false);
                     testCodeButton.setEnabled(false);

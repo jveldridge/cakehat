@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+<Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
     <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
       <Properties>
@@ -199,7 +199,7 @@
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="toggleEnabledButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="cardPanel" alignment="0" max="32767" attributes="0"/>
+                      <Component id="cardPanel" alignment="0" pref="472" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -427,7 +427,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="311" max="32767" attributes="0"/>
+                          <EmptySpace pref="347" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -462,7 +462,7 @@
                               </Group>
                               <Component id="welcomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="23" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -473,7 +473,7 @@
                           <Component id="welcomeLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="instructionsLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="308" max="32767" attributes="0"/>
+                          <EmptySpace pref="360" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -520,7 +520,7 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="writtenScoreValue" alignment="1" pref="102" max="32767" attributes="0"/>
+                                      <Component id="writtenScoreValue" alignment="1" pref="108" max="32767" attributes="0"/>
                                       <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="writtenTotalText" alignment="1" max="32767" attributes="1"/>
                                           <Component id="writtenEarnedText" alignment="1" pref="73" max="32767" attributes="1"/>
@@ -554,14 +554,14 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="codeScoreValue" alignment="1" pref="90" max="32767" attributes="0"/>
+                                      <Component id="codeScoreValue" alignment="1" pref="96" max="32767" attributes="0"/>
                                       <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="codeTotalText" alignment="1" max="32767" attributes="1"/>
                                           <Component id="codeEarnedText" alignment="1" pref="71" max="32767" attributes="1"/>
                                       </Group>
-                                      <Component id="overallEarnedValue" alignment="1" pref="90" max="32767" attributes="0"/>
-                                      <Component id="overallTotalValue" alignment="1" pref="90" max="32767" attributes="0"/>
-                                      <Component id="overallScoreValue" alignment="1" pref="90" max="32767" attributes="0"/>
+                                      <Component id="overallEarnedValue" alignment="1" pref="96" max="32767" attributes="0"/>
+                                      <Component id="overallTotalValue" alignment="1" pref="96" max="32767" attributes="0"/>
+                                      <Component id="overallScoreValue" alignment="1" pref="96" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -607,7 +607,7 @@
                               <Component id="totalEarnedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="codeTotalText" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="12" max="32767" attributes="0"/>
+                          <EmptySpace pref="53" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="codeScoreLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="codeScoreValue" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -894,8 +894,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jScrollPane1" pref="511" max="32767" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="1" pref="511" max="32767" attributes="1"/>
+                      <Component id="jScrollPane1" pref="545" max="32767" attributes="1"/>
+                      <Component id="jScrollPane2" alignment="1" pref="545" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -968,8 +968,8 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="asgnTypeComboBox">
           <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" postCode="asgnTypeComboBox.setSelectedItem(&quot;Type: Code&quot;);">
-              <Connection code="new javax.swing.DefaultComboBoxModel(new String[] { &quot;Type: All&quot;, &quot;Type: Code&quot;, &quot;Type: Written&quot;, &quot;Type: Combination&quot;, &quot;Type: Lab&quot; })" type="code"/>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" postCode="asgnTypeComboBox.setSelectedItem(&quot;Type: With Handin&quot;);">
+              <Connection code="new javax.swing.DefaultComboBoxModel(new String[] { &quot;Type: All&quot;, &quot;Type: With Handin&quot;, &quot;Type: Without Handin&quot;, &quot;Type: Lab&quot; })" type="code"/>
             </Property>
             <Property name="name" type="java.lang.String" value="asgnTypeComboBox" noResource="true"/>
           </Properties>
@@ -1069,7 +1069,7 @@
                   <Component id="exportDBButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="resetDatabaseButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="422" max="32767" attributes="0"/>
+                  <EmptySpace pref="436" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
