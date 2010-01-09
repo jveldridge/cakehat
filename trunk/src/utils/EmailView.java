@@ -1,13 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * EmailGUI.java
- *
- * Created on Sep 15, 2009, 9:50:50 PM
- */
 package utils;
 
 import com.inet.jortho.SpellChecker;
@@ -15,12 +5,14 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 
 /**
  *
  * @author psastras
+ * @author jeldridg
  */
 public class EmailView extends javax.swing.JFrame {
 
@@ -271,34 +263,40 @@ public class EmailView extends javax.swing.JFrame {
 }//GEN-LAST:event_subjectBoxActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        //get the date and time of submission for notification message
         final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
         String now = sdf.format(cal.getTime());
         
+        //send message to each student
         String[] students = studentsBox.getText().replace(" ", "").split("(,|;)");
-        String attachmentPath = null;
-        if (_attachments != null) {
-            //get correct attachment path
-        }
         for (String student : students) {
+            String attachmentPath = null;
+            if (_attachments != null) {
+                attachmentPath = _attachments.get(student.split("@")[0]);
+            }
+            System.out.println("student is " + student);
             Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),         //from
                                                                   new String[] {student},   //to
                                                                   null,                     //cc
                                                                   null,                     //bcc
                                                                   subjectBox.getText(),
                                                                   bodyText.getText(), 
-                                                                  null);                    //attachment paths
+                                                                  new String[] {attachmentPath});                    //attachment paths
         }
+        
+        //send notification of message sent to sender and to the course's notification addresses
         String[] toNotify = notifyBox.getText().replace(" ", "").split("(,|;)");
         
-        String notificationMessage = "<html>At " + now + ", grader " + Allocator.getGeneralUtilities().getUserLogin() +
+        String notificationMessage = "At " + now + ", grader " + Allocator.getGeneralUtilities().getUserLogin() +
                 " submitted grading for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
         for (String student : students) {
-            notificationMessage += student + "<br />";
+            student = student.split("@")[0];
+            notificationMessage += student + "; attachment: " + _attachments.get(student) + "<br />";
         }
         notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + bodyText.getText()
-                + "</blockquote>Rubrics were not emailed</html>";
+                + "</blockquote>";
         Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                             //from
                                                                   new String[] {fromBox.getText()},         //to
                                                                   toNotify,                                 //cc
