@@ -154,9 +154,9 @@
                       </Group>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="m_dqtotalText" pref="317" max="32767" attributes="0"/>
-                          <Component id="m_dqearnedText" alignment="0" pref="317" max="32767" attributes="0"/>
-                          <Component id="m_dqscoreText" alignment="0" pref="317" max="32767" attributes="0"/>
+                          <Component id="m_dqtotalText" pref="338" max="32767" attributes="0"/>
+                          <Component id="m_dqearnedText" alignment="0" pref="338" max="32767" attributes="0"/>
+                          <Component id="m_dqscoreText" alignment="0" pref="338" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="m_enterScoreLabel" min="-2" max="-2" attributes="0"/>
@@ -175,9 +175,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="m_prjscoreLabel" alignment="0" pref="329" max="32767" attributes="0"/>
-                          <Component id="m_prjtotalLabel" alignment="1" pref="329" max="32767" attributes="0"/>
-                          <Component id="m_prjpointsLabel" alignment="0" pref="329" max="32767" attributes="0"/>
+                          <Component id="m_prjscoreLabel" alignment="0" pref="348" max="32767" attributes="0"/>
+                          <Component id="m_prjtotalLabel" alignment="1" pref="348" max="32767" attributes="0"/>
+                          <Component id="m_prjpointsLabel" alignment="0" pref="348" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -197,7 +197,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="m_scroll2" pref="453" max="32767" attributes="0"/>
+                  <Component id="m_scroll2" pref="469" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="m_studentText" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -205,7 +205,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="m_scroll1" alignment="0" pref="420" max="32767" attributes="0"/>
+                          <Component id="m_scroll1" alignment="0" pref="433" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="m_dqearnedText" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -391,7 +391,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="414" max="32767" attributes="0"/>
+                  <EmptySpace pref="444" max="32767" attributes="0"/>
                   <Component id="statusLabel" min="-2" pref="364" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

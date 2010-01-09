@@ -16,8 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
+import rubric.RubricException;
 import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
+import utils.ErrorView;
 
 /**
  * Backend interface.
@@ -1070,7 +1072,12 @@ public class NewBackend extends javax.swing.JFrame {
 
     private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
         for (String asgn : this.getSelectedAssignments()) {
-            RubricManager.convertAllToGrd(this.getSelectedStudents(), asgn);
+            try {
+                RubricManager.convertAllToGrd(this.getSelectedStudents(), asgn);
+            }
+            catch(RubricException e) {
+                new ErrorView(e);
+            }
             Allocator.getGradingUtilities().printGRDFiles(this.getSelectedStudents(), asgn);
         }
     }//GEN-LAST:event_printRubricButtonActionPerformed

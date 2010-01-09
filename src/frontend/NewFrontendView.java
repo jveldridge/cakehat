@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import rubric.RubricException;
 import rubric.RubricManager;
 import utils.Allocator;
 import utils.ErrorView;
@@ -679,7 +680,12 @@ public class NewFrontendView extends javax.swing.JFrame {
             if (sd.showDialog() == JOptionPane.OK_OPTION) {
                 String asgnName = this.getSelectedAssignment().getName();
 
-                RubricManager.convertAllToGrd(this.getCurrentStudents(), asgnName);
+                try {
+                    RubricManager.convertAllToGrd(this.getCurrentStudents(), asgnName);
+                }
+                catch(RubricException e) {
+                    new ErrorView(e);
+                }
                 Vector<String> selectedStudents = sd.getSelectedStudents();
 
                 if (sd.printChecked()) {

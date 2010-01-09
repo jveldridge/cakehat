@@ -11,6 +11,7 @@
 package backend.entergrade;
 
 import backend.OldDatabaseOps;
+import rubric.RubricException;
 import rubric.RubricManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -744,26 +745,30 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_assignmentTableAncestorAdded
 
     private void m_xmlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_xmlButtonActionPerformed
-        String asgn = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0);
-        HashMap<String, Double> hm = RubricManager.getAllScores(asgn);
-        System.out.println(hm.size());
         try {
-            for (Object o : hm.keySet()) {
-                ISqlJetCursor c = OldDatabaseOps.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
-                String[] data = (String[]) OldDatabaseOps.getDataRow("grades_" + asgn, c.getRowId());
-                if (data[0].trim().compareToIgnoreCase(((String) o).trim()) != 0) {
-                    OldDatabaseOps.addStudent(((String) o).trim());
-                    c = OldDatabaseOps.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
-                    data = (String[]) OldDatabaseOps.getDataRow("grades_" + asgn, c.getRowId());
-                    System.out.println("Student " + (String) o + " added.");
+            String asgn = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0);
+            HashMap<String, Double> hm = RubricManager.getAllScores(asgn);
+            System.out.println(hm.size());
+            try {
+                for (Object o : hm.keySet()) {
+                    ISqlJetCursor c = OldDatabaseOps.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
+                    String[] data = (String[]) OldDatabaseOps.getDataRow("grades_" + asgn, c.getRowId());
+                    if (data[0].trim().compareToIgnoreCase(((String) o).trim()) != 0) {
+                        OldDatabaseOps.addStudent(((String) o).trim());
+                        c = OldDatabaseOps.getItemWithFilter("grades_" + asgn, "stud_login_" + asgn, (String) o);
+                        data = (String[]) OldDatabaseOps.getDataRow("grades_" + asgn, c.getRowId());
+                        System.out.println("Student " + (String) o + " added.");
+                    }
+                    data[data.length - 1] = Double.toString(hm.get(o));
+                    c.update((Object[]) data);
                 }
-                data[data.length - 1] = Double.toString(hm.get(o));
-                c.update((Object[]) data);
+                JOptionPane.showMessageDialog(this, "Grades for " + asgn + " have been successfully added to the database.", "Added", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error while adding grades to database.", "Error", JOptionPane.ERROR_MESSAGE);
+                new ErrorView(e);
             }
-            JOptionPane.showMessageDialog(this, "Grades for " + asgn + " have been successfully added to the database.", "Added", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error while adding grades to database.", "Error", JOptionPane.ERROR_MESSAGE);
-            new ErrorView(e);
+        } catch (RubricException ex) {
+            new ErrorView(ex);
         }
 }//GEN-LAST:event_m_xmlButtonActionPerformed
 
