@@ -447,7 +447,7 @@ public class BackendView extends javax.swing.JFrame {
     }//GEN-LAST:event_m_entergradesButtonActionPerformed
 
     private void m_assgndistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_assgndistButtonActionPerformed
-        AssignmentdistView av = new AssignmentdistView("Clock");    //sets starting asgn
+        AssignmentdistView av = new AssignmentdistView(null);    //sets starting asgn
         av.setLocationRelativeTo(null);
         av.setVisible(true);
 }//GEN-LAST:event_m_assgndistButtonActionPerformed

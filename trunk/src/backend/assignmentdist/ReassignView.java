@@ -12,10 +12,10 @@
 package backend.assignmentdist;
 
 import backend.OldDatabaseOps;
+import config.Assignment;
 import rubric.RubricManager;
 import javax.swing.JList;
 import utils.Allocator;
-import utils.GeneralUtilities;
 
 /**
  *
@@ -23,10 +23,10 @@ import utils.GeneralUtilities;
  */
 public class ReassignView extends javax.swing.JFrame {
 
-    private String _asgn;
+    private Assignment _asgn;
 
     /** Creates new form ReassignView */
-    public ReassignView(String asgn) {
+    public ReassignView(Assignment asgn) {
         this.initComponents();
         titleLabel.setText("<html><b>Reassign Grading for Assignment: </b>" + asgn + "</html>");
         this.populateLists();
@@ -254,13 +254,13 @@ public class ReassignView extends javax.swing.JFrame {
         
         //update XML files
         if (keepXMLRadioButton.isSelected()) {
-            RubricManager.reassignXML(Allocator.getProject(_asgn), oldTA, student, newTA);
+            RubricManager.reassignXML(Allocator.getProject(_asgn.getName()), oldTA, student, newTA);
         }
         else {
             //remove XML for old grader--TODO
             
             //create blank XML for new grader
-            RubricManager.assignXMLToGrader(Allocator.getProject(_asgn), student, newTA, OldDatabaseOps.getStudentDQScore(_asgn, student), 10);
+            RubricManager.assignXMLToGrader(Allocator.getProject(_asgn.getName()), student, newTA, OldDatabaseOps.getStudentDQScore(_asgn.getName(), student), 10);
         }
 
         //still need to remove old XMLs
