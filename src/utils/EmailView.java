@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 
@@ -44,9 +43,14 @@ public class EmailView extends javax.swing.JFrame {
         subjectBox.setText(subject);
         fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getCourseInfo().getEmailDomain());
         bodyText.setText(body);
+        
         if (attachments == null) {
-            attachmentMessage.setText("No attachments will be sent with this message");
+            attachmentMessage.setText("No attachments will be sent with this message.");
         }
+        else {
+            attachmentMessage.setText("Each student's .GRD file will be sent to that student as an attachment.");
+        }
+            
         _attachments = attachments;
         this.setVisible(true);
         this.setLocationRelativeTo(null);

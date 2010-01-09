@@ -702,7 +702,10 @@ public class NewFrontendView extends javax.swing.JFrame {
                 }
 
                 if (sd.notifyChecked()) {
-                    Allocator.getGradingUtilities().notifyStudents(asgnName, selectedStudents);
+                    if (sd.emailChecked())
+                        Allocator.getGradingUtilities().notifyStudents(asgnName, selectedStudents, true);
+                    else
+                        Allocator.getGradingUtilities().notifyStudents(asgnName, selectedStudents, false);
                 }
             }
         }
