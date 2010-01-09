@@ -13,6 +13,7 @@ class Configuration
 {
     private Vector<Assignment> _assignments = new Vector<Assignment>();
     private Vector<String> _notifyAddresses = new Vector<String>();
+    private Vector<TA> _tas = new Vector<TA>();
     private EmailAccount _emailAccount;
     private String _course;
     private int _leniency;
@@ -35,6 +36,16 @@ class Configuration
     Collection<String> getNotifyAddresses()
     {
        return _notifyAddresses;
+    }
+
+    void addTA(TA ta)
+    {
+        _tas.add(ta);
+    }
+
+    Collection<TA> getTAs()
+    {
+        return _tas;
     }
 
     void setCourse(String course)

@@ -1,6 +1,5 @@
 package config;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Vector;
 import utils.Allocator;
@@ -47,27 +46,149 @@ public class CourseInfo
         return _config.getAssigments();
     }
 
+    /**
+     * Returns the email account that emails can be sent from.
+     * 
+     * @return
+     */
     public EmailAccount getEmailAccount()
     {
         return _config.getEmailAccount();
     }
 
+    /**
+     * Returns the addresses that should be notified of actions such as grade
+     * submission.
+     *
+     * @return
+     */
     public Collection<String> getNotifyAddresses()
     {
         return _config.getNotifyAddresses();
     }
 
+    /**
+     * Returns the course name (that matches its course directory), e.g. cs015.
+     *
+     * @return
+     */
     public String getCourse()
     {
         return _config.getCourse();
     }
 
+    /**
+     * Minutes of leniency when determing if an assignment meets a deadline.
+     *
+     * @return
+     */
     public int getMinutuesOfLeniency()
     {
         return _config.getLeniency();
     }
 
+    /**
+     * Returns a collection of all of the TAs.
+     * @return
+     */
+    public Collection<TA> getTAs()
+    {
+        return _config.getTAs();
+    }
+
     //             Built from configuration data
+
+    private Collection<TA> _utas = null;
+    /**
+     * Returns a collection of TAs that are not HTAs.
+     * @return
+     */
+    public Collection<TA> getUTAs()
+    {
+        if(_utas == null)
+        {
+            _utas = new Vector<TA>();
+
+            for(TA ta : getTAs())
+            {
+                if(!ta.isHTA())
+                {
+                    _utas.add(ta);
+                }
+            }
+        }
+
+        return _utas;
+    }
+
+    private Collection<TA> _htas = null;
+    /**
+     * Returns a collection of HTAs.
+     * @return
+     */
+    public Collection<TA> getHTAs()
+    {
+        if(_htas == null)
+        {
+            _htas = new Vector<TA>();
+
+            for(TA ta : getTAs())
+            {
+                if(ta.isHTA())
+                {
+                    _htas.add(ta);
+                }
+            }
+        }
+
+        return _htas;
+    }
+
+    private Collection<TA> _defaultGraders = null;
+    /**
+     * Returns a collection of TAs that are default graders.
+     * @return
+     */
+    public Collection<TA> getDefaultGraders()
+    {
+        if(_defaultGraders == null)
+        {
+            _defaultGraders = new Vector<TA>();
+
+            for(TA ta : getTAs())
+            {
+                if(ta.isDefaultGrader())
+                {
+                    _defaultGraders.add(ta);
+                }
+            }
+        }
+
+        return _defaultGraders;
+    }
+
+    private Collection<TA> _admins = null;
+    /**
+     * Returns a collection of TAs that are default graders.
+     * @return
+     */
+    public Collection<TA> getAdmins()
+    {
+        if(_admins == null)
+        {
+            _admins = new Vector<TA>();
+
+            for(TA ta : getTAs())
+            {
+                if(ta.isAdmin())
+                {
+                    _admins.add(ta);
+                }
+            }
+        }
+
+        return _admins;
+    }
 
     private Collection<Assignment> _handinAssignments = null;
     /**
