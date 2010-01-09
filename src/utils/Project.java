@@ -230,7 +230,7 @@ public abstract class Project {
      *          currently, /course/cs015/grading/.<talogin>/<projectname>/<studentLogin>/
      * @author jeldridg
      */
-    protected String getStudentCodeDirectory(String studentLogin) {
+    public String getStudentCodeDirectory(String studentLogin) {
         return Allocator.getGradingUtilities().getUserGradingDirectory() + this.getName() + "/" + studentLogin + "/";
     }
 }

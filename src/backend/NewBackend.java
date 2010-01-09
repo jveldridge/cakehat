@@ -1051,7 +1051,9 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void gradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradingStandardsButtonActionPerformed
-        Allocator.getGradingUtilities().viewDeductionList(this.getSelectedAssignment().getName());
+        if(this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasDeductionList()) {
+            this.getSelectedAssignment().getHandinPart().viewDeductionList();
+        }
     }//GEN-LAST:event_gradingStandardsButtonActionPerformed
 
     private void blacklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blacklistButtonActionPerformed

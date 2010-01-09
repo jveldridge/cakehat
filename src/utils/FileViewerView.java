@@ -78,13 +78,13 @@ public class FileViewerView extends javax.swing.JFrame {
         this();
 
         this.openFile(file);
-        
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
 
         Dimension size = new Dimension(640,500);
         this.setSize(size);
         this.setPreferredSize(size);
+        
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 
     private class ReferencesPanel extends JPanel {
