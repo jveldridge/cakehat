@@ -1,5 +1,6 @@
 package utils;
 
+import com.ice.tar.TarArchive;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
@@ -423,22 +424,35 @@ public class GeneralUtilities {
     }
 
     /**
-     * TODO: Look into extracting using Java instead of the Linux tar command.
-     *
      * Extracts a tar file.
      *
      * @param tarPath the absolute path of the tar file
      * @param destPath the directory the tar file will be expanded into
+     *
+     * @boolean success of untarring file
      */
-    public void untar(String tarPath, String destPath) {
-        String cmd = "tar -xf " + tarPath + " -C " + destPath;
+    public boolean untar(String tarPath, String destPath) {
         try {
+            TarArchive tar = new TarArchive(new FileInputStream(new File(tarPath)));
+            tar.extractContents(new File(destPath));
+
+            return true;
+        }
+        catch (Exception ex) {
+            new ErrorView(ex);
+            return false;
+        }
+        /*
+          //Original code
+          String cmd = "tar -xf " + tarPath + " -C " + destPath;
+          try {
             Process proc = Runtime.getRuntime().exec(cmd);
             proc.waitFor();
-        }
-        catch (Exception e) {
+          }
+          catch (Exception e) {
             new ErrorView(e);
-        }
+          }
+             */
     }
 
     /**
