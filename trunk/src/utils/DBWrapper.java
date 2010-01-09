@@ -30,7 +30,7 @@ public class DBWrapper implements DatabaseIO {
      */
     public DBWrapper() {
         //should be set to constant
-        this("jdbc:sqlite:/Users/alexku/Documents/ Brown/sem5/cs015 ta/cakehat_db/cakehatcs015.sqlite");
+        this("jdbc:sqlite:/course/cs015/grading/bin/2009/cs015.sqlite");
     }
 
     /**
@@ -243,6 +243,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     /**
+     * @deprecated - should use addTA(String taLogin), since other TA info will be in config file
      * Checks to see if TA already exists. If does not exist then inserts TA to DB
      * @param taLogin - String TA Login
      * @param taFirstName - String TA First Name
@@ -461,6 +462,10 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public boolean resetDatabase() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean addTA(String taLogin) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
