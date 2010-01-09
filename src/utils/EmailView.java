@@ -11,7 +11,11 @@
 package utils;
 
 import com.inet.jortho.SpellChecker;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Map;
 import javax.imageio.ImageIO;
 
 /**
@@ -20,6 +24,8 @@ import javax.imageio.ImageIO;
  */
 public class EmailView extends javax.swing.JFrame {
 
+    private Map<String,String> _attachments;
+    
     /** Creates new form EmailGUI */
     public EmailView() {
         initComponents();
@@ -34,19 +40,23 @@ public class EmailView extends javax.swing.JFrame {
         SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
     }
 
-    public EmailView(String[] to, String[] cc, String[] bcc, String subject, String body) {
+    public EmailView(Collection<String> students, Collection<String> toNotify, String subject, String body, Map<String,String> attachments) {
         initComponents();
         this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
         } catch (Exception e) {
         }
-        toBox.setText(Arrays.toString(to).replace("[", "").replace("]", ""));
-        ccBox.setText(Arrays.toString(cc).replace("[", "").replace("]", ""));
-        bccBox.setText(Arrays.toString(bcc).replace("[", "").replace("]", ""));
+        studentsBox.setText(Arrays.toString(students.toArray()).replace("[", "").replace("]", ""));
+        notifyBox.setText(Arrays.toString(toNotify.toArray()).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain());
+        fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getCourseInfo().getEmailDomain());
         bodyText.setText(body);
+        if (attachments == null) {
+            attachmentMessage.setText("No attachments will be sent with this message");
+        }
+        _attachments = attachments;
+        this.setVisible(true);
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);
         SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
@@ -68,16 +78,16 @@ public class EmailView extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
         subjectBox = new javax.swing.JTextField();
-        bccBox = new javax.swing.JTextField();
-        ccBox = new javax.swing.JTextField();
-        toBox = new javax.swing.JTextField();
+        notifyBox = new javax.swing.JTextField();
+        studentsBox = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         bodyText = new javax.swing.JTextArea();
         jLabel5 = new javax.swing.JLabel();
         fromBox = new javax.swing.JTextField();
         cancelButton = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        attachmentMessage = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -120,22 +130,23 @@ public class EmailView extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        sendButton.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        sendButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gradesystem/resources/icons/32x32/mail-forward.png"))); // NOI18N
         sendButton.setMnemonic('S');
         sendButton.setText("Send");
         sendButton.setFocusable(false);
+        sendButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         sendButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendButtonActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("To");
+        jLabel1.setText("Students:");
 
-        jLabel2.setText("Cc");
+        jLabel2.setText("Notify:");
 
-        jLabel3.setText("Subject");
-
-        jLabel4.setText("Bcc");
+        jLabel3.setText("Subject:");
 
         subjectBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -143,22 +154,23 @@ public class EmailView extends javax.swing.JFrame {
             }
         });
 
-        toBox.addActionListener(new java.awt.event.ActionListener() {
+        studentsBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toBoxActionPerformed(evt);
+                studentsBoxActionPerformed(evt);
             }
         });
 
         bodyText.setColumns(20);
-        bodyText.setFont(new java.awt.Font("SansSerif", 0, 12));
+        bodyText.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         bodyText.setRows(5);
         bodyText.setMargin(new java.awt.Insets(10, 10, 10, 10));
         jScrollPane1.setViewportView(bodyText);
 
-        jLabel5.setText("From");
+        jLabel5.setText("From:");
 
         fromBox.setEnabled(false);
 
+        cancelButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/mail-mark-not-junk.png"))); // NOI18N
         cancelButton.setMnemonic('C');
         cancelButton.setText("Cancel");
         cancelButton.setFocusable(false);
@@ -167,6 +179,10 @@ public class EmailView extends javax.swing.JFrame {
                 cancelButtonActionPerformed(evt);
             }
         });
+
+        jLabel4.setText("Attach:");
+
+        attachmentMessage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/mail-attachment.png"))); // NOI18N
 
         jMenu1.setText("File");
 
@@ -190,20 +206,25 @@ public class EmailView extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(cancelButton, javax.swing.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel5))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(7, 7, 7)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel5)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel3))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
-                            .addComponent(ccBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
-                            .addComponent(toBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE)
-                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 887, Short.MAX_VALUE))))
+                            .addComponent(subjectBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
+                            .addComponent(notifyBox, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
+                            .addComponent(studentsBox, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
+                            .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
+                            .addComponent(attachmentMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -217,40 +238,74 @@ public class EmailView extends javax.swing.JFrame {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(toBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(studentsBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ccBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(notifyBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(bccBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(subjectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(attachmentMessage))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void toBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toBoxActionPerformed
-}//GEN-LAST:event_toBoxActionPerformed
+    private void studentsBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_studentsBoxActionPerformed
+}//GEN-LAST:event_studentsBoxActionPerformed
 
     private void subjectBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subjectBoxActionPerformed
 }//GEN-LAST:event_subjectBoxActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        Allocator.getGeneralUtilities().sendMail(fromBox.getText(), toBox.getText().replace(" ", "").split("(,|;)"), ccBox.getText().replace(" ", "").split("(,|;)"), bccBox.getText().replace(" ", "").split("(,|;)"), subjectBox.getText(), bodyText.getText(), new String[0]);
+        final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+        String now = sdf.format(cal.getTime());
+        
+        String[] students = studentsBox.getText().replace(" ", "").split("(,|;)");
+        String attachmentPath = null;
+        if (_attachments != null) {
+            //get correct attachment path
+        }
+        for (String student : students) {
+            Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),         //from
+                                                                  new String[] {student},   //to
+                                                                  null,                     //cc
+                                                                  null,                     //bcc
+                                                                  subjectBox.getText(),
+                                                                  bodyText.getText(), 
+                                                                  null);                    //attachment paths
+        }
+        String[] toNotify = notifyBox.getText().replace(" ", "").split("(,|;)");
+        
+        String notificationMessage = "<html>At " + now + ", grader " + Allocator.getGeneralUtilities().getUserLogin() +
+                " submitted grading for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
+        for (String student : students) {
+            notificationMessage += student + "<br />";
+        }
+        notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + bodyText.getText()
+                + "</blockquote>Rubrics were not emailed</html>";
+        Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                             //from
+                                                                  new String[] {fromBox.getText()},         //to
+                                                                  toNotify,                                 //cc
+                                                                  null,                                     //bcc
+                                                                  subjectBox.getText(),
+                                                                  notificationMessage, 
+                                                                  null);                    //attachment paths
         jDialog1.setLocationRelativeTo(null);
         jDialog1.setVisible(true);
 }//GEN-LAST:event_sendButtonActionPerformed
@@ -268,15 +323,11 @@ public class EmailView extends javax.swing.JFrame {
     }
 
     public void setTo(String s) {
-        toBox.setText(s);
+        studentsBox.setText(s);
     }
 
     public void setCc(String s) {
-        ccBox.setText(s);
-    }
-
-    public void setBcc(String s) {
-        bccBox.setText(s);
+        notifyBox.setText(s);
     }
 
     public void setBody(String s) {
@@ -299,10 +350,9 @@ public class EmailView extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField bccBox;
+    private javax.swing.JLabel attachmentMessage;
     private javax.swing.JTextArea bodyText;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JTextField ccBox;
     private javax.swing.JTextField fromBox;
     private javax.swing.JButton jButton2;
     private javax.swing.JDialog jDialog1;
@@ -316,8 +366,9 @@ public class EmailView extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField notifyBox;
     private javax.swing.JButton sendButton;
+    private javax.swing.JTextField studentsBox;
     private javax.swing.JTextField subjectBox;
-    private javax.swing.JTextField toBox;
     // End of variables declaration//GEN-END:variables
 }

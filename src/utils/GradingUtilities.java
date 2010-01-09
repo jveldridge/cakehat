@@ -3,6 +3,8 @@ package utils;
 import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -215,19 +217,15 @@ public class GradingUtilities {
      * @param students
      */
     public void notifyStudents(String project, Vector<String> students) {
-        String bccStringBuilder = "";
-        for (String student: students) {
-            bccStringBuilder += student + "@cs.brown.edu,";
+        for (int i = 0; i < students.size(); i++) {
+            students.setElementAt(students.get(i)+"@"+Allocator.getCourseInfo().getEmailDomain(), i);  //login -> email
         }
 
-        EmailView ev = new EmailView(new String[] {Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain()},
-                                     new String[] {Allocator.getConstants().getGradesTA() + "@" + Allocator.getConstants().getEmailDomain(),
-                                                   Allocator.getConstants().getGradesHTA() + "@" + Allocator.getConstants().getEmailDomain()},
-                                     bccStringBuilder.split(","),
-                                     "[" + Allocator.getConstants().getCourse() + "] " + project + " Graded",
-                                     project + " has been graded and is available for pickup in the handback bin.");
-        ev.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
-        ev.setVisible(true);
+        Map<String,String> attachments = new HashMap<String,String>();
+        new EmailView(students, Allocator.getCourseInfo().getNotifyAddresses(), 
+                        "[" + Allocator.getCourseInfo().getCourse() + "] " + project + " Graded",
+                         project + " has been graded and is available for pickup in the handback bin.", null);
+                
     }
 
     /**

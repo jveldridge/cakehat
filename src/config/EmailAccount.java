@@ -33,6 +33,7 @@ public class EmailAccount
 
     EmailAccount() { }
 
+
     void setLogin(String login)
     {
         _login = login;
@@ -193,7 +194,7 @@ public class EmailAccount
                 }
             }
             // bcc
-            if(cc != null)
+            if(bcc != null)
             {
                 for(String s : bcc)
                 {
