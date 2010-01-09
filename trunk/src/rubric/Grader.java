@@ -2,5 +2,5 @@ package rubric;
 
 public class Grader
 {
-	public String Name = "", Acct = "", Hours = "";
+    public String Name = "", Acct = "";
 }

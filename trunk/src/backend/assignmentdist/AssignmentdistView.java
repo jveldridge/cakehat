@@ -26,6 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import rubric.RubricException;
 import utils.Allocator;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
@@ -433,7 +434,12 @@ public class AssignmentdistView extends javax.swing.JFrame {
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
             String[] studsToGrade = OldDatabaseOps.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
-                RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, OldDatabaseOps.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                try {
+                    RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, OldDatabaseOps.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
+                }
+                catch(RubricException e) {
+                    new ErrorView(e);
+                }
             }
        }
 }//GEN-LAST:event_setupGradingButtonActionPerformed

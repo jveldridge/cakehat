@@ -5,10 +5,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
 import rubric.Rubric;
+import rubric.RubricException;
 import rubric.RubricManager;
 import rubric.visualizers.GradingVisualizer;
 import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
+import utils.ErrorView;
 import utils.FileViewerView;
 
 /**
@@ -73,10 +75,17 @@ public abstract class HandinPart extends Part
 
     public Rubric getRubric()
     {
-        //Intentionally reparses rubric each time it is requested so that
-        //when previewing a rubric any changes made will be reflected
-        //each time without needing to relaunch cakehat
-        return RubricManager.processXML(_rubricFile.getAbsolutePath());
+        try {
+            //Intentionally reparses rubric each time it is requested so that
+            //when previewing a rubric any changes made will be reflected
+            //each time without needing to relaunch cakehat
+            return RubricManager.processXML(_rubricFile.getAbsolutePath());
+        }
+        catch (RubricException ex) {
+            new ErrorView(ex);
+        }
+
+        return null;
     }
 
     public void previewRubric()

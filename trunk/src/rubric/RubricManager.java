@@ -6,7 +6,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,7 +28,17 @@ import utils.Allocator;
 import utils.BashConsole;
 import utils.ErrorView;
 
-public class RubricManager {
+public class RubricManager
+{
+    //String constants that represent the tags used in the XML markup
+    private final static String TEXT_NODE = "#text", COMMENT_NODE = "#comment",
+                                RUBRIC = "RUBRIC",
+                                NAME = "NAME", NUMBER = "NUMBER", STATUS = "STATUS",
+                                STUDENT = "STUDENT", GRADER = "GRADER", SECTION = "SECTION",
+                                EXTRACREDIT = "EXTRACREDIT", TEXT = "TEXT", SCORE = "SCORE",
+                                OUTOF = "OUTOF", ACCT = "ACCT", SUBSECTION = "SUBSECTION",
+                                NOTES = "NOTES", COMMENTS = "COMMENTS", DETAILS = "DETAILS",
+                                VALUE = "VALUE", ENTRY = "ENTRY";
 
     /**
      * Converts XML to a Rubric.
@@ -37,7 +46,8 @@ public class RubricManager {
      * @param XMLFilePath
      * @return
      */
-    public static Rubric processXML(String XMLFilePath) {
+    public static Rubric processXML(String XMLFilePath) throws RubricException
+    {
         Rubric rubric = new Rubric();
 
         //Get XML as a document
@@ -55,167 +65,238 @@ public class RubricManager {
         return rubric;
     }
 
-    private static Document getDocument(String XMLFilePath) {
+    private static Document getDocument(String XMLFilePath) throws RubricException
+    {
+        //Check if file exists
+        File file = new File(XMLFilePath);
+        if(!file.exists())
+        {
+            throw new RubricException("Rubric could not be read, location specified: " + XMLFilePath);
+        }
+
         Document document = null;
-        try {
+        try
+        {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.parse(new File(XMLFilePath));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Error("Could not create document from XML file. Be sure path specified is accurate.  Path is " + XMLFilePath);
+            document = builder.parse(file);
+        }
+        catch (Exception e)
+        {
+            throw new RubricException("Exception thrown during parsing, " + XMLFilePath + " is illegally formatted. \n" + e.getMessage());
         }
 
         return document;
     }
 
-    private static Node getRootNode(Document document) {
+    /**
+     * Indicates whether a node should be skipped or not. A node should not be
+     * processed if it is a text node or a comment node.
+     *
+     * @param node
+     * @return whether a node should be skipped
+     */
+    private static boolean skipNode(Node node)
+    {
+        return (node.getNodeName().equals(TEXT_NODE) || node.getNodeName().equals(COMMENT_NODE));
+    }
+
+    private static Node getRootNode(Document document) throws RubricException
+    {
         Node rubricNode = document.getDocumentElement();
-        if (!rubricNode.getNodeName().equals("RUBRIC")) {
-            throw new Error("XML not formatted properly, encountered node of name = " + rubricNode.getNodeName());
+        if (!rubricNode.getNodeName().equals(RUBRIC))
+        {
+            throw new RubricException("Expected root node " + RUBRIC + ", encountered: " + rubricNode.getNodeName());
         }
 
         return rubricNode;
     }
 
-    private static void assignRootAttributes(Node rubricNode, Rubric rubric) {
+    private static void assignRootAttributes(Node rubricNode, Rubric rubric)
+    {
         NamedNodeMap rubricMap = rubricNode.getAttributes();
-        rubric.Name = rubricMap.getNamedItem("NAME").getNodeValue();
-        rubric.Number = Integer.valueOf(rubricMap.getNamedItem("NUMBER").getNodeValue());
-        rubric.Status = rubricMap.getNamedItem("STATUS").getNodeValue();
+        rubric.Name = rubricMap.getNamedItem(NAME).getNodeValue();
+        rubric.Number = Integer.valueOf(rubricMap.getNamedItem(NUMBER).getNodeValue());
+        rubric.Status = rubricMap.getNamedItem(STATUS).getNodeValue();
     }
 
-    private static void assignChildrenAttributes(Node rubricNode, Rubric rubric) {
+    private static void assignChildrenAttributes(Node rubricNode, Rubric rubric) throws RubricException
+    {
         NodeList rubricList = rubricNode.getChildNodes();
-        for (int i = 0; i < rubricList.getLength(); i++) {
+        for (int i = 0; i < rubricList.getLength(); i++)
+        {
             Node currNode = rubricList.item(i);
-            //Skip if an empty text node
-            if (currNode.getNodeName().equals("#text") || currNode.getNodeName().equals("#comment")) {
+            //Skip if necessary
+            if(skipNode(currNode))
+            {
                 continue;
-            } //Student
-            else if (currNode.getNodeName().equals("STUDENT")) {
+            }
+            //Student
+            else if (currNode.getNodeName().equals(STUDENT))
+            {
                 assignStudentAttributes(currNode.getAttributes(), rubric);
-            } //Grader
-            else if (currNode.getNodeName().equals("GRADER")) {
+            }
+            //Grader
+            else if (currNode.getNodeName().equals(GRADER))
+            {
                 assignGraderAttributes(currNode.getAttributes(), rubric);
-            } //Section
-            else if (currNode.getNodeName().equals("SECTION")) {
+            }
+            //Section
+            else if (currNode.getNodeName().equals(SECTION))
+            {
                 //Create section
                 Section section = new Section();
                 rubric.Sections.add(section);
                 //Get name
                 NamedNodeMap sectionMap = currNode.getAttributes();
-                section.Name = sectionMap.getNamedItem("NAME").getNodeValue();
+                section.Name = sectionMap.getNamedItem(NAME).getNodeValue();
                 //Read section parts
                 assignSectionAttributes(currNode.getChildNodes(), section);
-            } //Extra credit
-            else if (currNode.getNodeName().equals("EXTRACREDIT")) {
+            }
+            //Extra credit
+            else if (currNode.getNodeName().equals(EXTRACREDIT))
+            {
                 //Assign properties
                 NamedNodeMap extraMap = currNode.getAttributes();
                 ExtraCredit extraCredit = new ExtraCredit();
                 rubric.ExtraCredit.add(extraCredit);
-                extraCredit.Text = extraMap.getNamedItem("TEXT").getNodeValue();
-                extraCredit.Score = Double.valueOf(extraMap.getNamedItem("SCORE").getNodeValue());
-                extraCredit.OutOf = Double.valueOf(extraMap.getNamedItem("OUTOF").getNodeValue());
-            } else {
-                throw new Error("XML not formatted properly, encountered node of name = " + currNode.getNodeName());
+                extraCredit.Text = extraMap.getNamedItem(TEXT).getNodeValue();
+                extraCredit.Score = Double.valueOf(extraMap.getNamedItem(SCORE).getNodeValue());
+                extraCredit.OutOf = Double.valueOf(extraMap.getNamedItem(OUTOF).getNodeValue());
+            }
+            else
+            {
+                throw new RubricException(RUBRIC, currNode, STUDENT, GRADER, SECTION, EXTRACREDIT);
             }
         }
     }
 
-    private static void assignStudentAttributes(NamedNodeMap map, Rubric rubric) {
-        rubric.Student.Name = map.getNamedItem("NAME").getNodeValue();
-        rubric.Student.Acct = map.getNamedItem("ACCT").getNodeValue();
+    private static void assignStudentAttributes(NamedNodeMap map, Rubric rubric)
+    {
+        rubric.Student.Name = map.getNamedItem(NAME).getNodeValue();
+        rubric.Student.Acct = map.getNamedItem(ACCT).getNodeValue();
     }
 
-    private static void assignGraderAttributes(NamedNodeMap map, Rubric rubric) {
-        rubric.Grader.Name = map.getNamedItem("NAME").getNodeValue();
-        rubric.Grader.Acct = map.getNamedItem("ACCT").getNodeValue();
-        rubric.Grader.Hours = map.getNamedItem("HOURS").getNodeValue();
+    private static void assignGraderAttributes(NamedNodeMap map, Rubric rubric)
+    {
+        rubric.Grader.Name = map.getNamedItem(NAME).getNodeValue();
+        rubric.Grader.Acct = map.getNamedItem(ACCT).getNodeValue();
     }
 
-    private static void assignSectionAttributes(NodeList subsectionList, Section section) {
-        for (int i = 0; i < subsectionList.getLength(); i++) {
+    private static void assignSectionAttributes(NodeList subsectionList, Section section) throws RubricException
+    {
+        for (int i = 0; i < subsectionList.getLength(); i++)
+        {
             Node subsectionNode = subsectionList.item(i);
-            if (subsectionNode.getNodeName().equals("#text") || subsectionNode.getNodeName().equals("#comment")) {
+            if (skipNode(subsectionNode))
+            {
                 continue;
-            } else if (subsectionNode.getNodeName().equals("SUBSECTION")) {
+            }
+            else if (subsectionNode.getNodeName().equals(SUBSECTION))
+            {
                 //Create subsection
                 Subsection subsection = new Subsection();
                 section.Subsections.add(subsection);
 
                 //Add properties
                 NamedNodeMap subsectionMap = subsectionNode.getAttributes();
-                subsection.Name = subsectionMap.getNamedItem("NAME").getNodeValue();
-                subsection.Score = Double.valueOf(subsectionMap.getNamedItem("SCORE").getNodeValue());
-                subsection.OutOf = Double.valueOf(subsectionMap.getNamedItem("OUTOF").getNodeValue());
+                subsection.Name = subsectionMap.getNamedItem(NAME).getNodeValue();
+                subsection.Score = Double.valueOf(subsectionMap.getNamedItem(SCORE).getNodeValue());
+                subsection.OutOf = Double.valueOf(subsectionMap.getNamedItem(OUTOF).getNodeValue());
 
                 //Add details
                 assignDetailAttributes(subsectionNode.getChildNodes(), subsection);
-            } else if (subsectionNode.getNodeName().equals("NOTES")) {
+            }
+            else if (subsectionNode.getNodeName().equals(NOTES))
+            {
                 assignNotesDetails(subsectionNode.getChildNodes(), section);
-            } else if (subsectionNode.getNodeName().equals("COMMENTS")) {
+            }
+            else if (subsectionNode.getNodeName().equals(COMMENTS))
+            {
                 assignCommentsDetails(subsectionNode.getChildNodes(), section);
-            } else {
-                throw new Error("XML not formatted properly, encountered node of name = " + subsectionNode.getNodeName());
+            }
+            else
+            {
+                throw new RubricException(SECTION, subsectionNode, SUBSECTION, NOTES, COMMENTS);
             }
         }
     }
 
-    private static void assignDetailAttributes(NodeList detailsList, Subsection subsection) {
-        for (int i = 0; i < detailsList.getLength(); i++) {
+    private static void assignDetailAttributes(NodeList detailsList, Subsection subsection) throws RubricException
+    {
+        for (int i = 0; i < detailsList.getLength(); i++)
+        {
             Node detailNode = detailsList.item(i);
-            if (detailNode.getNodeName().equals("#text") || detailNode.getNodeName().equals("#comment")) {
+            if (skipNode(detailNode))
+            {
                 continue;
-            } else if (detailNode.getNodeName().equals("DETAILS")) {
+            }
+            else if (detailNode.getNodeName().equals(DETAILS))
+            {
                 //Create new detail
                 Detail detail = new Detail();
                 subsection.Details.add(detail);
 
                 //Add attributes
                 NamedNodeMap detailMap = detailNode.getAttributes();
-                detail.Name = detailMap.getNamedItem("NAME").getNodeValue();
-                detail.Value = Double.valueOf(detailMap.getNamedItem("VALUE").getNodeValue());
-            } else {
-                throw new Error("XML not formatted properly, encountered node of name = " + detailNode.getNodeName());
+                detail.Name = detailMap.getNamedItem(NAME).getNodeValue();
+                detail.Value = Double.valueOf(detailMap.getNamedItem(VALUE).getNodeValue());
+            }
+            else
+            {
+                throw new RubricException(SUBSECTION, detailNode, DETAILS);
             }
         }
     }
 
-    private static void assignNotesDetails(NodeList notesList, Section section) {
-        for (int i = 0; i < notesList.getLength(); i++) {
+    private static void assignNotesDetails(NodeList notesList, Section section) throws RubricException
+    {
+        for (int i = 0; i < notesList.getLength(); i++)
+        {
             Node note = notesList.item(i);
-            if (note.getNodeName().equals("#text") || note.getNodeName().equals("#comment")) {
+            if (skipNode(note))
+            {
                 continue;
-            } else if (note.getNodeName().equals("ENTRY")) {
+            }
+            else if (note.getNodeName().equals(ENTRY))
+            {
                 //Create entry
                 Entry entry = new Entry();
                 section.Notes.add(entry);
 
                 //Add text
                 NamedNodeMap entryMap = note.getAttributes();
-                entry.Text = entryMap.getNamedItem("TEXT").getNodeValue();
-            } else {
-                throw new Error("XML not formatted properly, encountered node of name = " + note.getNodeName());
+                entry.Text = entryMap.getNamedItem(TEXT).getNodeValue();
+            }
+            else
+            {
+                throw new RubricException(NOTES, note, ENTRY);
             }
         }
     }
 
-    private static void assignCommentsDetails(NodeList commentsList, Section section) {
-        for (int i = 0; i < commentsList.getLength(); i++) {
+    private static void assignCommentsDetails(NodeList commentsList, Section section) throws RubricException
+    {
+        for (int i = 0; i < commentsList.getLength(); i++)
+        {
             Node comment = commentsList.item(i);
-            if (comment.getNodeName().equals("#text") || comment.getNodeName().equals("#comment")) {
+            if (skipNode(comment))
+            {
                 continue;
-            } else if (comment.getNodeName().equals("ENTRY")) {
+            }
+            else if (comment.getNodeName().equals(ENTRY))
+            {
                 //Create entry
                 Entry entry = new Entry();
                 section.Comments.add(entry);
 
                 //Add text
                 NamedNodeMap entryMap = comment.getAttributes();
-                entry.Text = entryMap.getNamedItem("TEXT").getNodeValue();
-            } else {
-                throw new Error("XML not formatted properly, encountered node of name = " + comment.getNodeName());
+                entry.Text = entryMap.getNamedItem(TEXT).getNodeValue();
+            }
+            else
+            {
+                throw new RubricException(COMMENTS, comment, ENTRY);
             }
         }
     }
@@ -232,7 +313,8 @@ public class RubricManager {
      * @param minutesOfLeniency for determining if the assignment is early, on time, late, or nc late
      */
     public static void assignXMLToGrader(Project prj, String studentAcct, String graderAcct,
-                                         double designCheckScore, int minutesOfLeniency) {
+                                         double designCheckScore, int minutesOfLeniency) throws RubricException
+    {
         String RubricTemplateFilePath = Allocator.getConstants().getAssignmentDir() + prj.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
         String StudentRubricFilePath = Allocator.getGradingUtilities().getStudentRubricPath(prj.getName(), studentAcct);
 
@@ -256,7 +338,8 @@ public class RubricManager {
      * @param minutesOfLeniency
      */
     public static void assignXMLToGrader(Project templateProject, Project destProject, String studentAcct, String graderAcct,
-                                         String studentName, String graderName, double designCheckScore, int minutesOfLeniency) {
+                                         String studentName, String graderName, double designCheckScore, int minutesOfLeniency) throws RubricException
+    {
         String RubricTemplateFilePath = Allocator.getConstants().getAssignmentDir() + templateProject.getName() + "/" + Allocator.getConstants().getTemplateGradeSheetFilename();
         
         String StudentRubricFilePath = Allocator.getGradingUtilities().getStudentRubricPath(destProject.getName(), studentName);
@@ -266,11 +349,13 @@ public class RubricManager {
         assignXMLToGrader(RubricTemplateFilePath, StudentRubricFilePath, status, studentAcct, graderAcct, studentName, graderName, designCheckScore);
     }
 
-    public static void reassignXML(Project prj, String oldGraderAcct, String studentAcct, String newGraderAcct) {
+    public static void reassignXML(Project prj, String oldGraderAcct, String studentAcct, String newGraderAcct)
+    {
         //TODO
     }
 
-    private static void reassignXML(String XMLOriginalGraderPath, String XMLNewGraderPath, String newGraderAcct) {
+    private static void reassignXML(String XMLOriginalGraderPath, String XMLNewGraderPath, String newGraderAcct)
+    {
         //TODO
     }
 
@@ -287,7 +372,8 @@ public class RubricManager {
      */
     private static void assignXMLToGrader(String XMLTemplateFilePath, String XMLGraderFilePath,
             TimeStatus status, String studentAcct, String graderAcct,
-            double designCheckScore) {
+            double designCheckScore) throws RubricException
+    {
         //Get rubric from the template
         Rubric rubric = processXML(XMLTemplateFilePath);
 
@@ -301,9 +387,12 @@ public class RubricManager {
         rubric.Grader.Acct = graderAcct;
 
         //Find the design check attribute if applicable, and store value
-        for (Section section : rubric.Sections) {
-            for (Subsection subsection : section.Subsections) {
-                if (subsection.Name.equals("Design Check")) {
+        for (Section section : rubric.Sections)
+        {
+            for (Subsection subsection : section.Subsections)
+            {
+                if (subsection.Name.equals("Design Check"))
+                {
                     subsection.Score = designCheckScore;
                 }
             }
@@ -326,7 +415,8 @@ public class RubricManager {
      */
     private static void assignXMLToGrader(String XMLTemplateFilePath, String XMLGraderFilePath,
             TimeStatus status, String studentAcct, String graderAcct, String studentName, String graderName,
-            double designCheckScore) {
+            double designCheckScore) throws RubricException
+    {
         //Get rubric from the template
         Rubric rubric = processXML(XMLTemplateFilePath);
 
@@ -340,9 +430,12 @@ public class RubricManager {
         rubric.Grader.Acct = graderAcct;
 
         //Find the design check attribute if applicable, and store value
-        for (Section section : rubric.Sections) {
-            for (Subsection subsection : section.Subsections) {
-                if (subsection.Name.equals("Design Check")) {
+        for (Section section : rubric.Sections)
+        {
+            for (Subsection subsection : section.Subsections)
+            {
+                if (subsection.Name.equals("Design Check"))
+                {
                     subsection.Score = designCheckScore;
                 }
             }
@@ -358,48 +451,51 @@ public class RubricManager {
      * @param rubric
      * @param XMLFilePath
      */
-    public static void writeToXML(Rubric rubric, String XMLFilePath) {
+    public static void writeToXML(Rubric rubric, String XMLFilePath)
+    {
         Document document = createXMLDocument();
 
         //Create the root node of the XML document
-        Element rubricNode = document.createElement("RUBRIC");
+        Element rubricNode = document.createElement(RUBRIC);
 
         //Set name, number and status attributes
-        rubricNode.setAttribute("NAME", rubric.Name);
-        rubricNode.setAttribute("NUMBER", Integer.toString(rubric.Number));
-        rubricNode.setAttribute("STATUS", rubric.Status);
+        rubricNode.setAttribute(NAME, rubric.Name);
+        rubricNode.setAttribute(NUMBER, Integer.toString(rubric.Number));
+        rubricNode.setAttribute(STATUS, rubric.Status);
 
         //Create the student node of the XML document
-        Element student = document.createElement("STUDENT");
-        student.setAttribute("NAME", rubric.Student.Name);
-        student.setAttribute("ACCT", rubric.Student.Acct);
+        Element student = document.createElement(STUDENT);
+        student.setAttribute(NAME, rubric.Student.Name);
+        student.setAttribute(ACCT, rubric.Student.Acct);
 
         //Add the student node to the root node
         rubricNode.appendChild(student);
 
         //Create the grader node and set attributes
-        Element grader = document.createElement("GRADER");
-        grader.setAttribute("NAME", rubric.Grader.Name);
-        grader.setAttribute("ACCT", rubric.Grader.Acct);
-        grader.setAttribute("HOURS", rubric.Grader.Hours);
+        Element grader = document.createElement(GRADER);
+        grader.setAttribute(NAME, rubric.Grader.Name);
+        grader.setAttribute(ACCT, rubric.Grader.Acct);
 
         //Add the grader node to the root node
         rubricNode.appendChild(grader);
 
-        for (Section section : rubric.Sections) {
-            Element sectionNode = document.createElement("SECTION");
-            sectionNode.setAttribute("NAME", section.Name);
+        for (Section section : rubric.Sections)
+        {
+            Element sectionNode = document.createElement(SECTION);
+            sectionNode.setAttribute(NAME, section.Name);
 
-            for (Subsection subsection : section.Subsections) {
-                Element subsectionNode = document.createElement("SUBSECTION");
-                subsectionNode.setAttribute("NAME", subsection.Name);
-                subsectionNode.setAttribute("SCORE", Double.toString(subsection.Score));
-                subsectionNode.setAttribute("OUTOF", Double.toString(subsection.OutOf));
+            for (Subsection subsection : section.Subsections)
+            {
+                Element subsectionNode = document.createElement(SUBSECTION);
+                subsectionNode.setAttribute(NAME, subsection.Name);
+                subsectionNode.setAttribute(SCORE, Double.toString(subsection.Score));
+                subsectionNode.setAttribute(OUTOF, Double.toString(subsection.OutOf));
 
-                for (Detail detail : subsection.Details) {
-                    Element detailNode = document.createElement("DETAILS");
-                    detailNode.setAttribute("NAME", detail.Name);
-                    detailNode.setAttribute("VALUE", Double.toString(detail.Value));
+                for (Detail detail : subsection.Details)
+                {
+                    Element detailNode = document.createElement(DETAILS);
+                    detailNode.setAttribute(NAME, detail.Name);
+                    detailNode.setAttribute(VALUE, Double.toString(detail.Value));
 
                     subsectionNode.appendChild(detailNode);
                 }
@@ -408,20 +504,22 @@ public class RubricManager {
             }
 
             //Add notes to the XML document
-            Element noteNode = document.createElement("NOTES");
-            for (Entry note : section.Notes) {
-                Element entryNode = document.createElement("ENTRY");
-                entryNode.setAttribute("TEXT", note.Text);
+            Element noteNode = document.createElement(NOTES);
+            for (Entry note : section.Notes)
+            {
+                Element entryNode = document.createElement(ENTRY);
+                entryNode.setAttribute(TEXT, note.Text);
 
                 noteNode.appendChild(entryNode);
             }
             sectionNode.appendChild(noteNode);
 
             //Add comments to the XML document
-            Element commentNode = document.createElement("COMMENTS");
-            for (Entry comment : section.Comments) {
-                Element entryNode = document.createElement("ENTRY");
-                entryNode.setAttribute("TEXT", comment.Text);
+            Element commentNode = document.createElement(COMMENTS);
+            for (Entry comment : section.Comments)
+            {
+                Element entryNode = document.createElement(ENTRY);
+                entryNode.setAttribute(TEXT, comment.Text);
 
                 commentNode.appendChild(entryNode);
             }
@@ -430,12 +528,13 @@ public class RubricManager {
             rubricNode.appendChild(sectionNode);
         }
 
-        for (ExtraCredit extraCreditNode : rubric.ExtraCredit) {
+        for (ExtraCredit extraCreditNode : rubric.ExtraCredit)
+        {
             //Create the extra credit node and set attributes
-            Element extraCredit = document.createElement("EXTRACREDIT");
-            extraCredit.setAttribute("TEXT", extraCreditNode.Text);
-            extraCredit.setAttribute("SCORE", Double.toString(extraCreditNode.Score));
-            extraCredit.setAttribute("OUTOF", Double.toString(extraCreditNode.OutOf));
+            Element extraCredit = document.createElement(EXTRACREDIT);
+            extraCredit.setAttribute(TEXT, extraCreditNode.Text);
+            extraCredit.setAttribute(SCORE, Double.toString(extraCreditNode.Score));
+            extraCredit.setAttribute(OUTOF, Double.toString(extraCreditNode.OutOf));
 
             //Add the extra credit node to the root node
             rubricNode.appendChild(extraCredit);
@@ -446,20 +545,26 @@ public class RubricManager {
         saveXMLFile(document, XMLFilePath);
     }
 
-    private static Document createXMLDocument() {
+    private static Document createXMLDocument()
+    {
         Document document = null;
-        try {
+        try
+        {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             document = builder.newDocument();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             throw new Error("Exception thrown in creating document.");
         }
         return document;
     }
 
-    private static void saveXMLFile(Document document, String XMLFilePath) {
-        try {
+    private static void saveXMLFile(Document document, String XMLFilePath)
+    {
+        try
+        {
             File f = new File(XMLFilePath); //added to ensure auto directory creation
             f.getParentFile().mkdirs();
             TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -469,7 +574,9 @@ public class RubricManager {
             StreamResult result = new StreamResult(f);
             transformer.transform(source, result);
             BashConsole.write("chmod 770 -R " + f.getParentFile().getAbsolutePath());
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             new ErrorView(e);
         }
     }
@@ -479,11 +586,10 @@ public class RubricManager {
      * @param rubric
      * @param GRDFilePath
      */
-    private final static String STUDENTS_ACCOUNT_LBL = "STUDENT's ACCT: ";
-    private final static String STUDENTS_NAME_LBL = "STUDENT's NAME: ";
+    private final static String STUDENTS_ACCOUNT_LBL = "STUDENT'S ACCT: ";
+    private final static String STUDENTS_NAME_LBL = "STUDENT'S NAME: ";
     private final static String GRADERS_ACCOUNT_LBL = "GRADER'S ACCT: ";
     private final static String GRADERS_NAME_LBL = "GRADER'S NAME: ";
-    private final static String GRADERS_HOURS_LBL = "GRADER'S HOURS: ";
     private final static int SECTION_TEXT_WIDTH = 58;
     private final static int SCORE_TEXT_WIDTH = 7;
     private final static int NUM_DIVIDERS = 3;
@@ -492,13 +598,15 @@ public class RubricManager {
     private final static int DETAIL_INDENT_WIDTH = 12;
     private final static int TOTAL_INDENT_WIDTH = 49;
 
-    public static void writeToGRD(Rubric rubric, String GRDFilePath) {
+    public static void writeToGRD(Rubric rubric, String GRDFilePath)
+    {
         //Get the writer to write to file
         BufferedWriter output = openGRDFile(GRDFilePath);
 
         writeAssignmentDetails(rubric, output);
 
-        for (int i = 0; i < rubric.Sections.size(); i++) {
+        for (int i = 0; i < rubric.Sections.size(); i++)
+        {
             writeSection(rubric.Sections.get(i), output);
         }
 
@@ -506,7 +614,8 @@ public class RubricManager {
     }
     private final static int STATIC_TEXT_WIDTH = 28;
 
-    private static void writeAssignmentDetails(Rubric rubric, BufferedWriter output) {
+    private static void writeAssignmentDetails(Rubric rubric, BufferedWriter output)
+    {
         //For centering the first line
         int emptySpace = TOTAL_TEXT_WIDTH - STATIC_TEXT_WIDTH - rubric.Name.length();
         printSpaces(emptySpace / 2, output);
@@ -517,15 +626,16 @@ public class RubricManager {
         writeLine(STUDENTS_NAME_LBL + rubric.Student.Name + '\n', output);
         writeLine(GRADERS_NAME_LBL + rubric.Grader.Name + '\n', output);
         writeLine(GRADERS_ACCOUNT_LBL + rubric.Grader.Acct + '\n', output);
-        //writeLine(GRADERS_HOURS_LBL + rubric.Grader.Hours + '\n', output);
         printHeader(output);
     }
 
-    private static void writeSection(Section section, BufferedWriter output) {
+    private static void writeSection(Section section, BufferedWriter output)
+    {
         printWithinBounds(0, SECTION_TEXT_WIDTH, section.Name, output);
         printEnd(null, null, output);
         writeLine("", output);
-        for (int i = 0; i < section.Subsections.size(); i++) {
+        for (int i = 0; i < section.Subsections.size(); i++)
+        {
             writeSubsection(section.Subsections.get(i), output);
         }
 
@@ -533,7 +643,8 @@ public class RubricManager {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Notes:", output);
         printEnd(null, null, output);
         writeLine("", output);
-        for (int i = 0; i < section.Notes.size(); i++) {
+        for (int i = 0; i < section.Notes.size(); i++)
+        {
             writeEntry(section.Notes.get(i), output);
         }
 
@@ -541,33 +652,40 @@ public class RubricManager {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Comments:", output);
         printEnd(null, null, output);
         writeLine("", output);
-        for (int i = 0; i < section.Comments.size(); i++) {
+        for (int i = 0; i < section.Comments.size(); i++)
+        {
             writeEntry(section.Comments.get(i), output);
         }
 
         double studentScore = 0.0;
         double availScore = 0.0;
 
-        for (Subsection subsection : section.Subsections) {
+        for (Subsection subsection : section.Subsections)
+        {
             studentScore += subsection.Score;
             availScore += subsection.OutOf;
         }
         printSectionTotal(studentScore, availScore, output);
     }
 
-    private static void writeSubsection(Subsection subsection, BufferedWriter output) {
+    private static void writeSubsection(Subsection subsection, BufferedWriter output)
+    {
         printWithinBounds(SECTION_INDENT_WIDTH, SECTION_TEXT_WIDTH, subsection.Name, output);
         printEnd(Double.toString(subsection.Score), Double.toString(subsection.OutOf), output);
-        for (int i = 0; i < subsection.Details.size(); i++) {
+        for (int i = 0; i < subsection.Details.size(); i++)
+        {
             writeDetail(subsection.Details.get(i), output);
         }
     }
 
-    private static void writeDetail(Detail detail, BufferedWriter output) {
+    private static void writeDetail(Detail detail, BufferedWriter output)
+    {
         String msg;
-        if (detail.Value == 0) {
+        if (detail.Value == 0)
+        {
             msg = detail.Name;
-        } else {
+        } else
+        {
             msg = detail.Name + " (" + detail.Value + " points)";
         }
         printWithinBounds(DETAIL_INDENT_WIDTH, SECTION_TEXT_WIDTH, msg, output);
@@ -575,20 +693,24 @@ public class RubricManager {
         writeLine("", output);
     }
 
-    private static void writeEntry(Entry note, BufferedWriter output) {
+    private static void writeEntry(Entry note, BufferedWriter output)
+    {
         printWithinBounds(SECTION_INDENT_WIDTH, SECTION_TEXT_WIDTH, note.Text, output);
         printEnd(null, null, output);
         writeLine("", output);
     }
 
-    private static void writeScores(Rubric rubric, BufferedWriter output) {
+    private static void writeScores(Rubric rubric, BufferedWriter output)
+    {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Total Points", output);
 
         double studentScore = 0.0;
         double availScore = 0.0;
 
-        for (Section section : rubric.Sections) {
-            for (Subsection subsection : section.Subsections) {
+        for (Section section : rubric.Sections)
+        {
+            for (Subsection subsection : section.Subsections)
+            {
                 studentScore += subsection.Score;
                 availScore += subsection.OutOf;
             }
@@ -602,7 +724,8 @@ public class RubricManager {
         studentScore += writeStatusPoints(TimeStatus.getStatus(rubric.Status), availScore, output);
         studentScore += writeExtraCredit(rubric, output);
 
-        if (TimeStatus.getStatus(rubric.Status).getPrettyPrintName().equals("NC Late")) {
+        if (TimeStatus.getStatus(rubric.Status).getPrettyPrintName().equals("NC Late"))
+        {
             studentScore = 0.0;
         }
 
@@ -613,7 +736,8 @@ public class RubricManager {
         System.out.println("File  written");
     }
 
-    private static void printTotal(double studentScore, double availScore, BufferedWriter output) {
+    private static void printTotal(double studentScore, double availScore, BufferedWriter output)
+    {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Final Grade", output);
         printEnd(Allocator.getGeneralUtilities().doubleToString(studentScore), Allocator.getGeneralUtilities().doubleToString(availScore), output);
         printWithinBounds(0, SECTION_TEXT_WIDTH, "", output);
@@ -622,15 +746,20 @@ public class RubricManager {
         printDivider(output);
     }
 
-    private static void closeFile(BufferedWriter output) {
-        try {
+    private static void closeFile(BufferedWriter output)
+    {
+        try
+        {
             output.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             new ErrorView(e);
         }
     }
 
-    private static double writeStatusPoints(TimeStatus status, double availScore, BufferedWriter output) {
+    private static double writeStatusPoints(TimeStatus status, double availScore, BufferedWriter output)
+    {
         //If early
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Early Bonus (+4% if early)", output);
         printEndPlusMinus(status.getEarlyBonus(availScore), status.getEarlyOutOf(availScore), output);
@@ -645,12 +774,14 @@ public class RubricManager {
         return status.getLatePenalty(availScore) + status.getEarlyBonus(availScore);
     }
 
-    private static double writeExtraCredit(Rubric rubric, BufferedWriter output) {
+    private static double writeExtraCredit(Rubric rubric, BufferedWriter output)
+    {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Bells & Whistles", output);
         printEnd(null, null, output);
         writeLine("", output);
         double totalExtra = 0;
-        for (ExtraCredit extraCreditNode : rubric.ExtraCredit) {
+        for (ExtraCredit extraCreditNode : rubric.ExtraCredit)
+        {
             printWithinBounds(SECTION_INDENT_WIDTH, SECTION_TEXT_WIDTH, extraCreditNode.Text, output);
             printEndPlusMinus(extraCreditNode.Score, extraCreditNode.OutOf, output);
             totalExtra += extraCreditNode.Score;
@@ -661,51 +792,69 @@ public class RubricManager {
         return totalExtra;
     }
 
-    private static BufferedWriter openGRDFile(String GRDFilePath) {
+    private static BufferedWriter openGRDFile(String GRDFilePath)
+    {
         File grdFile = new File(GRDFilePath);
         BufferedWriter output = null;
-        try {
+        try
+        {
             output = new BufferedWriter(new FileWriter(grdFile));
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             new ErrorView(e);
         }
         return output;
     }
 
-    private static void writeLine(String s, BufferedWriter output) {
-        try {
+    private static void writeLine(String s, BufferedWriter output)
+    {
+        try
+        {
             output.write(s + '\n');
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             new ErrorView(e);
         }
     }
 
-    private static void write(String s, BufferedWriter output) {
-        try {
+    private static void write(String s, BufferedWriter output)
+    {
+        try
+        {
             output.write(s);
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             new ErrorView(e);
         }
     }
 
-    private static void printWithinBounds(int charsSoFar, int charsPerLine, String message, BufferedWriter output) {
+    private static void printWithinBounds(int charsSoFar, int charsPerLine, String message, BufferedWriter output)
+    {
         //Split by word
         String[] words = message.split(" ");
 
 
         String prefix = "";
-        for (int i = 0; i < charsSoFar; i++) {
+        for (int i = 0; i < charsSoFar; i++)
+        {
             prefix += " ";
         }
         String currentLine = prefix;
 
-        for (String word : words) {
+        for (String word : words)
+        {
             //If the amount of characters is less than charsPerLine
-            if (charsSoFar + word.length() < charsPerLine) {
+            if (charsSoFar + word.length() < charsPerLine)
+            {
                 currentLine += word + " ";
                 charsSoFar += word.length() + 1;
-            } //Otherwise print the line and go to the next one
-            else {
+            }
+            //Otherwise print the line and go to the next one
+            else
+            {
                 write(currentLine, output);
                 printSpaces(charsPerLine - charsSoFar, output);
                 printEnd(null, null, output);
@@ -714,7 +863,8 @@ public class RubricManager {
                 //Indent to the length defined by the prefix
                 currentLine = "";
                 charsSoFar = 0;
-                for (int i = 0; i < prefix.length(); i++) {
+                for (int i = 0; i < prefix.length(); i++)
+                {
                     currentLine += " ";
                     charsSoFar++;
                 }
@@ -723,31 +873,38 @@ public class RubricManager {
             }
         }
         //Print the remainder
-        while (charsSoFar < charsPerLine) {
+        while (charsSoFar < charsPerLine)
+        {
             currentLine += " ";
             charsSoFar += 1;
         }
         write(currentLine, output);
     }
 
-    private static void printDivider(BufferedWriter output) {
+    private static void printDivider(BufferedWriter output)
+    {
         printDashes(TOTAL_TEXT_WIDTH, output);
         writeLine("", output);
     }
 
-    private static void printSpaces(int numSpaces, BufferedWriter output) {
-        for (int i = 0; i < numSpaces; i++) {
+    private static void printSpaces(int numSpaces, BufferedWriter output)
+    {
+        for (int i = 0; i < numSpaces; i++)
+        {
             write(" ", output);
         }
     }
 
-    private static void printDashes(int numDashes, BufferedWriter output) {
-        for (int i = 0; i < numDashes; i++) {
+    private static void printDashes(int numDashes, BufferedWriter output)
+    {
+        for (int i = 0; i < numDashes; i++)
+        {
             write("-", output);
         }
     }
 
-    private static void printHeader(BufferedWriter output) {
+    private static void printHeader(BufferedWriter output)
+    {
         printSpaces(SECTION_TEXT_WIDTH - 1, output);
         write("YOUR", output);
         printSpaces(SCORE_TEXT_WIDTH - 2, output);
@@ -760,43 +917,59 @@ public class RubricManager {
         printDivider(output);
     }
 
-    private static String formatScore(String score) {
+    private static String formatScore(String score)
+    {
         int len = score.length();
         String toReturn = "| " + score;
         int trailingSpaces = SCORE_TEXT_WIDTH - len - 1;
-        for (int i = 0; i < trailingSpaces; i++) {
+        for (int i = 0; i < trailingSpaces; i++)
+        {
             toReturn += " ";
         }
         return toReturn;
     }
 
-    private static void printEnd(String score, String outOf, BufferedWriter output) {
-        if (score == null || outOf == null) {
+    private static void printEnd(String score, String outOf, BufferedWriter output)
+    {
+        if (score == null || outOf == null)
+        {
             write("|", output);
             printSpaces(SCORE_TEXT_WIDTH, output);
             write("|", output);
             printSpaces(SCORE_TEXT_WIDTH, output);
             write("|", output);
-        } else {
+        }
+        else
+        {
             writeLine(formatScore(score) + formatScore(outOf) + "|", output);
         }
     }
 
-    private static void printEndPlusMinus(double score, double outOf, BufferedWriter output) {
-        if (score > 0) {
+    private static void printEndPlusMinus(double score, double outOf, BufferedWriter output)
+    {
+        if (score > 0)
+        {
             printEnd("+" + Allocator.getGeneralUtilities().doubleToString(score), "+" + Allocator.getGeneralUtilities().doubleToString(outOf), output);
-        } else if (score < 0) {
+        }
+        else if (score < 0)
+        {
             printEnd(Allocator.getGeneralUtilities().doubleToString(score), Allocator.getGeneralUtilities().doubleToString(outOf), output);
-        } else {
-            if (outOf < 0) {
+        }
+        else
+        {
+            if (outOf < 0)
+            {
                 printEnd(Allocator.getGeneralUtilities().doubleToString(score), Allocator.getGeneralUtilities().doubleToString(outOf), output);
-            } else {
+            }
+            else
+            {
                 printEnd(Allocator.getGeneralUtilities().doubleToString(score), "+" + Allocator.getGeneralUtilities().doubleToString(outOf), output);
             }
         }
     }
 
-    private static void printSectionTotal(double score, double outOf, BufferedWriter output) {
+    private static void printSectionTotal(double score, double outOf, BufferedWriter output)
+    {
         String stringScore = Allocator.getGeneralUtilities().doubleToString(score);
         String stringOutOf = Allocator.getGeneralUtilities().doubleToString(outOf);
         printSpaces(SECTION_TEXT_WIDTH, output);
@@ -813,7 +986,8 @@ public class RubricManager {
      * @param XMLFilePath
      * @param GRDFilePath
      */
-    public static void convertToGRD(String XMLFilePath, String GRDFilePath) {
+    public static void convertToGRD(String XMLFilePath, String GRDFilePath) throws RubricException
+    {
         Rubric rubric = processXML(XMLFilePath);
         writeToGRD(rubric, GRDFilePath);
     }
@@ -825,7 +999,8 @@ public class RubricManager {
      * @param graderAcct The grader's login
      * @param studentAcct The student's login
      */
-    public static void convertToGRD(String asgn, String graderAcct, String studentAcct) {
+    public static void convertToGRD(String asgn, String graderAcct, String studentAcct) throws RubricException
+    {
         String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(asgn, studentAcct);
         //TODO: fix this (when dealing w/removing .GRD files after sending)
         String GRDFilePath = "/course/cs015/grading/ta/" + graderAcct + "/" + asgn + "/" + studentAcct + ".grd";
@@ -839,25 +1014,31 @@ public class RubricManager {
      * @param asgn Assignment name
      * @param graderAcct The grader's login
      */
-    public static void convertAllToGrd(Iterable<String> studLogins, String asgn) {
-        for (String studLogin : studLogins) {
+    public static void convertAllToGrd(Iterable<String> studLogins, String asgn) throws RubricException
+    {
+        for (String studLogin : studLogins)
+        {
             String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(asgn, studLogin);
             String GRDFilePath = Allocator.getGradingUtilities().getStudentGRDPath(asgn, studLogin);
             convertToGRD(XMLFilePath, GRDFilePath);
         }
     }
 
-    public static HashMap<String, Double> getAllScores(String asgn) {
+    public static HashMap<String, Double> getAllScores(String asgn) throws RubricException
+    {
         HashMap<String, Double> scoresTable = new HashMap<String, Double>();
-        for (String g : ConfigurationManager.getGraderLogins()) {
-            for (String s : OldDatabaseOps.getStudentsToGrade(g, asgn)) {
+        for (String g : ConfigurationManager.getGraderLogins())
+        {
+            for (String s : OldDatabaseOps.getStudentsToGrade(g, asgn))
+            {
                 scoresTable.put(s, getTotalScore(asgn, g, s));
             }
         }
         return scoresTable;
     }
 
-    public static double getTotalScore(String asgn, String graderAcct, String studentAcct) {
+    public static double getTotalScore(String asgn, String graderAcct, String studentAcct) throws RubricException
+    {
         String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(asgn, studentAcct);
         Rubric rubric = processXML(XMLFilePath);
         return rubric.getTotalScore();

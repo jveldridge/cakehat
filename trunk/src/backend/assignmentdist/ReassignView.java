@@ -15,7 +15,9 @@ import backend.OldDatabaseOps;
 import config.Assignment;
 import rubric.RubricManager;
 import javax.swing.JList;
+import rubric.RubricException;
 import utils.Allocator;
+import utils.ErrorView;
 
 /**
  *
@@ -260,8 +262,13 @@ public class ReassignView extends javax.swing.JFrame {
             //remove XML for old grader--TODO
             
             //create blank XML for new grader
-            RubricManager.assignXMLToGrader(Allocator.getProject(_asgn.getName()), student, newTA, OldDatabaseOps.getStudentDQScore(_asgn.getName(), student), 10);
-        }
+            try {
+                RubricManager.assignXMLToGrader(Allocator.getProject(_asgn.getName()), student, newTA, OldDatabaseOps.getStudentDQScore(_asgn.getName(), student), 10);
+            }
+            catch(RubricException e) {
+                new ErrorView(e);
+            }
+       }
 
         //still need to remove old XMLs
     }//GEN-LAST:event_reassignButtonActionPerformed

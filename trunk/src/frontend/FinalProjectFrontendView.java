@@ -27,10 +27,12 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
+import rubric.RubricException;
 import utils.Allocator;
 import utils.Assignment;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
+import utils.ErrorView;
 import utils.Project;
 
 /**
@@ -483,7 +485,12 @@ public class FinalProjectFrontendView extends javax.swing.JFrame {
             return;
         }
         else{
-            RubricManager.convertAllToGrd(this.getCurrentStudents(), Allocator.getConstants().getFinal());
+            try {
+                RubricManager.convertAllToGrd(this.getCurrentStudents(), Allocator.getConstants().getFinal());
+            }
+            catch (RubricException e) {
+                new ErrorView(e);
+            }
             this.sendGRDFiles(students);
         }
 
