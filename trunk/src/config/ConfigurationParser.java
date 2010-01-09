@@ -27,9 +27,11 @@ public class ConfigurationParser
 
                                 CONFIG = "CONFIG",
           
-                                ASSIGNMENTS = "ASSIGNMENTS", DEFAULTS = "DEFAULTS", EMAIL = "EMAIL",
+                                ASSIGNMENTS = "ASSIGNMENTS", TAS = "TAS", DEFAULTS = "DEFAULTS", EMAIL = "EMAIL",
 
                                 COURSE = "COURSE", LENIENCY = "LENIENCY",
+
+                                TA = "TA", DEFAULT_GRADER = "DEFAULT-GRADER", ADMIN = "ADMIN", HTA = "HTA",
 
                                 NOTIFY = "NOTIFY", ADDRESS = "ADDRESS",
                                 SEND_FROM = "SEND-FROM", LOGIN = "LOGIN", PASSWORD = "PASSWORD",
@@ -111,6 +113,11 @@ public class ConfigurationParser
             {
                 processDefaults(currNode.getChildNodes(), config);
             }
+            //TAS
+            else if (currNode.getNodeName().equals(TAS))
+            {
+                processTAs(currNode.getChildNodes(), config);
+            }
             //EMAIL
             else if (currNode.getNodeName().equals(EMAIL))
             {
@@ -118,7 +125,7 @@ public class ConfigurationParser
             }
             else
             {
-                throw new ConfigurationException(CONFIG, currNode, ASSIGNMENTS, DEFAULTS, EMAIL);
+                throw new ConfigurationException(CONFIG, currNode, ASSIGNMENTS, DEFAULTS, TAS, EMAIL);
             }
         }
     }
@@ -150,6 +157,42 @@ public class ConfigurationParser
             }
         }
     }
+
+/**
+     * Parses out the TA information.
+     *
+     * @param taNodes
+     * @param config
+     * @throws ConfigurationException
+     */
+    private static void processTAs(NodeList taNodes, Configuration config) throws ConfigurationException
+    {
+        for (int i = 0; i < taNodes.getLength(); i++)
+        {
+            Node taNode = taNodes.item(i);
+
+            //Skip if appropriate
+            if(skipNode(taNode))
+            {
+                continue;
+            }
+            //TA
+            else if(taNode.getNodeName().equals(TA))
+            {
+                String taLogin = taNode.getAttributes().getNamedItem(LOGIN).getNodeValue();
+                boolean isDefaultGrader = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(DEFAULT_GRADER).getNodeValue());
+                boolean isAdmin = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(ADMIN).getNodeValue());
+                boolean isHTA = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(HTA).getNodeValue());
+
+                config.addTA(new TA(taLogin, isDefaultGrader, isAdmin, isHTA));
+            }
+            else
+            {
+                throw new ConfigurationException(TAS, taNode, TA);
+            }
+        }
+    }
+
 
     private static void processEmail(NodeList emailNodes, Configuration config) throws ConfigurationException
     {
