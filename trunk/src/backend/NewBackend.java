@@ -5,6 +5,7 @@ import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
 import config.Assignment;
+import config.LabPart;
 import config.NonHandinPart;
 import rubric.RubricManager;
 import java.awt.CardLayout;
@@ -111,9 +112,9 @@ public class NewBackend extends javax.swing.JFrame {
         instructionsLabel = new javax.swing.JLabel();
         singleSelectedPanel = new javax.swing.JPanel();
         writtenEarnedLabel = new javax.swing.JLabel();
-        writtenEarnedText = new javax.swing.JTextField();
+        nonHandinEarned = new javax.swing.JTextField();
         writtenTotalLabel = new javax.swing.JLabel();
-        writtenScoreLabel = new javax.swing.JLabel();
+        nonHandinScoreLabel = new javax.swing.JLabel();
         overallScoreValue = new javax.swing.JLabel();
         overallEarnedLabel = new javax.swing.JLabel();
         overalTotalLabel = new javax.swing.JLabel();
@@ -124,26 +125,26 @@ public class NewBackend extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         nonHandinPartsComboBox = new javax.swing.JComboBox();
         writtenScoreValue1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        writtenEarnedText1 = new javax.swing.JTextField();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
+        nonHandinScoreValue = new javax.swing.JLabel();
+        nonHandinOutOf = new javax.swing.JTextField();
+        nonHandinRb = new javax.swing.JRadioButton();
+        labRb = new javax.swing.JRadioButton();
         jLabel4 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        labComboBox = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        labOutOf = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        jRadioButton3 = new javax.swing.JRadioButton();
-        jLabel8 = new javax.swing.JLabel();
+        labEarned = new javax.swing.JTextField();
+        labScoreLabel = new javax.swing.JLabel();
+        handinRB = new javax.swing.JRadioButton();
+        labScoreValue = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        handinEarned = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        jRadioButton4 = new javax.swing.JRadioButton();
+        handinOutOf = new javax.swing.JTextField();
+        handinScoreLabel = new javax.swing.JLabel();
+        handinScoreValue = new javax.swing.JLabel();
+        overallRb = new javax.swing.JRadioButton();
         sendGradesButton = new javax.swing.JButton();
         printRubricButton = new javax.swing.JButton();
         toggleEnabledButton = new javax.swing.JButton();
@@ -355,7 +356,7 @@ public class NewBackend extends javax.swing.JFrame {
             .addGroup(multiSelectedPanelLayout.createSequentialGroup()
                 .addGap(125, 125, 125)
                 .addComponent(jLabel1)
-                .addContainerGap(362, Short.MAX_VALUE))
+                .addContainerGap(383, Short.MAX_VALUE))
         );
 
         cardPanel.add(multiSelectedPanel, "multiPanel");
@@ -380,7 +381,7 @@ public class NewBackend extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(instructionsLabel))
                     .addComponent(welcomeLabel))
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
         instructionsPanelLayout.setVerticalGroup(
             instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -389,7 +390,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(welcomeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(instructionsLabel)
-                .addContainerGap(365, Short.MAX_VALUE))
+                .addContainerGap(396, Short.MAX_VALUE))
         );
 
         cardPanel.add(instructionsPanel, "instructionCard");
@@ -399,13 +400,13 @@ public class NewBackend extends javax.swing.JFrame {
         writtenEarnedLabel.setText(resourceMap.getString("writtenEarnedLabel.text")); // NOI18N
         writtenEarnedLabel.setName("writtenEarnedLabel"); // NOI18N
 
-        writtenEarnedText.setName("writtenEarnedText"); // NOI18N
+        nonHandinEarned.setName("nonHandinEarned"); // NOI18N
 
         writtenTotalLabel.setText(resourceMap.getString("writtenTotalLabel.text")); // NOI18N
         writtenTotalLabel.setName("writtenTotalLabel"); // NOI18N
 
-        writtenScoreLabel.setText(resourceMap.getString("writtenScoreLabel.text")); // NOI18N
-        writtenScoreLabel.setName("writtenScoreLabel"); // NOI18N
+        nonHandinScoreLabel.setText(resourceMap.getString("nonHandinScoreLabel.text")); // NOI18N
+        nonHandinScoreLabel.setName("nonHandinScoreLabel"); // NOI18N
 
         overallScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         overallScoreValue.setText(resourceMap.getString("overallScoreValue.text")); // NOI18N
@@ -446,95 +447,96 @@ public class NewBackend extends javax.swing.JFrame {
         writtenScoreValue1.setText(resourceMap.getString("writtenScoreValue1.text")); // NOI18N
         writtenScoreValue1.setName("writtenScoreValue1"); // NOI18N
 
-        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
-        jLabel3.setName("jLabel3"); // NOI18N
+        nonHandinScoreValue.setText(resourceMap.getString("nonHandinScoreValue.text")); // NOI18N
+        nonHandinScoreValue.setName("nonHandinScoreValue"); // NOI18N
 
-        writtenEarnedText1.setEditable(false);
-        writtenEarnedText1.setName("writtenEarnedText1"); // NOI18N
+        nonHandinOutOf.setEditable(false);
+        nonHandinOutOf.setName("nonHandinOutOf"); // NOI18N
 
-        partsButtonGroup.add(jRadioButton1);
-        jRadioButton1.setText(resourceMap.getString("jRadioButton1.text")); // NOI18N
-        jRadioButton1.setName("jRadioButton1"); // NOI18N
+        partsButtonGroup.add(nonHandinRb);
+        nonHandinRb.setText(resourceMap.getString("nonHandinRb.text")); // NOI18N
+        nonHandinRb.setName("nonHandinRb"); // NOI18N
 
-        partsButtonGroup.add(jRadioButton2);
-        jRadioButton2.setText(resourceMap.getString("jRadioButton2.text")); // NOI18N
-        jRadioButton2.setName("jRadioButton2"); // NOI18N
+        partsButtonGroup.add(labRb);
+        labRb.setText(resourceMap.getString("labRb.text")); // NOI18N
+        labRb.setName("labRb"); // NOI18N
 
         jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
         jLabel4.setName("jLabel4"); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jComboBox1.setName("jComboBox1"); // NOI18N
+        labComboBox.setName("labComboBox"); // NOI18N
 
         jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
         jLabel5.setName("jLabel5"); // NOI18N
 
-        jTextField1.setText(resourceMap.getString("jTextField1.text")); // NOI18N
-        jTextField1.setName("jTextField1"); // NOI18N
+        labOutOf.setEditable(false);
+        labOutOf.setText(resourceMap.getString("labOutOf.text")); // NOI18N
+        labOutOf.setName("labOutOf"); // NOI18N
 
         jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
         jLabel6.setName("jLabel6"); // NOI18N
 
-        jTextField2.setName("jTextField2"); // NOI18N
+        labEarned.setName("labEarned"); // NOI18N
 
-        jLabel7.setText(resourceMap.getString("jLabel7.text")); // NOI18N
-        jLabel7.setName("jLabel7"); // NOI18N
+        labScoreLabel.setText(resourceMap.getString("labScoreLabel.text")); // NOI18N
+        labScoreLabel.setName("labScoreLabel"); // NOI18N
 
-        partsButtonGroup.add(jRadioButton3);
-        jRadioButton3.setText(resourceMap.getString("jRadioButton3.text")); // NOI18N
-        jRadioButton3.setName("jRadioButton3"); // NOI18N
+        partsButtonGroup.add(handinRB);
+        handinRB.setText(resourceMap.getString("handinRB.text")); // NOI18N
+        handinRB.setName("handinRB"); // NOI18N
 
-        jLabel8.setText(resourceMap.getString("jLabel8.text")); // NOI18N
-        jLabel8.setName("jLabel8"); // NOI18N
+        labScoreValue.setText(resourceMap.getString("labScoreValue.text")); // NOI18N
+        labScoreValue.setName("labScoreValue"); // NOI18N
 
         jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
         jLabel9.setName("jLabel9"); // NOI18N
 
-        jTextField3.setName("jTextField3"); // NOI18N
+        handinEarned.setName("handinEarned"); // NOI18N
 
         jLabel10.setText(resourceMap.getString("jLabel10.text")); // NOI18N
         jLabel10.setName("jLabel10"); // NOI18N
 
-        jTextField4.setName("jTextField4"); // NOI18N
+        handinOutOf.setEditable(false);
+        handinOutOf.setName("handinOutOf"); // NOI18N
 
-        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
-        jLabel11.setName("jLabel11"); // NOI18N
+        handinScoreLabel.setText(resourceMap.getString("handinScoreLabel.text")); // NOI18N
+        handinScoreLabel.setName("handinScoreLabel"); // NOI18N
 
-        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
-        jLabel12.setName("jLabel12"); // NOI18N
+        handinScoreValue.setText(resourceMap.getString("handinScoreValue.text")); // NOI18N
+        handinScoreValue.setName("handinScoreValue"); // NOI18N
 
-        partsButtonGroup.add(jRadioButton4);
-        jRadioButton4.setText(resourceMap.getString("jRadioButton4.text")); // NOI18N
-        jRadioButton4.setName("jRadioButton4"); // NOI18N
+        partsButtonGroup.add(overallRb);
+        overallRb.setText(resourceMap.getString("overallRb.text")); // NOI18N
+        overallRb.setName("overallRb"); // NOI18N
 
         javax.swing.GroupLayout singleSelectedPanelLayout = new javax.swing.GroupLayout(singleSelectedPanel);
         singleSelectedPanel.setLayout(singleSelectedPanelLayout);
         singleSelectedPanelLayout.setHorizontalGroup(
             singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(jRadioButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addComponent(labRb, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                 .addGap(78, 78, 78)
                 .addComponent(writtenScoreValue1)
                 .addGap(145, 145, 145))
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(jRadioButton1)
+                .addComponent(nonHandinRb)
                 .addContainerGap())
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(jRadioButton3)
+                .addComponent(handinRB)
                 .addContainerGap())
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                            .addComponent(writtenScoreLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
-                            .addComponent(jLabel3)
+                            .addComponent(nonHandinScoreLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 224, Short.MAX_VALUE)
+                            .addComponent(nonHandinScoreValue)
                             .addGap(8, 8, 8))
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
                             .addComponent(jLabel4)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jComboBox1, 0, 249, Short.MAX_VALUE))
+                            .addComponent(labComboBox, 0, 248, Short.MAX_VALUE))
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel2)
@@ -543,18 +545,18 @@ public class NewBackend extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
                                 .addComponent(writtenEarnedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(writtenEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(nonHandinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(writtenTotalLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(writtenEarnedText1, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(nonHandinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                            .addComponent(jLabel11)
+                            .addComponent(handinScoreLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel12))
+                            .addComponent(handinScoreValue))
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(labScoreLabel, javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(jLabel9)
@@ -563,25 +565,25 @@ public class NewBackend extends javax.swing.JFrame {
                                     .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                                         .addComponent(jLabel10)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(handinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
                                         .addGap(33, 33, 33)
                                         .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel8)
+                                            .addComponent(labScoreValue)
                                             .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(handinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(labEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                     .addGap(18, 18, 18)
                                                     .addComponent(jLabel6)
                                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
-                        .addComponent(overallEarnedValue, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                        .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                        .addComponent(overallScoreValue, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)))
+                                                    .addComponent(labOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
+                        .addComponent(overallEarnedValue, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(overallScoreValue, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(30, 30, 30))
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(jRadioButton4)
+                .addComponent(overallRb)
                 .addContainerGap())
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                 .addGap(24, 24, 24)
@@ -589,31 +591,31 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(overalTotalLabel)
                     .addComponent(overallScoreLabel)
                     .addComponent(overallEarnedLabel))
-                .addContainerGap(249, Short.MAX_VALUE))
+                .addContainerGap(242, Short.MAX_VALUE))
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                 .addGap(113, 113, 113)
                 .addComponent(submitGradeButton)
-                .addContainerGap(125, Short.MAX_VALUE))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
         singleSelectedPanelLayout.setVerticalGroup(
             singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                 .addGap(17, 17, 17)
-                .addComponent(jRadioButton1)
+                .addComponent(nonHandinRb)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nonHandinPartsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(writtenEarnedText, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(nonHandinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(writtenEarnedLabel)
                     .addComponent(writtenTotalLabel)
-                    .addComponent(writtenEarnedText1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(nonHandinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(writtenScoreLabel)
-                    .addComponent(jLabel3))
+                    .addComponent(nonHandinScoreLabel)
+                    .addComponent(nonHandinScoreValue))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(singleSelectedPanelLayout.createSequentialGroup()
@@ -623,38 +625,38 @@ public class NewBackend extends javax.swing.JFrame {
                             .addComponent(writtenScoreValue1)))
                     .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                         .addGap(18, 18, 18)
-                        .addComponent(jRadioButton2)
+                        .addComponent(labRb)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(labComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addGap(11, 11, 11)
-                        .addComponent(jLabel7)
+                        .addComponent(labScoreLabel)
                         .addGap(18, 18, 18)
-                        .addComponent(jRadioButton3))
+                        .addComponent(handinRB))
                     .addGroup(singleSelectedPanelLayout.createSequentialGroup()
                         .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(labEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel6)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(labOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel8)))
+                        .addComponent(labScoreValue)))
                 .addGap(1, 1, 1)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(handinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel9)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(handinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12))
+                    .addComponent(handinScoreLabel)
+                    .addComponent(handinScoreValue))
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton4)
+                .addComponent(overallRb)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(overallEarnedLabel)
@@ -794,7 +796,7 @@ public class NewBackend extends javax.swing.JFrame {
                         .addComponent(printRubricButton)
                         .addGap(18, 18, 18)
                         .addComponent(toggleEnabledButton))
-                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE))
+                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -843,8 +845,8 @@ public class NewBackend extends javax.swing.JFrame {
             }
         });
 
-        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Type: All", "Type: With Handin", "Type: Without Handin", "Type: Lab" }));
-        asgnTypeComboBox.setSelectedItem("Type: With Handin");
+        asgnTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All Assignments", "With Handin Part", "With NonHandin Part", "With Lab" }));
+        asgnTypeComboBox.setSelectedItem("With Handin Part");
         asgnTypeComboBox.setName("asgnTypeComboBox"); // NOI18N
         asgnTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -936,8 +938,8 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1007,7 +1009,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(exportDBButton)
                 .addGap(18, 18, 18)
                 .addComponent(resetDatabaseButton)
-                .addContainerGap(461, Short.MAX_VALUE))
+                .addContainerGap(472, Short.MAX_VALUE))
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -1080,16 +1082,16 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_asgnSelectNoneButtonActionPerformed
 
     private void asgnTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnTypeComboBoxActionPerformed
-        if (asgnTypeComboBox.getSelectedItem().equals("Type: All")) {
+        if (asgnTypeComboBox.getSelectedItem().equals("All Assignments")) {
             assignmentList.setListData(Allocator.getCourseInfo().getAssignments().toArray());
         }
-        else if (asgnTypeComboBox.getSelectedItem().equals("Type: With Handin")) {
+        else if (asgnTypeComboBox.getSelectedItem().equals("With Handin Part")) {
             assignmentList.setListData(Allocator.getCourseInfo().getHandinAssignments().toArray());
         }
-        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Without Handin")) {
+        else if (asgnTypeComboBox.getSelectedItem().equals("With NonHandin Part")) {
             assignmentList.setListData(Allocator.getCourseInfo().getNonHandinAssignments().toArray());
         }
-        else if (asgnTypeComboBox.getSelectedItem().equals("Type: Lab")) {
+        else if (asgnTypeComboBox.getSelectedItem().equals("With Lab")) {
             assignmentList.setListData(Allocator.getCourseInfo().getLabAssignments().toArray());
         }
     }//GEN-LAST:event_asgnTypeComboBoxActionPerformed
@@ -1121,7 +1123,8 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_demoButtonActionPerformed
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
-        //new GradingVisualizer(this.getSelectedAssignment(), Allocator.getGeneralUtilities().getUserLogin(), this.getSelectedStudent()).setVisible(true);
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasRubric())
+            this.getSelectedAssignment().getHandinPart().viewRubric(this.getSelectedStudent());
 }//GEN-LAST:event_viewRubricButtonActionPerformed
 
     private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
@@ -1304,6 +1307,8 @@ public class NewBackend extends javax.swing.JFrame {
                 cl.show(cardPanel, "singlePanel");
 
                 if (this.getSelectedAssignment().hasNonHandinParts()) {
+                    nonHandinRb.setEnabled(true);
+                    nonHandinPartsComboBox.setEnabled(true);
                     Vector<NonHandinPart> parts = new Vector<NonHandinPart>();
                     for (NonHandinPart part : this.getSelectedAssignment().getNonHandinParts()) {
                         parts.add(part);
@@ -1313,6 +1318,32 @@ public class NewBackend extends javax.swing.JFrame {
                 else {
                     nonHandinPartsComboBox.setModel(new DefaultComboBoxModel(new String[]{"none"}));
                     nonHandinPartsComboBox.setEnabled(false);
+                    nonHandinRb.setEnabled(false);
+                    
+                }
+                
+                if (this.getSelectedAssignment().hasLabParts()) {
+                    labRb.setEnabled(true);
+                    labComboBox.setEnabled(true);
+                    Vector<LabPart> parts = new Vector<LabPart>();
+                    for (LabPart part : this.getSelectedAssignment().getLabParts()) {
+                        parts.add(part);
+                    }
+                    labComboBox.setModel(new DefaultComboBoxModel(parts));
+                }
+                else {
+                    labComboBox.setModel(new DefaultComboBoxModel(new String[]{"none"}));
+                    labComboBox.setEnabled(false);
+                    labRb.setEnabled(false);
+                }
+                
+                if (this.getSelectedAssignment().hasHandinPart()) {
+                    handinRB.setEnabled(true);
+                    handinRB.setSelected(true);
+                }
+                else {
+                    handinRB.setEnabled(false);
+                    overallRb.setSelected(true);
                 }
 
                 //set Tester button to be enabled or not depending on whether project has a tester
@@ -1324,7 +1355,7 @@ public class NewBackend extends javax.swing.JFrame {
                 }
 
                 //if there is no handin, disable handin-realted buttons
-                if(!this.getSelectedAssignment().getHandinPart().hasHandin(this.getSelectedStudent())){
+                if(!this.getSelectedAssignment().hasHandinPart() || !this.getSelectedAssignment().getHandinPart().hasHandin(this.getSelectedStudent())){
                     openButton.setEnabled(false);
                     runCodeButton.setEnabled(false);
                     testCodeButton.setEnabled(false);
@@ -1423,42 +1454,45 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JLabel generalCommandsLabel;
     private javax.swing.JButton generateDistButton;
     private javax.swing.JButton gradingStandardsButton;
+    private javax.swing.JTextField handinEarned;
+    private javax.swing.JTextField handinOutOf;
+    private javax.swing.JRadioButton handinRB;
+    private javax.swing.JLabel handinScoreLabel;
+    private javax.swing.JLabel handinScoreValue;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JButton importGradesButton;
     private javax.swing.JLabel instructionsLabel;
     private javax.swing.JPanel instructionsPanel;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JRadioButton jRadioButton4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
+    private javax.swing.JComboBox labComboBox;
+    private javax.swing.JTextField labEarned;
+    private javax.swing.JTextField labOutOf;
+    private javax.swing.JRadioButton labRb;
+    private javax.swing.JLabel labScoreLabel;
+    private javax.swing.JLabel labScoreValue;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel multiSelectedPanel;
+    private javax.swing.JTextField nonHandinEarned;
+    private javax.swing.JTextField nonHandinOutOf;
     private javax.swing.JComboBox nonHandinPartsComboBox;
+    private javax.swing.JRadioButton nonHandinRb;
+    private javax.swing.JLabel nonHandinScoreLabel;
+    private javax.swing.JLabel nonHandinScoreValue;
     private javax.swing.JButton openButton;
     private javax.swing.JLabel overalTotalLabel;
     private javax.swing.JLabel overallEarnedLabel;
     private javax.swing.JLabel overallEarnedValue;
+    private javax.swing.JRadioButton overallRb;
     private javax.swing.JLabel overallScoreLabel;
     private javax.swing.JLabel overallScoreValue;
     private javax.swing.JLabel overallTotalValue;
@@ -1487,9 +1521,6 @@ public class NewBackend extends javax.swing.JFrame {
     private javax.swing.JButton viewRubricButton;
     private javax.swing.JLabel welcomeLabel;
     private javax.swing.JLabel writtenEarnedLabel;
-    private javax.swing.JTextField writtenEarnedText;
-    private javax.swing.JTextField writtenEarnedText1;
-    private javax.swing.JLabel writtenScoreLabel;
     private javax.swing.JLabel writtenScoreValue1;
     private javax.swing.JLabel writtenTotalLabel;
     // End of variables declaration//GEN-END:variables
