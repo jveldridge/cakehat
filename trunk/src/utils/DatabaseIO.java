@@ -2,9 +2,7 @@ package utils;
 
 import config.HandinPart;
 import config.Part;
-import rubric.TimeStatus;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
@@ -239,13 +237,6 @@ public interface DatabaseIO {
      * @return
      */
     public double getStudentScore(String studentLogin, Part part);
-
-    /**
-     * Exports the database as a CSV file to the File file.
-     * @param exportFile
-     * @return
-     */
-    public boolean exportDatabase(File exportFile);
 
     /**
      * Resets the database: removes all students, scores, graders, distributions,
