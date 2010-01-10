@@ -32,4 +32,10 @@ public abstract class Part
     {
         return _points;
     }
+
+    @Override
+    public String toString()
+    {
+        return _name;
+    }
 }
