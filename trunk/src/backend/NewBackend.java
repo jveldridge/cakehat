@@ -5,9 +5,9 @@ import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
 import config.Assignment;
+import config.HandinPart;
 import config.LabPart;
 import config.NonHandinPart;
-import rubric.RubricManager;
 import java.awt.CardLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -19,10 +19,7 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import rubric.RubricException;
-import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
-import utils.ErrorView;
 
 /**
  * Backend interface.
@@ -1103,7 +1100,7 @@ public class NewBackend extends javax.swing.JFrame {
 
     private void previewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRubricButtonActionPerformed
         if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasRubric())
-            new PreviewVisualizer(this.getSelectedAssignment().getHandinPart());
+            Allocator.getRubricManager().viewTemplate(this.getSelectedAssignment().getHandinPart());
 }//GEN-LAST:event_previewRubricButtonActionPerformed
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
@@ -1124,7 +1121,7 @@ public class NewBackend extends javax.swing.JFrame {
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
         if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasRubric())
-            this.getSelectedAssignment().getHandinPart().viewRubric(this.getSelectedStudent());
+            Allocator.getRubricManager().view(this.getSelectedAssignment().getHandinPart(), this.getSelectedStudent());
 }//GEN-LAST:event_viewRubricButtonActionPerformed
 
     private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
@@ -1184,14 +1181,9 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_studentListValueChanged
 
     private void printRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printRubricButtonActionPerformed
-        for (String asgn : this.getSelectedAssignments()) {
-            try {
-                RubricManager.convertAllToGrd(this.getSelectedStudents(), asgn);
-            }
-            catch(RubricException e) {
-                new ErrorView(e);
-            }
-            Allocator.getGradingUtilities().printGRDFiles(this.getSelectedStudents(), asgn);
+        for (Assignment asgn : this.getSelectedAssignments()) {
+            Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), this.getSelectedStudents());
+            Allocator.getGradingUtilities().printGRDFiles(this.getSelectedStudents(), asgn.getName());
         }
     }//GEN-LAST:event_printRubricButtonActionPerformed
 
@@ -1228,10 +1220,10 @@ public class NewBackend extends javax.swing.JFrame {
      *
      * @return
      */
-    private Vector<String> getSelectedAssignments(){
-        Vector<String> result = new Vector<String>();
+    private Vector<Assignment> getSelectedAssignments(){
+        Vector<Assignment> result = new Vector<Assignment>();
         for (Object o : assignmentList.getSelectedValues()) {
-            result.add((String) o);
+            result.add((Assignment) o);
         }
         return result;
     }
@@ -1364,7 +1356,7 @@ public class NewBackend extends javax.swing.JFrame {
 
                 //if there is no rubric, disable rubric related buttons
                 String rubricPath = Allocator.getConstants().getRubricDirectoryPath() +
-                                    this.getSelectedAssignment() + "/" + this.getSelectedStudent() + ".xml";
+                                    this.getSelectedAssignment() + "/" + this.getSelectedStudent() + ".gml";
                 if(!new File(rubricPath).exists()) {
                     viewRubricButton.setEnabled(false);
                     printRubricButton.setEnabled(false);

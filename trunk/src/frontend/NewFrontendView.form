@@ -170,13 +170,13 @@
                               <Component id="selectedStudentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="runTesterButton" alignment="1" pref="309" max="32767" attributes="2"/>
-                                      <Component id="openButton" alignment="0" pref="309" max="32767" attributes="2"/>
+                                      <Component id="runTesterButton" alignment="1" pref="315" max="32767" attributes="2"/>
+                                      <Component id="openButton" alignment="0" pref="315" max="32767" attributes="2"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="runButton" alignment="0" pref="310" max="32767" attributes="0"/>
-                                      <Component id="printButton" alignment="0" pref="310" max="32767" attributes="2"/>
+                                      <Component id="runButton" alignment="0" pref="316" max="32767" attributes="0"/>
+                                      <Component id="printButton" alignment="0" pref="316" max="32767" attributes="2"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -184,18 +184,18 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="runDemoButton" pref="309" max="32767" attributes="0"/>
-                              <Component id="viewGradingStandardsButton" alignment="1" pref="309" max="32767" attributes="0"/>
+                              <Component id="runDemoButton" pref="315" max="32767" attributes="0"/>
+                              <Component id="viewGradingStandardsButton" alignment="1" pref="315" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="submitGradesButton" pref="310" max="32767" attributes="0"/>
-                              <Component id="printAllButton" alignment="1" pref="310" max="32767" attributes="0"/>
+                              <Component id="submitGradesButton" pref="316" max="32767" attributes="0"/>
+                              <Component id="printAllButton" alignment="1" pref="316" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="gradeButton" pref="625" max="32767" attributes="2"/>
+                          <Component id="gradeButton" pref="635" max="32767" attributes="2"/>
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                       </Group>
                   </Group>

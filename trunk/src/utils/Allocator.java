@@ -38,6 +38,15 @@ public class Allocator {
         return COURSE_INFO;
     }
 
+    //RubricManager
+    private static new_rubric.RubricMananger RUBRIC_MANAGER = null;
+    public static new_rubric.RubricMananger getRubricManager(){
+        if(RUBRIC_MANAGER == null){
+            RUBRIC_MANAGER = new new_rubric.RubricMananger();
+        }
+
+        return RUBRIC_MANAGER;
+    }
 
     //General Utilities
     private static GeneralUtilities GENERAL_UTILITIES = null;

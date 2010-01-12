@@ -424,6 +424,44 @@ public class GeneralUtilities {
     }
 
     /**
+     * Number of days, given a certain amount of leniency, that is after
+     * the deadline.
+     *
+     * @param toCheck the calendar to check how many days after the deadline
+     * @param deadline the deadline
+     * @param minutesOfLeniency the amount of leniency in minutes to be granted after the deadline
+     * @return number of days
+     */
+    public int daysAfterDeadline(Calendar toCheck, Calendar deadline, int minutesOfLeniency) {
+        deadline = ((Calendar) deadline.clone());
+        deadline.add(Calendar.MINUTE, minutesOfLeniency);
+
+        //If to check is before the deadline
+        if(toCheck.before(deadline))
+        {
+            return 0;
+        }
+
+        int daysLate = 0;
+
+        // Look ahead 1000 days, to prevent infinite looping if really far apart days are passed in
+        for(int i = 0; i < 1000; i++)
+        {
+            if(toCheck.after(deadline))
+            {
+                daysLate++;
+                deadline.add(Calendar.HOUR, 24);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return daysLate;
+    }
+
+    /**
      * Extracts a tar file.
      *
      * @param tarPath the absolute path of the tar file

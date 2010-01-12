@@ -11,8 +11,6 @@
 package backend.entergrade;
 
 import backend.OldDatabaseOps;
-import rubric.RubricException;
-import rubric.RubricManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -745,6 +743,10 @@ public class EnterGradesView extends javax.swing.JFrame {
 }//GEN-LAST:event_assignmentTableAncestorAdded
 
     private void m_xmlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_xmlButtonActionPerformed
+        //Import rubric grades
+        //This code cannot easily be adapted - it is significantly different from current code
+        throw new UnsupportedOperationException("Not supported due to new rubric code changes.");
+        /*
         try {
             String asgn = (String) assignmentTable.getModel().getValueAt(assignmentTable.getSelectedRow(), 0);
             HashMap<String, Double> hm = RubricManager.getAllScores(asgn);
@@ -770,6 +772,7 @@ public class EnterGradesView extends javax.swing.JFrame {
         } catch (RubricException ex) {
             new ErrorView(ex);
         }
+        */
 }//GEN-LAST:event_m_xmlButtonActionPerformed
 
     /**

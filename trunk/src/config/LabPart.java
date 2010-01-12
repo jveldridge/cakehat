@@ -16,7 +16,7 @@ public class LabPart extends Part
     }
 
     //TODO: Implement parsing of lab score / completion
-    public int getScore(String studentLogin)
+    public double getScore(String studentLogin)
     {
         return 0;
     }

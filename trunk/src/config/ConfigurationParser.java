@@ -41,7 +41,7 @@ public class ConfigurationParser
                                 RUBRIC="RUBRIC", DEDUCTIONS="DEDUCTIONS", LOCATION = "LOCATION",
 
                                 PART = "PART", LAB_NUMBER="LAB-NUMBER", TYPE="TYPE", POINTS="POINTS", LANGUAGE="LANGUAGE",
-                                LATE_POLICY="LATE-POLICY", UNITS="UNITS",
+                                LATE_POLICY="LATE-POLICY", UNITS="UNITS", AFFECT_ALL="AFFECT-ALL", EC_IF_LATE="EC-IF-LATE",
 
                                 EARLY = "EARLY", ONTIME="ONTIME", LATE = "LATE",
                                 MONTH = "MONTH", DAY = "DAY", YEAR = "YEAR", TIME = "TIME",
@@ -603,10 +603,50 @@ public class ConfigurationParser
      */
     private static void processTimeInfo(Node timeNode, HandinPart part) throws ConfigurationException
     {
-        LatePolicy policy = LatePolicy.valueOf(timeNode.getAttributes().getNamedItem(TYPE).getNodeValue());
-        GradeUnits units = GradeUnits.valueOf(timeNode.getAttributes().getNamedItem(UNITS).getNodeValue());
+        // Get attributes
 
-        TimeInformation timeInfo = new TimeInformation(policy, units);
+        // Late Policy
+        LatePolicy policy = null;
+        // Grade Units (Not necessary if the policy is NO_LATE)
+        GradeUnits units = null;
+        // Affect-All (optional, defaults to false) - whether late policy deductions
+        // apply to all (entire assignment) or just the handin parts of the rubric
+        boolean affectAll = false;
+        // If extra credit is allowed for late handins (optional, defaults to true)
+        boolean ecIfLate = true;
+
+        NamedNodeMap attrMap = timeNode.getAttributes();
+        for(int i = 0; i < attrMap.getLength(); i++)
+        {
+            Node attrNode = attrMap.item(i);
+
+            if(skipNode(attrNode))
+            {
+                continue;
+            }
+            else if(attrNode.getNodeName().equals(TYPE))
+            {
+                policy = LatePolicy.valueOf(attrNode.getNodeValue());
+            }
+            else if(attrNode.getNodeName().equals(UNITS))
+            {
+                units = GradeUnits.valueOf(attrNode.getNodeValue());
+            }
+            else if(attrNode.getNodeName().equals(AFFECT_ALL))
+            {
+                affectAll = Boolean.parseBoolean(attrNode.getNodeValue());
+            }
+            else if(attrNode.getNodeName().equals(EC_IF_LATE))
+            {
+                ecIfLate = Boolean.parseBoolean(attrNode.getNodeValue());
+            }
+            else
+            {
+
+            }
+        }
+
+        TimeInformation timeInfo = new TimeInformation(policy, units, affectAll, ecIfLate);
 
         NodeList childrenNodes = timeNode.getChildNodes();
         for (int i = 0; i < childrenNodes.getLength(); i++)
