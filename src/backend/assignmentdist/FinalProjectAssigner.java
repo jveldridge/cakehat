@@ -11,7 +11,6 @@
 package backend.assignmentdist;
 
 import backend.OldDatabaseOps;
-import rubric.RubricManager;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -407,7 +406,9 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                                 studName = Allocator.getGeneralUtilities().getUserName(studLogin);
                                 _studs.put(studLogin, studName);
                             }
-                            RubricManager.assignXMLToGrader(Allocator.getProject(projName), Allocator.getProject("Final"), studLogin, taLogin, studName, taName, OldDatabaseOps.getStudentDQScore("Final", studLogin), Allocator.getConstants().getMinutesOfLeniency());
+
+                            //TODO: Assign the XML to the Grader
+                            //RubricManager.assignXMLToGrader(Allocator.getProject(projName), Allocator.getProject("Final"), studLogin, taLogin, studName, taName, OldDatabaseOps.getStudentDQScore("Final", studLogin), Allocator.getConstants().getMinutesOfLeniency());
                         }
                     } catch (Exception e) {
                         new ErrorView(e);

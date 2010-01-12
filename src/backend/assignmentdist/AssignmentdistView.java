@@ -13,7 +13,6 @@ package backend.assignmentdist;
 
 import backend.OldDatabaseOps;
 import config.Assignment;
-import rubric.RubricManager;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,7 +25,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
-import rubric.RubricException;
 import utils.Allocator;
 import utils.AssignmentType;
 import utils.ConfigurationManager;
@@ -431,6 +429,9 @@ public class AssignmentdistView extends javax.swing.JFrame {
             minsLeniency = Integer.parseInt(input);
         }
 
+
+        throw new UnsupportedOperationException("Not supported due to new rubric code changes.");
+        /*
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
             String[] studsToGrade = OldDatabaseOps.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
@@ -442,6 +443,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
                 }
             }
        }
+       */
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
     private String getBlacklist(String taName) {

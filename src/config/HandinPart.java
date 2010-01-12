@@ -4,13 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
-import rubric.Rubric;
-import rubric.RubricException;
-import rubric.RubricManager;
-import rubric.visualizers.GradingVisualizer;
-import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
-import utils.ErrorView;
 import utils.FileViewerView;
 
 /**
@@ -73,30 +67,9 @@ public abstract class HandinPart extends Part
         return exists;
     }
 
-    public Rubric getRubric()
+    public File getRubricFile()
     {
-        try {
-            //Intentionally reparses rubric each time it is requested so that
-            //when previewing a rubric any changes made will be reflected
-            //each time without needing to relaunch cakehat
-            return RubricManager.processXML(_rubricFile.getAbsolutePath());
-        }
-        catch (RubricException ex) {
-            new ErrorView(ex);
-        }
-
-        return null;
-    }
-
-    public void previewRubric()
-    {
-        new PreviewVisualizer(this);
-    }
-
-    public void viewRubric(String studentLogin)
-    {
-        new GradingVisualizer(this.getAssignment().getName(),
-                              Allocator.getGeneralUtilities().getUserLogin(), studentLogin);
+        return _rubricFile;
     }
 
     /**
@@ -105,7 +78,7 @@ public abstract class HandinPart extends Part
      * @param studentLogin
      * @return a student's handin for this assignment.
      */
-    protected File getHandin(String studentLogin)
+    public File getHandin(String studentLogin)
     {
         for (File handin : this.getHandins())
         {
@@ -142,7 +115,7 @@ public abstract class HandinPart extends Part
      */
     private String getHandinPath()
     {
-        String path = Allocator.getConstants().getHandinDir()
+        String path = Allocator.getCourseInfo().getHandinDir()
                       + this.getAssignment().getName() + "/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
         return path;
     }

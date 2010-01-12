@@ -13,11 +13,24 @@ public class TimeInformation
     private GradeUnits _units;
     private Calendar _early, _ontime, _late;
     private int _earlyValue, _ontimeValue, _lateValue;
+    private boolean _affectAll, _ecIfLate;
 
-    TimeInformation(LatePolicy policy, GradeUnits units)
+    TimeInformation(LatePolicy policy, GradeUnits units, boolean affectAll, boolean ecIfLate)
     {
         _latePolicy = policy;
         _units = units;
+        _affectAll = affectAll;
+        _ecIfLate = ecIfLate;
+    }
+
+    public boolean ecIfLate()
+    {
+        return _ecIfLate;
+    }
+
+    public boolean affectsAll()
+    {
+        return _affectAll;
     }
 
     public LatePolicy getLatePolicy()

@@ -1,8 +1,7 @@
 package frontend;
 
 import backend.OldDatabaseOps;
-import rubric.visualizers.GradingVisualizer;
-import rubric.RubricManager;
+import config.HandinPart;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -17,7 +16,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
-import rubric.RubricException;
 import utils.Allocator;
 import utils.BashConsole;
 import utils.ErrorView;
@@ -664,12 +662,15 @@ public class FrontendView extends javax.swing.JFrame {
         if(this.getSelectedAssignment() != null) {
             SubmitDialog sd = new SubmitDialog(studentList);
             if (sd.showDialog() == JOptionPane.OK_OPTION) {
-                try {
-                    RubricManager.convertAllToGrd(this.getCurrentStudents(), this.getSelectedAssignment());
+
+                HandinPart part = null;
+                for(config.Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()){
+                    if(asgn.getName().equals(this.getSelectedAssignment())){
+                        part = asgn.getHandinPart();
+                    }
                 }
-                catch(RubricException e) {
-                    new ErrorView(e);
-                }
+                Allocator.getRubricManager().convertToGRD(part, this.getCurrentStudents());
+
                 Vector<String> selectedStudents = sd.getSelectedStudents();
 
                 if (sd.printChecked()) {
@@ -743,7 +744,14 @@ public class FrontendView extends javax.swing.JFrame {
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedStudent != null && selectedAssignment != null){
-            new GradingVisualizer(selectedAssignment, Allocator.getGeneralUtilities().getUserLogin(), selectedStudent);
+            HandinPart part = null;
+            for(config.Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()){
+                if(asgn.getName().equals(selectedAssignment)){
+                    part = asgn.getHandinPart();
+                }
+            }
+            
+            Allocator.getRubricManager().view(part, selectedStudent);
         }
     }//GEN-LAST:event_gradeButtonActionPerformed
 

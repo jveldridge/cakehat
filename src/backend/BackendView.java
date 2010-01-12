@@ -33,7 +33,6 @@ import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import rubric.visualizers.PreviewVisualizer;
 import utils.Allocator;
 import utils.Assignment;
 import utils.AssignmentType;
@@ -545,7 +544,15 @@ public class BackendView extends javax.swing.JFrame {
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         String message = "Choose Project to Preview";
         String project = (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Project", JOptionPane.PLAIN_MESSAGE, icon, v.toArray(), null);
-        new PreviewVisualizer(project);
+        
+        //Hack to work with new rubric code
+        config.HandinPart part = null;
+        for(config.Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()){
+            if(asgn.getName().equals(project)) {
+                part = asgn.getHandinPart();
+            }
+        }
+        Allocator.getRubricManager().viewTemplate(part);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
