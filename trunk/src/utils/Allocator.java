@@ -39,10 +39,10 @@ public class Allocator {
     }
 
     //RubricManager
-    private static new_rubric.RubricMananger RUBRIC_MANAGER = null;
-    public static new_rubric.RubricMananger getRubricManager(){
+    private static rubric.RubricMananger RUBRIC_MANAGER = null;
+    public static rubric.RubricMananger getRubricManager(){
         if(RUBRIC_MANAGER == null){
-            RUBRIC_MANAGER = new new_rubric.RubricMananger();
+            RUBRIC_MANAGER = new rubric.RubricMananger();
         }
 
         return RUBRIC_MANAGER;

@@ -1,6 +1,6 @@
 package utils;
 
-import new_rubric.TimeStatus;
+import rubric.TimeStatus;
 import java.util.Collection;
 import java.io.File;
 import java.util.Calendar;
