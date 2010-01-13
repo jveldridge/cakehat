@@ -6,7 +6,7 @@ package gradesystem;
 
 import backend.BackendView;
 import backend.NewBackend;
-import frontend.NewFrontendView;
+import frontend.FrontendView;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -257,7 +257,7 @@ public class GradeSystemView extends FrameView {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        new NewFrontendView();
+        new FrontendView();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
