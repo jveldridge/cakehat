@@ -53,6 +53,49 @@ public abstract class HandinPart extends Part
         fv.setTitle(this.getAssignment().getName() + " Deductions List");
     }
 
+    // Readme
+
+    public boolean hasReadme(String studentLogin)
+    {
+        return !getReadme(studentLogin).isEmpty();
+    }
+
+    public void viewReadme(String studentLogin)
+    {
+        //View the first readme that was found
+        FileViewerView fv = new FileViewerView(this.getReadme(studentLogin).iterator().next());
+        fv.setTitle(studentLogin +"'s Readme");
+    }
+
+    private Collection<File> getReadme(String studentLogin)
+    {
+        this.untar(studentLogin);
+
+        return getFiles(this.getStudentHandinDirectory(studentLogin), "readme");
+    }
+
+    public Collection<File> getFiles(String dirPath, String filename) {
+        Vector<File> files = new Vector<File>();
+
+        File dir = new File(dirPath);
+        if (dir == null || !dir.exists()) {
+            return files;
+        }
+        for (String name : dir.list()) {
+            File entry = new File(dir.getAbsolutePath() + "/" + name);
+            //If it is a directory, recursively explore and add files
+            if (entry.isDirectory()) {
+                files.addAll(getFiles(entry.getAbsolutePath(), filename));
+            }
+            //Add if this entry is a file starts with readme (case insensitive)
+            if (entry.isFile() && name.toUpperCase().startsWith(filename.toUpperCase())) {
+                files.add(entry);
+            }
+        }
+
+        return files;
+    }
+
     //Rubric
 
     void setRubric(String filePath)
@@ -152,7 +195,7 @@ public abstract class HandinPart extends Part
     /**
      * Code directory is:
      *
-     * /course/<course>/grading/.<ta login>/<assignment name>/<student login>/
+     * /course/<course>/cakehat/.<ta login>/<assignment name>/<student login>/
      *
      */
     protected String getStudentHandinDirectory(String studentLogin)
@@ -175,7 +218,11 @@ public abstract class HandinPart extends Part
             Allocator.getGeneralUtilities().makeDirectory(compileDir);
 
             //untar student handin
-            Allocator.getGeneralUtilities().untar(this.getHandin(studentLogin).getAbsolutePath(), compileDir);
+            File handin = this.getHandin(studentLogin);
+            if(handin != null)
+            {
+                Allocator.getGeneralUtilities().untar(handin.getAbsolutePath(), compileDir);
+            }
 
             //record that student's code has been untarred
             _untarredStudents.add(studentLogin);

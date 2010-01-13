@@ -66,9 +66,9 @@ public class FrontendView extends javax.swing.JFrame {
             }
         });
 
-        _codeButtons = new JButton[]{ viewReadmeButton, runDemoButton, printAllButton, openButton, printButton, runTesterButton, runButton };
+        _codeButtons = new JButton[]{ runDemoButton, printAllButton, openButton, printButton, runTesterButton, runButton };
         _rubricButtons = new JButton[]{ gradeButton, submitGradesButton };
-        _studentButtons = new JButton[]{ openButton, printButton, runTesterButton, runButton, gradeButton };
+        _studentButtons = new JButton[]{ viewReadmeButton, openButton, printButton, runTesterButton, runButton, gradeButton };
         OldDatabaseOps.open();
         
         Allocator.getGradingUtilities().makeUserGradingDirectory();
@@ -143,6 +143,10 @@ public class FrontendView extends javax.swing.JFrame {
     private void updateButtonStates() {
         for(JButton button : _codeButtons) {
             button.setEnabled(this.getSelectedAssignment().getHandinPart().hasCode());
+        }
+
+        if(this.getSelectedStudent() != null) {
+            viewReadmeButton.setEnabled(this.getSelectedAssignment().getHandinPart().hasReadme(this.getSelectedStudent()));
         }
 
         if(this.getSelectedAssignment().getHandinPart().hasCode()) {
@@ -762,7 +766,7 @@ public class FrontendView extends javax.swing.JFrame {
 }//GEN-LAST:event_runButtonActionPerformed
 
     private void viewReadmeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewReadmeButtonActionPerformed
-        throw new UnsupportedOperationException("Viewing a project's readme is not yet supported");
+        this.getSelectedAssignment().getHandinPart().viewReadme(this.getSelectedStudent());
     }//GEN-LAST:event_viewReadmeButtonActionPerformed
 
     private Iterable<String> getCurrentStudents() {
