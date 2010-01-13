@@ -466,7 +466,26 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public boolean addTA(String taLogin) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount "
+                    + "FROM ta AS t "
+                    + "WHERE t.login == '" + taLogin + "'");
+            int rows = rs.getInt("rowcount");
+            if (rows == 0) {
+                _statement.executeUpdate("INSERT INTO ta "
+                        + "('login') "
+                        + "VALUES "
+                        + "('" + taLogin
+                        + "')");
+            }
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not insert new row for ta: " + taLogin);
+            this.closeConnection();
+            return false;
+        }
     }
 
 }
