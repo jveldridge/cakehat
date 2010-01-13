@@ -427,7 +427,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         String asgn = (String)assignmentNameComboBox.getSelectedItem();
 
         //create rubric directory if it does not exist
-        String directoryPath = Allocator.getCourseInfo().getRubricDirectoryPath() + asgn + "/";
+        String directoryPath = Allocator.getCourseInfo().getRubricDir() + asgn + "/";
         Allocator.getGeneralUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N

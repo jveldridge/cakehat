@@ -43,7 +43,7 @@ public class GradingUtilities {
      *         currently, /course/cs015/grading/rubrics/2009/<assignmentName>/<studentLogin>.xml
      */
     public String getStudentRubricPath(String assignmentName, String studentLogin) {
-        return Allocator.getCourseInfo().getRubricDirectoryPath() + assignmentName + "/" + studentLogin + ".gml";
+        return Allocator.getCourseInfo().getRubricDir() + assignmentName + "/" + studentLogin + ".gml";
     }
 
     public String getStudentGRDPath(String assignmentName, String studentLogin) {

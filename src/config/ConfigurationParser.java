@@ -17,10 +17,10 @@ import utils.Allocator;
  */
 public class ConfigurationParser
 {
-    private final static String CONFIG_FILE_NAME = "config_new_spec.xml";
+    private final static String CONFIG_FILE_NAME = "config.xml";
 
     //For testing purposes, specifies what root directory to look for config file
-    private final static String CONFIG_TEST_DIR_PATH = "/course/cs015/grading/bin/";
+    private final static String CONFIG_TEST_DIR_PATH = "/course/cs015/cakehat/";
 
     //String constants that represent the tags used in the XML markup
     private final static String TEXT_NODE = "#text", COMMENT_NODE = "#comment",
@@ -66,14 +66,15 @@ public class ConfigurationParser
         //If this is actually the jar we are running from
         if(loc.endsWith("GradeSystem.jar") && loc.startsWith("/course/cs"))
         {
-            filepath = loc.substring(0,loc.lastIndexOf("GradeSystem.jar"));
+            filepath = loc.substring(0,loc.lastIndexOf("bin/"));
         }
         //Otherwise we are testing, use the hardcoded testing path
         else
         {
+            System.out.println("Using hard-coded test value for config location");
             filepath = CONFIG_TEST_DIR_PATH;
         }
-        filepath += Allocator.getGeneralUtilities().getCurrentYear() + "/" + CONFIG_FILE_NAME;
+        filepath += Allocator.getGeneralUtilities().getCurrentYear() + "/config/" + CONFIG_FILE_NAME;
         
         //Check the config file exists
         if(!new File(filepath).exists())
