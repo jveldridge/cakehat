@@ -59,19 +59,18 @@
               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
               <Component id="studentListPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jPanel1" max="32767" attributes="1"/>
-                  <Component id="jPanel2" alignment="0" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="jPanel2" max="32767" attributes="1"/>
+                  <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Group type="102" alignment="0" attributes="1">
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel1" min="0" pref="358" max="32767" attributes="0"/>
@@ -168,28 +167,25 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="generalCommandsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="viewReadmeButton" pref="317" max="32767" attributes="1"/>
-                              <Component id="gradeButton" alignment="0" pref="317" max="32767" attributes="3"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="selectedStudentLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="137" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="viewGradingStandardsButton" alignment="0" pref="317" max="32767" attributes="1"/>
-                              <Component id="runDemoButton" alignment="0" pref="317" max="32767" attributes="1"/>
-                              <Component id="runTesterButton" alignment="0" pref="317" max="32767" attributes="3"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="selectedStudentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="runTesterButton" alignment="0" max="32767" attributes="3"/>
+                              <Component id="viewReadmeButton" alignment="0" max="32767" attributes="1"/>
+                              <Component id="viewGradingStandardsButton" alignment="0" max="32767" attributes="1"/>
+                              <Component id="runDemoButton" alignment="0" pref="285" max="32767" attributes="1"/>
+                              <Component id="gradeButton" alignment="0" max="32767" attributes="3"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="printButton" pref="291" max="32767" attributes="3"/>
-                              <Component id="openButton" pref="291" max="32767" attributes="3"/>
-                              <Component id="printAllButton" pref="291" max="32767" attributes="1"/>
-                              <Component id="submitGradesButton" alignment="0" pref="291" max="32767" attributes="1"/>
-                              <Component id="runButton" alignment="1" pref="291" max="32767" attributes="1"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="runButton" max="32767" attributes="1"/>
+                              <Component id="printAllButton" alignment="0" max="32767" attributes="1"/>
+                              <Component id="submitGradesButton" alignment="0" max="32767" attributes="1"/>
+                              <Component id="openButton" alignment="0" max="32767" attributes="3"/>
+                              <Component id="printButton" alignment="0" max="32767" attributes="3"/>
                           </Group>
                       </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -210,9 +206,9 @@
                   <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                   <Component id="selectedStudentLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="openButton" max="32767" attributes="1"/>
-                      <Component id="viewReadmeButton" alignment="0" pref="54" max="32767" attributes="1"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="viewReadmeButton" alignment="3" pref="54" max="32767" attributes="1"/>
+                      <Component id="openButton" alignment="3" min="-2" pref="53" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -463,7 +459,7 @@
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                       <Component id="currentInfo" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="515" max="32767" attributes="0"/>
+                  <EmptySpace pref="468" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
