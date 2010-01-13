@@ -34,8 +34,6 @@ public class CourseInfo
         }
     }
 
-    //           Directly from configuration
-
     /**
      * Returns a collection of all assignments.
      *
@@ -370,8 +368,14 @@ public class CourseInfo
         return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/backups/";
     }
 
-    // E-mail domain (technically not course info, but no better place to put it)
-
+    /**
+     * The email domain of student and TA logins: cs.brown.edu
+     *
+     * (Technically this isn't course info, but this is a convenient place to
+     * put it.)
+     *
+     * @return
+     */
     public String getEmailDomain()
     {
         return "cs.brown.edu";

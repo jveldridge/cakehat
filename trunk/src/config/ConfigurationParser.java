@@ -64,7 +64,7 @@ public class ConfigurationParser
         //Get the location of where this code is running
         String loc = ConfigurationParser.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         //If this is actually the jar we are running from
-        if(loc.endsWith("GradeSystem.jar") && loc.startsWith("/course/cs"))
+        if(loc.endsWith("jar") && loc.startsWith("/course/cs"))
         {
             filepath = loc.substring(0,loc.lastIndexOf("bin/"));
         }
@@ -81,7 +81,6 @@ public class ConfigurationParser
         {
             throw new ConfigurationException("Could not find configuration file at: " + filepath);
         }
-
 
         //Get XML as a document
         Document document = getDocument(filepath);
