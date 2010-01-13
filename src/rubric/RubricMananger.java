@@ -12,6 +12,7 @@ import utils.ErrorView;
 
 /**
  * Don't directly create this class, access it via the Allocator.
+ * All rubric related functionality goes through this class.
  *
  * @author jak2
  */
@@ -30,7 +31,7 @@ public class RubricMananger
 
         try
         {
-            Rubric rubric = RubricXMLParser.parse(XMLFilePath, part);
+            Rubric rubric = RubricGMLParser.parse(XMLFilePath, part);
             new GradingVisualizer(rubric, XMLFilePath);
         }
         catch (RubricException ex)
@@ -48,8 +49,8 @@ public class RubricMananger
     {
         try
         {
-            Rubric rubric = RubricXMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
-            new PreviewVisualizer(part.getAssignment().getName(), rubric);
+            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
+            new TemplateVisualizer(part.getAssignment().getName(), rubric);
         }
         catch (RubricException ex)
         {
@@ -88,7 +89,7 @@ public class RubricMananger
         try
         {
             // get template rubric
-            Rubric rubric = RubricXMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
+            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
 
             return rubric.getTotalHandinScore();
         }
@@ -112,7 +113,7 @@ public class RubricMananger
         try
         {
             // get template rubric
-            Rubric rubric = RubricXMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
+            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
 
             return rubric.getTotalRubricScore();
         }
@@ -159,7 +160,7 @@ public class RubricMananger
         try
         {
             // get template rubric
-            Rubric rubric = RubricXMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
+            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
             
             //For each TA
             for (String taLogin : distribution.keySet())
@@ -181,7 +182,7 @@ public class RubricMananger
                         rubric.setDaysLate(getDaysLate(part, studentLogin, minutesOfLeniency));
                     }
                     String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
-                    RubricXMLWriter.write(rubric, xmlPath);
+                    RubricGMLWriter.write(rubric, xmlPath);
                 }
             }
         }
@@ -276,14 +277,14 @@ public class RubricMananger
         {
             //Get rubric
             String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
-            Rubric rubric = RubricXMLParser.parse(xmlPath, part);
+            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Change grader
             //TODO: Get grader login from database
             rubric.setGrader(Allocator.getGeneralUtilities().getUserName(newGraderLogin), newGraderLogin);
 
             //Write rubric
-            RubricXMLWriter.write(rubric, xmlPath);
+            RubricGMLWriter.write(rubric, xmlPath);
         }
         catch(RubricException e)
         {
@@ -303,11 +304,11 @@ public class RubricMananger
         {
             //Get rubric
             String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
-            Rubric rubric = RubricXMLParser.parse(xmlPath, part);
+            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Write to grd
             String grdPath = Allocator.getGradingUtilities().getStudentGRDPath(part.getAssignment().getName(), studentLogin);
-            RubricXMLWriter.write(rubric, grdPath);
+            RubricGMLWriter.write(rubric, grdPath);
         }
         catch(RubricException e)
         {

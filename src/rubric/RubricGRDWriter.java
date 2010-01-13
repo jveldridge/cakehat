@@ -11,6 +11,7 @@ import utils.Allocator;
 import utils.ErrorView;
 
 /**
+ * Responsible for writing a Rubric instance to a GRD text file.
  *
  * @author jak2
  */
@@ -226,8 +227,6 @@ class RubricGRDWriter
         {
             return;
         }
-
-        //NC Late
 
         String msg = rubric.getStatus().getPrettyPrintName();
 

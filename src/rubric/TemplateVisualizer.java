@@ -16,9 +16,9 @@ import javax.swing.JScrollPane;
  * @author spoletto
  * @author jak2
  */
-public class PreviewVisualizer extends JFrame
+class TemplateVisualizer extends JFrame
 {
-    PreviewVisualizer(String name, Rubric rubric)
+    TemplateVisualizer(String name, Rubric rubric)
     {
         super("Rubric Preview for " + name);
 
@@ -42,7 +42,7 @@ public class PreviewVisualizer extends JFrame
         {
             public void windowClosing(WindowEvent e)
             {
-                PreviewVisualizer.this.dispose();
+                TemplateVisualizer.this.dispose();
             }
         });
 

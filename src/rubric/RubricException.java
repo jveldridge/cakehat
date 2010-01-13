@@ -4,17 +4,12 @@ import java.util.Arrays;
 import org.w3c.dom.Node;
 
 /**
+ * An exception that occurs while parsing or writing a GML file.
  *
  * @author jak2
  */
 public class RubricException extends Exception
 {
-    /**
-     * Creates a new instance of <code>RubricException</code> without detail message.
-     */
-    public RubricException() { }
-
-
     /**
      * Constructs an instance of <code>RubricException</code> with the specified detail message.
      * @param msg the detail message.
@@ -25,8 +20,8 @@ public class RubricException extends Exception
     }
 
     /**
-     * Constructed with a message that a given parent only allows for certain supported
-     * children and that this node is not supported.
+     * Constructs a message that a given parent only allows for certain
+     * supported children and that this node is not supported.
      *
      * @param parentTag
      * @param node unsupported node

@@ -2,6 +2,12 @@ package rubric;
 
 import javax.swing.JButton;
 
+/**
+ * Keeps track of the state of a rubric to determine if it has been edited.
+ * Toggles the save button depending on whether there is anything to save.
+ *
+ * @author spoletto
+ */
 class StateManager
 {	
     private boolean _saved;

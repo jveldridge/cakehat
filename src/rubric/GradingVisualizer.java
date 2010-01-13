@@ -1,7 +1,5 @@
 package rubric;
 
-import config.Assignment;
-import config.HandinPart;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
@@ -28,18 +26,16 @@ import javax.imageio.ImageIO;
 import java.util.HashSet;
 import java.util.Set;
 
-import utils.Allocator;
-import utils.ErrorView;
-
-public class GradingVisualizer extends JFrame
+/**
+ * Allows for viewing and editing a rubric. Intended to be used to fill out a
+ * rubric while grading. Create a GradingVisualizer by using RubricManager's
+ * view(...) method.
+ *
+ * @author jak2
+ * @auther spoletto
+ */
+class GradingVisualizer extends JFrame
 {
-    //For testing only
-    static void testView(Rubric rubric, String XMLFilePath)
-    {
-        new GradingVisualizer(rubric, XMLFilePath);
-    }
-
-
     GradingVisualizer(final Rubric rubric, final String XMLFilePath)
     {
         super("Grading " + rubric.getStudentAccount() + "'s " + rubric.getName());
@@ -78,7 +74,7 @@ public class GradingVisualizer extends JFrame
         {
             public void actionPerformed(ActionEvent e)
             {
-                RubricXMLWriter.write(rubric, XMLFilePath);
+                RubricGMLWriter.write(rubric, XMLFilePath);
                 stateManager.rubricSaved();
             }
         });
@@ -107,7 +103,7 @@ public class GradingVisualizer extends JFrame
                     int chosenOption = JOptionPane.showConfirmDialog(GradingVisualizer.this, "Would you like to save before exiting?");
                     if (chosenOption == JOptionPane.YES_OPTION)
                     {
-                        RubricXMLWriter.write(rubric, XMLFilePath);
+                        RubricGMLWriter.write(rubric, XMLFilePath);
                         GradingVisualizer.this.dispose();
                     }
                     if (chosenOption == JOptionPane.NO_OPTION)
