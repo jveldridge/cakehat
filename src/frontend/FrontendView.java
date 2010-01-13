@@ -66,7 +66,7 @@ public class FrontendView extends javax.swing.JFrame {
             }
         });
 
-        _codeButtons = new JButton[]{ runDemoButton, printAllButton, openButton, printButton, runTesterButton, runButton };
+        _codeButtons = new JButton[]{ viewReadmeButton, runDemoButton, printAllButton, openButton, printButton, runTesterButton, runButton };
         _rubricButtons = new JButton[]{ gradeButton, submitGradesButton };
         _studentButtons = new JButton[]{ openButton, printButton, runTesterButton, runButton, gradeButton };
         OldDatabaseOps.open();
@@ -78,6 +78,7 @@ public class FrontendView extends javax.swing.JFrame {
         this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getCourseInfo().getCourse() + " Grader");
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+        this.setResizable(false);
     }
 
     /**
