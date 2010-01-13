@@ -4,12 +4,13 @@
  */
 package backend;
 
-import utils.ConfigurationManager;
-import utils.Assignment;
+import config.NonHandinPart;
+import config.TA;
 import utils.AssignmentType;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Set;
 import org.tmatesoft.sqljet.core.SqlJetException;
@@ -374,8 +375,8 @@ public class OldDatabaseOps {
 
     public static boolean isDistEmpty(String asgn) {
         boolean isDistEmpty = true;
-        for (String taLogin : ConfigurationManager.getGraderLogins()) {
-            String[] s = OldDatabaseOps.getStudentsToGrade(taLogin, asgn);
+        for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
+            String[] s = OldDatabaseOps.getStudentsToGrade(grader.getLogin(), asgn);
             if (s.length != 0) {
                 isDistEmpty = false;
             }
@@ -725,8 +726,18 @@ public class OldDatabaseOps {
             addDatum("studlist", s);
         }
         String sqlCreateTableString1 = "Create table assignment_dist (taLogin text not null";
+
+        /*
+        // Original code that worked off of old configuration code
         for (Assignment a : ConfigurationManager.getAssignments()) {
-            addDatum("assignments", a.Name, a.Type.toString(), Allocator.getGeneralUtilities().getCalendarAsString(a.Early), Allocator.getGeneralUtilities().getCalendarAsString(a.Ontime), Allocator.getGeneralUtilities().getCalendarAsString(a.Late), "" + ((a.Points.DQ == 0) ? "" : a.Points.DQ), "" + a.Points.TOTAL);
+            addDatum("assignments",
+                    a.Name,
+                    a.Type.toString(),
+                    Allocator.getGeneralUtilities().getCalendarAsString(a.Early),
+                    Allocator.getGeneralUtilities().getCalendarAsString(a.Ontime),
+                    Allocator.getGeneralUtilities().getCalendarAsString(a.Late),
+                    "" + ((a.Points.DQ == 0) ? "" : a.Points.DQ),
+                    "" + a.Points.TOTAL);
             String sqlCreateTableString2 = "create table grades_" + a.Name + " (studLogins text not null";
             if (a.Points.DQ != 0) {
                 sqlCreateTableString2 += ", " + GRADE_RUBRIC_FIELDS[0] + " text";
@@ -739,15 +750,70 @@ public class OldDatabaseOps {
                 sqlCreateTableString1 += ", " + a.Name + " text";
             }
         }
+        */
+
+        //Huge hack to make it work with new configuration
+        for (config.Assignment a : Allocator.getCourseInfo().getAssignments()) {
+            String type = "";
+            if(a.hasHandinPart()) type = "PROJECT";
+            else if(a.hasLabParts()) type = "LAB";
+            else type = "HOMEWORK";
+
+            Calendar early = null, ontime = null, late = null;
+            if(a.hasHandinPart())
+            {
+                early = a.getHandinPart().getTimeInformation().getEarlyDate();
+                ontime = a.getHandinPart().getTimeInformation().getOntimeDate();
+                late = a.getHandinPart().getTimeInformation().getLateDate();
+            }
+
+            int DQ = 0;
+            if(a.hasHandinPart())
+            {
+                for(NonHandinPart p : a.getNonHandinParts())
+                {
+                    if(p.getName().equals("Design Questions"))
+                    {
+                        DQ = p.getPoints();
+                    }
+                }
+            }
+
+
+            addDatum("assignments",
+                    a.getName(),
+                    type,
+                    Allocator.getGeneralUtilities().getCalendarAsString(early),
+                    Allocator.getGeneralUtilities().getCalendarAsString(ontime),
+                    Allocator.getGeneralUtilities().getCalendarAsString(late),
+                    "" + ((DQ == 0) ? "" : DQ),
+                    "" + a.getTotalPoints());
+            String sqlCreateTableString2 = "create table grades_" + a.getName() + " (studLogins text not null";
+            if (DQ != 0) {
+                sqlCreateTableString2 += ", " + GRADE_RUBRIC_FIELDS[0] + " text";
+            }
+            sqlCreateTableString2 += ", " + GRADE_RUBRIC_FIELDS[1] + " text";
+            sqlCreateTableString2 += ")";
+            db.createTable(sqlCreateTableString2);
+            db.createIndex("create index stud_login_" + a.getName() + " on grades_" + a.getName() + " (studLogins)");
+            if (type.equals("PROJECT")) {
+                sqlCreateTableString1 += ", " + a.getName() + " text";
+            }
+        }
+
+
+
         sqlCreateTableString1 += ")";
         db.createTable(sqlCreateTableString1);
         db.createIndex("create index ta_login_dist on assignment_dist (taLogin)");
-        for (String s : ConfigurationManager.getTALogins()) {
-            addDatum(DISTRIBUTION_TABLE, s);
-            addDatum("blacklist", s);
-            addDatum("talist", new Object[]{s});
+        for (TA ta : Allocator.getCourseInfo().getTAs()) {
+            addDatum(DISTRIBUTION_TABLE, ta.getLogin());
+            addDatum("blacklist", ta.getLogin());
+            addDatum("talist", new Object[]{ta.getLogin()});
         }
         //autoPopulate();
+        /*
+        //code that worked with original configuration code
         for (Assignment a : ConfigurationManager.getAssignments()) {
             for (String ss : Allocator.getGeneralUtilities().getStudentLogins()) {
                 Object[] data;
@@ -765,30 +831,41 @@ public class OldDatabaseOps {
             }
 
         }
-    }
+         */
 
-    private static void autoPopulate() throws SqlJetException {
-        //@TODO:tester...remove this when done
+        //huge hack to work with new configuration code
+        for (config.Assignment a : Allocator.getCourseInfo().getAssignments()) {
+            int DQ = 0;
+            if(a.hasHandinPart())
+            {
+                for(NonHandinPart p : a.getNonHandinParts())
+                {
+                    if(p.getName().equals("Design Questions"))
+                    {
+                        DQ = p.getPoints();
+                    }
+                }
+            }
 
-        if (db == null) {
-            db = SqlJetDb.open(new File(Allocator.getCourseInfo().getDatabaseFilePath()), true);
-        }
-        for (Assignment a : ConfigurationManager.getAssignments()) {
             for (String ss : Allocator.getGeneralUtilities().getStudentLogins()) {
                 Object[] data;
-                if (a.Points.DQ == 0) {
+                if (DQ == 0) {
                     data = new String[2];
                     data[0] = ss;
-                    data[1] = Integer.toString(a.Points.TOTAL - (int) (Math.random() * (a.Points.TOTAL >> 1)));
+                    data[1] = "0";
                 } else {
                     data = new String[3];
                     data[0] = ss;
-                    data[1] = Integer.toString(a.Points.DQ - (int) (Math.random() * (a.Points.DQ >> 1)));
-                    data[2] = Integer.toString(a.Points.TOTAL - a.Points.DQ - (int) (Math.random() * (a.Points.TOTAL >> 1)));
+                    data[1] = "0";
+                    data[2] = "0";
                 }
-                addDatum("grades_" + a.Name, data);
+                addDatum("grades_" + a.getName(), data);
             }
+
         }
+
+
+
     }
 
     /**

@@ -1,5 +1,6 @@
 package utils;
 
+import config.HandinPart;
 import rubric.TimeStatus;
 import java.util.Collection;
 import java.io.File;
@@ -122,27 +123,30 @@ public abstract class Project {
 
         Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(this.getHandin(studentLogin));
 
-        //TODO: Replace information out of the database instead
-        Assignment asgn = null;
-        for(Assignment a : ConfigurationManager.getAssignments()){
-            if(a.Name.equalsIgnoreCase(this.getName())){
-                asgn = a;
+        HandinPart part = null;
+        for(config.Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()){
+            if(asgn.getName().equalsIgnoreCase(this.getName())){
+                part = asgn.getHandinPart();
             }
         }
-        if(asgn == null){
+
+        if(part == null){
             throw new Error("No information in the configuration could be found for " + this.getName());
         }
-        //END
 
-        if (asgn.Early != null && Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, asgn.Early, minutesOfLeniency)) {
+        Calendar early = part.getTimeInformation().getEarlyDate();
+        Calendar ontime = part.getTimeInformation().getOntimeDate();
+        Calendar late = part.getTimeInformation().getLateDate();
+
+        if (early != null && Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, early, minutesOfLeniency)) {
             return TimeStatus.EARLY;
         }
 
-        if (asgn.Ontime != null && Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, asgn.Ontime, minutesOfLeniency)) {
+        if (ontime != null && Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, ontime, minutesOfLeniency)) {
             return TimeStatus.ON_TIME;
         }
 
-        if (asgn.Late != null && Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, asgn.Late, minutesOfLeniency)) {
+        if (late != null && Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, late, minutesOfLeniency)) {
             return TimeStatus.LATE;
         }
 

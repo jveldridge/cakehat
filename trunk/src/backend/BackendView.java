@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * BackendView.java
  *
  * Created on Sep 25, 2009, 4:38:38 PM
@@ -34,10 +29,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import utils.Allocator;
-import utils.Assignment;
-import utils.AssignmentType;
 import utils.BashConsole;
-import utils.ConfigurationManager;
 
 /**
  *
@@ -526,21 +518,11 @@ public class BackendView extends javax.swing.JFrame {
     @Action
     public void previewRubricButtonActionPerformed() {
         Vector<Object> v = new Vector<Object>();
-        for (String s : OldDatabaseOps.getAssignmentNames()) {
-            if (OldDatabaseOps.getAssignmentType(s) == AssignmentType.PROJECT) {
-                v.add(s);
-            }
+        for(config.Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()){
+            v.add(asgn.getName());
         }
-        //Add Final projects based on data from config file
-        if (v.contains("Final")) {
-            v.remove("Final");
-        }
-        //Todo: Store final project data in the database somehow?
-        for (Assignment asgn : ConfigurationManager.getAssignments()) {
-            if (asgn.Type == AssignmentType.FINAL) {
-                v.add(asgn.Name);
-            }
-        }
+
+
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png"); // NOI18N
         String message = "Choose Project to Preview";
         String project = (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Project", JOptionPane.PLAIN_MESSAGE, icon, v.toArray(), null);
