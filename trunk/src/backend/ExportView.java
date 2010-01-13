@@ -168,10 +168,20 @@ public class ExportView extends javax.swing.JFrame {
                         sb.append(logins_names[j]._lname + "," + logins_names[j]._fname + "," + logins_names[j]._login + ",");
                         for (int i = 0; i < assignmentNames.length; i++) {
                             sb.append(OldDatabaseOps.getStudentEarnedScore(assignmentNames[i], logins_names[j]._login) + ",");
-                            try {
-                                sb.append(Allocator.getProject(assignmentNames[i]).getTimeStatus(logins_names[j]._login, Allocator.getCourseInfo().getMinutesOfLeniency()));
-                            } catch (Exception e) {
+                            
+                            //Hacky code to find the appropriate handin part
+                            config.HandinPart part = null;
+                            for(config.Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()){
+                                if(asgn.getName().equalsIgnoreCase(assignmentNames[i])){
+                                    part = asgn.getHandinPart();
+                                }
                             }
+                            //If found, writes the handin status
+                            if(part != null){
+                                sb.append(Allocator.getRubricManager().getTimeStatus(part, logins_names[j]._login));
+                            }
+
+
                             if (i < assignmentNames.length - 1) {
                                 sb.append(",");
                             }

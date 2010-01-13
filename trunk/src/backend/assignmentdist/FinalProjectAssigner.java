@@ -75,7 +75,14 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
         _handinsTograde = Collections.synchronizedCollection(new LinkedList<String>());
         int i = 0;
         for (String name : _projNames) {
-            Collection<String> c = Allocator.getProject(name).getHandinLogins();
+            //Hacky code to get the correct assignment using the new configuration code
+            Collection<String> c = null;
+            for(config.Assignment a : Allocator.getCourseInfo().getHandinAssignments()){
+                if(a.getName().equalsIgnoreCase(name)){
+                    c = a.getHandinPart().getHandinLogins();
+                }
+            }
+
             _projTotals[i++] = c.size();
             c.removeAll(allhandins); //Remove students already assigned to tas
             _handinsTograde.addAll(c);
