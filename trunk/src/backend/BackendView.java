@@ -52,7 +52,7 @@ public class BackendView extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 if (!GradeSystemApp._testing) {
-                    String cmd = "cp " + Allocator.getCourseInfo().getDatabaseFilePath() + " " + Allocator.getCourseInfo().getDatabaseBackupDir() + "cs015db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
+                    String cmd = "cp " + Allocator.getCourseInfo().getDatabaseFilePath() + " " + Allocator.getCourseInfo().getDatabaseBackupDir() + "database_backup_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
                     BashConsole.writeThreaded(cmd);
                 }
             }

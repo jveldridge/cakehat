@@ -34,13 +34,6 @@ public class CourseInfo
         }
     }
 
-    // Test main
-    public static void main(String[] args)
-    {
-        //CourseInfo.class.getProtectionDomain().getCodeSource().getLocation();
-        System.out.println(CourseInfo.class.getProtectionDomain().getCodeSource().getLocation());
-    }
-
     //           Directly from configuration
 
     /**
@@ -218,7 +211,6 @@ public class CourseInfo
             }
         }
 
-
         return _handinAssignments;
     }
 
@@ -242,7 +234,6 @@ public class CourseInfo
                 }
             }
         }
-
 
         return _nonHandinAssignments;
     }
@@ -268,63 +259,115 @@ public class CourseInfo
             }
         }
 
-
         return _labAssignments;
     }
 
+    /**
+     * The course's test account.
+     *
+     * <course>000
+     *
+     * @return
+     */
     public String getTestAccount()
     {
         return getCourse() + "000";
     }
 
+    /**
+     * The course's student group.
+     *
+     * <course>student
+     *
+     * @return
+     */
     public String getStudentGroup()
     {
         return getCourse() + "student";
     }
 
+    /**
+     * Course directory.
+     *
+     * /course/<course>/
+     *
+     * @return
+     */
     public String getCourseDir()
     {
         return "/course/" + getCourse() + "/";
     }
 
+    /**
+     * Handin directory.
+     *
+     * /course/<course>/handin/
+     *
+     * @return
+     */
     public String getHandinDir()
     {
         return getCourseDir() + "handin/";
     }
 
-    //TODO: Switch to cakehat
+    /**
+     * The directory where cakehat exists.
+     *
+     * /course/<course>/cakehat/
+     *
+     * @return
+     */
     public String getGradingDir()
     {
-        return getCourseDir() + "grading/";
+        return getCourseDir() + "cakehat/";
     }
 
+    /**
+     * The directory where the lab check off data is stored.
+     *
+     * /course/<course>/cakehat/<current year>/labs/
+     *
+     * @return
+     */
     public String getLabsDir()
     {
-        return getGradingDir() + "labs/";
+        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/labs/";
     }
 
-    //TODO: have directory just for database and config file
-    //TODO: Change back to config.xml
-    public String getConfigFilePath()
+    /**
+     * The top level directory that stores all of the GML rubric files.
+     *
+     * /course/<course>/cakehat/<current year>/rubrics/
+     *
+     * @return
+     */
+    public String getRubricDir()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/" + "config_new_test.xml";
+        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/rubrics/";
     }
 
-    public String getRubricDirectoryPath()
-    {
-        return getGradingDir() + "rubrics/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
-    }
-
-    //TODO: have directory just for database and config file
+    /**
+     * The path to the database file.
+     *
+     * /course/<course>/cakehat/<current year>/database/database.db
+     *
+     * @return
+     */
     public String getDatabaseFilePath()
     {
-        return getGradingDir() + "bin/" + Allocator.getGeneralUtilities().getCurrentYear() + "/cs015Database.db";
+        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/database.db";
     }
 
-    //TODO: have directory just for database and config file
+    /**
+     * The directory that backups of the database are put in.
+     *
+     * /course/<course>/cakehat/<current year>/database/backups/
+     *
+     * @return
+     */
     public String getDatabaseBackupDir()
     {
-        return getGradingDir() + "bin/" + Allocator.getGeneralUtilities().getCurrentYear() + "/bak/";
+        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/backups/";
     }
 
     // E-mail domain (technically not course info, but no better place to put it)
