@@ -4,7 +4,7 @@
 package gradesystem;
 
 import backend.BackendView;
-import frontend.NewFrontendView;
+import frontend.FrontendView;
 import java.awt.Font;
 import javax.swing.UIManager;
 import org.jdesktop.application.Application;
@@ -63,7 +63,7 @@ public class GradeSystemApp extends SingleFrameApplication {
                 bv.setLocationRelativeTo(null);
                 show(bv);
             } else if (_args[0].compareToIgnoreCase("frontend") == 0) {
-                NewFrontendView fv = new NewFrontendView();
+                FrontendView fv = new FrontendView();
                 show(fv); //Is this necessary?
             }
             _testing = false;
