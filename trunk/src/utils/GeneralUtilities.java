@@ -1,13 +1,21 @@
 package utils;
 
 import com.ice.tar.TarArchive;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
-import javax.mail.*;
-import javax.mail.internet.*;
-import java.util.*;
-import javax.activation.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Vector;
+
 
 /**
  * Utilities that are useful for any course.
@@ -85,99 +93,6 @@ public class GeneralUtilities {
     }
 
     /**
-     * @deprecated use config.EmailAccount's sendMail methods.
-     *
-     * Sends email through the cs department smtps server
-     * Attaches a list of files to the email
-     *
-     * @author aunger 12/10/09
-     *
-     * @param from
-     * @param to array of addresses
-     * @param cc array of addresses
-     * @param bcc array of addresses
-     * @param subject
-     * @param body
-     * @param attachmentNames files paths to the attachments
-     */
-    public void sendMail(String from, String[] to, String[] cc, String[] bcc, String subject, String body, String[] attachmentNames) {
-        System.setProperty("javax.net.ssl.trustStore", Allocator.getConstants().getEmailCertPath());
-        System.setProperty("javax.net.ssl.trustStorePassword", Allocator.getConstants().getEmailCertPassword());
-        Properties props = new Properties();
-        props.put("mail.transport.protocol", "smtps");
-        props.put("mail.smtps.host", Allocator.getConstants().getEmailHost());
-        props.put("mail.smtps.user", Allocator.getConstants().getEmailAccount());
-        props.put("mail.smtp.host", Allocator.getConstants().getEmailHost());
-        props.put("mail.smtp.port", Allocator.getConstants().getEmailPort());
-        props.put("mail.smtp.ssl.enable", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        //props.put("mail.smtp.debug", "true");
-        props.put("mail.smtp.socketFactory.port", Allocator.getConstants().getEmailPort());
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.socketFactory.fallback", "false");
-
-        try {
-            Authenticator auth = new javax.mail.Authenticator() {
-                public PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(Allocator.getConstants().getEmailAccount(),
-                                                      Allocator.getConstants().getEmailPassword());
-                }
-            };
-            Session session = Session.getInstance(props, auth);
-            //session.setDebug(true);
-
-            MimeMessage msg = new MimeMessage(session);
-            msg.setSubject(subject);
-            msg.setFrom(new InternetAddress(from));
-
-            //TODO: Fix this to something less hacky
-            if (Arrays.toString(to).length() > 2) { //checks that "to" array is not empty
-                for (String s : to) {
-                    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(s));
-                }
-            }
-            if (Arrays.toString(cc).length() > 2) {
-                for (String s : cc) {
-                    msg.addRecipient(Message.RecipientType.CC, new InternetAddress(s));
-                }
-            }
-            if (Arrays.toString(bcc).length() > 2) {
-                for (String s : bcc) {
-                    msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(s));
-                }
-            }
-
-            // multi part message to add parts to
-            Multipart multipart = new MimeMultipart();
-
-            // add message text
-            MimeBodyPart mainTextPart = new MimeBodyPart();
-            mainTextPart.setContent("<html>" + body + "</html>", "text/html");
-            multipart.addBodyPart(mainTextPart);
-
-            //for each file to attach
-            if (Arrays.toString(attachmentNames).length() > 2) { //if not empty
-                for (String s : attachmentNames) {
-                    // add attachments
-                    MimeBodyPart attachmentPart = new MimeBodyPart();
-                    DataSource source = new FileDataSource(s);
-                    attachmentPart.setDataHandler(new DataHandler(source));
-                    attachmentPart.setFileName(s.substring(s.lastIndexOf("/")+1));
-                    multipart.addBodyPart(attachmentPart);
-                }
-            }
-            // Put parts in message
-            msg.setContent(multipart);
-
-            // send message
-            Transport.send(msg);
-        } catch (Exception mex) {
-            mex.printStackTrace();
-        }
-    }
-
-    /**
      * Reads a text file into a String.
      *
      * @param the file to read
@@ -240,9 +155,9 @@ public class GeneralUtilities {
      */
     public Iterable<String> getStudentLogins() {
         //Get list of members to the student group
-        List<String> list = Arrays.asList(getMembers(Allocator.getConstants().getStudentGroup()));
+        List<String> list = Arrays.asList(getMembers(Allocator.getCourseInfo().getStudentGroup()));
         //Remove test account from list
-        list.remove(Allocator.getConstants().getTestAccount());
+        list.remove(Allocator.getCourseInfo().getTestAccount());
         
         return list;
     }

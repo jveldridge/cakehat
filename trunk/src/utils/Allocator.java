@@ -12,23 +12,7 @@ import java.util.HashMap;
  * @author jak2 (Joshua Kaplan)
  */
 public class Allocator {
-
-    //Constants
-    private static Constants CONSTANTS = null;
-    /**
-     * @deprecated To be replaced by Allocator.getCourseInfo();
-     * @return
-     */
-    public static Constants getConstants(){
-        if(CONSTANTS == null){
-            CONSTANTS = new CS015Constants(); //Change as appropriate
-        }
-
-        return CONSTANTS;
-    }
-
-    //New constants
-    //TODO: Eventually remove above Constants and replace with this
+    //Course info and constats
     private static config.CourseInfo COURSE_INFO = null;
     public static config.CourseInfo getCourseInfo(){
         if(COURSE_INFO == null){
@@ -118,7 +102,7 @@ public class Allocator {
         //Otherwise create the project and store it
         else {
             //Build path to handin directory
-            String prjPath = Allocator.getConstants().getHandinDir() + name + "/";
+            String prjPath = Allocator.getCourseInfo().getHandinDir() + name + "/";
             //Check if directory exists
             if(new File(prjPath).exists()) {
                 prj = new CS015Project(name); //Change as appropriate

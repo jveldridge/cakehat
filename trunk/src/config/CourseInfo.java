@@ -82,7 +82,7 @@ public class CourseInfo
      *
      * @return
      */
-    public int getMinutuesOfLeniency()
+    public int getMinutesOfLeniency()
     {
         return _config.getLeniency();
     }
@@ -282,7 +282,7 @@ public class CourseInfo
     }
 
     //TODO: Switch to cakehat
-      public String getGradingDir(){
+    public String getGradingDir(){
         return getCourseDir() + "grading/";
     }
 

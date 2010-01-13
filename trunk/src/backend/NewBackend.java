@@ -1355,7 +1355,7 @@ public class NewBackend extends javax.swing.JFrame {
                 }
 
                 //if there is no rubric, disable rubric related buttons
-                String rubricPath = Allocator.getConstants().getRubricDirectoryPath() +
+                String rubricPath = Allocator.getCourseInfo().getRubricDirectoryPath() +
                                     this.getSelectedAssignment() + "/" + this.getSelectedStudent() + ".gml";
                 if(!new File(rubricPath).exists()) {
                     viewRubricButton.setEnabled(false);
