@@ -60,7 +60,7 @@ public class BackendView extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 if (!GradeSystemApp._testing) {
-                    String cmd = "cp " + Allocator.getConstants().getDatabaseFilePath() + " " + Allocator.getConstants().getDatabaseBackupDir() + "cs015db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
+                    String cmd = "cp " + Allocator.getCourseInfo().getDatabaseFilePath() + " " + Allocator.getCourseInfo().getDatabaseBackupDir() + "cs015db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
                     BashConsole.writeThreaded(cmd);
                 }
             }
@@ -460,7 +460,7 @@ public class BackendView extends javax.swing.JFrame {
     private void m_importLabsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_importLabsButtonActionPerformed
         //THE LABS IN THE DATABASE MUST BE IN NUMERICAL ORDER OR THIS WILL NOT WORK
 
-        File labDir = new File(Allocator.getConstants().getLabsDir());
+        File labDir = new File(Allocator.getCourseInfo().getLabsDir());
         File[] fileList = labDir.listFiles(new FileFilter() {
 
             public boolean accept(File pathname) {

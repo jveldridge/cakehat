@@ -45,7 +45,7 @@ public abstract class Project {
      * @return handin path
      */
     private String getHandinPath() {
-        String path = Allocator.getConstants().getHandinDir()
+        String path = Allocator.getCourseInfo().getHandinDir()
                       + this.getName() + "/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
         return path;
     }

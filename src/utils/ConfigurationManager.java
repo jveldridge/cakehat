@@ -12,9 +12,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-//TODO: Have better error management. Currently throwing Error, which is a rather dirty hack.
 /**
  * @deprecated to be replaced by config.CourseInfo
+ * 
  * Allows retrieval of data from the config file.
  *
  * @author jak2 (Joshua Kaplan)
@@ -50,7 +50,7 @@ public class ConfigurationManager {
      */
     private static Configuration getInstance() {
         if (_config == null) {
-            _config = processXML(Allocator.getConstants().getConfigFilePath());
+            _config = processXML("/course/cs015/grading/bin/2009/config_new_test.xml");
         }
         return _config;
     }

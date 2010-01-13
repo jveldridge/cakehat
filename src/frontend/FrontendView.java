@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -16,10 +15,10 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import utils.Allocator;
 import utils.BashConsole;
 import utils.ErrorView;
-import utils.FileViewerView;
 
 /**
  * This class provides the frontend iterface for TAs when grading.  From here,
@@ -62,7 +61,7 @@ public class FrontendView extends javax.swing.JFrame {
         
         this.updateFormComponents();
 
-        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getConstants().getCourse() + " Grader");
+        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + " - " + Allocator.getCourseInfo().getCourse() + " Grader");
 
         //untar all students' code for the initially selected project
         Allocator.getProject(getSelectedAssignment()).untar(getJListAsVector(studentList));
@@ -709,6 +708,8 @@ public class FrontendView extends javax.swing.JFrame {
      * @param evt
      */
     private void viewGradingStandardsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewGradingStandardsButtonActionPerformed
+        throw new UnsupportedOperationException("Relies upon old code that has been removed. For this functionality use NewFrontendView.");
+        /*
         String selectedAssignment = this.getSelectedAssignment();
 
         if(selectedAssignment != null){
@@ -716,6 +717,7 @@ public class FrontendView extends javax.swing.JFrame {
             FileViewerView fv = new FileViewerView(list);
             fv.setTitle(selectedAssignment + " Deductions List");
         }
+        */
 }//GEN-LAST:event_viewGradingStandardsButtonActionPerformed
 
     /**

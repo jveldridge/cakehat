@@ -63,6 +63,8 @@ public class CS015Project extends Project {
      * @return tester
      */
     private File getTester(){
+        throw new UnsupportedOperationException("This functionality is no longer supported. Use config.HandinPart subclasses.");
+        /*
         //If the tester has already been looked for, look for what has been stored
         if(_lookedForTester){
             return _tester;
@@ -86,6 +88,7 @@ public class CS015Project extends Project {
 
         //No tester was found
         return null;
+         */
     }
 
     /**
@@ -97,7 +100,8 @@ public class CS015Project extends Project {
      * @return tester's existance
      */
     public boolean hasTester(){
-        return (getTester() != null);
+        return false;
+        //return (getTester() != null);
     }
 
     /**
@@ -110,6 +114,7 @@ public class CS015Project extends Project {
      * @param studentLogin
      */
     public void runTester(String studentLogin){
+        /*
         //Print error and bail if there is no tester to run
         if(!hasTester()){
             System.err.println(this.getName() + " does not have a tester.");
@@ -142,15 +147,20 @@ public class CS015Project extends Project {
         String testerName = relativePath.replace("/", ".").replace(".java","");
         executeJavaInVisibleTerminal(compileDir, testerName,
                                                                      CLASSPATH, "Testing " + studentLogin + "'s " + this.getName());
+         */
+        throw new UnsupportedOperationException("This functionality is no longer supported. Use config.HandinPart subclasses.");
     }
 
     public void runDemo(){
+        /*
        String cmd = "java -Djava.library.path=" + LIBRARY_PATH +
                      " -jar " + Allocator.getConstants().getDemoDir()
                               + this.getName() + "/" + this.getName() + ".jar";
 
 
         BashConsole.writeThreaded(cmd);
+         */
+        throw new UnsupportedOperationException("This functionality is no longer supported. Use config.HandinPart subclasses.");
     }
 
     public void print(String studentLogin, String printer){

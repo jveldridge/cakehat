@@ -169,7 +169,7 @@ public class ExportView extends javax.swing.JFrame {
                         for (int i = 0; i < assignmentNames.length; i++) {
                             sb.append(OldDatabaseOps.getStudentEarnedScore(assignmentNames[i], logins_names[j]._login) + ",");
                             try {
-                                sb.append(Allocator.getProject(assignmentNames[i]).getTimeStatus(logins_names[j]._login, Allocator.getConstants().getMinutesOfLeniency()));
+                                sb.append(Allocator.getProject(assignmentNames[i]).getTimeStatus(logins_names[j]._login, Allocator.getCourseInfo().getMinutesOfLeniency()));
                             } catch (Exception e) {
                             }
                             if (i < assignmentNames.length - 1) {

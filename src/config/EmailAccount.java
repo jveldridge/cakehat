@@ -71,15 +71,15 @@ public class EmailAccount
             //Build properties
             _properties = new Properties();
             _properties.put("mail.transport.protocol", "smtps");
-            _properties.put("mail.smtps.host", Allocator.getConstants().getEmailHost());
+            _properties.put("mail.smtps.host", Allocator.getCourseInfo().getEmailHost());
             _properties.put("mail.smtps.user", _login);
-            _properties.put("mail.smtp.host", Allocator.getConstants().getEmailHost());
-            _properties.put("mail.smtp.port", Allocator.getConstants().getEmailPort());
+            _properties.put("mail.smtp.host", Allocator.getCourseInfo().getEmailHost());
+            _properties.put("mail.smtp.port", Allocator.getCourseInfo().getEmailPort());
             _properties.put("mail.smtp.ssl.enable", "true");
             _properties.put("mail.smtp.starttls.enable", "true");
             _properties.put("mail.smtp.auth", "true");
             //props.put("mail.smtp.debug", "true");
-            _properties.put("mail.smtp.socketFactory.port", Allocator.getConstants().getEmailPort());
+            _properties.put("mail.smtp.socketFactory.port", Allocator.getCourseInfo().getEmailPort());
             _properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             _properties.put("mail.smtp.socketFactory.fallback", "false");
         }

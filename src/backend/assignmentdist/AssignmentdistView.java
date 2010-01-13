@@ -419,12 +419,12 @@ public class AssignmentdistView extends javax.swing.JFrame {
         String asgn = (String)assignmentNameComboBox.getSelectedItem();
 
         //create rubric directory if it does not exist
-        String directoryPath = Allocator.getConstants().getRubricDirectoryPath() + asgn + "/";
+        String directoryPath = Allocator.getCourseInfo().getRubricDirectoryPath() + asgn + "/";
         Allocator.getGeneralUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");
-        int minsLeniency = Allocator.getConstants().getMinutesOfLeniency();
+        int minsLeniency = Allocator.getCourseInfo().getMinutesOfLeniency();
         if ((input != null) && (input.length() != 0)) {
             minsLeniency = Integer.parseInt(input);
         }
