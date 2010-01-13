@@ -25,9 +25,6 @@ import java.util.TimerTask;
 import javax.swing.JList;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Allocator;
-import utils.Assignment;
-import utils.AssignmentType;
-import utils.ConfigurationManager;
 import utils.ErrorView;
 
 /**
@@ -452,14 +449,11 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
      * @return
      */
     private ArrayList<String> getFinalProjects() {
-        Iterable<Assignment> asgns = ConfigurationManager.getAssignments();
         ArrayList<String> finalprojects = new ArrayList<String>();
-        for (Assignment a : asgns) {
-            if (a.Type.compareTo(AssignmentType.FINAL) == 0) {
-                finalprojects.add(a.Name);
-            }
-        }
-        Collections.sort(finalprojects);
+        finalprojects.add("Adventure");
+        finalprojects.add("Othello");
+        finalprojects.add("Sketchy");
+
         return finalprojects;
     }
 

@@ -13,12 +13,14 @@ package backend.assignmentdist;
 
 import backend.OldDatabaseOps;
 import config.Assignment;
+import config.TA;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -27,7 +29,6 @@ import javax.swing.table.DefaultTableModel;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Allocator;
 import utils.AssignmentType;
-import utils.ConfigurationManager;
 import utils.ErrorView;
 
 /**
@@ -67,11 +68,10 @@ public class AssignmentdistView extends javax.swing.JFrame {
             mainTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, new String[]{}));
             mainTable.removeAll();
             DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
-            Iterable<String> taNames = ConfigurationManager.getGraderLogins();//DatabaseInterops.getTANames();
             m.addColumn("TA Login");
             m.addColumn("Max Number to Grade");
-            for (String s : taNames) {
-                m.addRow(new String[] {s, "0"});
+            for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
+                m.addRow(new String[] {grader.getLogin(), "0"});
             }
 
         } catch (Exception e) {
@@ -206,13 +206,16 @@ public class AssignmentdistView extends javax.swing.JFrame {
 
         //System.out.println(students);
 
-        //String[] taNames = ConfigurationManager.getGraderLogins();
-        String[] taNames = Arrays.asList(ConfigurationManager.getGraderLogins()).toArray(new String[0]);
+        Vector<String> taLogins = new Vector<String>();
+        for(TA grader : Allocator.getCourseInfo().getDefaultGraders()){
+            taLogins.add(grader.getLogin());
+        }
+        String[] taNames = taLogins.toArray(new String[0]);
 
 
         HashMap<String,String> distribution = new HashMap<String,String>();
-        for (String grader : ConfigurationManager.getGraderLogins()) {
-            distribution.put(grader, new String());
+        for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
+            distribution.put(grader.getLogin(), new String());
 }
 
         double double_ceil_avg = Math.floor((double) studNames.length / (double) taNames.length);
@@ -343,8 +346,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
         //convert the hashmap to an array of strings to be added to the database using Paul's code
         String[] studentsToGrade = new String[taNames.length];
         int j = 0;
-        for (String grader : ConfigurationManager.getGraderLogins()) {
-            String temp = distribution.get(grader);
+        for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
+            String temp = distribution.get(grader.getLogin());
             studentsToGrade[j] = temp;
             j++;
         }
