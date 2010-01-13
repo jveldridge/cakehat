@@ -264,6 +264,63 @@ public class RubricMananger
     }
 
     /**
+     * Reads out the time status information from a student's rubric.
+     * If the student's rubric cannot be parsed for any reason null will be
+     * returned.
+     *
+     * @param part
+     * @param studentLogin
+     */
+     public TimeStatus getTimeStatus(HandinPart part, String studentLogin)
+     {
+         try
+         {
+            //Get rubric
+            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
+            
+            return rubric.getStatus();
+            
+         }
+         catch(RubricException e)
+         {
+             new ErrorView(e);
+         }
+         
+         return null;
+     }
+
+     /**
+      * Sets the student's rubric to the given time status and days late. If days late is not
+      * applicable pass in 0.
+      *
+      * @param part
+      * @param studentLogin
+      * @param status
+      * @param daysLate
+      */
+     public void setTimeStatus(HandinPart part, String studentLogin, TimeStatus status, int daysLate)
+     {
+         try
+         {
+            //Get rubric
+            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
+
+            //Change status and days late
+            rubric.setStatus(status);
+            rubric.setDaysLate(daysLate);
+
+            //Write changes
+            RubricGMLWriter.write(rubric, xmlPath);
+         }
+         catch(RubricException e)
+         {
+             new ErrorView(e);
+         }
+     }
+
+    /**
      * Changes the grader of the rubric. Only makes changes in the rubric itself,
      * this has no effect on any information in the database.
      *

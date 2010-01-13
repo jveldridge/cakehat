@@ -192,9 +192,14 @@ public class AssignmentdistView extends javax.swing.JFrame {
 }
 }
 
-        String[] studNames = Allocator.getProject(asgn).getHandinLogins().toArray(new String[0]);
-        //ProjectManager.getHandinLogins(Project.getInstance((String)assignmentNameComboBox.getSelectedItem())).toArray(new String[0]);//DatabaseInterops.getStudentNames();
-
+        //Hacky code to get the correct assignment using the new configuration code
+        String[] studNames = null;
+        for(config.Assignment a : Allocator.getCourseInfo().getHandinAssignments()){
+            if(a.getName().equalsIgnoreCase(asgn)){
+                studNames = a.getHandinPart().getHandinLogins().toArray(new String[0]);
+            }
+        }
+        
         List<String> shuffledStudents = Arrays.asList(studNames);
         Collections.shuffle(shuffledStudents);
         studNames = shuffledStudents.toArray(new String[0]);

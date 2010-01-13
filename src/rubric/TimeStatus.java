@@ -11,8 +11,6 @@ import config.LatePolicy;
  * For LatePolicy.DAILY_DEDUCTION: ON_TIME, LATE
  * For MULTIPLE_DEADLINES: EARLY, ON_TIME, LATE, NC_LATE
  *
- * TODO: After more old code is removed, make TimeStatus package private.
- *
  * @author jak2
  */
 public enum TimeStatus
