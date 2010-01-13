@@ -20,15 +20,15 @@ import utils.ErrorView;
  *
  * @author jak2
  */
-class RubricXMLWriter implements RubricConstants
+class RubricGMLWriter implements RubricConstants
 {
     /**
-     * Writes a Rubric to XML.
+     * Writes a Rubric to GML.
      *
      * @param rubric
-     * @param XMLFilePath
+     * @param filepath location to write file to
      */
-    static void write(Rubric rubric, String XMLFilePath)
+    static void write(Rubric rubric, String filepath)
     {
         Document document = createXMLDocument();
 
@@ -174,7 +174,7 @@ class RubricXMLWriter implements RubricConstants
         //Append rubric to document
         document.appendChild(rubricNode);
 
-        saveXMLFile(document, XMLFilePath);
+        saveXMLFile(document, filepath);
     }
 
     private static Document createXMLDocument()
@@ -214,7 +214,7 @@ class RubricXMLWriter implements RubricConstants
             transformer.transform(source, result);
 
             // ensure the file written has the correct permissions
-            BashConsole.write("chmod 660 -R " + XMLFilePath);
+            BashConsole.write("chmod 660 " + XMLFilePath);
         }
         catch (Exception e)
         {

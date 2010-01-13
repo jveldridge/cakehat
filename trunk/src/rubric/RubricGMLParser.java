@@ -1,6 +1,5 @@
 package rubric;
 
-import config.Assignment;
 import config.HandinPart;
 import java.io.File;
 
@@ -19,52 +18,27 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import utils.Allocator;
 
 /**
+ * Parses out a GML file and constructs a Rubric.
  *
  * @author jak2
  */
-class RubricXMLParser implements RubricConstants
+class RubricGMLParser implements RubricConstants
 {
     /**
-     * Test main.
-     * 
-     * @param args
-     * @throws RubricException
-     */
-    public static void main(String[] args) throws RubricException
-    {
-        //Hack for testing to get the Adventure assignment
-        Assignment asgn = null;
-        for(Assignment a : Allocator.getCourseInfo().getHandinAssignments())
-        {
-            if(a.getName().equals("Cartoon"))
-            {
-                asgn = a;
-            }
-        }
-
-        Rubric rubric = parse("/Users/nonother/Desktop/gml_test.gml", asgn.getHandinPart());
-
-        RubricGRDWriter.write(rubric, "/Users/nonother/Desktop/grd_test.grd");
-        
-        GradingVisualizer.testView(rubric, "/Users/nonother/Desktop/gml_test.gml");
-        //new PreviewVisualizer(rubric);
-    }
-
-    /**
-     * Converts XML to a Rubric.
+     * Converts GML to a Rubric.
      *
-     * @param XMLFilePath
+     * @param filepath path to the GML file
+     * @param HandinPart the handin associated with this GML file
      * @return
      */
-    static Rubric parse(String XMLFilePath, HandinPart part) throws RubricException
+    static Rubric parse(String filepath, HandinPart part) throws RubricException
     {
         Rubric rubric = new Rubric(part);
 
         //Get XML as a document
-        Document document = getDocument(XMLFilePath);
+        Document document = getDocument(filepath);
 
         //Get root node
         Node rubricNode = getRootNode(document);
@@ -78,13 +52,13 @@ class RubricXMLParser implements RubricConstants
         return rubric;
     }
 
-    private static Document getDocument(String XMLFilePath) throws RubricException
+    private static Document getDocument(String filepath) throws RubricException
     {
         //Check if file exists
-        File file = new File(XMLFilePath);
+        File file = new File(filepath);
         if(!file.exists())
         {
-            throw new RubricException("Rubric could not be read, location specified: " + XMLFilePath);
+            throw new RubricException("Rubric could not be read, location specified: " + filepath);
         }
 
         Document document = null;
@@ -96,7 +70,7 @@ class RubricXMLParser implements RubricConstants
         }
         catch (Exception e)
         {
-            throw new RubricException("Exception thrown during parsing, " + XMLFilePath + " is illegally formatted. \n" + e.getMessage());
+            throw new RubricException("Exception thrown during parsing, " + filepath + " is illegally formatted. \n" + e.getMessage());
         }
 
         return document;

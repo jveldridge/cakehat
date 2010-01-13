@@ -4,11 +4,29 @@ import config.GradeUnits;
 import config.HandinPart;
 import config.LatePolicy;
 
+/**
+ * Represents the status of a turned in assignment. Not all of these are
+ * applicable given the LatePolicy.
+ * For LatePolicy.NO_LATE: ON_TIME, NC_LATE
+ * For LatePolicy.DAILY_DEDUCTION: ON_TIME, LATE
+ * For MULTIPLE_DEADLINES: EARLY, ON_TIME, LATE, NC_LATE
+ *
+ * TODO: After more old code is removed, make TimeStatus package private.
+ *
+ * @author jak2
+ */
 public enum TimeStatus
 {
-    ON_TIME, LATE, EARLY, NC_LATE;
+    EARLY, ON_TIME, LATE, NC_LATE;
 
-    public String getPrettyPrintName()
+    /**
+     * Returns a nicely formatted String representation.
+     * Only use this for display or printing purposes, never for storing in a
+     * database or XML.
+     *
+     * @return
+     */
+    String getPrettyPrintName()
     {
         switch(this)
         {
@@ -25,7 +43,13 @@ public enum TimeStatus
         }
     }
 
-    public static TimeStatus getStatus(String statusString)
+    /**
+     * Returns the TimeStatus corresponding to the string passed in.
+     *
+     * @param statusString
+     * @return
+     */
+    static TimeStatus getStatus(String statusString)
     {
         for(TimeStatus status : values())
         {
@@ -38,6 +62,20 @@ public enum TimeStatus
         throw new Error("Invalid status string: " + statusString);
     }
 
+    /**
+     * Calculates the appropriate deduction based on which TimeStatus value this
+     * is, what the LatePolicy governing this assignment is, and whether the
+     * LatePolicy applies to the entire rubric (AFFECT-ALL="TRUE") or just the
+     * handin parts of the rubric (AFFECT-ALL="FALSE").
+     *
+     * If NC_LATE, then all points will be deducted. (Whether that will be all
+     * of the points in the assignment or all the points in the handin depends
+     * on the AFFECT-ALL value.)
+     *
+     * @param part
+     * @param rubric
+     * @return
+     */
     double getDeduction(HandinPart part, Rubric rubric)
     {
         double outOf = 0;
@@ -61,9 +99,9 @@ public enum TimeStatus
             return -points;
         }
 
-        // LatePolicy
         LatePolicy policy = part.getTimeInformation().getLatePolicy();
         GradeUnits units = part.getTimeInformation().getGradeUnits();
+
         if(policy == LatePolicy.DAILY_DEDUCTION)
         {
             if(this == LATE)

@@ -15,6 +15,12 @@ import javax.swing.SpringLayout;
 import rubric.Rubric.*;
 import utils.Allocator;
 
+/**
+ * A graphical view of a rubric.
+ *
+ * @author jak2
+ * @author spoletto
+ */
 class RubricPanel extends JPanel
 {
     private Rubric _rubric;
@@ -261,6 +267,7 @@ class RubricPanel extends JPanel
         this.addPanelBelow(panel);
     }
 
+    //TODO: Display each subsection's details
     private void displayExtraCredit()
     {
         int height = 0;

@@ -1,6 +1,8 @@
 package rubric;
 
 /**
+ * Constants of the XML tags and attributes used in the GML markup. Used for
+ * reading and writing the GML files.
  *
  * @author jak2
  */

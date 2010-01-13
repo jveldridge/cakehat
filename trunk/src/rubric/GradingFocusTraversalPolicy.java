@@ -3,11 +3,14 @@ package rubric;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
-
 import java.util.Vector;
-
 import javax.swing.JScrollBar;
 
+/**
+ * Governs the traversal policy of the GradingVisualizer.
+ *
+ * @author spoletto
+ */
 class GradingFocusTraversalPolicy extends FocusTraversalPolicy
 {
     private Vector<Component> _order;
