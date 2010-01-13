@@ -17,10 +17,10 @@ import utils.Allocator;
  */
 public class ConfigurationParser
 {
-    //For testing purposes
-    //Although this should be defined as a specific location in relation to a course directory
-    //As in, not configurable by by the config file
-    private final static String CONFIG_FILE_PATH = "/course/cs015/grading/bin/2009/config_new_spec.xml";
+    private final static String CONFIG_FILE_NAME = "config_new_spec.xml";
+
+    //For testing purposes, specifies what root directory to look for config file
+    private final static String CONFIG_TEST_DIR_PATH = "/course/cs015/grading/bin/";
 
     //String constants that represent the tags used in the XML markup
     private final static String TEXT_NODE = "#text", COMMENT_NODE = "#comment",
@@ -59,8 +59,31 @@ public class ConfigurationParser
     {
         Configuration config = new Configuration();
 
+        //Determine where the config file is
+        String filepath;
+        //Get the location of where this code is running
+        String loc = ConfigurationParser.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        //If this is actually the jar we are running from
+        if(loc.endsWith("GradeSystem.jar") && loc.startsWith("/course/cs"))
+        {
+            filepath = loc.substring(0,loc.lastIndexOf("GradeSystem.jar"));
+        }
+        //Otherwise we are testing, use the hardcoded testing path
+        else
+        {
+            filepath = CONFIG_TEST_DIR_PATH;
+        }
+        filepath += Allocator.getGeneralUtilities().getCurrentYear() + "/" + CONFIG_FILE_NAME;
+        
+        //Check the config file exists
+        if(!new File(filepath).exists())
+        {
+            throw new ConfigurationException("Could not find configuration file at: " + filepath);
+        }
+
+
         //Get XML as a document
-        Document document = getDocument(CONFIG_FILE_PATH);
+        Document document = getDocument(filepath);
 
         //Get root node
         Node configNode = getRootNode(document);
