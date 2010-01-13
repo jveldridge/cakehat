@@ -34,6 +34,13 @@ public class CourseInfo
         }
     }
 
+    // Test main
+    public static void main(String[] args)
+    {
+        //CourseInfo.class.getProtectionDomain().getCodeSource().getLocation();
+        System.out.println(CourseInfo.class.getProtectionDomain().getCodeSource().getLocation());
+    }
+
     //           Directly from configuration
 
     /**
@@ -265,62 +272,65 @@ public class CourseInfo
         return _labAssignments;
     }
 
-    public String getTestAccount(){
+    public String getTestAccount()
+    {
         return getCourse() + "000";
     }
 
-    public String getStudentGroup(){
+    public String getStudentGroup()
+    {
         return getCourse() + "student";
     }
 
-    public String getCourseDir(){
+    public String getCourseDir()
+    {
         return "/course/" + getCourse() + "/";
     }
 
-    public String getHandinDir(){
+    public String getHandinDir()
+    {
         return getCourseDir() + "handin/";
     }
 
     //TODO: Switch to cakehat
-    public String getGradingDir(){
+    public String getGradingDir()
+    {
         return getCourseDir() + "grading/";
     }
 
-    public String getLabsDir(){
+    public String getLabsDir()
+    {
         return getGradingDir() + "labs/";
     }
 
     //TODO: have directory just for database and config file
     //TODO: Change back to config.xml
-    public String getConfigFilePath(){
+    public String getConfigFilePath()
+    {
         return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/" + "config_new_test.xml";
     }
 
-    public String getRubricDirectoryPath() {
+    public String getRubricDirectoryPath()
+    {
         return getGradingDir() + "rubrics/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
     }
 
     //TODO: have directory just for database and config file
-    public String getDatabaseFilePath(){
+    public String getDatabaseFilePath()
+    {
         return getGradingDir() + "bin/" + Allocator.getGeneralUtilities().getCurrentYear() + "/cs015Database.db";
     }
 
     //TODO: have directory just for database and config file
-    public String getDatabaseBackupDir(){
+    public String getDatabaseBackupDir()
+    {
         return getGradingDir() + "bin/" + Allocator.getGeneralUtilities().getCurrentYear() + "/bak/";
     }
 
-    // E-mail
+    // E-mail domain (technically not course info, but no better place to put it)
 
-    public String getEmailDomain(){
+    public String getEmailDomain()
+    {
         return "cs.brown.edu";
-    }
-
-    public String getEmailHost(){
-        return "smtps.cs.brown.edu";
-    }
-
-    public String getEmailPort(){
-        return "465";
     }
 }
