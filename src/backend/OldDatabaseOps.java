@@ -4,6 +4,7 @@
  */
 package backend;
 
+import config.HandinPart;
 import config.NonHandinPart;
 import config.TA;
 import utils.AssignmentType;
@@ -11,13 +12,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.Vector;
 import org.tmatesoft.sqljet.core.SqlJetException;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import org.tmatesoft.sqljet.core.table.ISqlJetTransaction;
 import org.tmatesoft.sqljet.core.table.SqlJetDb;
 import utils.Allocator;
+import utils.ErrorView;
 
 /**
  *
@@ -81,6 +85,60 @@ public class OldDatabaseOps {
             e.printStackTrace();
         }
         return 0.0;
+    }
+
+    /**
+     * Returns a Collection of Strings of student logins that the TA with login
+     * taLogin is assigned to grade for the HandinPart part.
+     *
+     * @param assignmentName
+     * @param taLogin
+     * @return
+     */
+    public static Collection<String> getStudentsAssigned(HandinPart part, String taLogin)
+    {
+        try
+        {
+            if (db == null)
+            {
+                db = SqlJetDb.open(new File(Allocator.getCourseInfo().getDatabaseFilePath()), true);
+            }
+
+            ISqlJetCursor cursor = OldDatabaseOps.getItemWithFilter("assignment_dist", "ta_login_dist", taLogin);
+            if (cursor.eof())
+            {
+                cursor.close();
+            }
+            try
+            {
+                //TODO: Hack because CS015 database has Final instead of Adventure, Othello, Indy, & Sketchy
+                String prjName = part.getAssignment().getName();
+                if(prjName.equals("Sketchy") || prjName.equals("Adventure")
+                   || prjName.equals("Othello") || prjName.equals("Indy"))
+                {
+                    prjName = "Final";
+                }
+
+                String s = cursor.getString(prjName);
+                String[] students = new String[0];
+                if (s != null && !s.isEmpty())
+                {
+                    students = s.split(", ");
+                }
+
+                return Arrays.asList(students);
+            }
+            finally
+            {
+                cursor.close();
+            }
+        }
+        catch (Exception e)
+        {
+            new ErrorView(e);
+        }
+
+        return new Vector<String>();
     }
 
     /**

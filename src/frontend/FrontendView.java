@@ -1,7 +1,7 @@
 package frontend;
 
-import backend.OldDatabaseOps;
 import config.Assignment;
+import config.HandinPart;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -9,13 +9,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Allocator;
-import utils.ErrorView;
 
 /**
  * This class provides the frontend iterface for TAs when grading.  From here,
@@ -69,7 +68,6 @@ public class FrontendView extends javax.swing.JFrame {
         _codeButtons = new JButton[]{ runDemoButton, printAllButton, openButton, printButton, runTesterButton, runButton };
         _rubricButtons = new JButton[]{ gradeButton, submitGradesButton };
         _studentButtons = new JButton[]{ viewReadmeButton, openButton, printButton, runTesterButton, runButton, gradeButton };
-        OldDatabaseOps.open();
         
         Allocator.getGradingUtilities().makeUserGradingDirectory();
         
@@ -168,46 +166,23 @@ public class FrontendView extends javax.swing.JFrame {
     }
 
     /**
-     * TODO: Update this to the new database code. This is a huge hack right now.
+     * TODO: Update this to the new database code.
      * 
      * This method populates the studentList list with the logins of the students that the TA has been
      * assigned to grade (as recorded in the database) for the selected assignment.
      */
     private void populateStudentList() {
-        String user = Allocator.getGeneralUtilities().getUserLogin();
+        HandinPart part = this.getSelectedAssignment().getHandinPart();
+        if(part != null)
+        {
+            Collection<String> students = backend.OldDatabaseOps.getStudentsAssigned(part, Allocator.getGeneralUtilities().getUserLogin());
 
-        try {
-            ISqlJetCursor cursor = OldDatabaseOps.getItemWithFilter("assignment_dist", "ta_login_dist", user);
-            if (cursor.eof()) {
-                cursor.close();
-                return;
+            studentList.setListData(students.toArray());
+            if(students.size() != 0)
+            {
+                studentList.setSelectedIndex(0);
             }
-            try {
-                //TODO: Hack because CS015 database has Final instead of Adventure, Othello, Indy, & Sketchy
-                String prjName = this.getSelectedAssignment().getName();
-                if(prjName.equals("Sketchy") || prjName.equals("Adventure")
-                   || prjName.equals("Othello") || prjName.equals("Indy")){
-                    prjName = "Final";
-                }
-
-                String s = cursor.getString(prjName);
-                if (s == null) {
-                    s = "";
-                }
-                String[] ss = s.split(", ");
-                studentList.setListData(ss);
-                if (studentList.getModel().getSize() > 0) {
-                    studentList.setSelectedIndex(0);
-                    currentInfo.setText(this.getSelectedStudent());
-                }
-
-            }
-            finally {
-                cursor.close();
-            }
-        }
-        catch (Exception e) {
-            new ErrorView(e);
+            currentInfo.setText(this.getSelectedStudent());
         }
     }
 
