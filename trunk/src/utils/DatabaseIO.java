@@ -1,8 +1,8 @@
 package utils;
 
+import config.Assignment;
 import config.HandinPart;
 import config.Part;
-import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
@@ -19,10 +19,19 @@ public interface DatabaseIO {
      * Checks if the assignment part already exists.  If not, creates a new
      * entry in the database
      * 
-     * @param assignment - a Part subclass
+     * @param part - a Part subclass
      * @return
      */
     public boolean addAssignmentPart(Part part);
+
+    /**
+     * Checks if the assignment already exists.  If not, creates a new
+     * entry in the database
+     *
+     * @param asgn - a Assignment subclass
+     * @return
+     */
+    public boolean addAssignment(Assignment asgn);
 
     /**
      * Checks to see if the TA already exists. If not, creates a new entry
@@ -225,7 +234,7 @@ public interface DatabaseIO {
      * @param status
      * @return
      */
-    public boolean enterGrade(String studentLogin, Part part, double score);
+    public boolean enterGrade(String studentLogin, Part part, double score, String status);
 
     /**
      * Returns the score of student with login studentLogin on Part part.
