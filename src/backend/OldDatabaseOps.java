@@ -111,7 +111,7 @@ public class OldDatabaseOps {
             }
             try
             {
-                //TODO: Hack because CS015 database has Final instead of Adventure, Othello, Indy, & Sketchy
+                //Hack because CS015 database has Final instead of Adventure, Othello, Indy, & Sketchy
                 String prjName = part.getAssignment().getName();
                 if(prjName.equals("Sketchy") || prjName.equals("Adventure")
                    || prjName.equals("Othello") || prjName.equals("Indy"))

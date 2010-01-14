@@ -247,6 +247,7 @@ public class ReassignView extends javax.swing.JFrame {
         this.updateFormComponents();
     }//GEN-LAST:event_fromTAListMouseClicked
 
+    //TODO: finish this reassign method
     private void reassignButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignButtonActionPerformed
         String oldTA = (String) fromTAList.getSelectedValue();
         String newTA = (String) toTAList.getSelectedValue();
@@ -254,14 +255,14 @@ public class ReassignView extends javax.swing.JFrame {
         
         //update XML files
         if (keepXMLRadioButton.isSelected()) {
-            //TODO: reassign
+            //reassign
         }
         else {
-            //remove XML for old grader--TODO
+            //remove XML for old grader
             
             //create blank XML for new grader
 
-            //TODO: assign initially
+            //assign initially
        }
 
         //still need to remove old XMLs

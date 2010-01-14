@@ -411,7 +411,7 @@ public class FinalProjectAssigner extends javax.swing.JFrame {
                                 _studs.put(studLogin, studName);
                             }
 
-                            //TODO: Assign the XML to the Grader
+                            //Assigns the XML to the Grader, method this calls no longer exists in new rubric code
                             //RubricManager.assignXMLToGrader(Allocator.getProject(projName), Allocator.getProject("Final"), studLogin, taLogin, studName, taName, OldDatabaseOps.getStudentDQScore("Final", studLogin), Allocator.getConstants().getMinutesOfLeniency());
                         }
                     } catch (Exception e) {

@@ -491,7 +491,6 @@ public class BackendView extends javax.swing.JFrame {
 
     }//GEN-LAST:event_m_importLabsButtonActionPerformed
 
-    //@TODO FInish this stuff
     private void exportDatabase(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDatabase
         new ExportView().start();
 
