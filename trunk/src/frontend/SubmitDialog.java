@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Vector;
 import javax.swing.*;
 
@@ -24,7 +25,21 @@ public class SubmitDialog{
     JPanel _panel;
     Vector<JCheckBox> _studentBoxes;
 
-    public SubmitDialog(JList studentList) {
+    public SubmitDialog(JList studentList){
+        this(listToCollection(studentList));
+    }
+
+    private static Collection<String> listToCollection(JList list) {
+        Collection<String> collection = new Vector<String>();
+        int size = list.getModel().getSize();
+        for (int i = 0; i < size; i++) {
+            collection.add((String) list.getModel().getElementAt(i));
+        }
+
+        return collection;
+    }
+
+    public SubmitDialog(Collection<String> studentLogins) {
         _printGRDcb = new JCheckBox("Print GRD Files");
         _emailGRDcb = new JCheckBox("Email GRD Files");
         _notifyStudentscb = new JCheckBox("Notify Students");
@@ -55,12 +70,6 @@ public class SubmitDialog{
         JPanel studentPanel = new JPanel();
         studentPanel.setLayout(new GridLayout(0,1));
         _studentBoxes = new Vector<JCheckBox>();
-
-        Vector<String> studentLogins = new Vector<String>();
-        int size = studentList.getModel().getSize();
-        for (int i = 0; i < size; i++) {
-            studentLogins.add((String) studentList.getModel().getElementAt(i));
-        }
 
         //create JCheckBox for each student
         for (String studentLogin : studentLogins) {
