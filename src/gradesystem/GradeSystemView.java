@@ -7,6 +7,7 @@ package gradesystem;
 import backend.BackendView;
 import backend.NewBackend;
 import frontend.FrontendView;
+import frontend.ProgrammaticFrontendView;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -247,7 +248,7 @@ public class GradeSystemView extends FrameView {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
+        new ProgrammaticFrontendView();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
