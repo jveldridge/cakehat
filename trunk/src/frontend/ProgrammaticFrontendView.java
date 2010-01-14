@@ -1,6 +1,5 @@
 package frontend;
 
-import backend.OldDatabaseOps;
 import config.Assignment;
 import config.HandinPart;
 import java.awt.BorderLayout;
@@ -12,11 +11,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Vector;
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -34,12 +33,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Allocator;
-import utils.ErrorView;
 
 /**
- *
+ * A frontend view that was not created with the Netbeans GUI creator.
  *
  * @author jak2
  */
@@ -51,25 +48,21 @@ public class ProgrammaticFrontendView extends JFrame
         new ProgrammaticFrontendView();
     }
 
-    private CList<Assignment> _assignmentList;
-    private CList<String> _studentList;
-    private CurrentlyGradingLabel _currentlyGradingLabel;
-    private JButton _runDemoButton, _viewDeductionsButton, _printAllButton, _submitGradingButton,
-                    _viewReadmeButton, _openCodeButton, _runTesterButton, _printStudentButton, _gradeAssignmentButton, _runCodeButton;
-
-    private JButton[] _codeButtons, _rubricButtons, _studentButtons;
-
-
-    private class CList<E> extends JList
+    /**
+     * A parameterized JList.
+     *
+     * @param <E>
+     */
+    private class ParameterizedJList<E> extends JList
     {
-        public CList(Collection<E> items)
+        public ParameterizedJList(Collection<E> items)
         {
             super(items.toArray());
         }
 
-        public CList() { }
+        public ParameterizedJList() { }
 
-        public CList(E[] items)
+        public ParameterizedJList(E[] items)
         {
             super(items);
         }
@@ -101,8 +94,27 @@ public class ProgrammaticFrontendView extends JFrame
 
             return items;
         }
+
+        public boolean hasItems()
+        {
+            return (super.getModel().getSize() != 0);
+        }
+
+        /**
+         * Selects the first entry if it exists.
+         */
+        public void selectFirst()
+        {
+            if(this.hasItems())
+            {
+                this.setSelectedIndex(0);
+            }
+        }
     }
 
+    /**
+     * Label that displays the currently selected student.
+     */
     private class CurrentlyGradingLabel extends JLabel
     {
         private final static String _begin ="<html><b>Currently Grading</b><br/>",
@@ -127,27 +139,58 @@ public class ProgrammaticFrontendView extends JFrame
         }
     }
 
+    private ParameterizedJList<Assignment> _assignmentList;
+    private ParameterizedJList<String> _studentList;
+    private CurrentlyGradingLabel _currentlyGradingLabel;
+    private JButton _runDemoButton, _viewDeductionsButton, _printAllButton,
+                    _submitGradingButton, _viewReadmeButton, _openCodeButton,
+                    _runTesterButton, _printStudentButton, _gradeAssignmentButton,
+                    _runCodeButton;
+    private JButton[] _allButtons, _codeButtons, _rubricButtons, _studentButtons;
+
     public ProgrammaticFrontendView()
     {
+        //Frame title
         super(Allocator.getGeneralUtilities().getUserLogin() +
               " - " + Allocator.getCourseInfo().getCourse() + " Grader");
 
+        //Create the directory to work in
         Allocator.getGradingUtilities().makeUserGradingDirectory();
 
-        OldDatabaseOps.open();
-
-        this.initializeWindowCloseProperty();
+        //Initialize GUI components
         this.initializeFrameIcon();
-
         this.initializeMenuBar();
         this.initializeComponents();
 
-        _codeButtons = new JButton[]{ _runDemoButton, _printAllButton, _openCodeButton, _printStudentButton, _runTesterButton, _runCodeButton };
-        _rubricButtons = new JButton[]{ _gradeAssignmentButton, _submitGradingButton };
-        _studentButtons = new JButton[]{ _viewReadmeButton, _openCodeButton, _printStudentButton, _runTesterButton, _runCodeButton, _gradeAssignmentButton };
+        //Group buttons so they can be enabled/disabled appropriately
+        _allButtons = new JButton[] {
+                                      _runDemoButton, _viewDeductionsButton,
+                                      _printAllButton,_submitGradingButton,
+                                      _viewReadmeButton, _openCodeButton,
+                                      _runTesterButton, _printStudentButton,
+                                      _gradeAssignmentButton, _runCodeButton
+                                    };
+
+        _codeButtons = new JButton[] {
+                                       _runDemoButton, _printAllButton,
+                                       _openCodeButton, _printStudentButton,
+                                       _runTesterButton, _runCodeButton
+                                     };
+        _rubricButtons = new JButton[] { _gradeAssignmentButton, _submitGradingButton };
+        _studentButtons = new JButton[]{
+                                         _viewReadmeButton, _openCodeButton,
+                                         _printStudentButton, _runTesterButton,
+                                         _runCodeButton, _gradeAssignmentButton
+                                       };
 
         //Select first assignment
-        _assignmentList.setSelectedIndex(0);
+        _assignmentList.selectFirst();
+
+        //Setup close property
+        this.initializeWindowCloseProperty();
+
+        //Update button states
+        this.updateButtonStates();
 
         //Display
         this.pack();
@@ -158,16 +201,20 @@ public class ProgrammaticFrontendView extends JFrame
 
 
     /**
-     * Called when a different assignment is selected from the assignmentList to update other GUI components
+     * Called when a different assignment is selected from the assignmentList
+     * to update other GUI components
      */
-    private void updateAssignmentList() {
-        //need to create directory for the assignment so GRD files can be created
+    private void updateAssignmentList()
+    {
+        //Create directory for the assignment so GRD files can be created,
         //even if no assignments have been untarred
         Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
                                                         + _assignmentList.getSelectedValue().getName());
 
+        //Get the students assigned for this assignment
         this.populateStudentList();
 
+        //Update buttons accordingly
         this.updateButtonStates();
     }
 
@@ -178,7 +225,18 @@ public class ProgrammaticFrontendView extends JFrame
      */
     private void updateButtonStates()
     {
-        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+        HandinPart part = this.getHandinPart();
+ 
+        //If there is no handin part selected, disable all of the buttons
+        if(part == null)
+        {
+            for(JButton button : _allButtons)
+            {
+                button.setEnabled(false);
+            }
+            return;
+        }
+
         String stud = _studentList.getSelectedValue();
         if(stud != null && stud.isEmpty())
         {
@@ -217,6 +275,9 @@ public class ProgrammaticFrontendView extends JFrame
         }
     }
 
+    /**
+     * Create sall of the GUI components aside from the menu bar
+     */
     private void initializeComponents()
     {
         JPanel outerPanel = new JPanel(new BorderLayout());
@@ -246,7 +307,7 @@ public class ProgrammaticFrontendView extends JFrame
         assignmentPanel.setPreferredSize(listPanelSize);
         JLabel assignmentLabel = new JLabel("<html><b>Assignment</b></html>");
         assignmentLabel.setPreferredSize(labelSize);
-        _assignmentList = new CList<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
+        _assignmentList = new ParameterizedJList<Assignment>(/*Allocator.getCourseInfo().getHandinAssignments()*/);
         _assignmentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _assignmentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -275,7 +336,7 @@ public class ProgrammaticFrontendView extends JFrame
         studentPanel.setPreferredSize(listPanelSize);
         JLabel studentLabel = new JLabel("<html><b>Student</b></html>");
         studentLabel.setPreferredSize(labelSize);
-        _studentList = new CList<String>();
+        _studentList = new ParameterizedJList<String>();
         _studentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -347,6 +408,9 @@ public class ProgrammaticFrontendView extends JFrame
         controlPanel.add(studentCommandsPanel);
     }
 
+    /**
+     * Create the menu bar
+     */
     private void initializeMenuBar()
     {
         //Menu bar
@@ -386,6 +450,11 @@ public class ProgrammaticFrontendView extends JFrame
         menu.add(menuItem);
     }
 
+    /**
+     * Creates the assignment wide buttons
+     *
+     * @param generalButtonsPanel
+     */
     private void initializeGeneralCommandButtons(JPanel generalButtonsPanel)
     {
         //Run Demo
@@ -441,7 +510,11 @@ public class ProgrammaticFrontendView extends JFrame
         generalButtonsPanel.add(_submitGradingButton);
     }
 
-    //_viewReadmeButton, _openCodeButton, _runTesterButton, _printStudentButton, _gradeAssignmentButton, _runCodeButton;
+    /**
+     * Creates the student specific buttons.
+     *
+     * @param studentButtonsPanel
+     */
     private void initializeStudentCommandButtons(JPanel studentButtonsPanel)
     {
         //View Readme
@@ -523,52 +596,101 @@ public class ProgrammaticFrontendView extends JFrame
         studentButtonsPanel.add(_runCodeButton);
     }
 
+    /**
+     * Creates a button with an image on the left hand side and then two lines
+     * of text to the right of the image. The top line of text is bolded.
+     *
+     * @param imagePath
+     * @param topLine
+     * @param bottomLine
+     * @return the button created
+     */
+    private JButton createButton(String imagePath, String topLine, String bottomLine)
+    {
+        Icon icon = new ImageIcon(getClass().getResource(imagePath));
+        JButton button = new JButton("<html><b>" + topLine + "</b><br/>" + bottomLine + "</html>", icon);
+        button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        button.setIconTextGap(10);
+
+        return button;
+    }
+
+    /**
+     * Called when the run code button is clicked.
+     */
     private void runCodeButtonActionPerformed()
     {
-        this.getPart().run(_studentList.getSelectedValue());
+        this.getHandinPart().run(_studentList.getSelectedValue());
     }
 
+    /**
+     * Called when the grade assignment button is clicked.
+     */
     private void gradeAssignmentButtonActionPerformed()
     {
-        Allocator.getRubricManager().view(this.getPart(), _studentList.getSelectedValue());
+        Allocator.getRubricManager().view(this.getHandinPart(), _studentList.getSelectedValue());
 
     }
 
+    /**
+     * Called when the print student code button is clicked.
+     */
     private void printStudentButtonActionPerformed()
     {
-        this.getPart().printCode(_studentList.getSelectedValue(), Allocator.getGradingUtilities().getPrinter());
+        this.getHandinPart().printCode(_studentList.getSelectedValue(), Allocator.getGradingUtilities().getPrinter());
     }
 
+    /**
+     * Called when the run tester button is clicked.
+     */
     private void runTesterButtonActionPerformed()
     {
-        this.getPart().runTester(_studentList.getSelectedValue());
+        this.getHandinPart().runTester(_studentList.getSelectedValue());
     }
 
+    /**
+     * Called when the open code button is clicked.
+     */
     private void openCodeButtonActionPerformed()
     {
-        this.getPart().openCode(_studentList.getSelectedValue());
+        this.getHandinPart().openCode(_studentList.getSelectedValue());
     }
 
+    /**
+     * Called when the view readme button is clicked.
+     */
     private void viewReadmeButtonActionPerformed()
     {
-        this.getPart().viewReadme(_studentList.getSelectedValue());
+        this.getHandinPart().viewReadme(_studentList.getSelectedValue());
     }
 
+    /**
+     * Called when the run demo button is clicked.
+     */
     private void runDemoButtonActionPerformed()
     {
-        this.getPart().runDemo();
+        this.getHandinPart().runDemo();
     }
 
+    /**
+     * Called when the print all button is clicked.
+     */
     private void printAllButtonActionPerformed()
     {
-        this.getPart().printCode(_studentList.getItems(), Allocator.getGradingUtilities().getPrinter());
+        this.getHandinPart().printCode(_studentList.getItems(), Allocator.getGradingUtilities().getPrinter());
     }
 
+    /**
+     * Called when the view deductions button is clicked.
+     */
     private void viewDeductionsButtonActionPerformed()
     {
-        this.getPart().viewDeductionList();
+        this.getHandinPart().viewDeductionList();
     }
 
+    /**
+     * Called when the submit grading button is clicked.
+     */
     private void submitGradingButtonActionPerformed()
     {
         Assignment asgn = _assignmentList.getSelectedValue();
@@ -597,21 +719,27 @@ public class ProgrammaticFrontendView extends JFrame
         }
     }
 
-    private HandinPart getPart()
+    /**
+     * Returns the selected assignment's handin part.
+     *
+     * @return
+     */
+    private HandinPart getHandinPart()
     {
-        return _assignmentList.getSelectedValue().getHandinPart();
+        if(_assignmentList.getSelectedValue() == null)
+        {
+            return null;
+        }
+        else
+        {
+            return _assignmentList.getSelectedValue().getHandinPart();
+        }
     }
 
-    private JButton createButton(String imagePath, String topLine, String bottomLine)
-    {
-        Icon icon = new ImageIcon(getClass().getResource(imagePath));
-        JButton button = new JButton("<html><b>" + topLine + "</b><br/>" + bottomLine + "</html>", icon);
-        button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        button.setIconTextGap(10);
-
-        return button;
-    }
-
+    /**
+     * Ensures when the window closes the program terminates and that the
+     * user's grading directory is removing.
+     */
     private void initializeWindowCloseProperty()
     {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -627,87 +755,58 @@ public class ProgrammaticFrontendView extends JFrame
         });
     }
 
+    /**
+     * Initializes this frame's icon. Only visible on certain operating systems
+     * and window managers.
+     */
     private void initializeFrameIcon()
     {
         try
         {
-            //randomly selects one of 5 icons to display in menu bar
+            //randomly selects one of 5 icons
+            BufferedImage icon = null;
             switch ((int) (Math.random() * 5))
             {
                 case 0:
-                    this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png")));
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png"));
                     break;
                 case 1:
-                    this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png")));
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png"));
                     break;
                 case 2:
-                    this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png")));
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png"));
                     break;
                 case 3:
-                    this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png")));
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png"));
                     break;
                 case 4:
-                    this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png")));
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png"));
                     break;
                 case 5:
-                    this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png")));
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png"));
                     break;
             }
+            this.setIconImage(icon);
         }
         catch (IOException e) { }
     }
 
     /**
-     * TODO: Update this to the new database code. This is a huge hack right now.
+     * TODO: Update this to the new database code.
      *
      * This method populates the studentList list with the logins of the students that the TA has been
      * assigned to grade (as recorded in the database) for the selected assignment.
      */
     private void populateStudentList()
     {
-        String user = Allocator.getGeneralUtilities().getUserLogin();
-
-        try
+        if(this.getHandinPart() != null)
         {
-            ISqlJetCursor cursor = OldDatabaseOps.getItemWithFilter("assignment_dist", "ta_login_dist", user);
-            if (cursor.eof())
-            {
-                cursor.close();
-                return;
-            }
-            try {
-                //TODO: Hack because CS015 database has Final instead of Adventure, Othello, Indy, & Sketchy
-                String prjName = _assignmentList.getSelectedValue().getName();
-                if(prjName.equals("Sketchy") || prjName.equals("Adventure")
-                   || prjName.equals("Othello") || prjName.equals("Indy"))
-                {
-                    prjName = "Final";
-                }
-
-                String s = cursor.getString(prjName);
-                if (s == null)
-                {
-                    s = "";
-                }
-                String[] ss = s.split(", ");
-                _studentList.setListData(ss);
-                if (_studentList.getModel().getSize() > 0)
-                {
-                    _studentList.setSelectedIndex(0);
-                    _currentlyGradingLabel.update(_studentList.getSelectedValue());
-                }
-
-            }
-            finally
-            {
-                cursor.close();
-            }
-        }
-        catch (Exception e)
-        {
-            new ErrorView(e);
+            Collection<String> students = backend.OldDatabaseOps.getStudentsAssigned(this.getHandinPart(), Allocator.getGeneralUtilities().getUserLogin());
+        
+            _studentList.setListData(students);
+            _studentList.selectFirst();
+            _currentlyGradingLabel.update(_studentList.getSelectedValue());
         }
     }
-
     
 }
