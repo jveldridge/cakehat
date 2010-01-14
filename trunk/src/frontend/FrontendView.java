@@ -726,8 +726,6 @@ public class FrontendView extends javax.swing.JFrame {
      * @param evt
      */
     /**
-     * TODO: prevent users from opening more than one grading GUI
-     *
      * actionPerformed method for gradeButton
      * Instantiates a new GradingVisualizer for the selected student for the selected assignment
      * @param evt

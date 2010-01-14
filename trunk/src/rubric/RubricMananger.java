@@ -2,6 +2,8 @@ package rubric;
 
 import config.HandinPart;
 import config.LatePolicy;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,8 +21,11 @@ import utils.ErrorView;
 public class RubricMananger
 {
 
+    private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
     /**
-     * View the rubric for a student for a given handin part.
+     * View the rubric for a student for a given handin part. If it is already
+     * open it will be brought to front and centered on screen.
+     *
      *
      * @param part
      * @param studentLogin
@@ -29,15 +34,38 @@ public class RubricMananger
     {
         String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
 
-        try
+        //Determine if it has been opened
+        final String graderViewName = part.getAssignment().getName() + "::" + studentLogin;
+        //If it hasn't been opened
+        if(!_graders.containsKey(graderViewName))
         {
+            try
+            {
             Rubric rubric = RubricGMLParser.parse(XMLFilePath, part);
-            new GradingVisualizer(rubric, XMLFilePath);
+            GradingVisualizer visualizer = new GradingVisualizer(rubric, XMLFilePath);
+            visualizer.addWindowListener(new WindowAdapter()
+            {
+                public void windowClosed(WindowEvent e)
+                {
+                    _graders.remove(graderViewName);
+                }
+            });
+
+            _graders.put(graderViewName, visualizer);
+            }
+            catch (RubricException ex)
+            {
+                new ErrorView(ex);
+            }
         }
-        catch (RubricException ex)
+        //If it has, bring it to front and center it on screen
+        else
         {
-            new ErrorView(ex);
+            GradingVisualizer visualizer = _graders.get(graderViewName);
+            visualizer.toFront();
+            visualizer.setLocationRelativeTo(null);
         }
+
     }
 
     /**

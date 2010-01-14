@@ -27,7 +27,6 @@ public enum AssignmentType {
             }
         }
 
-        //TODO: Consider throwing a AssignmentTypeNotFound exception
         //If not found, print error and return null
         System.err.println("Invalid input: " + typeString +
                             ", valid options are " + java.util.Arrays.toString(values()));
