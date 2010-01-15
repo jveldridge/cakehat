@@ -299,14 +299,29 @@ class JavaHandin extends CodeHandin
     }
 
     /**
-     * TODO: Write this method!
-     *
      * Runs a demo that is compiled class files. Supports running the files with
      * both a classpath and a library path.
      */
     private void runClassDemo()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //Build command
+        String cmd = "java ";
+
+        //Add java.library.path if it has it
+        if(this.hasDemoProperty("librarypath"))
+        {
+            cmd += " -Djava.library.path=" + this.getDemoProperty("librarypath");
+        }
+
+        //Add classpath
+        String classpath = this.getDemoProperty("code-loc") + ":" + this.getDemoProperty("classpath");
+        cmd += " -classpath " + classpath;
+
+        //Add fully qualified path of main class
+        cmd += " " + this.getDemoProperty("main");
+
+        //Execute command
+        BashConsole.writeThreaded(cmd);
     }
 
     /**
