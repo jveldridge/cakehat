@@ -1165,7 +1165,7 @@ public class NewBackend extends javax.swing.JFrame {
     }//GEN-LAST:event_gradingStandardsButtonActionPerformed
 
     private void blacklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blacklistButtonActionPerformed
-        // TODO add your handling code here:
+        new ModifyBlacklistView();
     }//GEN-LAST:event_blacklistButtonActionPerformed
 
     private void configButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configButtonActionPerformed
