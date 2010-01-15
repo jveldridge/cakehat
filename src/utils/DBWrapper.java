@@ -33,7 +33,7 @@ public class DBWrapper implements DatabaseIO {
      */
     public DBWrapper() {
         //should be set to constant
-        this("jdbc:sqlite:" + Allocator.getCourseInfo().getDatabaseFilePath());
+        this("jdbc:sqlite:/course/cs015/cakehat/2009/database/cs015.sqlite");// + Allocator.getCourseInfo().getDatabaseFilePath());
     }
 
     /**
@@ -741,7 +741,7 @@ public class DBWrapper implements DatabaseIO {
                     "FROM asgn AS a " +
                     "WHERE a.name == '" + asgn.getName() + "'");
             int count = rs.getInt("count");
-            if (count != 0) {
+            if (count == 0) {
                 _statement.executeUpdate("INSERT INTO asgn "
                         + "('name') "
                         + "VALUES "
