@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class DBWrapper implements DatabaseIO {
      */
     public DBWrapper() {
         //should be set to constant
-        this("jdbc:sqlite:/course/cs015/cakehat/2009/database/database.db");
+        this("jdbc:sqlite:" + Allocator.getCourseInfo().getDatabaseFilePath());
     }
 
     /**
@@ -501,9 +502,9 @@ public class DBWrapper implements DatabaseIO {
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
             int isAssigned = rs.getInt("assigned");
             if (isAssigned == 0) {
-                rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE t.login == '" + taLogin + "'");
+                rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
                 int sID = rs.getInt("sid");
-                rs = _statement.executeQuery("SELECT t.tid FROM ta AS t WHERE t.login == '" + studentLogin + "'");
+                rs = _statement.executeQuery("SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "'");
                 int tID = rs.getInt("tid");
                 rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
                 int pID = rs.getInt("pid");
@@ -523,7 +524,7 @@ public class DBWrapper implements DatabaseIO {
         try {
                 _statement.executeUpdate("DELETE FROM distribution " +
                         "WHERE pid IN " +
-                         "(SELECT pid FROM part WHERE name == '" + part.getName() + "') " +
+                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
                          "AND sid IN " +
                           "(SELECT sid FROM student WHERE login == '" + studentLogin + "') " +
                          "AND tid IN " +
@@ -538,23 +539,149 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.openConnection();
+        try {
+            _statement.executeUpdate("DELETE FROM extension " +
+                        "WHERE pid IN " +
+                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
+                         "AND sid IN " +
+                          "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
+                ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+                int sID = rs.getInt("sid");
+                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+                int pID = rs.getInt("pid");
+                int ontime = (int) (newDate.getTimeInMillis() / 1000);
+                _statement.executeUpdate("INSERT INTO extension ('sid', 'pid', 'ontime', 'note') VALUES (" + sID + ", " + pID + ", " + ontime + ", '" + note + "')");
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not grant extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
+            this.closeConnection();
+            return false;
+        }
     }
 
     public boolean grantExemption(String studentLogin, Part part, String note) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.openConnection();
+        try {
+            _statement.executeUpdate("DELETE FROM exemption " +
+                        "WHERE pid IN " +
+                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
+                         "AND sid IN " +
+                          "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
+                ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+                int sID = rs.getInt("sid");
+                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+                int pID = rs.getInt("pid");
+                _statement.executeUpdate("INSERT INTO exemption ('sid', 'pid', 'note') VALUES (" + sID + ", " + pID + ", '" + note + "')");
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
+            this.closeConnection();
+            return false;
+        }
     }
 
+    public Map<String, Calendar> getExtension(Part part) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, e.ontime AS date "
+                    + "FROM student AS s "
+                    + "INNER JOIN extension AS e "
+                    + "ON e.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON e.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + part.getName() + "' "
+                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+            HashMap<String, Calendar> result = new HashMap<String, Calendar>();
+            while (rs.next()) {
+                Calendar date = new GregorianCalendar();
+                date.setTimeInMillis(rs.getInt("date") * 1000);
+                result.put(rs.getString("studlogin"), date);
+            }
+            this.closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get students with extensions for assignment part: " + part.getName());
+            this.closeConnection();
+            return null;
+        }
+    }
+    
     public Calendar getExtension(String studentLogin, Part part) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT e.ontime AS date "
+                    + "FROM extension AS e "
+                    + "INNER JOIN student AS s "
+                    + "ON e.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON e.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + part.getName() + "' "
+                    + "AND s.login == '" + studentLogin + "' "
+                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+            Calendar result = new GregorianCalendar();
+            result.setTimeInMillis(rs.getInt("date") * 1000);
+            this.closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get extension for: " + studentLogin + " for assignment part: " + part.getName());
+            this.closeConnection();
+            return null;
+        }
     }
 
-    public String getExtensionNote(String studentLogin, HandinPart part) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public String getExtensionNote(String studentLogin, Part part) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT e.note AS note "
+                    + "FROM extension AS e "
+                    + "INNER JOIN student AS s "
+                    + "ON e.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON e.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + part.getName() + "' "
+                    + "AND s.login == '" + studentLogin + "' "
+                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+            String result = rs.getString("note");
+            this.closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get extension note for: " + studentLogin + " for assignment part: " + part.getName());
+            this.closeConnection();
+            return null;
+        }
     }
 
     public String getExemptionNote(String studentLogin, Part part) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT x.note AS note "
+                    + "FROM exemption AS x "
+                    + "INNER JOIN student AS s "
+                    + "ON x.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON x.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + part.getName() + "' "
+                    + "AND s.login == '" + studentLogin + "' "
+                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+            String result = rs.getString("note");
+            this.closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get exemption note for: " + studentLogin + " for assignment part: " + part.getName());
+            this.closeConnection();
+            return null;
+        }
     }
 
     public boolean enterGrade(String studentLogin, Part part, double score, String status) {

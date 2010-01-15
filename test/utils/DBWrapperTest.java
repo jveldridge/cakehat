@@ -4,6 +4,9 @@
  */
 package utils;
 
+import config.Part;
+import config.Assignment;
+import config.HandinPart;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -15,6 +18,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -116,7 +120,7 @@ public class DBWrapperTest {
         aunger.add("drs");
         ArrayList<String> spoletto = new ArrayList<String>();
         spoletto.add("nvarone");
-        Map<String, ArrayList<String>> distribution = new HashMap<String, ArrayList<String>>();
+        Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
         distribution.put("aunger", aunger);
         distribution.put("spoletto", spoletto);
 
@@ -143,9 +147,9 @@ public class DBWrapperTest {
     @Test
     public void testAddAssignment() {
         System.out.println("addAssignment");
-        String assignmentName = "newAsgn";
+        Part asgnPart = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0]).getHandinPart();
         boolean expResult = true;
-        boolean result = _instance.addAssignment(assignmentName);
+        boolean result = _instance.addAssignmentPart(asgnPart);
         assertEquals(expResult, result);
     }
 
@@ -161,121 +165,127 @@ public class DBWrapperTest {
         boolean expResult = true;
         boolean result = _instance.addStudent(studentLogin, studentFirstName, studentLastName);
         assertEquals(expResult, result);
-        Map<String, String> result2 = _instance.getStudents();
+        Map<String, String> result2 = _instance.getEnabledStudents();
         Map<String, String> expResult2 = new HashMap<String, String>();
         expResult2.put("drs", "The Doctors");
         expResult2.put("dmorrill", "Drew Morrill");
         expResult2.put("nvarone", "Nick Varone");
         expResult2.put("hbhardin", "CardBoard Kid");
-        assertEquals(result2, expResult2);
+        assertEquals(expResult2, result2);
     }
-//
-//    /**
-//     * Test of disableStudent method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testDisableStudent() {
-//        System.out.println("disableStudent");
-//        String studentLogin = "";
-//        DBWrapper instance = new DBWrapper();
-//        boolean expResult = false;
-//        boolean result = instance.disableStudent(studentLogin);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of enableStudent method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testEnableStudent() {
-//        System.out.println("enableStudent");
-//        String studentLogin = "";
-//        DBWrapper instance = new DBWrapper();
-//        boolean expResult = false;
-//        boolean result = instance.enableStudent(studentLogin);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of addTA method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testAddTA() {
-//        System.out.println("addTA");
-//        String taLogin = "";
-//        String taFirstName = "";
-//        String taLastName = "";
-//        String type = "";
-//        DBWrapper instance = new DBWrapper();
-//        boolean expResult = false;
-//        boolean result = instance.addTA(taLogin, taFirstName, taLastName, type);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getStudents method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testGetStudents() {
-//        System.out.println("getStudents");
-//        DBWrapper instance = new DBWrapper();
-//        Map expResult = null;
-//        Map result = instance.getStudents();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of blacklistStudent method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testBlacklistStudent() {
-//        System.out.println("blacklistStudent");
-//        String studentLogin = "";
-//        String taLogin = "";
-//        DBWrapper instance = new DBWrapper();
-//        boolean expResult = false;
-//        boolean result = instance.blacklistStudent(studentLogin, taLogin);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of isDistEmpty method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testIsDistEmpty() {
-//        System.out.println("isDistEmpty");
-//        String asgn = "";
-//        DBWrapper instance = new DBWrapper();
-//        boolean expResult = false;
-//        boolean result = instance.isDistEmpty(asgn);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getBlacklistedStudents method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testGetBlacklistedStudents() {
-//        System.out.println("getBlacklistedStudents");
-//        DBWrapper instance = new DBWrapper();
-//        Collection expResult = null;
-//        Collection result = instance.getBlacklistedStudents();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+
+    /**
+     * Test of disableStudent method, of class DBWrapper.
+     */
+    @Test
+    public void testDisableStudent() {
+        System.out.println("disableStudent");
+        String studentLogin = "hbhardin";
+        boolean expResult = true;
+        boolean result = _instance.disableStudent(studentLogin);
+        assertEquals(expResult, result);
+        Map<String, String> result2 = _instance.getEnabledStudents();
+        Map<String, String> expResult2 = new HashMap<String, String>();
+        expResult2.put("drs", "The Doctors");
+        expResult2.put("dmorrill", "Drew Morrill");
+        expResult2.put("nvarone", "Nick Varone");
+        assertEquals(expResult2, result2);
+    }
+
+    /**
+     * Test of enableStudent method, of class DBWrapper.
+     */
+    @Test
+    public void testEnableStudent() {
+        System.out.println("enableStudent");
+        String studentLogin = "hbhardin";
+        boolean expResult = true;
+        boolean result = _instance.enableStudent(studentLogin);
+        assertEquals(expResult, result);
+        Map<String, String> result2 = _instance.getEnabledStudents();
+        Map<String, String> expResult2 = new HashMap<String, String>();
+        expResult2.put("drs", "The Doctors");
+        expResult2.put("dmorrill", "Drew Morrill");
+        expResult2.put("nvarone", "Nick Varone");
+        expResult2.put("hbhardin", "CardBoard Kid");
+        assertEquals(expResult2, result2);
+    }
+
+    /**
+     * Test of addTA method, of class DBWrapper.
+     */
+    @Test
+    public void testAddTA() {
+        System.out.println("addTA");
+        String taLogin = "ashley";
+        String taFirstName = "Ashley";
+        String taLastName = "T";
+        String type = "HTA";
+        boolean expResult = true;
+        boolean result = _instance.addTA(taLogin);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getStudents method, of class DBWrapper.
+     */
+    @Test
+    public void testGetStudents() {
+        System.out.println("getStudents");
+        Map<String, String> result = _instance.getEnabledStudents();
+        Map<String, String> expResult = new HashMap<String, String>();
+        expResult.put("drs", "The Doctors");
+        expResult.put("dmorrill", "Drew Morrill");
+        expResult.put("nvarone", "Nick Varone");
+        expResult.put("hbhardin", "CardBoard Kid");
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of blacklistStudent method, of class DBWrapper.
+     */
+    @Test
+    public void testBlacklistStudent() {
+        System.out.println("blacklistStudent");
+        String studentLogin = "drs";
+        String taLogin = "ashley";
+        boolean expResult = true;
+        boolean result = _instance.blacklistStudent(studentLogin, taLogin);
+        assertEquals(expResult, result);
+        Collection<String> result2 = _instance.getTABlacklist(taLogin);
+        Collection<String> expResult2 = new ArrayList<String>();
+        expResult2.add(studentLogin);
+        assertEquals(expResult2, result2);
+    }
+
+    /**
+     * Test of isDistEmpty method, of class DBWrapper.
+     */
+    @Test
+    public void testIsDistEmpty() {
+        System.out.println("isDistEmpty");
+        HandinPart asgn = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0]).getHandinPart();
+        System.out.println(asgn.getAssignment().getName());
+        boolean expResult = false;
+        boolean result = _instance.isDistEmpty(asgn);
+        assertEquals(expResult, result);
+        HandinPart asgn2 = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[1]).getHandinPart();
+        boolean expResult2 = true;
+        boolean result2 = _instance.isDistEmpty(asgn2);
+        assertEquals(expResult2, result2);
+    }
+
+    /**
+     * Test of getBlacklistedStudents method, of class DBWrapper.
+     */
+    @Test
+    public void testGetBlacklistedStudents() {
+        System.out.println("getBlacklistedStudents");
+        Collection<String> expResult = new HashSet<String>();
+        expResult.add("drs");
+        Collection<String> result = _instance.getBlacklistedStudents();
+        assertEquals(expResult, result);
+    }
 //
 //    /**
 //     * Test of assignStudentToGrader method, of class DBWrapper.
@@ -286,7 +296,6 @@ public class DBWrapperTest {
 //        String studentLogin = "";
 //        String assignmentName = "";
 //        String taLogin = "";
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.assignStudentToGrader(studentLogin, assignmentName, taLogin);
 //        assertEquals(expResult, result);
@@ -303,7 +312,6 @@ public class DBWrapperTest {
 //        String studentLogin = "";
 //        String assignmentName = "";
 //        String taLogin = "";
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.unassignStudentFromGrader(studentLogin, assignmentName, taLogin);
 //        assertEquals(expResult, result);
@@ -319,7 +327,6 @@ public class DBWrapperTest {
 //        System.out.println("getStudentsAssigned");
 //        String assignmentName = "";
 //        String taLogin = "";
-//        DBWrapper instance = new DBWrapper();
 //        Collection expResult = null;
 //        Collection result = instance.getStudentsAssigned(assignmentName, taLogin);
 //        assertEquals(expResult, result);
@@ -337,7 +344,6 @@ public class DBWrapperTest {
 //        String assignmentName = "";
 //        Calendar newDate = null;
 //        String note = "";
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.grantExtension(studentLogin, assignmentName, newDate, note);
 //        assertEquals(expResult, result);
@@ -354,7 +360,6 @@ public class DBWrapperTest {
 //        String studentLogin = "";
 //        String assignmentName = "";
 //        String note = "";
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.grantExemption(studentLogin, assignmentName, note);
 //        assertEquals(expResult, result);
@@ -370,7 +375,6 @@ public class DBWrapperTest {
 //        System.out.println("getExtension");
 //        String studentLogin = "";
 //        String assignmentName = "";
-//        DBWrapper instance = new DBWrapper();
 //        Calendar expResult = null;
 //        Calendar result = instance.getExtension(studentLogin, assignmentName);
 //        assertEquals(expResult, result);
@@ -386,7 +390,6 @@ public class DBWrapperTest {
 //        System.out.println("getExtensionNote");
 //        String studentLogin = "";
 //        String assignmentName = "";
-//        DBWrapper instance = new DBWrapper();
 //        String expResult = "";
 //        String result = instance.getExtensionNote(studentLogin, assignmentName);
 //        assertEquals(expResult, result);
@@ -402,7 +405,6 @@ public class DBWrapperTest {
 //        System.out.println("getExemptionNote");
 //        String studentLogin = "";
 //        String assignmentName = "";
-//        DBWrapper instance = new DBWrapper();
 //        String expResult = "";
 //        String result = instance.getExemptionNote(studentLogin, assignmentName);
 //        assertEquals(expResult, result);
@@ -420,7 +422,6 @@ public class DBWrapperTest {
 //        String assignmentName = "";
 //        double score = 0.0;
 //        TimeStatus status = null;
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.enterGrade(studentLogin, assignmentName, score, status);
 //        assertEquals(expResult, result);
@@ -436,7 +437,6 @@ public class DBWrapperTest {
 //        System.out.println("getStudentScore");
 //        String studentLogin = "";
 //        String assignmentName = "";
-//        DBWrapper instance = new DBWrapper();
 //        double expResult = 0.0;
 //        double result = instance.getStudentScore(studentLogin, assignmentName);
 //        assertEquals(expResult, result, 0.0);
@@ -451,7 +451,6 @@ public class DBWrapperTest {
 //    public void testGetNumberOfGrades() {
 //        System.out.println("getNumberOfGrades");
 //        String assignmentName = "";
-//        DBWrapper instance = new DBWrapper();
 //        int expResult = 0;
 //        int result = instance.getNumberOfGrades(assignmentName);
 //        assertEquals(expResult, result);
@@ -466,7 +465,6 @@ public class DBWrapperTest {
 //    public void testExportDatabase() {
 //        System.out.println("exportDatabase");
 //        File exportFile = null;
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.exportDatabase(exportFile);
 //        assertEquals(expResult, result);
@@ -480,7 +478,6 @@ public class DBWrapperTest {
 //    @Test
 //    public void testResetDatabase() {
 //        System.out.println("resetDatabase");
-//        DBWrapper instance = new DBWrapper();
 //        boolean expResult = false;
 //        boolean result = instance.resetDatabase();
 //        assertEquals(expResult, result);

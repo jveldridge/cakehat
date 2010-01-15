@@ -192,7 +192,7 @@ public interface DatabaseIO {
     public boolean grantExemption(String studentLogin, Part part, String note);
 
     /**
-     * Returns the Calendar representing the date when the HandinPart part is due
+     * Returns the Calendar representing the date when the Part is due
      * for student with login studentLogin if that student has an extension.  Returns
      * null if the student does not have an extension.
      * 
@@ -203,15 +203,25 @@ public interface DatabaseIO {
     public Calendar getExtension(String studentLogin, Part part);
 
     /**
+     * Returns the Map of student to extensions for a specific Part.  Returns
+     * null on error and empty map if no students have extension for the project.
+     *
+     * @param studentLogin
+     * @param assignmentName
+     * @return
+     */
+    public Map<String, Calendar> getExtension(Part part);
+
+    /**
      * Returns a string containing a message to indicate why the student with login
-     * studentLogin has been granted an extension on HandinPart part.  Returns null
+     * studentLogin has been granted an extension on Part part.  Returns null
      * if the student does not have an extension.
      * 
      * @param studentLogin
      * @param assignmentName
      * @return
      */
-    public String getExtensionNote(String studentLogin, HandinPart part);
+    public String getExtensionNote(String studentLogin, Part part);
 
     /**
      * Returns a string containing a message to indicate why the student with login
