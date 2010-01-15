@@ -307,7 +307,7 @@ public class ProgrammaticFrontendView extends JFrame
         assignmentPanel.setPreferredSize(listPanelSize);
         JLabel assignmentLabel = new JLabel("<html><b>Assignment</b></html>");
         assignmentLabel.setPreferredSize(labelSize);
-        _assignmentList = new ParameterizedJList<Assignment>(/*Allocator.getCourseInfo().getHandinAssignments()*/);
+        _assignmentList = new ParameterizedJList<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
         _assignmentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _assignmentList.addListSelectionListener(new ListSelectionListener()
         {
