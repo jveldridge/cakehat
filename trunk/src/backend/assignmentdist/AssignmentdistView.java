@@ -48,14 +48,12 @@ public class AssignmentdistView extends javax.swing.JFrame {
         //create dist for assignment passed in as parameter
         if (asgn != null) {
             assignmentNameComboBox.setSelectedItem(asgn);
-        }
-
-        if (assignmentNameComboBox.getItemCount() > 0) {
-            assignmentNameComboBox.setSelectedIndex(0);
             this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
         }
+
         fillTable();
         this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 
     private void fillTable() {

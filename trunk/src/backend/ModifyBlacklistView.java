@@ -113,6 +113,8 @@ public class ModifyBlacklistView extends JFrame{
         this.add(blacklistPanel, BorderLayout.WEST);
         this.add(controlPanel, BorderLayout.CENTER);
         this.add(listPanel, BorderLayout.EAST);
+        
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.pack();
         this.setVisible(true);
     }
