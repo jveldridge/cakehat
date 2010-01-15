@@ -10,25 +10,21 @@
  */
 package backend.assignmentdist;
 
-
-import backend.OldDatabaseOps;
 import config.Assignment;
 import config.TA;
+import backend.OldDatabaseOps;
 import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.HashSet;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Allocator;
-import utils.AssignmentType;
 import utils.ErrorView;
 
 /**
@@ -45,20 +41,21 @@ public class AssignmentdistView extends javax.swing.JFrame {
         } catch (Exception e) {
         }
 
-        for(String s: OldDatabaseOps.getAssignmentNames()) {
-            if(OldDatabaseOps.getAssignmentType(s) == AssignmentType.PROJECT) {
-                assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
-            }
+        for (Assignment s : Allocator.getCourseInfo().getHandinAssignments()) {
+            assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
         }
 
         //create dist for assignment passed in as parameter
-        assignmentNameComboBox.setSelectedItem(asgn);
+        if (asgn != null) {
+            assignmentNameComboBox.setSelectedItem(asgn);
+        }
 
-        this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+        if (assignmentNameComboBox.getItemCount() > 0) {
+            assignmentNameComboBox.setSelectedIndex(0);
+            this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+        }
         fillTable();
-
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
     }
 
     private void fillTable() {
@@ -94,6 +91,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         mainTable = new backend.assignmentdist.AssignmentdistTable();
         setupGradingButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         mainMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMcenu2 = new javax.swing.JMenu();
@@ -132,6 +130,13 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("ReAssign Grading");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         jMenu1.setText("File");
         mainMenuBar.add(jMenu1);
 
@@ -153,6 +158,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 263, Short.MAX_VALUE)
                         .addComponent(generateDistButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(setupGradingButton)))
@@ -170,7 +177,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(generateDistButton)
-                    .addComponent(setupGradingButton))
+                    .addComponent(setupGradingButton)
+                    .addComponent(jButton1))
                 .addGap(14, 14, 14))
         );
 
@@ -183,255 +191,125 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        String asgn = (String)assignmentNameComboBox.getSelectedItem();
+        String asgn = (String) assignmentNameComboBox.getSelectedItem();
+        Assignment asgnObject = (Assignment) assignmentNameComboBox.getSelectedItem();
 
-        if(!OldDatabaseOps.isDistEmpty(asgn)) {
-            int n = JOptionPane.showConfirmDialog(new JFrame(),"A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?","Confirm Overwrite",JOptionPane.YES_NO_OPTION);
+        //check to make sure that there is not a dist already
+        if (!OldDatabaseOps.isDistEmpty(asgn)) {
+            int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.NO_OPTION) {
                 return;
-}
-}
-
-        //Hacky code to get the correct assignment using the new configuration code
-        String[] studNames = null;
-        for(config.Assignment a : Allocator.getCourseInfo().getHandinAssignments()){
-            if(a.getName().equalsIgnoreCase(asgn)){
-                studNames = a.getHandinPart().getHandinLogins().toArray(new String[0]);
             }
         }
-        
-        List<String> shuffledStudents = Arrays.asList(studNames);
-        Collections.shuffle(shuffledStudents);
-        studNames = shuffledStudents.toArray(new String[0]);
 
-        ArrayDeque<String> students = new ArrayDeque<String>();
-        for (String student : studNames) {
-            students.add(student);
-        }
+        //get studnet logins, shuffle logins, add to deque
+        ArrayList<String> studLogins = new ArrayList<String>(asgnObject.getHandinPart().getHandinLogins());
+        Collections.shuffle(studLogins);
+        ArrayDeque<String> students = new ArrayDeque<String>(studLogins);
 
-        //System.out.println(students);
-
-        Vector<String> taLogins = new Vector<String>();
-        for(TA grader : Allocator.getCourseInfo().getDefaultGraders()){
-            taLogins.add(grader.getLogin());
+        //get all grader logins
+        ArrayList<String> taLogins = new ArrayList<String>();
+        for (TA ta : Allocator.getCourseInfo().getDefaultGraders()) {
+            taLogins.add(ta.getLogin());
         }
         String[] taNames = taLogins.toArray(new String[0]);
 
+        //build distrobution hashmap
+        HashMap<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
+        for (String grader : taLogins) {
+            distribution.put(grader, new ArrayList<String>());
+        }
 
-        HashMap<String,String> distribution = new HashMap<String,String>();
-        for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
-            distribution.put(grader.getLogin(), new String());
-}
+        //get the current distribution modifiers from table
+        DefaultTableModel modelOfTable = (DefaultTableModel) mainTable.getModel();
 
-        double double_ceil_avg = Math.floor((double) studNames.length / (double) taNames.length);
-        int avg = (int) double_ceil_avg;
+        //total number of students used in calculating the average
+        int calculatedTotalStudents = students.size();
 
-        DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
+        //update total number of students based modifiers from table (only used for calc of avg)
+        for (int rowCount = 0; rowCount < modelOfTable.getRowCount(); rowCount++) {
+            int diffFromAvg = (Integer) Integer.parseInt(modelOfTable.getValueAt(rowCount, 1).toString());
+            calculatedTotalStudents -= diffFromAvg;
+        }
 
-        Stack<String> gradeFewer = new Stack<String>();
-        Stack<String> gradeAvg = new Stack<String>();
-        Stack<String> gradeMore = new Stack<String>();
+        //average number of students for each ta
+        int avg = (int) Math.floor((double) calculatedTotalStudents / (double) taLogins.size());
 
-        HashMap<String,Integer> numStudsToGrade = new HashMap<String,Integer>();
-        for (int rowCount = 0; rowCount < m.getRowCount(); rowCount++) {
-            String taLogin = (String) m.getValueAt(rowCount,0);
-            int numToGrade = (Integer) Integer.parseInt(m.getValueAt(rowCount, 1).toString()) + avg;
+        //build hashmap of how many students each TA must grade
+        HashMap<String, Integer> numStudsToGrade = new HashMap<String, Integer>();
+        for (int rowCount = 0; rowCount < modelOfTable.getRowCount(); rowCount++) {
+            String taLogin = (String) modelOfTable.getValueAt(rowCount, 0);
+            int numToGrade = (Integer) Integer.parseInt(modelOfTable.getValueAt(rowCount, 1).toString()) + avg;
 
-            numStudsToGrade.put((String) m.getValueAt(rowCount, 0), numToGrade);
-            if (numToGrade < avg) {
-                gradeFewer.push(taLogin);
-}
-            else if (numToGrade > avg) {
-                gradeMore.push(taLogin);
-}
-            else {
-                gradeAvg.push(taLogin);
-}
-}
+            numStudsToGrade.put(taLogin, numToGrade);
+        }
 
-        //String[] tasWithBlacklist = DatabaseIO.getColumnData("taLogin", "blacklist");
+        //make a list of all blacklisted students and hashmap of all ta blacklists
+        HashSet<String> blacklistedStudents = new HashSet<String>();
+        HashMap<String, Collection<String>> taBlacklists = new HashMap<String, Collection<String>>();
 
-        while (!gradeMore.isEmpty()) {
-            String ta = gradeMore.pop();
-            System.out.println("ta is " + ta);
-            String blacklist = this.getBlacklist(ta);
-            System.out.println("blacklist: " + blacklist);
-            if (blacklist == null) {
-                blacklist = "";
-            }
-            String[] blacklistedStuds = blacklist.split(",");
-            Arrays.sort(blacklistedStuds, new StringComparator());
-            int numAssigned = 0;
-            System.out.println("numToGrade is " + numStudsToGrade.get(ta));
-            System.out.println("students is " + students + " and blacklistedStuds is " + blacklistedStuds);
-            while (numAssigned <= numStudsToGrade.get(ta)) {
-                if (numAssigned != 0) {
-                    distribution.put(ta, distribution.get(ta) + ", ");
-                }
-                while (Arrays.binarySearch((String[]) blacklistedStuds, " " + ((String) students.peekFirst())) >= 0) {
-                    System.out.println("while loop 3");
-                    String s = students.removeFirst();
-                    students.addLast(s);
-                }
-                if (!students.isEmpty()) {
-                    distribution.put(ta, distribution.get(ta) + students.removeFirst());
-                    numAssigned++;
-                }
-                else {
+        for (String ta : taLogins) {
+            Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
+            blacklistedStudents.addAll(tasBlackList);
+            taBlacklists.put(ta, tasBlackList);
+        }
+
+        //add all blacklisted students to a TA first
+        for (String blStudent : blacklistedStudents) {
+            Collections.shuffle(taLogins);
+            boolean distributed = false;
+            for (String ta : taLogins) {
+                //if ta's blacklist does not contain student and ta's dist is not full
+                if (!taBlacklists.get(ta).contains(blStudent)
+                        && distribution.get(ta).size() < numStudsToGrade.get(ta)) {
+
+                    distribution.get(ta).add(blStudent); //add student to ta's dist
+                    students.remove(blStudent); //remove student from those that need dist
+                    numStudsToGrade.put(ta, numStudsToGrade.get(ta) - 1); //reduce num ta needs
+                    distributed = true;
                     break;
                 }
             }
-        }
-
-         while (!gradeAvg.isEmpty()) {
-            String ta = gradeAvg.pop();
-            System.out.println("ta is " + ta);
-            String blacklist = this.getBlacklist(ta);
-            System.out.println("blacklist: " + blacklist);
-            if (blacklist == null) {
-                blacklist = "";
-            }
-            String[] blacklistedStuds = blacklist.split(",");
-            Arrays.sort(blacklistedStuds, new StringComparator());
-            int numAssigned = 0;
-            System.out.println("numToGrade is " + numStudsToGrade.get(ta));
-            System.out.println("students is " + students + " and blacklistedStuds is " + blacklistedStuds);
-            while (numAssigned < numStudsToGrade.get(ta)) {
-                if (numAssigned != 0) {
-                    distribution.put(ta, distribution.get(ta) + ", ");
-                }
-                while (Arrays.binarySearch((String[]) blacklistedStuds, " " + ((String) students.peekFirst())) >= 0) {
-                    System.out.println("while loop 3");
-                    String s = students.removeFirst();
-                    students.addLast(s);
-                }
-                if (!students.isEmpty()) {
-                    distribution.put(ta, distribution.get(ta) + students.removeFirst());
-                    numAssigned++;
-                }
-                else {
-                    break;
-                }
+            if (!distributed) {
+                JOptionPane.showMessageDialog(this, "There was an error"
+                        + "distributing blacklisted"
+                        + "students. Please try running"
+                        + "the distribution again.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         }
 
-         while (!gradeFewer.isEmpty()) {
-            String ta = gradeFewer.pop();
-            System.out.println("ta is " + ta);
-            String blacklist = this.getBlacklist(ta);
-            if (blacklist == null) {
-                blacklist = "";
+        //fill TAs to limit
+        for (String ta : taLogins) {
+            Collection<String> students2TA = distribution.get(ta);
+            for (int i = 0; i < numStudsToGrade.get(ta); i++) {
+                students2TA.add(students.removeFirst());
             }
-            System.out.println("blacklist: " + blacklist);
-            String[] blacklistedStuds = blacklist.split(",");
-            Arrays.sort(blacklistedStuds, new StringComparator());
-            int numAssigned = 0;
-            System.out.println("numToGrade is " + numStudsToGrade.get(ta));
-            System.out.println("students is " + students + " and blacklistedStuds is " + blacklistedStuds);
-            while (numAssigned <= numStudsToGrade.get(ta)) {
-                if (numAssigned != 0) {
-                    distribution.put(ta, distribution.get(ta) + ", ");
-                }
-                while (Arrays.binarySearch((String[]) blacklistedStuds, " " + ((String) students.peekFirst())) >= 0) {
-                    System.out.println("while loop 3");
-                    String s = students.removeFirst();
-                    students.addLast(s);
-                }
-                if (!students.isEmpty()) {
-                    distribution.put(ta, distribution.get(ta) + students.removeFirst());
-                    numAssigned++;
-                }
-                else {
-                    break;
-                }
+            distribution.put(ta, students2TA);
+        }
+
+        //distribute remaining students (< n of them) to random TAs
+        Collections.shuffle(taLogins);
+        for (String ta : taLogins) {
+            if (!students.isEmpty()) {
+                distribution.get(ta).add(students.removeFirst());
+            } else {
+                break;
             }
         }
 
-        System.out.println("distribution is " + distribution);
-        //convert the hashmap to an array of strings to be added to the database using Paul's code
-        String[] studentsToGrade = new String[taNames.length];
-        int j = 0;
-        for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
-            String temp = distribution.get(grader.getLogin());
-            studentsToGrade[j] = temp;
-            j++;
-        }
-
-
-//        String[] studentsToGrade = new String[taNames.length];
-//        Arrays.fill(studentsToGrade, "");
-//        String[] tasWithBlacklist = DatabaseIO.getColumnData("taLogin", "blacklist");
-//        System.out.println(tasWithBlacklist);
-//        ArrayDeque<String> ad = new ArrayDeque<String>();
-//        for (String s : studNames) {
-//            ad.add(s);
-//        }
-//        int index = (int) (Math.random() * taNames.length);
-//        int loopCount = 0;
-//        Arrays.sort(tasWithBlacklist);
-//        while (!ad.isEmpty()) {
-//            if (Arrays.binarySearch(tasWithBlacklist, taNames[index % studentsToGrade.length]) >= 0) {
-//                String blacklistedStuds = getBlacklist(taNames[index % studentsToGrade.length]);
-//                if (blacklistedStuds != null) {
-//                    if (blacklistedStuds.contains(ad.peekLast())) {
-//                        ad.addFirst(ad.pollLast());
-//                        loopCount++;
-//                        if (loopCount == ad.size()) {
-//                            index++;
-//                        }
-//                        continue;
-//                    }
-//                }
-//            }
-//
-//            if (studentsToGrade[index % studentsToGrade.length].split(",").length == numStudsToGrade.get(m.getValueAt(index % studentsToGrade.length, 0).toString())) {
-//                index++;
-//                continue;
-//            }
-////            if (studentsToGrade[index % studentsToGrade.length].split(",").length == Integer.parseInt(m.getValueAt(index % studentsToGrade.length, 1).toString())) {
-////                index++;
-////                continue;
-////            }
-//            if (studentsToGrade[index % studentsToGrade.length].isEmpty()) {
-//                studentsToGrade[index++ % studentsToGrade.length] += ad.pollLast();
-//            } else {
-//                studentsToGrade[index++ % studentsToGrade.length] += ", " + ad.pollLast();
-//            }
-//            loopCount = 0;
-//        }
-
-
-        //database part
-        try {
-            System.out.println("hello!");
-            String[] colNames = OldDatabaseOps.getColumnNames("assignment_dist");
-            int colIndex = 0;
-            for (int i = 0; i < colNames.length; i++, colIndex++) {
-                if (colNames[i].compareToIgnoreCase((String) assignmentNameComboBox.getSelectedItem()) == 0) {
-                    break;
-                }
-            }
-            for (int i = 0; i < taNames.length; i++) {
-                long rowid = OldDatabaseOps.getRowID("assignment_dist", "ta_login_dist", taNames[i]);
-                Object[] o = OldDatabaseOps.getDataRow("assignment_dist", rowid);
-                o[colIndex] = studentsToGrade[i];
-                OldDatabaseOps.update(rowid, "assignment_dist", o);
-            }
-            JOptionPane.showMessageDialog(this, "Assignments have been successfully distributed to the grading TAs.", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "There was an error distributing the assignments to the grading TAs.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        Allocator.getDatabaseIO().setAsgnDist(asgnObject.getHandinPart(), distribution);
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
-        String asgn = (String)assignmentNameComboBox.getSelectedItem();
+        String asgn = (String) assignmentNameComboBox.getSelectedItem();
 
         //create rubric directory if it does not exist
         String directoryPath = Allocator.getCourseInfo().getRubricDir() + asgn + "/";
         Allocator.getGeneralUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
-        String input = (String)JOptionPane.showInputDialog(new JFrame(),"Enter minutes of leniency:","Set Grace Period",JOptionPane.PLAIN_MESSAGE,icon,null,"");
+        String input = (String) JOptionPane.showInputDialog(new JFrame(), "Enter minutes of leniency:", "Set Grace Period", JOptionPane.PLAIN_MESSAGE, icon, null, "");
         int minsLeniency = Allocator.getCourseInfo().getMinutesOfLeniency();
         if ((input != null) && (input.length() != 0)) {
             minsLeniency = Integer.parseInt(input);
@@ -441,7 +319,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         throw new UnsupportedOperationException("Not supported due to new rubric code changes.");
         /*
         for (String taLogin : ConfigurationManager.getGraderLogins()) {
-            String[] studsToGrade = OldDatabaseOps.getStudentsToGrade(taLogin, (String)assignmentNameComboBox.getSelectedItem());
+            String[] studsToGrade = OldDatabaseOps.getStudentsToGrade(taLogin, (String) assignmentNameComboBox.getSelectedItem());
             for (String stud : studsToGrade) {
                 try {
                     RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, OldDatabaseOps.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
@@ -450,23 +328,29 @@ public class AssignmentdistView extends javax.swing.JFrame {
                     new ErrorView(e);
                 }
             }
-       }
+        }
        */
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
-    private String getBlacklist(String taName) {
-        try {
-            ISqlJetCursor cursor = OldDatabaseOps.getData("blacklist", "ta_blist_logins", taName);
-            return cursor.getString("studLogins");
-        } catch (Exception e) {
-            new ErrorView(e);
-            return "";
-        }
-    }
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        //new ReassignView((String) assignmentNameComboBox.getSelectedItem());
+    }//GEN-LAST:event_jButton1ActionPerformed
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                new AssignmentdistView(null).setVisible(true);
+            }
+        });
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox assignmentNameComboBox;
     private javax.swing.JButton generateDistButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMcenu2;
     private javax.swing.JMenu jMenu1;
