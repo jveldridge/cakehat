@@ -165,13 +165,13 @@ public class DBWrapper implements DatabaseIO {
                     + "FROM asgn AS a "
                     + "WHERE a.name == '" + part.getAssignment().getName() + "'");
             int count = rs.getInt("count");
-            if (count != 0) {
+            if (count == 0) {
                 int asgnID = rs.getInt("aid");
                 rs = _statement.executeQuery("SELECT COUNT(p.pid) AS count "
                         + "FROM part AS p "
                         + "WHERE p.name == '" + part.getName() + "'");
                 count = rs.getInt("count");
-                if (count != 0) {
+                if (count == 0) {
                     _statement.executeUpdate("INSERT INTO part "
                             + "('name', 'aid') "
                             + "VALUES "
@@ -194,6 +194,8 @@ public class DBWrapper implements DatabaseIO {
 
     /**
      * Inserts a new student into the DB (not check if already exists)
+     * TODO: make check for duplicate student
+     * TODO: change to just one name
      * @param studentLogin - String login
      * @param studentFirstName - String First Name
      * @param studentLastName - String Last Name
@@ -299,6 +301,7 @@ public class DBWrapper implements DatabaseIO {
 
     /**
      * Checks to see if TA already exists. If does not exist then inserts TA to DB
+     * TODO: add full name
      * @param taLogin - String TA Login
      * @param taFirstName - String TA First Name
      * @param taLastName - String TA Last Name
@@ -684,7 +687,8 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    public boolean enterGrade(String studentLogin, Part part, double score, String status) {
+    //TODO: remove status
+    public boolean enterGrade(String studentLogin, Part part, double score) {
         this.openConnection();
         try {
 
@@ -695,7 +699,7 @@ public class DBWrapper implements DatabaseIO {
             _statement.executeUpdate("DELETE FROM grade " +
                         "WHERE pid == " + pID + " " +
                          "AND sid == " + tID);
-                _statement.executeUpdate("INSERT INTO grade ('tid', 'pid', 'score', 'status') VALUES (" + tID + ", " + pID + ", '" + score + "', '" + status + "')");
+                _statement.executeUpdate("INSERT INTO grade ('tid', 'pid', 'score', 'status') VALUES (" + tID + ", " + pID + ", '" + score + "', 'blank')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
@@ -734,6 +738,7 @@ public class DBWrapper implements DatabaseIO {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //TODO: add all parts if don't exist
     public boolean addAssignment(Assignment asgn) {
         this.openConnection();
         try {
