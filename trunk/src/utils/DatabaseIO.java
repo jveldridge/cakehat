@@ -241,10 +241,9 @@ public interface DatabaseIO {
      * @param studentLogin
      * @param assignmentName
      * @param score
-     * @param status
      * @return
      */
-    public boolean enterGrade(String studentLogin, Part part, double score, String status);
+    public boolean enterGrade(String studentLogin, Part part, double score);
 
     /**
      * Returns the score of student with login studentLogin on Part part.
