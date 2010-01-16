@@ -22,12 +22,6 @@ class CPPHandin extends CodeHandin
     }
 
     @Override
-    public void openCode(String studentLogin)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void run(String studentLogin)
     {
         throw new UnsupportedOperationException("Not supported yet.");
