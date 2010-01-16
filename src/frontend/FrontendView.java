@@ -790,10 +790,9 @@ public class FrontendView extends JFrame
     }
 
     /**
-     * TODO: Update this to the new database code.
-     *
-     * This method populates the studentList list with the logins of the students that the TA has been
-     * assigned to grade (as recorded in the database) for the selected assignment.
+     * Populates the student list with the logins of the students that the TA
+     * has been assigned to grade (as recorded in the database) for the selected
+     * assignment.
      */
     private void populateStudentList()
     {
