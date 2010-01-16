@@ -784,4 +784,9 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public boolean unBlacklistStudent(String studentLogin, String taLogin) {
+        new ErrorView(new UnsupportedOperationException(), "Not supported yet.\n");
+        return false;
+    }
+
 }

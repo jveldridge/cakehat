@@ -99,6 +99,16 @@ public interface DatabaseIO {
      * @return
      */
     public boolean blacklistStudent(String studentLogin, String taLogin);
+    
+    /**
+     * Removes student with login studentLogin from the blacklist of TA
+     * with login taLogin, if the student was on that TA's blacklist.
+     * 
+     * @param studentLogin
+     * @param taLogin
+     * @return
+     */
+    public boolean unBlacklistStudent(String studentLogin, String taLogin);
 
     /**
      * Indicates whether the HandinPart has a distribution.  Returns true if
