@@ -72,6 +72,15 @@ public interface DatabaseIO {
     public boolean enableStudent(String studentLogin);
 
     /**
+     * Returns a Map of all students currently in the database
+     * Key: String studentLogin
+     * Value: String studentName (as "FirstName LastName")
+     * 
+     * @return
+     */
+    public Map<String,String> getAllStudents();
+    
+    /**
      * Returns a Map of all currently enabled student
      * Key: String studentLogin
      * Value: String studentName (as "FirstName LastName")

@@ -331,6 +331,26 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public Map<String, String> getAllStudents() {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, "
+                    + "s.firstname AS fname, "
+                    + "s.lastname AS lname "
+                    + "FROM student AS s ");
+            HashMap<String, String> result = new HashMap<String, String>();
+            while (rs.next()) {
+                result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
+            }
+            this.closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get All Students from DB");
+            this.closeConnection();
+            return new HashMap<String, String>();
+        }
+    }
+    
     public Map<String, String> getEnabledStudents() {
         this.openConnection();
         try {
