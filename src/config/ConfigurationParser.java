@@ -501,6 +501,10 @@ public class ConfigurationParser
         {
             part = new MatlabHandin(asgn, name, points);
         }
+        else if(language.equalsIgnoreCase("text"))
+        {
+            part = new TextHandin(asgn, name, points);
+        }
         else
         {
             throw new ConfigurationException("Encountered CODE PART of unsupported" + LANGUAGE + ": " + language);

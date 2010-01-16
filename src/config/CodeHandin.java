@@ -400,15 +400,18 @@ public abstract class CodeHandin extends HandinPart
         //Untar if necesary
         this.untar(studentLogin);
 
-        //Build command to open all of the source files in Ksate
-        String cmd = "kate ";
+        //Build command to open all of the source files in Kate
         Collection<File> files = getSourceFiles(studentLogin);
-        for(File file : files)
+        if(!files.isEmpty())
         {
-            cmd += file.getAbsolutePath() + " ";
-        }
+            String cmd = "kate ";
+            for(File file : files)
+            {
+                cmd += file.getAbsolutePath() + " ";
+            }
 
-        BashConsole.writeThreaded(cmd);
+            BashConsole.writeThreaded(cmd);
+        }
     }
 
     /**
