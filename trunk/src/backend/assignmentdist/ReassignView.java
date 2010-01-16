@@ -15,9 +15,12 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import utils.Allocator;
@@ -76,6 +79,7 @@ public class ReassignView extends javax.swing.JFrame {
     private void initComponents() {
 
         fromButtonGroup = new javax.swing.ButtonGroup();
+        XMLButtonGroup = new javax.swing.ButtonGroup();
         jScrollPane2 = new javax.swing.JScrollPane();
         fromTAList = new javax.swing.JList();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -204,19 +208,21 @@ public class ReassignView extends javax.swing.JFrame {
         assignButton.setName("assignButton");
         assignButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                assignButtonActionPerformed();
+                reassignButtonActionPerformed();
             }
         });
 
         assignButton.addKeyListener(new KeyAdapter() {
             public void KeyReleased(KeyEvent evt) {
-                assignButtonActionPerformed();
+                reassignButtonActionPerformed();
             }
         });
 
+        XMLButtonGroup.add(newXMLRadioButton);
         newXMLRadioButton.setText(resourceMap.getString("newXMLRadioButton.text")); // NOI18N
         newXMLRadioButton.setName("newXMLRadioButton"); // NOI18N
 
+        XMLButtonGroup.add(keepXMLRadioButton);
         keepXMLRadioButton.setSelected(true);
         keepXMLRadioButton.setText(resourceMap.getString("keepXMLRadioButton.text")); // NOI18N
         keepXMLRadioButton.setName("keepXMLRadioButton"); // NOI18N
@@ -461,6 +467,38 @@ public class ReassignView extends javax.swing.JFrame {
         }
     }
     
+    private void reassignButtonActionPerformed() {
+        TA oldTA = (TA) fromTAList.getSelectedValue();
+        TA newTA = (TA) toTAList.getSelectedValue();
+        String student = (String) fromStudentList.getSelectedValue();
+        if (student != null) {
+            if (this.studentOnTAsBlacklist(student, newTA)) {
+                if (JOptionPane.showConfirmDialog(null, "Student " + student + " is on TA "
+                                                + newTA.getLogin() + "'s blacklist.  Continue?", 
+                                                "Distribute Blacklisted Student?", 
+                                                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                    studentFilter.requestFocus();
+                    return;
+                }
+            }
+            Allocator.getDatabaseIO().unassignStudentFromGrader(student, _asgn.getHandinPart(), oldTA.getLogin());
+            Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
+        
+            if (keepXMLRadioButton.isSelected()) {
+                    Allocator.getRubricManager().reassignRubric(_asgn.getHandinPart(), student, newTA.getLogin());
+            }
+            else {
+                Map<String,Collection<String>> dist = new HashMap<String,Collection<String>>();
+                Vector<String> assigned = new Vector<String>();
+                assigned.add(student);
+                dist.put(oldTA.getLogin(), assigned);
+                Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(), dist, Allocator.getCourseInfo().getMinutesOfLeniency());
+            }
+            
+            this.updateGUI();
+        }
+    }
+    
     private void unassignButtonActionPerformed() {
         TA newTA = (TA) toTAList.getSelectedValue();
         String student = (String) toStudentList.getSelectedValue();
@@ -602,6 +640,7 @@ private void randomAssignButtonActionPerformed(java.awt.event.ActionEvent evt) {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup XMLButtonGroup;
     private javax.swing.JComboBox asgnComboBox;
     private javax.swing.JButton assignButton;
     private javax.swing.JPanel cardPanel;
