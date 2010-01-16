@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 import utils.Allocator;
+import utils.BashConsole;
 import utils.ErrorView;
 import utils.printing.PrintRequest;
 
@@ -386,6 +387,28 @@ public abstract class CodeHandin extends HandinPart
         }
 
         Allocator.getLandscapePrinter().print(requests, printer);
+    }
+
+    /**
+     * Opens all of the student's code in Kate. Feel free to override this
+     * method in subclasses to open the code in a different editor.
+     *
+     * @param studentLogin
+     */
+    public void openCode(String studentLogin)
+    {
+        //Untar if necesary
+        this.untar(studentLogin);
+
+        //Build command to open all of the source files in Ksate
+        String cmd = "kate ";
+        Collection<File> files = getSourceFiles(studentLogin);
+        for(File file : files)
+        {
+            cmd += file.getAbsolutePath() + " ";
+        }
+
+        BashConsole.writeThreaded(cmd);
     }
 
     /**

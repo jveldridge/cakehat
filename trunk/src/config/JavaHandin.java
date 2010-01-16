@@ -103,22 +103,6 @@ class JavaHandin extends CodeHandin
     }
 
     @Override
-    public void openCode(String studentLogin)
-    {
-        //Untar if necesary
-        this.untar(studentLogin);
-
-        //Open in Kate
-        
-        //additional */ is to open code in all directories handin in
-        String path = this.getStudentHandinDirectory(studentLogin) + "*/";
-
-        String cmd = "kate " + path + "*.java";
-
-        BashConsole.writeThreaded(cmd);
-    }
-
-    @Override
     public void run(String studentLogin)
     {
         //Untar if necesary
