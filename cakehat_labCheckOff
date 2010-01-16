@@ -1,0 +1,67 @@
+#!/bin/bash
+#==============================================================================
+# A lab check of script for cakehat.
+# Creates an empty file with the student's name and score if specified. For a
+# student with login 'jak2' a file called 'jak2' would be created. If a score
+# of '10' was received then the file created would be named 'jak2,10'.
+#
+# The file is placed in:
+# /course/<course code>/cakehat/<current year>/labs/<lab number>/
+#
+# author:  jak2 (Joshua Kaplan)
+# created: January 16, 2010
+#==============================================================================
+
+#if the number of arguments passed in is not 2 or 3
+if [[ !( $# == 2 || $# == 3 ) ]]
+then
+    echo "Usage: cakehat_labCheckOff [lab number] [student login] OR"
+    echo "       cakehat_labCheckOff [lab number] [student login] [points earned]"
+    exit 1
+fi
+
+#retrieve the location of this script
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+#extract the course name
+course=${abspath:8:5}
+
+#get the current year
+year=`eval date +%Y`
+
+#path to the lab directory
+labs_dir_path="/course/"$course"/cakehat/"$year"/labs/"
+
+#if lab directory does not exist, create
+if [ ! -e $labs_dir_path ]
+then
+    mkdir $labs_dir_path
+fi
+
+#path to the specific lab directory
+specific_lab_dir=$labs_dir_path$1"/"
+
+#if specific lab directory does not exist, create it
+if [ ! -e $specific_lab_dir ]
+then
+    mkdir $specific_lab_dir
+fi
+
+#change to specific lab directory
+cd $specific_lab_dir
+
+#create the appropriate file name
+filename=$2
+
+#if points were specified add them to the file name
+if [[ ($# == 3 ) ]]
+then
+    filename=$filename","$3
+fi
+
+#create the file, and make it group readable
+touch $filename
+chmod 660 $filename
+
+#inform user
+echo $2" checked off Lab "$1
