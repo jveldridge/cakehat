@@ -146,7 +146,7 @@ public class FrontendView extends JFrame
                     _submitGradingButton, _viewReadmeButton, _openCodeButton,
                     _runTesterButton, _printStudentButton, _gradeAssignmentButton,
                     _runCodeButton;
-    private JButton[] _allButtons, _codeButtons, _rubricButtons, _studentButtons;
+    private JButton[] _allButtons, _studentButtons;
 
     public FrontendView()
     {
@@ -162,26 +162,8 @@ public class FrontendView extends JFrame
         this.initializeMenuBar();
         this.initializeComponents();
 
-        //Group buttons so they can be enabled/disabled appropriately
-        _allButtons = new JButton[] {
-                                      _runDemoButton, _viewDeductionsButton,
-                                      _printAllButton,_submitGradingButton,
-                                      _viewReadmeButton, _openCodeButton,
-                                      _runTesterButton, _printStudentButton,
-                                      _gradeAssignmentButton, _runCodeButton
-                                    };
+        this.createButtonGroups();
 
-        _codeButtons = new JButton[] {
-                                       _runDemoButton, _printAllButton,
-                                       _openCodeButton, _printStudentButton,
-                                       _runTesterButton, _runCodeButton
-                                     };
-        _rubricButtons = new JButton[] { _gradeAssignmentButton, _submitGradingButton };
-        _studentButtons = new JButton[]{
-                                         _viewReadmeButton, _openCodeButton,
-                                         _printStudentButton, _runTesterButton,
-                                         _runCodeButton, _gradeAssignmentButton
-                                       };
 
         //Select first assignment
         _assignmentList.selectFirst();
@@ -197,6 +179,26 @@ public class FrontendView extends JFrame
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
+    }
+
+    /**
+     * Set up the groups of buttons that will be enabled or disabled.
+     */
+    private void createButtonGroups()
+    {
+        //Group buttons so they can be enabled/disabled appropriately
+        _allButtons = new JButton[] {
+                                      _runDemoButton, _viewDeductionsButton,
+                                      _printAllButton,_submitGradingButton,
+                                      _viewReadmeButton, _openCodeButton,
+                                      _runTesterButton, _printStudentButton,
+                                      _gradeAssignmentButton, _runCodeButton
+                                    };
+        _studentButtons = new JButton[]{
+                                         _viewReadmeButton, _openCodeButton,
+                                         _printStudentButton, _runTesterButton,
+                                         _runCodeButton, _gradeAssignmentButton
+                                       };
     }
 
 
@@ -237,33 +239,18 @@ public class FrontendView extends JFrame
             return;
         }
 
+        //General commands
+        _runDemoButton.setEnabled(part.hasDemo());
+        _viewDeductionsButton.setEnabled(part.hasDeductionList());
+        _submitGradingButton.setEnabled(part.hasRubric());
+        _printAllButton.setEnabled(part.hasPrint());
+
+        //Get selected student
         String stud = _studentList.getSelectedValue();
         if(stud != null && stud.isEmpty())
         {
             stud = null;
         }
-        
-        for(JButton button : _codeButtons)
-        {
-            button.setEnabled(part.hasCode());
-        }
-
-        if(stud != null)
-        {
-            _viewReadmeButton.setEnabled(part.hasReadme(stud));
-        }
-
-        if(part.hasCode())
-        {
-            _runTesterButton.setEnabled(part.hasTester());
-        }
-
-        for(JButton button : _rubricButtons)
-        {
-            button.setEnabled(part.hasRubric());
-        }
-
-        _viewDeductionsButton.setEnabled(part.hasDeductionList());
 
         //If no student is selected, disable all student buttons
         if(stud == null)
@@ -271,6 +258,20 @@ public class FrontendView extends JFrame
             for(JButton button : _studentButtons)
             {
                 button.setEnabled(false);
+            }
+        }
+        //If there is a student, enable buttons appropriately
+        else
+        {
+            //Student buttons
+            _gradeAssignmentButton.setEnabled(part.hasRubric());
+            _runTesterButton.setEnabled(part.hasTester());
+            _runCodeButton.setEnabled(part.hasRun());
+            _openCodeButton.setEnabled(part.hasOpen());
+            _printStudentButton.setEnabled(part.hasPrint());
+            if(stud != null)
+            {
+                _viewReadmeButton.setEnabled(part.hasReadme(stud));
             }
         }
     }

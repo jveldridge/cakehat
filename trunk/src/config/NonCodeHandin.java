@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package config;
 
 /**
@@ -14,12 +9,6 @@ public class NonCodeHandin extends HandinPart
     NonCodeHandin(Assignment asgn, String name, int points)
     {
         super(asgn, name, points);
-    }
-
-    @Override
-    public boolean hasCode()
-    {
-        return false;
     }
 
     @Override
@@ -51,4 +40,22 @@ public class NonCodeHandin extends HandinPart
 
     @Override
     public void runTester(String studentLogin) { }
+
+    @Override
+    public boolean hasOpen()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasPrint()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasRun()
+    {
+        return false;
+    }
 }

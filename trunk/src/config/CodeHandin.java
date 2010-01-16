@@ -410,9 +410,23 @@ public abstract class CodeHandin extends HandinPart
         return sourceFiles;
     }
 
-    public boolean hasCode()
+
+    @Override
+    public boolean hasOpen()
     {
         return true;
+    }
+
+    @Override
+    public boolean hasPrint()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean hasRun()
+    {
+        return (_runMode != null);
     }
 
     protected abstract String[] getSourceFileTypes();

@@ -231,19 +231,27 @@ public abstract class HandinPart extends Part
         }
     }
 
-    public abstract boolean hasCode();
+    public abstract boolean hasOpen();
 
     public abstract void openCode(String studentLogin);
+
+
+    public abstract boolean hasPrint();
 
     public abstract void printCode(String studentLogin, String printer);
 
     public abstract void printCode(Iterable<String> studentLogins, String printer);
+    
+
+    public abstract boolean hasRun();
 
     public abstract void run(String studentLogin);
+
 
     public abstract boolean hasDemo();
 
     public abstract void runDemo();
+
 
     public abstract boolean hasTester();
 

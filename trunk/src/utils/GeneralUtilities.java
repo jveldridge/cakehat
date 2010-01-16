@@ -123,7 +123,8 @@ public class GeneralUtilities {
      * @return user login
      */
     public String getUserLogin() {
-        return System.getProperty("user.name");
+        return "jak2";
+        //return System.getProperty("user.name");
     }
 
     /**
