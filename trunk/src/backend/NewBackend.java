@@ -14,11 +14,13 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JTextField;
 import utils.Allocator;
 
 /**
@@ -33,11 +35,21 @@ public class NewBackend extends javax.swing.JFrame {
     ArrayList<JButton> _multiStudButtons;
     ArrayList<JButton> _multiAsgnButtons;
     private String[] _studentLogins;
+    private HashMap<String,JTextField> _rbMap;
     
     /** Creates new form NewJFrame */
     public NewBackend() {
         initComponents();
-
+        
+        nonHandinRb.setActionCommand("nonHandin");
+        labRb.setActionCommand("lab");
+        handinRB.setActionCommand("handin");
+        
+        _rbMap = new HashMap<String,JTextField>();
+        _rbMap.put(nonHandinRb.getActionCommand(), nonHandinEarned);
+        _rbMap.put(labRb.getActionCommand(), labEarned);
+        _rbMap.put(handinRB.getActionCommand(), handinEarned);
+        
         _asgnButtons = new ArrayList(Arrays.asList(generateDistButton, previewRubricButton, reassignGradingButton,
                                                     gradingStandardsButton, demoButton, importGradesButton));
         _studButtons = new ArrayList(Arrays.asList(statisticsButton, sendGradesButton, openButton, runCodeButton,
@@ -1175,6 +1187,7 @@ public class NewBackend extends javax.swing.JFrame {
 
     private void assignmentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_assignmentListValueChanged
         this.updateGUI();
+        studentFilter.requestFocus();
     }//GEN-LAST:event_assignmentListValueChanged
 
     private void studentListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_studentListValueChanged
@@ -1211,8 +1224,9 @@ public class NewBackend extends javax.swing.JFrame {
         studentList.setListData(matchingLogins.toArray());
         studentList.setSelectedIndex(0);
 
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+        if ((evt.getKeyCode() == KeyEvent.VK_ENTER) || (evt.getKeyCode() == KeyEvent.VK_TAB)) {
             studentFilter.setText(matchingLogins.get(0));
+            _rbMap.get(partsButtonGroup.getSelection().getActionCommand()).requestFocus();
         }
     }//GEN-LAST:event_studentFilterKeyReleased
 
@@ -1307,12 +1321,14 @@ public class NewBackend extends javax.swing.JFrame {
                         parts.add(part);
                     }
                     nonHandinPartsComboBox.setModel(new DefaultComboBoxModel(parts));
+                    if (partsButtonGroup.getSelection() == null) {
+                        nonHandinRb.setSelected(true);
+                    }
                 }
                 else {
                     nonHandinPartsComboBox.setModel(new DefaultComboBoxModel(new String[]{"none"}));
                     nonHandinPartsComboBox.setEnabled(false);
                     nonHandinRb.setEnabled(false);
-                    
                 }
                 
                 if (this.getSelectedAssignment().hasLabParts()) {
@@ -1323,6 +1339,9 @@ public class NewBackend extends javax.swing.JFrame {
                         parts.add(part);
                     }
                     labComboBox.setModel(new DefaultComboBoxModel(parts));
+                    if (partsButtonGroup.getSelection() == null) {
+                        labRb.setSelected(true);
+                    }
                 }
                 else {
                     labComboBox.setModel(new DefaultComboBoxModel(new String[]{"none"}));
@@ -1332,11 +1351,15 @@ public class NewBackend extends javax.swing.JFrame {
                 
                 if (this.getSelectedAssignment().hasHandinPart()) {
                     handinRB.setEnabled(true);
-                    handinRB.setSelected(true);
+                    if (partsButtonGroup.getSelection() == null) {
+                        handinRB.setSelected(true);
+                    }
                 }
                 else {
                     handinRB.setEnabled(false);
-                    overallRb.setSelected(true);
+                    if (partsButtonGroup.getSelection() == null) {
+                        overallRb.setSelected(true);
+                    }
                 }
 
                 //set Tester button to be enabled or not depending on whether project has a tester
