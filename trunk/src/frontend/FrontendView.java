@@ -36,16 +36,16 @@ import javax.swing.event.ListSelectionListener;
 import utils.Allocator;
 
 /**
- * A frontend view that was not created with the Netbeans GUI creator.
+ * A frontend view to be used by TAs that are grading.
  *
  * @author jak2
  */
-public class ProgrammaticFrontendView extends JFrame
+public class FrontendView extends JFrame
 {
     //Test main
     public static void main(String[] args)
     {
-        new ProgrammaticFrontendView();
+        new FrontendView();
     }
 
     /**
@@ -148,7 +148,7 @@ public class ProgrammaticFrontendView extends JFrame
                     _runCodeButton;
     private JButton[] _allButtons, _codeButtons, _rubricButtons, _studentButtons;
 
-    public ProgrammaticFrontendView()
+    public FrontendView()
     {
         //Frame title
         super(Allocator.getGeneralUtilities().getUserLogin() +
@@ -444,7 +444,7 @@ public class ProgrammaticFrontendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                JOptionPane.showMessageDialog(ProgrammaticFrontendView.this, "This feature is not yet available");
+                JOptionPane.showMessageDialog(FrontendView.this, "This feature is not yet available");
             }
         });
         menu.add(menuItem);
