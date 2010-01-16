@@ -40,7 +40,6 @@ public class TA
     @Override
     public String toString()
     {
-        return "[ LOGIN="+_login + " DEFAULT_GRADER=" + _isDefaultGrader +
-                " ADMIN=" + _isAdmin + " HTA=" + _isHTA +"]";
+        return _login;
     }
 }

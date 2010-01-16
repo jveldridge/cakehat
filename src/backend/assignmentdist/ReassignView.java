@@ -11,11 +11,16 @@
 
 package backend.assignmentdist;
 
-import backend.OldDatabaseOps;
 import config.Assignment;
-import javax.swing.JList;
+import config.TA;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 import utils.Allocator;
-import utils.ErrorView;
 
 /**
  *
@@ -24,15 +29,34 @@ import utils.ErrorView;
 public class ReassignView extends javax.swing.JFrame {
 
     private Assignment _asgn;
+    private Vector<String> _unassignedStudents;
 
     /** Creates new form ReassignView */
     public ReassignView(Assignment asgn) {
         this.initComponents();
-        titleLabel.setText("<html><b>Reassign Grading for Assignment: </b>" + asgn + "</html>");
-        this.populateLists();
+        _asgn = asgn;
+        for (Assignment s : Allocator.getCourseInfo().getHandinAssignments()) {
+            asgnComboBox.insertItemAt(s, asgnComboBox.getItemCount());
+        }
+
+        //create dist for assignment passed in as parameter
+        if (asgn != null) {
+            asgnComboBox.setSelectedItem(asgn);
+            this.setTitle(asgnComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+        }
+        
+        _unassignedStudents = new Vector<String>(Allocator.getDatabaseIO().getEnabledStudents().keySet());
+        for (TA ta : Allocator.getCourseInfo().getTAs()) {
+            for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin())) {
+                _unassignedStudents.remove(login);
+            }
+        }
+        
+        manualDistrb.setSelected(true);
+        this.updateGUI();
+        
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setVisible(true);
-        _asgn = asgn;
     }
 
     /** This method is called from within the constructor to
@@ -44,11 +68,9 @@ public class ReassignView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup = new javax.swing.ButtonGroup();
+        fromButtonGroup = new javax.swing.ButtonGroup();
         jScrollPane2 = new javax.swing.JScrollPane();
         fromTAList = new javax.swing.JList();
-        fromTALabel = new javax.swing.JLabel();
-        reassignButton = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         fromStudentList = new javax.swing.JList();
         fromStudentLabel = new javax.swing.JLabel();
@@ -59,23 +81,21 @@ public class ReassignView extends javax.swing.JFrame {
         toStudentList = new javax.swing.JList();
         toStudentsLabel = new javax.swing.JLabel();
         titleLabel = new javax.swing.JLabel();
+        studentFilter = new javax.swing.JTextField();
+        reassignFromrb = new javax.swing.JRadioButton();
+        manualDistrb = new javax.swing.JRadioButton();
+        asgnComboBox = new javax.swing.JComboBox();
+        jPanel1 = new javax.swing.JPanel();
+        assignButton = new javax.swing.JButton();
         keepXMLRadioButton = new javax.swing.JRadioButton();
         newXMLRadioButton = new javax.swing.JRadioButton();
-        studentFilter = new javax.swing.JTextField();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
 
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
-        fromTAList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
+        fromTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         fromTAList.setName("fromTAList"); // NOI18N
         fromTAList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -84,42 +104,27 @@ public class ReassignView extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(fromTAList);
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(ReassignView.class);
-        fromTALabel.setText(resourceMap.getString("fromTALabel.text")); // NOI18N
-        fromTALabel.setName("fromTALabel"); // NOI18N
-
-        reassignButton.setText(resourceMap.getString("reassignButton.text")); // NOI18N
-        reassignButton.setName("reassignButton"); // NOI18N
-        reassignButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reassignButtonActionPerformed(evt);
-            }
-        });
-
         jScrollPane3.setName("jScrollPane3"); // NOI18N
 
-        fromStudentList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         fromStudentList.setName("fromStudentList"); // NOI18N
         jScrollPane3.setViewportView(fromStudentList);
 
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(ReassignView.class);
         fromStudentLabel.setText(resourceMap.getString("fromStudentLabel.text")); // NOI18N
         fromStudentLabel.setName("fromStudentLabel"); // NOI18N
 
         jScrollPane4.setName("jScrollPane4"); // NOI18N
 
-        toTAList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
+        toTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         toTAList.setName("toTAList"); // NOI18N
         toTAList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 toTAListMouseClicked(evt);
+            }
+        });
+        toTAList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                toTAListKeyReleased(evt);
             }
         });
         jScrollPane4.setViewportView(toTAList);
@@ -129,11 +134,6 @@ public class ReassignView extends javax.swing.JFrame {
 
         jScrollPane5.setName("jScrollPane5"); // NOI18N
 
-        toStudentList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         toStudentList.setName("toStudentList"); // NOI18N
         jScrollPane5.setViewportView(toStudentList);
 
@@ -143,29 +143,85 @@ public class ReassignView extends javax.swing.JFrame {
         titleLabel.setText(resourceMap.getString("titleLabel.text")); // NOI18N
         titleLabel.setName("titleLabel"); // NOI18N
 
-        buttonGroup.add(keepXMLRadioButton);
+        studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
+        studentFilter.setName("studentFilter"); // NOI18N
+        studentFilter.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                studentFilterKeyReleased(evt);
+            }
+        });
+
+        fromButtonGroup.add(reassignFromrb);
+        reassignFromrb.setText(resourceMap.getString("reassignFromrb.text")); // NOI18N
+        reassignFromrb.setName("reassignFromrb"); // NOI18N
+        reassignFromrb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ReassignView.this.updateGUI();
+            }
+        });
+
+        fromButtonGroup.add(manualDistrb);
+        manualDistrb.setText(resourceMap.getString("manualDistrb.text")); // NOI18N
+        manualDistrb.setName("manualDistrb"); // NOI18N
+        manualDistrb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ReassignView.this.updateGUI();
+            }
+        });
+
+        asgnComboBox.setName("asgnComboBox"); // NOI18N
+
+        jPanel1.setName("jPanel1"); // NOI18N
+
+        assignButton.setText(resourceMap.getString("assignButton.text")); // NOI18N
+        assignButton.setName("assignButton");
+        assignButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                assignButtonActionPerformed();
+            }
+        });
+
+        assignButton.addKeyListener(new KeyAdapter() {
+            public void KeyReleased(KeyEvent evt) {
+                assignButtonActionPerformed();
+            }
+        });
+
         keepXMLRadioButton.setSelected(true);
         keepXMLRadioButton.setText(resourceMap.getString("keepXMLRadioButton.text")); // NOI18N
         keepXMLRadioButton.setName("keepXMLRadioButton"); // NOI18N
 
-        buttonGroup.add(newXMLRadioButton);
         newXMLRadioButton.setText(resourceMap.getString("newXMLRadioButton.text")); // NOI18N
         newXMLRadioButton.setName("newXMLRadioButton"); // NOI18N
 
-        studentFilter.setText(resourceMap.getString("studentFilter.text")); // NOI18N
-        studentFilter.setName("studentFilter"); // NOI18N
-
-        jMenuBar1.setName("jMenuBar1"); // NOI18N
-
-        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu1.setName("jMenu1"); // NOI18N
-        jMenuBar1.add(jMenu1);
-
-        jMenu2.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu2.setName("jMenu2"); // NOI18N
-        jMenuBar1.add(jMenu2);
-
-        setJMenuBar(jMenuBar1);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(53, 53, 53)
+                        .addComponent(assignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(keepXMLRadioButton))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(newXMLRadioButton)))
+                .addContainerGap(27, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(assignButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keepXMLRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(newXMLRadioButton)
+                .addContainerGap(225, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -175,150 +231,173 @@ public class ReassignView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(fromTALabel)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(manualDistrb)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(fromStudentLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(reassignFromrb)
+                                .addGap(12, 12, 12))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(studentFilter)
-                            .addComponent(fromStudentLabel)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(45, 45, 45)
-                                .addComponent(reassignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(newXMLRadioButton)
-                                    .addComponent(keepXMLRadioButton))))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(toTALabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(toStudentsLabel)
-                            .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(titleLabel))
-                .addContainerGap(23, Short.MAX_VALUE))
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(titleLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toTALabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toStudentsLabel))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(titleLabel)
-                .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(fromStudentLabel)
-                            .addComponent(fromTALabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(toTALabel)
                             .addComponent(toStudentsLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jScrollPane5)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(titleLabel)
+                            .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(3, 3, 3)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(manualDistrb)
+                            .addComponent(fromStudentLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(reassignFromrb)
+                            .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))))
-                .addGap(26, 26, 26))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(143, 143, 143)
-                .addComponent(reassignButton)
-                .addGap(18, 18, 18)
-                .addComponent(keepXMLRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(newXMLRadioButton)
-                .addContainerGap(154, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void fromTAListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fromTAListMouseClicked
-        this.updateFormComponents();
+        fromStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), 
+                                    ((TA)fromTAList.getSelectedValue()).getLogin()).toArray(new String[0]));
     }//GEN-LAST:event_fromTAListMouseClicked
 
-    //TODO: finish this reassign method
-    private void reassignButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignButtonActionPerformed
-        String oldTA = (String) fromTAList.getSelectedValue();
-        String newTA = (String) toTAList.getSelectedValue();
+    private void assignButtonActionPerformed() {
+        TA newTA = (TA) toTAList.getSelectedValue();
         String student = (String) fromStudentList.getSelectedValue();
         
-        //update XML files
-        if (keepXMLRadioButton.isSelected()) {
-            //reassign
-        }
-        else {
-            //remove XML for old grader
-            
-            //create blank XML for new grader
-
-            //assign initially
-       }
-
-        //still need to remove old XMLs
-    }//GEN-LAST:event_reassignButtonActionPerformed
-
+        Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
+        
+        studentFilter.requestFocus();
+    }
+    
+    
     private void toTAListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_toTAListMouseClicked
-        this.updateFormComponents();
+        toStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), 
+                                    ((TA)toTAList.getSelectedValue()).getLogin()).toArray(new String[0]));
     }//GEN-LAST:event_toTAListMouseClicked
 
+private void studentFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyReleased
+    //term to filter against
+        String filterTerm = studentFilter.getText();
 
-    private void populateLists() {
-
-        fromTAList.setListData(OldDatabaseOps.getTANames());
-        if (fromTAList.getModel().getSize() > 0) {
-            fromTAList.setSelectedIndex(0);
+        List<String> matchingLogins;
+        //if no filter term, include all logins
+        String[] students = _unassignedStudents.toArray(new String[0]);
+        if(filterTerm.isEmpty()) {
+            matchingLogins = Arrays.asList(students);
+        }
+        //otherwise compared against beginning of each login
+        else {
+            matchingLogins = new Vector<String>();
+            for(String login : students){
+                if(login.startsWith(filterTerm)){
+                    matchingLogins.add(login);
+                }
+            }
         }
 
-        toTAList.setListData(OldDatabaseOps.getTANames());
+        //display matching logins
+        fromStudentList.setListData(matchingLogins.toArray());
+        fromStudentList.setSelectedIndex(0);
+
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            studentFilter.setText(matchingLogins.get(0));
+            toTAList.requestFocus();
+        }
+}//GEN-LAST:event_studentFilterKeyReleased
+
+private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_toTAListKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            assignButton.requestFocus();
+        }
+}//GEN-LAST:event_toTAListKeyReleased
+
+    private void updateGUI() {
+        TA[] tas = Allocator.getCourseInfo().getTAs().toArray(new TA[0]);
+
+        fromTAList.setListData(tas);
+
+        toTAList.setListData(tas);
         if (toTAList.getModel().getSize() > 0) {
             toTAList.setSelectedIndex(0);
+            toStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(
+                        _asgn.getHandinPart(), ((TA)toTAList.getSelectedValue()).getLogin()).toArray(new TA[0]));
         }
-
-        this.populateStudentList(fromStudentList, (String) fromTAList.getSelectedValue());
-        this.populateStudentList(toStudentList, (String) toTAList.getSelectedValue());
-    }
-
-    private void populateStudentList(JList list, String user) {
         
-    }
-
-    private void updateFormComponents() {
-//        assignmentList.setListData(DatabaseIO.getProjectNames());
-//        if (assignmentList.getModel().getSize() > 0) {
-//            assignmentList.setSelectedIndex(0);
-//        }
-
-        this.populateStudentList(fromStudentList, (String) fromTAList.getSelectedValue());
-        this.populateStudentList(toStudentList, (String) toTAList.getSelectedValue());
+        if (manualDistrb.isSelected()) {
+            fromTAList.setEnabled(false);
+            String[] students = _unassignedStudents.toArray(new String[0]);
+            Arrays.sort(students);
+            fromStudentList.setListData(students);
+            studentFilter.requestFocus();
+        }
+        else {
+            fromTAList.setEnabled(true);
+            if (fromTAList.getModel().getSize() > 0) {
+                fromTAList.setSelectedIndex(0);
+                fromStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(
+                        _asgn.getHandinPart(), ((TA)fromTAList.getSelectedValue()).getLogin()).toArray(new TA[0]));
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup buttonGroup;
+    private javax.swing.JComboBox asgnComboBox;
+    private javax.swing.JButton assignButton;
+    private javax.swing.ButtonGroup fromButtonGroup;
     private javax.swing.JLabel fromStudentLabel;
     private javax.swing.JList fromStudentList;
-    private javax.swing.JLabel fromTALabel;
     private javax.swing.JList fromTAList;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JRadioButton keepXMLRadioButton;
+    private javax.swing.JRadioButton manualDistrb;
     private javax.swing.JRadioButton newXMLRadioButton;
-    private javax.swing.JButton reassignButton;
+    private javax.swing.JRadioButton reassignFromrb;
     private javax.swing.JTextField studentFilter;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JList toStudentList;
