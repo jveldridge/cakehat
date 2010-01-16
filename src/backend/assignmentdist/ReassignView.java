@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * ReassignView.java
  *
  * Created on Nov 26, 2009, 7:48:08 PM
@@ -13,6 +8,7 @@ package backend.assignmentdist;
 
 import config.Assignment;
 import config.TA;
+import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -85,10 +81,19 @@ public class ReassignView extends javax.swing.JFrame {
         reassignFromrb = new javax.swing.JRadioButton();
         manualDistrb = new javax.swing.JRadioButton();
         asgnComboBox = new javax.swing.JComboBox();
-        jPanel1 = new javax.swing.JPanel();
+        cardPanel = new javax.swing.JPanel();
+        reassignPanel = new javax.swing.JPanel();
         assignButton = new javax.swing.JButton();
-        keepXMLRadioButton = new javax.swing.JRadioButton();
         newXMLRadioButton = new javax.swing.JRadioButton();
+        keepXMLRadioButton = new javax.swing.JRadioButton();
+        manualDistPanel = new javax.swing.JPanel();
+        numStudentsSpinner = new javax.swing.JSpinner();
+        randomAssignButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel2 = new javax.swing.JLabel();
+        selectedAssign = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -171,7 +176,10 @@ public class ReassignView extends javax.swing.JFrame {
 
         asgnComboBox.setName("asgnComboBox"); // NOI18N
 
-        jPanel1.setName("jPanel1"); // NOI18N
+        cardPanel.setName("cardPanel"); // NOI18N
+        cardPanel.setLayout(new java.awt.CardLayout());
+
+        reassignPanel.setName("reassignPanel"); // NOI18N
 
         assignButton.setText(resourceMap.getString("assignButton.text")); // NOI18N
         assignButton.setName("assignButton");
@@ -187,41 +195,110 @@ public class ReassignView extends javax.swing.JFrame {
             }
         });
 
+        newXMLRadioButton.setText(resourceMap.getString("newXMLRadioButton.text")); // NOI18N
+        newXMLRadioButton.setName("newXMLRadioButton"); // NOI18N
+
         keepXMLRadioButton.setSelected(true);
         keepXMLRadioButton.setText(resourceMap.getString("keepXMLRadioButton.text")); // NOI18N
         keepXMLRadioButton.setName("keepXMLRadioButton"); // NOI18N
 
-        newXMLRadioButton.setText(resourceMap.getString("newXMLRadioButton.text")); // NOI18N
-        newXMLRadioButton.setName("newXMLRadioButton"); // NOI18N
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(53, 53, 53)
-                        .addComponent(assignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(keepXMLRadioButton))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(30, 30, 30)
-                        .addComponent(newXMLRadioButton)))
-                .addContainerGap(27, Short.MAX_VALUE))
+        javax.swing.GroupLayout reassignPanelLayout = new javax.swing.GroupLayout(reassignPanel);
+        reassignPanel.setLayout(reassignPanelLayout);
+        reassignPanelLayout.setHorizontalGroup(
+            reassignPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(reassignPanelLayout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addGroup(reassignPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(newXMLRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(keepXMLRadioButton)
+                    .addComponent(assignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+        reassignPanelLayout.setVerticalGroup(
+            reassignPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(reassignPanelLayout.createSequentialGroup()
+                .addGap(70, 70, 70)
                 .addComponent(assignButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(keepXMLRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(newXMLRadioButton)
-                .addContainerGap(225, Short.MAX_VALUE))
+                .addContainerGap(130, Short.MAX_VALUE))
         );
+
+        cardPanel.add(reassignPanel, "reassignCard");
+
+        manualDistPanel.setName("manualDistPanel"); // NOI18N
+
+        numStudentsSpinner.setName("numStudentsSpinner"); // NOI18N
+
+        randomAssignButton.setText(resourceMap.getString("randomAssignButton.text")); // NOI18N
+        randomAssignButton.setName("randomAssignButton"); // NOI18N
+
+        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setName("jLabel1"); // NOI18N
+
+        jSeparator1.setName("jSeparator1"); // NOI18N
+
+        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        jLabel2.setName("jLabel2"); // NOI18N
+
+        selectedAssign.setText(resourceMap.getString("selectedAssign.text")); // NOI18N
+        selectedAssign.setName("selectedAssign"); // NOI18N
+
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setName("jButton1"); // NOI18N
+
+        javax.swing.GroupLayout manualDistPanelLayout = new javax.swing.GroupLayout(manualDistPanel);
+        manualDistPanel.setLayout(manualDistPanelLayout);
+        manualDistPanelLayout.setHorizontalGroup(
+            manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(manualDistPanelLayout.createSequentialGroup()
+                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(manualDistPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addGroup(manualDistPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(manualDistPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(randomAssignButton, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)))
+                    .addGroup(manualDistPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addGroup(manualDistPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(selectedAssign, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))))))
+                .addContainerGap())
+        );
+        manualDistPanelLayout.setVerticalGroup(
+            manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(manualDistPanelLayout.createSequentialGroup()
+                .addGap(58, 58, 58)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(randomAssignButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(selectedAssign)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addContainerGap(72, Short.MAX_VALUE))
+        );
+
+        cardPanel.add(manualDistPanel, "manualDistCard");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -231,34 +308,34 @@ public class ReassignView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(manualDistrb)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(fromStudentLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(reassignFromrb)
-                                .addGap(12, 12, 12))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(studentFilter)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(titleLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(toTALabel))
+                        .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(reassignFromrb)
+                            .addComponent(manualDistrb))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fromStudentLabel)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(studentFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(toStudentsLabel))
+                    .addComponent(toTALabel)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(24, 24, 24)
+                        .addComponent(toStudentsLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -268,15 +345,6 @@ public class ReassignView extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(toTALabel)
-                            .addComponent(toStudentsLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jScrollPane5)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(titleLabel)
                             .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(3, 3, 3)
@@ -285,12 +353,18 @@ public class ReassignView extends javax.swing.JFrame {
                             .addComponent(fromStudentLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(reassignFromrb)
-                            .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))))
+                            .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(reassignFromrb)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(toTALabel)
+                        .addComponent(toStudentsLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cardPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -364,8 +438,11 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
             toStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(
                         _asgn.getHandinPart(), ((TA)toTAList.getSelectedValue()).getLogin()).toArray(new TA[0]));
         }
-        
+
+        CardLayout cl = (CardLayout) cardPanel.getLayout();
+
         if (manualDistrb.isSelected()) {
+            cl.show(cardPanel, "manualDistCard");
             fromTAList.setEnabled(false);
             String[] students = _unassignedStudents.toArray(new String[0]);
             Arrays.sort(students);
@@ -373,6 +450,7 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
             studentFilter.requestFocus();
         }
         else {
+            cl.show(cardPanel, "reassignCard");
             fromTAList.setEnabled(true);
             if (fromTAList.getModel().getSize() > 0) {
                 fromTAList.setSelectedIndex(0);
@@ -385,19 +463,28 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox asgnComboBox;
     private javax.swing.JButton assignButton;
+    private javax.swing.JPanel cardPanel;
     private javax.swing.ButtonGroup fromButtonGroup;
     private javax.swing.JLabel fromStudentLabel;
     private javax.swing.JList fromStudentList;
     private javax.swing.JList fromTAList;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JRadioButton keepXMLRadioButton;
+    private javax.swing.JPanel manualDistPanel;
     private javax.swing.JRadioButton manualDistrb;
     private javax.swing.JRadioButton newXMLRadioButton;
+    private javax.swing.JSpinner numStudentsSpinner;
+    private javax.swing.JButton randomAssignButton;
     private javax.swing.JRadioButton reassignFromrb;
+    private javax.swing.JPanel reassignPanel;
+    private javax.swing.JButton selectedAssign;
     private javax.swing.JTextField studentFilter;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JList toStudentList;
