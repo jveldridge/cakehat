@@ -9,6 +9,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -259,6 +260,9 @@ public class FrontendView extends JFrame
             {
                 button.setEnabled(false);
             }
+
+            _submitGradingButton.setEnabled(false);
+            _printAllButton.setEnabled(false);
         }
         //If there is a student, enable buttons appropriately
         else
@@ -353,6 +357,35 @@ public class FrontendView extends JFrame
         studentPane.setPreferredSize(listSize);
         studentPanel.add(studentPane);
         mainPanel.add(studentPanel);
+
+        //When the left key is pressed, switch focus to the assignment list
+        _studentList.addKeyListener(new KeyListener()
+        {
+            public void keyTyped(KeyEvent ke) {}
+            public void keyReleased(KeyEvent ke) {}
+
+            public void keyPressed(KeyEvent ke)
+            {
+                if(KeyEvent.VK_LEFT == ke.getKeyCode())
+                {
+                    _assignmentList.grabFocus();
+                }
+            }
+        });
+        //When the right key is pressed, switch focus to the student list
+        _assignmentList.addKeyListener(new KeyListener()
+        {
+            public void keyTyped(KeyEvent ke) {}
+            public void keyReleased(KeyEvent ke) {}
+
+            public void keyPressed(KeyEvent ke)
+            {
+                if(KeyEvent.VK_RIGHT == ke.getKeyCode())
+                {
+                    _studentList.grabFocus();
+                }
+            }
+        });
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
