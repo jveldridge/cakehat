@@ -6,6 +6,10 @@ package config;
  */
 class CHandin extends CodeHandin
 {
+    //TODO: Fill in my properties
+    public static final LanguageSpecification SPECIFICATION =
+            new LanguageSpecification("C", null, null, null);
+
     CHandin(Assignment asgn, String name, int points)
     {
         super(asgn,name,points);
@@ -49,12 +53,6 @@ class CHandin extends CodeHandin
 
     @Override
     public void runTester(String studentLogin)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isValid()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

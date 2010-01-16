@@ -1,6 +1,9 @@
 package config;
 
+import java.io.StringWriter;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
+import utils.Allocator;
 
 /**
  * Represents the time information a CodePart has.
@@ -21,6 +24,49 @@ public class TimeInformation
         _units = units;
         _affectAll = affectAll;
         _ecIfLate = ecIfLate;
+    }
+
+    /**
+     * Determines if the dates are reasonable. Reasonable is determined
+     * as being in the same calendar year.
+     *
+     * @param writer to write error messages to
+     * @param part in order to give helpful error messages
+     * @return whether dates are reasonable
+     */
+    boolean areDatesReasonable(StringWriter writer, HandinPart part)
+    {
+        String msgBeginning = part.getAssignment().getName() + " - " + part.getName() +
+                              "'s";
+
+        Calendar thisYear = GregorianCalendar.getInstance();
+        thisYear.set(Calendar.YEAR, Allocator.getGeneralUtilities().getCurrentYear());
+
+        boolean valid = true;
+
+        if(_early != null && _early.before(thisYear))
+        {
+            valid = false;
+
+            writer.append(msgBeginning + " EARLY date is likely incorrect." +
+                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_early) + "\n");
+        }
+        if(_ontime != null && _ontime.before(thisYear))
+        {
+            valid = false;
+
+            writer.append(msgBeginning + " ONTIME date is likely incorrect." +
+                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_early) + "\n");
+        }
+        if(_late != null && _late.before(thisYear))
+        {
+            valid = false;
+
+            writer.append(msgBeginning + " LATE date is likely incorrect." +
+                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_early) + "\n");
+        }
+
+        return valid;
     }
 
     public boolean ecIfLate()

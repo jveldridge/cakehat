@@ -6,6 +6,10 @@ package config;
  */
 class CPPHandin extends CodeHandin
 {
+    //TODO: Fill in my properties
+    public static final LanguageSpecification SPECIFICATION =
+            new LanguageSpecification("C++", null, null, null);
+
     CPPHandin(Assignment asgn, String name, int points)
     {
         super(asgn,name,points);
@@ -52,11 +56,5 @@ class CPPHandin extends CodeHandin
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-    @Override
-    public boolean isValid()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+    
 }
