@@ -16,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 import utils.Allocator;
 
 /**
@@ -184,6 +185,11 @@ public class ReassignView extends javax.swing.JFrame {
         });
 
         asgnComboBox.setName("asgnComboBox"); // NOI18N
+        asgnComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asgnComboBoxActionPerformed(evt);
+            }
+        });
 
         cardPanel.setName("cardPanel"); // NOI18N
         cardPanel.setLayout(new java.awt.CardLayout());
@@ -428,7 +434,17 @@ public class ReassignView extends javax.swing.JFrame {
         TA newTA = (TA) toTAList.getSelectedValue();
         String student = (String) fromStudentList.getSelectedValue();
         
+        if (this.studentOnTAsBlacklist(student, newTA)) {
+            if (JOptionPane.showConfirmDialog(null, "Student " + student + " is on TA "
+                                            + newTA.getLogin() + "'s blacklist.  Continue?", 
+                                            "Distribute Blacklisted Student?", 
+                                            JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                studentFilter.requestFocus();
+                return;
+            }
+        }
         Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
+        
         _unassignedStudents.remove(student);
         this.updateGUI();
         studentFilter.setText("");
@@ -488,6 +504,17 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         }
 }//GEN-LAST:event_toTAListKeyReleased
 
+private void asgnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnComboBoxActionPerformed
+    _asgn = (Assignment) asgnComboBox.getSelectedItem();
+    _unassignedStudents = new Vector<String>(Allocator.getDatabaseIO().getEnabledStudents().keySet());
+    for (TA ta : Allocator.getCourseInfo().getTAs()) {
+        for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin())) {
+            _unassignedStudents.remove(login);
+        }
+    }
+    this.updateGUI();
+}//GEN-LAST:event_asgnComboBoxActionPerformed
+
     private void updateGUI() {
         if (toTAList.getModel().getSize() > 0) {
             if (toTAList.getSelectedValue() == null) {
@@ -522,6 +549,15 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         }
     }
 
+    private boolean studentOnTAsBlacklist(String studentLogin, TA ta) {
+        for (String blacklistedStudent : Allocator.getDatabaseIO().getTABlacklist(ta.getLogin())) {
+            if (studentLogin.equals(blacklistedStudent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox asgnComboBox;
     private javax.swing.JButton assignButton;

@@ -264,6 +264,9 @@
         </Property>
         <Property name="name" type="java.lang.String" value="asgnComboBox" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="asgnComboBoxActionPerformed"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JPanel" name="cardPanel">
       <Properties>
