@@ -6,7 +6,6 @@ package gradesystem;
 
 import backend.BackendView;
 import backend.NewBackend;
-import frontend.FrontendView;
 import frontend.ProgrammaticFrontendView;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
@@ -19,6 +18,7 @@ import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * The application's main frame.
@@ -258,7 +258,7 @@ public class GradeSystemView extends FrameView {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        new FrontendView();
+        JOptionPane.showMessageDialog(null, "Really this button doesn't do anything.");
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
