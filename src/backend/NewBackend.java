@@ -1104,12 +1104,12 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_previewRubricButtonActionPerformed
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasCode())
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasOpen())
             this.getSelectedAssignment().getHandinPart().openCode(this.getSelectedStudent());
 }//GEN-LAST:event_openButtonActionPerformed
 
     private void printCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printCodeButtonActionPerformed
-        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasCode())
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasPrint())
             this.getSelectedAssignment().getHandinPart().printCode(this.getSelectedStudent(),
                                                                     Allocator.getGradingUtilities().getPrinter());
 }//GEN-LAST:event_printCodeButtonActionPerformed
@@ -1130,7 +1130,7 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_testCodeButtonActionPerformed
 
     private void runCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runCodeButtonActionPerformed
-        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasCode())
+        if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasRun())
             this.getSelectedAssignment().getHandinPart().run(this.getSelectedStudent());
 }//GEN-LAST:event_runCodeButtonActionPerformed
 
