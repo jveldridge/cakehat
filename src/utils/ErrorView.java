@@ -45,7 +45,7 @@ public class ErrorView extends javax.swing.JFrame {
 
     public ErrorView(Exception e, String customMessage) {
         this(e);
-        errorTextArea.insert(customMessage, 0);
+        errorTextArea.insert(customMessage + "\n", 0);
         errorTextArea.setCaretPosition(0);
     }
 
