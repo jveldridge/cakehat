@@ -13,11 +13,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import utils.Allocator;
+import utils.ErrorView;
 
 /**
  *
@@ -249,6 +253,11 @@ public class ReassignView extends javax.swing.JFrame {
 
         randomAssignButton.setText(resourceMap.getString("randomAssignButton.text")); // NOI18N
         randomAssignButton.setName("randomAssignButton"); // NOI18N
+        randomAssignButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                randomAssignButtonActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
@@ -433,31 +442,35 @@ public class ReassignView extends javax.swing.JFrame {
     private void assignButtonActionPerformed() {
         TA newTA = (TA) toTAList.getSelectedValue();
         String student = (String) fromStudentList.getSelectedValue();
-        
-        if (this.studentOnTAsBlacklist(student, newTA)) {
-            if (JOptionPane.showConfirmDialog(null, "Student " + student + " is on TA "
-                                            + newTA.getLogin() + "'s blacklist.  Continue?", 
-                                            "Distribute Blacklisted Student?", 
-                                            JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
-                studentFilter.requestFocus();
-                return;
+        if (student != null) {
+            if (this.studentOnTAsBlacklist(student, newTA)) {
+                if (JOptionPane.showConfirmDialog(null, "Student " + student + " is on TA "
+                                                + newTA.getLogin() + "'s blacklist.  Continue?", 
+                                                "Distribute Blacklisted Student?", 
+                                                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                    studentFilter.requestFocus();
+                    return;
+                }
             }
+            Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
+
+            _unassignedStudents.remove(student);
+            this.updateGUI();
+            studentFilter.setText("");
+            studentFilter.requestFocus();
         }
-        Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
-        
-        _unassignedStudents.remove(student);
-        this.updateGUI();
-        studentFilter.setText("");
-        studentFilter.requestFocus();
     }
     
     private void unassignButtonActionPerformed() {
         TA newTA = (TA) toTAList.getSelectedValue();
         String student = (String) toStudentList.getSelectedValue();
-        
-        Allocator.getDatabaseIO().unassignStudentFromGrader(student, _asgn.getHandinPart(), newTA.getLogin());
-        _unassignedStudents.add(student);
+        if (student != null) {
+            Allocator.getDatabaseIO().unassignStudentFromGrader(student, _asgn.getHandinPart(), newTA.getLogin());
+            _unassignedStudents.add(student);
+        }
         this.updateGUI();
+        toStudentList.setSelectedIndex(0);
+        unassignButton.requestFocus();
     }
     
     
@@ -514,6 +527,36 @@ private void asgnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
     this.updateGUI();
 }//GEN-LAST:event_asgnComboBoxActionPerformed
+
+private void randomAssignButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_randomAssignButtonActionPerformed
+    TA ta = (TA) toTAList.getSelectedValue();
+    Collections.shuffle(_unassignedStudents);
+    Deque<String> students = new ArrayDeque<String>(_unassignedStudents);
+    String firstStud = students.getFirst();
+    int timesSeenFirst = 0;
+    for (int i = 0; i < (Integer) numStudentsSpinner.getValue(); i++) {
+        if (!students.isEmpty()) {
+            while (this.studentOnTAsBlacklist(students.getFirst(), ta)) {
+                if (students.getFirst().equals(firstStud)) {
+                    timesSeenFirst++;
+                }
+                System.out.println(timesSeenFirst);
+                if (timesSeenFirst == 2) {
+                    new ErrorView(new Exception(), "Cannot assign this many students " +
+                                  "without violating the blacklist.\nIf you would like to " +
+                                  "override the blacklist, please manually select students" +
+                                  "to be distributed.\n");
+                    this.updateGUI();
+                    return;
+                }
+                students.addLast(students.removeFirst());
+            }
+            Allocator.getDatabaseIO().assignStudentToGrader(students.removeFirst(), _asgn.getHandinPart(), ta.getLogin());
+        }
+    }
+    
+    this.updateGUI();
+}//GEN-LAST:event_randomAssignButtonActionPerformed
 
     private void updateGUI() {
         if (toTAList.getModel().getSize() > 0) {
