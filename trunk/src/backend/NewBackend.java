@@ -5,7 +5,6 @@ import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
 import backend.histogram.HistogramView;
 import config.Assignment;
-import config.HandinPart;
 import config.LabPart;
 import config.NonHandinPart;
 import java.awt.CardLayout;
@@ -15,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
@@ -50,7 +50,8 @@ public class NewBackend extends javax.swing.JFrame {
         assignmentList.setListData(Allocator.getCourseInfo().getHandinAssignments().toArray());
 
         //populate student list
-        _studentLogins = OldDatabaseOps.getStudentNames();
+        List<String> students = new LinkedList<String>(Allocator.getDatabaseIO().getAllStudents().keySet());
+        _studentLogins = students.toArray(new String[0]);
         Arrays.sort(_studentLogins);
         studentList.setListData(_studentLogins);
 
