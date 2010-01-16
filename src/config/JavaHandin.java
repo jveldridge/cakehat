@@ -22,6 +22,9 @@ import utils.ErrorView;
 
 /**
  * A Java subclass of CodePart.
+ *
+ * Below are the following modes and properties. ( ) indicate the arguement is
+ * optional.
  * 
  * RUN
  *     MODE
@@ -54,6 +57,46 @@ import utils.ErrorView;
  */
 class JavaHandin extends CodeHandin
 {
+    //Valid RUN, DEMO, & TESTER values
+    private static final String
+    SPECIFY_MAIN="specify-main", MAIN="main", CLASSPATH="classpath",
+    LIBRARY_PATH="librarypath", FIND_MAIN="find-main", JAR="jar",
+    JAR_LOC="jar-loc", CLASS="class", CODE_LOC="code-loc",
+    COMPILE_WITH="compile-with", TESTER_LOC="tester-loc", PACKAGE="package";
+
+    //Run modes
+    private static final LanguageSpecification.Mode
+    RUN_SPECIFY_MAIN_MODE = new LanguageSpecification.Mode(SPECIFY_MAIN,
+                            new LanguageSpecification.Property(MAIN, true),
+                            new LanguageSpecification.Property(CLASSPATH, false),
+                            new LanguageSpecification.Property(LIBRARY_PATH, false)),
+    RUN_FIND_MAIN_MODE = new LanguageSpecification.Mode(FIND_MAIN,
+                         new LanguageSpecification.Property(CLASSPATH, false),
+                         new LanguageSpecification.Property(LIBRARY_PATH, false)),
+    //Demo modes
+    DEMO_JAR_MODE = new LanguageSpecification.Mode(JAR,
+                    new LanguageSpecification.Property(JAR_LOC, true),
+                    new LanguageSpecification.Property(CLASSPATH, false),
+                    new LanguageSpecification.Property(LIBRARY_PATH, false)),
+    DEMO_CLASS_MODE = new LanguageSpecification.Mode(CLASS,
+                      new LanguageSpecification.Property(CODE_LOC, true),
+                      new LanguageSpecification.Property(MAIN, true),
+                      new LanguageSpecification.Property(CLASSPATH, false),
+                      new LanguageSpecification.Property(LIBRARY_PATH, false)),
+    //Tester modes
+    TESTER_COMPILE_WITH_MODE = new LanguageSpecification.Mode(COMPILE_WITH,
+                               new LanguageSpecification.Property(TESTER_LOC, true),
+                               new LanguageSpecification.Property(PACKAGE, true));
+
+    
+    //The specification of how this handin can be configured
+    public static final LanguageSpecification SPECIFICATION =
+    new LanguageSpecification("Java",
+                              new LanguageSpecification.Mode[]{ RUN_SPECIFY_MAIN_MODE, RUN_FIND_MAIN_MODE},
+                              new LanguageSpecification.Mode[]{ DEMO_JAR_MODE, DEMO_CLASS_MODE},
+                              new LanguageSpecification.Mode[]{ TESTER_COMPILE_WITH_MODE } );
+    
+
     public JavaHandin(Assignment asgn, String name, int points)
     {
         super(asgn, name, points);
@@ -123,7 +166,7 @@ class JavaHandin extends CodeHandin
      */
     private boolean compile(String studentLogin)
     {
-        return compileJava(this.getStudentHandinDirectory(studentLogin), this.getRunProperty("classpath"));
+        return compileJava(this.getStudentHandinDirectory(studentLogin), this.getRunProperty(CLASSPATH));
     }
 
     /**
@@ -135,11 +178,11 @@ class JavaHandin extends CodeHandin
     {
         String main = null;
 
-        if(_runMode.equalsIgnoreCase("specify-main"))
+        if(_runMode.equalsIgnoreCase(SPECIFY_MAIN))
         {
-            main = this.getRunProperty("main");
+            main = this.getRunProperty(MAIN);
         }
-        else if(_runMode.equalsIgnoreCase("find-main"))
+        else if(_runMode.equalsIgnoreCase(FIND_MAIN))
         {
             main = this.findMain(studentLogin);
         }
@@ -164,7 +207,7 @@ class JavaHandin extends CodeHandin
         else
         {
             executeJavaInVisibleTerminal(this.getStudentHandinDirectory(studentLogin), main,
-                                        this.getRunProperty("classpath"), this.getRunProperty("librarypath"),
+                                        this.getRunProperty(CLASSPATH), this.getRunProperty(LIBRARY_PATH),
                                         studentLogin + "'s " + this.getAssignment().getName());
         }
     }
@@ -190,7 +233,7 @@ class JavaHandin extends CodeHandin
             locations.add(new URL("file:"+directory));
 
             //Supporting classes in the classpath
-            String[] paths = this.getRunProperty("classpath").split(":");
+            String[] paths = this.getRunProperty(CLASSPATH).split(":");
             for(String path : paths)
             {
                 locations.add(new URL("file:"+path));
@@ -283,11 +326,11 @@ class JavaHandin extends CodeHandin
     @Override
     public void runDemo()
     {
-        if(_demoMode.equalsIgnoreCase("jar"))
+        if(_demoMode.equalsIgnoreCase(JAR))
         {
             this.runJarDemo();
         }
-        else if(_demoMode.equals("class"))
+        else if(_demoMode.equals(CLASS))
         {
             this.runClassDemo();
         }
@@ -308,17 +351,17 @@ class JavaHandin extends CodeHandin
         String cmd = "java ";
 
         //Add java.library.path if it has it
-        if(this.hasDemoProperty("librarypath"))
+        if(this.hasDemoProperty(LIBRARY_PATH))
         {
-            cmd += " -Djava.library.path=" + this.getDemoProperty("librarypath");
+            cmd += " -Djava.library.path=" + this.getDemoProperty(LIBRARY_PATH);
         }
 
         //Add classpath
-        String classpath = this.getDemoProperty("code-loc") + ":" + this.getDemoProperty("classpath");
+        String classpath = this.getDemoProperty(CODE_LOC) + ":" + this.getDemoProperty(CLASSPATH);
         cmd += " -classpath " + classpath;
 
         //Add fully qualified path of main class
-        cmd += " " + this.getDemoProperty("main");
+        cmd += " " + this.getDemoProperty(MAIN);
 
         //Execute command
         BashConsole.writeThreaded(cmd);
@@ -334,18 +377,18 @@ class JavaHandin extends CodeHandin
         String cmd = "java ";
 
         //Add java.library.path component if an arguement was passed in
-        if(this.hasDemoProperty("librarypath"))
+        if(this.hasDemoProperty(LIBRARY_PATH))
         {
-            cmd += " -Djava.library.path=" + this.getDemoProperty("librarypath");
+            cmd += " -Djava.library.path=" + this.getDemoProperty(LIBRARY_PATH);
         }
 
         //Add classpath if it has it
-        if(this.hasDemoProperty("classpath"))
+        if(this.hasDemoProperty(CLASSPATH))
         {
-            cmd += " -classpath " + this.getDemoProperty("classpath");
+            cmd += " -classpath " + this.getDemoProperty(CLASSPATH);
         }
 
-        cmd += " -jar " + this.getDemoProperty("jar-loc");
+        cmd += " -jar " + this.getDemoProperty(JAR_LOC);
 
         BashConsole.writeThreaded(cmd);
     }
@@ -362,7 +405,7 @@ class JavaHandin extends CodeHandin
         //Untar if necesary
         this.untar(studentLogin);
 
-        if(_testerMode.equalsIgnoreCase("compile-with"))
+        if(_testerMode.equalsIgnoreCase(COMPILE_WITH))
         {
             runCompileWithTester(studentLogin);
         }
@@ -376,11 +419,11 @@ class JavaHandin extends CodeHandin
     private void runCompileWithTester(String studentLogin)
     {
         //Get name of tester file from path to tester
-        String testerPath = this.getTesterProperty("tester-loc");
+        String testerPath = this.getTesterProperty(TESTER_LOC);
         String testerName = testerPath.substring(testerPath.lastIndexOf("/")+1);
 
         String copyPath = this.getStudentHandinDirectory(studentLogin) +
-                          this.getTesterProperty("package").replace(".", "/") + "/" + testerName;
+                          this.getTesterProperty(PACKAGE).replace(".", "/") + "/" + testerName;
 
         //Copy file into student's code directory, print error and bail if copy fails
         if(!Allocator.getGeneralUtilities().copyFile(testerPath, copyPath))
@@ -399,22 +442,11 @@ class JavaHandin extends CodeHandin
         //Run tester if compilation succeeded
         if(compilationSuccess)
         {
-            String main = this.getTesterProperty("package") + "." + testerName.replace(".java", "");
+            String main = this.getTesterProperty(PACKAGE) + "." + testerName.replace(".java", "");
             executeJavaInVisibleTerminal(this.getStudentHandinDirectory(studentLogin),
-                                         main,this.getRunProperty("classpath"),this.getRunProperty("librarypath"),
+                                         main,this.getRunProperty(CLASSPATH),this.getRunProperty(LIBRARY_PATH),
                                          "Testing " + studentLogin + "'s " + this.getAssignment().getName());
         }
-    }
-
-    /**
-     * TODO: Come up with validity checks.
-     * 
-     * @return
-     */
-    @Override
-    public boolean isValid()
-    {
-        return true;
     }
 
     private static final String[] _sourceFileTypes = { "java" };

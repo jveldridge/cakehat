@@ -6,6 +6,10 @@ package config;
  */
 class MatlabHandin extends CodeHandin
 {
+    //TODO: Fill in my properties
+    public static final LanguageSpecification SPECIFICATION =
+            new LanguageSpecification("Matlab", null, null, null);
+
     MatlabHandin(Assignment asgn, String name, int points)
     {
         super(asgn,name,points);
@@ -49,12 +53,6 @@ class MatlabHandin extends CodeHandin
 
     @Override
     public void runTester(String studentLogin)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isValid()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

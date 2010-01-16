@@ -1,7 +1,9 @@
 package config;
 
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 import utils.Allocator;
 import utils.ErrorView;
 
@@ -26,6 +28,15 @@ public class CourseInfo
             try
             {
                 _config = ConfigurationParser.parse();
+
+                //Check validity
+                StringWriter writer = new StringWriter();
+                //If invalid display message
+                if(!_config.checkValidity(writer))
+                {
+                    JOptionPane.showMessageDialog(null, writer.toString(), "Configuration Issues", JOptionPane.ERROR_MESSAGE);
+                    //JOptionPane.showMessageDialog(null, writer.toString());
+                }
             }
             catch (ConfigurationException ex)
             {

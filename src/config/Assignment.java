@@ -77,6 +77,20 @@ public class Assignment
         return (_handinPart != null);
     }
 
+    public Iterable<Part> getParts()
+    {
+        Vector<Part> parts = new Vector<Part>();
+
+        parts.addAll(_labParts);
+        parts.addAll(_nonHandinParts);
+        if(this.hasHandinPart())
+        {
+            parts.add(_handinPart);
+        }
+
+        return parts;
+    }
+
     // Points
 
     public int getTotalPoints()

@@ -23,6 +23,8 @@ public abstract class HandinPart extends Part
         super(asgn, name, points);
     }
 
+    // Time Info
+
     void setTimeInfo(TimeInformation info)
     {
         _timeInfo = info;
