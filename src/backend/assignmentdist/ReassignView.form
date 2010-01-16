@@ -46,8 +46,8 @@
                           <Component id="fromStudentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="studentFilter" pref="140" max="32767" attributes="1"/>
-                                  <Component id="jScrollPane3" alignment="1" pref="140" max="32767" attributes="1"/>
+                                  <Component id="studentFilter" pref="132" max="32767" attributes="1"/>
+                                  <Component id="jScrollPane3" alignment="1" pref="132" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cardPanel" min="-2" max="-2" attributes="0"/>
@@ -292,7 +292,7 @@
                           <Component id="keepXMLRadioButton" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="assignButton" alignment="1" min="-2" pref="139" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="30" max="32767" attributes="0"/>
+                      <EmptySpace pref="38" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -305,7 +305,7 @@
                       <Component id="keepXMLRadioButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="newXMLRadioButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="130" max="32767" attributes="0"/>
+                      <EmptySpace pref="128" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -352,34 +352,37 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                              <Component id="numStudentsSpinner" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="69" max="-2" attributes="0"/>
                                       <Component id="jSeparator1" min="-2" pref="50" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="randomAssignButton" alignment="0" pref="127" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="jButton1" alignment="0" max="32767" attributes="1"/>
-                                          <Component id="selectedAssign" alignment="0" pref="140" max="32767" attributes="1"/>
+                                          <Component id="unassignButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="generateRubricsButton" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="selectedAssign" alignment="0" max="32767" attributes="1"/>
                                       </Group>
                                   </Group>
+                                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="numStudentsSpinner" min="-2" pref="51" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="randomAssignButton" pref="138" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+                              <Component id="remainingLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="69" max="-2" attributes="0"/>
+                              <Component id="jSeparator2" min="-2" pref="50" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -389,13 +392,15 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="numStudentsSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="randomAssignButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="numStudentsSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                      <Component id="remainingLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -403,8 +408,12 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="selectedAssign" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="72" max="32767" attributes="0"/>
+                      <Component id="unassignButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="generateRubricsButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="36" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -443,11 +452,34 @@
                 <Property name="text" type="java.lang.String" resourceKey="selectedAssign.text"/>
                 <Property name="name" type="java.lang.String" value="selectedAssign" noResource="true"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="selectedAssign.addActionListener(new ActionListener() {&#xa;    public void actionPerformed(ActionEvent evt) {&#xa;        assignButtonActionPerformed();&#xa;    }&#xa;});&#xa;selectedAssign.addKeyListener(new KeyAdapter() {&#xa;    public void keyReleased(KeyEvent evt) {&#xa;        assignButtonActionPerformed();&#xa;    }&#xa;});"/>
+              </AuxValues>
             </Component>
-            <Component class="javax.swing.JButton" name="jButton1">
+            <Component class="javax.swing.JButton" name="unassignButton">
               <Properties>
-                <Property name="text" type="java.lang.String" resourceKey="jButton1.text"/>
-                <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
+                <Property name="text" type="java.lang.String" resourceKey="unassignButton.text"/>
+                <Property name="name" type="java.lang.String" value="unassignButton" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="unassignButton.addActionListener(new ActionListener() {&#xa;    public void actionPerformed(ActionEvent evt) {&#xa;        unassignButtonActionPerformed();&#xa;    }&#xa;});&#xa;unassignButton.addKeyListener(new KeyAdapter() {&#xa;    public void keyReleased(KeyEvent evt) {&#xa;        unassignButtonActionPerformed();&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="remainingLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="remainingLabel.text"/>
+                <Property name="name" type="java.lang.String" value="remainingLabel" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSeparator" name="jSeparator2">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="jSeparator2" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="generateRubricsButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="generateRubricsButton.text"/>
+                <Property name="name" type="java.lang.String" value="generateRubricsButton" noResource="true"/>
               </Properties>
             </Component>
           </SubComponents>
