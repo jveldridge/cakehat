@@ -799,7 +799,7 @@ public class FrontendView extends JFrame
     {
         if(this.getHandinPart() != null)
         {
-            Collection<String> students = backend.OldDatabaseOps.getStudentsAssigned(this.getHandinPart(), Allocator.getGeneralUtilities().getUserLogin());
+            Collection<String> students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getGeneralUtilities().getUserLogin());
         
             _studentList.setListData(students);
             _studentList.selectFirst();
