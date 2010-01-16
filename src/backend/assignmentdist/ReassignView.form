@@ -4,6 +4,8 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="fromButtonGroup">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="XMLButtonGroup">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
@@ -322,17 +324,23 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="assignButton.addActionListener(new ActionListener() {&#xa;    public void actionPerformed(ActionEvent evt) {&#xa;        assignButtonActionPerformed();&#xa;    }&#xa;});&#xa;&#xa;assignButton.addKeyListener(new KeyAdapter() {&#xa;    public void KeyReleased(KeyEvent evt) {&#xa;        assignButtonActionPerformed();&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="assignButton.addActionListener(new ActionListener() {&#xa;    public void actionPerformed(ActionEvent evt) {&#xa;        reassignButtonActionPerformed();&#xa;    }&#xa;});&#xa;&#xa;assignButton.addKeyListener(new KeyAdapter() {&#xa;    public void KeyReleased(KeyEvent evt) {&#xa;        reassignButtonActionPerformed();&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JRadioButton" name="newXMLRadioButton">
               <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="XMLButtonGroup"/>
+                </Property>
                 <Property name="text" type="java.lang.String" resourceKey="newXMLRadioButton.text"/>
                 <Property name="name" type="java.lang.String" value="newXMLRadioButton" noResource="true"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JRadioButton" name="keepXMLRadioButton">
               <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="XMLButtonGroup"/>
+                </Property>
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" resourceKey="keepXMLRadioButton.text"/>
                 <Property name="name" type="java.lang.String" value="keepXMLRadioButton" noResource="true"/>
