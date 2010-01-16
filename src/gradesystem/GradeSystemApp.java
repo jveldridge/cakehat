@@ -1,10 +1,7 @@
-/*
- * GradeSystemApp.java
- */
 package gradesystem;
 
 import backend.BackendView;
-import frontend.ProgrammaticFrontendView;
+import frontend.FrontendView;
 import java.awt.Font;
 import javax.swing.UIManager;
 import org.jdesktop.application.Application;
@@ -63,8 +60,7 @@ public class GradeSystemApp extends SingleFrameApplication {
                 bv.setLocationRelativeTo(null);
                 show(bv);
             } else if (_args[0].compareToIgnoreCase("frontend") == 0) {
-                ProgrammaticFrontendView fv = new ProgrammaticFrontendView();
-                show(fv); //Is this necessary?
+                show(new FrontendView());
             }
             _testing = false;
         } else {
