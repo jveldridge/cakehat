@@ -269,10 +269,7 @@ public class FrontendView extends JFrame
             _runCodeButton.setEnabled(part.hasRun());
             _openCodeButton.setEnabled(part.hasOpen());
             _printStudentButton.setEnabled(part.hasPrint());
-            if(stud != null)
-            {
-                _viewReadmeButton.setEnabled(part.hasReadme(stud));
-            }
+            _viewReadmeButton.setEnabled(part.hasReadme(stud));
         }
     }
 
