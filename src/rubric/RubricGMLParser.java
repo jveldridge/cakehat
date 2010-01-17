@@ -164,12 +164,12 @@ class RubricGMLParser implements RubricConstants
             //Section
             else if (currNode.getNodeName().equals(SECTION))
             {
-                rubric.addSection(parseSection(currNode));
+                parseSection(currNode, rubric);
             }
             //Extra credit
             else if (currNode.getNodeName().equals(EXTRA_CREDIT))
             {
-                rubric.setExtraCredit(parseSection(currNode));
+                parseSection(currNode, rubric);
             }
             else
             {
@@ -206,9 +206,9 @@ class RubricGMLParser implements RubricConstants
         return person;
     }
 
-    private static Section parseSection(Node sectionNode) throws RubricException
+    private static void parseSection(Node sectionNode, Rubric rubric) throws RubricException
     {
-        Section section = new Section();
+        Section section = rubric.addSection();
 
         //Parse name if it exists (if EXTRA-CREDIT it won't have a name)
         Node nameNode = sectionNode.getAttributes().getNamedItem(NAME);
@@ -227,7 +227,7 @@ class RubricGMLParser implements RubricConstants
             }
             else if (subsectionNode.getNodeName().equals(SUBSECTION))
             {
-                section.addSubsection(parseSubsection(subsectionNode));
+                parseSubsection(subsectionNode, section);
             }
             else if (subsectionNode.getNodeName().equals(NOTES))
             {
@@ -242,8 +242,6 @@ class RubricGMLParser implements RubricConstants
                 throw new RubricException(SECTION, subsectionNode, SUBSECTION, NOTES, COMMENTS);
             }
         }
-
-        return section;
     }
 
     private static Collection<String> parseNotesComments(Node node) throws RubricException
@@ -271,11 +269,12 @@ class RubricGMLParser implements RubricConstants
         return entries;
     }
 
-    private static Subsection parseSubsection(Node subsectionNode) throws RubricException
+    private static void parseSubsection(Node subsectionNode, Section section) throws RubricException
     {
-        Subsection subsection = new Subsection();
-
         //Subsection attributes
+        String name = "", source = "";
+        double outof = 0, score = 0;
+
         NamedNodeMap attrMap = subsectionNode.getAttributes();
         for(int i = 0; i < attrMap.getLength(); i++)
         {
@@ -287,19 +286,23 @@ class RubricGMLParser implements RubricConstants
             }
             else if (attrNode.getNodeName().equals(NAME))
             {
-                subsection.setName(attrNode.getNodeValue());
+                name = attrNode.getNodeValue();
+                //subsection.setName(attrNode.getNodeValue());
             }
             else if (attrNode.getNodeName().equals(SCORE))
             {
-                subsection.setScore(Double.valueOf(attrNode.getNodeValue()));
+                score = Double.valueOf(attrNode.getNodeValue());
+                //subsection.setScore(Double.valueOf(attrNode.getNodeValue()));
             }
             else if (attrNode.getNodeName().equals(OUTOF))
             {
-                subsection.setOutOf(Double.valueOf(attrNode.getNodeValue()));
+                outof = Double.valueOf(attrNode.getNodeValue());
+                //subsection.setOutOf(Double.valueOf(attrNode.getNodeValue()));
             }
             else if (attrNode.getNodeName().equals(SOURCE))
             {
-                subsection.setSource(attrNode.getNodeValue());
+                source = attrNode.getNodeValue();
+                //subsection.setSource(attrNode.getNodeValue());
             }
             else
             {
@@ -307,8 +310,10 @@ class RubricGMLParser implements RubricConstants
             }
         }
 
-        //Detail children (if they exist)
+        //Add subsections
+        Subsection subsection = section.addSubsection(name, score, outof, source);
 
+        //Detail children (if they exist)
         NodeList nodeList = subsectionNode.getChildNodes();
         for(int i = 0; i < nodeList.getLength(); i++)
         {
@@ -327,8 +332,6 @@ class RubricGMLParser implements RubricConstants
                 
             }
         }
-
-        return subsection;
     }
 
     private static Detail processDetail(Node detailNode)

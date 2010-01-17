@@ -1,19 +1,14 @@
 package rubric;
 
-import config.Assignment;
 import config.HandinPart;
 import config.LatePolicy;
-import config.NonHandinPart;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import rubric.Rubric.Person;
-import rubric.Rubric.Section;
-import rubric.Rubric.Subsection;
 import utils.Allocator;
 import utils.ErrorView;
 
@@ -25,81 +20,6 @@ import utils.ErrorView;
  */
 public class RubricMananger
 {
-    //Executes the rubric import code
-    public static void main(String[] args) throws RubricException
-    {
-        importGMLToNewDB();
-    }
-
-    //Test code to load rubric scores into the database
-    private static void importGMLToNewDB() throws RubricException
-    {
-        long start = System.currentTimeMillis();
-
-        for(Assignment asgn : Allocator.getCourseInfo().getHandinAssignments())
-        {
-            //Get GML files
-            String dirPath = "/course/cs015/cakehat/2009/rubrics/"+asgn.getName()+"/";
-            Collection<File> files = Allocator.getGeneralUtilities().getFiles(dirPath, "gml");
-
-            //Get handin part
-            HandinPart handinPart = asgn.getHandinPart();
-
-            //Get DQ part if it exists
-            NonHandinPart dqPart = null;
-            for(NonHandinPart part : asgn.getNonHandinParts())
-            {
-                if(part.getName().equals("Design Questions"))
-                {
-                    dqPart = part;
-                }
-            }
-
-            //For each rubric file
-            for(File file : files)
-            {
-                Rubric rubric = RubricGMLParser.parse(file.getAbsolutePath(), handinPart);
-                String studentLogin = rubric.getStudentAccount();
-
-                double dq = 0;
-
-                //If it has a dq part
-                if(dqPart != null)
-                {
-                    //Check DQ points
-                    for(Section section : rubric.getSections())
-                    {
-                        if(section.getName().equals("Design"))
-                        {
-                            for(Subsection subsection : section.getSubsections())
-                            {
-                                if(subsection.getName().equals("Design Check"))
-                                {
-                                    dq = subsection.getScore();
-                                }
-                            }
-                        }
-                    }
-
-                    //Enter DQ score
-                    //Allocator.getDatabaseIO().enterGrade(studentLogin, dqPart, dq);
-                }
-
-                //total points
-                double handin = rubric.getTotalRubricScore() - dq;
-
-                System.out.println("Entering: " + asgn.getName() + ":" + studentLogin + " - " + dq + ":" + handin);
-
-                //Enter handin score
-                //Allocator.getDatabaseIO().enterGrade(studentLogin, handinPart, handin);
-            }
-        }
-
-        long end = System.currentTimeMillis();
-
-        System.out.println("Run time: " + ((end - start) / 1000) + " seconds");
-    }
-
     private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
     /**
      * View the rubric for a student for a given handin part. If it is already
