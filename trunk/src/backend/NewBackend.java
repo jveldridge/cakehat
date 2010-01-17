@@ -1418,7 +1418,7 @@ public class NewBackend extends javax.swing.JFrame {
                     totalScore += Allocator.getDatabaseIO().getStudentScore(this.getSelectedStudent(), p);
                 }
                 overallEarnedValue.setText(Double.toString(totalScore));
-                double percent = totalScore / totalPoints * 100;
+                double percent = Math.round(totalScore / totalPoints) * 10;
                 overallScoreValue.setText(Double.toString(percent));
 
                 //set Tester button to be enabled or not depending on whether project has a tester
