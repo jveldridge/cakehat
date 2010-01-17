@@ -21,7 +21,7 @@ import javax.swing.*;
 
 public class SubmitDialog{
 
-    JCheckBox _printGRDcb, _emailGRDcb, _notifyStudentscb;
+    JCheckBox _submitcb, _printGRDcb, _emailGRDcb, _notifyStudentscb;
     JPanel _panel;
     Vector<JCheckBox> _studentBoxes;
 
@@ -40,6 +40,7 @@ public class SubmitDialog{
     }
 
     public SubmitDialog(Collection<String> studentLogins) {
+        _submitcb = new JCheckBox("Submit Grades");
         _printGRDcb = new JCheckBox("Print GRD Files");
         _emailGRDcb = new JCheckBox("Email GRD Files");
         _notifyStudentscb = new JCheckBox("Notify Students");
@@ -53,6 +54,7 @@ public class SubmitDialog{
             
         });
         
+        _submitcb.setSelected(true);
         _printGRDcb.setSelected(false);
         _emailGRDcb.setSelected(true);
         _notifyStudentscb.setSelected(true);
@@ -63,6 +65,7 @@ public class SubmitDialog{
         JPanel optionsPanel = new JPanel();
         optionsPanel.setLayout(new GridLayout(0,1));
         optionsPanel.add(new JLabel("<html><b>Select submit options: </b></html>"));
+        optionsPanel.add(_submitcb);
         optionsPanel.add(_notifyStudentscb);
         optionsPanel.add(_emailGRDcb);
         optionsPanel.add(_printGRDcb);
@@ -76,7 +79,7 @@ public class SubmitDialog{
             _studentBoxes.add(new JCheckBox(studentLogin));
         }
 
-        studentPanel.add(new JLabel("<html><b>Select students to email: </b><html>"));
+        studentPanel.add(new JLabel("<html><b>Select students to notify: </b><html>"));
 
         //default each each newly created JCheckBox to be selected and add to the panel
         for (JCheckBox box : _studentBoxes) {
@@ -112,6 +115,13 @@ public class SubmitDialog{
         return JOptionPane.showConfirmDialog(null, _panel, "Submit Options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
     }
 
+    /**
+     * @return whether the _submitcb checkbox is selected
+     */
+    public boolean submitChecked() {
+        return _submitcb.isSelected();
+    }
+    
     /**
      * @return whether the _printGRDcb checkbox is selected
      */
