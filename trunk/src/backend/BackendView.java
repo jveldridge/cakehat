@@ -444,9 +444,10 @@ public class BackendView extends javax.swing.JFrame {
 }//GEN-LAST:event_m_assgndistButtonActionPerformed
 
     private void m_gradeReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_gradeReportButtonActionPerformed
-        GradeReportView grv = new GradeReportView();
-        grv.setLocationRelativeTo(null);
-        grv.setVisible(true);
+//GradeReportView is being overhauled
+//        GradeReportView grv = new GradeReportView();
+//        grv.setLocationRelativeTo(null);
+//        grv.setVisible(true);
 }//GEN-LAST:event_m_gradeReportButtonActionPerformed
 
     private void m_importLabsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_importLabsButtonActionPerformed
