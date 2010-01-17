@@ -9,6 +9,7 @@ import config.LabPart;
 import config.NonHandinPart;
 import config.Part;
 import java.awt.CardLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -18,13 +19,18 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import utils.Allocator;
 
@@ -46,7 +52,6 @@ public class NewBackend extends javax.swing.JFrame {
     /** Creates new form NewJFrame */
     public NewBackend() {
         initComponents();
-        
         submitGradeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 submitGradeActionPerformed();
@@ -1181,9 +1186,38 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_importGradesButtonActionPerformed
 
     private void sendGradesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendGradesButtonActionPerformed
-        GradeReportView grv = new GradeReportView();
-        grv.setLocationRelativeTo(null);
-        grv.setVisible(true);
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new GridLayout(0,1));
+        HashMap<Part,JCheckBox> boxMap = new HashMap<Part,JCheckBox>();
+        for (Assignment a : this.getSelectedAssignments()) {
+            for (Part p : a.getParts()) {
+                JCheckBox partBox = new JCheckBox(a.getName() + ": " + p.getName());
+                partBox.setSelected(true);
+                boxMap.put(p, partBox);
+                messagePanel.add(partBox);
+            }
+        }
+        
+        if (JOptionPane.showConfirmDialog(null, messagePanel, 
+                                            "Select Assignment Parts", 
+                                            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION ) {
+            Map<Assignment,Collection<Part>> map = new HashMap<Assignment,Collection<Part>>();
+            for (Assignment a : this.getSelectedAssignments()) {
+                Vector<Part> parts = new Vector<Part>();
+                for (Part p : a.getParts()) {
+                    if (boxMap.get(p).isSelected()) {
+                        parts.add(p);
+                    }
+                }
+                if (!parts.isEmpty()) {
+                    map.put(a, parts);
+                }
+            }
+            
+            GradeReportView grv = new GradeReportView(map, this.getSelectedStudents());
+            grv.setLocationRelativeTo(null);
+            grv.setVisible(true);
+        }
 }//GEN-LAST:event_sendGradesButtonActionPerformed
 
     private void statisticsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsButtonActionPerformed

@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * GradeReportView.java
  *
  * Created on Nov 7, 2009, 11:22:20 PM
@@ -13,11 +8,15 @@ package backend.gradereport;
 import backend.OldDatabaseOps;
 import backend.histogram.ChartPanel;
 import backend.histogram.StudentDataPanel;
+import config.Assignment;
+import config.Part;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -29,14 +28,19 @@ import utils.BashConsole;
 /**
  *
  * @author psastras
+ * @author jeldridg
  */
 public class GradeReportView extends javax.swing.JFrame {
 
     /** Creates new form GradeReportView */
     private String[] _projectNames,  _projectPointsTotal,  _labNames,  _labPointsTotal,  _homeworkNames,  _homeworkPointsTotal,  _pointsEarned;
-
-    public GradeReportView() {
+    private Collection<String> _students;
+    private Map<Assignment,Collection<Part>> _asgnParts;
+    
+    public GradeReportView(Map<Assignment,Collection<Part>> asgnParts, Collection<String> students) {
         initComponents();
+        _asgnParts = asgnParts;
+        _students = students;
         HTMLEditorKit k = new HTMLEditorKit();
         //_projectList = new JList(DatabaseIO.getAssignmentNames());
         _projectNames = OldDatabaseOps.getProjectNames();
@@ -68,102 +72,20 @@ public class GradeReportView extends javax.swing.JFrame {
     }
 
     public void updatePreview() {
-        int[] projIndex = _projectList.getSelectedIndices();
-        int[] labIndex = _labList.getSelectedIndices();
-
-        String[] projNames = new String[projIndex.length];
-        Object[] projObjects = _projectList.getSelectedValues();
-        for (int i = 0; i < projNames.length; i++) {
-            projNames[i] = (String) projObjects[i];
-        }
-        String[] labNames = new String[labIndex.length];
-        Object[] labObjects = _labList.getSelectedValues();
-        for (int i = 0; i < labNames.length; i++) {
-            labNames[i] = (String) labObjects[i];
-        }
-//        Object[] homeworkObjects = DatabaseIO.getHomeworkNames();
-//        String[] homeworkNames = new String[homeworkObjects.length];
-//        for (int i = 0; i < homeworkNames.length; i++) {
-//            homeworkNames[i] = (String) homeworkObjects[i];
-//        }
-
-        //
-
-        String[] projTotals = new String[projIndex.length];
-        String[] projEarned = new String[projIndex.length];
-        for (int i = 0; i < projIndex.length; i++) {
-            projTotals[i] = _projectPointsTotal[projIndex[i]];
-            projEarned[i] = "0";
-        }
-        String[] labTotals = new String[labIndex.length];
-        String[] labEarned = new String[labIndex.length];
-        for (int i = 0; i < labIndex.length; i++) {
-            labTotals[i] = _labPointsTotal[labIndex[i]];
-            labEarned[i] = "0";
-        }
-
-        String[] homeworkEarned = new String[_homeworkNames.length];
-        Arrays.fill(homeworkEarned, "0");
-
-//        String[] homeworkTotals = new String[homeworkNames.length];
-
-//        DatabaseIO.getAssignmentTotal(assignmentName)
-//        String[] homeworkEarned = new String[homeworkNames.length];
-//        for (int i = 0; i < homeworkNames.length; i++) {
-//            homeworkTotals[i] =
-//        }
-        _previewPane.setText(htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal));
+        _previewPane.setText(htmlBuilder(Allocator.getCourseInfo().getTestAccount()));
     }
 
-    public String htmlBuilder(String body, String[] projectNames, String[] pointsEarned, String[] pointsTotal) {
+    public String htmlBuilder(String student) {
         String stringBuilder = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
-                "<hr />" + body;
-        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>";
-        for (int i = 0; i < projectNames.length; i++) {
-            stringBuilder += "<tr><td>" + projectNames[i] + "</td><td>" + pointsEarned[i] + "</td><td>" + pointsTotal[i] + "</td></tr>";
+                "<hr />" + _messageText.getText();
+        for (Assignment a : _asgnParts.keySet()) {
+            stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>" + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
+            for (Part p : _asgnParts.get(a)) {
+                stringBuilder += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>" + Allocator.getDatabaseIO().getStudentScore(student, p) + "</td><td>" + p.getPoints() + "</td></tr>";
+            }
+            stringBuilder += "</tbody></table>";
         }
-        stringBuilder += "</tbody></table></body>";
-        return stringBuilder;
-    }
-
-    public String htmlBuilder(String body, String[] projectNames, String[] projPointsEarned, String[] projPointsTotal, String[] labNames, String[] labPointsEarned, String[] labPointsTotal, String[] homeworkNames, String[] homeworkPointsEarned, String[] homeworkPointsTotal) {
-        String stringBuilder = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
-                "<hr />" + body;
-        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>";
-        for (int i = 0; i < projectNames.length; i++) {
-            stringBuilder += "<tr style='background:" + ((i % 2 == 0) ? "#FFFFFF" : "#FDFDFD") + "'><td>" + projectNames[i] + "</td><td>" + projPointsEarned[i] + "</td><td>" + projPointsTotal[i] + "</td></tr>";
-        }
-        stringBuilder += "</tbody></table>";
-
-        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Homework Name</td><td>Earned Points</td><td>Total Points</td></tr>";
-        for (int i = 0; i < homeworkNames.length; i++) {
-            stringBuilder += "<tr style='background:" + ((i % 2 == 0) ? "#FFFFFF" : "#FDFDFD") + "'><td>" + homeworkNames[i] + "</td><td>" + homeworkPointsEarned[i] + "</td><td>" + homeworkPointsTotal[i] + "</td></tr>";
-        }
-        stringBuilder += "</tbody></table>";
-
-        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Lab Name</td><td>Earned Points</td><td>Total Points</td></tr>";
-        for (int i = 0; i < labNames.length; i++) {
-            stringBuilder += "<tr style='background:" + ((i % 2 == 0) ? "#FFFFFF" : "#FDFDFD") + "'><td>" + labNames[i] + "</td><td>" + labPointsEarned[i] + "</td><td>" + labPointsTotal[i] + "</td></tr>";
-        }
-
-        stringBuilder += "</tbody></table><hr /></body>";
-        return stringBuilder;
-    }
-
-    public String htmlBuilder(String body, String[] projectNames, String[] projPointsEarned, String[] projPointsTotal, String[] labNames, String[] labPointsEarned, String[] labPointsTotal) {
-        String stringBuilder = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
-                "<hr />" + body;
-        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Project Name</td><td>Earned Points</td><td>Total Points</td></tr>";
-        for (int i = 0; i < projectNames.length; i++) {
-            stringBuilder += "<tr><td>" + projectNames[i] + "</td><td>" + projPointsEarned[i] + "</td><td>" + projPointsTotal[i] + "</td></tr>";
-        }
-        stringBuilder += "</tbody></table>";
-
-        stringBuilder += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>Lab Name</td><td>Earned Points</td><td>Total Points</td></tr>";
-        for (int i = 0; i < labNames.length; i++) {
-            stringBuilder += "<tr><td>" + labNames[i] + "</td><td>" + labPointsEarned[i] + "</td><td>" + labPointsTotal[i] + "</td></tr>";
-        }
-        stringBuilder += "</tbody></table></body>";
+        
         return stringBuilder;
     }
 
@@ -190,7 +112,7 @@ public class GradeReportView extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         _sendButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        testButton = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
         _labList = new javax.swing.JList();
@@ -265,11 +187,11 @@ public class GradeReportView extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
-        jButton1.setName("jButton1"); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        testButton.setText(resourceMap.getString("testButton.text")); // NOI18N
+        testButton.setName("testButton"); // NOI18N
+        testButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                testButtonActionPerformed(evt);
             }
         });
 
@@ -328,7 +250,7 @@ public class GradeReportView extends javax.swing.JFrame {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(jLabel6)
-                                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))))
+                                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))))
                                 .addGap(25, 25, 25)
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)))
@@ -340,7 +262,7 @@ public class GradeReportView extends javax.swing.JFrame {
                                 .addComponent(jScrollPane3)
                                 .addContainerGap())))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(testButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_sendButton)
                         .addContainerGap())))
@@ -361,21 +283,21 @@ public class GradeReportView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
                             .addComponent(jLabel6))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_sendButton)
-                    .addComponent(jButton1))
+                    .addComponent(testButton))
                 .addContainerGap())
         );
 
@@ -405,7 +327,7 @@ public class GradeReportView extends javax.swing.JFrame {
             public void run() {
                 JOptionPane.showMessageDialog(null, new String("Finished sending " + OldDatabaseOps.getStudentNames().length + " emails.  Make sure to delete your sent file or you fail next login."));
             }
-        });
+        }); 
 
         ArrayDeque<File> fullFileList = new ArrayDeque<File>();
         ArrayList<String> histogramFileNames = new ArrayList<String>();
@@ -470,22 +392,8 @@ public class GradeReportView extends javax.swing.JFrame {
 
             //NOW SEND THE EMAILS we do this after the image creation loop so that we can guarantee that all the images have been made
             //otherwise mutt will fail at sending the message wihtout giving a warning.
-            for (String s : studNames) {
-                ArrayList<String> files = new ArrayList<String>(histogramFileNames);
-                files.add(".tmpdata/" + s + ".png");
-                for (int i = 0; i < projIndex.length; i++) {
-                    projEarned[i] = Double.toString(OldDatabaseOps.getStudentEarnedScore(projNames[i], s));
-                }
-                for (int i = 0; i < labIndex.length; i++) {
-                    labEarned[i] = Double.toString(OldDatabaseOps.getStudentEarnedScore(labNames[i], s));
-                }
-                for (int i = 0; i < homeworkEarned.length; i++) {
-                    homeworkEarned[i] = Double.toString(OldDatabaseOps.getStudentEarnedScore(_homeworkNames[i], s));
-                }
-//             Utils.sendMail("cs015headtas@cs.brown.edu", "cs015 Head TAs", new String[]{Utils.getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
-//                     files.toArray(new String[0]));
-               Allocator.getCourseInfo().getEmailAccount().sendMail("cs015headtas@cs.brown.edu", new String[]{s + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal),
-                        files.toArray(new String[0]));
+            for (String student : _students) {
+               Allocator.getCourseInfo().getEmailAccount().sendMail("cs015headtas@cs.brown.edu", new String[]{student + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(student), null);
             }
             File dir1 = new File(".");
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");
@@ -494,7 +402,7 @@ public class GradeReportView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event__sendButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
 
         ArrayDeque<File> fList = new ArrayDeque<File>();
         ArrayList<String> fNames = new ArrayList<String>();
@@ -557,7 +465,7 @@ public class GradeReportView extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Allocator.getCourseInfo().getEmailAccount().sendMail("cs015headtas@cs.brown.edu", new String[]{Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(_messageText.getText(), projNames, projEarned, projTotals, labNames, labEarned, labTotals, _homeworkNames, homeworkEarned, _homeworkPointsTotal), fNames.toArray(new String[0]));
+        Allocator.getCourseInfo().getEmailAccount().sendMail("cs015headtas@cs.brown.edu", new String[]{Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu"}, new String[]{}, new String[]{}, "[cs015] Grade Report", htmlBuilder(Allocator.getCourseInfo().getTestAccount()), fNames.toArray(new String[0]));
         File dir1 = new File(".");
         try {
             BashConsole.write("chmod 660 " + dir1.getCanonicalPath() + "/.tmpdata/*");
@@ -566,7 +474,7 @@ public class GradeReportView extends javax.swing.JFrame {
         }
 
     //while(!fList.isEmpty()) fList.pollFirst().delete();
-    }//GEN-LAST:event_jButton1ActionPerformed
+}//GEN-LAST:event_testButtonActionPerformed
 
     private void _labListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event__labListValueChanged
         updatePreview();
@@ -576,18 +484,6 @@ public class GradeReportView extends javax.swing.JFrame {
 //        updatePreview();
 }//GEN-LAST:event__labListPropertyChange
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new GradeReportView().setVisible(true);
-            }
-        });
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField _fromText;
     private javax.swing.JList _labList;
@@ -595,7 +491,6 @@ public class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JEditorPane _previewPane;
     private javax.swing.JList _projectList;
     private javax.swing.JButton _sendButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -610,5 +505,6 @@ public class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton testButton;
     // End of variables declaration//GEN-END:variables
 }
