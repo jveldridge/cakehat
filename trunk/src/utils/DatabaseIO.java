@@ -229,7 +229,7 @@ public interface DatabaseIO {
      * @param assignmentName
      * @return
      */
-    public Map<String, Calendar> getExtension(Part part);
+    public Map<String, Calendar> getExtensions(Part part);
 
     /**
      * Returns a string containing a message to indicate why the student with login

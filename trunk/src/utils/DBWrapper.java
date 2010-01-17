@@ -165,11 +165,14 @@ public class DBWrapper implements DatabaseIO {
                     + "FROM asgn AS a "
                     + "WHERE a.name == '" + part.getAssignment().getName() + "'");
             int count = rs.getInt("count");
-            if (count == 0) {
+            if (count != 0) {
                 int asgnID = rs.getInt("aid");
                 rs = _statement.executeQuery("SELECT COUNT(p.pid) AS count "
-                        + "FROM part AS p "
-                        + "WHERE p.name == '" + part.getName() + "'");
+                        + "FROM part AS p " +
+                        "INNER JOIN asgn AS a " +
+                        "ON p.aid == a.aid "
+                        + "WHERE p.name == '" + part.getName() + "' " +
+                        "AND a.name == '" + part.getAssignment().getName() + "'");
                 count = rs.getInt("count");
                 if (count == 0) {
                     _statement.executeUpdate("INSERT INTO part "
@@ -259,41 +262,6 @@ public class DBWrapper implements DatabaseIO {
             return true;
         } catch (Exception e) {
             new ErrorView(e, "Could not update student " + studentLogin + " to be enabled.");
-            this.closeConnection();
-            return false;
-        }
-    }
-
-    /**
-     * @deprecated - should use addTA(String taLogin), since other TA info will be in config file
-     * Checks to see if TA already exists. If does not exist then inserts TA to DB
-     * @param taLogin - String TA Login
-     * @param taFirstName - String TA First Name
-     * @param taLastName - String TA Last Name
-     * @param type - String HTA or UTA
-     * @return status
-     */
-    public boolean addTA(String taLogin, String taFirstName, String taLastName, String type) {
-        this.openConnection();
-        try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount "
-                    + "FROM ta AS t "
-                    + "WHERE t.login == '" + taLogin + "'");
-            int rows = rs.getInt("rowcount");
-            if (rows == 0) {
-                _statement.executeUpdate("INSERT INTO ta "
-                        + "('login', 'firstname', 'lastname', 'type') "
-                        + "VALUES "
-                        + "('" + taLogin
-                        + "', '" + taFirstName
-                        + "', '" + taLastName
-                        + "', '" + type
-                        + "')");
-            }
-            this.closeConnection();
-            return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not insert new row for ta: " + taLogin);
             this.closeConnection();
             return false;
         }
@@ -606,7 +574,7 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    public Map<String, Calendar> getExtension(Part part) {
+    public Map<String, Calendar> getExtensions(Part part) {
         this.openConnection();
         try {
             ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, e.ontime AS date "
@@ -731,7 +699,7 @@ public class DBWrapper implements DatabaseIO {
     public double getStudentScore(String studentLogin, Part part) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.score AS grade "
+            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore "
                     + "FROM grade AS g "
                     + "INNER JOIN student AS s ON g.sid == s.sid "
                     + "INNER JOIN part AS p ON g.pid == p.pid "
@@ -739,11 +707,11 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE s.login == '" + studentLogin + "' "
                     + "AND p.name == '" + part.getName() + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "' ");
-            double grade = rs.getDouble("grade");
+            double grade = rs.getDouble("partscore");
             this.closeConnection();
             return grade;
         } catch (Exception e) {
-            //new ErrorView(e, "Could not grade a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+            new ErrorView(e, "Could not get a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
             this.closeConnection();
             return 0;
         }
