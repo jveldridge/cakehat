@@ -400,7 +400,7 @@ public class NewBackend extends javax.swing.JFrame {
             .addGroup(multiSelectedPanelLayout.createSequentialGroup()
                 .addGap(125, 125, 125)
                 .addComponent(jLabel1)
-                .addContainerGap(383, Short.MAX_VALUE))
+                .addContainerGap(455, Short.MAX_VALUE))
         );
 
         cardPanel.add(multiSelectedPanel, "multiPanel");
@@ -423,9 +423,9 @@ public class NewBackend extends javax.swing.JFrame {
                 .addGroup(instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(instructionsPanelLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(instructionsLabel))
+                        .addComponent(instructionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(welcomeLabel))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         instructionsPanelLayout.setVerticalGroup(
             instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -433,8 +433,8 @@ public class NewBackend extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(welcomeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(instructionsLabel)
-                .addContainerGap(396, Short.MAX_VALUE))
+                .addComponent(instructionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(452, Short.MAX_VALUE))
         );
 
         cardPanel.add(instructionsPanel, "instructionCard");
@@ -443,280 +443,149 @@ public class NewBackend extends javax.swing.JFrame {
 
         writtenEarnedLabel.setText(resourceMap.getString("writtenEarnedLabel.text")); // NOI18N
         writtenEarnedLabel.setName("writtenEarnedLabel"); // NOI18N
+        singleSelectedPanel.add(writtenEarnedLabel);
 
         nonHandinEarned.setName("nonHandinEarned"); // NOI18N
+        singleSelectedPanel.add(nonHandinEarned);
 
         writtenTotalLabel.setText(resourceMap.getString("writtenTotalLabel.text")); // NOI18N
         writtenTotalLabel.setName("writtenTotalLabel"); // NOI18N
+        singleSelectedPanel.add(writtenTotalLabel);
 
         nonHandinScoreLabel.setText(resourceMap.getString("nonHandinScoreLabel.text")); // NOI18N
         nonHandinScoreLabel.setName("nonHandinScoreLabel"); // NOI18N
+        singleSelectedPanel.add(nonHandinScoreLabel);
 
         overallScoreValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         overallScoreValue.setText(resourceMap.getString("overallScoreValue.text")); // NOI18N
         overallScoreValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         overallScoreValue.setName("overallScoreValue"); // NOI18N
+        singleSelectedPanel.add(overallScoreValue);
 
         overallEarnedLabel.setText(resourceMap.getString("overallEarnedLabel.text")); // NOI18N
         overallEarnedLabel.setName("overallEarnedLabel"); // NOI18N
+        singleSelectedPanel.add(overallEarnedLabel);
 
         overalTotalLabel.setText(resourceMap.getString("overalTotalLabel.text")); // NOI18N
         overalTotalLabel.setName("overalTotalLabel"); // NOI18N
+        singleSelectedPanel.add(overalTotalLabel);
 
         overallScoreLabel.setText(resourceMap.getString("overallScoreLabel.text")); // NOI18N
         overallScoreLabel.setName("overallScoreLabel"); // NOI18N
+        singleSelectedPanel.add(overallScoreLabel);
 
         overallEarnedValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         overallEarnedValue.setText(resourceMap.getString("overallEarnedValue.text")); // NOI18N
         overallEarnedValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         overallEarnedValue.setName("overallEarnedValue"); // NOI18N
+        singleSelectedPanel.add(overallEarnedValue);
 
         overallTotalValue.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         overallTotalValue.setText(resourceMap.getString("overallTotalValue.text")); // NOI18N
         overallTotalValue.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         overallTotalValue.setName("overallTotalValue"); // NOI18N
+        singleSelectedPanel.add(overallTotalValue);
 
         submitGradeButton.setIcon(resourceMap.getIcon("submitGradeButton.icon")); // NOI18N
         submitGradeButton.setText(resourceMap.getString("submitGradeButton.text")); // NOI18N
         submitGradeButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         submitGradeButton.setIconTextGap(5);
         submitGradeButton.setName("submitGradeButton"); // NOI18N
+        singleSelectedPanel.add(submitGradeButton);
 
         jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
         jLabel2.setName("jLabel2"); // NOI18N
+        singleSelectedPanel.add(jLabel2);
 
         nonHandinPartsComboBox.setName("nonHandinPartsComboBox"); // NOI18N
+        singleSelectedPanel.add(nonHandinPartsComboBox);
 
         writtenScoreValue1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         writtenScoreValue1.setText(resourceMap.getString("writtenScoreValue1.text")); // NOI18N
         writtenScoreValue1.setName("writtenScoreValue1"); // NOI18N
+        singleSelectedPanel.add(writtenScoreValue1);
 
         nonHandinScoreValue.setText(resourceMap.getString("nonHandinScoreValue.text")); // NOI18N
         nonHandinScoreValue.setName("nonHandinScoreValue"); // NOI18N
+        singleSelectedPanel.add(nonHandinScoreValue);
 
         nonHandinOutOf.setEditable(false);
         nonHandinOutOf.setName("nonHandinOutOf"); // NOI18N
+        singleSelectedPanel.add(nonHandinOutOf);
 
         partsButtonGroup.add(nonHandinRb);
         nonHandinRb.setText(resourceMap.getString("nonHandinRb.text")); // NOI18N
         nonHandinRb.setName("nonHandinRb"); // NOI18N
+        singleSelectedPanel.add(nonHandinRb);
 
         partsButtonGroup.add(labRb);
         labRb.setText(resourceMap.getString("labRb.text")); // NOI18N
         labRb.setName("labRb"); // NOI18N
+        singleSelectedPanel.add(labRb);
 
         jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
         jLabel4.setName("jLabel4"); // NOI18N
+        singleSelectedPanel.add(jLabel4);
 
         labComboBox.setName("labComboBox"); // NOI18N
+        singleSelectedPanel.add(labComboBox);
 
         jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
         jLabel5.setName("jLabel5"); // NOI18N
+        singleSelectedPanel.add(jLabel5);
 
         labOutOf.setEditable(false);
         labOutOf.setText(resourceMap.getString("labOutOf.text")); // NOI18N
         labOutOf.setName("labOutOf"); // NOI18N
+        singleSelectedPanel.add(labOutOf);
 
         jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
         jLabel6.setName("jLabel6"); // NOI18N
+        singleSelectedPanel.add(jLabel6);
 
         labEarned.setName("labEarned"); // NOI18N
+        singleSelectedPanel.add(labEarned);
 
         labScoreLabel.setText(resourceMap.getString("labScoreLabel.text")); // NOI18N
         labScoreLabel.setName("labScoreLabel"); // NOI18N
+        singleSelectedPanel.add(labScoreLabel);
 
         partsButtonGroup.add(handinRB);
         handinRB.setText(resourceMap.getString("handinRB.text")); // NOI18N
         handinRB.setName("handinRB"); // NOI18N
+        singleSelectedPanel.add(handinRB);
 
         labScoreValue.setText(resourceMap.getString("labScoreValue.text")); // NOI18N
         labScoreValue.setName("labScoreValue"); // NOI18N
+        singleSelectedPanel.add(labScoreValue);
 
         jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
         jLabel9.setName("jLabel9"); // NOI18N
+        singleSelectedPanel.add(jLabel9);
 
         handinEarned.setName("handinEarned"); // NOI18N
+        singleSelectedPanel.add(handinEarned);
 
         jLabel10.setText(resourceMap.getString("jLabel10.text")); // NOI18N
         jLabel10.setName("jLabel10"); // NOI18N
+        singleSelectedPanel.add(jLabel10);
 
         handinOutOf.setEditable(false);
         handinOutOf.setName("handinOutOf"); // NOI18N
+        singleSelectedPanel.add(handinOutOf);
 
         handinScoreLabel.setText(resourceMap.getString("handinScoreLabel.text")); // NOI18N
         handinScoreLabel.setName("handinScoreLabel"); // NOI18N
+        singleSelectedPanel.add(handinScoreLabel);
 
         handinScoreValue.setText(resourceMap.getString("handinScoreValue.text")); // NOI18N
         handinScoreValue.setName("handinScoreValue"); // NOI18N
+        singleSelectedPanel.add(handinScoreValue);
 
         partsButtonGroup.add(overallRb);
         overallRb.setText(resourceMap.getString("overallRb.text")); // NOI18N
         overallRb.setName("overallRb"); // NOI18N
-
-        javax.swing.GroupLayout singleSelectedPanelLayout = new javax.swing.GroupLayout(singleSelectedPanel);
-        singleSelectedPanel.setLayout(singleSelectedPanelLayout);
-        singleSelectedPanelLayout.setHorizontalGroup(
-            singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(labRb, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
-                .addGap(78, 78, 78)
-                .addComponent(writtenScoreValue1)
-                .addGap(145, 145, 145))
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(nonHandinRb)
-                .addContainerGap())
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(handinRB)
-                .addContainerGap())
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                            .addComponent(nonHandinScoreLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 224, Short.MAX_VALUE)
-                            .addComponent(nonHandinScoreValue)
-                            .addGap(8, 8, 8))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                            .addComponent(jLabel4)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(labComboBox, 0, 248, Short.MAX_VALUE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(nonHandinPartsComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                                .addComponent(writtenEarnedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(nonHandinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(writtenTotalLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(nonHandinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                            .addComponent(handinScoreLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(handinScoreValue))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(labScoreLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel9)
-                                    .addComponent(jLabel5))
-                                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                        .addComponent(jLabel10)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(handinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, singleSelectedPanelLayout.createSequentialGroup()
-                                        .addGap(33, 33, 33)
-                                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(labScoreValue)
-                                            .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(handinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                                                    .addComponent(labEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addGap(18, 18, 18)
-                                                    .addComponent(jLabel6)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(labOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
-                        .addComponent(overallEarnedValue, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(overallTotalValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(overallScoreValue, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(30, 30, 30))
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addComponent(overallRb)
-                .addContainerGap())
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(overalTotalLabel)
-                    .addComponent(overallScoreLabel)
-                    .addComponent(overallEarnedLabel))
-                .addContainerGap(242, Short.MAX_VALUE))
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addGap(113, 113, 113)
-                .addComponent(submitGradeButton)
-                .addContainerGap(128, Short.MAX_VALUE))
-        );
-        singleSelectedPanelLayout.setVerticalGroup(
-            singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addComponent(nonHandinRb)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nonHandinPartsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nonHandinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(writtenEarnedLabel)
-                    .addComponent(writtenTotalLabel)
-                    .addComponent(nonHandinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nonHandinScoreLabel)
-                    .addComponent(nonHandinScoreValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addGap(34, 34, 34)
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(writtenScoreValue1)
-                            .addComponent(writtenScoreValue1)))
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(labRb)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(labComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addGap(11, 11, 11)
-                        .addComponent(labScoreLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(handinRB))
-                    .addGroup(singleSelectedPanelLayout.createSequentialGroup()
-                        .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(labEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6)
-                            .addComponent(labOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labScoreValue)))
-                .addGap(1, 1, 1)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(handinOutOf, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9)
-                    .addComponent(handinEarned, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(handinScoreLabel)
-                    .addComponent(handinScoreValue))
-                .addGap(18, 18, 18)
-                .addComponent(overallRb)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(overallEarnedLabel)
-                    .addComponent(overallEarnedValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(overalTotalLabel)
-                    .addComponent(overallTotalValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(singleSelectedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(overallScoreLabel)
-                    .addComponent(overallScoreValue))
-                .addGap(31, 31, 31)
-                .addComponent(submitGradeButton)
-                .addContainerGap())
-        );
+        singleSelectedPanel.add(overallRb);
 
         cardPanel.add(singleSelectedPanel, "singlePanel");
 
@@ -770,11 +639,11 @@ public class NewBackend extends javax.swing.JFrame {
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(importGradesButton, 0, 0, Short.MAX_VALUE)
                                     .addComponent(demoButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addComponent(selectedAsgnLabel)
+                            .addComponent(selectedAsgnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(centerPanelLayout.createSequentialGroup()
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(selectedStudsLabel))
+                                    .addComponent(selectedStudsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(printCodeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -797,7 +666,7 @@ public class NewBackend extends javax.swing.JFrame {
             centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(centerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(selectedAsgnLabel)
+                .addComponent(selectedAsgnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(centerPanelLayout.createSequentialGroup()
@@ -815,7 +684,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(19, 19, 19)
-                .addComponent(selectedStudsLabel)
+                .addComponent(selectedStudsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(centerPanelLayout.createSequentialGroup()
@@ -840,7 +709,7 @@ public class NewBackend extends javax.swing.JFrame {
                         .addComponent(printRubricButton)
                         .addGap(18, 18, 18)
                         .addComponent(toggleEnabledButton))
-                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
+                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -982,8 +851,8 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1019,6 +888,11 @@ public class NewBackend extends javax.swing.JFrame {
         exportDBButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         exportDBButton.setIconTextGap(5);
         exportDBButton.setName("exportDBButton"); // NOI18N
+        exportDBButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDBButtonActionPerformed(evt);
+            }
+        });
 
         resetDatabaseButton.setIcon(resourceMap.getIcon("resetDatabaseButton.icon")); // NOI18N
         resetDatabaseButton.setText(resourceMap.getString("resetDatabaseButton.text")); // NOI18N
@@ -1037,14 +911,14 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(exportDBButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(configButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(blacklistButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(21, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(generalCommandsLabel)
+                .addComponent(generalCommandsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(blacklistButton)
                 .addGap(18, 18, 18)
@@ -1053,7 +927,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(exportDBButton)
                 .addGap(18, 18, 18)
                 .addComponent(resetDatabaseButton)
-                .addContainerGap(472, Short.MAX_VALUE))
+                .addContainerGap(566, Short.MAX_VALUE))
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -1098,7 +972,7 @@ public class NewBackend extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(centerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(leftPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE))
+                    .addComponent(leftPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 786, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1300,6 +1174,10 @@ public class NewBackend extends javax.swing.JFrame {
             _rbMap.get(partsButtonGroup.getSelection().getActionCommand()).requestFocus();
         }
     }//GEN-LAST:event_studentFilterKeyReleased
+
+    private void exportDBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDBButtonActionPerformed
+        Allocator.getCSVExporter().export();
+    }//GEN-LAST:event_exportDBButtonActionPerformed
 
    /**
      * Returns the currently selected assignment as a String.

@@ -73,5 +73,14 @@ public class Allocator {
         }
         return PORTRAIT_PRINTER;
     }
+
+    //Exporter
+    private static export.Exporter CSV_EXPORTER = null;
+    public static export.Exporter getCSVExporter() {
+        if(CSV_EXPORTER == null){
+            CSV_EXPORTER = new export.CSVExporter();
+        }
+        return CSV_EXPORTER;
+    }
     
 }

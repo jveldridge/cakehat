@@ -317,6 +317,49 @@ public class RubricMananger
          return null;
      }
 
+    /**
+     * Reads out the time status information from a student's rubric. If the
+     * late policy is DAILY_DEDUCTION and the assignment is LATE, then the
+     * number of days late will be included in the returned descriptor.
+     *
+     * @param part
+     * @param studentLogin
+     */
+     public String getTimeStatusDescriptor(HandinPart part, String studentLogin)
+     {
+         try
+         {
+            //Get rubric
+            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
+
+            TimeStatus status = rubric.getStatus();
+
+            String descriptor = status.getPrettyPrintName();
+
+            if(part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION &&
+               status == TimeStatus.LATE)
+            {
+                descriptor += " " + rubric.getDaysLate();
+
+                if(rubric.getDaysLate() == 1)
+                {
+                    descriptor += " day late";
+                }
+                else
+                {
+                    descriptor += " days late";
+                }
+            }
+
+            return descriptor;
+
+         }
+         catch(RubricException e) { }
+
+         return "not available";
+     }
+
      /**
       * Sets the student's rubric to the given time status and days late. If days late is not
       * applicable pass in 0.
