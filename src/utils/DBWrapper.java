@@ -699,7 +699,7 @@ public class DBWrapper implements DatabaseIO {
     public double getStudentScore(String studentLogin, Part part) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore "
+            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore, COUNT(g.score) AS numgrades "
                     + "FROM grade AS g "
                     + "INNER JOIN student AS s ON g.sid == s.sid "
                     + "INNER JOIN part AS p ON g.pid == p.pid "
@@ -707,7 +707,11 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE s.login == '" + studentLogin + "' "
                     + "AND p.name == '" + part.getName() + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "' ");
-            double grade = rs.getDouble("partscore");
+            double count = rs.getInt("numgrades");
+            double grade = 0;
+            if (count != 0) {
+                grade = rs.getDouble("partscore");
+            }
             this.closeConnection();
             return grade;
         } catch (Exception e) {
