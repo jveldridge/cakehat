@@ -1,9 +1,11 @@
 package rubric;
 
 import config.HandinPart;
+import config.Part;
 import config.TimeInformation;
 import java.util.Collection;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 import utils.Allocator;
 
 /**
@@ -141,6 +143,14 @@ class Rubric
     }
 
     // Sections
+
+    Section addSection()
+    {
+        Section section = new Section();
+        _sections.add(section);
+
+        return section;
+    }
 
     void addSection(Section section)
     {
@@ -353,7 +363,7 @@ class Rubric
 
     // Section
 
-    public static class Section
+    public class Section
     {
         private String _name = "";
         private Collection<Subsection> _subsections = new Vector<Subsection>();
@@ -380,6 +390,14 @@ class Rubric
         }
 
         // Subsections
+
+        Subsection addSubsection(String name, double score, double outof, String source)
+        {
+            Subsection subsection = new Subsection(name, score, outof, source);
+            _subsections.add(subsection);
+
+            return subsection;
+        }
 
         void addSubsection(Subsection subsection)
         {
@@ -458,7 +476,7 @@ class Rubric
         }
     }
 
-    public static class Subsection
+    public class Subsection
     {
         private String _name = "";
         private double _score = 0.0, _outOf = 0.0;
@@ -466,14 +484,50 @@ class Rubric
         //What part this subsection pulls from in the database (if at all)
         private String _source = null;
 
-        Subsection() { }
-
         Subsection(String name, double score, double outOf, String source)
         {
             this.setName(name);
-            this.setScore(score);
             this.setOutOf(outOf);
             this.setSource(source);
+
+            if(this.hasSource())
+            {
+                this.loadScoreFromSource();
+            }
+            else
+            {
+                this.setScore(score);
+            }
+        }
+
+        private void loadScoreFromSource()
+        {
+            //Get corresponding part
+            Part sourcePart = null;
+            for(Part part : Rubric.this._handinPart.getAssignment().getParts())
+            {
+                if(part.getName().equals(_source))
+                {
+                    sourcePart = part;
+                }
+            }
+            //If no part was found we've got an issue
+            if(sourcePart == null)
+            {
+                JOptionPane.showMessageDialog(null, "Rubric specifies source part named [" +
+                                              _source + "] for assignment [" +
+                                              Rubric.this._handinPart.getAssignment().getName() + "]. \n" +
+                                              "This part was not found.");
+
+                return;
+            }
+
+            //If a there is a student account (when not a template), load score
+            if(!Rubric.this.getStudentAccount().isEmpty())
+            {
+                String studentLogin = Rubric.this.getStudentAccount();
+                _score = Allocator.getDatabaseIO().getStudentScore(studentLogin, sourcePart);
+            }
         }
 
         // Name
@@ -492,20 +546,16 @@ class Rubric
 
         void setScore(double score)
         {
-            _score = score;
+            //If this doesn't have a source, store the score
+            if(!this.hasSource())
+            {
+                _score = score;
+            }
         }
 
         public double getScore()
         {
-            if(this.hasSource())
-            {
-                //TODO: Pull from the database
-                return 19.23;
-            }
-            else
-            {
-                return _score;
-            }
+            return _score;
         }
 
         // OutOf
@@ -534,7 +584,7 @@ class Rubric
 
         public boolean hasSource()
         {
-            return (_source != null);
+            return (_source != null && !_source.isEmpty());
         }
 
         // Details
