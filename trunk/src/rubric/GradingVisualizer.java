@@ -1,5 +1,6 @@
 package rubric;
 
+import config.HandinPart;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
@@ -25,6 +26,7 @@ import javax.imageio.ImageIO;
 
 import java.util.HashSet;
 import java.util.Set;
+import utils.Allocator;
 
 /**
  * Allows for viewing and editing a rubric. Intended to be used to fill out a
@@ -36,7 +38,7 @@ import java.util.Set;
  */
 class GradingVisualizer extends JFrame
 {
-    GradingVisualizer(final Rubric rubric, final String XMLFilePath)
+    GradingVisualizer(final HandinPart part, final Rubric rubric, final String XMLFilePath, final boolean isAdmin)
     {
         super("Grading " + rubric.getStudentAccount() + "'s " + rubric.getName());
 
@@ -75,6 +77,14 @@ class GradingVisualizer extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 RubricGMLWriter.write(rubric, XMLFilePath);
+
+                //If an admin is saving this rubric, write to that database
+                if(isAdmin)
+                {
+                    double score = rubric.getTotalHandinScore();
+                    Allocator.getDatabaseIO().enterGrade(rubric.getStudentAccount(), part, score);
+                }
+
                 stateManager.rubricSaved();
             }
         });
