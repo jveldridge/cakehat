@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.Box;
@@ -736,6 +737,13 @@ public class FrontendView extends JFrame
                 Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), _studentList.getItems());
 
                 Vector<String> selectedStudents = sd.getSelectedStudents();
+                
+                if (sd.submitChecked()) {
+                    Map<String, Double> handinTotals = Allocator.getRubricManager().getHandinTotals(asgn.getHandinPart(), selectedStudents);
+                    for (String login : handinTotals.keySet()) {
+                        Allocator.getDatabaseIO().enterGrade(login, asgn.getHandinPart(), handinTotals.get(login));
+                    }
+                }
 
                 if (sd.printChecked())
                 {
