@@ -743,9 +743,9 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection();
             return grade;
         } catch (Exception e) {
-            new ErrorView(e, "Could not grade a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+            //new ErrorView(e, "Could not grade a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
             this.closeConnection();
-            return -1.0;
+            return 0;
         }
     }
 

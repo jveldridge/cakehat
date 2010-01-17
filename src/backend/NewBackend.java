@@ -7,7 +7,11 @@ import backend.histogram.HistogramView;
 import config.Assignment;
 import config.LabPart;
 import config.NonHandinPart;
+import config.Part;
 import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -20,6 +24,7 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import utils.Allocator;
 
@@ -36,14 +41,38 @@ public class NewBackend extends javax.swing.JFrame {
     ArrayList<JButton> _multiAsgnButtons;
     private String[] _studentLogins;
     private HashMap<String,JTextField> _rbMap;
+    private HashMap<String,JComboBox> _comboMap;
     
     /** Creates new form NewJFrame */
     public NewBackend() {
         initComponents();
         
+        submitGradeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                submitGradeActionPerformed();
+            }
+        });
+        
+        submitGradeButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    submitGradeActionPerformed();
+                }
+            }
+        });
+        
+        nonHandinEarned.addKeyListener(new GradeBoxKeyListener());
+        handinEarned.addKeyListener(new GradeBoxKeyListener());
+        labEarned.addKeyListener(new GradeBoxKeyListener());
+        
         nonHandinRb.setActionCommand("nonHandin");
         labRb.setActionCommand("lab");
         handinRB.setActionCommand("handin");
+        
+        _comboMap = new HashMap<String,JComboBox>();
+        _comboMap.put(nonHandinRb.getActionCommand(), nonHandinPartsComboBox);
+        _comboMap.put(labRb.getActionCommand(), labComboBox);
         
         _rbMap = new HashMap<String,JTextField>();
         _rbMap.put(nonHandinRb.getActionCommand(), nonHandinEarned);
@@ -1201,6 +1230,15 @@ public class NewBackend extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_printRubricButtonActionPerformed
 
+    private void submitGradeActionPerformed() {
+        Part part = (Part) _comboMap.get(partsButtonGroup.getSelection().getActionCommand()).getSelectedItem();
+        JTextField textField = _rbMap.get(partsButtonGroup.getSelection().getActionCommand());
+        Double score = Double.parseDouble(textField.getText());
+        Allocator.getDatabaseIO().enterGrade(getSelectedStudent(), part, score);
+        textField.setText("");
+        studentFilter.requestFocus();
+    }
+    
     private void studentFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyReleased
         //term to filter against
         String filterTerm = studentFilter.getText();
@@ -1255,6 +1293,7 @@ public class NewBackend extends javax.swing.JFrame {
         return (Assignment) assignmentList.getSelectedValue();
     }
 
+    
     /**
      * Returns the currently selected student as a String.
      *
@@ -1321,6 +1360,11 @@ public class NewBackend extends javax.swing.JFrame {
                         parts.add(part);
                     }
                     nonHandinPartsComboBox.setModel(new DefaultComboBoxModel(parts));
+                    
+                    Part selected = (Part) nonHandinPartsComboBox.getSelectedItem();
+                    nonHandinOutOf.setText(Double.toString(selected.getPoints()));
+                    nonHandinEarned.setText(Double.toString(Allocator.getDatabaseIO().getStudentScore(this.getSelectedStudent(), selected)));
+                    
                     if (partsButtonGroup.getSelection() == null) {
                         nonHandinRb.setSelected(true);
                     }
@@ -1339,6 +1383,9 @@ public class NewBackend extends javax.swing.JFrame {
                         parts.add(part);
                     }
                     labComboBox.setModel(new DefaultComboBoxModel(parts));
+                    Part selected = (Part) labComboBox.getSelectedItem();
+                    labOutOf.setText(Double.toString(selected.getPoints()));
+                    labEarned.setText(Double.toString(Allocator.getDatabaseIO().getStudentScore(this.getSelectedStudent(), selected)));
                     if (partsButtonGroup.getSelection() == null) {
                         labRb.setSelected(true);
                     }
@@ -1354,6 +1401,9 @@ public class NewBackend extends javax.swing.JFrame {
                     if (partsButtonGroup.getSelection() == null) {
                         handinRB.setSelected(true);
                     }
+                    Part selected = this.getSelectedAssignment().getHandinPart();
+                    handinOutOf.setText(Double.toString(selected.getPoints()));
+                    handinEarned.setText(Double.toString(Allocator.getDatabaseIO().getStudentScore(this.getSelectedStudent(), selected)));
                 }
                 else {
                     handinRB.setEnabled(false);
@@ -1361,6 +1411,8 @@ public class NewBackend extends javax.swing.JFrame {
                         overallRb.setSelected(true);
                     }
                 }
+                
+                overallTotalValue.setText(Double.toString(this.getSelectedAssignment().getTotalPoints()));
 
                 //set Tester button to be enabled or not depending on whether project has a tester
                 if (this.getSelectedAssignment().hasHandinPart()) {
@@ -1440,6 +1492,14 @@ public class NewBackend extends javax.swing.JFrame {
 
     }
 
+    private class GradeBoxKeyListener extends KeyAdapter {
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                submitGradeButton.requestFocus();
+            }
+        }
+    }
+    
     /**
     * @param args the command line arguments
     */
