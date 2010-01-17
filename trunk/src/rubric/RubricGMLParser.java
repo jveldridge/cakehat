@@ -164,12 +164,12 @@ class RubricGMLParser implements RubricConstants
             //Section
             else if (currNode.getNodeName().equals(SECTION))
             {
-                parseSection(currNode, rubric);
+                parseSection(currNode, rubric, false);
             }
             //Extra credit
             else if (currNode.getNodeName().equals(EXTRA_CREDIT))
             {
-                parseSection(currNode, rubric);
+                parseSection(currNode, rubric, true);
             }
             else
             {
@@ -206,9 +206,18 @@ class RubricGMLParser implements RubricConstants
         return person;
     }
 
-    private static void parseSection(Node sectionNode, Rubric rubric) throws RubricException
+    private static void parseSection(Node sectionNode, Rubric rubric, boolean isEC) throws RubricException
     {
-        Section section = rubric.addSection();
+        Section section;
+        
+        if(isEC)
+        {
+            section = rubric.addExtraCredit();
+        }
+        else
+        {
+            section = rubric.addSection();
+        }
 
         //Parse name if it exists (if EXTRA-CREDIT it won't have a name)
         Node nameNode = sectionNode.getAttributes().getNamedItem(NAME);
