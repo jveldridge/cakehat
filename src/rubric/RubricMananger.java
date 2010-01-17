@@ -20,8 +20,8 @@ import utils.ErrorView;
  */
 public class RubricMananger
 {
-    private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
-    /**
+
+     /**
      * View the rubric for a student for a given handin part. If it is already
      * open it will be brought to front and centered on screen.
      *
@@ -30,6 +30,23 @@ public class RubricMananger
      * @param studentLogin
      */
     public void view(HandinPart part, String studentLogin)
+    {
+        view(part, studentLogin, false);
+    }
+
+
+
+    private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
+    /**
+     * View the rubric for a student for a given handin part. If it is already
+     * open it will be brought to front and centered on screen.
+     *
+     * @param part
+     * @param studentLogin
+     * @param isAdmin if true then on save the rubric's handin score will be written
+     *                to the database
+     */
+    public void view(HandinPart part, String studentLogin, boolean isAdmin)
     {
         String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
 
@@ -41,7 +58,7 @@ public class RubricMananger
             try
             {
             Rubric rubric = RubricGMLParser.parse(XMLFilePath, part);
-            GradingVisualizer visualizer = new GradingVisualizer(rubric, XMLFilePath);
+            GradingVisualizer visualizer = new GradingVisualizer(part, rubric, XMLFilePath, isAdmin);
             visualizer.addWindowListener(new WindowAdapter()
             {
                 public void windowClosed(WindowEvent e)

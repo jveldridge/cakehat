@@ -1042,7 +1042,7 @@ public class NewBackend extends javax.swing.JFrame {
 
     private void viewRubricButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewRubricButtonActionPerformed
         if (this.getSelectedAssignment().hasHandinPart() && this.getSelectedAssignment().getHandinPart().hasRubric())
-            Allocator.getRubricManager().view(this.getSelectedAssignment().getHandinPart(), this.getSelectedStudent());
+            Allocator.getRubricManager().view(this.getSelectedAssignment().getHandinPart(), this.getSelectedStudent(), true);
 }//GEN-LAST:event_viewRubricButtonActionPerformed
 
     private void testCodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testCodeButtonActionPerformed
