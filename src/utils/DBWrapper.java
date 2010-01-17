@@ -711,15 +711,14 @@ public class DBWrapper implements DatabaseIO {
     public boolean enterGrade(String studentLogin, Part part, double score) {
         this.openConnection();
         try {
-
-                ResultSet rs = _statement.executeQuery("SELECT t.tid FROM ta AS t WHERE t.login == '" + studentLogin + "'");
-                int tID = rs.getInt("tid");
-                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
-                int pID = rs.getInt("pid");
+            ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+            int sID = rs.getInt("sid");
+            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+            int pID = rs.getInt("pid");
             _statement.executeUpdate("DELETE FROM grade " +
                         "WHERE pid == " + pID + " " +
-                         "AND sid == " + tID);
-                _statement.executeUpdate("INSERT INTO grade ('tid', 'pid', 'score', 'status') VALUES (" + tID + ", " + pID + ", '" + score + "', 'blank')");
+                         "AND sid == " + sID);
+            _statement.executeUpdate("INSERT INTO grade ('sid', 'pid', 'score', 'status') VALUES (" + sID + ", " + pID + ", '" + score + "', 'blank')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
