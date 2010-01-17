@@ -1235,7 +1235,6 @@ public class NewBackend extends javax.swing.JFrame {
         JTextField textField = _rbMap.get(partsButtonGroup.getSelection().getActionCommand());
         Double score = Double.parseDouble(textField.getText());
         Allocator.getDatabaseIO().enterGrade(getSelectedStudent(), part, score);
-        textField.setText("");
         studentFilter.requestFocus();
     }
     
@@ -1412,7 +1411,15 @@ public class NewBackend extends javax.swing.JFrame {
                     }
                 }
                 
-                overallTotalValue.setText(Double.toString(this.getSelectedAssignment().getTotalPoints()));
+                double totalPoints = this.getSelectedAssignment().getTotalPoints();
+                overallTotalValue.setText(Double.toString(totalPoints));
+                double totalScore = 0;
+                for (Part p : this.getSelectedAssignment().getParts()) {
+                    totalScore += Allocator.getDatabaseIO().getStudentScore(this.getSelectedStudent(), p);
+                }
+                overallEarnedValue.setText(Double.toString(totalScore));
+                double percent = totalScore / totalPoints * 100;
+                overallScoreValue.setText(Double.toString(percent));
 
                 //set Tester button to be enabled or not depending on whether project has a tester
                 if (this.getSelectedAssignment().hasHandinPart()) {
