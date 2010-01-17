@@ -152,11 +152,6 @@ class Rubric
         return section;
     }
 
-    void addSection(Section section)
-    {
-        _sections.add(section);
-    }
-
     public Collection<Section> getSections()
     {
         return _sections;
@@ -164,9 +159,11 @@ class Rubric
 
     // Extra credit
 
-    void setExtraCredit(Section ec)
+    Section addExtraCredit()
     {
-        _extraCredit = ec;
+        _extraCredit = new Section();
+
+        return _extraCredit;
     }
 
     public Section getExtraCredit()
@@ -372,11 +369,6 @@ class Rubric
 
         Section() { }
 
-        Section(String name)
-        {
-            this.setName(name);
-        }
-
         // Name
 
         void setName(String name)
@@ -397,11 +389,6 @@ class Rubric
             _subsections.add(subsection);
 
             return subsection;
-        }
-
-        void addSubsection(Subsection subsection)
-        {
-            _subsections.add(subsection);
         }
 
         public Collection<Subsection> getSubsections()
