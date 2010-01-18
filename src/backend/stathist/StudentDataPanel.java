@@ -8,7 +8,7 @@
  *
  * Created on Sep 9, 2009, 10:35:44 AM
  */
-package backend.histogram;
+package backend.stathist;
 
 import backend.OldDatabaseOps;
 import java.awt.Color;

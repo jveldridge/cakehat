@@ -6,8 +6,8 @@
 package backend.gradereport;
 
 import backend.OldDatabaseOps;
-import backend.histogram.ChartPanel;
-import backend.histogram.StudentDataPanel;
+import backend.stathist.ChartPanel;
+import backend.stathist.StudentDataPanel;
 import config.Assignment;
 import config.Part;
 import java.io.File;
