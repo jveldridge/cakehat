@@ -70,6 +70,13 @@ public interface DatabaseIO {
      * @return
      */
     public boolean enableStudent(String studentLogin);
+    
+    /**
+     * Returns true if the student is enabled and false otherwise
+     * @param studentLogin
+     * @return
+     */
+    public boolean isStudentEnabled(String studentLogin);
 
     /**
      * Returns a Map of all students currently in the database

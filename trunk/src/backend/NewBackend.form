@@ -201,7 +201,7 @@
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="toggleEnabledButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="cardPanel" alignment="0" pref="580" max="32767" attributes="0"/>
+                      <Component id="cardPanel" alignment="0" pref="616" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -432,7 +432,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="455" max="32767" attributes="0"/>
+                          <EmptySpace pref="491" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -467,7 +467,7 @@
                               </Group>
                               <Component id="welcomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="23" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -478,7 +478,7 @@
                           <Component id="welcomeLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="instructionsLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="452" max="32767" attributes="0"/>
+                          <EmptySpace pref="504" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -776,6 +776,9 @@
             <Property name="inheritsPopupMenu" type="boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="toggleEnabledButton" noResource="true"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleEnabledButtonActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
@@ -850,8 +853,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jScrollPane1" pref="655" max="32767" attributes="1"/>
-                      <Component id="jScrollPane2" alignment="1" pref="655" max="32767" attributes="1"/>
+                      <Component id="jScrollPane1" pref="689" max="32767" attributes="1"/>
+                      <Component id="jScrollPane2" alignment="1" pref="689" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -1025,7 +1028,7 @@
                   <Component id="exportDBButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="resetDatabaseButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="566" max="32767" attributes="0"/>
+                  <EmptySpace pref="580" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
