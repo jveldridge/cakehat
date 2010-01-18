@@ -22,6 +22,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -31,7 +32,7 @@ import javax.swing.event.DocumentListener;
 import utils.Allocator;
 
 /**
- * Allows for viewing and submitting extensions.
+ * Allows for viewing, submitting, and removing extensions.
  *
  * @author jak2
  */
@@ -63,11 +64,12 @@ public class ExtensionView extends JFrame
     private HandinPart _part;
     private String _studentLogin;
     private Calendar _extensionDate;
+    private boolean _hasExtension;
     private CalendarView _calendarView;
     private JComboBox _monthBox, _dayBox, _yearBox;
     private IntegerField _hourField, _minuteField, _secondField;
-    private JTextArea _commentArea;
     private static String[] MONTHS = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+    private int _minYear, _maxYear, _startYear;
 
     private class DateLabel extends JLabel
     {
@@ -102,7 +104,6 @@ public class ExtensionView extends JFrame
             this.setText("<html><b>" + _text + ": </b>" + calString + "</html>");
         }
 
-
         private String ensureLeadingZero(int value)
         {
             String valueText = value + "";
@@ -124,10 +125,16 @@ public class ExtensionView extends JFrame
 
         //Get extension, if none available default to on time date
         _extensionDate = null;//Allocator.getDatabaseIO().getExtension(studentLogin, part);
+        _hasExtension = (_extensionDate != null);
         if(_extensionDate == null)
         {
             _extensionDate = part.getTimeInformation().getOntimeDate();
         }
+        int extYear = _extensionDate.get(Calendar.YEAR);
+        int ontimeYear = part.getTimeInformation().getOntimeDate().get(Calendar.YEAR);
+        _minYear = Math.min(extYear, ontimeYear);
+        _maxYear = Math.max(extYear, ontimeYear) + 1;
+        _startYear = extYear;
 
         this.initializeComponents();
 
@@ -166,8 +173,7 @@ public class ExtensionView extends JFrame
             }
         });
         _calendarView.selectDate(_extensionDate);
-        int currYear = Allocator.getGeneralUtilities().getCurrentYear();
-        _calendarView.restrictYearRange(currYear, currYear + 1);
+        _calendarView.restrictYearRange(_minYear, _maxYear);
 
         //Add extension date
         mainPanel.add(this.createExtensionSelectionPanel());
@@ -197,40 +203,56 @@ public class ExtensionView extends JFrame
             comment = "Please insert an explanation of the extension here.";
         }
 
-        _commentArea = new JTextArea(comment);
+        final JTextArea commentArea = new JTextArea(comment);
         //If there was no initial comment, then display initial text in a lighter
         //color and on first focus gained clear the message
         if(noComment)
         {
-            _commentArea.setForeground(Color.DARK_GRAY);
-            _commentArea.addFocusListener(new FocusListener()
+            commentArea.setForeground(Color.DARK_GRAY);
+            commentArea.addFocusListener(new FocusListener()
             {
                 public void focusGained(FocusEvent fe){
-                    _commentArea.setText("");
-                    _commentArea.setForeground(Color.BLACK);
-                    _commentArea.removeFocusListener(this);
+                    commentArea.setText("");
+                    commentArea.setForeground(Color.BLACK);
+                    commentArea.removeFocusListener(this);
                 }
 
                 public void focusLost(FocusEvent fe) {}
             });
         }
-        _commentArea.setLineWrap(true);
-        _commentArea.setWrapStyleWord(true);
-        JScrollPane commentPane = new JScrollPane(_commentArea);
+        commentArea.setLineWrap(true);
+        commentArea.setWrapStyleWord(true);
+        JScrollPane commentPane = new JScrollPane(commentArea);
         commentPane.setPreferredSize(new Dimension(_calendarView.getPreferredSize().width, 120));
         mainPanel.add(commentPane);
 
-        //Save button
-        JButton saveButton = new JButton("Submit Extension");
-        mainPanel.add(saveButton);
-        saveButton.addActionListener(new ActionListener()
+        //Remove extension button
+        JButton removeExtensionButton = new JButton("Remove Extension");
+        removeExtensionButton.setEnabled(_hasExtension);
+        mainPanel.add(removeExtensionButton);
+        removeExtensionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                String text = _commentArea.getText();
+                //Call to remove extension
+                JOptionPane.showMessageDialog(ExtensionView.this, "This functionality does not yet exist in the backend");
+
+                //Close window
+                ExtensionView.this.dispose();
+            }
+        });
+
+        //Submit button
+        JButton submitButton = new JButton("Submit Extension");
+        mainPanel.add(submitButton);
+        submitButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                String text = commentArea.getText();
                 Calendar cal = getCalendar();
 
-                //Allocator.getDatabaseIO().grantExtension(_studentLogin, _part, cal, text);
+                Allocator.getDatabaseIO().grantExtension(_studentLogin, _part, cal, text);
 
                 //Close window
                 ExtensionView.this.dispose();
@@ -269,9 +291,8 @@ public class ExtensionView extends JFrame
         });
         panel.add(_dayBox);
 
-        int currYear = Allocator.getGeneralUtilities().getCurrentYear();
-        _yearBox = new JComboBox(generateValues(currYear, currYear + 1));
-        _yearBox.setSelectedItem(_extensionDate.get(Calendar.YEAR));
+        _yearBox = new JComboBox(generateValues(_minYear, _maxYear));
+        _yearBox.setSelectedItem(_startYear);
         _yearBox.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -279,7 +300,6 @@ public class ExtensionView extends JFrame
                 updateCalendar();
                 updateDayBox();
             }
-
         });
         panel.add(_yearBox);
 
@@ -303,7 +323,7 @@ public class ExtensionView extends JFrame
 
     private void updateCalendar()
     {
-        _calendarView.selectDate(getComboBoxCal());
+        _calendarView.selectDate(this.getComboBoxCal());
     }
 
     private Calendar getComboBoxCal()
@@ -408,7 +428,6 @@ public class ExtensionView extends JFrame
                         {
                             if(changeValue)
                             {
-                                //setText(finalValue + "");
                                 setIntValue(finalValue);
                             }
                         }
