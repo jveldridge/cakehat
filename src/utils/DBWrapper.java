@@ -783,4 +783,25 @@ public class DBWrapper implements DatabaseIO {
         return scores;
     }
 
+    //ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+    public boolean isStudentEnabled(String studentLogin) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.enabled FROM student "
+                    + "AS s "
+                    + "WHERE "
+                    + "s.login == '" + studentLogin + "'");
+            int enabled = rs.getInt("enabled");
+            this.closeConnection();
+            if (enabled == 1)
+                return true;
+            else
+                return false;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not determine if enabled.");
+            this.closeConnection();
+            return false;
+        }
+    }
+
 }
