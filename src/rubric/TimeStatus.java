@@ -18,6 +18,32 @@ public enum TimeStatus
     EARLY, ON_TIME, LATE, NC_LATE;
 
     /**
+     * For LatePolicy.NO_LATE: ON_TIME, NC_LATE
+     * For LatePolicy.DAILY_DEDUCTION: ON_TIME, LATE
+     * For MULTIPLE_DEADLINES: EARLY, ON_TIME, LATE, NC_LATE
+     *
+     * @param policy
+     * @return
+     */
+    TimeStatus[] getAvailableStatuses(LatePolicy policy)
+    {
+        if(policy == LatePolicy.NO_LATE)
+        {
+            return new TimeStatus[] { ON_TIME, NC_LATE };
+        }
+        else if(policy == LatePolicy.MULTIPLE_DEADLINES)
+        {
+            return new TimeStatus[] { EARLY, ON_TIME, LATE, NC_LATE };
+        }
+        else if(policy == LatePolicy.DAILY_DEDUCTION)
+        {
+            return new TimeStatus[] { ON_TIME, LATE };
+        }
+
+        return new TimeStatus[0];
+    }
+
+    /**
      * Returns a nicely formatted String representation.
      * Only use this for display or printing purposes, never for storing in a
      * database or XML.

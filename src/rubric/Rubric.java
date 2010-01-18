@@ -24,7 +24,7 @@ class Rubric
     private Person _grader = new Person();
     private Vector<Section> _sections = new Vector<Section>();
     private Section _extraCredit = new Section();
-    private HandinPart _handinPart;
+    protected HandinPart _handinPart;
 
     Rubric(HandinPart part)
     {

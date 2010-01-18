@@ -58,7 +58,7 @@ public class RubricMananger
             try
             {
             Rubric rubric = RubricGMLParser.parse(XMLFilePath, part);
-            GradingVisualizer visualizer = new GradingVisualizer(part, rubric, XMLFilePath, isAdmin);
+            GradingVisualizer visualizer = new GradingVisualizer(rubric, XMLFilePath, isAdmin);
             visualizer.addWindowListener(new WindowAdapter()
             {
                 public void windowClosed(WindowEvent e)

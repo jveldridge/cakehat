@@ -26,7 +26,7 @@ class TemplateVisualizer extends JFrame
         this.setLayout(new BorderLayout());
 
         //Panels
-        RubricPanel rubricPanel = new RubricPanel(rubric, null);
+        RubricPanel rubricPanel = new RubricPanel(rubric, null, false);
         final JScrollPane scrollPane = new JScrollPane(rubricPanel);
         Dimension size = new Dimension(rubricPanel.getPreferredSize().width + 30, 800);
         scrollPane.setPreferredSize(size);

@@ -1,16 +1,26 @@
 package rubric;
 
+import config.HandinPart;
+import config.LatePolicy;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.util.Vector;
+import javax.swing.JComboBox;
 
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import rubric.Rubric.*;
 import utils.Allocator;
@@ -31,8 +41,11 @@ class RubricPanel extends JPanel
     private Vector<NumberField> _totals = new Vector<NumberField>();
     private Vector<Section> _sections = new Vector<Section>();
     private NumberField _totalScoreField, _statusPointsField;
+    private Vector<NumberField> _ecFields = new Vector<NumberField>();
     private Vector<Component> _tabOrder = new Vector<Component>(7);
     private StateManager _stateManager;
+    private boolean _isAdmin;
+    private HandinPart _part;
 
     /**
      * Constructs a panel that displays the content of the passed in rubric.
@@ -43,10 +56,12 @@ class RubricPanel extends JPanel
      * @param rubric Rubric to visualize
      * @param manager StateManager that tracks unsaved changes, can be null
      */
-    public RubricPanel(Rubric rubric, StateManager manager)
+    public RubricPanel(Rubric rubric, StateManager manager, boolean isAdmin)
     {
         _rubric = rubric;
         _stateManager = manager;
+        _isAdmin = isAdmin;
+        _part = rubric._handinPart;
 
         this.setBackground(Color.white);
 
@@ -267,6 +282,16 @@ class RubricPanel extends JPanel
         this.addPanelBelow(panel);
     }
 
+    private boolean isECEditable()
+    {
+        // Determine if extra credit is editable
+        // editable if early or ontime, or late AND extra credit is allowable if late
+        boolean editable = (_rubric.getStatus() == TimeStatus.EARLY || _rubric.getStatus() == TimeStatus.ON_TIME)
+                            || (_rubric.getStatus() == TimeStatus.LATE && _rubric.getTimeInformation().ecIfLate());
+
+        return editable;
+    }
+
     //TODO: Display each subsection's details
     private void displayExtraCredit()
     {
@@ -285,9 +310,7 @@ class RubricPanel extends JPanel
         height += extraCreditName.getPreferredSize().height + vGap;
 
         // Determine if extra credit is editable
-        // editable if early or ontime, or late AND extra credit is allowable if late
-        boolean editable = (_rubric.getStatus() == TimeStatus.EARLY || _rubric.getStatus() == TimeStatus.ON_TIME)
-                            || (_rubric.getStatus() == TimeStatus.LATE && _rubric.getTimeInformation().ecIfLate());
+        boolean editable = this.isECEditable();
 
         Section extraCredit = _rubric.getExtraCredit();
         //For each ExtraCredit section
@@ -308,16 +331,10 @@ class RubricPanel extends JPanel
             height += extraCreditText.getPreferredSize().height + vGap + 5;
 
             //Score field
-            NumberField scoreField;
-            if(editable)
-            {
-                scoreField = NumberField.getAsScore(ecSection, this, _stateManager);
-                _tabOrder.add(scoreField);
-            }
-            else
-            {
-                scoreField = NumberField.getAsUneditable(ecSection.getScore());
-            }
+            NumberField scoreField = NumberField.getAsScore(ecSection, this, _stateManager);
+            scoreField.setEditable(editable);
+            _tabOrder.add(scoreField);
+            _ecFields.add(scoreField);
             layout.putConstraint(SpringLayout.WEST, scoreField, 5, SpringLayout.EAST, extraCreditText);
             layout.putConstraint(SpringLayout.NORTH, scoreField, 0, SpringLayout.NORTH, extraCreditText);
             panel.add(scoreField);
@@ -435,6 +452,17 @@ class RubricPanel extends JPanel
         }
 
         _statusPointsField.setValue(Allocator.getGeneralUtilities().round(_rubric.getDeduction(), 2));
+
+        //Display total score, if EC isn't editable then don't count the EC
+        /*
+        double ecScore = _rubric.getExtraCredit().getSectionScore();
+        double totalScore = _rubric.getTotalRubricScore();
+        double displayScore = totalScore;
+        if(!this.isECEditable())
+        {
+            displayScore -= ecScore;
+        }
+         */
         _totalScoreField.setValue(_rubric.getTotalRubricScore());
     }
 	
@@ -509,30 +537,131 @@ class RubricPanel extends JPanel
 
         //Status
         TimeStatus status = _rubric.getStatus();
-        JTextArea statusText = new JTextArea(status.getPrettyPrintName());
-        statusText.setSize(new Dimension(450,200));
-        statusText.setEditable(false);
-        statusText.setLineWrap(true);
-        statusText.setWrapStyleWord(true);
-        statusText.setBackground(this.getBackground());
-        vGap = 10;
-        layout.putConstraint(SpringLayout.NORTH, statusText, vGap, SpringLayout.SOUTH, elemAbove);
-        layout.putConstraint(SpringLayout.WEST, statusText, 5, SpringLayout.WEST, panel);
-        panel.add(statusText);
-        elemAbove = statusText;
-        height += statusText.getPreferredSize().height + vGap + 5;
+        JComponent elemLeft = null;
+        //If admin, display a drop down list
+        if(_isAdmin)
+        {
+            //Displays status
+            final JComboBox statusBox = new JComboBox(status.getAvailableStatuses(_part.getTimeInformation().getLatePolicy()));
+            elemLeft = statusBox;
+            statusBox.setSelectedItem(status);
+            vGap = 10;
+            layout.putConstraint(SpringLayout.NORTH, statusBox, vGap, SpringLayout.SOUTH, elemAbove);
+            layout.putConstraint(SpringLayout.WEST, statusBox, 5, SpringLayout.WEST, panel);
+            panel.add(statusBox);
+            elemAbove = statusBox;
+            height += statusBox.getPreferredSize().height + vGap + 5;
+
+            //If the LatePolicy is DAILY_DEDUCTION then have a box for the amount of days late
+            final JFormattedTextField daysLateField = new JFormattedTextField(NumberFormat.getIntegerInstance());
+            if(_part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
+            {
+                panel.add(daysLateField);
+                layout.putConstraint(SpringLayout.WEST, daysLateField, 2, SpringLayout.EAST, statusBox);
+                layout.putConstraint(SpringLayout.NORTH, daysLateField, 0, SpringLayout.NORTH, statusBox);
+
+
+                daysLateField.setHorizontalAlignment(SwingConstants.CENTER);
+                daysLateField.setPreferredSize(new Dimension(50, statusBox.getPreferredSize().height));
+                daysLateField.setText(_rubric.getDaysLate() + "");
+
+                //If current status is LATE, editable, otherwise uneditable
+                boolean editable = (status == TimeStatus.LATE);
+                daysLateField.setEditable(editable);
+                daysLateField.setVisible(editable);
+
+                //Listen for changes
+                daysLateField.getDocument().addDocumentListener(new DocumentListener()
+                {
+                    public void changedUpdate(DocumentEvent e){}
+
+                    public void insertUpdate(DocumentEvent e)
+                    {
+                        try
+                        {
+                            //Update with new values
+                            int daysLate = Integer.parseInt(daysLateField.getText());
+                            _rubric.setDaysLate(daysLate);
+                            _stateManager.rubricChanged();
+
+                            //Recalculate score
+                            RubricPanel.this.updateTotals();
+
+                        }
+                        catch (Exception exc) {}
+                    }
+
+                    public void removeUpdate(DocumentEvent e)
+                    {
+                        insertUpdate(e);
+                    }
+                });
+            }
+
+            //Listener for TimeStatus box
+            statusBox.addActionListener(new ActionListener()
+            {
+                public void actionPerformed(ActionEvent ae)
+                {
+                    //Set new status
+                    TimeStatus newStatus = (TimeStatus) statusBox.getSelectedItem();
+                    _rubric.setStatus(newStatus);
+
+                    //If the new time status is LATE and LatePolicy is DAILY_DEDUCTION
+                    //then enable the text box, otherwise disable it
+                    if(_part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
+                    {
+                        boolean editable = (newStatus == TimeStatus.LATE);
+                        daysLateField.setEditable(editable);
+                        daysLateField.setVisible(editable);
+                    }
+
+                    //Update editability of extra credit
+                    boolean ecEditable = RubricPanel.this.isECEditable();
+                    for(NumberField ecField : _ecFields)
+                    {
+                        ecField.setEditable(ecEditable);
+                        //If not editable, clear score
+                        if(!ecEditable)
+                        {
+                            ecField.setValue(0);
+                        }
+                    }
+                    
+                    //Recalculate score
+                    RubricPanel.this.updateTotals();
+
+                    _stateManager.rubricChanged();
+                }
+            });
+        }
+        else
+        {
+            JTextArea statusText = new JTextArea(status.getPrettyPrintName());
+            elemLeft = statusText;
+            statusText.setEditable(false);
+            statusText.setLineWrap(true);
+            statusText.setWrapStyleWord(true);
+            statusText.setBackground(this.getBackground());
+            vGap = 10;
+            layout.putConstraint(SpringLayout.NORTH, statusText, vGap, SpringLayout.SOUTH, elemAbove);
+            layout.putConstraint(SpringLayout.WEST, statusText, 5, SpringLayout.WEST, panel);
+            panel.add(statusText);
+            elemAbove = statusText;
+            height += statusText.getPreferredSize().height + vGap + 5;
+        }
 
         //Score field
         _statusPointsField = NumberField.getAsUneditable(Allocator.getGeneralUtilities().round(_rubric.getDeduction(), 2));
-        layout.putConstraint(SpringLayout.WEST, _statusPointsField, 5, SpringLayout.EAST, statusText);
-        layout.putConstraint(SpringLayout.NORTH, _statusPointsField, 0, SpringLayout.NORTH, statusText);
+        layout.putConstraint(SpringLayout.WEST, _statusPointsField, 460, SpringLayout.WEST, panel);
+        layout.putConstraint(SpringLayout.NORTH, _statusPointsField, 0, SpringLayout.NORTH, elemLeft);
         panel.add(_statusPointsField);
 
         //OutOf field
         NumberField outOfField = NumberField.getAsUneditable(0.0);
         outOfField.setFocusable(false);
         layout.putConstraint(SpringLayout.WEST, outOfField, 2, SpringLayout.EAST, _statusPointsField);
-        layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, statusText);
+        layout.putConstraint(SpringLayout.NORTH, outOfField, 0, SpringLayout.NORTH, _statusPointsField);
         panel.add(outOfField);
 
         panel.setPreferredSize(new Dimension(this.getWidth(), height + 5));
