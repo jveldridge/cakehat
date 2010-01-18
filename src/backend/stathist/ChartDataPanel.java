@@ -10,20 +10,19 @@
  */
 package backend.stathist;
 
-import backend.OldDatabaseOps;
 import config.Assignment;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.jfree.data.statistics.Statistics;
-import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
 import utils.Allocator;
 import utils.ErrorView;
 
 /**
  *
  * @author psastras
+ * @author jeldridg
  */
 public class ChartDataPanel extends javax.swing.JPanel {
 
