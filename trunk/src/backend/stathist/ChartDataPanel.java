@@ -8,14 +8,17 @@
  *
  * Created on Sep 25, 2009, 5:24:46 PM
  */
-package backend.histogram;
+package backend.stathist;
 
 import backend.OldDatabaseOps;
+import config.Assignment;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.jfree.data.statistics.Statistics;
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor;
+import utils.Allocator;
 import utils.ErrorView;
 
 /**
@@ -29,21 +32,27 @@ public class ChartDataPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void updateChartData(String asgnName) {
+    public void updateChartData(Assignment asgn) {
         try {
-            ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + asgnName);
+            //ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + asgnName);
+            Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAllAssignmentScores(asgn);
             //int cols = DatabaseIO.getColumnNames("grades_" + asgnName).length;
-            double d = OldDatabaseOps.getAssignmentTotal(asgnName);
+            double outOf = asgn.getTotalPoints();
+            //double d = OldDatabaseOps.getAssignmentTotal(asgnName);
             List<Double> l = new ArrayList<Double>();
-            while (!cursor.eof()) {
-                double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
-                if (earned / d * 100 != 0) { //ignore zero handins
-                    l.add(earned / d * 100);
-                }
-                cursor.next();
+            for (String student : scoreMap.keySet()) {
+                double earned = scoreMap.get(student);
+                l.add(earned / outOf * 100);
             }
+//            while (!cursor.eof()) {
+//                double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
+//                if (earned / d * 100 != 0) { //ignore zero handins
+//                    l.add(earned / d * 100);
+//                }
+//                cursor.next();
+//            }
             if(l.size() == 0){
-                chartPanel1.loadData(asgnName, new double[]{});
+                chartPanel1.loadData(asgn.getName(), new double[]{});
                 return;
             }
             double[] data = new double[l.size()];
@@ -58,7 +67,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
             medianLabel.setText("" + Statistics.calculateMedian(l));
             meanLabel.setText("" + Statistics.calculateMean(l));
             stdDevLabel.setText("" + Statistics.getStdDev(dataAsNumber));
-            chartPanel1.loadData(asgnName, data);
+            chartPanel1.loadData(asgn.getName(), data);
         } catch (Exception e) {
             new ErrorView(e);
         }
@@ -77,7 +86,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        chartPanel1 = new backend.histogram.ChartPanel();
+        chartPanel1 = new backend.stathist.ChartPanel();
         jLabel1 = new javax.swing.JLabel();
         medianLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -187,7 +196,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private backend.histogram.ChartPanel chartPanel1;
+    private backend.stathist.ChartPanel chartPanel1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;

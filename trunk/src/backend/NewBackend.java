@@ -3,7 +3,7 @@ package backend;
 import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.gradereport.GradeReportView;
-import backend.histogram.HistogramView;
+import backend.stathist.HistogramView;
 import config.Assignment;
 import config.LabPart;
 import config.NonHandinPart;
@@ -1100,9 +1100,7 @@ public class NewBackend extends javax.swing.JFrame {
 }//GEN-LAST:event_sendGradesButtonActionPerformed
 
     private void statisticsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsButtonActionPerformed
-        HistogramView hv = new HistogramView();
-        hv.setLocationRelativeTo(null);
-        hv.setVisible(true);
+        new HistogramView(this.getSelectedAssignments(), this.getSelectedStudents());
 }//GEN-LAST:event_statisticsButtonActionPerformed
 
     private void reassignGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reassignGradingButtonActionPerformed

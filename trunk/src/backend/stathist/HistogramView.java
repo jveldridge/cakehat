@@ -8,9 +8,13 @@
  *
  * Created on Sep 25, 2009, 5:26:08 PM
  */
-package backend.histogram;
+package backend.stathist;
 
 import backend.OldDatabaseOps;
+import config.Assignment;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -28,17 +32,24 @@ import utils.ErrorView;
  */
 public class HistogramView extends javax.swing.JFrame {
 
-    private ChartDataPanel[] _charts;
+    private ChartDataPanel[] _oldcharts;
+    private Map<Assignment,ChartDataPanel> _chartMap;
     private StudentDataPanel sdp;
+    private Collection<Assignment> _assignments;
+    private Collection<String> _students;
 
     /** Creates new form HistogramView */
-    public HistogramView() {
+    public HistogramView(Collection<Assignment> assignments, Collection<String> students) {
+        _assignments = assignments;
+        _students = students;
+        _chartMap = new HashMap<Assignment,ChartDataPanel>();
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/x-office-drawing.png")));
         } catch (Exception e) {
         }
         initComponents();
         domoreinit();
+        this.setVisible(true);
     }
 
     private void domoreinit() {
@@ -55,27 +66,47 @@ public class HistogramView extends javax.swing.JFrame {
         if (assignmentNames.length > 0) {
             jList1.setSelectedIndex(0);
         }
-        _charts = new ChartDataPanel[assignmentNames.length - 1];
-        for (int i = 0; i < _charts.length; i++) {
-            _charts[i] = new ChartDataPanel();
+        
+        
+        _oldcharts = new ChartDataPanel[assignmentNames.length - 1];
+        for (int i = 0; i < _oldcharts.length; i++) {
+            _oldcharts[i] = new ChartDataPanel();
         }
+        
+        for (Assignment a : _assignments) {
+            _chartMap.put(a, new ChartDataPanel());
+        }
+        
+        
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         ParallelGroup pg = jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
         sdp = new StudentDataPanel();
         sdp.setVisible(true);
         pg.addComponent(sdp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
-        for (ChartDataPanel c : _charts) {
+        
+        for (ChartDataPanel c : _chartMap.values()) {
             pg.addComponent(c, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
         }
+//        for (ChartDataPanel c : _oldcharts) {
+//            pg.addComponent(c, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
+//        }
         jPanel2Layout.setHorizontalGroup(pg);
         SequentialGroup sg = jPanel2Layout.createSequentialGroup();
         sg.addComponent(sdp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
         sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
-        for (ChartDataPanel c : _charts) {
+        
+        for (ChartDataPanel c : _chartMap.values()) {
             sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
             sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
         }
+        
+//        for (ChartDataPanel c : _oldcharts) {
+//            sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
+//            sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
+//        }
+        
+        
         jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(sg));
 
         this.setLocationRelativeTo(null);
@@ -98,24 +129,34 @@ public class HistogramView extends javax.swing.JFrame {
     }
 
     private void updateCharts() {
-        for (ChartDataPanel c : _charts) {
+        for (ChartDataPanel c : _oldcharts) {
             c.setVisible(false);
         }
         sdp.setVisible(false);
         Object[] assgns = jList1.getSelectedValues();
         String[] assgnsAsString = new String[assgns.length];
+        
         for (int i = 0; i < assgns.length; i++) {
             assgnsAsString[i] = assgns[i].toString();
         }
-        if (table1.getSelectedRow() >= 0 && table1.getSelectedColumn() >= 0 && jCheckBox2.isSelected() == true) {
-            sdp.setVisible(true);
-            sdp.updateChart((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()), assgnsAsString);
+//        if (table1.getSelectedRow() >= 0 && table1.getSelectedColumn() >= 0 && jCheckBox2.isSelected() == true) {
+//            sdp.setVisible(true);
+//            sdp.updateChart((String) table1.getValueAt(table1.getSelectedRow(), table1.getSelectedColumn()), assgnsAsString);
+//        }
+        
+        for (Assignment a : _assignments) {
+            
         }
-        for (int i = 0; i < assgnsAsString.length; i++) {
-            if (jCheckBox1.isSelected()) {
-                _charts[i].updateChartData(assgnsAsString[i]);
-                _charts[i].setVisible(true);
-            }
+//        for (int i = 0; i < assgnsAsString.length; i++) {
+//            if (jCheckBox1.isSelected()) {
+//                _charts[i].updateChartData(assgnsAsString[i]);
+//                _charts[i].setVisible(true);
+//            }
+//        }
+        for (Assignment a : _assignments) {
+            ChartDataPanel chart = _chartMap.get(a);
+            chart.updateChartData(a);
+            chart.setVisible(true);
         }
 
 
@@ -395,7 +436,7 @@ public class HistogramView extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new HistogramView().setVisible(true);
+                new HistogramView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
             }
         });
     }

@@ -574,6 +574,7 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    
     public Map<String, Calendar> getExtensions(Part part) {
         this.openConnection();
         try {
@@ -601,10 +602,11 @@ public class DBWrapper implements DatabaseIO {
             return null;
         }
     }
-    
+                
     public Calendar getExtension(String studentLogin, Part part) {
         this.openConnection();
         try {
+            Calendar result = new GregorianCalendar();
             ResultSet rs = _statement.executeQuery("SELECT e.ontime AS date "
                     + "FROM extension AS e "
                     + "INNER JOIN student AS s "
@@ -616,7 +618,6 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE p.name == '" + part.getName() + "' "
                     + "AND s.login == '" + studentLogin + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
-            Calendar result = new GregorianCalendar();
             result.setTimeInMillis(rs.getInt("date") * 1000);
             this.closeConnection();
             return result;
@@ -773,8 +774,13 @@ public class DBWrapper implements DatabaseIO {
         return scores;
     }
 
+    //TODO --fix this to actually be fast
     public Map<String, Double> getAllAssignmentScores(Assignment asgn) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Map<String,Double> scores = new HashMap<String,Double>();
+        for (String student : this.getEnabledStudents().keySet()) {
+            scores.put(student, this.getStudentScore(student, asgn.getHandinPart()));
+        }
+        return scores;
     }
 
 }

@@ -274,6 +274,26 @@ public interface DatabaseIO {
      * @return
      */
     public double getStudentScore(String studentLogin, Part part);
+    
+    
+    /**
+     * Returns a map of all student scores for the specified Part
+     * with students' logins as the keys and their scores as the values
+     * @param part
+     * @return
+     */
+    public Map<String,Double> getPartScores(Part part, Iterable<String> students);
+    
+    public Map<String,Double> getAllPartScores(Part part);
+    
+    
+    /**
+     * Returns a map of all student scores for the specified Assignment
+     * with students' logins as the keys and their scores as the values
+     * @param part
+     * @return
+     */
+    public Map<String,Double> getAllAssignmentScores(Assignment asgn);
 
     /**
      * Resets the database: removes all students, scores, graders, distributions,

@@ -10,7 +10,7 @@ import backend.assignmentdist.FinalProjectAssigner;
 import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.gradereport.GradeReportView;
-import backend.histogram.HistogramView;
+import backend.stathist.HistogramView;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
 import javax.imageio.ImageIO;
@@ -380,9 +380,9 @@ public class BackendView extends javax.swing.JFrame {
     }//GEN-LAST:event_m_databaseButtonActionPerformed
 
     private void m_histogramButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_histogramButtonActionPerformed
-        HistogramView hv = new HistogramView();
-        hv.setLocationRelativeTo(null);
-        hv.setVisible(true);
+//        HistogramView hv = new HistogramView();
+//        hv.setLocationRelativeTo(null);
+//        hv.setVisible(true);
     }//GEN-LAST:event_m_histogramButtonActionPerformed
 
     private void m_regenerateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_regenerateButtonActionPerformed
