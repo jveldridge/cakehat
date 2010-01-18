@@ -316,6 +316,11 @@ public class NewBackend extends javax.swing.JFrame {
         extensionButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         extensionButton.setIconTextGap(5);
         extensionButton.setName("extensionButton"); // NOI18N
+        extensionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extensionButtonActionPerformed(evt);
+            }
+        });
 
         exemptionButton.setIcon(resourceMap.getIcon("exemptionButton.icon")); // NOI18N
         exemptionButton.setText(resourceMap.getString("exemptionButton.text")); // NOI18N
@@ -1178,6 +1183,13 @@ public class NewBackend extends javax.swing.JFrame {
     private void exportDBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDBButtonActionPerformed
         Allocator.getCSVExporter().export();
     }//GEN-LAST:event_exportDBButtonActionPerformed
+
+    private void extensionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extensionButtonActionPerformed
+        if(this.getSelectedStudent() != null && this.getSelectedAssignment() != null && this.getSelectedAssignment().hasHandinPart())
+        {
+            new ExtensionView(this.getSelectedAssignment().getHandinPart(), this.getSelectedStudent());
+        }
+    }//GEN-LAST:event_extensionButtonActionPerformed
 
    /**
      * Returns the currently selected assignment as a String.
