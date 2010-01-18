@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -1285,9 +1286,11 @@ private void toggleEnabledButtonActionPerformed(java.awt.event.ActionEvent evt) 
                 
                 if (Allocator.getDatabaseIO().isStudentEnabled(this.getSelectedStudent())) {
                     toggleEnabledButton.setText("Disable Student");
+                    toggleEnabledButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/dialog-error.png")));
                 }
                 else {
                     toggleEnabledButton.setText("Enable Student");
+                    toggleEnabledButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/preferences-desktop-locale.png")));
                 }
 
                 //update the current student label
