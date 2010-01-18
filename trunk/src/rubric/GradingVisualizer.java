@@ -1,6 +1,5 @@
 package rubric;
 
-import config.HandinPart;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
@@ -38,7 +37,7 @@ import utils.Allocator;
  */
 class GradingVisualizer extends JFrame
 {
-    GradingVisualizer(final HandinPart part, final Rubric rubric, final String XMLFilePath, final boolean isAdmin)
+    GradingVisualizer(final Rubric rubric, final String XMLFilePath, final boolean isAdmin)
     {
         super("Grading " + rubric.getStudentAccount() + "'s " + rubric.getName());
 
@@ -62,7 +61,7 @@ class GradingVisualizer extends JFrame
 
         //Panels
         this.setLayout(new BorderLayout());
-        RubricPanel rubricPanel = new RubricPanel(rubric, stateManager);
+        RubricPanel rubricPanel = new RubricPanel(rubric, stateManager, isAdmin);
         final JScrollPane scrollPane = new JScrollPane(rubricPanel);
         Dimension size = new Dimension(rubricPanel.getPreferredSize().width + 30, 800);
         scrollPane.setPreferredSize(size);
@@ -82,7 +81,7 @@ class GradingVisualizer extends JFrame
                 if(isAdmin)
                 {
                     double score = rubric.getTotalHandinScore();
-                    Allocator.getDatabaseIO().enterGrade(rubric.getStudentAccount(), part, score);
+                    Allocator.getDatabaseIO().enterGrade(rubric.getStudentAccount(), rubric._handinPart, score);
                 }
 
                 stateManager.rubricSaved();

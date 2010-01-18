@@ -36,7 +36,7 @@ class NumberField extends JFormattedTextField
         this.setValue(value);
         _oldValue = value;
 
-        this.setEditable(editable);
+        super.setEditable(editable);
         this.setColumns(5);
         this.setHorizontalAlignment(CENTER);
     }
@@ -86,29 +86,32 @@ class NumberField extends JFormattedTextField
 
             public void insertUpdate(DocumentEvent e)
             {
-                try
+                if(field.isEditable())
                 {
-                    double newValue = Double.parseDouble(field.getText());
-                    if (newValue != field._oldValue)
+                    try
                     {
-                        field._oldValue = newValue;
-                        field._stateManager.rubricChanged();
-                    }
-                    if (field._subsection != null)
-                    {
-                        if (newValue > field._subsection.getOutOf())
+                        double newValue = Double.parseDouble(field.getText());
+                        if (newValue != field._oldValue)
                         {
-                            field.setBackground(java.awt.Color.RED);
+                            field._oldValue = newValue;
+                            field._stateManager.rubricChanged();
                         }
-                        else
+                        if (field._subsection != null)
                         {
-                            field.setBackground(java.awt.Color.WHITE);
+                            if (newValue > field._subsection.getOutOf())
+                            {
+                                field.setBackground(java.awt.Color.RED);
+                            }
+                            else
+                            {
+                                field.setBackground(java.awt.Color.WHITE);
+                            }
+                            field._subsection.setScore(newValue);
+                            field._panel.updateTotals();
                         }
-                        field._subsection.setScore(newValue);
-                        field._panel.updateTotals();
                     }
+                    catch (Exception exc) {}
                 }
-                catch (Exception exc) {}
             }
 
             public void removeUpdate(DocumentEvent e)
@@ -180,6 +183,28 @@ class NumberField extends JFormattedTextField
         }
 
         return field;
+    }
+
+    /**
+     * Sets whether this field is editable or not. Only call this on a field
+     * that was initialized as editable. Calling this on a field that was
+     * initialized as uneditable will cause issues.
+     *
+     * @param editable
+     */
+    @Override
+    public void setEditable(boolean editable)
+    {
+        super.setEditable(editable);
+
+        if(editable)
+        {
+            this.setBackground(java.awt.Color.WHITE);
+        }
+        else
+        {
+            this.setBackground(java.awt.Color.LIGHT_GRAY);
+        }
     }
 
     /**
