@@ -60,6 +60,7 @@ public class CalendarView extends JPanel
     private JLabel _monthYearLabel;
     private int _currentMonth, _currentYear;
     private Calendar _selectedDate;
+    private int _maxYear = Integer.MAX_VALUE, _minYear = Integer.MIN_VALUE;
 
     private Vector<CalendarListener> _listeners = new Vector<CalendarListener>();
 
@@ -211,6 +212,12 @@ public class CalendarView extends JPanel
         this.refreshCalendar(_currentMonth, _currentYear);
     }
 
+    public void restrictYearRange(int minYear, int maxYear)
+    {
+        _minYear = minYear;
+        _maxYear = maxYear;
+    }
+
     /**
      * Selects the current date and moves the calendar to the appropriate
      * month and year if necessary. Does not notify calendar listeners.
@@ -308,6 +315,20 @@ public class CalendarView extends JPanel
     {
         _currentMonth = month;
         _currentYear = year;
+
+        //Update buttons appropriately
+        _prevButton.setEnabled(!((_currentYear == _minYear && _currentMonth == 0)));
+        _nextButton.setEnabled(!(_currentYear == _maxYear && _currentMonth == 11));
+        /*
+        if(_currentYear == _minYear && _currentMonth == 0)
+        {
+            _prevButton.setEnabled(false);
+        }
+        if(_currentYear == _maxYear && _currentMonth == 11)
+        {
+            _nextButton.setEnabled(false);
+        }
+         */
 
         //Update the label showing the current month and year
         _monthYearLabel.setText(MONTHS[month] + ", " + year);

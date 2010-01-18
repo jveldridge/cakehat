@@ -4,9 +4,13 @@ import backend.calendar.CalendarListener;
 import backend.calendar.CalendarView;
 import config.Assignment;
 import config.HandinPart;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -43,7 +47,7 @@ public class ExtensionView extends JFrame
                 HandinPart part = null;
                 for(Assignment asgn : Allocator.getCourseInfo().getHandinAssignments())
                 {
-                    if(asgn.getName().equals("Cartoon"))
+                    if(asgn.getName().equals("PizzaDex"))
                     {
                         part = asgn.getHandinPart();
                     }
@@ -89,13 +93,25 @@ public class ExtensionView extends JFrame
 
                 if(_showTime)
                 {
-                    calString += " " + cal.get(Calendar.HOUR_OF_DAY) + ":" +
-                                 cal.get(Calendar.MINUTE) + ":" +
-                                 cal.get(Calendar.SECOND);
+                    calString += " " + ensureLeadingZero(cal.get(Calendar.HOUR_OF_DAY))
+                                 + ":" + ensureLeadingZero(cal.get(Calendar.MINUTE))
+                                 + ":" + ensureLeadingZero(cal.get(Calendar.SECOND));
                 }
             }
 
             this.setText("<html><b>" + _text + ": </b>" + calString + "</html>");
+        }
+
+
+        private String ensureLeadingZero(int value)
+        {
+            String valueText = value + "";
+            if(value > -1 && value < 10)
+            {
+                valueText = "0" + valueText;
+            }
+
+            return valueText;
         }
     }
 
@@ -115,11 +131,12 @@ public class ExtensionView extends JFrame
 
         this.initializeComponents();
 
-
         this.pack();
+        this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
-        this.setLocationRelativeTo(null);
+
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
     private void initializeComponents()
@@ -148,6 +165,9 @@ public class ExtensionView extends JFrame
                 _yearBox.setSelectedItem(year);
             }
         });
+        _calendarView.selectDate(_extensionDate);
+        int currYear = Allocator.getGeneralUtilities().getCurrentYear();
+        _calendarView.restrictYearRange(currYear, currYear + 1);
 
         //Add extension date
         mainPanel.add(this.createExtensionSelectionPanel());
@@ -171,12 +191,29 @@ public class ExtensionView extends JFrame
 
         //Comment area
         String comment = null;//Allocator.getDatabaseIO().getExtensionNote(_studentLogin, _part);
-        if(comment == null)
+        boolean noComment = (comment == null);
+        if(noComment)
         {
             comment = "Please insert an explanation of the extension here.";
         }
 
         _commentArea = new JTextArea(comment);
+        //If there was no initial comment, then display initial text in a lighter
+        //color and on first focus gained clear the message
+        if(noComment)
+        {
+            _commentArea.setForeground(Color.DARK_GRAY);
+            _commentArea.addFocusListener(new FocusListener()
+            {
+                public void focusGained(FocusEvent fe){
+                    _commentArea.setText("");
+                    _commentArea.setForeground(Color.BLACK);
+                    _commentArea.removeFocusListener(this);
+                }
+
+                public void focusLost(FocusEvent fe) {}
+            });
+        }
         _commentArea.setLineWrap(true);
         _commentArea.setWrapStyleWord(true);
         JScrollPane commentPane = new JScrollPane(_commentArea);
@@ -194,16 +231,18 @@ public class ExtensionView extends JFrame
                 Calendar cal = getCalendar();
 
                 //Allocator.getDatabaseIO().grantExtension(_studentLogin, _part, cal, text);
+
+                //Close window
+                ExtensionView.this.dispose();
             }
-
         });
-
-
     }
 
     private JPanel createExtensionSelectionPanel()
     {
-        JPanel panel = new JPanel();
+        FlowLayout layout = new FlowLayout();
+        layout.setHgap(0);
+        JPanel panel = new JPanel(layout);
 
         _monthBox = new JComboBox(MONTHS);
         _monthBox.setSelectedIndex(_extensionDate.get(Calendar.MONTH));
@@ -231,7 +270,7 @@ public class ExtensionView extends JFrame
         panel.add(_dayBox);
 
         int currYear = Allocator.getGeneralUtilities().getCurrentYear();
-        _yearBox = new JComboBox(generateValues(currYear - 1, currYear + 1));
+        _yearBox = new JComboBox(generateValues(currYear, currYear + 1));
         _yearBox.setSelectedItem(_extensionDate.get(Calendar.YEAR));
         _yearBox.addActionListener(new ActionListener()
         {
@@ -244,15 +283,22 @@ public class ExtensionView extends JFrame
         });
         panel.add(_yearBox);
 
+        panel.add(Box.createRigidArea(new Dimension(10,5)));
+
         _hourField = new IntegerField(_extensionDate.get(Calendar.HOUR_OF_DAY), 0, 23);
         panel.add(_hourField);
+
+        panel.add(new JLabel(":"));
+
         _minuteField = new IntegerField(_extensionDate.get(Calendar.MINUTE), 0, 59);
         panel.add(_minuteField);
+        
+        panel.add(new JLabel(":"));
+
         _secondField = new IntegerField(_extensionDate.get(Calendar.SECOND), 0, 59);
         panel.add(_secondField);
 
         return panel;
-
     }
 
     private void updateCalendar()
@@ -326,7 +372,7 @@ public class ExtensionView extends JFrame
         {
             super(NumberFormat.getIntegerInstance());
 
-            this.setText(initValue + "");
+            this.setIntValue(initValue);
 
             this.setColumns(2);
 
@@ -362,7 +408,8 @@ public class ExtensionView extends JFrame
                         {
                             if(changeValue)
                             {
-                                setText(finalValue + "");
+                                //setText(finalValue + "");
+                                setIntValue(finalValue);
                             }
                         }
                     });
@@ -375,11 +422,38 @@ public class ExtensionView extends JFrame
                     insertUpdate(e);
                 }
             });
+
+            this.addFocusListener(new FocusListener()
+            {
+                public void focusGained(FocusEvent fe) { }
+
+
+                public void focusLost(FocusEvent fe)
+                {
+                    SwingUtilities.invokeLater(new Runnable()
+                    {
+                        public void run()
+                        {
+                            setIntValue(getIntValue());
+                        }
+                    });
+                }
+            });
         }
 
         public int getIntValue()
         {
             return Integer.parseInt(getText());
+        }
+
+        public void setIntValue(int value)
+        {
+            String valueText = value + "";
+            if(value > -1 && value < 10)
+            {
+                valueText = "0" + valueText;
+            }
+            this.setText(valueText);
         }
     }
 
