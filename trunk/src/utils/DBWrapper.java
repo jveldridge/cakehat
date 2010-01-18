@@ -536,10 +536,10 @@ public class DBWrapper implements DatabaseIO {
                         "WHERE pid IN " +
                           "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
                          "AND sid IN " +
-                          "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
+                          "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
                 ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
-                int sID = rs.getInt("sid");
-                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+                int sID = 4;
+                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
                 int pID = rs.getInt("pid");
                 int ontime = (int) (newDate.getTimeInMillis() / 1000);
                 _statement.executeUpdate("INSERT INTO extension ('sid', 'pid', 'ontime', 'note') VALUES (" + sID + ", " + pID + ", " + ontime + ", '" + note + "')");
@@ -758,6 +758,23 @@ public class DBWrapper implements DatabaseIO {
     public boolean unBlacklistStudent(String studentLogin, String taLogin) {
         new ErrorView(new UnsupportedOperationException(), "Not supported yet.\n");
         return false;
+    }
+
+    public Map<String,Double> getAllPartScores(Part part) {
+        return this.getPartScores(part, this.getEnabledStudents().keySet());
+    }
+    
+    //TODO --fix this to actually be fast
+    public Map<String,Double> getPartScores(Part part, Iterable<String> students) {
+        Map<String,Double> scores = new HashMap<String,Double>();
+        for (String student : students) {
+            scores.put(student, this.getStudentScore(student, part));
+        }
+        return scores;
+    }
+
+    public Map<String, Double> getAllAssignmentScores(Assignment asgn) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
