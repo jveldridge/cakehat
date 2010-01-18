@@ -10,7 +10,7 @@ import backend.assignmentdist.FinalProjectAssigner;
 import backend.database.DatabaseView;
 import backend.entergrade.EnterGradesView;
 import backend.gradereport.GradeReportView;
-import backend.stathist.HistogramView;
+import backend.stathist.StatHistView;
 import gradesystem.GradeSystemApp;
 import java.awt.Color;
 import javax.imageio.ImageIO;

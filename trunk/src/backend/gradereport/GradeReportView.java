@@ -7,7 +7,7 @@ package backend.gradereport;
 
 import backend.OldDatabaseOps;
 import backend.stathist.ChartPanel;
-import backend.stathist.StudentDataPanel;
+import backend.stathist.StudentChartPanel;
 import config.Assignment;
 import config.Part;
 import java.io.File;
@@ -332,7 +332,7 @@ public class GradeReportView extends javax.swing.JFrame {
         ArrayDeque<File> fullFileList = new ArrayDeque<File>();
         ArrayList<String> histogramFileNames = new ArrayList<String>();
 
-        StudentDataPanel sdp = new StudentDataPanel();
+        StudentChartPanel sdp = new StudentChartPanel();
         int[] projIndex = _projectList.getSelectedIndices();
         int[] labIndex = _labList.getSelectedIndices();
         ChartPanel p = new ChartPanel();
@@ -382,13 +382,13 @@ public class GradeReportView extends javax.swing.JFrame {
                 histogramFileNames.add(fullFileList.peekLast().getAbsolutePath());
                 ImageIO.write(p.getImage(600, 250), "png", fullFileList.peekLast());
             }
-            for (String s : studNames) {
-                sdp.updateChart(s, projNames);
-                fullFileList.add(new File(".tmpdata/" + s + ".png"));
-                //fNames.add(fList.peekLast().getAbsolutePath());
-                ImageIO.write(sdp.getImage(600, 250), "png", fullFileList.peekLast());
-
-            }
+//            for (String s : studNames) {
+//                sdp.updateChart(s, projNames);
+//                fullFileList.add(new File(".tmpdata/" + s + ".png"));
+//                //fNames.add(fList.peekLast().getAbsolutePath());
+//                ImageIO.write(sdp.getImage(600, 250), "png", fullFileList.peekLast());
+//
+//            }
 
             //NOW SEND THE EMAILS we do this after the image creation loop so that we can guarantee that all the images have been made
             //otherwise mutt will fail at sending the message wihtout giving a warning.
@@ -407,7 +407,7 @@ public class GradeReportView extends javax.swing.JFrame {
         ArrayDeque<File> fList = new ArrayDeque<File>();
         ArrayList<String> fNames = new ArrayList<String>();
 
-        StudentDataPanel sdp = new StudentDataPanel();
+        StudentChartPanel sdp = new StudentChartPanel();
         int[] projIndex = _projectList.getSelectedIndices();
         int[] labIndex = _labList.getSelectedIndices();
         ChartPanel p = new ChartPanel();
@@ -458,7 +458,7 @@ public class GradeReportView extends javax.swing.JFrame {
                 fNames.add(fList.peekLast().getAbsolutePath());
                 ImageIO.write(p.getImage(600, 250), "png", fList.peekLast());
             }
-            sdp.updateChart("", projNames);
+//            sdp.updateChart("", projNames);
             fList.add(new File(".tmpdata/" + "test.png"));
             fNames.add(fList.peekLast().getAbsolutePath());
             ImageIO.write(sdp.getImage(600, 250), "png", fList.peekLast());

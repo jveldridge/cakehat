@@ -538,7 +538,7 @@ public class DBWrapper implements DatabaseIO {
                          "AND sid IN " +
                           "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
                 ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
-                int sID = 4;
+                int sID = rs.getInt("sid");
                 rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
                 int pID = rs.getInt("pid");
                 int ontime = (int) (newDate.getTimeInMillis() / 1000);
