@@ -1,5 +1,6 @@
 package frontend;
 
+import components.ParameterizedJList;
 import config.Assignment;
 import config.HandinPart;
 import java.awt.BorderLayout;
@@ -24,7 +25,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -48,70 +48,6 @@ public class FrontendView extends JFrame
     public static void main(String[] args)
     {
         new FrontendView();
-    }
-
-    /**
-     * A parameterized JList.
-     *
-     * @param <E>
-     */
-    private class ParameterizedJList<E> extends JList
-    {
-        public ParameterizedJList(Collection<E> items)
-        {
-            super(items.toArray());
-        }
-
-        public ParameterizedJList() { }
-
-        public ParameterizedJList(E[] items)
-        {
-            super(items);
-        }
-
-        public void setListData(Collection<E> items)
-        {
-            super.setListData(items.toArray());
-        }
-
-        @Override
-        public E getSelectedValue()
-        {
-            return (E) super.getSelectedValue();
-        }
-
-        @Override
-        public E[] getSelectedValues()
-        {
-            return (E[]) super.getSelectedValues();
-        }
-
-        public Collection<E> getItems()
-        {
-            Vector<E> items = new Vector<E>();
-            for (int i = 0; i < this.getModel().getSize(); i++)
-            {
-                items.add((E)this.getModel().getElementAt(i));
-            }
-
-            return items;
-        }
-
-        public boolean hasItems()
-        {
-            return (super.getModel().getSize() != 0);
-        }
-
-        /**
-         * Selects the first entry if it exists.
-         */
-        public void selectFirst()
-        {
-            if(this.hasItems())
-            {
-                this.setSelectedIndex(0);
-            }
-        }
     }
 
     /**
@@ -153,8 +89,7 @@ public class FrontendView extends JFrame
     public FrontendView()
     {
         //Frame title
-        super(Allocator.getGeneralUtilities().getUserLogin() +
-              " - " + Allocator.getCourseInfo().getCourse() + " Grader");
+        super("[cakehat] frontend - " + Allocator.getGeneralUtilities().getUserLogin());
 
         //Create the directory to work in
         Allocator.getGradingUtilities().makeUserGradingDirectory();
