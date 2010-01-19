@@ -4,6 +4,7 @@ import config.HandinPart;
 import config.LatePolicy;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -100,6 +101,15 @@ public class RubricMananger
         {
             new ErrorView(ex);
         }
+    }
+
+    public boolean hasRubric(HandinPart part, String studentLogin)
+    {
+        String rubricPath = Allocator.getCourseInfo().getRubricDir() +
+                            part.getAssignment().getName() + "/" +
+                            studentLogin + ".gml";
+
+        return new File(rubricPath).exists();
     }
 
     /**

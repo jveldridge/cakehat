@@ -147,7 +147,7 @@ public class ProgrammaticNewBackend extends JFrame
                                                                    MIDDLE_PANEL_SIZE.height - SELECTED_ASSIGNMENT_PANEL_SIZE.height);
 
     private JButton //Assignment wide buttons
-                    _createDistributionButton, _reassignGradingButton, _importGradesButton,
+                    _createDistributionButton, _reassignGradingButton, _importLabsButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionButton,
@@ -157,7 +157,7 @@ public class ProgrammaticNewBackend extends JFrame
                     //General command buttons
                     _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
                     _resetDatabaseButton;
-    private JButton[] _assignmentButtons, _generalCommandsButtons, _singleStudentButtons, _multipleStudentButtons;
+    private JButton[] _assignmentButtons, _generalCommandsButtons, _studentButtons, _multipleStudentButtons;
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
     private ParameterizedJList<Assignment> _assignmentList;
     private ParameterizedJList<String> _studentList;
@@ -191,7 +191,7 @@ public class ProgrammaticNewBackend extends JFrame
         _assignmentButtons = new JButton[]
         {
           _createDistributionButton, _reassignGradingButton,
-          _importGradesButton, _previewRubricButton, _viewDeductionsButton,
+          _importLabsButton, _previewRubricButton, _viewDeductionsButton,
           _runDemoButton
         };
 
@@ -200,8 +200,8 @@ public class ProgrammaticNewBackend extends JFrame
           _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
           _resetDatabaseButton
         };
-
-        _singleStudentButtons = new JButton[]
+        
+        _studentButtons = new JButton[]
         {
           _chartsButton, _emailReportsButton, _extensionButton, _exemptionButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
@@ -1415,8 +1415,8 @@ public class ProgrammaticNewBackend extends JFrame
         buttonPanel.add(_reassignGradingButton);
 
         //Import grades
-        _importGradesButton = createButton("Import Lab Grades", "/gradesystem/resources/icons/16x16/mail-send-receive.png");
-        _importGradesButton.addActionListener(new ActionListener()
+        _importLabsButton = createButton("Import Lab Grades", "/gradesystem/resources/icons/16x16/mail-send-receive.png");
+        _importLabsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
@@ -1424,7 +1424,7 @@ public class ProgrammaticNewBackend extends JFrame
             }
             
         });
-        buttonPanel.add(_importGradesButton);
+        buttonPanel.add(_importLabsButton);
 
         //Preview rubric
         _previewRubricButton = createButton("Preview Rubric", "/gradesystem/resources/icons/16x16/system-search.png");
@@ -1543,59 +1543,139 @@ public class ProgrammaticNewBackend extends JFrame
 
         //Update button states
 
-        //No students selected
-        if(selectedStudents.isEmpty())
+        //                  STUDENT BUTTONS
+
+        //Disable all, re-enable as appropriate
+        for(JButton button : _studentButtons)
         {
-            for(JButton button : _singleStudentButtons)
-            {
-                button.setEnabled(false);
-            }
+            button.setEnabled(false);
         }
+
         //If one student selected
-        else if(selectedStudents.size() == 1)
+        if(selectedStudents.size() == 1)
         {
-            for(JButton button : _singleStudentButtons)
+            //If zero or more assignments
+            if(selectedAssignments.size() >= 0)
             {
-                button.setEnabled(true);
+                _disableStudentButton.setEnabled(true);
+            }
+            //If one or more assignments
+            if(selectedAssignments.size() >= 1)
+            {
+                _chartsButton.setEnabled(true);
+                _emailReportsButton.setEnabled(true);
+
+                //TODO: Check if all students actually have a rubric
+                boolean allHaveRubrics = true;
+                for(Assignment asgn : selectedAssignments)
+                {
+                    if(asgn.hasHandinPart())
+                    {
+                        allHaveRubrics &= asgn.getHandinPart().hasRubric();
+                    }
+                    else
+                    {
+                        allHaveRubrics = false;
+                    }
+                }
+                _printRubricButton.setEnabled(allHaveRubrics);
+            }
+            //If one assigment
+            if(selectedAssignments.size() == 1)
+            {
+                _exemptionButton.setEnabled(true);
+
+                //If it has a handin part
+                if(_assignmentList.getSelectedValue().hasHandinPart())
+                {
+                    HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+
+                    boolean hasHandin = part.hasHandin(_studentList.getSelectedValue());
+
+                    _testCodeButton.setEnabled(hasHandin && part.hasTester());
+                    _runCodeButton.setEnabled(hasHandin && part.hasRun() );
+                    _openCodeButton.setEnabled(hasHandin && part.hasOpen());
+                    _printCodeButton.setEnabled(hasHandin && part.hasPrint());
+
+                    _extensionButton.setEnabled(true);
+
+                    _viewRubricButton.setEnabled(part.hasRubric() &&
+                            Allocator.getRubricManager().hasRubric(part, _studentList.getSelectedValue()));
+                }
             }
         }
         //Multiple students selected
         else
-        {
-            for(JButton button : _singleStudentButtons)
+        {            
+            _chartsButton.setEnabled(true);
+            _emailReportsButton.setEnabled(true);
+
+
+            //TODO: Check if each student actually has a rubric
+            boolean allHaveRubrics = true;
+            for(Assignment asgn : selectedAssignments)
             {
-                button.setEnabled(false);
+                if(asgn.hasHandinPart())
+                {
+                    allHaveRubrics &= asgn.getHandinPart().hasRubric();
+                }
+                else
+                {
+                    allHaveRubrics = false;
+                }
             }
-            for(JButton button : _multipleStudentButtons)
+            _printRubricButton.setEnabled(allHaveRubrics);
+
+            boolean allHavePrintCode = true;
+            for(Assignment asgn : selectedAssignments)
             {
-                button.setEnabled(true);
+                if(asgn.hasHandinPart())
+                {
+                    allHavePrintCode &= asgn.getHandinPart().hasPrint();
+                }
+                else
+                {
+                    allHavePrintCode = false;
+                }
             }
+            _printCodeButton.setEnabled(allHavePrintCode);
         }
 
-        //If no assignments selected, disable all assignment buttons
-        if(selectedAssignments.isEmpty())
+         //                 ASSIGNMENT BUTTONS
+
+
+        //Disable the assignment buttons, and then re-enable as appropriate
+        for(JButton button : _assignmentButtons)
         {
-            for(JButton button : _assignmentButtons)
-            {
-                button.setEnabled(false);
-            }
+            button.setEnabled(false);
         }
-        //If one assignment is selected, enable all assignment buttons
-        else if(selectedAssignments.size() == 1)
+        //If one assignment is selected, enable assignment buttons as appropriate
+        if(selectedAssignments.size() == 1)
         {
-            for(JButton button : _assignmentButtons)
+            _importLabsButton.setEnabled(_assignmentList.getSelectedValue().hasLabParts());
+
+            if(_assignmentList.getSelectedValue().hasHandinPart())
             {
-                button.setEnabled(true);
-            }
+                HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+
+                _createDistributionButton.setEnabled(true);
+                _reassignGradingButton.setEnabled(true);
+
+                _previewRubricButton.setEnabled(part.hasRubric());
+                _viewDeductionsButton.setEnabled(part.hasDeductionList());
+                _runDemoButton.setEnabled(part.hasDemo());
+            }            
         }
-        //If more than one assignment is selected, enable the import grades button
+        //If more than one assignment is selected, check if they have labs
         else
         {
-            for(JButton button : _assignmentButtons)
+            boolean allHaveLabs = true;
+            for(Assignment asgn : selectedAssignments)
             {
-                button.setEnabled(false);
+                allHaveLabs &= asgn.hasLabParts();
             }
-            _importGradesButton.setEnabled(true);
+
+            _importLabsButton.setEnabled(allHaveLabs);
         }
 
         //Update which panel is showing
