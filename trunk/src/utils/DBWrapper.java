@@ -761,10 +761,6 @@ public class DBWrapper implements DatabaseIO {
         return false;
     }
 
-    public Map<String,Double> getAllPartScores(Part part) {
-        return this.getPartScores(part, this.getEnabledStudents().keySet());
-    }
-    
     //TODO --fix this to actually be fast
     public Map<String,Double> getPartScores(Part part, Iterable<String> students) {
         Map<String,Double> scores = new HashMap<String,Double>();
@@ -773,17 +769,20 @@ public class DBWrapper implements DatabaseIO {
         }
         return scores;
     }
-
+    
     //TODO --fix this to actually be fast
-    public Map<String, Double> getAllAssignmentScores(Assignment asgn) {
+    public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) {
         Map<String,Double> scores = new HashMap<String,Double>();
-        for (String student : this.getEnabledStudents().keySet()) {
-            scores.put(student, this.getStudentScore(student, asgn.getHandinPart()));
+        for (String student : students) {
+            double score = 0;
+            for (Part p : asgn.getParts()) {
+                score += this.getStudentScore(student, p);
+            }
+            scores.put(student, score);
         }
         return scores;
     }
 
-    //ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
     public boolean isStudentEnabled(String studentLogin) {
         this.openConnection();
         try {

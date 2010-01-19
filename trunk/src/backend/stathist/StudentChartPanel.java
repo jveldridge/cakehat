@@ -1,13 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * StudentDataPanel.java
- *
- * Created on Sep 9, 2009, 10:35:44 AM
- */
 package backend.stathist;
 
 import config.Assignment;
@@ -57,7 +47,8 @@ public class StudentChartPanel extends javax.swing.JPanel {
             data[1][i] = studentScore / assignments[i].getHandinPart().getPoints() * 100;
             
             Vector<Double> scores = new Vector<Double>();
-            Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAllAssignmentScores(assignments[i]);
+            Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAssignmentScores(assignments[i], 
+                                                                                            Allocator.getDatabaseIO().getEnabledStudents().keySet());
             for (String student : scoreMap.keySet()) {
                 scores.add(scoreMap.get(student));
             }
@@ -65,29 +56,6 @@ public class StudentChartPanel extends javax.swing.JPanel {
             avgData[0][i] = i;
             avgData[1][i] = Statistics.calculateMean(scores) / assignments[i].getHandinPart().getPoints() * 100;
         }
-//        for (int i = 0; i < assignments.length; i++) {
-//            avgData[0][i] = i;
-//            avgData[1][i] = OldDatabaseOps.getAverage(assignments[i]);
-//            
-//            if (assignments[i].getName().compareTo("") != 0 && assignments[i].getName().compareTo("None") != 0) {
-//                try {
-//                    ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + assignments[i]);
-//                    data[0][i] = i;
-//                    while (!cursor.eof()) {
-//                        if (cursor.getString("studLogins").compareToIgnoreCase(studName) == 0) {
-//                            double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
-//                            data[1][i] = earned / OldDatabaseOps.getAssignmentTotal(assignments[i]) * 100;
-//                            break;
-//                        }
-//                        cursor.next();
-//                    }
-//                } catch (Exception e) {
-//                    new ErrorView(e);
-//                }
-//            } else {
-//            }
-//        }
-
         dataset.addSeries(studName + "'s Scores", data);
         dataset.addSeries("Class Average", avgData);
         ValueAxis yAxis = new NumberAxis("Score (%)");

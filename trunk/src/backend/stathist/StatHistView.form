@@ -250,6 +250,9 @@
                         </Property>
                         <Property name="text" type="java.lang.String" resourceKey="assignmentsRb.text"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="assignmentsRb.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        updateCharts();&#xa;    }&#xa;});"/>
+                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="partsRb">
                       <Properties>
@@ -259,6 +262,9 @@
                         <Property name="text" type="java.lang.String" resourceKey="partsRb.text"/>
                         <Property name="name" type="java.lang.String" value="partsRb" noResource="true"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="partsRb.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        updateCharts();&#xa;    }&#xa;});"/>
+                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel1">
                       <Properties>
@@ -279,6 +285,9 @@
                         <Property name="text" type="java.lang.String" resourceKey="allStudentsRb.text"/>
                         <Property name="name" type="java.lang.String" value="allStudentsRb" noResource="true"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="allStudentsRb.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        updateCharts();&#xa;    }&#xa;});"/>
+                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="studentsSelectedRb">
                       <Properties>
@@ -288,6 +297,9 @@
                         <Property name="text" type="java.lang.String" resourceKey="studentsSelectedRb.text"/>
                         <Property name="name" type="java.lang.String" value="studentsSelectedRb" noResource="true"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studentsSelectedRb.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        updateCharts();&#xa;    }&#xa;});"/>
+                      </AuxValues>
                     </Component>
                   </SubComponents>
                 </Container>

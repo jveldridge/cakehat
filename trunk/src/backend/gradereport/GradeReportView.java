@@ -6,7 +6,7 @@
 package backend.gradereport;
 
 import backend.OldDatabaseOps;
-import backend.stathist.ChartPanel;
+import backend.stathist.HistogramPanel;
 import backend.stathist.StudentChartPanel;
 import config.Assignment;
 import config.Part;
@@ -335,7 +335,7 @@ public class GradeReportView extends javax.swing.JFrame {
         StudentChartPanel sdp = new StudentChartPanel();
         int[] projIndex = _projectList.getSelectedIndices();
         int[] labIndex = _labList.getSelectedIndices();
-        ChartPanel p = new ChartPanel();
+        HistogramPanel p = new HistogramPanel();
         String[] projNames = new String[projIndex.length];
         Object[] projObjects = _projectList.getSelectedValues();
         for (int i = 0; i < projNames.length; i++) {
@@ -410,7 +410,7 @@ public class GradeReportView extends javax.swing.JFrame {
         StudentChartPanel sdp = new StudentChartPanel();
         int[] projIndex = _projectList.getSelectedIndices();
         int[] labIndex = _labList.getSelectedIndices();
-        ChartPanel p = new ChartPanel();
+        HistogramPanel p = new HistogramPanel();
         String[] projNames = new String[projIndex.length];
         Object[] projObjects = _projectList.getSelectedValues();
         for (int i = 0; i < projNames.length; i++) {

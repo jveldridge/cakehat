@@ -26,11 +26,11 @@ import org.jfree.data.statistics.HistogramDataset;
  *
  * @author Paul
  */
-public class ChartPanel extends JComponent {
+public class HistogramPanel extends JComponent {
 
     private JFreeChart _chart;
 
-    public ChartPanel() {
+    public HistogramPanel() {
     }
 
     public BufferedImage getImage(int w, int h) {
