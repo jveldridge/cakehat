@@ -562,7 +562,7 @@ public class DBWrapper implements DatabaseIO {
                           "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
                 ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
                 int sID = rs.getInt("sid");
-                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
                 int pID = rs.getInt("pid");
                 _statement.executeUpdate("INSERT INTO exemption ('sid', 'pid', 'note') VALUES (" + sID + ", " + pID + ", '" + note + "')");
             this.closeConnection();
@@ -605,8 +605,7 @@ public class DBWrapper implements DatabaseIO {
                 
     public Calendar getExtension(String studentLogin, Part part) {
         this.openConnection();
-        try {
-            Calendar result = new GregorianCalendar();
+        try { 
             ResultSet rs = _statement.executeQuery("SELECT e.ontime AS date "
                     + "FROM extension AS e "
                     + "INNER JOIN student AS s "
@@ -618,7 +617,11 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE p.name == '" + part.getName() + "' "
                     + "AND s.login == '" + studentLogin + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
-            result.setTimeInMillis(rs.getInt("date") * 1000);
+            Calendar result = null;
+            if (rs.next()) {
+                result = new GregorianCalendar();
+                result.setTimeInMillis(rs.getInt("date") * 1000);
+            }
             this.closeConnection();
             return result;
         } catch (Exception e) {
@@ -642,7 +645,10 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE p.name == '" + part.getName() + "' "
                     + "AND s.login == '" + studentLogin + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
-            String result = rs.getString("note");
+            String result = null;
+            if (rs.next()) {
+                result = rs.getString("note");
+            }
             this.closeConnection();
             return result;
         } catch (Exception e) {
@@ -666,7 +672,10 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE p.name == '" + part.getName() + "' "
                     + "AND s.login == '" + studentLogin + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
-            String result = rs.getString("note");
+            String result = null;
+            if (rs.next()) {
+                result = rs.getString("note");
+            }
             this.closeConnection();
             return result;
         } catch (Exception e) {
