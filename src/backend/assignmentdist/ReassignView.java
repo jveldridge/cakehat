@@ -55,7 +55,7 @@ public class ReassignView extends javax.swing.JFrame {
             this.setTitle(asgnComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
         }
         
-        _unassignedStudents = new Vector<String>(Allocator.getDatabaseIO().getEnabledStudents().keySet());
+        _unassignedStudents = new Vector<String>(_asgn.getHandinPart().getHandinLogins());
         for (TA ta : tas) {
             for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin())) {
                 _unassignedStudents.remove(login);
@@ -557,7 +557,7 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
 
 private void asgnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnComboBoxActionPerformed
     _asgn = (Assignment) asgnComboBox.getSelectedItem();
-    _unassignedStudents = new Vector<String>(Allocator.getDatabaseIO().getEnabledStudents().keySet());
+    _unassignedStudents = new Vector<String>(_asgn.getHandinPart().getHandinLogins());
     for (TA ta : Allocator.getCourseInfo().getTAs()) {
         for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin())) {
             _unassignedStudents.remove(login);
