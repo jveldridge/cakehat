@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -67,8 +68,8 @@ public class EmailView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jDialog1 = new javax.swing.JDialog();
-        jButton2 = new javax.swing.JButton();
+        sentDialog = new javax.swing.JDialog();
+        dialogCloseButton = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         sendButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
@@ -88,39 +89,39 @@ public class EmailView extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
 
-        jDialog1.setMinimumSize(new java.awt.Dimension(300, 100));
-        jDialog1.setModal(true);
-        jDialog1.setResizable(false);
+        sentDialog.setMinimumSize(new java.awt.Dimension(300, 100));
+        sentDialog.setModal(true);
+        sentDialog.setResizable(false);
 
-        jButton2.setText("Close");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        dialogCloseButton.setText("Close");
+        dialogCloseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                dialogCloseButtonActionPerformed(evt);
             }
         });
 
         jLabel6.setText("Mail sent.");
 
-        javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
-        jDialog1.getContentPane().setLayout(jDialog1Layout);
-        jDialog1Layout.setHorizontalGroup(
-            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jDialog1Layout.createSequentialGroup()
+        javax.swing.GroupLayout sentDialogLayout = new javax.swing.GroupLayout(sentDialog.getContentPane());
+        sentDialog.getContentPane().setLayout(sentDialogLayout);
+        sentDialogLayout.setHorizontalGroup(
+            sentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sentDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel6)
                 .addContainerGap(257, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jDialog1Layout.createSequentialGroup()
-                .addContainerGap(238, Short.MAX_VALUE)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sentDialogLayout.createSequentialGroup()
+                .addContainerGap(239, Short.MAX_VALUE)
+                .addComponent(dialogCloseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-        jDialog1Layout.setVerticalGroup(
-            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jDialog1Layout.createSequentialGroup()
+        sentDialogLayout.setVerticalGroup(
+            sentDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sentDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(dialogCloseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -144,20 +145,8 @@ public class EmailView extends javax.swing.JFrame {
 
         jLabel3.setText("Subject:");
 
-        subjectBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                subjectBoxActionPerformed(evt);
-            }
-        });
-
-        studentsBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                studentsBoxActionPerformed(evt);
-            }
-        });
-
         bodyText.setColumns(20);
-        bodyText.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        bodyText.setFont(new java.awt.Font("SansSerif", 0, 12));
         bodyText.setRows(5);
         bodyText.setMargin(new java.awt.Insets(10, 10, 10, 10));
         jScrollPane1.setViewportView(bodyText);
@@ -260,12 +249,6 @@ public class EmailView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void studentsBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_studentsBoxActionPerformed
-}//GEN-LAST:event_studentsBoxActionPerformed
-
-    private void subjectBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subjectBoxActionPerformed
-}//GEN-LAST:event_subjectBoxActionPerformed
-
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         //get the date and time of submission for notification message
         final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
@@ -280,14 +263,13 @@ public class EmailView extends javax.swing.JFrame {
             if (_attachments != null) {
                 attachmentPath = _attachments.get(student.split("@")[0]);
             }
-            System.out.println("student is " + student);
-            Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),         //from
-                                                                  new String[] {student},   //to
-                                                                  null,                     //cc
-                                                                  null,                     //bcc
+            Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                     //from
+                                                                  new String[] {student},               //to
+                                                                  null,                                 //cc
+                                                                  null,                                 //bcc
                                                                   subjectBox.getText(),
                                                                   bodyText.getText(), 
-                                                                  new String[] {attachmentPath});                    //attachment paths
+                                                                      new String[] {attachmentPath});   //attachment paths
         }
         
         //send notification of message sent to sender and to the course's notification addresses
@@ -297,24 +279,29 @@ public class EmailView extends javax.swing.JFrame {
                 " submitted grading for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
         for (String student : students) {
             student = student.split("@")[0];
-            notificationMessage += student + "; attachment: " + _attachments.get(student) + "<br />";
+            String attachment = "none";
+            if (_attachments != null) {
+                attachment = _attachments.get(student);
+            }
+            notificationMessage += student + "; attachment: " + attachment + "<br />";
         }
         notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + bodyText.getText()
                 + "</blockquote>";
-        Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                             //from
-                                                                  new String[] {fromBox.getText()},         //to
-                                                                  toNotify,                                 //cc
-                                                                  null,                                     //bcc
+        Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                         //from
+                                                                  new String[] {fromBox.getText()},     //to
+                                                                  toNotify,                             //cc
+                                                                  null,                                 //bcc
                                                                   subjectBox.getText(),
                                                                   notificationMessage, 
-                                                                  null);                    //attachment paths
-        jDialog1.setLocationRelativeTo(null);
-        jDialog1.setVisible(true);
+                                                                  null);                                //attachment paths
+        sentDialog.setLocationRelativeTo(null);
+        sentDialog.setVisible(true);
 }//GEN-LAST:event_sendButtonActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        jDialog1.setVisible(false);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void dialogCloseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dialogCloseButtonActionPerformed
+        sentDialog.dispose();
+        this.dispose();
+}//GEN-LAST:event_dialogCloseButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         this.dispose();
@@ -355,9 +342,8 @@ public class EmailView extends javax.swing.JFrame {
     private javax.swing.JLabel attachmentMessage;
     private javax.swing.JTextArea bodyText;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton dialogCloseButton;
     private javax.swing.JTextField fromBox;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -370,6 +356,7 @@ public class EmailView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField notifyBox;
     private javax.swing.JButton sendButton;
+    private javax.swing.JDialog sentDialog;
     private javax.swing.JTextField studentsBox;
     private javax.swing.JTextField subjectBox;
     // End of variables declaration//GEN-END:variables
