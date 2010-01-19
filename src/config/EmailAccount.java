@@ -220,7 +220,7 @@ public class EmailAccount
             {
                 for(String s : attachmentNames)
                 {
-                    if(!s.isEmpty() && s != null)
+                    if(s != null && !s.isEmpty())
                     {
                         // add attachment
                         MimeBodyPart attachmentPart = new MimeBodyPart();
