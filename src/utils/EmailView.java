@@ -1,12 +1,15 @@
 package utils;
 
 import com.inet.jortho.SpellChecker;
+import java.awt.event.ActionEvent;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -25,6 +28,14 @@ public class EmailView extends javax.swing.JFrame {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
         } catch (Exception e) {
         }
+        
+        bodyText.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "newline");
+        bodyText.getActionMap().put("newline", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                bodyText.append("\n");
+            }
+        });
+        
         fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu");
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);
@@ -255,6 +266,9 @@ public class EmailView extends javax.swing.JFrame {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
         String now = sdf.format(cal.getTime());
         
+        String body = bodyText.getText();
+        body = body.replace("\n", "<br/>");
+        
         //send message to each student
         String[] students = studentsBox.getText().replace(" ", "").split("(,|;)");
         for (String student : students) {
@@ -262,12 +276,13 @@ public class EmailView extends javax.swing.JFrame {
             if (_attachments != null) {
                 attachmentPath = _attachments.get(student.split("@")[0]);
             }
+            
             Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                     //from
                                                                   new String[] {student},               //to
                                                                   null,                                 //cc
                                                                   null,                                 //bcc
                                                                   subjectBox.getText(),
-                                                                  bodyText.getText(), 
+                                                                  body, 
                                                                       new String[] {attachmentPath});   //attachment paths
         }
         
@@ -284,7 +299,7 @@ public class EmailView extends javax.swing.JFrame {
             }
             notificationMessage += student + "; attachment: " + attachment + "<br />";
         }
-        notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + bodyText.getText()
+        notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + body
                 + "</blockquote>";
         Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                         //from
                                                                   new String[] {fromBox.getText()},     //to
