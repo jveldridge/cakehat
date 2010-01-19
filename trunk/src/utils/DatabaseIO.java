@@ -216,6 +216,14 @@ public interface DatabaseIO {
      * @return
      */
     public boolean grantExemption(String studentLogin, Part part, String note);
+    
+    /**
+     * Removes a previously granted exception for the given student for the given Part.
+     * @param studentLogin
+     * @param part
+     * @return
+     */
+    public boolean removeExemption(String studentLogin, Part part);
 
     /**
      * Returns the Calendar representing the date when the Part is due
