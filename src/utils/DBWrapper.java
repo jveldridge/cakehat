@@ -696,7 +696,7 @@ public class DBWrapper implements DatabaseIO {
             _statement.executeUpdate("DELETE FROM grade " +
                         "WHERE pid == " + pID + " " +
                          "AND sid == " + sID);
-            _statement.executeUpdate("INSERT INTO grade ('sid', 'pid', 'score', 'status') VALUES (" + sID + ", " + pID + ", '" + score + "', 'blank')");
+            _statement.executeUpdate("INSERT INTO grade ('sid', 'pid', 'score') VALUES (" + sID + ", " + pID + ", '" + score + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
