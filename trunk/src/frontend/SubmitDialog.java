@@ -45,6 +45,15 @@ public class SubmitDialog{
         _emailGRDcb = new JCheckBox("Email GRD Files");
         _notifyStudentscb = new JCheckBox("Notify Students");
         
+        //if notifyStudentscb is unselected, emailGRDcb must be as well
+        _notifyStudentscb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (!_notifyStudentscb.isSelected())
+                    _emailGRDcb.setSelected(false);
+            }
+            
+        });
+        
         //if emailGRDcb is selected, notifyStudentscb must be as well
         _emailGRDcb.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
