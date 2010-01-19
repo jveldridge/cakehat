@@ -620,7 +620,7 @@ public class DBWrapper implements DatabaseIO {
             Calendar result = null;
             if (rs.next()) {
                 result = new GregorianCalendar();
-                result.setTimeInMillis(rs.getInt("date") * 1000);
+                result.setTimeInMillis(rs.getInt("date"));
             }
             this.closeConnection();
             return result;
@@ -828,5 +828,24 @@ public class DBWrapper implements DatabaseIO {
             return false;
         }
     }
+    
+    public boolean removeExtension(String studentLogin, Part part) {
+        this.openConnection();
+        try {
+            _statement.executeUpdate("DELETE FROM extension " +
+                        "WHERE pid IN " +
+                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
+                         "AND sid IN " +
+                          "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
+            this.closeConnection();
+            return false;
+        }
+    }
+    
+    
 
 }
