@@ -812,4 +812,21 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public boolean removeExemption(String studentLogin, Part part) {
+        this.openConnection();
+        try {
+            _statement.executeUpdate("DELETE FROM exemption " +
+                        "WHERE pid IN " +
+                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
+                         "AND sid IN " +
+                          "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
+            this.closeConnection();
+            return false;
+        }
+    }
+
 }

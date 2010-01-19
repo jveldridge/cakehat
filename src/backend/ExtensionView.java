@@ -124,7 +124,7 @@ public class ExtensionView extends JFrame
         this.setTitle(part.getAssignment().getName() + " extension for " + studentLogin);
 
         //Get extension, if none available default to on time date
-        _extensionDate = null;//Allocator.getDatabaseIO().getExtension(studentLogin, part);
+        _extensionDate = Allocator.getDatabaseIO().getExtension(studentLogin, part);
         _hasExtension = (_extensionDate != null);
         if(_extensionDate == null)
         {
@@ -196,7 +196,7 @@ public class ExtensionView extends JFrame
         datePanel.add(lateLabel);
 
         //Comment area
-        String comment = null;//Allocator.getDatabaseIO().getExtensionNote(_studentLogin, _part);
+        String comment = Allocator.getDatabaseIO().getExtensionNote(_studentLogin, _part);
         boolean noComment = (comment == null);
         if(noComment)
         {
