@@ -11,6 +11,7 @@
 package backend.stathist;
 
 import config.Assignment;
+import config.Part;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,56 +25,63 @@ import utils.ErrorView;
  * @author psastras
  * @author jeldridg
  */
-public class ChartDataPanel extends javax.swing.JPanel {
+public class AssignmentChartPanel extends javax.swing.JPanel {
 
     /** Creates new form ChartDataPanel */
-    public ChartDataPanel() {
+    public AssignmentChartPanel() {
         initComponents();
     }
 
-    public void updateChartData(Assignment asgn) {
-        try {
-            //ISqlJetCursor cursor = OldDatabaseOps.getAllData("grades_" + asgnName);
-            Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAllAssignmentScores(asgn);
-            //int cols = DatabaseIO.getColumnNames("grades_" + asgnName).length;
-            double outOf = asgn.getTotalPoints();
-            //double d = OldDatabaseOps.getAssignmentTotal(asgnName);
-            List<Double> l = new ArrayList<Double>();
-            for (String student : scoreMap.keySet()) {
-                double earned = scoreMap.get(student);
-                l.add(earned / outOf * 100);
-            }
-//            while (!cursor.eof()) {
-//                double earned = (cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]).length() == 0) ? 0.0 : Double.parseDouble(cursor.getString(OldDatabaseOps.GRADE_RUBRIC_FIELDS[1]));
-//                if (earned / d * 100 != 0) { //ignore zero handins
-//                    l.add(earned / d * 100);
-//                }
-//                cursor.next();
-//            }
-            if(l.size() == 0){
-                chartPanel1.loadData(asgn.getName(), new double[]{});
-                return;
-            }
-            double[] data = new double[l.size()];
-            for (int i = 0; i < data.length; i++) {
-                data[i] = l.get(i);
-            }
-            Number[] dataAsNumber = new Number[data.length];
-            for (int i = 0; i < dataAsNumber.length; i++) {
-                dataAsNumber[i] = (Number) data[i];
-            }
-            nLabel.setText("" + data.length);
-            medianLabel.setText("" + Statistics.calculateMedian(l));
-            meanLabel.setText("" + Statistics.calculateMean(l));
-            stdDevLabel.setText("" + Statistics.getStdDev(dataAsNumber));
-            chartPanel1.loadData(asgn.getName(), data);
-        } catch (Exception e) {
-            new ErrorView(e);
+    public void updateChartData(Assignment asgn, Iterable<String> students) {
+        Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAssignmentScores(asgn, students);
+        double outOf = asgn.getTotalPoints();
+        
+        List<Double> scores = new ArrayList<Double>();
+        for (String student : scoreMap.keySet()) {
+            double earned = scoreMap.get(student);
+            scores.add(earned / outOf * 100);
         }
+
+        this.updateChartData(asgn.getName(), scores);
+    }
+    
+    public void updateChartData(Part part, Iterable<String> students) {
+        Map<String, Double> scoreMap = Allocator.getDatabaseIO().getPartScores(part, students);
+        double outOf = part.getPoints();
+
+        List<Double> scores = new ArrayList<Double>();
+        for (String student : scoreMap.keySet()) {
+            double earned = scoreMap.get(student);
+            scores.add(earned / outOf * 100);
+        }
+
+        this.updateChartData(part.getAssignment().getName() + ": " + part.getName(), scores);
+    }
+    
+    private void updateChartData(String asgnName, List<Double> scores) {
+        if(scores.size() == 0){
+            chartPanel.loadData(asgnName, new double[]{});
+            return;
+        }
+        
+        double[] data = new double[scores.size()];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = scores.get(i);
+        }
+        Number[] dataAsNumber = new Number[data.length];
+        for (int i = 0; i < dataAsNumber.length; i++) {
+            dataAsNumber[i] = (Number) data[i];
+        }
+
+        nLabel.setText("" + data.length);
+        medianLabel.setText("" + Statistics.calculateMedian(scores));
+        meanLabel.setText("" + Statistics.calculateMean(scores));
+        stdDevLabel.setText("" + Statistics.getStdDev(dataAsNumber));
+        chartPanel.loadData(asgnName, data);
     }
 
     public BufferedImage getImage(int w, int h) {
-        return chartPanel1.getImage(w, h);
+        return chartPanel.getImage(w, h);
     }
 
     /** This method is called from within the constructor to
@@ -85,7 +93,6 @@ public class ChartDataPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        chartPanel1 = new backend.stathist.ChartPanel();
         jLabel1 = new javax.swing.JLabel();
         medianLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -94,25 +101,11 @@ public class ChartDataPanel extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         meanLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        chartPanel = new backend.stathist.HistogramPanel();
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(ChartDataPanel.class);
-        setBackground(resourceMap.getColor("chartPanel1.background")); // NOI18N
         setName("Form"); // NOI18N
 
-        chartPanel1.setBackground(resourceMap.getColor("chartPanel1.background")); // NOI18N
-        chartPanel1.setName("chartPanel1"); // NOI18N
-
-        javax.swing.GroupLayout chartPanel1Layout = new javax.swing.GroupLayout(chartPanel1);
-        chartPanel1.setLayout(chartPanel1Layout);
-        chartPanel1Layout.setHorizontalGroup(
-            chartPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 595, Short.MAX_VALUE)
-        );
-        chartPanel1Layout.setVerticalGroup(
-            chartPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 254, Short.MAX_VALUE)
-        );
-
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(AssignmentChartPanel.class);
         jLabel1.setForeground(resourceMap.getColor("jLabel1.foreground")); // NOI18N
         jLabel1.setText("<html><b>Number of Students</b></html>");
         jLabel1.setName("jLabel1"); // NOI18N
@@ -145,35 +138,50 @@ public class ChartDataPanel extends javax.swing.JPanel {
         jLabel3.setText("<html><b>Mean / Average</b></html>");
         jLabel3.setName("jLabel3"); // NOI18N
 
+        chartPanel.setName("chartPanel"); // NOI18N
+
+        javax.swing.GroupLayout chartPanelLayout = new javax.swing.GroupLayout(chartPanel);
+        chartPanel.setLayout(chartPanelLayout);
+        chartPanelLayout.setHorizontalGroup(
+            chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 587, Short.MAX_VALUE)
+        );
+        chartPanelLayout.setVerticalGroup(
+            chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 262, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chartPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(meanLabel)
-                    .addComponent(nLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(stdDevLabel)
-                    .addComponent(medianLabel))
-                .addContainerGap(187, Short.MAX_VALUE))
+                    .addComponent(chartPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(meanLabel)
+                            .addComponent(nLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(stdDevLabel)
+                            .addComponent(medianLabel))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(chartPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chartPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -195,7 +203,7 @@ public class ChartDataPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private backend.stathist.ChartPanel chartPanel1;
+    private backend.stathist.HistogramPanel chartPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;

@@ -1,15 +1,12 @@
-/*
- * HistogramView.java
- *
- * Created on Sep 25, 2009, 5:26:08 PM
- */
 package backend.stathist;
 
 import config.Assignment;
+import config.Part;
 import java.awt.CardLayout;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
@@ -22,21 +19,24 @@ import utils.Allocator;
  */
 public class StatHistView extends javax.swing.JFrame {
 
-    private Map<Assignment,ChartDataPanel> _asgnChartMap;
+    private Map<Assignment,AssignmentChartPanel> _asgnChartMap;
+    private Map<Part,AssignmentChartPanel> _partChartMap;
     private Map<String,StudentChartPanel> _studChartMap;
     private Collection<Assignment> _assignments;
+    private Collection<Part> _parts;
     private Collection<String> _students;
 
     /** Creates new form HistogramView */
     public StatHistView(Collection<Assignment> assignments, Collection<String> students) {
         _assignments = assignments;
         _students = students;
-        _asgnChartMap = new HashMap<Assignment,ChartDataPanel>();
+        _asgnChartMap = new HashMap<Assignment,AssignmentChartPanel>();
+        _partChartMap = new HashMap<Part,AssignmentChartPanel>();
         _studChartMap = new HashMap<String,StudentChartPanel>();
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/x-office-drawing.png")));
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
+        
         initComponents();
         domoreinit();
         this.setLocationRelativeTo(null);
@@ -44,10 +44,20 @@ public class StatHistView extends javax.swing.JFrame {
     }
 
     private void domoreinit() {
+        
+        _parts = new Vector<Part>();
+        
+        //create AssignmentChartPanels for each Assignment and Part
         for (Assignment a : _assignments) {
-            _asgnChartMap.put(a, new ChartDataPanel());
+            _asgnChartMap.put(a, new AssignmentChartPanel());
+            
+            for (Part p : a.getParts()) {
+                _partChartMap.put(p, new AssignmentChartPanel());
+                _parts.add(p);
+            }
         }
         
+        //create StudentChartPanels for each student
         for (String s : _students) {
             _studChartMap.put(s, new StudentChartPanel());
         }
@@ -56,11 +66,13 @@ public class StatHistView extends javax.swing.JFrame {
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(chartPanel);
         chartPanel.setLayout(jPanel2Layout);
         ParallelGroup pg = jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
-//        sdp = new StudentDataPanel();
-//        sdp.setVisible(true);
-//        pg.addComponent(sdp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
+
         
-        for (ChartDataPanel acp : _asgnChartMap.values()) {
+        for (AssignmentChartPanel acp : _asgnChartMap.values()) {
+            pg.addComponent(acp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
+        }
+        
+        for (AssignmentChartPanel acp : _partChartMap.values()) {
             pg.addComponent(acp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
         }
         
@@ -70,10 +82,13 @@ public class StatHistView extends javax.swing.JFrame {
 
         jPanel2Layout.setHorizontalGroup(pg);
         SequentialGroup sg = jPanel2Layout.createSequentialGroup();
-//        sg.addComponent(sdp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
-//        sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
         
-        for (ChartDataPanel c : _asgnChartMap.values()) {
+        for (AssignmentChartPanel c : _asgnChartMap.values()) {
+            sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
+            sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
+        }
+        
+        for (AssignmentChartPanel c : _partChartMap.values()) {
             sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
             sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
         }
@@ -90,6 +105,7 @@ public class StatHistView extends javax.swing.JFrame {
         assignmentsRb.setSelected(true);
         allStudentsRb.setSelected(true);
         
+        this.updateCharts();
     }
 
 
@@ -163,10 +179,20 @@ public class StatHistView extends javax.swing.JFrame {
 
         asgnButtonGroup.add(assignmentsRb);
         assignmentsRb.setText(resourceMap.getString("assignmentsRb.text")); // NOI18N
+        assignmentsRb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                updateCharts();
+            }
+        });
 
         asgnButtonGroup.add(partsRb);
         partsRb.setText(resourceMap.getString("partsRb.text")); // NOI18N
         partsRb.setName("partsRb"); // NOI18N
+        partsRb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                updateCharts();
+            }
+        });
 
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
@@ -176,10 +202,20 @@ public class StatHistView extends javax.swing.JFrame {
         studButtonGroup.add(allStudentsRb);
         allStudentsRb.setText(resourceMap.getString("allStudentsRb.text")); // NOI18N
         allStudentsRb.setName("allStudentsRb"); // NOI18N
+        allStudentsRb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                updateCharts();
+            }
+        });
 
         studButtonGroup.add(studentsSelectedRb);
         studentsSelectedRb.setText(resourceMap.getString("studentsSelectedRb.text")); // NOI18N
         studentsSelectedRb.setName("studentsSelectedRb"); // NOI18N
+        studentsSelectedRb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                updateCharts();
+            }
+        });
 
         javax.swing.GroupLayout asgnControlPanelLayout = new javax.swing.GroupLayout(asgnControlPanel);
         asgnControlPanel.setLayout(asgnControlPanelLayout);
@@ -316,31 +352,68 @@ public class StatHistView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
 private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectViewBoxActionPerformed
-    CardLayout cl = (CardLayout) cardPanel.getLayout();
-    if (selectViewBox.getSelectedItem().equals("By Assignment")) {
-        cl.show(cardPanel, "assignment");
-        for (String s : _students) {
-            _studChartMap.get(s).setVisible(false);
-        }
-        for (Assignment a : _assignments) {
-            ChartDataPanel chart = _asgnChartMap.get(a);
-            chart.updateChartData(a);
-            chart.setVisible(true);
-        }
-    }
-    else if (selectViewBox.getSelectedItem().equals("By Student")) {
-        cl.show(cardPanel, "student");
-        for (Assignment a : _assignments) {
-            _asgnChartMap.get(a).setVisible(false);
-        }
-        for (String student : _students) {
-            StudentChartPanel chart = _studChartMap.get(student);
-            chart.updateChart(student, _assignments.toArray(new Assignment[0]));
-            chart.setVisible(true);
-        }
-    }
+    this.updateCharts();
 }//GEN-LAST:event_selectViewBoxActionPerformed
 
+
+    private void updateCharts() {
+        CardLayout cl = (CardLayout) cardPanel.getLayout();
+
+        //see assignment histograms
+        if (selectViewBox.getSelectedItem().equals("By Assignment")) {
+            cl.show(cardPanel, "assignment");
+            for (String s : _students) {
+                _studChartMap.get(s).setVisible(false);
+            }
+            if (assignmentsRb.isSelected()) {                           //show assignments
+                for (Part p : _parts) {
+                    _partChartMap.get(p).setVisible(false);
+                }
+                for (Assignment a : _assignments) {
+                    AssignmentChartPanel chart = _asgnChartMap.get(a);
+                    if (studentsSelectedRb.isSelected()) {
+                        chart.updateChartData(a, _students);
+                    }
+                    else {
+                        chart.updateChartData(a, Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                    }
+                    chart.setVisible(true);
+                }
+            }
+            else {                                                      //show parts
+                for (Assignment a : _assignments) {
+                    _asgnChartMap.get(a).setVisible(false);
+                }
+                for (Part p : _parts) {
+                    AssignmentChartPanel chart = _partChartMap.get(p);
+                    if (studentsSelectedRb.isSelected()) {
+                        chart.updateChartData(p, _students);
+                    }
+                    else {
+                        chart.updateChartData(p, Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                    }
+                    chart.setVisible(true);
+                }
+            }
+        }
+
+        //see student performance
+        else if (selectViewBox.getSelectedItem().equals("By Student")) {
+            cl.show(cardPanel, "student");
+            for (Assignment a : _assignments) {
+                _asgnChartMap.get(a).setVisible(false);
+            }
+            for (Part p : _parts) {
+                _partChartMap.get(p).setVisible(false);
+            }
+            for (String student : _students) {
+                StudentChartPanel chart = _studChartMap.get(student);
+                chart.updateChart(student, _assignments.toArray(new Assignment[0]));
+                chart.setVisible(true);
+            }
+        }
+        
+    }
     /**
      * @param args the command line arguments
      */
