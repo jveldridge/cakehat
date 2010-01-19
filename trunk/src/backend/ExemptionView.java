@@ -58,6 +58,7 @@ public class ExemptionView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        studentSelectionBG = new javax.swing.ButtonGroup();
         tabbedPane = new javax.swing.JTabbedPane();
         grantViewPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
@@ -69,6 +70,8 @@ public class ExemptionView extends javax.swing.JFrame {
         viewCardPanel = new javax.swing.JPanel();
         assignmentSP = new javax.swing.JScrollPane();
         asgnPanel = new javax.swing.JPanel();
+        studsSelectedButton = new javax.swing.JRadioButton();
+        allStudsButton = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -169,13 +172,26 @@ public class ExemptionView extends javax.swing.JFrame {
 
         viewCardPanel.add(assignmentSP, "card2");
 
+        studentSelectionBG.add(studsSelectedButton);
+        studsSelectedButton.setText(resourceMap.getString("studsSelectedButton.text")); // NOI18N
+        studsSelectedButton.setName("studsSelectedButton"); // NOI18N
+
+        studentSelectionBG.add(allStudsButton);
+        allStudsButton.setText(resourceMap.getString("allStudsButton.text")); // NOI18N
+        allStudsButton.setName("allStudsButton"); // NOI18N
+
         javax.swing.GroupLayout viewPanelLayout = new javax.swing.GroupLayout(viewPanel);
         viewPanel.setLayout(viewPanelLayout);
         viewPanelLayout.setHorizontalGroup(
             viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(viewPanelLayout.createSequentialGroup()
                 .addGroup(viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(viewByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(viewPanelLayout.createSequentialGroup()
+                        .addComponent(viewByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                        .addComponent(allStudsButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(studsSelectedButton))
                     .addGroup(viewPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)))
@@ -185,7 +201,10 @@ public class ExemptionView extends javax.swing.JFrame {
             viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(viewPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(viewByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(viewByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(studsSelectedButton)
+                    .addComponent(allStudsButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
                 .addContainerGap())
@@ -227,6 +246,7 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton allStudsButton;
     private javax.swing.JPanel asgnPanel;
     private javax.swing.JScrollPane assignmentSP;
     private javax.swing.JButton grantButton;
@@ -234,6 +254,8 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JScrollPane grantSP;
     private javax.swing.JPanel grantViewPanel;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.ButtonGroup studentSelectionBG;
+    private javax.swing.JRadioButton studsSelectedButton;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JComboBox viewByCombo;
     private javax.swing.JPanel viewCardPanel;

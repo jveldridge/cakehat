@@ -235,7 +235,7 @@ public class ExtensionView extends JFrame
             public void actionPerformed(ActionEvent ae)
             {
                 //Call to remove extension
-                JOptionPane.showMessageDialog(ExtensionView.this, "This functionality does not yet exist in the backend");
+                Allocator.getDatabaseIO().removeExtension(_studentLogin, _part);
 
                 //Close window
                 ExtensionView.this.dispose();

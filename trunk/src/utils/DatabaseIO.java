@@ -202,6 +202,14 @@ public interface DatabaseIO {
      * @return
      */
     public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note);
+    
+    /**
+     * Removes a previously granted extension for the given student for the given Part.
+     * @param studentLogin
+     * @param part
+     * @return
+     */
+    public boolean removeExtension(String studentLogin, Part part);
 
     /**
      * Grants an extension for the student with login studentLogin for the HandinPart
@@ -218,7 +226,7 @@ public interface DatabaseIO {
     public boolean grantExemption(String studentLogin, Part part, String note);
     
     /**
-     * Removes a previously granted exception for the given student for the given Part.
+     * Removes a previously granted exemption for the given student for the given Part.
      * @param studentLogin
      * @param part
      * @return
