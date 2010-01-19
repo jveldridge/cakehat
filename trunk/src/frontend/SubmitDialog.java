@@ -25,20 +25,6 @@ public class SubmitDialog{
     JPanel _panel;
     Vector<JCheckBox> _studentBoxes;
 
-    public SubmitDialog(JList studentList){
-        this(listToCollection(studentList));
-    }
-
-    private static Collection<String> listToCollection(JList list) {
-        Collection<String> collection = new Vector<String>();
-        int size = list.getModel().getSize();
-        for (int i = 0; i < size; i++) {
-            collection.add((String) list.getModel().getElementAt(i));
-        }
-
-        return collection;
-    }
-
     public SubmitDialog(Collection<String> studentLogins) {
         _submitcb = new JCheckBox("Submit Grades");
         _printGRDcb = new JCheckBox("Print GRD Files");
