@@ -40,7 +40,7 @@ public interface DatabaseIO {
      * @param taLogin
      * @return status
      */
-    public boolean addTA(String taLogin);
+    public boolean addTA(String taLogin, String taName);
 
     /**
      * Checks to see if the student already exists. If not, creates new entry

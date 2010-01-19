@@ -30,6 +30,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import utils.Allocator;
+import utils.CakeHatCalendar;
 
 /**
  * Allows for viewing, submitting, and removing extensions.
@@ -326,27 +327,31 @@ public class ExtensionView extends JFrame
         _calendarView.selectDate(this.getComboBoxCal());
     }
 
-    private Calendar getComboBoxCal()
+    private CakeHatCalendar getComboBoxCal()
     {
         int month = _monthBox.getSelectedIndex();
         int day = (Integer) _dayBox.getSelectedItem();
         int year = (Integer) _yearBox.getSelectedItem();
 
-        Calendar cal = GregorianCalendar.getInstance();
+        CakeHatCalendar cal = new CakeHatCalendar();
         cal.set(Calendar.YEAR, year);
         cal.set(Calendar.MONTH, month);
         cal.set(Calendar.DAY_OF_MONTH, day);
+
+        cal.postUpdate();
 
         return cal;
     }
 
     private Calendar getCalendar()
     {
-        Calendar cal = getComboBoxCal();
+        CakeHatCalendar cal = getComboBoxCal();
 
         cal.set(Calendar.HOUR_OF_DAY, _hourField.getIntValue());
         cal.set(Calendar.MINUTE, _minuteField.getIntValue());
         cal.set(Calendar.SECOND, _secondField.getIntValue());
+
+        cal.postUpdate();
 
         return cal;
     }

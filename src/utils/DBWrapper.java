@@ -3,7 +3,6 @@ package utils;
 import config.Assignment;
 import config.HandinPart;
 import config.Part;
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -276,7 +275,7 @@ public class DBWrapper implements DatabaseIO {
      * @param type - String HTA or UTA
      * @return status
      */
-    public boolean addTA(String taLogin) {
+    public boolean addTA(String taLogin, String taName) {
         this.openConnection();
         try {
             ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount "
@@ -285,10 +284,10 @@ public class DBWrapper implements DatabaseIO {
             int rows = rs.getInt("rowcount");
             if (rows == 0) {
                 _statement.executeUpdate("INSERT INTO ta "
-                        + "('login') "
+                        + "('login', 'name') "
                         + "VALUES "
                         + "('" + taLogin
-                        + "')");
+                        + "','" + taName + "')");
             }
             this.closeConnection();
             return true;
@@ -590,8 +589,9 @@ public class DBWrapper implements DatabaseIO {
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
             HashMap<String, Calendar> result = new HashMap<String, Calendar>();
             while (rs.next()) {
-                Calendar date = new GregorianCalendar();
+                CakeHatCalendar date = new CakeHatCalendar();
                 date.setTimeInMillis(rs.getInt("date") * 1000);
+                date.postUpdate();
                 result.put(rs.getString("studlogin"), date);
             }
             this.closeConnection();
@@ -620,7 +620,7 @@ public class DBWrapper implements DatabaseIO {
             Calendar result = null;
             if (rs.next()) {
                 result = new GregorianCalendar();
-                result.setTimeInMillis(rs.getInt("date"));
+                result.setTimeInMillis(rs.getInt("date") * 1000);
             }
             this.closeConnection();
             return result;
@@ -634,7 +634,7 @@ public class DBWrapper implements DatabaseIO {
     public String getExtensionNote(String studentLogin, Part part) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT e.note AS note "
+            ResultSet rs = _statement.executeQuery("SELECT e.note AS extnote "
                     + "FROM extension AS e "
                     + "INNER JOIN student AS s "
                     + "ON e.sid == s.sid "
@@ -647,7 +647,7 @@ public class DBWrapper implements DatabaseIO {
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
             String result = null;
             if (rs.next()) {
-                result = rs.getString("note");
+                result = rs.getString("extnote");
             }
             this.closeConnection();
             return result;
@@ -661,7 +661,7 @@ public class DBWrapper implements DatabaseIO {
     public String getExemptionNote(String studentLogin, Part part) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT x.note AS note "
+            ResultSet rs = _statement.executeQuery("SELECT x.note AS exenote "
                     + "FROM exemption AS x "
                     + "INNER JOIN student AS s "
                     + "ON x.sid == s.sid "
@@ -674,7 +674,7 @@ public class DBWrapper implements DatabaseIO {
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
             String result = null;
             if (rs.next()) {
-                result = rs.getString("note");
+                result = rs.getString("exenote");
             }
             this.closeConnection();
             return result;
@@ -709,7 +709,7 @@ public class DBWrapper implements DatabaseIO {
     public double getStudentScore(String studentLogin, Part part) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore, COUNT(g.score) AS numgrades "
+            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore "
                     + "FROM grade AS g "
                     + "INNER JOIN student AS s ON g.sid == s.sid "
                     + "INNER JOIN part AS p ON g.pid == p.pid "
@@ -717,9 +717,8 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE s.login == '" + studentLogin + "' "
                     + "AND p.name == '" + part.getName() + "' "
                     + "AND a.name == '" + part.getAssignment().getName() + "' ");
-            double count = rs.getInt("numgrades");
             double grade = 0;
-            if (count != 0) {
+            if (rs.next()) {
                 grade = rs.getDouble("partscore");
             }
             this.closeConnection();
@@ -729,10 +728,6 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection();
             return 0;
         }
-    }
-
-    public boolean exportDatabase(File exportFile) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public boolean resetDatabase() {
@@ -766,30 +761,90 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public boolean unBlacklistStudent(String studentLogin, String taLogin) {
-        new ErrorView(new UnsupportedOperationException(), "Not supported yet.\n");
-        return false;
+        this.openConnection();
+        try {
+            _statement.executeUpdate("DELETE FROM backlist " +
+                        "WHERE tid IN " +
+                          "(SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "') " +
+                         "AND sid IN " +
+                          "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not remove student: " + studentLogin + " from the blacklist of: " + taLogin);
+            this.closeConnection();
+            return false;
+        }
     }
 
-    //TODO --fix this to actually be fast
-    public Map<String,Double> getPartScores(Part part, Iterable<String> students) {
-        Map<String,Double> scores = new HashMap<String,Double>();
+    public Map<String, Double> getPartScores(Part part, Iterable<String> students) {
+        Map<String, Double> scores = new HashMap<String, Double>();
+
+        String studLogins = "";
         for (String student : students) {
-            scores.put(student, this.getStudentScore(student, part));
+            studLogins += ",'" + student + "'";
         }
-        return scores;
+        if (studLogins.length() > 1) {
+            studLogins = studLogins.substring(1);
+        }
+
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore, s.login AS studLogin "
+                    + "FROM grade AS g "
+                    + "INNER JOIN student AS s ON g.sid == s.sid "
+                    + "INNER JOIN part AS p ON g.pid == p.pid "
+                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
+                    + "WHERE s.login IN (" + studLogins + ") "
+                    + "AND p.name == '" + part.getName() + "' "
+                    + "AND a.name == '" + part.getAssignment().getName() + "' ");
+            while (rs.next()) {
+                scores.put(rs.getString("studLogin"), rs.getDouble("partscore"));
+            }
+            this.closeConnection();
+            return scores;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+            this.closeConnection();
+            return new HashMap<String, Double>();
+        }
     }
     
-    //TODO --fix this to actually be fast
     public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) {
         Map<String,Double> scores = new HashMap<String,Double>();
+
+        String studLogins = "";
         for (String student : students) {
-            double score = 0;
-            for (Part p : asgn.getParts()) {
-                score += this.getStudentScore(student, p);
-            }
-            scores.put(student, score);
+            studLogins += ",'" + student + "'";
         }
-        return scores;
+        if (studLogins.length() > 1) {
+            studLogins = studLogins.substring(1);
+        }
+
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore, s.login AS studLogin "
+                    + "FROM grade AS g "
+                    + "INNER JOIN student AS s ON g.sid == s.sid "
+                    + "INNER JOIN part AS p ON g.pid == p.pid "
+                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
+                    + "WHERE s.login IN (" + studLogins + ") "
+                    + "AND a.name == '" + asgn.getName() + "' ");
+            while (rs.next()) {
+                String studLogin = rs.getString("studLogin");
+                Double score = rs.getDouble("partscore");
+                if (scores.containsKey(studLogin)) {
+                    score += scores.get(studLogin);
+                }
+                scores.put(studLogin, score);
+            }
+            this.closeConnection();
+            return scores;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + asgn.getName());
+            this.closeConnection();
+            return new HashMap<String, Double>();
+        }
     }
 
     public boolean isStudentEnabled(String studentLogin) {
@@ -823,29 +878,26 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
+            new ErrorView(e, "Could not remove exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
             this.closeConnection();
             return false;
         }
     }
-    
+
     public boolean removeExtension(String studentLogin, Part part) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM extension " +
-                        "WHERE pid IN " +
-                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
-                         "AND sid IN " +
-                          "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
+            _statement.executeUpdate("DELETE FROM extension "
+                    + "WHERE pid IN "
+                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
+                    + "AND sid IN "
+                    + "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
+            new ErrorView(e, "Could not remove extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
             this.closeConnection();
             return false;
         }
     }
-    
-    
-
 }
