@@ -15,7 +15,6 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.text.html.HTMLEditorKit;
 import utils.Allocator;
-import utils.AssignmentComparator;
 import utils.ErrorView;
 
 /**
@@ -41,7 +40,7 @@ public class GradeReportView extends javax.swing.JFrame {
         
         //sort the assignments by assignment number
         _sortedAssignments = new Vector<Assignment>(_asgnParts.keySet());
-        Collections.sort(_sortedAssignments, new AssignmentComparator());
+        Collections.sort(_sortedAssignments);
         
         HTMLEditorKit k = new HTMLEditorKit();
 

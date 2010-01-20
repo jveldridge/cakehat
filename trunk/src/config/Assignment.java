@@ -1,12 +1,13 @@
 package config;
 
+import java.util.Comparator;
 import java.util.Vector;
 
 /**
  *
  * @author jak2
  */
-public class Assignment
+public class Assignment implements Comparable<Assignment>
 {
     private String _name;
     private int _number;
@@ -118,5 +119,15 @@ public class Assignment
     {
         return _name;
     }
-    
+
+    /**
+     * Compares this assignment to another based on its assignment number.
+     * 
+     * @param a
+     * @return
+     */
+    public int compareTo(Assignment a)
+    {
+        return ((Integer)this.getNumber()).compareTo(a.getNumber());
+    }
 }
