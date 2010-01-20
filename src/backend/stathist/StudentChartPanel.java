@@ -1,6 +1,7 @@
 package backend.stathist;
 
 import config.Assignment;
+import config.Part;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -43,8 +44,12 @@ public class StudentChartPanel extends javax.swing.JPanel {
         
         for (int i = 0; i < assignments.length; i++) {
             data[0][i] = i;
-            double studentScore = Allocator.getDatabaseIO().getStudentScore(studName, assignments[i].getHandinPart());
-            data[1][i] = studentScore / assignments[i].getHandinPart().getPoints() * 100;
+            double studentScore = 0;
+            for (Part p : assignments[i].getParts()) {
+                studentScore += Allocator.getDatabaseIO().getStudentScore(studName, p);
+            }
+
+            data[1][i] = studentScore / assignments[i].getTotalPoints() * 100;
             
             Vector<Double> scores = new Vector<Double>();
             Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAssignmentScores(assignments[i], 
@@ -54,8 +59,9 @@ public class StudentChartPanel extends javax.swing.JPanel {
             }
             
             avgData[0][i] = i;
-            avgData[1][i] = Statistics.calculateMean(scores) / assignments[i].getHandinPart().getPoints() * 100;
+            avgData[1][i] = (Statistics.calculateMean(scores) / assignments[i].getTotalPoints()) * 100;
         }
+        
         dataset.addSeries(studName + "'s Scores", data);
         dataset.addSeries("Class Average", avgData);
         ValueAxis yAxis = new NumberAxis("Score (%)");
