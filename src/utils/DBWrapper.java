@@ -589,10 +589,9 @@ public class DBWrapper implements DatabaseIO {
                     + "AND a.name == '" + part.getAssignment().getName() + "'");
             HashMap<String, Calendar> result = new HashMap<String, Calendar>();
             while (rs.next()) {
-                CakeHatCalendar date = new CakeHatCalendar();
-                date.setTimeInMillis(rs.getInt("date") * 1000);
-                date.postUpdate();
-                result.put(rs.getString("studlogin"), date);
+                Calendar cal = new GregorianCalendar();
+                cal.setTimeInMillis(rs.getInt("date") * 1000L);
+                result.put(rs.getString("studlogin"), cal);
             }
             this.closeConnection();
             return result;
@@ -620,7 +619,7 @@ public class DBWrapper implements DatabaseIO {
             Calendar result = null;
             if (rs.next()) {
                 result = new GregorianCalendar();
-                result.setTimeInMillis(rs.getInt("date") * 1000);
+                result.setTimeInMillis(rs.getInt("date") * 1000L);
             }
             this.closeConnection();
             return result;
