@@ -105,11 +105,13 @@ public class RubricMananger
 
     public boolean hasRubric(HandinPart part, String studentLogin)
     {
-        String rubricPath = Allocator.getCourseInfo().getRubricDir() +
-                            part.getAssignment().getName() + "/" +
-                            studentLogin + ".gml";
+        return new File(getRubricPath(part, studentLogin)).exists();
+    }
 
-        return new File(rubricPath).exists();
+    private String getRubricPath(HandinPart part, String studentLogin)
+    {
+        return Allocator.getCourseInfo().getRubricDir() + 
+               part.getAssignment().getName() + "/" + studentLogin + ".gml";
     }
 
     /**
@@ -143,7 +145,7 @@ public class RubricMananger
         try
         {
             // get template rubric
-            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
+            Rubric rubric = RubricGMLParser.parse(getRubricPath(part, studentLogin), part);
 
             return rubric.getTotalHandinScore();
         }
@@ -167,7 +169,7 @@ public class RubricMananger
         try
         {
             // get template rubric
-            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
+            Rubric rubric = RubricGMLParser.parse(getRubricPath(part, studentLogin), part);
 
             return rubric.getTotalRubricScore();
         }
