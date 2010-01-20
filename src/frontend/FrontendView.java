@@ -3,6 +3,7 @@ package frontend;
 import components.ParameterizedJList;
 import config.Assignment;
 import config.HandinPart;
+import gradesystem.GradeSystemAboutBox;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -430,6 +431,19 @@ public class FrontendView extends JFrame
             }
         });
         menu.add(menuItem);
+
+        //About
+        menuItem = new JMenuItem("About");
+        menuItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                GradeSystemAboutBox aboutBox = new GradeSystemAboutBox(FrontendView.this);
+                aboutBox.setLocationRelativeTo(FrontendView.this);
+                aboutBox.setVisible(true);
+            }
+        });
+        menu.add(menuItem);
     }
 
     /**
@@ -514,7 +528,7 @@ public class FrontendView extends JFrame
 
         //Open Code
         _openCodeButton = createButton("/gradesystem/resources/icons/32x32/document-open.png",
-                                       "Open Code", "Open the student's code in Kate");
+                                       "Open Code", "Open the student's code");
         _openCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
