@@ -323,4 +323,11 @@ public interface DatabaseIO {
      * @return
      */
     public boolean resetDatabase();
+
+    /**
+     * pulls the distribution for a handin part from the DB
+     * @param handin
+     * @return
+     */
+    public Map<String,Collection<String>> getDistribution(HandinPart handin);
 }

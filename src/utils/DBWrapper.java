@@ -99,7 +99,7 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 taIDs.put(rs.getString("login"), rs.getInt("tid"));
             }
-            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
             partID = rs.getInt("pid");
 
             _statement.executeUpdate("DELETE FROM distribution WHERE pid == " + partID);
@@ -810,7 +810,7 @@ public class DBWrapper implements DatabaseIO {
     }
     
     public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) {
-        Map<String,Double> scores = new HashMap<String,Double>();
+        Map<String, Double> scores = new HashMap<String, Double>();
 
         String studLogins = "";
         for (String student : students) {
@@ -897,6 +897,42 @@ public class DBWrapper implements DatabaseIO {
             new ErrorView(e, "Could not remove extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
             this.closeConnection();
             return false;
+        }
+    }
+
+    public Map<String, Collection<String>> getDistribution(HandinPart handin) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, t.login AS talogin "
+                    + "FROM student AS s "
+                    + "INNER JOIN distribution AS d "
+                    + "ON d.sid == s.sid "
+                    + "INNER JOIN ta AS t "
+                    + "ON d.tid == t.tid "
+                    + "INNER JOIN part AS p "
+                    + "ON d.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "' " +
+                    "ORDER BY t.tid");
+            Map<String, Collection<String>> result = new HashMap<String, Collection<String>>();
+            while (rs.next()) {
+                String taLogin = rs.getString("talogin");
+                String studLogin = rs.getString("studLogin");
+                Collection taDist = result.get(taLogin);
+                if (taDist == null) {
+                    taDist = new ArrayList<String>();
+                    result.put(taLogin,taDist);
+                }
+                taDist.add(studLogin);
+            }
+            this.closeConnection();
+            return result;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get students assigned for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
+            this.closeConnection();
+            return new HashMap<String, Collection<String>>();
         }
     }
 }
