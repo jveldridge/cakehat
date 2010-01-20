@@ -106,7 +106,7 @@ public class ModifyBlacklistView extends JFrame{
         JButton unBlacklistButton = new JButton("Remove From Blacklist >>");
         unBlacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Allocator.getDatabaseIO().unBlacklistStudent((String) _studentList.getSelectedValue(), 
+                Allocator.getDatabaseIO().unBlacklistStudent((String) _lists.get(_taButtons.getSelection().getActionCommand()).getSelectedValue(),
                                                             _taButtons.getSelection().getActionCommand());
                 ModifyBlacklistView.this.updateGUI();
             }
