@@ -1,8 +1,3 @@
-/*
- * GradeReportView.java
- *
- * Created on Nov 7, 2009, 11:22:20 PM
- */
 package backend.gradereport;
 
 import backend.stathist.AssignmentChartPanel;
@@ -15,16 +10,20 @@ import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.text.html.HTMLEditorKit;
 import utils.Allocator;
+import utils.AssignmentComparator;
 import utils.ErrorView;
 
 /**
- *
+ * Interface for sending grade reports to students.  Grade reports will be sent
+ * to the students passed in Collection<String> students for the Assignment Parts
+ * in the Map asgnParts.  Histograms for each project, and a graph showing the student's
+ * performance over time, can be included on the outgoing email (included by default).
+ * 
  * @author psastras
  * @author jeldridg
  */
@@ -33,11 +32,17 @@ public class GradeReportView extends javax.swing.JFrame {
     /** Creates new form GradeReportView */
     private Collection<String> _students;
     private Map<Assignment,Collection<Part>> _asgnParts;
+    private Vector<Assignment> _sortedAssignments;
     
     public GradeReportView(Map<Assignment,Collection<Part>> asgnParts, Collection<String> students) {
         initComponents();
         _asgnParts = asgnParts;
         _students = students;
+        
+        //sort the assignments by assignment number
+        _sortedAssignments = new Vector<Assignment>(_asgnParts.keySet());
+        Collections.sort(_sortedAssignments, new AssignmentComparator());
+        
         HTMLEditorKit k = new HTMLEditorKit();
 
         _previewPane.setEditorKit(k);
@@ -46,29 +51,31 @@ public class GradeReportView extends javax.swing.JFrame {
         _messageText.setText("<p>Here are your current grades for the course.<br />\n<i>Histograms for each of the projects are attached.</i></p>\n<p>-The cs015 TAs</p>\n");
         _fromText.setText("cs015headtas@cs.brown.edu");
         updatePreview();
+        
         new File(".tmpdata").mkdirs();
     }
 
+    /** 
+     * Displays the grade report as it would be sent to the course's test account
+     */
     public void updatePreview() {
         _previewPane.setText(htmlBuilder(Allocator.getCourseInfo().getTestAccount()));
     }
 
+    /**
+     * Constructs the body of the email message for the given student, adding
+     * the student's grades (or extensions/exemptions as appropriate) for each Part
+     * of each Assignment.
+     * 
+     * @param student
+     * @return
+     */
     public String htmlBuilder(String student) {
         String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
                 "<hr />" + _messageText.getText();
         
-        //sort the assignments by assignment number
-        Vector<Assignment> sortedAsgns = new Vector<Assignment>(_asgnParts.keySet());
-        Collections.sort(sortedAsgns, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                Assignment a1 = (Assignment) o1;
-                Assignment a2 = (Assignment) o2;
-                return ((Integer)a1.getNumber()).compareTo(a2.getNumber());
-            }
-            
-        });
-        
-        for (Assignment a : sortedAsgns) {
+        //constructing the message body
+        for (Assignment a : _sortedAssignments) {
             htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>" + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
             for (Part p : _asgnParts.get(a)) {
                 Calendar extension = Allocator.getDatabaseIO().getExtension(student, p);
@@ -314,8 +321,9 @@ public class GradeReportView extends javax.swing.JFrame {
     private void _sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__sendButtonActionPerformed
         ArrayDeque<File> fullFileList = new ArrayDeque<File>();
 
+        //generate Assignment histograms
         if (attachHistButton.isSelected()) {
-            for (Assignment a : _asgnParts.keySet()) {
+            for (Assignment a : _sortedAssignments) {
                 try {
                     AssignmentChartPanel acp = new AssignmentChartPanel();
                     acp.updateChartData(a, Allocator.getDatabaseIO().getEnabledStudents().keySet());
@@ -334,10 +342,11 @@ public class GradeReportView extends javax.swing.JFrame {
         }
         attachPaths[attachPaths.length-1] = null;                   //last will be for student chart
 
-        //NOW SEND THE EMAILS we do this after the image creation loop 
-        //so that we can guarantee that all the images have been made
+        //send email to each student
         StudentChartPanel scp = new StudentChartPanel();
         for (String student : _students) {
+            
+            //create student score chart
             if (attachScoreGraphButton.isSelected()) {
                 try {
                     scp.updateChart(student, _asgnParts.keySet().toArray(new Assignment[0]));
