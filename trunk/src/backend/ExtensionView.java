@@ -1,7 +1,7 @@
 package backend;
 
-import backend.calendar.CalendarListener;
-import backend.calendar.CalendarView;
+import components.calendar.CalendarListener;
+import components.calendar.CalendarView;
 import config.Assignment;
 import config.HandinPart;
 import java.awt.Color;

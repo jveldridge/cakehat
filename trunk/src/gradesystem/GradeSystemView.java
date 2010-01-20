@@ -1,8 +1,7 @@
 package gradesystem;
 
-import backend.BackendView;
-import backend.NewBackend;
-import backend.ProgrammaticNewBackend;
+import backend.NetBeansBackend;
+import backend.Backend;
 import frontend.FrontendView;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
@@ -249,17 +248,18 @@ public class GradeSystemView extends FrameView {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        BackendView b = new BackendView();
-        b.setLocationRelativeTo(null);
-        b.setVisible(true);
+//        BackendView b = new BackendView();
+//        b.setLocationRelativeTo(null);
+//        b.setVisible(true);
+        JOptionPane.showMessageDialog(null, "No more old backend!");
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-         ProgrammaticNewBackend.launch();
+         Backend.launch();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        new NewBackend();
+        new NetBeansBackend();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

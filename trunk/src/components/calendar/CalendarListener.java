@@ -1,4 +1,4 @@
-package backend.calendar;
+package components.calendar;
 
 /**
  *

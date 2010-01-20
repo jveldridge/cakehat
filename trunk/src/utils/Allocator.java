@@ -1,5 +1,8 @@
 package utils;
 
+import database.DBWrapper;
+import database.DatabaseIO;
+
 /**
  * Used to statically get references to utility classes.
  *
