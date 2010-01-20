@@ -1144,7 +1144,11 @@ public class ProgrammaticNewBackend extends JFrame
 
     private void exemptionButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available");
+        if(_studentList.getSelectedValue() != null && _assignmentList.getSelectedValue() != null &&
+           _assignmentList.getSelectedValue().hasHandinPart())
+        {
+            new ExemptionView(_assignmentList.getGenericSelectedValues(), _studentList.getGenericSelectedValues());
+        }
     }
 
     private void openCodeButtonActionPerformed()
