@@ -2,7 +2,7 @@ package backend;
 
 import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
-import backend.gradereport.GradeReportView;
+import backend.GradeReportView;
 import backend.stathist.StatHistView;
 import config.Assignment;
 import config.LabPart;
@@ -36,12 +36,12 @@ import javax.swing.JTextField;
 import utils.Allocator;
 
 /**
- * Backend interface.
+ * Backend interface --not quite ready to completely get rid of this yet
  * 
  * @author jeldridg
  * Created on Dec 26, 2009, 6:29:58 PM
  */
-public class NewBackend extends javax.swing.JFrame {
+public class NetBeansBackend extends javax.swing.JFrame {
 
     ArrayList<JButton> _asgnButtons, _studButtons;
     ArrayList<JButton> _multiStudButtons;
@@ -51,7 +51,7 @@ public class NewBackend extends javax.swing.JFrame {
     private HashMap<String,JComboBox> _comboMap;
     
     /** Creates new form NewJFrame */
-    public NewBackend() {
+    public NetBeansBackend() {
         initComponents();
         submitGradeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -224,7 +224,7 @@ public class NewBackend extends javax.swing.JFrame {
 
         centerPanel.setName("centerPanel"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NewBackend.class);
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(NetBeansBackend.class);
         selectedStudsLabel.setText(resourceMap.getString("selectedStudsLabel.text")); // NOI18N
         selectedStudsLabel.setName("selectedStudsLabel"); // NOI18N
 
@@ -406,7 +406,7 @@ public class NewBackend extends javax.swing.JFrame {
             .addGroup(multiSelectedPanelLayout.createSequentialGroup()
                 .addGap(125, 125, 125)
                 .addComponent(jLabel1)
-                .addContainerGap(491, Short.MAX_VALUE))
+                .addContainerGap(527, Short.MAX_VALUE))
         );
 
         cardPanel.add(multiSelectedPanel, "multiPanel");
@@ -429,9 +429,9 @@ public class NewBackend extends javax.swing.JFrame {
                 .addGroup(instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(instructionsPanelLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(instructionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(instructionsLabel))
                     .addComponent(welcomeLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
         instructionsPanelLayout.setVerticalGroup(
             instructionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -439,8 +439,8 @@ public class NewBackend extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(welcomeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(instructionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(488, Short.MAX_VALUE))
+                .addComponent(instructionsLabel)
+                .addContainerGap(540, Short.MAX_VALUE))
         );
 
         cardPanel.add(instructionsPanel, "instructionCard");
@@ -650,11 +650,11 @@ public class NewBackend extends javax.swing.JFrame {
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(importGradesButton, 0, 0, Short.MAX_VALUE)
                                     .addComponent(demoButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addComponent(selectedAsgnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(selectedAsgnLabel)
                             .addGroup(centerPanelLayout.createSequentialGroup()
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(selectedStudsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(selectedStudsLabel))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(printCodeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -677,7 +677,7 @@ public class NewBackend extends javax.swing.JFrame {
             centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(centerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(selectedAsgnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(selectedAsgnLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(centerPanelLayout.createSequentialGroup()
@@ -695,7 +695,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(19, 19, 19)
-                .addComponent(selectedStudsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(selectedStudsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(centerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(centerPanelLayout.createSequentialGroup()
@@ -720,7 +720,7 @@ public class NewBackend extends javax.swing.JFrame {
                         .addComponent(printRubricButton)
                         .addGap(18, 18, 18)
                         .addComponent(toggleEnabledButton))
-                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE))
+                    .addComponent(cardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -862,8 +862,8 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 725, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 725, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -927,14 +927,14 @@ public class NewBackend extends javax.swing.JFrame {
                     .addComponent(exportDBButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(configButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(blacklistButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(generalCommandsLabel, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap(21, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(generalCommandsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(generalCommandsLabel)
                 .addGap(18, 18, 18)
                 .addComponent(blacklistButton)
                 .addGap(18, 18, 18)
@@ -943,7 +943,7 @@ public class NewBackend extends javax.swing.JFrame {
                 .addComponent(exportDBButton)
                 .addGap(18, 18, 18)
                 .addComponent(resetDatabaseButton)
-                .addContainerGap(602, Short.MAX_VALUE))
+                .addContainerGap(616, Short.MAX_VALUE))
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -1470,7 +1470,7 @@ private void resetDatabaseButtonActionPerformed(java.awt.event.ActionEvent evt) 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new NewBackend().setVisible(true);
+                new NetBeansBackend().setVisible(true);
             }
         });
     }

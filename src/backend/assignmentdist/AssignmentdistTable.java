@@ -5,7 +5,7 @@
 
 package backend.assignmentdist;
 
-import backend.components.Table;
+import components.Table;
 
 
 /**

@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * AssignmentDistributorGUI.java
  *
  * Created on Sep 7, 2009, 12:53:58 PM
@@ -30,6 +25,7 @@ import utils.ErrorView;
 /**
  *
  * @author Paul
+ * @author aunger
  */
 public class AssignmentdistView extends javax.swing.JFrame {
 

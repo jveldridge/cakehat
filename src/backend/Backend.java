@@ -2,7 +2,6 @@ package backend;
 
 import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
-import backend.gradereport.GradeReportView;
 import backend.stathist.StatHistView;
 import components.ParameterizedJList;
 import config.Assignment;
@@ -11,7 +10,6 @@ import config.Part;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -58,18 +56,18 @@ import utils.Allocator;
  *
  * @author jak2
  */
-public class ProgrammaticNewBackend extends JFrame
+public class Backend extends JFrame
 {
     public static void main(String[] args)
     {
-        new ProgrammaticNewBackend();
+        new Backend();
     }
 
     public static void launch()
     {
         if(Allocator.getGradingUtilities().isUserTA())
         {
-            new ProgrammaticNewBackend();
+            new Backend();
         }
         else
         {
@@ -173,7 +171,7 @@ public class ProgrammaticNewBackend extends JFrame
     private CardLayout _cardLayout;
     private SingleSelectionPanel _singleSelectionPanel;
 
-    private ProgrammaticNewBackend()
+    private Backend()
     {
         super("[cakehat] backend - " + Allocator.getGeneralUtilities().getUserLogin());
 

@@ -1,4 +1,4 @@
-package backend.gradereport;
+package backend;
 
 import backend.stathist.AssignmentChartPanel;
 import backend.stathist.StudentChartPanel;
