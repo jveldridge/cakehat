@@ -12,13 +12,13 @@ package backend.assignmentdist;
 
 import config.Assignment;
 import config.TA;
-import backend.OldDatabaseOps;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -64,7 +64,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             mainTable.removeAll();
             DefaultTableModel m = (DefaultTableModel) mainTable.getModel();
             m.addColumn("TA Login");
-            m.addColumn("Max Number to Grade");
+            m.addColumn("Difference from Average");
             for (TA grader : Allocator.getCourseInfo().getDefaultGraders()) {
                 m.addRow(new String[] {grader.getLogin(), "0"});
             }
@@ -189,11 +189,11 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
 
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        String asgn = (String) assignmentNameComboBox.getSelectedItem();
+        String asgn = assignmentNameComboBox.getSelectedItem().toString();
         Assignment asgnObject = (Assignment) assignmentNameComboBox.getSelectedItem();
 
         //check to make sure that there is not a dist already
-        if (!OldDatabaseOps.isDistEmpty(asgn)) {
+        if (!Allocator.getDatabaseIO().isDistEmpty(asgnObject.getHandinPart())) {
             int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.NO_OPTION) {
                 return;
@@ -234,12 +234,12 @@ public class AssignmentdistView extends javax.swing.JFrame {
         int avg = (int) Math.floor((double) calculatedTotalStudents / (double) taLogins.size());
 
         //build hashmap of how many students each TA must grade
-        HashMap<String, Integer> numStudsToGrade = new HashMap<String, Integer>();
+        HashMap<String, Integer> numStudsNeeded = new HashMap<String, Integer>();
         for (int rowCount = 0; rowCount < modelOfTable.getRowCount(); rowCount++) {
             String taLogin = (String) modelOfTable.getValueAt(rowCount, 0);
             int numToGrade = (Integer) Integer.parseInt(modelOfTable.getValueAt(rowCount, 1).toString()) + avg;
 
-            numStudsToGrade.put(taLogin, numToGrade);
+            numStudsNeeded.put(taLogin, numToGrade);
         }
 
         //make a list of all blacklisted students and hashmap of all ta blacklists
@@ -259,19 +259,19 @@ public class AssignmentdistView extends javax.swing.JFrame {
             for (String ta : taLogins) {
                 //if ta's blacklist does not contain student and ta's dist is not full
                 if (!taBlacklists.get(ta).contains(blStudent)
-                        && distribution.get(ta).size() < numStudsToGrade.get(ta)) {
+                        && numStudsNeeded.get(ta) > 0) {
 
                     distribution.get(ta).add(blStudent); //add student to ta's dist
                     students.remove(blStudent); //remove student from those that need dist
-                    numStudsToGrade.put(ta, numStudsToGrade.get(ta) - 1); //reduce num ta needs
+                    numStudsNeeded.put(ta, numStudsNeeded.get(ta) - 1); //reduce num ta needs
                     distributed = true;
                     break;
                 }
             }
             if (!distributed) {
-                JOptionPane.showMessageDialog(this, "There was an error"
-                        + "distributing blacklisted"
-                        + "students. Please try running"
+                JOptionPane.showMessageDialog(this, "There was an error "
+                        + "distributing blacklisted "
+                        + "student: " + blStudent + ". Please try running "
                         + "the distribution again.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -280,7 +280,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         //fill TAs to limit
         for (String ta : taLogins) {
             Collection<String> students2TA = distribution.get(ta);
-            for (int i = 0; i < numStudsToGrade.get(ta); i++) {
+            for (int i = 0; i < numStudsNeeded.get(ta); i++) {
                 students2TA.add(students.removeFirst());
             }
             distribution.put(ta, students2TA);
@@ -300,7 +300,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }//GEN-LAST:event_generateDistButtonActionPerformed
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
-        String asgn = (String) assignmentNameComboBox.getSelectedItem();
+        String asgn = assignmentNameComboBox.getSelectedItem().toString();
+        Assignment asgnObject = (Assignment) assignmentNameComboBox.getSelectedItem();
 
         //create rubric directory if it does not exist
         String directoryPath = Allocator.getCourseInfo().getRubricDir() + asgn + "/";
@@ -313,21 +314,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
             minsLeniency = Integer.parseInt(input);
         }
 
-
-        throw new UnsupportedOperationException("Not supported due to new rubric code changes.");
-        /*
-        for (String taLogin : ConfigurationManager.getGraderLogins()) {
-            String[] studsToGrade = OldDatabaseOps.getStudentsToGrade(taLogin, (String) assignmentNameComboBox.getSelectedItem());
-            for (String stud : studsToGrade) {
-                try {
-                    RubricManager.assignXMLToGrader(Allocator.getProject((String)assignmentNameComboBox.getSelectedItem()), stud, taLogin, OldDatabaseOps.getStudentDQScore((String)assignmentNameComboBox.getSelectedItem(), stud), minsLeniency);
-                }
-                catch(RubricException e) {
-                    new ErrorView(e);
-                }
-            }
-        }
-       */
+        Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(asgnObject.getHandinPart());
+        Allocator.getRubricManager().distributeRubrics(asgnObject.getHandinPart(), distribution, minsLeniency);
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
