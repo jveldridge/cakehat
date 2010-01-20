@@ -12,8 +12,12 @@ import config.Part;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.text.html.HTMLEditorKit;
 import utils.Allocator;
@@ -52,10 +56,31 @@ public class GradeReportView extends javax.swing.JFrame {
     public String htmlBuilder(String student) {
         String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
                 "<hr />" + _messageText.getText();
-        for (Assignment a : _asgnParts.keySet()) {
+        
+        //sort the assignments by assignment number
+        Vector<Assignment> sortedAsgns = new Vector<Assignment>(_asgnParts.keySet());
+        Collections.sort(sortedAsgns, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                Assignment a1 = (Assignment) o1;
+                Assignment a2 = (Assignment) o2;
+                return ((Integer)a1.getNumber()).compareTo(a2.getNumber());
+            }
+            
+        });
+        
+        for (Assignment a : sortedAsgns) {
             htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>" + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
             for (Part p : _asgnParts.get(a)) {
-                htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>" + Allocator.getDatabaseIO().getStudentScore(student, p) + "</td><td>" + p.getPoints() + "</td></tr>";
+                Calendar extension = Allocator.getDatabaseIO().getExtension(student, p);
+                if (Allocator.getDatabaseIO().getExemptionNote(student, p) != null) {
+                    htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
+                }
+                else if (extension != null && (extension.getTimeInMillis() < System.currentTimeMillis())) {
+                    htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>Extension until: " + extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
+                }
+                else {
+                    htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>" + Allocator.getDatabaseIO().getStudentScore(student, p) + "</td><td>" + p.getPoints() + "</td></tr>";
+                }
             }
             htmlString += "</tbody></table>";
         }
@@ -326,8 +351,6 @@ public class GradeReportView extends javax.swing.JFrame {
             
             Allocator.getCourseInfo().getEmailAccount().sendMail("cs015headtas@cs.brown.edu", new String[]{student + "@cs.brown.edu"}, null, null, "[cs015] Grade Report", htmlBuilder(student), attachPaths);
         }
-
-        System.out.println(fullFileList.peekLast().getAbsolutePath());
     }//GEN-LAST:event__sendButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
