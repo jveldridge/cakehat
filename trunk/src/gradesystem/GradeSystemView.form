@@ -13,13 +13,13 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jButton3" alignment="0" pref="279" max="32767" attributes="0"/>
-                      <Component id="jButton1" alignment="0" pref="279" max="32767" attributes="0"/>
+                      <Component id="jButton3" alignment="0" pref="268" max="32767" attributes="0"/>
+                      <Component id="jButton1" alignment="0" pref="268" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jButton4" pref="280" max="32767" attributes="0"/>
-                      <Component id="jButton2" alignment="0" pref="280" max="32767" attributes="0"/>
+                      <Component id="jButton4" pref="269" max="32767" attributes="0"/>
+                      <Component id="jButton2" alignment="0" pref="269" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -30,13 +30,13 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jButton1" alignment="0" pref="91" max="32767" attributes="2"/>
-                      <Component id="jButton2" alignment="0" pref="91" max="32767" attributes="2"/>
+                      <Component id="jButton1" alignment="0" pref="78" max="32767" attributes="2"/>
+                      <Component id="jButton2" alignment="0" pref="78" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jButton4" pref="91" max="32767" attributes="0"/>
-                      <Component id="jButton3" alignment="0" pref="91" max="32767" attributes="0"/>
+                      <Component id="jButton4" pref="78" max="32767" attributes="0"/>
+                      <Component id="jButton3" alignment="0" pref="78" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -153,7 +153,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="statusMessageLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="413" max="32767" attributes="0"/>
+                  <EmptySpace pref="381" max="32767" attributes="0"/>
                   <Component id="progressBar" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="statusAnimationLabel" min="-2" max="-2" attributes="0"/>
