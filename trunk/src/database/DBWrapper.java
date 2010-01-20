@@ -763,7 +763,7 @@ public class DBWrapper implements DatabaseIO {
     public boolean unBlacklistStudent(String studentLogin, String taLogin) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM backlist " +
+            _statement.executeUpdate("DELETE FROM blacklist " +
                         "WHERE tid IN " +
                           "(SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "') " +
                          "AND sid IN " +
