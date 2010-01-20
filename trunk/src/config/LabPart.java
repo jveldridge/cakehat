@@ -2,19 +2,18 @@ package config;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 import utils.Allocator;
 
 /**
- * Represents a lab part of an assignment. Can retrieve a student's score for
- * a lab.
+ * Represents a lab part of an assignment. Can retrieve check off scores for a
+ * lab.
  *
  * @author jak2
  */
 public class LabPart extends Part
 {
     private int _labNumber;
-    //Maps student logins to points earned
-    private HashMap<String, Integer> _scores = null;
 
     LabPart(Assignment asgn, String name, int points, int labNumber)
     {
@@ -23,6 +22,12 @@ public class LabPart extends Part
         _labNumber = labNumber;
     }
 
+    /**
+     * Lab number that is used when checking off a lab. Also used by this
+     * class to retrieve the scores given.
+     *
+     * @return
+     */
     public int getLabNumber()
     {
         return _labNumber;
@@ -32,21 +37,21 @@ public class LabPart extends Part
      * Returns the score a student received on this lab. If there is no record
      * for the student 0 will be returned.
      *
+     * This will reprocess all scores for this lab, so if you want multiple
+     * lab scores you should call getLabScores() instead of this method.
+     *
      * @param studentLogin
-     * @return
+     * @return lab score
      */
-    public double getScore(String studentLogin)
+    public int getScore(String studentLogin)
     {
         //If scores haven't been processed, process them
-        if(_scores == null)
-        {
-            this.processLabScores();
-        }
+        Map<String, Integer> scores = getLabScores();
 
         //If the student has a score, return it
-        if(_scores.containsKey(studentLogin))
+        if(scores.containsKey(studentLogin))
         {
-            return _scores.get(studentLogin);
+            return scores.get(studentLogin);
         }
         //Else, 0
         else
@@ -56,13 +61,18 @@ public class LabPart extends Part
     }
 
     /**
-     * Processes the lab scores.
+     * Returns a mapping of student logins to scores received for this lab.
+     * This will return logins as specified by the check off script, so if
+     * someone checked off with a login that is wrong, it will still be
+     * returned by this method.
+     *
+     * @return mapping of student logins to lab scores
      */
-    private void processLabScores()
+    public Map<String, Integer> getLabScores()
     {
         File dir = new File(Allocator.getCourseInfo().getLabsDir() + _labNumber + "/");
         
-        _scores = new HashMap<String, Integer>();
+        Map<String, Integer> scores = new HashMap<String, Integer>();
 
         if(dir.exists())
         {
@@ -75,10 +85,10 @@ public class LabPart extends Part
                 {
                     score = Integer.valueOf(parts[1]);
                 }
-                _scores.put(parts[0], score);
-
-                System.out.println(parts[0] + ":" + score);
+                scores.put(parts[0], score);
             }
         }
+
+        return scores;
     }
 }

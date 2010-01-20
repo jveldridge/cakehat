@@ -1,9 +1,11 @@
 package utils;
 
+import config.LabPart;
 import config.TA;
 import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -18,6 +20,28 @@ import javax.swing.JOptionPane;
  * @author jak2
  */
 public class GradingUtilities {
+
+    /**
+     * Import grades for a lab part into the database.
+     *
+     * @param part
+     */
+    public void importLabGrades(LabPart part) {
+        //Get logins
+        Collection<String> logins = Allocator.getDatabaseIO().getAllStudents().keySet();
+        //Get scores
+        Map<String, Integer> scores = part.getLabScores();
+
+        //We don't want to just input all the keys in scores, because if people
+        //were checked off with the wrong login we would submit that to the database
+
+        //Input scores for those logins
+        for(String login : logins){
+            if(scores.containsKey(login)){
+                Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
+            }
+        }
+    }
 
     /**
      * Returns whether or not the current user is a TA for the course as
