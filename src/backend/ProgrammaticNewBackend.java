@@ -8,12 +8,17 @@ import components.ParameterizedJList;
 import config.Assignment;
 import config.HandinPart;
 import config.Part;
+import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.FocusTraversalPolicy;
 import java.awt.GridLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -21,9 +26,11 @@ import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
@@ -32,12 +39,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -154,6 +163,7 @@ public class ProgrammaticNewBackend extends JFrame
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
     private ParameterizedJList<Assignment> _assignmentList;
     private ParameterizedJList<String> _studentList;
+    private JTextField _filterField;
     private JPanel _cardPanel = new JPanel();
     private List<String> _studentLogins;
     private final static String WELCOME_PANEL_TAG = "Welcome panel",
@@ -172,12 +182,95 @@ public class ProgrammaticNewBackend extends JFrame
 
         this.initComponents();
         this.initButtonGroups();
+        this.initFocusTraversalPolicy();
         this.updateGUI();
 
         this.pack();
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+    }
+
+    private void initFocusTraversalPolicy()
+    {
+        //Add custom focus traversal policy
+        this.setFocusTraversalPolicy(new FocusTraversalPolicy()
+        {
+            private JButton _submitButton = _singleSelectionPanel.getSubmitButton();
+            private JFormattedTextField _nonHandinEarnedField = _singleSelectionPanel.getNonHandinEarnedField();
+
+            @Override
+            public Component getComponentAfter(Container cntnr, Component cmpnt)
+            {
+                //Actions
+
+                //If filter field, select first result and place result into field
+                if(cmpnt == _filterField)
+                {
+                    if(_studentList.hasItems())
+                    {
+                        _studentList.selectFirst();
+                        _filterField.setText(_studentList.getSelectedValue());
+                    }
+                }
+                
+                //If submit grade button, invoke it
+                if(cmpnt == _submitButton)
+                {
+                    _submitButton.doClick();
+                }
+
+                //Next component
+                
+                if(cmpnt == _filterField && _nonHandinEarnedField.isEnabled())
+                {
+                    _nonHandinEarnedField.selectAll();
+                    return _nonHandinEarnedField;
+                }
+                else if(cmpnt == _nonHandinEarnedField && _submitButton.isEnabled())
+                {
+                    return _submitButton;
+                }
+                else if(cmpnt == _submitButton)
+                {
+                    return _filterField;
+                }
+
+                return _filterField;
+            }
+
+            @Override
+            public Component getComponentBefore(Container cntnr, Component cmpnt)
+            {
+                return _filterField;
+            }
+
+            @Override
+            public Component getFirstComponent(Container cntnr)
+            {
+                return _filterField;
+            }
+
+            @Override
+            public Component getLastComponent(Container cntnr)
+            {
+                return _filterField;
+            }
+
+            @Override
+            public Component getDefaultComponent(Container cntnr)
+            {
+                return _filterField;
+            }
+        });
+
+        //Add enter as forward tab key
+        Set<AWTKeyStroke> forwardKeys = this.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        Set<AWTKeyStroke> newForwardKeys = new HashSet(forwardKeys);
+        newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
+
+        
     }
 
     private void initButtonGroups()
@@ -370,15 +463,15 @@ public class ProgrammaticNewBackend extends JFrame
         controlPanel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //Student filter
-        final JTextField filterField = new JTextField();
-        filterField.setPreferredSize(LIST_SELECTOR_SIZE);
-        filterField.addKeyListener(new KeyAdapter()
+        _filterField = new JTextField();
+        _filterField.setPreferredSize(LIST_SELECTOR_SIZE);
+        _filterField.addKeyListener(new KeyAdapter()
         {
             @Override
             public void keyReleased(KeyEvent ke)
             {
                 //term to filter against
-                String filterTerm = filterField.getText();
+                String filterTerm = _filterField.getText();
 
                 List<String> matchingLogins;
                 //if no filter term, include all logins
@@ -402,14 +495,9 @@ public class ProgrammaticNewBackend extends JFrame
                 //display matching logins
                 _studentList.setListData(matchingLogins);
                 _studentList.selectFirst();
-
-                if ((ke.getKeyCode() == KeyEvent.VK_ENTER) || (ke.getKeyCode() == KeyEvent.VK_TAB))
-                {
-                    filterField.setText(matchingLogins.get(0));
-                }
             }
         });
-        controlPanel.add(filterField, BorderLayout.SOUTH);
+        controlPanel.add(_filterField, BorderLayout.SOUTH);
 
         //Gap space
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
