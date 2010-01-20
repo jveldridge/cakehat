@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import utils.Allocator;
-import utils.AssignmentComparator;
 
 /**
  *
@@ -25,14 +24,14 @@ public class StatHistView extends javax.swing.JFrame {
     private Map<Assignment,AssignmentChartPanel> _asgnChartMap;
     private Map<Part,AssignmentChartPanel> _partChartMap;
     private Map<String,StudentChartPanel> _studChartMap;
-    private Vector<Assignment> _assignments;
+    private List<Assignment> _assignments;
     private Collection<Part> _parts;
     private Collection<String> _students;
 
     /** Creates new form HistogramView */
     public StatHistView(Collection<Assignment> assignments, Collection<String> students) {
         _assignments  = new Vector<Assignment>(assignments) {};
-        Collections.sort(_assignments, new AssignmentComparator());
+        Collections.sort(_assignments);
         _students = students;
         _asgnChartMap = new HashMap<Assignment,AssignmentChartPanel>();
         _partChartMap = new HashMap<Part,AssignmentChartPanel>();
