@@ -34,6 +34,9 @@ class NumberField extends JFormattedTextField
         super(NumberFormat.getNumberInstance());
 
         this.setValue(value);
+        if (value == 0) {
+            this.setBackground(java.awt.Color.YELLOW);
+        }
         _oldValue = value;
 
         super.setEditable(editable);
@@ -101,6 +104,10 @@ class NumberField extends JFormattedTextField
                             if (newValue > field._subsection.getOutOf())
                             {
                                 field.setBackground(java.awt.Color.RED);
+                            }
+                            else if (newValue == 0)
+                            {
+                                field.setBackground(java.awt.Color.YELLOW);
                             }
                             else
                             {
