@@ -120,9 +120,9 @@ public class ReassignView extends javax.swing.JFrame {
 
         fromTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         fromTAList.setName("fromTAList"); // NOI18N
-        fromTAList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                fromTAListMouseClicked(evt);
+        fromTAList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                fromTAListValueChanged(evt);
             }
         });
         jScrollPane2.setViewportView(fromTAList);
@@ -140,9 +140,9 @@ public class ReassignView extends javax.swing.JFrame {
 
         toTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         toTAList.setName("toTAList"); // NOI18N
-        toTAList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                toTAListMouseClicked(evt);
+        toTAList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                toTAListValueChanged(evt);
             }
         });
         toTAList.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -237,7 +237,7 @@ public class ReassignView extends javax.swing.JFrame {
                     .addComponent(newXMLRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(keepXMLRadioButton)
                     .addComponent(assignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
         reassignPanelLayout.setVerticalGroup(
             reassignPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -248,7 +248,7 @@ public class ReassignView extends javax.swing.JFrame {
                 .addComponent(keepXMLRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(newXMLRadioButton)
-                .addContainerGap(128, Short.MAX_VALUE))
+                .addContainerGap(134, Short.MAX_VALUE))
         );
 
         cardPanel.add(reassignPanel, "reassignCard");
@@ -362,7 +362,7 @@ public class ReassignView extends javax.swing.JFrame {
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(generateRubricsButton)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
 
         cardPanel.add(manualDistPanel, "manualDistCard");
@@ -375,7 +375,7 @@ public class ReassignView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(titleLabel)
+                        .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
@@ -412,7 +412,7 @@ public class ReassignView extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(titleLabel)
+                            .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(asgnComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(3, 3, 3)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -437,13 +437,6 @@ public class ReassignView extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void fromTAListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fromTAListMouseClicked
-        if (fromTAList.isEnabled()) {
-            fromStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), 
-                                        ((TA)fromTAList.getSelectedValue()).getLogin()).toArray(new String[0]));
-        }
-    }//GEN-LAST:event_fromTAListMouseClicked
 
     private void assignButtonActionPerformed() {
         TA newTA = (TA) toTAList.getSelectedValue();
@@ -512,11 +505,6 @@ public class ReassignView extends javax.swing.JFrame {
     }
     
     
-    private void toTAListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_toTAListMouseClicked
-        toStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), 
-                                    ((TA)toTAList.getSelectedValue()).getLogin()).toArray(new String[0]));
-    }//GEN-LAST:event_toTAListMouseClicked
-
 private void studentFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_studentFilterKeyReleased
     //term to filter against
         String filterTerm = studentFilter.getText();
@@ -595,6 +583,18 @@ private void randomAssignButtonActionPerformed(java.awt.event.ActionEvent evt) {
     
     this.updateGUI();
 }//GEN-LAST:event_randomAssignButtonActionPerformed
+
+private void fromTAListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_fromTAListValueChanged
+    if (fromTAList.isEnabled()) {
+            fromStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(),
+                                        ((TA)fromTAList.getSelectedValue()).getLogin()).toArray(new String[0]));
+        }
+}//GEN-LAST:event_fromTAListValueChanged
+
+private void toTAListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_toTAListValueChanged
+    toStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(),
+            ((TA) toTAList.getSelectedValue()).getLogin()).toArray(new String[0]));
+}//GEN-LAST:event_toTAListValueChanged
 
     private void updateGUI() {
         if (toTAList.getModel().getSize() > 0) {
