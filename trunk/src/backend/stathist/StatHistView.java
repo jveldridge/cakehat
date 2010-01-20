@@ -4,13 +4,16 @@ import config.Assignment;
 import config.Part;
 import java.awt.CardLayout;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import utils.Allocator;
+import utils.AssignmentComparator;
 
 /**
  *
@@ -22,13 +25,14 @@ public class StatHistView extends javax.swing.JFrame {
     private Map<Assignment,AssignmentChartPanel> _asgnChartMap;
     private Map<Part,AssignmentChartPanel> _partChartMap;
     private Map<String,StudentChartPanel> _studChartMap;
-    private Collection<Assignment> _assignments;
+    private Vector<Assignment> _assignments;
     private Collection<Part> _parts;
     private Collection<String> _students;
 
     /** Creates new form HistogramView */
     public StatHistView(Collection<Assignment> assignments, Collection<String> students) {
-        _assignments = assignments;
+        _assignments  = new Vector<Assignment>(assignments) {};
+        Collections.sort(_assignments, new AssignmentComparator());
         _students = students;
         _asgnChartMap = new HashMap<Assignment,AssignmentChartPanel>();
         _partChartMap = new HashMap<Part,AssignmentChartPanel>();
@@ -63,34 +67,34 @@ public class StatHistView extends javax.swing.JFrame {
         }
         
         
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(chartPanel);
-        chartPanel.setLayout(jPanel2Layout);
-        ParallelGroup pg = jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
+        javax.swing.GroupLayout chartPanelLayout = new javax.swing.GroupLayout(chartPanel);
+        chartPanel.setLayout(chartPanelLayout);
+        ParallelGroup pg = chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
 
         
-        for (AssignmentChartPanel acp : _asgnChartMap.values()) {
-            pg.addComponent(acp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
+        for (Assignment a : _assignments) {
+            pg.addComponent(_asgnChartMap.get(a), javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
+            
+            for (Part p : a.getParts()) {
+                pg.addComponent(_partChartMap.get(p), javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
+            }
         }
-        
-        for (AssignmentChartPanel acp : _partChartMap.values()) {
-            pg.addComponent(acp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
-        }
-        
+
         for (StudentChartPanel scp : _studChartMap.values()) {
             pg.addComponent(scp, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE);
         }
 
-        jPanel2Layout.setHorizontalGroup(pg);
-        SequentialGroup sg = jPanel2Layout.createSequentialGroup();
+        chartPanelLayout.setHorizontalGroup(pg);
+        SequentialGroup sg = chartPanelLayout.createSequentialGroup();
         
-        for (AssignmentChartPanel c : _asgnChartMap.values()) {
-            sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
+        for (Assignment a : _assignments) {
+            sg.addComponent(_asgnChartMap.get(a), javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
             sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
-        }
-        
-        for (AssignmentChartPanel c : _partChartMap.values()) {
-            sg.addComponent(c, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
-            sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
+            
+            for (Part p : a.getParts()) {
+                sg.addComponent(_partChartMap.get(p), javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
+                sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
+            }
         }
         
         for (StudentChartPanel scp : _studChartMap.values()) {
@@ -99,7 +103,7 @@ public class StatHistView extends javax.swing.JFrame {
         }
         
         
-        jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(sg));
+        chartPanelLayout.setVerticalGroup(chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(sg));
 
         selectViewBox.setSelectedIndex(0);
         assignmentsRb.setSelected(true);
