@@ -59,6 +59,9 @@ then
     filename=$filename","$3
 fi
 
+#delete any possibly created files for this student for this lab
+rm -f $2*
+
 #create the file, and make it group readable
 touch $filename
 chmod 660 $filename
