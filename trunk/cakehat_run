@@ -1,0 +1,55 @@
+#!/bin/bash
+#==============================================================================
+# A convenience script to run cakehat.
+#
+# author:  jak2 (Joshua Kaplan)
+# created: January 20, 2010
+#==============================================================================
+
+#message displayed when run incorrectly
+usage="Usage: cakehat_run [frontend | backend] (ssh)"
+
+#retrieve the location of this script
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+#extract the course name
+course=${abspath:8:5}
+
+#location of jar to run
+grade_sys="/course/"$course"/cakehat/bin/GradeSystem.jar"
+
+#if the number of arguments passed in is invalid
+if [[ !( $# == 1 || $# == 2 ) ]]
+then
+    echo $usage
+	exit 1
+fi
+
+#ssh option
+option2="" #default to no second option
+#check if they have a second option
+if [[ ( $# == 2 ) ]]
+then
+    if [ "$2" == "ssh" ]
+    then
+        option2="ssh"
+    #if the second arguement isn't ssh, let them know this is wrong
+    else
+        echo $usage
+        echo "Optional second argument must be ssh; you used "$2
+        exit 1
+    fi
+fi
+
+#check appropriate arguements: frontend, backend
+if [[ $1 == "frontend" ]]
+then
+    java -jar $grade_sys frontend $option2
+elif [[ $1 == "backend" ]]
+then
+    java -jar $grade_sys backend $option2
+else
+    echo $usage
+    echo "First argument must be frontend or backend; you used "$1
+    exit 1
+fi
