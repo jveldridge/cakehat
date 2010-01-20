@@ -6,6 +6,7 @@ import backend.stathist.StatHistView;
 import components.ParameterizedJList;
 import config.Assignment;
 import config.HandinPart;
+import config.LabPart;
 import config.Part;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -1165,22 +1166,28 @@ public class Backend extends JFrame
         JOptionPane.showMessageDialog(this, "This feature is not yet available");
     }
 
-    public void generateDistributionButtonActionPerformed()
+    private void generateDistributionButtonActionPerformed()
     {
         new AssignmentdistView(_assignmentList.getSelectedValue());
     }
 
-    public void reassignGradingButtonActionPerformed()
+    private void reassignGradingButtonActionPerformed()
     {
         new ReassignView(_assignmentList.getSelectedValue());
     }
 
-    public void importGradesButtonActionPerformed()
+    private void importGradesButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available");
+        for(Assignment asgn : _assignmentList.getGenericSelectedValues())
+        {
+            for(LabPart part : asgn.getLabParts())
+            {
+                Allocator.getGradingUtilities().importLabGrades(part);
+            }
+        }
     }
 
-    public void previewRubricButtonActionPerformed()
+    private void previewRubricButtonActionPerformed()
     {
         if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasRubric())
         {
@@ -1189,7 +1196,7 @@ public class Backend extends JFrame
 
     }
 
-    public void viewDeductionsButtonActionPerformed()
+    private void viewDeductionsButtonActionPerformed()
     {
         if(_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasDeductionList())
         {
@@ -1197,7 +1204,7 @@ public class Backend extends JFrame
         }
     }
 
-    public void runDemoButtonActionPerformed()
+    private void runDemoButtonActionPerformed()
     {
         if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasDemo())
         {
