@@ -1,9 +1,14 @@
 package config;
 
-import java.util.Comparator;
 import java.util.Vector;
 
 /**
+ * A representation of an Assigment, composed of any number of non-handin parts,
+ * any number of lab parts, and zero or one handin parts. This assignment has
+ * a name, that must be unique, and a number that does not need to be unique. If
+ * the number of this assignment is the same as that of another assignment then
+ * those assignments will be considered alternatives of one another, e.g.
+ * multiple options for a final project.
  *
  * @author jak2
  */
@@ -14,6 +19,7 @@ public class Assignment implements Comparable<Assignment>
     private Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
     private Vector<LabPart> _labParts = new Vector<LabPart>();
     private HandinPart _handinPart;
+    private Vector<Part> _allParts = null;
 
     Assignment(String name, int number)
     {
@@ -26,6 +32,13 @@ public class Assignment implements Comparable<Assignment>
         return _name;
     }
 
+    /**
+     * The number of this assignment. It does not need to be unique; assignments
+     * with the same number are considered to be alternatives, e.g. multiple
+     * options for a final project.
+     *
+     * @return
+     */
     public int getNumber()
     {
         return _number;
@@ -78,37 +91,41 @@ public class Assignment implements Comparable<Assignment>
         return (_handinPart != null);
     }
 
+    /**
+     * Returns all Parts of this Assignment.
+     * 
+     * @return
+     */
     public Iterable<Part> getParts()
     {
-        Vector<Part> parts = new Vector<Part>();
-
-        parts.addAll(_labParts);
-        parts.addAll(_nonHandinParts);
-        if(this.hasHandinPart())
+        //If this has not been created yet, build it
+        if(_allParts == null)
         {
-            parts.add(_handinPart);
+            _allParts = new Vector<Part>();
+
+            _allParts.addAll(_labParts);
+            _allParts.addAll(_nonHandinParts);
+            if(this.hasHandinPart())
+            {
+                _allParts.add(_handinPart);
+            }
         }
 
-        return parts;
+        return _allParts;
     }
 
-    // Points
-
+    /**
+     * Sums all of the point values for this Assignment's parts.
+     *
+     * @return
+     */
     public int getTotalPoints()
     {
         int points = 0;
 
-        for(Part part : _nonHandinParts)
+        for(Part part : this.getParts())
         {
             points += part.getPoints();
-        }
-        for(Part part : _labParts)
-        {
-            points += part.getPoints();
-        }
-        if(this.hasHandinPart())
-        {
-            points += _handinPart.getPoints();
         }
 
         return points;
