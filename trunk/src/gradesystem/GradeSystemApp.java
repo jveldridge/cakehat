@@ -14,7 +14,7 @@ import org.jvnet.substance.skin.SubstanceCremeLookAndFeel;
 public class GradeSystemApp extends SingleFrameApplication
 {
     private static String[] _args;
-    public static boolean _testing; //I'm a sinner
+    private static boolean _testing;
 
     /**
      * At startup create and show the main frame of the application.
@@ -24,7 +24,7 @@ public class GradeSystemApp extends SingleFrameApplication
     {
         this.applyDisplaySettings();
 
-        if (_args != null && _args.length >= 1)
+        if (_args.length >= 1)
         {
             if (_args[0].compareToIgnoreCase("backend") == 0)
             {
@@ -60,9 +60,8 @@ public class GradeSystemApp extends SingleFrameApplication
                         System.setProperty("awt.useSystemAAFontSettings", "false");
                         System.setProperty("swing.aatext", "false");
                     }
-                    else if ((_args != null && _args.length >= 2 &&
-                              _args[1].compareToIgnoreCase("ssh") != 0) ||
-                              _args == null || _args.length < 2)
+                    else if ( (_args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0)
+                              || _args.length < 2)
                     {
                         UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
 
@@ -104,7 +103,8 @@ public class GradeSystemApp extends SingleFrameApplication
      * A convenient static getter for the application instance.
      * @return the instance of GradeSystemApp
      */
-    public static GradeSystemApp getApplication() {
+    public static GradeSystemApp getApplication()
+    {
         return Application.getInstance(GradeSystemApp.class);
     }
 
