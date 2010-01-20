@@ -77,6 +77,21 @@ public class FrontendView extends JFrame
         }
     }
 
+    public static void launch()
+    {
+        if(Allocator.getGradingUtilities().isUserTA())
+        {
+            new FrontendView();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null, "You [" +
+                                         Allocator.getGeneralUtilities().getUserLogin() +
+                                         "] are not an authorized user.");
+            System.exit(0);
+        }
+    }
+
     private ParameterizedJList<Assignment> _assignmentList;
     private ParameterizedJList<String> _studentList;
     private CurrentlyGradingLabel _currentlyGradingLabel;
@@ -86,7 +101,7 @@ public class FrontendView extends JFrame
                     _runCodeButton;
     private JButton[] _allButtons, _studentButtons;
 
-    public FrontendView()
+    private FrontendView()
     {
         //Frame title
         super("[cakehat] frontend - " + Allocator.getGeneralUtilities().getUserLogin());
