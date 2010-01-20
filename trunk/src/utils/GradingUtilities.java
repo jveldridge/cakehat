@@ -1,5 +1,6 @@
 package utils;
 
+import config.TA;
 import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,6 +19,39 @@ import javax.swing.JOptionPane;
  */
 public class GradingUtilities {
 
+    /**
+     * Returns whether or not the current user is a TA for the course as
+     * specified by the configuration file.
+     * @return
+     */
+    public boolean isUserTA(){
+        String userLogin = Allocator.getGeneralUtilities().getUserLogin();
+        
+        for(TA ta : Allocator.getCourseInfo().getTAs()){
+            if(ta.getLogin().equals(userLogin)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether or not the current user is an admin for the course as
+     * specified by the configuration file.
+     * @return
+     */
+    public boolean isUserAdmin(){
+        String userLogin = Allocator.getGeneralUtilities().getUserLogin();
+
+        for(TA ta : Allocator.getCourseInfo().getTAs()){
+            if(ta.getLogin().equals(userLogin) && ta.isAdmin()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public void makeUserGradingDirectory() {
         Allocator.getGeneralUtilities().makeDirectory(this.getUserGradingDirectory());
     }
@@ -29,7 +63,7 @@ public class GradingUtilities {
     /**
      * @date 01/08/2009
      * @return path to a TA's temporary grading directory.
-     *         currently, /course/cs015/grading/.<talogin>/
+     *         currently, /course/<course>/<cakehat>/.<talogin>/
      *         this directory is erased when the user closes the grader
      */
     public String getUserGradingDirectory() {
@@ -40,7 +74,7 @@ public class GradingUtilities {
      * @date 01/08/2010
      * @return path to student's rubric for a particular project
      *          Note: this is independent of the TA who graded the student
-     *         currently, /course/cs015/grading/rubrics/2009/<assignmentName>/<studentLogin>.xml
+     *         currently, /course/<course>/cakehat/<year>/rubrics/<assignmentName>/<studentLogin>.gml
      */
     public String getStudentRubricPath(String assignmentName, String studentLogin) {
         return Allocator.getCourseInfo().getRubricDir() + assignmentName + "/" + studentLogin + ".gml";

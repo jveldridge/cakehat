@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,6 +63,21 @@ public class ProgrammaticNewBackend extends JFrame
     public static void main(String[] args)
     {
         new ProgrammaticNewBackend();
+    }
+
+    public static void launch()
+    {
+        if(Allocator.getGradingUtilities().isUserTA())
+        {
+            new ProgrammaticNewBackend();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null, "You [" +
+                                         Allocator.getGeneralUtilities().getUserLogin() +
+                                         "] are not an authorized user.");
+            System.exit(0);
+        }
     }
 
     private class SelectedLabel extends JLabel
@@ -132,22 +149,6 @@ public class ProgrammaticNewBackend extends JFrame
         }
     }
 
-    //Size constants
-    private static final Dimension MAIN_PANEL_SIZE = new Dimension(1150, 700);
-    private static final Dimension LIST_PANEL_SIZE = new Dimension(185, MAIN_PANEL_SIZE.height);
-    private static final Dimension GENERAL_COMMANDS_PANEL_SIZE = new Dimension(195, MAIN_PANEL_SIZE.height);
-    private static final Dimension MIDDLE_PANEL_SIZE = new Dimension(MAIN_PANEL_SIZE.width -
-                                                                     2 * LIST_PANEL_SIZE.width -
-                                                                     GENERAL_COMMANDS_PANEL_SIZE.width,
-                                                                     MAIN_PANEL_SIZE.height);
-    private static final Dimension SELECTED_ASSIGNMENT_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width, 100);
-    private static final Dimension STUDENT_BUTTON_PANEL_SIZE = new Dimension(200, MIDDLE_PANEL_SIZE.height -
-                                                                                  SELECTED_ASSIGNMENT_PANEL_SIZE.height);
-    private static final Dimension MULTI_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width - STUDENT_BUTTON_PANEL_SIZE.width,
-                                                                   MIDDLE_PANEL_SIZE.height - SELECTED_ASSIGNMENT_PANEL_SIZE.height);
-
-
-
     private JButton //Assignment wide buttons
                     _createDistributionButton, _reassignGradingButton, _importLabsButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
@@ -172,7 +173,7 @@ public class ProgrammaticNewBackend extends JFrame
     private CardLayout _cardLayout;
     private SingleSelectionPanel _singleSelectionPanel;
 
-    public ProgrammaticNewBackend()
+    private ProgrammaticNewBackend()
     {
         super("[cakehat] backend - " + Allocator.getGeneralUtilities().getUserLogin());
 
@@ -180,15 +181,25 @@ public class ProgrammaticNewBackend extends JFrame
         _studentLogins = new LinkedList(Allocator.getDatabaseIO().getAllStudents().keySet());
         Collections.sort(_studentLogins);
 
+        //make the user's temporary grading directory
+        Allocator.getGradingUtilities().makeUserGradingDirectory();
+
+        //on window close, remove user's temporary grading directory
+        this.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                Allocator.getGradingUtilities().removeUserGradingDirectory();
+            }
+        });
+
+        //init
         this.initComponents();
         this.initButtonGroups();
         this.initFocusTraversalPolicy();
-        this.updateGUI();
 
-        this.pack();
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
+        this.updateGUI();
     }
 
     private void initFocusTraversalPolicy()
@@ -269,8 +280,6 @@ public class ProgrammaticNewBackend extends JFrame
         Set<AWTKeyStroke> newForwardKeys = new HashSet(forwardKeys);
         newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
-
-        
     }
 
     private void initButtonGroups()
@@ -296,12 +305,21 @@ public class ProgrammaticNewBackend extends JFrame
         };
     }
 
+    private static final Dimension
+    MAIN_PANEL_SIZE = new Dimension(1150, 700),
+    LIST_PANEL_SIZE = new Dimension(185, MAIN_PANEL_SIZE.height),
+    GENERAL_COMMANDS_PANEL_SIZE = new Dimension(195, MAIN_PANEL_SIZE.height),
+    MIDDLE_PANEL_SIZE = new Dimension(MAIN_PANEL_SIZE.width - 2 * LIST_PANEL_SIZE.width -
+                                      GENERAL_COMMANDS_PANEL_SIZE.width, MAIN_PANEL_SIZE.height),
+    SELECTED_ASSIGNMENT_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width, 100),
+    STUDENT_BUTTON_PANEL_SIZE = new Dimension(200, MIDDLE_PANEL_SIZE.height -
+                                              SELECTED_ASSIGNMENT_PANEL_SIZE.height),
+    MULTI_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width - STUDENT_BUTTON_PANEL_SIZE.width,
+                                     MIDDLE_PANEL_SIZE.height - SELECTED_ASSIGNMENT_PANEL_SIZE.height);
     private void initComponents()
     {
-        FlowLayout layout = new FlowLayout();
-        layout.setHgap(0);
-        layout.setVgap(0);
-        JPanel mainPanel = new JPanel(layout);
+        //main panel - holds everything together
+        JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         mainPanel.setPreferredSize(MAIN_PANEL_SIZE);
         this.add(mainPanel);
 
@@ -318,12 +336,8 @@ public class ProgrammaticNewBackend extends JFrame
         mainPanel.add(studentListPanel);
 
         //middle panel
-        BorderLayout bLayout = new BorderLayout();
-        bLayout.setHgap(0);
-        bLayout.setVgap(0);
-        JPanel middlePanel = new JPanel(bLayout);
+        JPanel middlePanel = new JPanel(new BorderLayout(0,0));
         middlePanel.setPreferredSize(MIDDLE_PANEL_SIZE);
-        middlePanel.setBackground(Color.BLUE);
         mainPanel.add(middlePanel);
 
         //selected assignment button panel
@@ -332,7 +346,7 @@ public class ProgrammaticNewBackend extends JFrame
         this.initSelectedAssignmentPanel(selectedAssignmentPanel);
         middlePanel.add(selectedAssignmentPanel, BorderLayout.NORTH);
 
-        //selected student panel / card panel
+        //contains card layout for selected student / multiselect / intro card
         JPanel multiPanel = new JPanel();
         multiPanel.setPreferredSize(MULTI_PANEL_SIZE);
         this.initMultiPanel(multiPanel);
@@ -350,13 +364,19 @@ public class ProgrammaticNewBackend extends JFrame
         this.initGeneralCommandPanel(generalCommandsPanel);
         mainPanel.add(generalCommandsPanel);
 
+        //display properties
         this.setResizable(false);
+        this.pack();
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 
     private static Dimension MULTI_PANEL_LABEL_SIZE = new Dimension(MULTI_PANEL_SIZE.width - 10, 20);
+    //intentionally package private so that SingleSelectionPanel can use this size
     static Dimension MULTI_PANEL_CARD_SIZE = new Dimension(MULTI_PANEL_SIZE.width - 10,
-                                                                   MULTI_PANEL_SIZE.height -
-                                                                   MULTI_PANEL_LABEL_SIZE.height - 15);
+                                                           MULTI_PANEL_SIZE.height -
+                                                           MULTI_PANEL_LABEL_SIZE.height - 15);
     private void initMultiPanel(JPanel panel)
     {
         //Student label
@@ -406,15 +426,15 @@ public class ProgrammaticNewBackend extends JFrame
     }
 
     //List panel sizes (for both student & assignment)
-    private static final Dimension LIST_CONTROL_PANEL_SIZE = new Dimension(LIST_PANEL_SIZE.width - 10, 80);
-    private static final Dimension LIST_LABEL_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 20);
-    private static final Dimension LIST_GAP_SPACE_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 5);
-    private static final Dimension LIST_BUTTON_PANEL_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 25);
-    private static final Dimension LIST_SELECTOR_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 25);
-    private static final Dimension LIST_LIST_PANE_SIZE = new Dimension(LIST_PANEL_SIZE.width - 10,
-                                                                       LIST_PANEL_SIZE.height -
-                                                                       LIST_CONTROL_PANEL_SIZE.height - 10);
-
+    private static final Dimension
+    LIST_CONTROL_PANEL_SIZE = new Dimension(LIST_PANEL_SIZE.width - 10, 80),
+    LIST_LABEL_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 20),
+    LIST_GAP_SPACE_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 5),
+    LIST_BUTTON_PANEL_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 25),
+    LIST_SELECTOR_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 25),
+    LIST_LIST_PANE_SIZE = new Dimension(LIST_PANEL_SIZE.width - 10,
+                                        LIST_PANEL_SIZE.height -
+                                        LIST_CONTROL_PANEL_SIZE.height - 10);
     private void initStudentListPanel(JPanel panel)
     {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -608,24 +628,27 @@ public class ProgrammaticNewBackend extends JFrame
         panel.add(assignmentPane);
     }
 
+    private static final int STUDENT_BUTTON_PANEL_BUFFER_HEIGHT = 90,
+                             STUDENT_BUTTON_PANEL_BUFFER_WIDTH = 10,
+                             STUDENT_BUTTON_PANEL_BUTTON_SLOTS = 17;
+    private static final Dimension
+    STUDENT_BUTTON_PANEL_GAP_SIZE = new Dimension(STUDENT_BUTTON_PANEL_SIZE.width,
+                                                  STUDENT_BUTTON_PANEL_BUFFER_HEIGHT / 2),
+    STUDENT_BUTTON_PANEL_BUTTON_PANEL_SIZE = new Dimension(STUDENT_BUTTON_PANEL_SIZE.width -
+                                                           STUDENT_BUTTON_PANEL_BUFFER_WIDTH,
+                                                           STUDENT_BUTTON_PANEL_SIZE.height -
+                                                           STUDENT_BUTTON_PANEL_BUFFER_HEIGHT / 2);
+
     private void initStudentButtonPanel(JPanel panel)
     {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
-        //buffer room
-        int bufferHeight = 90;
-        int bufferWidth = 10;
-
         //Add some vertical space
-        panel.add(Box.createRigidArea(new Dimension(STUDENT_BUTTON_PANEL_SIZE.width, bufferHeight / 2)));
+        panel.add(Box.createRigidArea(STUDENT_BUTTON_PANEL_GAP_SIZE));
 
         //Button panel
-        Dimension buttonPanelSize = new Dimension(STUDENT_BUTTON_PANEL_SIZE.width - bufferWidth,
-                                                  STUDENT_BUTTON_PANEL_SIZE.height - bufferHeight / 2);
-
-        int buttonSlots = 17;
-        JPanel buttonPanel = new JPanel(new GridLayout(buttonSlots,1,0,2));
-        buttonPanel.setPreferredSize(buttonPanelSize);
+        JPanel buttonPanel = new JPanel(new GridLayout(STUDENT_BUTTON_PANEL_BUTTON_SLOTS,1,0,2));
+        buttonPanel.setPreferredSize(STUDENT_BUTTON_PANEL_BUTTON_PANEL_SIZE);
         panel.add(buttonPanel);
 
         //Charts & histograms
@@ -860,10 +883,12 @@ public class ProgrammaticNewBackend extends JFrame
         buttonPanel.add(_runDemoButton);
     }
 
-    private static final Dimension GENERAL_COMMANDS_LABEL_SIZE = new Dimension(GENERAL_COMMANDS_PANEL_SIZE.width, 30);
-    private static final Dimension GENERAL_COMMANDS_BUTTON_PANEL_SIZE = new Dimension(GENERAL_COMMANDS_PANEL_SIZE.width - 10,
-                                                                                      GENERAL_COMMANDS_PANEL_SIZE.height -
-                                                                                      GENERAL_COMMANDS_LABEL_SIZE.height);
+    private static final Dimension
+    GENERAL_COMMANDS_LABEL_SIZE = new Dimension(GENERAL_COMMANDS_PANEL_SIZE.width, 30),
+    GENERAL_COMMANDS_BUTTON_PANEL_SIZE = new Dimension(GENERAL_COMMANDS_PANEL_SIZE.width - 10,
+                                                       GENERAL_COMMANDS_PANEL_SIZE.height -
+                                                       GENERAL_COMMANDS_LABEL_SIZE.height);
+    private static final int GENERAL_COMMANDS_BUTTON_SLOTS = 17;
 
     private void initGeneralCommandPanel(JPanel panel)
     {
@@ -875,8 +900,7 @@ public class ProgrammaticNewBackend extends JFrame
         panel.add(generalCommandsLabel);
 
         //Buttons
-        int buttonSlots = 17;
-        JPanel buttonPanel = new JPanel(new GridLayout(buttonSlots,1,5,10));
+        JPanel buttonPanel = new JPanel(new GridLayout(GENERAL_COMMANDS_BUTTON_SLOTS,1,5,10));
         buttonPanel.setPreferredSize(GENERAL_COMMANDS_BUTTON_PANEL_SIZE);
         panel.add(buttonPanel);
 
@@ -927,9 +951,12 @@ public class ProgrammaticNewBackend extends JFrame
             
         });
         buttonPanel.add(_resetDatabaseButton);
-
     }
 
+    /**
+     * Updates the buttons, the student assignment labels, and which panel is
+     * shown in the center.
+     */
     private void updateGUI()
     {
         Collection<Assignment> selectedAssignments = _assignmentList.getGenericSelectedValues();
@@ -1096,6 +1123,13 @@ public class ProgrammaticNewBackend extends JFrame
         _selectedAssignmentLabel.setText(selectedAssignments);
     }
 
+    /**
+     * Creates a button with bold text and an image.
+     *
+     * @param text
+     * @param imagePath
+     * @return
+     */
     private JButton createButton(String text, String imagePath)
     {
         Icon icon = new ImageIcon(getClass().getResource(imagePath));
