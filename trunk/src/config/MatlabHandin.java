@@ -1,11 +1,16 @@
 package config;
 
+import utils.*;
+import java.util.Collection;
+
 /**
  *
  * @author <author-here>
  */
 class MatlabHandin extends CodeHandin
 {
+    private static final String[] _sourceFileTypes = { "m" };
+
     //TODO: Fill in my properties
     public static final LanguageSpecification SPECIFICATION =
             new LanguageSpecification("Matlab", null, null, null);
@@ -18,12 +23,18 @@ class MatlabHandin extends CodeHandin
     @Override
     protected String[] getSourceFileTypes()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return _sourceFileTypes;
     }
 
     @Override
     public void run(String studentLogin)
     {
+        //ps -u graderlogin | grep matlab
+        Collection<String> response = BashConsole.write("ps -u " +
+                Allocator.getGeneralUtilities().getUserLogin() + " | grep matlab");
+        if(response.isEmpty()) { //MATLAB is not currently running
+            BashConsole.write("matlab -r " + "/course/cs004/cakehattemp/setup");
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
