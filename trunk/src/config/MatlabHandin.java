@@ -33,15 +33,18 @@ class MatlabHandin extends CodeHandin
         Collection<String> response = BashConsole.write("ps -u " +
                 Allocator.getGeneralUtilities().getUserLogin() + " | grep matlab");
         if(response.isEmpty()) { //MATLAB is not currently running
-            BashConsole.write("matlab -r " + "/course/cs004/cakehattemp/setup");
+            BashConsole.write("cd /course/cs004/cakehat/bin ; matlab -r "
+                    + "setup");
         }
-        throw new UnsupportedOperationException("Not supported yet.");
+        else { //MATLAB is currently running; we want to tell it to 'cd'
+
+        }
     }
 
     @Override
     public boolean hasDemo()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
     @Override
@@ -53,7 +56,7 @@ class MatlabHandin extends CodeHandin
     @Override
     public boolean hasTester()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
     @Override
