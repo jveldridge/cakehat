@@ -59,7 +59,23 @@ public abstract class HandinPart extends Part
 
     public boolean hasReadme(String studentLogin)
     {
-        return !getReadme(studentLogin).isEmpty();
+        //Get contents of tar
+        Collection<String> contents = Allocator.getGeneralUtilities().getTarContents(this.getHandin(studentLogin).getAbsolutePath());
+
+        //For each entry (file and directory) in the tar
+        for(String entry : contents)
+        {
+            //Extract the file name
+            String filename = entry.substring(entry.lastIndexOf("/")+1);
+
+            //See if the file name begins with README, regardless of case
+            if(filename.toUpperCase().startsWith("README"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void viewReadme(String studentLogin)

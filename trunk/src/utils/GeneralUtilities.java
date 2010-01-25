@@ -1,6 +1,7 @@
 package utils;
 
 import com.ice.tar.TarArchive;
+import com.ice.tar.TarProgressDisplay;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -395,17 +396,31 @@ public class GeneralUtilities {
             new ErrorView(ex);
             return false;
         }
-        /*
-          //Original code
-          String cmd = "tar -xf " + tarPath + " -C " + destPath;
-          try {
-            Process proc = Runtime.getRuntime().exec(cmd);
-            proc.waitFor();
-          }
-          catch (Exception e) {
-            new ErrorView(e);
-          }
-             */
+    }
+
+    public Collection<String> getTarContents(String tarPath) {
+        final Vector<String> contents = new Vector<String>();
+
+        try {
+            TarArchive tar = new TarArchive(new FileInputStream(new File(tarPath)));
+
+            tar.setTarProgressDisplay(new TarProgressDisplay(){
+                public void showTarProgressMessage(String msg){
+                    //System.out.println(msg);
+                    String[] contentArray = msg.split("\n");
+                    for(String entry : contentArray){
+                        contents.add(entry);
+                    }
+                }
+            });
+
+            tar.listContents();
+        }
+        catch (Exception ex) {
+            new ErrorView(ex);
+        }
+
+        return contents;
     }
 
     /**
