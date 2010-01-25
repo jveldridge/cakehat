@@ -184,7 +184,7 @@ public class GeneralUtilities {
      * @return
      */
     public int getCurrentYear() {
-        return 2009; //For testing purposes only
+        return Calendar.getInstance().get(Calendar.YEAR); //For testing purposes only
         //return Calendar.getInstance().get(Calendar.YEAR);
     }
 
