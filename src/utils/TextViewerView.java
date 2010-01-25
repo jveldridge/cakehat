@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.LinkedList;
+import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.text.DefaultHighlighter;
@@ -81,7 +82,7 @@ public class TextViewerView extends javax.swing.JFrame {
         Dimension size = new Dimension(640,500);
         this.setSize(size);
         this.setPreferredSize(size);
-        
+
         this.setLocationRelativeTo(null);
         this.setVisible(true);
     }
