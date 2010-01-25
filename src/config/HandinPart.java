@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
 import utils.Allocator;
-import utils.FileViewerView;
+import utils.TextViewerView;
 
 /**
  *
@@ -51,7 +51,7 @@ public abstract class HandinPart extends Part
 
     public void viewDeductionList()
     {
-        FileViewerView fv = new FileViewerView(_deductionsFile);
+        TextViewerView fv = new TextViewerView(_deductionsFile);
         fv.setTitle(this.getAssignment().getName() + " Deductions List");
     }
 
@@ -65,7 +65,7 @@ public abstract class HandinPart extends Part
     public void viewReadme(String studentLogin)
     {
         //View the first readme that was found
-        FileViewerView fv = new FileViewerView(this.getReadme(studentLogin).iterator().next());
+        TextViewerView fv = new TextViewerView(this.getReadme(studentLogin).iterator().next());
         fv.setTitle(studentLogin +"'s Readme");
     }
 
