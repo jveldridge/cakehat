@@ -24,6 +24,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
@@ -154,8 +157,8 @@ public class BackendView extends JFrame
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionButton,
                     _exemptionButton, _openCodeButton, _runCodeButton,
-                    _testCodeButton, _printCodeButton, _viewRubricButton,
-                    _printRubricButton, _disableStudentButton,
+                    _testCodeButton, _printCodeButton, _viewReadmeButton,
+                    _viewRubricButton, _printRubricButton, _disableStudentButton,
                     //General command buttons
                     _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
                     _resetDatabaseButton;
@@ -194,11 +197,48 @@ public class BackendView extends JFrame
         });
 
         //init
+        this.initFrameIcon();
         this.initComponents();
         this.initButtonGroups();
         this.initFocusTraversalPolicy();
 
         this.updateGUI();
+    }
+
+        /**
+     * Initializes this frame's icon. Only visible on certain operating systems
+     * and window managers.
+     */
+    private void initFrameIcon()
+    {
+        try
+        {
+            //randomly selects one of 5 icons
+            BufferedImage icon = null;
+            switch ((int) (Math.random() * 5))
+            {
+                case 0:
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png"));
+                    break;
+                case 1:
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png"));
+                    break;
+                case 2:
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png"));
+                    break;
+                case 3:
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png"));
+                    break;
+                case 4:
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png"));
+                    break;
+                case 5:
+                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png"));
+                    break;
+            }
+            this.setIconImage(icon);
+        }
+        catch (IOException e) { }
     }
 
     private void initFocusTraversalPolicy()
@@ -300,7 +340,7 @@ public class BackendView extends JFrame
         {
           _chartsButton, _emailReportsButton, _extensionButton, _exemptionButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
-          _viewRubricButton, _printRubricButton, _disableStudentButton
+          _viewReadmeButton, _viewRubricButton, _printRubricButton, _disableStudentButton
         };
     }
 
@@ -752,6 +792,20 @@ public class BackendView extends JFrame
 
         buttonPanel.add(Box.createVerticalBox());//space
 
+        //View readme
+        _viewReadmeButton =createButton("View Readme", "/gradesystem/resources/icons/16x16/text-x-generic.png");
+        _viewReadmeButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                viewReadmeButtonActionPerformed();
+            }
+
+        });
+        buttonPanel.add(_viewReadmeButton);
+
+        buttonPanel.add(Box.createVerticalBox());//space
+
         //View student rubric
         _viewRubricButton = createButton("View Student Rubric", "/gradesystem/resources/icons/16x16/font-x-generic.png");
         _viewRubricButton.addActionListener(new ActionListener()
@@ -1016,6 +1070,7 @@ public class BackendView extends JFrame
                     _runCodeButton.setEnabled(hasHandin && part.hasRun() );
                     _openCodeButton.setEnabled(hasHandin && part.hasOpen());
                     _printCodeButton.setEnabled(hasHandin && part.hasPrint());
+                    _viewReadmeButton.setEnabled(hasHandin && part.hasReadme(_studentList.getSelectedValue()));
 
                     _extensionButton.setEnabled(true);
 
@@ -1311,6 +1366,11 @@ public class BackendView extends JFrame
             _assignmentList.getSelectedValue().getHandinPart().printCode(_studentList.getSelectedValue(),
                                                                     Allocator.getGradingUtilities().getPrinter());
         }
+    }
+
+    private void viewReadmeButtonActionPerformed()
+    {
+        _assignmentList.getSelectedValue().getHandinPart().viewReadme(_studentList.getSelectedValue());
     }
 
     private void viewRubricButtonActionPerformed()
