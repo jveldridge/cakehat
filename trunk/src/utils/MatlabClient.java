@@ -24,13 +24,23 @@ import java.net.*;
                     _sock = new Socket("localhost", 4444);
                     _out = new PrintWriter(_sock.getOutputStream(), true);
                 } catch (UnknownHostException e) {
-                System.err.println("no localhost"); }
+                new ErrorView(e, "Could not bind socket to localhost"); }
                 catch (IOException e) {
-                System.err.println(e); }
+                new ErrorView(e, "Could not bind socket to localhost"); }
         }
 
         public void sendCommand(String cmd) {
             _out.println(cmd);
+        }
+
+        public void die() {
+            try {
+                _sock.close();
+            }
+            catch (IOException e) {
+                new ErrorView(e, "Could not kill client");
+            }
+            _out.close();
         }
 
 
