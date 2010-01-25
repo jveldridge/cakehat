@@ -16,16 +16,16 @@ import javax.swing.JList;
  *
  * @param <E>
  */
-public class ParameterizedJList<E> extends JList
+public class GenericJList<E> extends JList
 {
-    public ParameterizedJList(Collection<E> items)
+    public GenericJList(Collection<E> items)
     {
         super(items.toArray());
     }
 
-    public ParameterizedJList() { }
+    public GenericJList() { }
 
-    public ParameterizedJList(E[] items)
+    public GenericJList(E[] items)
     {
         super(items);
     }

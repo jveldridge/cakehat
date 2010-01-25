@@ -1,6 +1,6 @@
 package gradesystem;
 
-import backend.Backend;
+import backend.BackendView;
 import frontend.FrontendView;
 import java.awt.Font;
 import javax.swing.UIManager;
@@ -28,7 +28,7 @@ public class GradeSystemApp extends SingleFrameApplication
         {
             if (_args[0].compareToIgnoreCase("backend") == 0)
             {
-                Backend.launch();
+                BackendView.launch();
             }
             else if (_args[0].compareToIgnoreCase("frontend") == 0)
             {

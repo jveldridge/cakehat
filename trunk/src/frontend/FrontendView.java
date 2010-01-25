@@ -1,6 +1,6 @@
 package frontend;
 
-import components.ParameterizedJList;
+import components.GenericJList;
 import config.Assignment;
 import config.HandinPart;
 import gradesystem.GradeSystemAboutBox;
@@ -93,8 +93,8 @@ public class FrontendView extends JFrame
         }
     }
 
-    private ParameterizedJList<Assignment> _assignmentList;
-    private ParameterizedJList<String> _studentList;
+    private GenericJList<Assignment> _assignmentList;
+    private GenericJList<String> _studentList;
     private CurrentlyGradingLabel _currentlyGradingLabel;
     private JButton _runDemoButton, _viewDeductionsButton, _printAllButton,
                     _submitGradingButton, _viewReadmeButton, _openCodeButton,
@@ -261,7 +261,7 @@ public class FrontendView extends JFrame
         assignmentPanel.setPreferredSize(listPanelSize);
         JLabel assignmentLabel = new JLabel("<html><b>Assignment</b></html>");
         assignmentLabel.setPreferredSize(labelSize);
-        _assignmentList = new ParameterizedJList<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
+        _assignmentList = new GenericJList<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
         _assignmentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _assignmentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -290,7 +290,7 @@ public class FrontendView extends JFrame
         studentPanel.setPreferredSize(listPanelSize);
         JLabel studentLabel = new JLabel("<html><b>Student</b></html>");
         studentLabel.setPreferredSize(labelSize);
-        _studentList = new ParameterizedJList<String>();
+        _studentList = new GenericJList<String>();
         _studentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {

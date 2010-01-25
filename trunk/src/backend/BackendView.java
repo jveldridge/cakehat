@@ -3,7 +3,7 @@ package backend;
 import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.stathist.StatHistView;
-import components.ParameterizedJList;
+import components.GenericJList;
 import config.Assignment;
 import config.HandinPart;
 import config.LabPart;
@@ -57,18 +57,18 @@ import utils.Allocator;
  *
  * @author jak2
  */
-public class Backend extends JFrame
+public class BackendView extends JFrame
 {
     public static void main(String[] args)
     {
-        new Backend();
+        new BackendView();
     }
 
     public static void launch()
     {
         if(Allocator.getGradingUtilities().isUserTA())
         {
-            new Backend();
+            new BackendView();
         }
         else
         {
@@ -161,8 +161,8 @@ public class Backend extends JFrame
                     _resetDatabaseButton;
     private JButton[] _assignmentButtons, _generalCommandsButtons, _studentButtons;
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
-    private ParameterizedJList<Assignment> _assignmentList;
-    private ParameterizedJList<String> _studentList;
+    private GenericJList<Assignment> _assignmentList;
+    private GenericJList<String> _studentList;
     private JTextField _filterField;
     private JPanel _cardPanel = new JPanel();
     private List<String> _studentLogins;
@@ -172,7 +172,7 @@ public class Backend extends JFrame
     private CardLayout _cardLayout;
     private SingleSelectionPanel _singleSelectionPanel;
 
-    private Backend()
+    private BackendView()
     {
         super("[cakehat] backend - " + Allocator.getGeneralUtilities().getUserLogin());
 
@@ -522,7 +522,7 @@ public class Backend extends JFrame
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //List
-        _studentList = new ParameterizedJList<String>(_studentLogins);
+        _studentList = new GenericJList<String>(_studentLogins);
         _studentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -610,7 +610,7 @@ public class Backend extends JFrame
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //List
-        _assignmentList = new ParameterizedJList<Assignment>(Allocator.getCourseInfo().getAssignments());
+        _assignmentList = new GenericJList<Assignment>(Allocator.getCourseInfo().getAssignments());
         _assignmentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         _assignmentList.addListSelectionListener(new ListSelectionListener()
         {
