@@ -5,9 +5,11 @@ import com.ice.tar.TarProgressDisplay;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -16,7 +18,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Vector;
-
+import java.util.zip.GZIPInputStream;
 
 /**
  * Utilities that are useful for any course.
@@ -377,6 +379,12 @@ public class GeneralUtilities {
         return daysLate;
     }
 
+    public static void main(String[] args)
+    {
+        new GeneralUtilities().untar("/course/cs015/handin/tgzHandins/mak1.tgz", "/home/jak2/extract_test/");
+        //new GeneralUtilities().untar("/course/cs015/handin/Swarm/2009/ss16.tar", "/home/jak2/extract_test/");
+    }
+
     /**
      * Extracts a tar file.
      *
@@ -386,8 +394,15 @@ public class GeneralUtilities {
      * @boolean success of untarring file
      */
     public boolean untar(String tarPath, String destPath) {
+        //Get appropriate stream
+        InputStream stream = getTarInputStream(tarPath);
+        if(stream == null) {
+            return false;
+        }
+
+        //Extract
         try {
-            TarArchive tar = new TarArchive(new FileInputStream(new File(tarPath)));
+            TarArchive tar = new TarArchive(stream);
             tar.extractContents(new File(destPath));
 
             return true;
@@ -398,15 +413,43 @@ public class GeneralUtilities {
         }
     }
 
+    private InputStream getTarInputStream(String tarPath) {
+        //Create stream
+        InputStream stream = null;
+        if(tarPath.endsWith(".tar")) {
+            try {
+                stream = new FileInputStream(new File(tarPath));
+            }
+            catch (FileNotFoundException ex) {
+                new ErrorView(ex);
+            }
+        }
+        else if(tarPath.endsWith(".tgz")) {
+            try {
+                stream = new GZIPInputStream(new FileInputStream(new File(tarPath)));
+            }
+            catch (Exception ex) {
+                new ErrorView(ex);
+            }
+        }
+
+        return stream;
+    }
+
     public Collection<String> getTarContents(String tarPath) {
         final Vector<String> contents = new Vector<String>();
+
+        //Get appropriate stream
+        InputStream stream = getTarInputStream(tarPath);
+        if(stream == null) {
+            return contents;
+        }
 
         try {
             TarArchive tar = new TarArchive(new FileInputStream(new File(tarPath)));
 
             tar.setTarProgressDisplay(new TarProgressDisplay(){
                 public void showTarProgressMessage(String msg){
-                    //System.out.println(msg);
                     String[] contentArray = msg.split("\n");
                     for(String entry : contentArray){
                         contents.add(entry);
