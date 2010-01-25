@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
 import utils.Allocator;
+import utils.BashConsole;
 import utils.TextViewerView;
 
 /**
@@ -80,9 +81,20 @@ public abstract class HandinPart extends Part
 
     public void viewReadme(String studentLogin)
     {
-        //View the first readme that was found
-        TextViewerView fv = new TextViewerView(this.getReadme(studentLogin).iterator().next());
-        fv.setTitle(studentLogin +"'s Readme");
+        //Get the first readme that was found
+        File readme = this.getReadme(studentLogin).iterator().next();
+
+        //If a PDF
+        if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
+        {
+            BashConsole.write("kpdf " + readme.getAbsolutePath());
+        }
+        //Otherwise, we assume it's a text file
+        else
+        {
+            TextViewerView fv = new TextViewerView(readme);
+            fv.setTitle(studentLogin +"'s Readme");
+        }
     }
 
     private Collection<File> getReadme(String studentLogin)
