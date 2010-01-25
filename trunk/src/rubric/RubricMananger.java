@@ -204,7 +204,10 @@ public class RubricMananger
      * Distributes the rubric for the HandinPart part, mapping TA logins (as
      * strings) to Collections of Strings of studentLogins that TA is assigned
      * to grade. When determining handin time status, takes into account the
-     * specified minutes of leniency to apply to deadlines.
+     * specified minutes of leniency to apply to deadlines. Also takes into
+     * account extensions that have been recorded in the database. If an
+     * extension is granted and the policy is MULTIPLE_DEADLINES it is treated
+     * as if the policy is NO_LATE using the extension date.
      *
      * @param assignmentName
      * @param distribution
@@ -213,32 +216,37 @@ public class RubricMananger
      */
     public void distributeRubrics(HandinPart part, Map<String,Collection<String>> distribution, int minutesOfLeniency)
     {
+        Map<String, Calendar> extensions = Allocator.getDatabaseIO().getExtensions(part);
+        Map<String, String> studentLogins = Allocator.getDatabaseIO().getAllStudents();
+
         try
         {
-            // get template rubric
+            //get template rubric
             Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
             
-            //For each TA
+            //for each TA
             for (String taLogin : distribution.keySet())
             {
                 //TODO: Get grader name from database
                 Person grader = new Person(taLogin, Allocator.getGeneralUtilities().getUserName(taLogin));
                 rubric.setGrader(grader);
-                //For each student
+
+                //for each student
                 for (String studentLogin : distribution.get(taLogin))
                 {
-                    //TODO: Get student name from database
-                    Person student = new Person(studentLogin, Allocator.getGeneralUtilities().getUserName(studentLogin));
+                    //student login and name
+                    Person student = new Person(studentLogin, studentLogins.get(studentLogin));
                     rubric.setStudent(student);
-                    // time status
-                    rubric.setStatus(getTimeStatus(part, studentLogin, minutesOfLeniency));
+                    //time status
+                    rubric.setStatus(getTimeStatus(part, studentLogin, extensions, minutesOfLeniency));
                     rubric.setDaysLate(0);
                     if (rubric.getStatus() == TimeStatus.LATE && rubric.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
                     {
-                        rubric.setDaysLate(getDaysLate(part, studentLogin, minutesOfLeniency));
+                        rubric.setDaysLate(getDaysLate(part, studentLogin, extensions, minutesOfLeniency));
                     }
-                    String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
-                    RubricGMLWriter.write(rubric, xmlPath);
+                    //write file
+                    String gmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+                    RubricGMLWriter.write(rubric, gmlPath);
                 }
             }
         }
@@ -248,21 +256,38 @@ public class RubricMananger
         }
     }
 
-    private int getDaysLate(HandinPart part, String studentLogin, int minutesOfLeniency)
+    private int getDaysLate(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
     {
         Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(part.getHandin(studentLogin));
         Calendar onTime = part.getTimeInformation().getOntimeDate();
+        //if there is an extension, use that date
+        if(extensions.containsKey(studentLogin))
+        {
+            onTime = extensions.get(studentLogin);
+        }
 
         return Allocator.getGeneralUtilities().daysAfterDeadline(handinTime, onTime, minutesOfLeniency);
     }
 
-    private TimeStatus getTimeStatus(HandinPart part, String studentLogin, int minutesOfLeniency)
+    private TimeStatus getTimeStatus(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
     {
         Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(part.getHandin(studentLogin));
+        
+        Calendar extensionTime = null;
+        if(extensions.containsKey(studentLogin))
+        {
+            extensionTime = extensions.get(studentLogin);
+        }
 
-        if(part.getTimeInformation().getLatePolicy() == LatePolicy.NO_LATE)
+        //If the policy is N0_LATE, or MULTIPLE_DEADLINES with an extension
+        if( (part.getTimeInformation().getLatePolicy() == LatePolicy.NO_LATE) ||
+            (extensionTime != null && part.getTimeInformation().getLatePolicy() == LatePolicy.MULTIPLE_DEADLINES)   )
         {
             Calendar onTime = part.getTimeInformation().getOntimeDate();
+            if(extensionTime != null)
+            {
+                onTime = extensionTime;
+            }
 
             //If before deadline
             if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
@@ -277,6 +302,10 @@ public class RubricMananger
         else if(part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
         {
             Calendar onTime = part.getTimeInformation().getOntimeDate();
+            if(extensionTime != null)
+            {
+                onTime = extensionTime;
+            }
 
             //If before deadline
             if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
