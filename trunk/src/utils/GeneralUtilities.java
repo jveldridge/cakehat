@@ -186,8 +186,7 @@ public class GeneralUtilities {
      * @return
      */
     public int getCurrentYear() {
-        return Calendar.getInstance().get(Calendar.YEAR); //For testing purposes only
-        //return Calendar.getInstance().get(Calendar.YEAR);
+        return Calendar.getInstance().get(Calendar.YEAR);
     }
 
     /**
@@ -379,17 +378,11 @@ public class GeneralUtilities {
         return daysLate;
     }
 
-    public static void main(String[] args)
-    {
-        new GeneralUtilities().untar("/course/cs015/handin/tgzHandins/mak1.tgz", "/home/jak2/extract_test/");
-        //new GeneralUtilities().untar("/course/cs015/handin/Swarm/2009/ss16.tar", "/home/jak2/extract_test/");
-    }
-
     /**
-     * Extracts a tar file.
+     * Extracts a tar or tgz archive file.
      *
-     * @param tarPath the absolute path of the tar file
-     * @param destPath the directory the tar file will be expanded into
+     * @param tarPath the absolute path of the archive file
+     * @param destPath the directory the archive file will be expanded into
      *
      * @boolean success of untarring file
      */
@@ -413,10 +406,18 @@ public class GeneralUtilities {
         }
     }
 
+    /**
+     * Gets the appropriate stream depending on whether the file is a tar
+     * file or a tgz file. This is determined by file extension. If the
+     * extension is neither tar nor tgz, null will be returned.
+     *
+     * @param tarPath
+     * @return
+     */
     private InputStream getTarInputStream(String tarPath) {
         //Create stream
         InputStream stream = null;
-        if(tarPath.endsWith(".tar")) {
+        if(tarPath.toLowerCase().endsWith(".tar")) {
             try {
                 stream = new FileInputStream(new File(tarPath));
             }
@@ -424,7 +425,7 @@ public class GeneralUtilities {
                 new ErrorView(ex);
             }
         }
-        else if(tarPath.endsWith(".tgz")) {
+        else if(tarPath.toLowerCase().endsWith(".tgz")) {
             try {
                 stream = new GZIPInputStream(new FileInputStream(new File(tarPath)));
             }
@@ -436,6 +437,13 @@ public class GeneralUtilities {
         return stream;
     }
 
+    /**
+     * Returns a listing of the files and directories of a tar or tgz file
+     * without extracting the file.
+     *
+     * @param tarPath
+     * @return
+     */
     public Collection<String> getTarContents(String tarPath) {
         final Vector<String> contents = new Vector<String>();
 
@@ -555,6 +563,9 @@ public class GeneralUtilities {
 
     /**
      * Rounds a double to the number of decimal places specified.
+     *
+     * TODO: Make this more efficient! Write the rounding code so that it
+     * doesn't need to create a BigDecimal. This code gets called a lot.
      *
      * @param d the double to round
      * @param decimalPlace the number of decimal places to round to
