@@ -86,6 +86,15 @@ public interface DatabaseIO {
      * @return
      */
     public Map<String,String> getAllStudents();
+
+    /**
+     * Returns a Map of all TAs currently in the database
+     * Key: String taLogin
+     * Value: String taName (as "FirstName LastName")
+     *
+     * @return
+     */
+    public Map<String,String> getAllTAs();
     
     /**
      * Returns a Map of all currently enabled student
