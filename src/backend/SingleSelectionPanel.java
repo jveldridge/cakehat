@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package backend;
 
 import config.Assignment;
@@ -45,12 +40,13 @@ class SingleSelectionPanel extends JPanel
     //GUI components
     private JComboBox _nonHandinBox, _labBox;
     private ScoreField _nonHandinEarnedField, _nonHandinOutOfField,
-                                _labEarnedField, _labOutOfField,
-                                _handinEarnedField, _handinOutOfField;
+                       _labEarnedField, _labOutOfField,
+                       _handinEarnedField, _handinOutOfField;
     private JLabel _nonHandinScoreLabel, _labScoreLabel, _handinScoreLabel,
                    _overallEarnedPointsLabel, _overallTotalPointsLabel,
                    _overallScoreLabel;
     private JButton _submitGradeButton;
+    private boolean _suppressUpdateScores = false;
 
     public SingleSelectionPanel()
     {
@@ -59,47 +55,48 @@ class SingleSelectionPanel extends JPanel
         this.initComponents();
     }
 
+    private static final Dimension
+    NON_HANDIN_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 130),
+    LAB_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 130),
+    HANDIN_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 110),
+    OVERALL_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 130),
+    UPDATE_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10,
+                                      PANEL_SIZE.height -
+                                      NON_HANDIN_PANEL_SIZE.height -
+                                      LAB_PANEL_SIZE.height -
+                                      HANDIN_PANEL_SIZE.height -
+                                      OVERALL_PANEL_SIZE.height);
     private void initComponents()
     {
         this.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
         //Non Handin
-        Dimension nonHandinPanelSize = new Dimension(PANEL_SIZE.width - 10, 130);
         JPanel nonHandinPanel = new JPanel();
-        nonHandinPanel.setPreferredSize(nonHandinPanelSize);
-        initNonHandinPanel(nonHandinPanel);
+        nonHandinPanel.setPreferredSize(NON_HANDIN_PANEL_SIZE);
+        this.initNonHandinPanel(nonHandinPanel);
         this.add(nonHandinPanel);
 
         //Lab
-        Dimension labPanelSize = new Dimension(PANEL_SIZE.width - 10, 130);
         JPanel labPanel = new JPanel();
-        labPanel.setPreferredSize(labPanelSize);
-        initLabPartsPanel(labPanel);
+        labPanel.setPreferredSize(LAB_PANEL_SIZE);
+        this.initLabPartsPanel(labPanel);
         this.add(labPanel);
 
         //Handin
-        Dimension handinPanelSize = new Dimension(PANEL_SIZE.width - 10, 110);
         JPanel handinPanel = new JPanel();
-        handinPanel.setPreferredSize(handinPanelSize);
-        initHandinPanel(handinPanel);
+        handinPanel.setPreferredSize(HANDIN_PANEL_SIZE);
+        this.initHandinPanel(handinPanel);
         this.add(handinPanel);
 
         //Overall
-        Dimension overallPanelSize = new Dimension(PANEL_SIZE.width -10, 130);
         JPanel overallPanel = new JPanel();
-        overallPanel.setPreferredSize(overallPanelSize);
+        overallPanel.setPreferredSize(OVERALL_PANEL_SIZE);
         this.initOverallPanel(overallPanel);
         this.add(overallPanel);
 
         //Update
-        Dimension updatePanelSize = new Dimension(PANEL_SIZE.width - 10,
-                                                  PANEL_SIZE.height -
-                                                  nonHandinPanelSize.height -
-                                                  labPanelSize.height -
-                                                  handinPanelSize.height -
-                                                  overallPanelSize.height);
         JPanel updatePanel = new JPanel();
-        updatePanel.setPreferredSize(updatePanelSize);
+        updatePanel.setPreferredSize(UPDATE_PANEL_SIZE);
         this.initUpdatePanel(updatePanel);
         this.add(updatePanel);
     }
@@ -122,10 +119,7 @@ class SingleSelectionPanel extends JPanel
 
     private void initNonHandinPanel(JPanel panel)
     {
-        FlowLayout fLayout = new FlowLayout();
-        fLayout.setHgap(0);
-        fLayout.setVgap(0);
-        panel.setLayout(fLayout);
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
         Dimension panelSize = panel.getPreferredSize();
 
@@ -232,10 +226,7 @@ class SingleSelectionPanel extends JPanel
 
     private void initLabPartsPanel(JPanel panel)
     {
-        FlowLayout fLayout = new FlowLayout();
-        fLayout.setHgap(0);
-        fLayout.setVgap(0);
-        panel.setLayout(fLayout);
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
         Dimension panelSize = panel.getPreferredSize();
 
@@ -344,10 +335,7 @@ class SingleSelectionPanel extends JPanel
 
     private void initHandinPanel(JPanel panel)
     {
-        FlowLayout fLayout = new FlowLayout();
-        fLayout.setHgap(0);
-        fLayout.setVgap(0);
-        panel.setLayout(fLayout);
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
         Dimension panelSize = panel.getPreferredSize();
 
@@ -424,10 +412,7 @@ class SingleSelectionPanel extends JPanel
 
     private void initOverallPanel(JPanel panel)
     {
-        FlowLayout fLayout = new FlowLayout();
-        fLayout.setHgap(0);
-        fLayout.setVgap(0);
-        panel.setLayout(fLayout);
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
         Dimension panelSize = panel.getPreferredSize();
 
@@ -521,6 +506,8 @@ class SingleSelectionPanel extends JPanel
 
     public void updateView(String studentLogin, Assignment asgn)
     {
+        _suppressUpdateScores = true;
+
         _studentLogin = studentLogin;
         _asgn = asgn;
 
@@ -550,6 +537,9 @@ class SingleSelectionPanel extends JPanel
             _handinEarnedField.setNumberValue(handinEarned);
             _handinOutOfField.setNumberValue(handinOutOf);
         }
+
+        _suppressUpdateScores = false;
+        this.updateScores();
     }
 
     private class ScoreField extends JFormattedTextField
@@ -605,7 +595,7 @@ class SingleSelectionPanel extends JPanel
 
     private void updateScores()
     {
-        if(_asgn == null)
+        if(_asgn == null || _suppressUpdateScores)
         {
             return;
         }
