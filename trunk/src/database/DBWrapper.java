@@ -299,6 +299,10 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public Map<String, String> getAllTAs() {
+        throw new UnsupportedOperationException("This method is not yet implemented");
+    }
+
     public Map<String, String> getAllStudents() {
         this.openConnection();
         try {
