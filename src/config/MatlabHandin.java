@@ -29,6 +29,7 @@ class MatlabHandin extends CodeHandin
     @Override
     public void run(String studentLogin)
     {
+        super.untar(studentLogin);
         //ps -u graderlogin | grep matlab
         Collection<String> response = BashConsole.write("ps -u " +
                 Allocator.getGeneralUtilities().getUserLogin() + " | grep matlab");
@@ -36,9 +37,16 @@ class MatlabHandin extends CodeHandin
             BashConsole.write("cd /course/cs004/cakehat/bin ; matlab -r "
                     + "setup");
         }
-        else { //MATLAB is currently running; we want to tell it to 'cd'
-
+        //MATLAB is currently running; we want to tell it to 'cd'
+        MatlabClient c = new MatlabClient();
+        try
+        {
+            c.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
         }
+        catch(Exception e) {
+            new ErrorView(e, "Could not send command to MATLAB");
+        }
+        
     }
 
     @Override
