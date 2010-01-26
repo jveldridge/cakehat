@@ -36,8 +36,6 @@ public class RubricMananger
         view(part, studentLogin, false);
     }
 
-
-
     private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
     /**
      * View the rubric for a student for a given handin part. If it is already
@@ -50,7 +48,7 @@ public class RubricMananger
      */
     public void view(HandinPart part, String studentLogin, boolean isAdmin)
     {
-        String XMLFilePath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+        String GMLFilePath = getStudentRubricPath(part, studentLogin);
 
         //Determine if it has been opened
         final String graderViewName = part.getAssignment().getName() + "::" + studentLogin;
@@ -59,17 +57,17 @@ public class RubricMananger
         {
             try
             {
-            Rubric rubric = RubricGMLParser.parse(XMLFilePath, part);
-            GradingVisualizer visualizer = new GradingVisualizer(rubric, XMLFilePath, isAdmin);
-            visualizer.addWindowListener(new WindowAdapter()
-            {
-                public void windowClosed(WindowEvent e)
+                Rubric rubric = RubricGMLParser.parse(GMLFilePath, part);
+                GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
+                visualizer.addWindowListener(new WindowAdapter()
                 {
-                    _graders.remove(graderViewName);
-                }
-            });
+                    public void windowClosed(WindowEvent e)
+                    {
+                        _graders.remove(graderViewName);
+                    }
+                });
 
-            _graders.put(graderViewName, visualizer);
+                _graders.put(graderViewName, visualizer);
             }
             catch (RubricException ex)
             {
@@ -84,6 +82,16 @@ public class RubricMananger
             visualizer.setLocationRelativeTo(null);
         }
 
+    }
+
+    /**
+     * @date 01/08/2010
+     * @return path to student's rubric for a particular project
+     *          Note: this is independent of the TA who graded the student
+     *         currently, /course/<course>/cakehat/<year>/rubrics/<assignmentName>/<studentLogin>.gml
+     */
+    protected String getStudentRubricPath(HandinPart part, String studentLogin) {
+        return Allocator.getCourseInfo().getRubricDir() + part.getAssignment().getName() + "/" + studentLogin + ".gml";
     }
 
     /**
@@ -217,8 +225,8 @@ public class RubricMananger
      */
     public void distributeRubrics(HandinPart part, Map<String,Collection<String>> distribution, int minutesOfLeniency)
     {
-        Map<String, Calendar> extensions = Allocator.getDatabaseIO().getExtensions(part);
-        Map<String, String> studentLogins = Allocator.getDatabaseIO().getAllStudents();
+        Map<String, String> studentLogins = Allocator.getDatabaseIO().getAllStudents();   
+        Map<String, Calendar> extensions = getExtensions(part, studentLogins.keySet());
 
         try
         {
@@ -246,7 +254,7 @@ public class RubricMananger
                         rubric.setDaysLate(getDaysLate(part, studentLogin, extensions, minutesOfLeniency));
                     }
                     //write file
-                    String gmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+                    String gmlPath = getStudentRubricPath(part, studentLogin);
                     RubricGMLWriter.write(rubric, gmlPath);
                 }
             }
@@ -268,6 +276,69 @@ public class RubricMananger
         }
 
         return Allocator.getGeneralUtilities().daysAfterDeadline(handinTime, onTime, minutesOfLeniency);
+    }
+
+    /**
+     * Gets the extensions for each student in studentLogins. Takes into account
+     * the group the student is in; using the latest date of all group members.
+     * If there is no extension for any member of the group, null is assigned.
+     *
+     * @param part
+     * @param studentLogins
+     * @return
+     */
+    private Map<String, Calendar> getExtensions(HandinPart part, Iterable<String> studentLogins)
+    {
+        //Info from the database
+        Map<String, Calendar> individualExtensions = Allocator.getDatabaseIO().getExtensions(part);
+        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(part);
+
+        //Extensions for each student, taking into account the extensions that
+        //apply for each member of the group
+        Map<String, Calendar> groupExtensions = new HashMap<String, Calendar>();
+
+        for(String studentLogin : studentLogins)
+        {
+            groupExtensions.put(studentLogin,
+                                getExtensionCalendar(studentLogin, individualExtensions, groups));
+        }
+
+        return groupExtensions;
+    }
+
+    /**
+     * Gets the the extension calendar for this student. Gets all calendars for
+     * each member of the group and then returns the latest one. If there is no
+     * applicable extension calendar, then null is returned.
+     *
+     * @param studentLogin
+     * @param extensions
+     * @param groups
+     * @return
+     */
+    private Calendar getExtensionCalendar(String studentLogin, Map<String, Calendar> extensions, Map<String, Collection<String>> groups)
+    {
+        Collection<String> groupLogins = groups.get(studentLogin);
+        
+        Calendar latestCal = null;
+        
+        for(String login : groupLogins)
+        {
+            Calendar cal = extensions.get(login);
+            
+            //If no calendar so far, set this one
+            if(latestCal == null)
+            {
+                latestCal = cal;
+            }            
+            //Else if this student has a calendar and is after the latest so far
+            else if(cal != null && cal.after(latestCal))
+            {
+                latestCal = cal;
+            }
+        }
+        
+        return latestCal;
     }
 
     private TimeStatus getTimeStatus(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
@@ -362,7 +433,7 @@ public class RubricMananger
          try
          {
             //Get rubric
-            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            String xmlPath = getStudentRubricPath(part, studentLogin);
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
             
             return rubric.getStatus();
@@ -389,7 +460,7 @@ public class RubricMananger
          try
          {
             //Get rubric
-            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            String xmlPath = getStudentRubricPath(part, studentLogin);
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             TimeStatus status = rubric.getStatus();
@@ -433,7 +504,7 @@ public class RubricMananger
          try
          {
             //Get rubric
-            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            String xmlPath = getStudentRubricPath(part, studentLogin);
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Change status and days late
@@ -462,7 +533,7 @@ public class RubricMananger
         try
         {
             //Get rubric
-            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            String xmlPath = getStudentRubricPath(part, studentLogin);
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Change grader
@@ -489,7 +560,7 @@ public class RubricMananger
         try
         {
             //Get rubric
-            String xmlPath = Allocator.getGradingUtilities().getStudentRubricPath(part.getAssignment().getName(), studentLogin);
+            String xmlPath = getStudentRubricPath(part, studentLogin);
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Write to grd

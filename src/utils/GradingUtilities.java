@@ -94,16 +94,6 @@ public class GradingUtilities {
         return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
     }
 
-    /**
-     * @date 01/08/2010
-     * @return path to student's rubric for a particular project
-     *          Note: this is independent of the TA who graded the student
-     *         currently, /course/<course>/cakehat/<year>/rubrics/<assignmentName>/<studentLogin>.gml
-     */
-    public String getStudentRubricPath(String assignmentName, String studentLogin) {
-        return Allocator.getCourseInfo().getRubricDir() + assignmentName + "/" + studentLogin + ".gml";
-    }
-
     public String getStudentGRDPath(String assignmentName, String studentLogin) {
         return this.getUserGradingDirectory() + assignmentName + "/" + studentLogin + ".grd";
     }

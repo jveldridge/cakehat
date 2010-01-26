@@ -21,9 +21,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import utils.Allocator;
 
@@ -37,9 +40,17 @@ import utils.Allocator;
  */
 class GradingVisualizer extends JFrame
 {
-    GradingVisualizer(final Rubric rubric, final String XMLFilePath, final boolean isAdmin)
+    private Rubric _rubric;
+    private Map<String, String> _group;
+    private boolean _isAdmin;
+    private StateManager _stateManager;
+
+    GradingVisualizer(final Rubric rubric, final boolean isAdmin)
     {
         super("Grading " + rubric.getStudentAccount() + "'s " + rubric.getName());
+
+        _rubric = rubric;
+        _isAdmin = isAdmin;
 
         //Load window icon
         try
@@ -56,12 +67,12 @@ class GradingVisualizer extends JFrame
             saveButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/16x16/media-floppy.png"))));
         }
         catch (Exception e) {}
-        final StateManager stateManager = new StateManager(saveButton, true);
+        _stateManager = new StateManager(saveButton, true);
         saveButton.setEnabled(false);
 
         //Panels
         this.setLayout(new BorderLayout());
-        RubricPanel rubricPanel = new RubricPanel(rubric, stateManager, isAdmin);
+        RubricPanel rubricPanel = new RubricPanel(rubric, _stateManager, isAdmin);
         final JScrollPane scrollPane = new JScrollPane(rubricPanel);
         Dimension size = new Dimension(rubricPanel.getPreferredSize().width + 30, 800);
         scrollPane.setPreferredSize(size);
@@ -70,21 +81,21 @@ class GradingVisualizer extends JFrame
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
 
+        //Get all members of the group and their names
+        Collection<String> groupLogins = Allocator.getDatabaseIO().getGroup(rubric._handinPart, rubric.getStudentName());
+        Map<String, String> allStudents = Allocator.getDatabaseIO().getAllStudents();
+        _group = new HashMap<String, String>();
+        for(String login : groupLogins)
+        {
+            _group.put(login, allStudents.get(login));
+        }
+
         //Save action
         saveButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
             {
-                RubricGMLWriter.write(rubric, XMLFilePath);
-
-                //If an admin is saving this rubric, write to that database
-                if(isAdmin)
-                {
-                    double score = rubric.getTotalHandinScore();
-                    Allocator.getDatabaseIO().enterGrade(rubric.getStudentAccount(), rubric._handinPart, score);
-                }
-
-                stateManager.rubricSaved();
+                save();
             }
         });
 
@@ -103,7 +114,7 @@ class GradingVisualizer extends JFrame
         {
             public void windowClosing(WindowEvent e)
             {
-                if (stateManager.beenSaved())
+                if (_stateManager.beenSaved())
                 {
                     GradingVisualizer.this.dispose();
                 }
@@ -112,7 +123,7 @@ class GradingVisualizer extends JFrame
                     int chosenOption = JOptionPane.showConfirmDialog(GradingVisualizer.this, "Would you like to save before exiting?");
                     if (chosenOption == JOptionPane.YES_OPTION)
                     {
-                        RubricGMLWriter.write(rubric, XMLFilePath);
+                        save();
                         GradingVisualizer.this.dispose();
                     }
                     if (chosenOption == JOptionPane.NO_OPTION)
@@ -145,5 +156,28 @@ class GradingVisualizer extends JFrame
         //Show
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+    }
+
+    private void save()
+    {
+        for(String login : _group.keySet())
+        {
+            _rubric.setStudent(_group.get(login), login);
+            String gmlPath = Allocator.getRubricManager().getStudentRubricPath(_rubric._handinPart, login);
+            RubricGMLWriter.write(_rubric, gmlPath);
+        }
+
+        //If an admin is saving this rubric, write to that database
+        if(_isAdmin)
+        {
+            double score = _rubric.getTotalHandinScore();
+
+            for(String login : _group.keySet())
+            {
+                Allocator.getDatabaseIO().enterGrade(login, _rubric._handinPart, score);
+            }
+        }
+
+        _stateManager.rubricSaved();
     }
 }

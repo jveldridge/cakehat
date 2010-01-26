@@ -949,11 +949,29 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public Collection<String> getGroup(HandinPart handin, String student) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Collection<String> group = new ArrayList<String>();
+
+        group.add(student);
+        //group.add("a_student2");
+        //group.add("a_student3");
+
+        return group;
     }
 
     public Map<String, Collection<String>> getGroups(HandinPart handin) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Collection<String> students = this.getAllStudents().keySet();
+
+        Map<String, Collection<String>> groups = new HashMap<String, Collection<String>>();
+
+        for(String student : students){
+            Collection<String> group = new ArrayList<String>();
+            group.add(student);
+            //group.add("a_student2");
+            //group.add("a_student3");
+            groups.put(student, group);
+        }
+
+        return groups;
     }
 
     public boolean removeGroup(HandinPart handin, Collection<String> group) {
