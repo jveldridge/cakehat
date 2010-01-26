@@ -952,8 +952,6 @@ public class DBWrapper implements DatabaseIO {
         Collection<String> group = new ArrayList<String>();
 
         group.add(student);
-        //group.add("a_student2");
-        //group.add("a_student3");
 
         return group;
     }
@@ -966,8 +964,6 @@ public class DBWrapper implements DatabaseIO {
         for(String student : students){
             Collection<String> group = new ArrayList<String>();
             group.add(student);
-            //group.add("a_student2");
-            //group.add("a_student3");
             groups.put(student, group);
         }
 

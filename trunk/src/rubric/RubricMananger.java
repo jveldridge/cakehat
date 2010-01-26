@@ -564,7 +564,7 @@ public class RubricMananger
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Write to grd
-            String grdPath = Allocator.getGradingUtilities().getStudentGRDPath(part.getAssignment().getName(), studentLogin);
+            String grdPath = Allocator.getGradingUtilities().getStudentGRDPath(part, studentLogin);
             RubricGMLWriter.write(rubric, grdPath);
         }
         catch(RubricException e)
@@ -584,6 +584,17 @@ public class RubricMananger
         for(String studentLogin : studentLogins)
         {
             convertToGRD(part, studentLogin);
+        }
+    }
+
+    public void convertToGRD(Map<HandinPart, Iterable<String>> toConvert)
+    {
+        for(HandinPart part : toConvert.keySet())
+        {
+            for(String studentLogin : toConvert.get(part))
+            {
+                convertToGRD(part, studentLogin);
+            }
         }
     }
 }
