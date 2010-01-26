@@ -150,6 +150,7 @@ class MatlabHandin extends CodeHandin
                if(tf.getText() != null && !tf.getText().isEmpty()) {
                    cmd += "(" + tf.getText() + ")";
                }
+               System.out.println(cmd);
                 _client.sendCommand(cmd);
         }
         
