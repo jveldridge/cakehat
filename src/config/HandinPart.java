@@ -159,6 +159,10 @@ public abstract class HandinPart extends Part
             {
                 return handin;
             }
+            if (handin.getName().equals(studentLogin + ".tgz"))
+            {
+                return handin;
+            }
         }
 
         return null;
@@ -175,7 +179,10 @@ public abstract class HandinPart extends Part
         //If handins have not been requested yet, load them
         if(_handins == null)
         {
-            _handins = Allocator.getGeneralUtilities().getFiles(this.getHandinPath(), "tar");
+            _handins = new Vector<File>();
+
+            _handins.addAll(Allocator.getGeneralUtilities().getFiles(this.getHandinPath(), "tar"));
+            _handins.addAll(Allocator.getGeneralUtilities().getFiles(this.getHandinPath(), "tgz"));
         }
         return _handins;
     }
