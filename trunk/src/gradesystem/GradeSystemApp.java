@@ -2,11 +2,9 @@ package gradesystem;
 
 import backend.BackendView;
 import frontend.FrontendView;
-import java.awt.Font;
 import javax.swing.UIManager;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
-import org.jvnet.substance.skin.SubstanceCremeLookAndFeel;
 
 /**
  * The main class of the application.
@@ -14,7 +12,6 @@ import org.jvnet.substance.skin.SubstanceCremeLookAndFeel;
 public class GradeSystemApp extends SingleFrameApplication
 {
     private static String[] _args;
-    private static boolean _testing;
 
     /**
      * At startup create and show the main frame of the application.
@@ -38,7 +35,6 @@ public class GradeSystemApp extends SingleFrameApplication
         else
         {
             show(new GradeSystemView(this));
-            _testing = true;
         }
 
     }
@@ -55,31 +51,13 @@ public class GradeSystemApp extends SingleFrameApplication
             {
                 try
                 {
-                    if(_testing)
-                    {
-                        System.setProperty("awt.useSystemAAFontSettings", "false");
-                        System.setProperty("swing.aatext", "false");
-                    }
-                    else if ( (_args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0)
+                    //If not ssh
+                    if ( (_args.length >= 2 && _args[1].compareToIgnoreCase("ssh") != 0)
                               || _args.length < 2)
                     {
-                        UIManager.setLookAndFeel(new SubstanceCremeLookAndFeel());
-
-                        Font font = new Font("Deja Vu Sans", Font.TRUETYPE_FONT, 12);
-
-                        UIManager.put("MenuItem.font", font);
-                        UIManager.put("Menu.font", font);
-                        UIManager.put("Button.font", font);
-                        UIManager.put("ComboBox.font", font);
-                        UIManager.put("CheckBox.font", font);
-                        UIManager.put("Label.font", font);
-                        UIManager.put("TabbedPane.font", font);
-                        UIManager.put("TextField.font", font);
-                        UIManager.put("List.font", font);
-                        UIManager.put("RadioButton.font", font);
-                        System.setProperty("awt.useSystemAAFontSettings", "true");
-                        System.setProperty("swing.aatext", "true");
+                        UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
                     }
+                    //If ssh
                     else
                     {
                         System.setProperty("awt.useSystemAAFontSettings", "false");
