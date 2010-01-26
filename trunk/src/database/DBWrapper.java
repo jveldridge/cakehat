@@ -940,4 +940,24 @@ public class DBWrapper implements DatabaseIO {
             return new HashMap<String, Collection<String>>();
         }
     }
+
+    public boolean setGroups(HandinPart handin, Collection<Collection<String>> groupings) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean setGroup(HandinPart handin, Collection<String> group) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Collection<String> getGroup(HandinPart handin, String student) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Map<String, Collection<String>> getGroups(HandinPart handin) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean removeGroup(HandinPart handin, Collection<String> group) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
