@@ -32,8 +32,7 @@ public class DBWrapper implements DatabaseIO {
      * sets DB path to regular location
      */
     public DBWrapper() {
-        //should be set to constant
-        this("jdbc:sqlite:/course/cs015/cakehat/2009/database/cs015.sqlite");// + Allocator.getCourseInfo().getDatabaseFilePath());
+        this("jdbc:sqlite:" + Allocator.getCourseInfo().getDatabaseFilePath());
     }
 
     /**
