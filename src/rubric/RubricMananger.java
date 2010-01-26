@@ -17,6 +17,7 @@ import utils.ErrorView;
  * Don't directly create this class, access it via the Allocator.
  * All rubric related functionality goes through this class.
  *
+ * @author spoletto
  * @author jak2
  */
 public class RubricMananger

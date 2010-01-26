@@ -12,6 +12,7 @@ import utils.Allocator;
  * An object representation of a GML file. Used internally within the the rubric
  * package.
  *
+ * @author spoletto
  * @author jak2
  */
 class Rubric

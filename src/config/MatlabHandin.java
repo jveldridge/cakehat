@@ -23,6 +23,7 @@ class MatlabHandin extends CodeHandin
 {
     private static final String[] _sourceFileTypes = { "m" };
     private static MatlabClient _client = null;
+    private static final String MATLAB_PATH = "/com/matlab/bin/matlab";
 
     //TODO: Fill in my properties
     public static final LanguageSpecification SPECIFICATION =
@@ -86,7 +87,7 @@ class MatlabHandin extends CodeHandin
         if (response.isEmpty()) { //MATLAB is not currently running
             String terminalCmd = "/usr/bin/xterm -title " + "\"" + "MATLAB" +
                     "\"" + " -e " + "\"" + "cd " + Allocator.getCourseInfo().getGradingDir() +
-                    "bin ; matlab -r setup " + "; read" + "\"";
+                    "bin ; " + MATLAB_PATH + " -r setup " + "; read" + "\"";
             //Execute the command in a seperate thread
             BashConsole.writeThreaded(terminalCmd);
             boolean serverExists = false;
