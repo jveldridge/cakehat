@@ -155,8 +155,8 @@ public class BackendView extends JFrame
                     _createDistributionButton, _reassignGradingButton, _importLabsButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
                     //Student buttons
-                    _chartsButton, _emailReportsButton, _extensionButton,
-                    _exemptionButton, _openCodeButton, _runCodeButton,
+                    _chartsButton, _emailReportsButton, _extensionExemptionButton,
+                    _openCodeButton, _runCodeButton,
                     _testCodeButton, _printCodeButton, _viewReadmeButton,
                     _viewRubricButton, _printRubricButton, _disableStudentButton,
                     //General command buttons
@@ -338,7 +338,7 @@ public class BackendView extends JFrame
         
         _studentButtons = new JButton[]
         {
-          _chartsButton, _emailReportsButton, _extensionButton, _exemptionButton,
+          _chartsButton, _emailReportsButton, _extensionExemptionButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
           _viewReadmeButton, _viewRubricButton, _printRubricButton, _disableStudentButton
         };
@@ -691,7 +691,7 @@ public class BackendView extends JFrame
         panel.add(buttonPanel);
 
         //Charts & histograms
-        _chartsButton = createButton("Charts &amp; Histograms", "/gradesystem/resources/icons/16x16/x-office-spreadsheet.png");
+        _chartsButton = createButton("View Charts", "/gradesystem/resources/icons/16x16/x-office-spreadsheet.png");
         _chartsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -703,7 +703,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_chartsButton);
 
         //Email grade reports
-        _emailReportsButton = createButton("Email Grade Reports", "/gradesystem/resources/icons/16x16/mail-message-new.png");
+        _emailReportsButton = createButton("Email Reports", "/gradesystem/resources/icons/16x16/mail-message-new.png");
         _emailReportsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -716,29 +716,17 @@ public class BackendView extends JFrame
 
         buttonPanel.add(Box.createVerticalBox());//space
 
-        //Extension Manager
-        _extensionButton = createButton("Extension Manager", "/gradesystem/resources/icons/16x16/office-calendar.png");
-        _extensionButton.addActionListener(new ActionListener()
+        //Extensions & Exemptions
+        _extensionExemptionButton = createButton("Extensions|Exemptions", "/gradesystem/resources/icons/16x16/office-calendar.png");
+        _extensionExemptionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                extensionButtonActionPerformed();
+                extensionExemptionButtonActionPerformed();
             }
             
         });
-        buttonPanel.add(_extensionButton);
-
-        //Exemption Manager
-        _exemptionButton = createButton("Exemption Manager", "/gradesystem/resources/icons/16x16/emblem-unreadable.png");
-        _exemptionButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                exemptionButtonActionPerformed();
-            }
-            
-        });
-        buttonPanel.add(_exemptionButton);
+        buttonPanel.add(_extensionExemptionButton);
 
         buttonPanel.add(Box.createVerticalBox());//space
 
@@ -1057,7 +1045,7 @@ public class BackendView extends JFrame
             //If one assigment
             if(selectedAssignments.size() == 1)
             {
-                _exemptionButton.setEnabled(true);
+                _extensionExemptionButton.setEnabled(true);
 
                 //If it has a handin part
                 if(_assignmentList.getSelectedValue().hasHandinPart())
@@ -1071,8 +1059,6 @@ public class BackendView extends JFrame
                     _openCodeButton.setEnabled(hasHandin && part.hasOpen());
                     _printCodeButton.setEnabled(hasHandin && part.hasPrint());
                     _viewReadmeButton.setEnabled(hasHandin && part.hasReadme(_studentList.getSelectedValue()));
-
-                    _extensionButton.setEnabled(true);
 
                     _viewRubricButton.setEnabled(part.hasRubric() &&
                             Allocator.getRubricManager().hasRubric(part, _studentList.getSelectedValue()));
@@ -1315,22 +1301,9 @@ public class BackendView extends JFrame
         }
     }
 
-    private void extensionButtonActionPerformed()
+    private void extensionExemptionButtonActionPerformed()
     {
-        if(_studentList.getSelectedValue() != null && _assignmentList.getSelectedValue() != null &&
-           _assignmentList.getSelectedValue().hasHandinPart())
-        {
-            new ExtensionView(_assignmentList.getSelectedValue().getHandinPart(), _studentList.getSelectedValue());
-        }
-    }
-
-    private void exemptionButtonActionPerformed()
-    {
-        if(_studentList.getSelectedValue() != null && _assignmentList.getSelectedValue() != null &&
-           _assignmentList.getSelectedValue().hasHandinPart())
-        {
-            new ExemptionView(_assignmentList.getGenericSelectedValues(), _studentList.getGenericSelectedValues());
-        }
+        JOptionPane.showMessageDialog(this, "This feature is not yet implemented");
     }
 
     private void openCodeButtonActionPerformed()
