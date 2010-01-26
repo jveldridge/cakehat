@@ -24,8 +24,8 @@ public class SetupScriptWriter {
         try
         {
             printer = new PrintWriter(setupScript);
-            printer.println("javaaddpath " + path);
-            printer.println("server = MatlabServer;");
+            printer.println("javaaddpath " + path + "GradeSystem.jar");
+            printer.println("server = matlab.MatlabServer;");
 
         }
         catch(Exception e)
