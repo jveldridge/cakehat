@@ -1,11 +1,14 @@
 package config;
 
+import matlab.MatlabClient;
 import utils.*;
 import java.util.Collection;
+import matlab.SetupScriptWriter;
 
 /**
+ * Adds support for MATLAB student handins.
  *
- * @author <author-here>
+ * @author spoletto
  */
 class MatlabHandin extends CodeHandin
 {
@@ -27,25 +30,66 @@ class MatlabHandin extends CodeHandin
     }
 
     @Override
-    public void run(String studentLogin)
+    public void openCode(String studentLogin)
     {
+        MatlabClient c = setupClient(studentLogin);
+        try
+        {
+            c.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
+            //get all .m files from current working directory
+            //open up all .m files in MATLAB editor with 'edit' command
+        }
+        catch(Exception e) {
+            new ErrorView(e, "Could not connect to MATLAB server. If you were " +
+                    "running an active session of MATLAB before pressing the run " +
+                    "button, please close MATLAB and try again");
+        }
+    }
+
+    private Collection<String> getMFiles(String studentLogin, MatlabClient c)
+    {
+        //get the M files using 'what'
+        return null;
+    }
+
+    private MatlabClient setupClient(String studentLogin)
+    {
+        if(!SetupScriptWriter.exists(studentLogin))
+        {
+            SetupScriptWriter.createScript(studentLogin);
+        }
         super.untar(studentLogin);
         //ps -u graderlogin | grep matlab
         Collection<String> response = BashConsole.write("ps -u " +
                 Allocator.getGeneralUtilities().getUserLogin() + " | grep matlab");
         if(response.isEmpty()) { //MATLAB is not currently running
-            BashConsole.write("cd /course/cs004/cakehat/bin ; matlab -r "
-                    + "setup");
+            BashConsole.writeThreaded("cd " + Allocator.getCourseInfo().getGradingDir() +
+                    "bin ; matlab -r setup");
         }
         //MATLAB is currently running; we want to tell it to 'cd'
-        MatlabClient c = new MatlabClient();
+        return new MatlabClient();
+    }
+
+
+    @Override //TODO: dynamically create setup.m script for use in
+    //courses other than CS4
+    public void run(String studentLogin)
+    {
+        MatlabClient c = setupClient(studentLogin);
         try
         {
             c.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
+            //get all .m files from current working directory
+            //open up all .m files in MATLAB editor with 'edit' command
         }
         catch(Exception e) {
-            new ErrorView(e, "Could not send command to MATLAB");
+            new ErrorView(e, "Could not connect to MATLAB server. If you were " +
+                    "running an active session of MATLAB before pressing the run " +
+                    "button, please close MATLAB and try again");
         }
+        //check if setup script exists within setupClient
+        //using PrintWriter, write findMFiles function
+        //
         
     }
 
