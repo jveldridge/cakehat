@@ -58,7 +58,7 @@ class MatlabHandin extends CodeHandin
         }
         catch(Exception e) {
             new ErrorView(e, "Could not connect to MATLAB server. If you were " +
-                    "running an active session of MATLAB before pressing the run " +
+                    "running an active session of MATLAB before pressing the open " +
                     "button, please close MATLAB and try again");
         }
     }
@@ -146,7 +146,11 @@ class MatlabHandin extends CodeHandin
         panel.add(tf);
 
         if (JOptionPane.showConfirmDialog(null, panel, "Select file to run:", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-                _client.sendCommand((String) cb.getSelectedItem());
+               String cmd = (String) cb.getSelectedItem();
+               if(tf.getText() != null && !tf.getText().isEmpty()) {
+                   cmd += "(" + tf.getText() + ")";
+               }
+                _client.sendCommand(cmd);
         }
         
     }
