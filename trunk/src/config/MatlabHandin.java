@@ -54,9 +54,9 @@ class MatlabHandin extends CodeHandin
 
     private MatlabClient setupClient(String studentLogin)
     {
-        if(!SetupScriptWriter.exists(studentLogin))
+        if(!SetupScriptWriter.exists())
         {
-            SetupScriptWriter.createScript(studentLogin);
+            SetupScriptWriter.createScript();
         }
         super.untar(studentLogin);
         //ps -u graderlogin | grep matlab

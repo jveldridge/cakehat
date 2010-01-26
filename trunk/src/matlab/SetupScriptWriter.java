@@ -25,12 +25,12 @@ public class SetupScriptWriter {
         {
             printer = new PrintWriter(setupScript);
             printer.println("javaaddpath " + path);
-            printer.println("server = matlab.MatlabServer");
+            printer.println("server = MatlabServer;");
 
         }
         catch(Exception e)
         {
-            new ErrorView(e);
+            new ErrorView(e, "Could not create setup.m file");
         }
         finally
         {
