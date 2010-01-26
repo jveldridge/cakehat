@@ -1,15 +1,13 @@
 package config;
 
+import java.awt.GridLayout;
 import java.io.File;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import matlab.MatlabClient;
 import utils.*;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -148,15 +146,21 @@ class MatlabHandin extends CodeHandin
     
         //create the GUI to select which function to run
         JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0,1));
         JComboBox cb = new JComboBox();
         Collection<String> files = this.getMFiles(studentLogin);
         for (String s : files ) {
             cb.insertItemAt(s, cb.getItemCount());
         }
+        if (cb.getModel().getSize() > 0) {
+            cb.setSelectedIndex(0);
+        }
 
+        JLabel label = new JLabel("Enter any function arguments here: ");
         JTextField tf = new JTextField();
 
         panel.add(cb);
+        panel.add(label);
         panel.add(tf);
 
         if (JOptionPane.showConfirmDialog(null, panel, "Select file to run:", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
