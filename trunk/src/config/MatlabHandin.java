@@ -18,6 +18,7 @@ import matlab.SetupScriptWriter;
  *
  * @author spoletto
  */
+
 class MatlabHandin extends CodeHandin
 {
     private static final String[] _sourceFileTypes = { "m" };
@@ -41,12 +42,19 @@ class MatlabHandin extends CodeHandin
     @Override
     public void openCode(String studentLogin)
     {
-        //MatlabClient c = setupClient(studentLogin);
+        this.setupRun(studentLogin);
         try
         {
-           // c.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
+            //close the MATLAB text editor
+            _client.sendCommand("Editor = com.mathworks.mlservices.MLEditorServices;");
+            _client.sendCommand("Editor.closeAll;");
+            _client.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
             //get all .m files from current working directory
             //open up all .m files in MATLAB editor with 'edit' command
+            Collection<String> files = this.getMFiles(studentLogin);
+            for (String s : files ) {
+                _client.sendCommand("edit " + s + ".m");
+            }
         }
         catch(Exception e) {
             new ErrorView(e, "Could not connect to MATLAB server. If you were " +
@@ -81,43 +89,22 @@ class MatlabHandin extends CodeHandin
                     "bin ; matlab -r setup " + "; read" + "\"";
             //Execute the command in a seperate thread
             BashConsole.writeThreaded(terminalCmd);
-            try {
-                Thread.sleep(15000);
-//            boolean serverExists = false;
-//            long timeout = 30000;
-//            long startTime = System.currentTimeMillis();
-//            while (!serverExists && System.currentTimeMillis() < startTime + timeout) {
-//                try {
-//                    Socket sock = new Socket("localhost", 4444);
-//                    serverExists = true;
-//                } catch (Exception e) {
-//                    serverExists = false;
-//                }
-//                long now = System.currentTimeMillis();
-//                while (System.currentTimeMillis() < now + 1000);
-//            }
-//            if (!serverExists) {
-//                new ErrorView(new Exception(), "Could not set up MATLAB server within specified timeout");
-//            }
-            } catch (InterruptedException e) {}
-//            boolean serverExists = false;
-//            long timeout = 30000;
-//            long startTime = System.currentTimeMillis();
-//            while (!serverExists && System.currentTimeMillis() < startTime + timeout) {
-//                try {
-//                    Socket sock = new Socket("localhost", 4444);
-//                    serverExists = true;
-//                } catch (Exception e) {
-//                    serverExists = false;
-//                }
-//                long now = System.currentTimeMillis();
-//                while (System.currentTimeMillis() < now + 1000);
-//            }
-//            if (!serverExists) {
-//                new ErrorView(new Exception(), "Could not set up MATLAB server within specified timeout");
-//            }
-
-
+            boolean serverExists = false;
+            long timeout = 60000;
+            long startTime = System.currentTimeMillis();
+            while (!serverExists && System.currentTimeMillis() < startTime + timeout) {
+                try {
+                    _client = new MatlabClient();
+                    serverExists = true;
+                } catch (Exception e) {
+                    serverExists = false;
+                }
+                long now = System.currentTimeMillis();
+                while (System.currentTimeMillis() < now + 1000);
+            }
+            if (!serverExists) {
+                new ErrorView(new Exception(), "Could not set up MATLAB server within specified timeout");
+            }
         }
     }
 
@@ -127,13 +114,8 @@ class MatlabHandin extends CodeHandin
     public void run(String studentLogin)
     {
         this.setupRun(studentLogin);
-        if(_client == null)
-        {
-            _client = new MatlabClient();
-        }
         try
         {
-            System.out.println("cd " + super.getStudentHandinDirectory(studentLogin));
             _client.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
             //get all .m files from current working directory
             //open up all .m files in MATLAB editor with 'edit' command
