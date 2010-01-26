@@ -1026,21 +1026,6 @@ public class BackendView extends JFrame
             {
                 _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
-
-                //TODO: Check if all students actually have a rubric
-                boolean allHaveRubrics = true;
-                for(Assignment asgn : selectedAssignments)
-                {
-                    if(asgn.hasHandinPart())
-                    {
-                        allHaveRubrics &= asgn.getHandinPart().hasRubric();
-                    }
-                    else
-                    {
-                        allHaveRubrics = false;
-                    }
-                }
-                _printRubricButton.setEnabled(allHaveRubrics);
             }
             //If one assigment
             if(selectedAssignments.size() == 1)
@@ -1052,16 +1037,17 @@ public class BackendView extends JFrame
                 {
                     HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
 
-                    boolean hasHandin = part.hasHandin(_studentList.getSelectedValue());
+                    String handinLogin = getHandinLogin(_studentList.getSelectedValue(), part);
+                    boolean hasHandin = (handinLogin != null);
 
                     _testCodeButton.setEnabled(hasHandin && part.hasTester());
                     _runCodeButton.setEnabled(hasHandin && part.hasRun() );
                     _openCodeButton.setEnabled(hasHandin && part.hasOpen());
-                    _printCodeButton.setEnabled(hasHandin && part.hasPrint());
-                    _viewReadmeButton.setEnabled(hasHandin && part.hasReadme(_studentList.getSelectedValue()));
+                    _viewReadmeButton.setEnabled(hasHandin && part.hasReadme(handinLogin));
 
-                    _viewRubricButton.setEnabled(part.hasRubric() &&
-                            Allocator.getRubricManager().hasRubric(part, _studentList.getSelectedValue()));
+                    boolean hasRubric = part.hasRubric() &&
+                                        Allocator.getRubricManager().hasRubric(part, _studentList.getSelectedValue());
+                    _viewRubricButton.setEnabled(hasRubric);
                 }
             }
         }
@@ -1070,38 +1056,53 @@ public class BackendView extends JFrame
         {            
             _chartsButton.setEnabled(true);
             _emailReportsButton.setEnabled(true);
-
-            //TODO: Check if each student actually has a rubric
-            boolean allHaveRubrics = true;
-            for(Assignment asgn : selectedAssignments)
-            {
-                if(asgn.hasHandinPart())
-                {
-                    allHaveRubrics &= asgn.getHandinPart().hasRubric();
-                }
-                else
-                {
-                    allHaveRubrics = false;
-                }
-            }
-            _printRubricButton.setEnabled(allHaveRubrics);
-
-            boolean allHavePrintCode = true;
-            for(Assignment asgn : selectedAssignments)
-            {
-                if(asgn.hasHandinPart())
-                {
-                    allHavePrintCode &= asgn.getHandinPart().hasPrint();
-                }
-                else
-                {
-                    allHavePrintCode = false;
-                }
-            }
-            _printCodeButton.setEnabled(allHavePrintCode);
         }
 
-         //                 ASSIGNMENT BUTTONS
+        //Check if there is any rubric available
+        boolean anyRubric = false;
+        for(Assignment asgn : selectedAssignments)
+        {
+            for(String stud : selectedStudents)
+            {
+                if(asgn.hasHandinPart() &&
+                   asgn.getHandinPart().hasRubric() &&
+                   Allocator.getRubricManager().hasRubric(asgn.getHandinPart(), stud))
+                {
+                    anyRubric = true;
+                    break;
+                }
+            }
+        }
+        _printRubricButton.setEnabled(anyRubric);
+
+        //Check if there is any code available to print
+        boolean anyCode = false;
+        for(Assignment asgn : selectedAssignments)
+        {
+            if(asgn.hasHandinPart() && asgn.getHandinPart().hasPrint())
+            {
+                HandinPart part = asgn.getHandinPart();
+                Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(part);
+
+                //For each selected student
+                for(String stud : selectedStudents)
+                {
+                    //For each login of this student's group
+                    for(String login : groups.get(stud))
+                    {
+                        if(part.hasHandin(login))
+                        {
+                            anyCode = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        _printCodeButton.setEnabled(anyCode);
+
+
+        //                 ASSIGNMENT BUTTONS
 
 
         //Disable the assignment buttons, and then re-enable as appropriate
@@ -1161,6 +1162,43 @@ public class BackendView extends JFrame
         //Update labels
         _selectedStudentLabel.setText(selectedStudents);
         _selectedAssignmentLabel.setText(selectedAssignments);
+    }
+
+    /**
+     * Takes in a student login and a handin part and taking into account
+     * groups returns if there is handin for this student.
+     *
+     * @param studentLogin
+     * @param part
+     * @return
+     */
+    private boolean hasHandin(String studentLogin, HandinPart part)
+    {
+        return (this.getHandinLogin(studentLogin, part) != null);
+    }
+
+    /**
+     * Takes in a student login and a handin part and taking into account
+     * groups returns the student login that the handin. If there is no
+     * handin for any member of the group, null is returned;
+     *
+     * @param studentLogin
+     * @param part
+     * @return
+     */
+    private String getHandinLogin(String studentLogin, HandinPart part)
+    {
+        Collection<String> group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
+
+        for(String login : group)
+        {
+            if(part.hasHandin(login))
+            {
+                return login;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1308,42 +1346,100 @@ public class BackendView extends JFrame
 
     private void openCodeButtonActionPerformed()
     {
+        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
+        
+        part.openCode(login);
+
+        /*
         if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasOpen())
         {
             _assignmentList.getSelectedValue().getHandinPart().openCode(_studentList.getSelectedValue());
         }
+         */
     }
 
     private void runCodeButtonActionPerformed()
-    {
+    {   
+        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
+        
+        part.run(login);
+        /*
         if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasRun())
         {
             _assignmentList.getSelectedValue().getHandinPart().run(_studentList.getSelectedValue());
         }
+         */
     }
 
     private void testCodeButtonActionPerformed()
     {
+        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
+        
+        part.runTester(login);
+
+        /*
         if (_assignmentList.getSelectedValue().hasHandinPart() &&
             _assignmentList.getSelectedValue().getHandinPart().hasTester())
         {
             _assignmentList.getSelectedValue().getHandinPart().runTester(_studentList.getSelectedValue());
         }
+         */
     }
 
     private void printCodeButtonActionPerformed()
     {
-        if (_assignmentList.getSelectedValue().hasHandinPart() &&
-            _assignmentList.getSelectedValue().getHandinPart().hasPrint())
+        String printer = Allocator.getGradingUtilities().getPrinter();
+        if(printer == null)
         {
-            _assignmentList.getSelectedValue().getHandinPart().printCode(_studentList.getSelectedValue(),
-                                                                    Allocator.getGradingUtilities().getPrinter());
+            return;
         }
+
+        /*
+         * As this button can be selected for multiple students and multiple
+         * assignments, of which not all students may have code to print, and
+         * some may be code not of their login because of groups.
+         */
+
+        //Map of handin parts to code for the selected assignments and students
+        HashMap<HandinPart, Iterable<String>> code = new HashMap<HandinPart, Iterable<String>>();
+
+        for (Assignment asgn : _assignmentList.getGenericSelectedValues())
+        {
+            if(asgn.hasHandinPart() && asgn.getHandinPart().hasPrint())
+            {
+                HandinPart part = asgn.getHandinPart();
+                HashSet<String> logins = new HashSet<String>();
+                code.put(part, logins);
+
+                for(String stud : _studentList.getGenericSelectedValues())
+                {
+                    String handinLogin = this.getHandinLogin(stud, part);
+                    if(handinLogin != null)
+                    {
+                        logins.add(handinLogin);
+                    }
+                }
+
+                //TODO: Instead of printing for each part, do all printing in one batch
+                part.printCode(logins, printer);
+            }
+        }
+
+        //TODO: Print the code here outside of the loop in one batch
     }
 
     private void viewReadmeButtonActionPerformed()
     {
-        _assignmentList.getSelectedValue().getHandinPart().viewReadme(_studentList.getSelectedValue());
+        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
+
+        part.viewReadme(login);
+
+
+        //_assignmentList.getSelectedValue().getHandinPart().viewReadme(_studentList.getSelectedValue());
     }
 
     private void viewRubricButtonActionPerformed()
@@ -1356,11 +1452,36 @@ public class BackendView extends JFrame
 
     private void printRubricButtonActionPerformed()
     {
+        /*
+         * As this button can be selected for multiple students and multiple
+         * assignments, of which not all students may have a rubric, first
+         * build a map for all of the rubrics that actually exist.
+         */
+
+        //Map of handin parts to rubrics for the selected assignments and students
+        HashMap<HandinPart, Iterable<String>> rubrics = new HashMap<HandinPart, Iterable<String>>();
+
         for (Assignment asgn : _assignmentList.getGenericSelectedValues())
         {
-            Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), _studentList.getGenericSelectedValues());
-            Allocator.getGradingUtilities().printGRDFiles(_studentList.getGenericSelectedValues(), asgn.getName());
+            if(asgn.hasHandinPart())
+            {
+                HandinPart part = asgn.getHandinPart();
+                Vector<String> students = new Vector<String>();
+                rubrics.put(part, students);
+
+                for(String stud : _studentList.getGenericSelectedValues())
+                {
+                    if(Allocator.getRubricManager().hasRubric(part, stud))
+                    {
+                        students.add(stud);
+                    }
+                }
+            }
         }
+
+        //Then convert these rubrics to GRD and print them
+        Allocator.getRubricManager().convertToGRD(rubrics);
+        Allocator.getGradingUtilities().printGRDFiles(rubrics);
     }
 
     private void disableStudentButtonActionPerformed()

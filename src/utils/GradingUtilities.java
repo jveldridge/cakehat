@@ -1,5 +1,6 @@
 package utils;
 
+import config.HandinPart;
 import config.LabPart;
 import config.TA;
 import utils.printing.PrintRequest;
@@ -94,8 +95,8 @@ public class GradingUtilities {
         return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
     }
 
-    public String getStudentGRDPath(String assignmentName, String studentLogin) {
-        return this.getUserGradingDirectory() + assignmentName + "/" + studentLogin + ".grd";
+    public String getStudentGRDPath(HandinPart part, String studentLogin) {
+        return this.getUserGradingDirectory() + part.getAssignment().getName() + "/" + studentLogin + ".grd";
     }
 
     /**
@@ -111,13 +112,13 @@ public class GradingUtilities {
      * @param project
      * @param students
      */
-    public void notifyStudents(String project, Vector<String> students, boolean emailRubrics) {
+    public void notifyStudents(HandinPart part, Vector<String> students, boolean emailRubrics) {
         
         Map<String,String> attachments = null;
         if (emailRubrics) {
             attachments = new HashMap<String,String>();
             for (String student : students) {
-                attachments.put(student, Allocator.getGradingUtilities().getStudentGRDPath(project, student));
+                attachments.put(student, Allocator.getGradingUtilities().getStudentGRDPath(part, student));
             }
         }
         
@@ -126,8 +127,8 @@ public class GradingUtilities {
         }
 
         new EmailView(students, Allocator.getCourseInfo().getNotifyAddresses(), 
-                        "[" + Allocator.getCourseInfo().getCourse() + "] " + project + " Graded",
-                         project + " has been graded and is available for pickup in the handback bin.", attachments);
+                        "[" + Allocator.getCourseInfo().getCourse() + "] " + part.getAssignment().getName() + " Graded",
+                         part.getAssignment().getName() + " has been graded and is available for pickup in the handback bin.", attachments);
                 
     }
 
@@ -137,13 +138,15 @@ public class GradingUtilities {
      *
      * @param assignment assignment for which .GRD files should be printed
      */
-    public void printGRDFiles(Iterable<String> studentLogins, String assignment) {
+    public void printGRDFiles(HandinPart part, Iterable<String> studentLogins) {
         String printer = this.getPrinter("Select printer to print .GRD files");
 
         String taLogin = Allocator.getGeneralUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
+
+
         for(String studentLogin : studentLogins){
-           String filePath = this.getStudentGRDPath(assignment, studentLogin);
+           String filePath = this.getStudentGRDPath(part, studentLogin);
            File file = new File(filePath);
             try{
                 requests.add(new PrintRequest(file, taLogin, studentLogin));
@@ -152,29 +155,42 @@ public class GradingUtilities {
                 new ErrorView(ex);
             }
         }
+
+
         Allocator.getPortraitPrinter().print(requests, printer);
+    }
 
-        
-        /*
-        if (printer != null) {
-            //want to print cover sheet for first student's code
-            boolean print_cover_sheet = true;
+    /**
+     * Prints GRD files for the handin parts and student logins specified. The
+     * GRD files must already exist in order for this to work.
+     * 
+     * @param toPrint
+     */
+    public void printGRDFiles(Map<HandinPart, Iterable<String>> toPrint)
+    {
+        String printer = this.getPrinter("Select printer to print .GRD files");
 
-            for (String sL : studentLogins) {
-                String printCommand;
-                if (print_cover_sheet) {
-                    printCommand = "lpr -P" + printer + " " + Allocator.getGeneralUtilities().getStudentGRDPath(assignment, sL);
+        String taLogin = Allocator.getGeneralUtilities().getUserLogin();
+        Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
-                    //but not for subsequent students
-                    print_cover_sheet = false;
+        for(HandinPart part : toPrint.keySet())
+        {
+            for(String studentLogin : toPrint.get(part))
+            {
+                String filePath = this.getStudentGRDPath(part, studentLogin);
+                File file = new File(filePath);
+                try
+                {
+                    requests.add(new PrintRequest(file, taLogin, studentLogin));
                 }
-                else {
-                    printCommand = "lpr -h -P" + printer + " " + Allocator.getGeneralUtilities().getStudentGRDPath(assignment, sL);                    
+                catch (FileNotFoundException ex)
+                {
+                    new ErrorView(ex);
                 }
-                BashConsole.writeThreaded(printCommand);
             }
         }
-        */
+
+        Allocator.getPortraitPrinter().print(requests, printer);
     }
 
     /**
