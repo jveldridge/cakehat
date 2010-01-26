@@ -339,4 +339,43 @@ public interface DatabaseIO {
      * @return
      */
     public Map<String,Collection<String>> getDistribution(HandinPart handin);
+
+    /**
+     * adds a set of groups for a handin part
+     * @param handin
+     * @param groupings
+     * @return
+     */
+    public boolean setGroups(HandinPart handin, Collection<Collection<String>> groupings);
+
+    /**
+     * adds a group for a handin part
+     * @param handin
+     * @param group
+     * @return
+     */
+    public boolean setGroup(HandinPart handin, Collection<String> group);
+
+    /**
+     * get the group for a student for a handin
+     * @param handin
+     * @param student
+     * @return
+     */
+    public Collection<String> getGroup(HandinPart handin, String student);
+
+    /**
+     * gets the whole map of students to their group members
+     * @param handin
+     * @return
+     */
+    public Map<String, Collection<String>> getGroups(HandinPart handin);
+
+    /**
+     * removes a group for a specfic handin
+     * @param handin
+     * @param group
+     * @return
+     */
+    public boolean removeGroup(HandinPart handin, Collection<String> group);
 }
