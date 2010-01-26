@@ -3,6 +3,10 @@ package config;
 import matlab.MatlabClient;
 import utils.*;
 import java.util.Collection;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import matlab.SetupScriptWriter;
 
 /**
@@ -90,6 +94,21 @@ class MatlabHandin extends CodeHandin
         //check if setup script exists within setupClient
         //using PrintWriter, write findMFiles function
         //
+
+        JPanel panel = new JPanel();
+        JComboBox cb = new JComboBox();
+        String[] files = new String[] {"hi"}; //STEPHEN: FIX THIS!
+        for (String s : files ) {
+            cb.insertItemAt(s, cb.getItemCount());
+        }
+        
+        JTextField tf = new JTextField();
+
+        panel.add(cb);
+        panel.add(tf);
+
+        
+        JOptionPane.showConfirmDialog(null, panel, "Select file to run:", JOptionPane.OK_CANCEL_OPTION);
         
     }
 
