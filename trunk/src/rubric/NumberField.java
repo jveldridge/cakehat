@@ -19,7 +19,8 @@ import utils.Allocator;
  * Instances can be retrieved as either managed or non-managed. If managed, when
  * its value changes it directly updates the rubric and informs the StateManager
  * which keeps track of the save state.
- * 
+ *
+ * @author spoletto
  * @author jak2
  */
 class NumberField extends JFormattedTextField

@@ -13,6 +13,7 @@ import utils.ErrorView;
 /**
  * Responsible for writing a Rubric instance to a GRD text file.
  *
+ * @author spoletto
  * @author jak2
  */
 class RubricGRDWriter

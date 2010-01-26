@@ -18,6 +18,7 @@ import utils.ErrorView;
 
 /**
  *
+ * @author spoletto
  * @author jak2
  */
 class RubricGMLWriter implements RubricConstants

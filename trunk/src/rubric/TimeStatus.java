@@ -11,6 +11,7 @@ import config.LatePolicy;
  * For LatePolicy.DAILY_DEDUCTION: ON_TIME, LATE
  * For MULTIPLE_DEADLINES: EARLY, ON_TIME, LATE, NC_LATE
  *
+ * @author spoletto
  * @author jak2
  */
 public enum TimeStatus

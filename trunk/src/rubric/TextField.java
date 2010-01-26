@@ -13,6 +13,7 @@ import rubric.Rubric.Section;
  * A custom text field for comment and note sections. Cannot be directly
  * constructed, instead use this class's public static methods.
  *
+ * @author spoletto
  * @author jak2
  */
 class TextField extends JTextArea

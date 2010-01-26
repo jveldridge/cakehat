@@ -22,6 +22,7 @@ import org.w3c.dom.NodeList;
 /**
  * Parses out a GML file and constructs a Rubric.
  *
+ * @author spoletto
  * @author jak2
  */
 class RubricGMLParser implements RubricConstants
