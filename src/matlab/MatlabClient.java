@@ -17,17 +17,9 @@ public class MatlabClient {
     private Socket _sock;
     private PrintWriter _out;
 
-    public MatlabClient() {
-        _sock = null;
-        _out = null;
-        try {
-            _sock = new Socket("localhost", 4444);
-            _out = new PrintWriter(_sock.getOutputStream(), true);
-        } catch (UnknownHostException e) {
-            new ErrorView(e, "Could not bind socket to localhost");
-        } catch (IOException e) {
-            new ErrorView(e, "Could not bind socket to localhost");
-        }
+    public MatlabClient() throws Exception {
+        _sock = new Socket("localhost", 4444);
+        _out = new PrintWriter(_sock.getOutputStream(), true);
     }
 
     public void sendCommand(String cmd) {
