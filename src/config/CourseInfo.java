@@ -35,7 +35,6 @@ public class CourseInfo
                 if(!_config.checkValidity(writer))
                 {
                     JOptionPane.showMessageDialog(null, writer.toString(), "Configuration Issues", JOptionPane.ERROR_MESSAGE);
-                    //JOptionPane.showMessageDialog(null, writer.toString());
                 }
             }
             catch (ConfigurationException ex)

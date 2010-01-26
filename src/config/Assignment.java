@@ -1,6 +1,7 @@
 package config;
 
 import java.util.Vector;
+import utils.Allocator;
 
 /**
  * A representation of an Assigment, composed of any number of non-handin parts,
@@ -129,6 +130,27 @@ public class Assignment implements Comparable<Assignment>
         }
 
         return points;
+    }
+
+    /**
+     * Returns if this assignment has a unique assignment number.
+     *
+     * @return
+     */
+    public boolean isUnique()
+    {
+        for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
+        {
+            if(asgn != this)
+            {
+                if(asgn.getNumber() == this.getNumber())
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override
