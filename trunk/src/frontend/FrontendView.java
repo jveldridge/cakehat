@@ -101,6 +101,7 @@ public class FrontendView extends JFrame
                     _runTesterButton, _printStudentButton, _gradeAssignmentButton,
                     _runCodeButton;
     private JButton[] _allButtons, _studentButtons;
+    private Map<String, Collection<String>> _studentGroups;
 
     private FrontendView()
     {
@@ -116,7 +117,6 @@ public class FrontendView extends JFrame
         this.initializeComponents();
 
         this.createButtonGroups();
-
 
         //Select first assignment
         _assignmentList.selectFirst();
@@ -298,7 +298,7 @@ public class FrontendView extends JFrame
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    _currentlyGradingLabel.update(_studentList.getSelectedValue());
+                    updateSelectedStudent();
                     updateButtonStates(); //To check for README
                 }
             }
@@ -389,6 +389,25 @@ public class FrontendView extends JFrame
         this.initializeStudentCommandButtons(studentButtonsPanel);
         studentCommandsPanel.add(studentButtonsPanel, BorderLayout.SOUTH);
         controlPanel.add(studentCommandsPanel);
+    }
+
+    private void updateSelectedStudent()
+    {
+        String students = null;
+        if(_studentList.getSelectedValue() != null)
+        {
+            Collection<String> group = _studentGroups.get(_studentList.getSelectedValue());
+            students = "";
+            for(String student : group)
+            {
+                if(group.size() != 1 && student != group.iterator().next())
+                {
+                    students += ", ";
+                }
+                students += student;
+            }
+        }
+        _currentlyGradingLabel.update(students);
     }
 
     /**
@@ -807,7 +826,11 @@ public class FrontendView extends JFrame
         
             _studentList.setListData(students);
             _studentList.selectFirst();
-            _currentlyGradingLabel.update(_studentList.getSelectedValue());
+
+            //Get groups
+            _studentGroups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
+
+            updateSelectedStudent();
         }
     }
     

@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.JComboBox;
 
@@ -315,7 +317,7 @@ class RubricPanel extends JPanel
         Section extraCredit = _rubric.getExtraCredit();
         //For each ExtraCredit section
         for(Subsection ecSection : extraCredit.getSubsections())
-	{
+        {
             //Section name
             JTextArea extraCreditText = new JTextArea(ecSection.getName());
             extraCreditText.setSize(new Dimension(450,200));
@@ -448,21 +450,9 @@ class RubricPanel extends JPanel
             Section section = _sections.elementAt(i);
             NumberField score = _totals.elementAt(i);
             score.setValue(section.getSectionScore());
-
         }
 
         _statusPointsField.setValue(Allocator.getGeneralUtilities().round(_rubric.getDeduction(), 2));
-
-        //Display total score, if EC isn't editable then don't count the EC
-        /*
-        double ecScore = _rubric.getExtraCredit().getSectionScore();
-        double totalScore = _rubric.getTotalRubricScore();
-        double displayScore = totalScore;
-        if(!this.isECEditable())
-        {
-            displayScore -= ecScore;
-        }
-         */
         _totalScoreField.setValue(_rubric.getTotalRubricScore());
     }
 	
@@ -490,16 +480,34 @@ class RubricPanel extends JPanel
         SpringLayout layout = new SpringLayout();
         JPanel panel = new JPanel(layout);
 
+        //Get all students in the group
+        Collection<String> group = Allocator.getDatabaseIO().getGroup(_rubric._handinPart, _rubric.getStudentAccount());
+        Map<String, String> allLogins = Allocator.getDatabaseIO().getAllStudents();
+        String studentNames = "";
+        String studentLogins = "";
+        for(String student : group)
+        {
+            if(group.size() != 1 && student != group.iterator().next())
+            {
+                studentLogins += ", ";
+                studentNames += ", ";
+            }
+            studentLogins += student;
+            studentNames += allLogins.get(student);
+        }
+
         //Student
-        JLabel studentAcct = new JLabel(" Student's account: " + _rubric.getStudentAccount());
+        JLabel studentAcct = new JLabel(" Student account(s): " + studentLogins);
         panel.add(studentAcct);
         height += studentAcct.getPreferredSize().height + vGap;
 
-        JLabel studentName = new JLabel(" Student's name: " + _rubric.getStudentName());
+
+        JLabel studentName = new JLabel(" Student name(s): " + studentNames);
         vGap = 2;
         layout.putConstraint(SpringLayout.NORTH, studentName, vGap, SpringLayout.SOUTH, studentAcct);
         panel.add(studentName);
         height += studentName.getPreferredSize().height + vGap;
+
 
         //Grader
         JLabel graderAcct = new JLabel(" Grader's account: " + _rubric.getGraderAccount());
@@ -586,7 +594,6 @@ class RubricPanel extends JPanel
 
                             //Recalculate score
                             RubricPanel.this.updateTotals();
-
                         }
                         catch (Exception exc) {}
                     }
