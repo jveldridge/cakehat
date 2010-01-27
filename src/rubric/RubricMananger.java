@@ -22,8 +22,7 @@ import utils.ErrorView;
  */
 public class RubricMananger
 {
-
-     /**
+    /**
      * View the rubric for a student for a given handin part. If it is already
      * open it will be brought to front and centered on screen.
      *
@@ -225,8 +224,9 @@ public class RubricMananger
      */
     public void distributeRubrics(HandinPart part, Map<String,Collection<String>> distribution, int minutesOfLeniency)
     {
-        Map<String, String> studentLogins = Allocator.getDatabaseIO().getAllStudents();   
-        Map<String, Calendar> extensions = getExtensions(part, studentLogins.keySet());
+        Map<String, String> students = Allocator.getDatabaseIO().getAllStudents();
+        Map<String, String> tas = Allocator.getDatabaseIO().getAllTAs();
+        Map<String, Calendar> extensions = getExtensions(part, students.keySet());
 
         try
         {
@@ -236,15 +236,14 @@ public class RubricMananger
             //for each TA
             for (String taLogin : distribution.keySet())
             {
-                //TODO: Get grader name from database
-                Person grader = new Person(taLogin, Allocator.getGeneralUtilities().getUserName(taLogin));
+                Person grader = new Person(taLogin, tas.get(taLogin));
                 rubric.setGrader(grader);
 
                 //for each student
                 for (String studentLogin : distribution.get(taLogin))
                 {
                     //student login and name
-                    Person student = new Person(studentLogin, studentLogins.get(studentLogin));
+                    Person student = new Person(studentLogin, students.get(studentLogin));
                     rubric.setStudent(student);
                     //time status
                     rubric.setStatus(getTimeStatus(part, studentLogin, extensions, minutesOfLeniency));
