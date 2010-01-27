@@ -28,19 +28,7 @@ class CHandin extends CodeHandin
     }
 
     @Override
-    public boolean hasDemo()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void runDemo()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean hasTester()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -50,5 +38,4 @@ class CHandin extends CodeHandin
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

@@ -501,6 +501,10 @@ public class ConfigurationParser
         {
             part = new MatlabHandin(asgn, name, points);
         }
+        else if(language.equalsIgnoreCase("custom"))
+        {
+            part = new CustomHandin(asgn, name, points);
+        }
         else if(language.equalsIgnoreCase("text"))
         {
             part = new TextHandin(asgn, name, points);

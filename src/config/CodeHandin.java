@@ -455,5 +455,17 @@ public abstract class CodeHandin extends HandinPart
         return (_runMode != null);
     }
 
+    @Override
+    public boolean hasDemo()
+    {
+        return (_demoMode != null);
+    }
+
+    @Override
+    public boolean hasTester()
+    {
+        return (_testerMode != null);
+    }
+
     protected abstract String[] getSourceFileTypes();
 }
