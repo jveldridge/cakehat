@@ -712,7 +712,15 @@ public class FrontendView extends JFrame
 
         if(_assignmentList.getSelectedValue() != null)
         {
-            SubmitDialog sd = new SubmitDialog(_studentList.getItems());
+            
+            Vector<String> students = new Vector<String>();
+            Map<String,Collection<String>> groups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
+            for (String s1 : _studentList.getItems()) {
+                for (String s2 : groups.get(s1)) {
+                    students.add(s2);
+                }
+            }
+            SubmitDialog sd = new SubmitDialog(students);
             if (sd.showDialog() == JOptionPane.OK_OPTION)
             {
                 Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), _studentList.getItems());
