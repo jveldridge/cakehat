@@ -390,4 +390,15 @@ public class CourseInfo
     {
         return "cs.brown.edu";
     }
+
+    /**
+     * This is the cakehat email address.
+     *
+     * (Technically this isn't course info, but this is a convenient place to
+     * put it.)
+     */
+    public String getCakehatEmailAddress()
+    {
+        return "cakehat@cs.brown.edu";
+    }
 }
