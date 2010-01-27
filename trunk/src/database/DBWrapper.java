@@ -270,9 +270,7 @@ public class DBWrapper implements DatabaseIO {
      * Checks to see if TA already exists. If does not exist then inserts TA to DB
      * TODO: add full name
      * @param taLogin - String TA Login
-     * @param taFirstName - String TA First Name
-     * @param taLastName - String TA Last Name
-     * @param type - String HTA or UTA
+     * @param taName - String TA Name
      * @return status
      */
     public boolean addTA(String taLogin, String taName) {
@@ -298,8 +296,14 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    //TODO: Actually retrieve this from the database
     public Map<String, String> getAllTAs() {
-        throw new UnsupportedOperationException("This method is not yet implemented");
+        HashMap<String, String> tas = new HashMap<String, String>();
+        for(config.TA ta : Allocator.getCourseInfo().getTAs()) {
+            tas.put(ta.getLogin(), Allocator.getGeneralUtilities().getUserName(ta.getLogin()));
+        }
+
+        return tas;
     }
 
     public Map<String, String> getAllStudents() {
