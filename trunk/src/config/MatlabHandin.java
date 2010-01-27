@@ -157,21 +157,9 @@ class MatlabHandin extends CodeHandin
     }
 
     @Override
-    public boolean hasDemo()
-    {
-        return false;
-    }
-
-    @Override
     public void runDemo()
     {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean hasTester()
-    {
-        return false;
     }
 
     @Override
@@ -181,6 +169,8 @@ class MatlabHandin extends CodeHandin
     }
 
     @Override
+    //TODO: After you have set up run properties properly, do not override this
+    //method as CodeHandin will determine this for you
     public boolean hasRun()
     {
         return true;

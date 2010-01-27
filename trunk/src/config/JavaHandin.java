@@ -302,12 +302,6 @@ class JavaHandin extends CodeHandin
     }
 
     @Override
-    public boolean hasDemo()
-    {
-        return (_demoMode != null);
-    }
-
-    @Override
     public void runDemo()
     {
         if(_demoMode.equalsIgnoreCase(JAR))
@@ -375,12 +369,6 @@ class JavaHandin extends CodeHandin
         cmd += " -jar " + this.getDemoProperty(JAR_LOC);
 
         BashConsole.writeThreaded(cmd);
-    }
-
-    @Override
-    public boolean hasTester()
-    {
-        return (_testerMode != null);
     }
 
     @Override

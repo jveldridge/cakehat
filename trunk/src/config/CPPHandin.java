@@ -28,19 +28,7 @@ class CPPHandin extends CodeHandin
     }
 
     @Override
-    public boolean hasDemo()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void runDemo()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean hasTester()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -49,6 +37,5 @@ class CPPHandin extends CodeHandin
     public void runTester(String studentLogin)
     {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
+    }    
 }
