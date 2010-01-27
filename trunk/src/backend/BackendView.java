@@ -717,7 +717,8 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //Extensions & Exemptions
-        _extensionExemptionButton = createButton("Extensions|Exemptions", "/gradesystem/resources/icons/16x16/office-calendar.png");
+
+        _extensionExemptionButton = createButton("<h1 style=\"font-size:87%\">Extensions &amp; Exemptions</h1>", "/gradesystem/resources/icons/16x16/office-calendar.png");
         _extensionExemptionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -821,7 +822,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
         
         //Disable student
-        _disableStudentButton = createButton("Disable Student", "/gradesystem/resources/icons/16x16/dialog-error.png");
+        _disableStudentButton = createButton("Disable Student", "/gradesystem/resources/icons/16x16/list-remove.png");
         _disableStudentButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1019,6 +1020,7 @@ public class BackendView extends JFrame
             //If zero or more assignments
             if(selectedAssignments.size() >= 0)
             {
+                this.updateDisableEnableButton(Allocator.getDatabaseIO().isStudentEnabled(_studentList.getSelectedValue()));
                 _disableStudentButton.setEnabled(true);
             }
             //If one or more assignments
@@ -1026,11 +1028,11 @@ public class BackendView extends JFrame
             {
                 _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
+                _extensionExemptionButton.setEnabled(true);
             }
             //If one assigment
             if(selectedAssignments.size() == 1)
             {
-                _extensionExemptionButton.setEnabled(true);
 
                 //If it has a handin part
                 if(_assignmentList.getSelectedValue().hasHandinPart())
@@ -1053,9 +1055,13 @@ public class BackendView extends JFrame
         }
         //Multiple students selected
         else
-        {            
-            _chartsButton.setEnabled(true);
-            _emailReportsButton.setEnabled(true);
+        {
+            if(selectedAssignments.size() >= 1)
+            {
+                _chartsButton.setEnabled(true);
+                _emailReportsButton.setEnabled(true);
+                _extensionExemptionButton.setEnabled(true);
+            }
         }
 
         //Check if there is any rubric available
@@ -1268,27 +1274,17 @@ public class BackendView extends JFrame
 
     private void previewRubricButtonActionPerformed()
     {
-        if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasRubric())
-        {
-            Allocator.getRubricManager().viewTemplate(_assignmentList.getSelectedValue().getHandinPart());
-        }
-
+        Allocator.getRubricManager().viewTemplate(_assignmentList.getSelectedValue().getHandinPart());
     }
 
     private void viewDeductionsButtonActionPerformed()
     {
-        if(_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasDeductionList())
-        {
-            _assignmentList.getSelectedValue().getHandinPart().viewDeductionList();
-        }
+        _assignmentList.getSelectedValue().getHandinPart().viewDeductionList();
     }
 
     private void runDemoButtonActionPerformed()
     {
-        if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasDemo())
-        {
-            _assignmentList.getSelectedValue().getHandinPart().runDemo();
-        }
+        _assignmentList.getSelectedValue().getHandinPart().runDemo();
     }
 
     private void chartsButtonActionPerformed()
@@ -1313,8 +1309,8 @@ public class BackendView extends JFrame
         }
 
         if (JOptionPane.showConfirmDialog(null, messagePanel,
-                                            "Select Assignment Parts",
-                                            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION )
+                                          "Select Assignment Parts",
+                                          JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION )
         {
             Map<Assignment,Collection<Part>> map = new HashMap<Assignment,Collection<Part>>();
             for (Assignment a : _assignmentList.getGenericSelectedValues())
@@ -1350,13 +1346,6 @@ public class BackendView extends JFrame
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
         
         part.openCode(login);
-
-        /*
-        if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasOpen())
-        {
-            _assignmentList.getSelectedValue().getHandinPart().openCode(_studentList.getSelectedValue());
-        }
-         */
     }
 
     private void runCodeButtonActionPerformed()
@@ -1365,12 +1354,6 @@ public class BackendView extends JFrame
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
         
         part.run(login);
-        /*
-        if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasRun())
-        {
-            _assignmentList.getSelectedValue().getHandinPart().run(_studentList.getSelectedValue());
-        }
-         */
     }
 
     private void testCodeButtonActionPerformed()
@@ -1379,14 +1362,6 @@ public class BackendView extends JFrame
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
         
         part.runTester(login);
-
-        /*
-        if (_assignmentList.getSelectedValue().hasHandinPart() &&
-            _assignmentList.getSelectedValue().getHandinPart().hasTester())
-        {
-            _assignmentList.getSelectedValue().getHandinPart().runTester(_studentList.getSelectedValue());
-        }
-         */
     }
 
     private void printCodeButtonActionPerformed()
@@ -1437,9 +1412,6 @@ public class BackendView extends JFrame
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
 
         part.viewReadme(login);
-
-
-        //_assignmentList.getSelectedValue().getHandinPart().viewReadme(_studentList.getSelectedValue());
     }
 
     private void viewRubricButtonActionPerformed()
@@ -1486,7 +1458,32 @@ public class BackendView extends JFrame
 
     private void disableStudentButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available");
+        String studentLogin = _studentList.getSelectedValue();
+
+        if(Allocator.getDatabaseIO().isStudentEnabled(studentLogin))
+        {
+            Allocator.getDatabaseIO().disableStudent(studentLogin);
+            this.updateDisableEnableButton(false);
+        }
+        else
+        {
+            Allocator.getDatabaseIO().enableStudent(studentLogin);
+            this.updateDisableEnableButton(true);
+        }
+    }
+
+    private void updateDisableEnableButton(boolean enabled)
+    {
+        if(enabled)
+        {
+            _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-remove.png")));
+            _disableStudentButton.setText("Disable Student");
+        }
+        else
+        {
+            _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-add.png")));
+            _disableStudentButton.setText("Enable Student");
+        }
     }
 
     private void assignmentListValueChanged()
@@ -1498,5 +1495,4 @@ public class BackendView extends JFrame
     {
         updateGUI();
     }
-
 }

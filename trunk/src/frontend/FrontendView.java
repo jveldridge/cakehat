@@ -719,9 +719,11 @@ public class FrontendView extends JFrame
 
                 Vector<String> selectedStudents = sd.getSelectedStudents();
                 
-                if (sd.submitChecked()) {
+                if (sd.submitChecked())
+                {
                     Map<String, Double> handinTotals = Allocator.getRubricManager().getHandinTotals(asgn.getHandinPart(), selectedStudents);
-                    for (String login : handinTotals.keySet()) {
+                    for (String login : handinTotals.keySet())
+                    {
                         Allocator.getDatabaseIO().enterGrade(login, asgn.getHandinPart(), handinTotals.get(login));
                     }
                 }
