@@ -1337,7 +1337,7 @@ public class BackendView extends JFrame
 
     private void extensionExemptionButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet implemented");
+        new EEView(_assignmentList.getGenericSelectedValues(), _studentList.getGenericSelectedValues());
     }
 
     private void openCodeButtonActionPerformed()
