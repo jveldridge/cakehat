@@ -9,20 +9,62 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
+ * A field that only accepts integer values. Depending on how this class is
+ * constructed, a minimum and maximum value can be enforced.
  *
  * @author jak2
  */
 public class IntegerField extends JFormattedTextField
 {
-    public IntegerField() { }
+    /**
+     * A field that only accepts integer values.
+     */
+    public IntegerField()
+    {
+        this(0);
+    }
 
-    public IntegerField(int initValue, final int min, final int max)
+    /**
+     * A field that only accepts integer values.
+     *
+     * @param initValue
+     */
+    public IntegerField(int initValue)
     {
         super(NumberFormat.getIntegerInstance());
 
         this.setIntValue(initValue);
 
         this.setColumns(2);
+
+        this.addFocusListener(new FocusListener()
+        {
+            public void focusGained(FocusEvent fe) { }
+
+            public void focusLost(FocusEvent fe)
+            {
+                SwingUtilities.invokeLater(new Runnable()
+                {
+                    public void run()
+                    {
+                        setIntValue(getIntValue());
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * A field that only accepts integer values between the specified
+     * minimum and maximum.
+     * 
+     * @param initValue
+     * @param min
+     * @param max
+     */
+    public IntegerField(int initValue, final int min, final int max)
+    {
+        this(initValue);
 
         this.getDocument().addDocumentListener(new DocumentListener()
         {
@@ -67,30 +109,24 @@ public class IntegerField extends JFormattedTextField
                 insertUpdate(e);
             }
         });
-
-        this.addFocusListener(new FocusListener()
-        {
-            public void focusGained(FocusEvent fe) { }
-
-
-            public void focusLost(FocusEvent fe)
-            {
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    public void run()
-                    {
-                        setIntValue(getIntValue());
-                    }
-                });
-            }
-        });
     }
 
+    /**
+     * Get the value of this field as an integer.
+     *
+     * @return
+     */
     public int getIntValue()
     {
         return Integer.parseInt(getText());
     }
 
+    /**
+     * Set this field as the given value. If between 0 and 9 a leading 0 is
+     * appended. So '3' will display as '03'.
+     *
+     * @param value
+     */
     public void setIntValue(int value)
     {
         String valueText = value + "";
