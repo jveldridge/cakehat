@@ -34,7 +34,7 @@
                   <Component id="jScrollPane2" alignment="0" pref="638" max="32767" attributes="2"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="notifyGradesTACheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="278" max="32767" attributes="0"/>
+                      <EmptySpace pref="280" max="32767" attributes="0"/>
                       <Component id="ConfirmButton" min="-2" pref="87" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane1" alignment="0" min="-2" pref="631" max="-2" attributes="2"/>

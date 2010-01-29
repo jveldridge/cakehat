@@ -99,7 +99,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane1" alignment="1" pref="1033" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="1" pref="1037" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="sendButton" max="32767" attributes="1"/>

@@ -18,6 +18,8 @@ import javax.swing.KeyStroke;
  */
 public class EmailView extends javax.swing.JFrame {
 
+    private static String newline = System.getProperty("line.separator");
+
     private Map<String,String> _attachments;
     
     /** Creates new form EmailGUI */
@@ -267,7 +269,7 @@ public class EmailView extends javax.swing.JFrame {
         String now = sdf.format(cal.getTime());
         
         String body = bodyText.getText();
-        body = body.replace("\n", "<br/>");
+        body = body.replace(newline, "<br/>");
         
         //send message to each student
         String[] students = studentsBox.getText().replace(" ", "").split("(,|;)");
