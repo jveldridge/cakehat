@@ -154,6 +154,7 @@ public class BackendView extends JFrame
     private JButton //Assignment wide buttons
                     _createDistributionButton, _reassignGradingButton, _importLabsButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
+                    _manageGroupsButton,
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionExemptionButton,
                     _openCodeButton, _runCodeButton,
@@ -327,7 +328,7 @@ public class BackendView extends JFrame
         {
           _createDistributionButton, _reassignGradingButton,
           _importLabsButton, _previewRubricButton, _viewDeductionsButton,
-          _runDemoButton
+          _runDemoButton, _manageGroupsButton
         };
 
         _generalCommandsButtons = new JButton[]
@@ -350,7 +351,7 @@ public class BackendView extends JFrame
     GENERAL_COMMANDS_PANEL_SIZE = new Dimension(195, MAIN_PANEL_SIZE.height),
     MIDDLE_PANEL_SIZE = new Dimension(MAIN_PANEL_SIZE.width - 2 * LIST_PANEL_SIZE.width -
                                       GENERAL_COMMANDS_PANEL_SIZE.width, MAIN_PANEL_SIZE.height),
-    SELECTED_ASSIGNMENT_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width, 100),
+    SELECTED_ASSIGNMENT_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width, 130),
     STUDENT_BUTTON_PANEL_SIZE = new Dimension(200, MIDDLE_PANEL_SIZE.height -
                                               SELECTED_ASSIGNMENT_PANEL_SIZE.height),
     MULTI_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width - STUDENT_BUTTON_PANEL_SIZE.width,
@@ -848,7 +849,7 @@ public class BackendView extends JFrame
         panel.add(_selectedAssignmentLabel);
 
         //Button panel
-        JPanel buttonPanel = new JPanel(new GridLayout(2,3,5,5));
+        JPanel buttonPanel = new JPanel(new GridLayout(3,3,5,5));
         buttonPanel.setPreferredSize(SELECTED_ASSIGNMENT_BUTTON_PANEL_SIZE);
         panel.add(buttonPanel);
 
@@ -923,6 +924,24 @@ public class BackendView extends JFrame
             
         });
         buttonPanel.add(_runDemoButton);
+
+        //Space
+        buttonPanel.add(Box.createVerticalBox());//space
+
+        //Manage groups
+        _manageGroupsButton = createButton("Manage Groups", "/gradesystem/resources/icons/16x16/system-users.png");
+        _manageGroupsButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                manageGroupsButtonActionPerformed();
+            }
+
+        });
+        buttonPanel.add(_manageGroupsButton);
+
+        //Space
+        buttonPanel.add(Box.createVerticalBox());//space
     }
 
     private static final Dimension
@@ -1124,6 +1143,8 @@ public class BackendView extends JFrame
             if(_assignmentList.getSelectedValue().hasHandinPart())
             {
                 HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+
+                _manageGroupsButton.setEnabled(true);
 
                 _createDistributionButton.setEnabled(true);
                 _reassignGradingButton.setEnabled(true);
@@ -1484,6 +1505,11 @@ public class BackendView extends JFrame
             _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-add.png")));
             _disableStudentButton.setText("Enable Student");
         }
+    }
+
+    private void manageGroupsButtonActionPerformed()
+    {
+        JOptionPane.showMessageDialog(this, "This feature is not yet implemented");
     }
 
     private void assignmentListValueChanged()
