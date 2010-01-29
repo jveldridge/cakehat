@@ -22,7 +22,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -48,13 +47,13 @@ public class ExtensionView extends JFrame
                 HandinPart part = null;
                 for(Assignment asgn : Allocator.getCourseInfo().getHandinAssignments())
                 {
-                    if(asgn.getName().equals("PizzaDex"))
+                    if(asgn.getName().equals("Week1"))
                     {
                         part = asgn.getHandinPart();
                     }
                 }
 
-                String studentLogin = "zhou";
+                String studentLogin = "cs004000";
 
                 new ExtensionView(part, studentLogin).setVisible(true);
             }
