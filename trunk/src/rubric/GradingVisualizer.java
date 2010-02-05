@@ -82,7 +82,7 @@ class GradingVisualizer extends JFrame
         this.add(scrollPane, BorderLayout.CENTER);
 
         //Get all members of the group and their names
-        Collection<String> groupLogins = Allocator.getDatabaseIO().getGroup(rubric._handinPart, rubric.getStudentName());
+        Collection<String> groupLogins = Allocator.getDatabaseIO().getGroup(rubric._handinPart, rubric.getStudentAccount());
         Map<String, String> allStudents = Allocator.getDatabaseIO().getAllStudents();
         _group = new HashMap<String, String>();
         for(String login : groupLogins)
@@ -164,6 +164,7 @@ class GradingVisualizer extends JFrame
         {
             _rubric.setStudent(_group.get(login), login);
             String gmlPath = Allocator.getRubricManager().getStudentRubricPath(_rubric._handinPart, login);
+            System.out.println(gmlPath);
             RubricGMLWriter.write(_rubric, gmlPath);
         }
 

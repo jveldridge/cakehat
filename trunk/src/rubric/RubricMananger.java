@@ -243,7 +243,7 @@ public class RubricMananger
                 for (String studentLogin : distribution.get(taLogin))
                 {
                     //student login and name
-                    Person student = new Person(studentLogin, students.get(studentLogin));
+                    Person student = new Person(students.get(studentLogin), studentLogin);
                     rubric.setStudent(student);
                     //time status
                     rubric.setStatus(getTimeStatus(part, studentLogin, extensions, minutesOfLeniency));
@@ -564,7 +564,7 @@ public class RubricMananger
 
             //Write to grd
             String grdPath = Allocator.getGradingUtilities().getStudentGRDPath(part, studentLogin);
-            RubricGMLWriter.write(rubric, grdPath);
+            RubricGRDWriter.write(rubric, grdPath);
         }
         catch(RubricException e)
         {

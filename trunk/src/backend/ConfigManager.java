@@ -29,7 +29,7 @@ public class ConfigManager extends javax.swing.JFrame {
     public ConfigManager() {
         initComponents();
 
-        for (Assignment s : Allocator.getCourseInfo().getHandinAssignments()) {
+        for (Assignment s : Allocator.getCourseInfo().getAssignments()) {
             asgnCombo.insertItemAt(s, asgnCombo.getItemCount());
         }
 
