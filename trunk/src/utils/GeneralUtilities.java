@@ -160,7 +160,7 @@ public class GeneralUtilities {
         //Get list of members to the student group
         List<String> list = Arrays.asList(getMembers(Allocator.getCourseInfo().getStudentGroup()));
         //Remove test account from list
-        list.remove(Allocator.getCourseInfo().getTestAccount());
+        //list.remove(Allocator.getCourseInfo().getTestAccount());
         
         return list;
     }
