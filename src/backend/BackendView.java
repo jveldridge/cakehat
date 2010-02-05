@@ -1259,7 +1259,7 @@ public class BackendView extends JFrame
 
     private void editConfigurationButtionActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available");
+        new ConfigManager();
     }
 
     private void exportGradesButtonActionPerformed()
