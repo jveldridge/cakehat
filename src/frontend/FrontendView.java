@@ -396,15 +396,22 @@ public class FrontendView extends JFrame
         String students = null;
         if(_studentList.getSelectedValue() != null)
         {
-            Collection<String> group = _studentGroups.get(_studentList.getSelectedValue());
-            students = "";
-            for(String student : group)
+            if(_studentGroups != null)
             {
-                if(group.size() != 1 && student != group.iterator().next())
+                Collection<String> group = _studentGroups.get(_studentList.getSelectedValue());
+                students = "";
+                for(String student : group)
                 {
-                    students += ", ";
+                    if(group.size() != 1 && student != group.iterator().next())
+                    {
+                        students += ", ";
+                    }
+                    students += student;
                 }
-                students += student;
+            }
+            else
+            {
+                students = _studentList.getSelectedValue();
             }
         }
         _currentlyGradingLabel.update(students);
