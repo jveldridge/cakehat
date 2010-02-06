@@ -284,6 +284,7 @@ public class BackendView extends JFrame
                 }
                 else if(cmpnt == _submitButton)
                 {
+                    _filterField.setText("");
                     return _filterField;
                 }
 
