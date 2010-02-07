@@ -467,6 +467,10 @@ public class GeneralUtilities {
 
             tar.listContents();
         }
+        catch (com.ice.tar.InvalidHeaderException e) {
+            //do nothing, as untarring works successfully even when
+            //an InvalidHeaderException is thrown
+        }
         catch (Exception ex) {
             new ErrorView(ex);
         }
