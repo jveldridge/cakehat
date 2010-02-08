@@ -46,9 +46,11 @@ public class GradeReportView extends javax.swing.JFrame {
 
         _previewPane.setEditorKit(k);
         _previewPane.setDocument(k.createDefaultDocument());
-
-        _messageText.setText("<p>Here are your current grades for the course.<br />\n<i>Histograms for each of the projects are attached.</i></p>\n<p>-The cs015 TAs</p>\n");
-        _fromText.setText("cs015headtas@cs.brown.edu");
+        String course = Allocator.getCourseInfo().getCourse();
+        _messageText.setText("<p>Here are your current grades for the course.<br />"
+                + "\n<i>Histograms for each of the projects are attached.</i></p>\n<p>-The "
+                + course + " TAs</p>\n");
+        _fromText.setText(course + "headtas@cs.brown.edu");
         updatePreview();
         
         new File(".tmpdata").mkdirs();
@@ -70,7 +72,9 @@ public class GradeReportView extends javax.swing.JFrame {
      * @return
      */
     public String htmlBuilder(String student) {
-        String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'><h1 style='font-weight: bold; font-size:11pt'>[cs015] Grade Report</h1>" +
+        String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>" +
+                "<h1 style='font-weight: bold; font-size:11pt'>" +
+                "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report</h1>" +
                 "<hr />" + _messageText.getText();
         
         //constructing the message body
