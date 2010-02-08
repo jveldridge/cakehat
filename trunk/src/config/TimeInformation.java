@@ -41,6 +41,12 @@ public class TimeInformation
 
         Calendar thisYear = GregorianCalendar.getInstance();
         thisYear.set(Calendar.YEAR, Allocator.getGeneralUtilities().getCurrentYear());
+        thisYear.set(Calendar.MONTH, 0);
+        thisYear.set(Calendar.DAY_OF_MONTH, 1);
+        thisYear.set(Calendar.HOUR_OF_DAY, 0);
+        thisYear.set(Calendar.MINUTE, 0);
+        thisYear.set(Calendar.SECOND, 0);
+        thisYear.set(Calendar.MILLISECOND, 0);
 
         boolean valid = true;
 
