@@ -164,7 +164,6 @@ class GradingVisualizer extends JFrame
         {
             _rubric.setStudent(_group.get(login), login);
             String gmlPath = Allocator.getRubricManager().getStudentRubricPath(_rubric._handinPart, login);
-            System.out.println(gmlPath);
             RubricGMLWriter.write(_rubric, gmlPath);
         }
 

@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -246,6 +247,14 @@ public class AssignmentdistView extends javax.swing.JFrame {
             Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
             blacklistedStudents.addAll(tasBlackList);
             taBlacklists.put(ta, tasBlackList);
+        }
+
+        //remove blacklisted students who don't have a handin
+        Iterator<String> iterator = blacklistedStudents.iterator();
+        while (iterator.hasNext()) {
+            if (!asgnObject.getHandinPart().hasHandin(iterator.next())) {
+                iterator.remove();
+            }
         }
 
         //add all blacklisted students to a TA first
