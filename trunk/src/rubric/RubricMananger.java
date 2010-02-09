@@ -236,7 +236,7 @@ public class RubricMananger
             //for each TA
             for (String taLogin : distribution.keySet())
             {
-                Person grader = new Person(taLogin, tas.get(taLogin));
+                Person grader = new Person(tas.get(taLogin), taLogin);
                 rubric.setGrader(grader);
 
                 //for each student

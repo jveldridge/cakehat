@@ -99,6 +99,7 @@ public class ModifyBlacklistView extends JFrame{
                                                             _taButtons.getSelection().getActionCommand());
                     ModifyBlacklistView.this.updateGUI();
                     _filterBox.requestFocus();
+                    _filterBox.setText("");
                 }
             }
         });
