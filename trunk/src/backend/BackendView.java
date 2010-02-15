@@ -159,7 +159,8 @@ public class BackendView extends JFrame
                     _chartsButton, _emailReportsButton, _extensionExemptionButton,
                     _openCodeButton, _runCodeButton,
                     _testCodeButton, _printCodeButton, _viewReadmeButton,
-                    _viewRubricButton, _printRubricButton, _disableStudentButton,
+                    _viewRubricButton, _emailStudentRubric, _printRubricButton,
+                    _disableStudentButton,
                     //General command buttons
                     _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
                     _resetDatabaseButton;
@@ -342,7 +343,8 @@ public class BackendView extends JFrame
         {
           _chartsButton, _emailReportsButton, _extensionExemptionButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
-          _viewReadmeButton, _viewRubricButton, _printRubricButton, _disableStudentButton
+          _viewReadmeButton, _viewRubricButton, _emailStudentRubric,
+          _printRubricButton, _disableStudentButton
         };
     }
 
@@ -671,7 +673,7 @@ public class BackendView extends JFrame
 
     private static final int STUDENT_BUTTON_PANEL_BUFFER_HEIGHT = 90,
                              STUDENT_BUTTON_PANEL_BUFFER_WIDTH = 10,
-                             STUDENT_BUTTON_PANEL_BUTTON_SLOTS = 17;
+                             STUDENT_BUTTON_PANEL_BUTTON_SLOTS = 18;
     private static final Dimension
     STUDENT_BUTTON_PANEL_GAP_SIZE = new Dimension(STUDENT_BUTTON_PANEL_SIZE.width,
                                                   STUDENT_BUTTON_PANEL_BUFFER_HEIGHT / 2),
@@ -808,6 +810,19 @@ public class BackendView extends JFrame
             
         });
         buttonPanel.add(_viewRubricButton);
+
+        //Email student rubric
+        _emailStudentRubric = createButton("Email Student Rubric", "/gradesystem/resources/icons/16x16/mail-forward.png");
+        _emailStudentRubric.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                emailRubricButtonActionPerformed();
+            }
+
+        });
+        buttonPanel.add(_emailStudentRubric);
+
 
         //Print student rubric
         _printRubricButton = createButton("Print Student Rubric", "/gradesystem/resources/icons/16x16/document-print.png");
@@ -1070,6 +1085,7 @@ public class BackendView extends JFrame
                     boolean hasRubric = part.hasRubric() &&
                                         Allocator.getRubricManager().hasRubric(part, _studentList.getSelectedValue());
                     _viewRubricButton.setEnabled(hasRubric);
+                    _emailStudentRubric.setEnabled(hasRubric);
                 }
             }
         }
@@ -1442,6 +1458,11 @@ public class BackendView extends JFrame
         {
             Allocator.getRubricManager().view(_assignmentList.getSelectedValue().getHandinPart(), _studentList.getSelectedValue(), true);
         }
+    }
+
+    private void emailRubricButtonActionPerformed()
+    {
+        
     }
 
     private void printRubricButtonActionPerformed()
