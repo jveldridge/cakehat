@@ -1462,7 +1462,13 @@ public class BackendView extends JFrame
 
     private void emailRubricButtonActionPerformed()
     {
-        
+        Vector<String> students = new Vector<String>(_studentList.getGenericSelectedValues());
+        for (Assignment a : _assignmentList.getGenericSelectedValues()) {
+            if (a.hasHandinPart()) {
+                Allocator.getRubricManager().convertToGRD(a.getHandinPart(), students);
+                Allocator.getGradingUtilities().notifyStudents(a.getHandinPart(), students, true);
+            }
+        }
     }
 
     private void printRubricButtonActionPerformed()
@@ -1496,6 +1502,8 @@ public class BackendView extends JFrame
 
         //Then convert these rubrics to GRD and print them
         Allocator.getRubricManager().convertToGRD(rubrics);
+        JOptionPane.showConfirmDialog(rootPane, this, WELCOME_PANEL_TAG, WIDTH);
+
         Allocator.getGradingUtilities().printGRDFiles(rubrics);
     }
 
@@ -1536,6 +1544,10 @@ public class BackendView extends JFrame
 
     private void assignmentListValueChanged()
     {
+        //Create directory for the assignment so GRD files can be created,
+        //even if no assignments have been untarred
+        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
+                                                        + _assignmentList.getSelectedValue().getName());
         updateGUI();
     }
 
