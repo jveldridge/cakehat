@@ -8,6 +8,7 @@ package backend;
 
 import config.Assignment;
 import config.Part;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
@@ -19,7 +20,9 @@ import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import utils.Allocator;
@@ -79,6 +82,7 @@ public class ExemptionView extends javax.swing.JFrame {
         tabbedPane.setName("tabbedPane"); // NOI18N
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
+                _parts = new Vector<Part>();
                 updateGUI();
             }
         });
@@ -104,11 +108,11 @@ public class ExemptionView extends javax.swing.JFrame {
         grantPanel.setLayout(grantPanelLayout);
         grantPanelLayout.setHorizontalGroup(
             grantPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 578, Short.MAX_VALUE)
+            .addGap(0, 589, Short.MAX_VALUE)
         );
         grantPanelLayout.setVerticalGroup(
             grantPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 335, Short.MAX_VALUE)
+            .addGap(0, 338, Short.MAX_VALUE)
         );
 
         grantSP.setViewportView(grantPanel);
@@ -120,13 +124,13 @@ public class ExemptionView extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(211, 211, 211)
                 .addComponent(grantButton)
-                .addContainerGap(215, Short.MAX_VALUE))
-            .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
+                .addContainerGap(257, Short.MAX_VALUE))
+            .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grantButton)
                 .addContainerGap())
@@ -188,13 +192,13 @@ public class ExemptionView extends javax.swing.JFrame {
                 .addGroup(viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(viewPanelLayout.createSequentialGroup()
                         .addComponent(viewByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
                         .addComponent(allStudsButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(studsSelectedButton))
                     .addGroup(viewPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)))
+                        .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         viewPanelLayout.setVerticalGroup(
@@ -206,7 +210,7 @@ public class ExemptionView extends javax.swing.JFrame {
                     .addComponent(studsSelectedButton)
                     .addComponent(allStudsButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
+                .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -229,7 +233,17 @@ public class ExemptionView extends javax.swing.JFrame {
 private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grantButtonActionPerformed
     for (Part p : _parts) {
         for (String student : _students) {
-            Allocator.getDatabaseIO().grantExemption(student, p, "need to deal with entering notes");
+            JTextField reason = new JTextField();
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(0,1));
+            panel.add(new JLabel("Enter reason for granting extension for student " 
+                                  + student + " for " + p.getAssignment().getName()
+                                  + ": " + p.getName()));
+            panel.add(reason);
+            int num = JOptionPane.showConfirmDialog(null, panel, "Enter reason for exemption", JOptionPane.OK_CANCEL_OPTION);
+            if (num == JOptionPane.OK_OPTION) {
+                Allocator.getDatabaseIO().grantExemption(student, p, reason.getText());
+            }
         }
     }
 }//GEN-LAST:event_grantButtonActionPerformed
@@ -314,6 +328,7 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
     
     private void updateViewGUI() {
+        asgnPanel.removeAll();
         javax.swing.GroupLayout asgnLayout = new javax.swing.GroupLayout(asgnPanel);
         asgnPanel.setLayout(asgnLayout);
         ParallelGroup pg = asgnLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
@@ -333,7 +348,7 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                 partLabelMap.put(p, pLab);
                 Vector<JPanel> v = new Vector<JPanel>();
                 for (final String s : _students) {
-                    String note = Allocator.getDatabaseIO().getExemptionNote(s, a.getHandinPart());
+                    String note = Allocator.getDatabaseIO().getExemptionNote(s, p);
                     if (note != null) {
                         JPanel sPan = new JPanel();
                         JLabel sLab = new JLabel("\t\t" + s + ": " + note);
@@ -343,6 +358,7 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         delete.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 Allocator.getDatabaseIO().removeExemption(s, p);
+                                asgnPanel.removeAll();
                                 updateViewGUI();
                             }
                             

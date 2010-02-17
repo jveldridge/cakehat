@@ -156,8 +156,8 @@ public class BackendView extends JFrame
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
                     _manageGroupsButton,
                     //Student buttons
-                    _chartsButton, _emailReportsButton, _extensionExemptionButton,
-                    _openCodeButton, _runCodeButton,
+                    _chartsButton, _emailReportsButton, _extensionsButton,
+                    _openCodeButton, _runCodeButton, _exemptionsButton,
                     _testCodeButton, _printCodeButton, _viewReadmeButton,
                     _viewRubricButton, _emailStudentRubric, _printRubricButton,
                     _disableStudentButton,
@@ -341,7 +341,7 @@ public class BackendView extends JFrame
         
         _studentButtons = new JButton[]
         {
-          _chartsButton, _emailReportsButton, _extensionExemptionButton,
+          _chartsButton, _emailReportsButton, _extensionsButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
           _viewReadmeButton, _viewRubricButton, _emailStudentRubric,
           _printRubricButton, _disableStudentButton
@@ -720,18 +720,30 @@ public class BackendView extends JFrame
 
         buttonPanel.add(Box.createVerticalBox());//space
 
-        //Extensions & Exemptions
-
-        _extensionExemptionButton = createButton("<h1 style=\"font-size:87%\">Extensions &amp; Exemptions</h1>", "/gradesystem/resources/icons/16x16/office-calendar.png");
-        _extensionExemptionButton.addActionListener(new ActionListener()
+        _exemptionsButton = createButton("Exemptions", "/gradesystem/resources/icons/16x16/dialog-error.png");
+        _exemptionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                extensionExemptionButtonActionPerformed();
+                exemptionsButtonActionPerformed();
             }
             
         });
-        buttonPanel.add(_extensionExemptionButton);
+        buttonPanel.add(_exemptionsButton);
+
+
+        //Extensions & Exemptions
+
+        _extensionsButton = createButton("Extensions", "/gradesystem/resources/icons/16x16/office-calendar.png");
+        _extensionsButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                extensionsButtonActionPerformed();
+            }
+            
+        });
+        buttonPanel.add(_extensionsButton);
 
         buttonPanel.add(Box.createVerticalBox());//space
 
@@ -1063,7 +1075,7 @@ public class BackendView extends JFrame
             {
                 _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
-                _extensionExemptionButton.setEnabled(true);
+                _extensionsButton.setEnabled(true);
             }
             //If one assigment
             if(selectedAssignments.size() == 1)
@@ -1096,7 +1108,7 @@ public class BackendView extends JFrame
             {
                 _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
-                _extensionExemptionButton.setEnabled(true);
+                _extensionsButton.setEnabled(true);
             }
         }
 
@@ -1373,9 +1385,18 @@ public class BackendView extends JFrame
         }
     }
 
-    private void extensionExemptionButtonActionPerformed()
+    private void extensionsButtonActionPerformed()
     {
-        new EEView(_assignmentList.getGenericSelectedValues(), _studentList.getGenericSelectedValues());
+        Assignment a = _assignmentList.getSelectedValue();
+        if (a.hasHandinPart()) {
+            new ExtensionView(a.getHandinPart(), _studentList.getSelectedValue());
+        }
+        
+    }
+
+    private void exemptionsButtonActionPerformed() {
+        new ExemptionView(_assignmentList.getGenericSelectedValues(),
+                          _studentList.getGenericSelectedValues());
     }
 
     private void openCodeButtonActionPerformed()
