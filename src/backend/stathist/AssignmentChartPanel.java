@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import org.jfree.data.statistics.Statistics;
 import utils.Allocator;
-import utils.ErrorView;
 
 /**
  *

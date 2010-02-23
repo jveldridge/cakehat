@@ -10,10 +10,6 @@ import javax.swing.KeyStroke;
 
 /**
  * Displays an error that occurs during runtime.
- * 
- * TODO: Have error emailed to dedicated cakehat email address, not the Grades
- * TA, as the Grades TA of a given course isn't likely going to be able to fix
- * the problem.
  *
  * @author psastras
  */

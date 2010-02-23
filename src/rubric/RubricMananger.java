@@ -536,8 +536,8 @@ public class RubricMananger
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Change grader
-            //TODO: Get grader login from database
-            rubric.setGrader(Allocator.getGeneralUtilities().getUserName(newGraderLogin), newGraderLogin);
+            String graderName = Allocator.getDatabaseIO().getAllTAs().get(newGraderLogin);
+            rubric.setGrader(graderName, newGraderLogin);
 
             //Write rubric
             RubricGMLWriter.write(rubric, xmlPath);

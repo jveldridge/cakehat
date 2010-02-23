@@ -197,7 +197,6 @@ public class DBWrapper implements DatabaseIO {
     /**
      * Inserts a new student into the DB (not check if already exists)
      * TODO: make check for duplicate student
-     * TODO: change to just one name
      * @param studentLogin - String login
      * @param studentFirstName - String First Name
      * @param studentLastName - String Last Name
@@ -268,7 +267,6 @@ public class DBWrapper implements DatabaseIO {
 
     /**
      * Checks to see if TA already exists. If does not exist then inserts TA to DB
-     * TODO: add full name
      * @param taLogin - String TA Login
      * @param taName - String TA Name
      * @return status
@@ -692,7 +690,6 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    //TODO: remove status
     public boolean enterGrade(String studentLogin, Part part, double score) {
         this.openConnection();
         try {

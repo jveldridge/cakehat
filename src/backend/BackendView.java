@@ -69,7 +69,7 @@ public class BackendView extends JFrame
 
     public static void launch()
     {
-        if(Allocator.getGradingUtilities().isUserTA())
+        if(Allocator.getGradingUtilities().isUserAdmin())
         {
             new BackendView();
         }
@@ -518,6 +518,9 @@ public class BackendView extends JFrame
             public void actionPerformed(ActionEvent ae)
             {
                 _studentList.clearSelection();
+                _studentList.setListData(_studentLogins);
+                _filterField.setText("");
+                _filterField.requestFocus();
             }
         });
         buttonPanel.add(selectNoneButton, BorderLayout.EAST);
@@ -1379,7 +1382,13 @@ public class BackendView extends JFrame
                 }
             }
 
-            GradeReportView grv = new GradeReportView(map, _studentList.getGenericSelectedValues());
+            Vector<String> students = new Vector<String>();
+            for (String student : _studentList.getGenericSelectedValues()) {
+                if (Allocator.getDatabaseIO().isStudentEnabled(student)) {
+                    students.add(student);
+                }
+            }
+            GradeReportView grv = new GradeReportView(map, students);
             grv.setLocationRelativeTo(null);
             grv.setVisible(true);
         }
