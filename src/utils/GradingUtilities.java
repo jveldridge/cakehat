@@ -96,7 +96,7 @@ public class GradingUtilities {
     }
 
     public String getStudentGRDPath(HandinPart part, String studentLogin) {
-        return this.getUserGradingDirectory() + part.getAssignment().getName() + "/" + studentLogin + ".grd";
+        return this.getUserGradingDirectory() + part.getAssignment().getName() + "/" + studentLogin + ".txt";
     }
 
     /**
