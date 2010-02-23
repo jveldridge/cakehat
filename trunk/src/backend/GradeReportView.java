@@ -2,6 +2,7 @@ package backend;
 
 import backend.stathist.AssignmentChartPanel;
 import backend.stathist.StudentChartPanel;
+import com.google.common.collect.Iterables;
 import config.Assignment;
 import config.Part;
 import java.io.File;
@@ -50,6 +51,13 @@ public class GradeReportView extends javax.swing.JFrame {
         _messageText.setText("<p>Here are your current grades for the course.<br />"
                 + "\n<i>Histograms for each of the projects are attached.</i></p>\n<p>-The "
                 + course + " TAs</p>\n");
+        if (_students.size() <= 5) {
+            _toText.setText(_students.toString());
+        }
+        else {
+            _toText.setText(_students.size() + " students");
+        }
+
         _fromText.setText(course + "headtas@cs.brown.edu");
         updatePreview();
         
@@ -60,7 +68,15 @@ public class GradeReportView extends javax.swing.JFrame {
      * Displays the grade report as it would be sent to the course's test account
      */
     public void updatePreview() {
-        _previewPane.setText(htmlBuilder(Allocator.getCourseInfo().getTestAccount()));
+        String student;
+        if (_students.size() == 1) {
+            student = Iterables.get(_students, 0);
+        }
+        else {
+            student = Allocator.getCourseInfo().getTestAccount();
+        }
+
+        _previewPane.setText(htmlBuilder(student));
     }
 
     /**
@@ -118,20 +134,10 @@ public class GradeReportView extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         _sendButton = new javax.swing.JButton();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuBar2 = new javax.swing.JMenuBar();
-        jMenu3 = new javax.swing.JMenu();
-        jMenu4 = new javax.swing.JMenu();
-        jMenuBar3 = new javax.swing.JMenuBar();
-        jMenu5 = new javax.swing.JMenu();
-        jMenu6 = new javax.swing.JMenu();
-        jMenuBar4 = new javax.swing.JMenuBar();
-        jMenu7 = new javax.swing.JMenu();
-        jMenu8 = new javax.swing.JMenu();
         attachScoreGraphButton = new javax.swing.JCheckBox();
         attachHistButton = new javax.swing.JCheckBox();
+        jLabel4 = new javax.swing.JLabel();
+        _toText = new javax.swing.JTextField();
         jMenuBar5 = new javax.swing.JMenuBar();
         jMenu9 = new javax.swing.JMenu();
         jMenu10 = new javax.swing.JMenu();
@@ -185,46 +191,6 @@ public class GradeReportView extends javax.swing.JFrame {
             }
         });
 
-        jMenuBar1.setName("jMenuBar1"); // NOI18N
-
-        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu1.setName("jMenu1"); // NOI18N
-        jMenuBar1.add(jMenu1);
-
-        jMenu2.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu2.setName("jMenu2"); // NOI18N
-        jMenuBar1.add(jMenu2);
-
-        jMenuBar2.setName("jMenuBar1"); // NOI18N
-
-        jMenu3.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu3.setName("jMenu1"); // NOI18N
-        jMenuBar2.add(jMenu3);
-
-        jMenu4.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu4.setName("jMenu2"); // NOI18N
-        jMenuBar2.add(jMenu4);
-
-        jMenuBar3.setName("jMenuBar1"); // NOI18N
-
-        jMenu5.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu5.setName("jMenu1"); // NOI18N
-        jMenuBar3.add(jMenu5);
-
-        jMenu6.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu6.setName("jMenu2"); // NOI18N
-        jMenuBar3.add(jMenu6);
-
-        jMenuBar4.setName("jMenuBar1"); // NOI18N
-
-        jMenu7.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu7.setName("jMenu1"); // NOI18N
-        jMenuBar4.add(jMenu7);
-
-        jMenu8.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu8.setName("jMenu2"); // NOI18N
-        jMenuBar4.add(jMenu8);
-
         attachScoreGraphButton.setSelected(true);
         attachScoreGraphButton.setText(resourceMap.getString("attachScoreGraphButton.text")); // NOI18N
         attachScoreGraphButton.setName("attachScoreGraphButton"); // NOI18N
@@ -232,6 +198,13 @@ public class GradeReportView extends javax.swing.JFrame {
         attachHistButton.setSelected(true);
         attachHistButton.setText(resourceMap.getString("attachHistButton.text")); // NOI18N
         attachHistButton.setName("attachHistButton"); // NOI18N
+
+        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+        jLabel4.setName("jLabel4"); // NOI18N
+
+        _toText.setEditable(false);
+        _toText.setText(resourceMap.getString("_toText.text")); // NOI18N
+        _toText.setName("_toText"); // NOI18N
 
         jMenuBar5.setName("jMenuBar1"); // NOI18N
 
@@ -255,23 +228,31 @@ public class GradeReportView extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                                 .addGap(305, 305, 305))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(attachHistButton)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                            .addComponent(_toText)
+                                                            .addComponent(_fromText, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE))))
+                                                .addGap(25, 25, 25)))
                                         .addGroup(layout.createSequentialGroup()
-                                            .addComponent(attachHistButton)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                                                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                                                .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(_fromText, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
-                                            .addGap(25, 25, 25)))
+                                            .addComponent(attachScoreGraphButton)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(attachScoreGraphButton)
+                                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)))
@@ -291,24 +272,28 @@ public class GradeReportView extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel5))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_toText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_fromText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_fromText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addComponent(attachScoreGraphButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(attachHistButton))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_sendButton)
                 .addContainerGap())
@@ -327,13 +312,16 @@ public class GradeReportView extends javax.swing.JFrame {
         //generate Assignment histograms
         if (attachHistButton.isSelected()) {
             for (Assignment a : _sortedAssignments) {
+                for (Part p : a.getParts()) {
                 try {
-                    AssignmentChartPanel acp = new AssignmentChartPanel();
-                    acp.updateChartData(a, Allocator.getDatabaseIO().getEnabledStudents().keySet());
-                    fullFileList.add(new File(".tmpdata/" + a.getName() + ".png"));
-                    ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
-                } catch (IOException ex) {
-                    new ErrorView(ex, "Could not generate histogram image for assignment " + a.getName());
+                        AssignmentChartPanel acp = new AssignmentChartPanel();
+                        acp.updateChartData(p, Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                        fullFileList.add(new File(".tmpdata/" + p.getName() + ".png"));
+                        ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
+                    } catch (IOException ex) {
+                        new ErrorView(ex, "Could not generate histogram image for assignment "
+                                            + a.getName() + ": " + p.getName());
+                    }
                 }
             }  
         }
@@ -361,7 +349,13 @@ public class GradeReportView extends javax.swing.JFrame {
                 }
             }    
             
-            Allocator.getCourseInfo().getEmailAccount().sendMail("cs015headtas@cs.brown.edu", new String[]{student + "@cs.brown.edu"}, null, null, "[cs015] Grade Report", htmlBuilder(student), attachPaths);
+            Allocator.getCourseInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
+                                                                    + "headtas@cs.brown.edu",
+                                                                    new String[]{student + "@cs.brown.edu"},
+                                                                    null, null,
+                                                                    "[" + Allocator.getCourseInfo().getCourse()
+                                                                        + "] Grade Report", htmlBuilder(student),
+                                                                    attachPaths);
         }
     }//GEN-LAST:event__sendButtonActionPerformed
 
@@ -370,26 +364,16 @@ public class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JTextArea _messageText;
     private javax.swing.JEditorPane _previewPane;
     private javax.swing.JButton _sendButton;
+    private javax.swing.JTextField _toText;
     private javax.swing.JCheckBox attachHistButton;
     private javax.swing.JCheckBox attachScoreGraphButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu10;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenu jMenu5;
-    private javax.swing.JMenu jMenu6;
-    private javax.swing.JMenu jMenu7;
-    private javax.swing.JMenu jMenu8;
     private javax.swing.JMenu jMenu9;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuBar jMenuBar2;
-    private javax.swing.JMenuBar jMenuBar3;
-    private javax.swing.JMenuBar jMenuBar4;
     private javax.swing.JMenuBar jMenuBar5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
