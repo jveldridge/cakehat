@@ -34,18 +34,19 @@ import matlab.MatlabProxyController;
  *      MODE
  *          mfile
  *              path
+ *          directory
+ *              path
  *
  * @author spoletto
  * @author jeldridg
  */
 
-class MatlabHandin extends CodeHandin
-{
+class MatlabHandin extends CodeHandin {
     private static final String[] _sourceFileTypes = { "m" };
 
     private static final String 
     SELECT_FILE = "select-file", SPECIFY_FILE = "specify-file", PATH="path",
-    MFILE="m-file";
+    MFILE="m-file", DIRECTORY="directory";
 
     private static final LanguageSpecification.Mode
     //run modes
@@ -56,7 +57,7 @@ class MatlabHandin extends CodeHandin
     //demo modes
     DEMO_MFILE_MODE = new LanguageSpecification.Mode((MFILE),
                                 new LanguageSpecification.Property(PATH, true)),
-    DEM0_DIRECTORY_MODE = new LanguageSpecification.Mode((MFILE),
+    DEM0_DIRECTORY_MODE = new LanguageSpecification.Mode((DIRECTORY),
                                 new LanguageSpecification.Property(PATH, true)),
 
     //tester modes
@@ -67,7 +68,7 @@ class MatlabHandin extends CodeHandin
     public static final LanguageSpecification SPECIFICATION =
     new LanguageSpecification("Matlab",
                               new LanguageSpecification.Mode[]{ RUN_SELECT_FILE_MODE, RUN_SPECIFY_FILE_MODE },
-                              new LanguageSpecification.Mode[]{ DEMO_MFILE_MODE },
+                              new LanguageSpecification.Mode[]{ DEMO_MFILE_MODE, DEM0_DIRECTORY_MODE },
                               new LanguageSpecification.Mode[]{ TEST_MFILE_MODE });
 
     MatlabHandin(Assignment asgn, String name, int points)
@@ -88,7 +89,7 @@ class MatlabHandin extends CodeHandin
 
         //close all open code and get new M-files to open
         MatlabProxyController.eval("com.mathworks.mlservices.MLEditorServices.closeAll");
-        Collection<String> files = this.getMFiles(studentLogin);
+        Collection<String> files = this.getMFiles(super.getStudentHandinDirectory(studentLogin));
 
         String openCommand = "edit ";
         for (String s : files ) {
@@ -109,7 +110,7 @@ class MatlabHandin extends CodeHandin
             JPanel panel = new JPanel();
             panel.setLayout(new GridLayout(0,1));
             JComboBox cb = new JComboBox();
-            Collection<String> files = this.getMFiles(studentLogin);
+            Collection<String> files = this.getMFiles(super.getStudentHandinDirectory(studentLogin));
             for (String s : files ) {
                 cb.insertItemAt(s, cb.getItemCount());
             }
@@ -162,14 +163,49 @@ class MatlabHandin extends CodeHandin
 
     @Override
     public void runDemo() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (_demoMode.equalsIgnoreCase(DIRECTORY)) {
+            String path = this.getDemoProperty(PATH);
+            this.setupRun();
+            MatlabProxyController.eval("cd " + path);
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(0,1));
+            JComboBox cb = new JComboBox();
+            Collection<String> files = this.getMFiles(path);
+            for (String s : files ) {
+                cb.insertItemAt(s, cb.getItemCount());
+            }
+            if (cb.getModel().getSize() > 0) {
+                cb.setSelectedIndex(0);
+            }
+
+            JLabel label = new JLabel("Enter any function arguments here: ");
+            JTextField tf = new JTextField();
+
+            panel.add(cb);
+            panel.add(label);
+            panel.add(tf);
+
+            if (JOptionPane.showConfirmDialog(null, panel, "Select file to run:", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                   String cmd = (String) cb.getSelectedItem();
+                   if(tf.getText() != null && !tf.getText().isEmpty()) {
+                       cmd += "(" + tf.getText() + ")";
+                   }
+                    MatlabProxyController.eval(cmd);
+            }
+        }
+        else
+        {
+            System.err.println(this.getClass().getName() +
+                               " does not support this run mode: " + _runMode);
+            return;
+        }
     }
 
     @Override
     public void runTester(String studentLogin) {
         this.setupRun(studentLogin);
 
-        if (_demoMode.equalsIgnoreCase(MFILE)) {
+        if (_testerMode.equalsIgnoreCase(MFILE)) {
             this.getDemoProperty(PATH);
             //Get name of tester file from path to tester
             String testerPath = this.getTesterProperty(PATH);
@@ -214,9 +250,9 @@ class MatlabHandin extends CodeHandin
         }
     }
 
-    private Collection<String> getMFiles(String studentLogin) {
+    private Collection<String> getMFiles(String directoryPath) {
         Collection<File> fileList = Allocator.getGeneralUtilities().getFiles
-                (super.getStudentHandinDirectory(studentLogin), "m");
+                (directoryPath, "m");
         Collection<String> mFiles = new Vector<String>();
         for(File f : fileList)
         {
