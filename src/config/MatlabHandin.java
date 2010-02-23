@@ -2,7 +2,7 @@ package config;
 
 import java.awt.GridLayout;
 import java.io.File;
-import matlab.MatlabClient;
+import matlab.MatlabConnectionException;
 import utils.*;
 import java.util.Collection;
 import java.util.Vector;
@@ -11,23 +11,64 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import matlab.SetupScriptWriter;
+import matlab.MatlabProxyController;
 
 /**
  * Adds support for MATLAB student handins.
  *
+ * Below are the valid modes and properties. ( ) indicate the argument is optional.
+ *
+ * RUN
+ *      MODE
+ *          select_file
+ *          specify_file
+ *              path
+ *
+ * DEMO
+ *      MODE
+ *          directory
+ *              path
+ *          mfile
+ *
+ * TESTER
+ *      MODE
+ *          mfile
+ *              path
+ *
  * @author spoletto
+ * @author jeldridg
  */
 
 class MatlabHandin extends CodeHandin
 {
     private static final String[] _sourceFileTypes = { "m" };
-    private static MatlabClient _client = null;
-    private static final String MATLAB_PATH = "/com/matlab/bin/matlab";
 
-    //TODO: Fill in my properties
+    private static final String 
+    SELECT_FILE = "select-file", SPECIFY_FILE = "specify-file", PATH="path",
+    MFILE="m-file";
+
+    private static final LanguageSpecification.Mode
+    //run modes
+    RUN_SELECT_FILE_MODE = new LanguageSpecification.Mode(SELECT_FILE),
+    RUN_SPECIFY_FILE_MODE = new LanguageSpecification.Mode(SPECIFY_FILE,
+                                new LanguageSpecification.Property(PATH, true)),
+
+    //demo modes
+    DEMO_MFILE_MODE = new LanguageSpecification.Mode((MFILE),
+                                new LanguageSpecification.Property(PATH, true)),
+    DEM0_DIRECTORY_MODE = new LanguageSpecification.Mode((MFILE),
+                                new LanguageSpecification.Property(PATH, true)),
+
+    //tester modes
+    TEST_MFILE_MODE = new LanguageSpecification.Mode((MFILE),
+                                new LanguageSpecification.Property(PATH, true));
+
+
     public static final LanguageSpecification SPECIFICATION =
-            new LanguageSpecification("Matlab", null, null, null);
+    new LanguageSpecification("Matlab",
+                              new LanguageSpecification.Mode[]{ RUN_SELECT_FILE_MODE, RUN_SPECIFY_FILE_MODE },
+                              new LanguageSpecification.Mode[]{ DEMO_MFILE_MODE },
+                              new LanguageSpecification.Mode[]{ TEST_MFILE_MODE });
 
     MatlabHandin(Assignment asgn, String name, int points)
     {
@@ -44,28 +85,136 @@ class MatlabHandin extends CodeHandin
     public void openCode(String studentLogin)
     {
         this.setupRun(studentLogin);
-        try
-        {
-            //close the MATLAB text editor
-            _client.sendCommand("Editor = com.mathworks.mlservices.MLEditorServices;");
-            _client.sendCommand("Editor.closeAll;");
-            _client.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
-            //get all .m files from current working directory
-            //open up all .m files in MATLAB editor with 'edit' command
+
+        //close all open code and get new M-files to open
+        MatlabProxyController.eval("com.mathworks.mlservices.MLEditorServices.closeAll");
+        Collection<String> files = this.getMFiles(studentLogin);
+
+        String openCommand = "edit ";
+        for (String s : files ) {
+            openCommand += s + " ";
+        }
+
+        //open up all .m files in MATLAB editor with 'edit' command
+        MatlabProxyController.eval(openCommand);
+    }
+
+
+    @Override
+    public void run(String studentLogin) {
+        this.setupRun(studentLogin);
+    
+        if (_runMode.equalsIgnoreCase(SELECT_FILE)) {
+            //create the GUI to select which function to run
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(0,1));
+            JComboBox cb = new JComboBox();
             Collection<String> files = this.getMFiles(studentLogin);
             for (String s : files ) {
-                _client.sendCommand("edit " + s + ".m");
+                cb.insertItemAt(s, cb.getItemCount());
+            }
+            if (cb.getModel().getSize() > 0) {
+                cb.setSelectedIndex(0);
+            }
+
+            JLabel label = new JLabel("Enter any function arguments here: ");
+            JTextField tf = new JTextField();
+
+            panel.add(cb);
+            panel.add(label);
+            panel.add(tf);
+
+            if (JOptionPane.showConfirmDialog(null, panel, "Select file to run:", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                   String cmd = (String) cb.getSelectedItem();
+                   if(tf.getText() != null && !tf.getText().isEmpty()) {
+                       cmd += "(" + tf.getText() + ")";
+                   }
+                    MatlabProxyController.eval(cmd);
             }
         }
-        catch(Exception e) {
-            new ErrorView(e, "Could not connect to MATLAB server. If you were " +
-                    "running an active session of MATLAB before pressing the open " +
-                    "button, please close MATLAB and try again");
+        else if (_runMode.equalsIgnoreCase(SPECIFY_FILE)) {
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(0,1));
+
+            String function = this.getRunProperty(PATH);
+
+            JLabel label = new JLabel("Enter here any arguments for function " + function + ": ");
+            JTextField tf = new JTextField();
+
+            panel.add(label);
+            panel.add(tf);
+
+            if (JOptionPane.showConfirmDialog(null, panel, "Enter arguments", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                   String cmd = function;
+                   if(tf.getText() != null && !tf.getText().isEmpty()) {
+                       cmd += "(" + tf.getText() + ")";
+                   }
+                   MatlabProxyController.eval(cmd);
+            }
+        }
+        else {
+            System.err.println(this.getClass().getName() +
+                               " does not support this run mode: " + _runMode);
+            return;
+        }
+        
+    }
+
+    @Override
+    public void runDemo() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void runTester(String studentLogin) {
+        this.setupRun(studentLogin);
+
+        if (_demoMode.equalsIgnoreCase(MFILE)) {
+            this.getDemoProperty(PATH);
+            //Get name of tester file from path to tester
+            String testerPath = this.getTesterProperty(PATH);
+            String testerName = testerPath.substring(testerPath.lastIndexOf("/")+1);
+
+            String copyPath = this.getStudentHandinDirectory(studentLogin) + testerName;
+
+            //Copy file into student's code directory, print error and bail if copy fails
+            if(!Allocator.getGeneralUtilities().copyFile(testerPath, copyPath))
+            {
+                System.err.println("Could not test " + studentLogin + "'s " + this.getName());
+                System.err.println("Error in copying " + testerPath + " to " + copyPath);
+                return;
+            }
+
+            //run the tester from the directory with the student's code
+            //(splitting gets rid of .m)
+            MatlabProxyController.eval(testerName.split("\\.")[0]);
+        }
+        else
+        {
+            System.err.println(this.getClass().getName() +
+                               " does not support this run mode: " + _runMode);
+            return;
         }
     }
 
-    private Collection<String> getMFiles(String studentLogin)
-    {
+    private void setupRun(String studentLogin) {
+        this.setupRun();
+
+        super.untar(studentLogin);
+        MatlabProxyController.eval("cd " + super.getStudentHandinDirectory(studentLogin));
+    }
+
+    private void setupRun() {
+        if (!MatlabProxyController.isConnected()) {
+            try {
+                MatlabProxyController.createConnection();
+            } catch (MatlabConnectionException ex) {
+                new ErrorView(ex, "Could not create connection to MATLAB");
+            }
+        }
+    }
+
+    private Collection<String> getMFiles(String studentLogin) {
         Collection<File> fileList = Allocator.getGeneralUtilities().getFiles
                 (super.getStudentHandinDirectory(studentLogin), "m");
         Collection<String> mFiles = new Vector<String>();
@@ -74,106 +223,6 @@ class MatlabHandin extends CodeHandin
             mFiles.add(f.getName().split("\\.")[0]);
         }
         return mFiles;
-    }
-
-    private void setupRun(String studentLogin) {
-        if (!SetupScriptWriter.exists()) {
-            SetupScriptWriter.createScript();
-        }
-        super.untar(studentLogin);
-        //ps -u graderlogin | grep matlab
-        Collection<String> response = BashConsole.write("ps -u " +
-                Allocator.getGeneralUtilities().getUserLogin() + " | grep matlab");
-        if (response.isEmpty()) { //MATLAB is not currently running
-            String terminalCmd = "/usr/bin/xterm -title " + "\"" + "MATLAB" +
-                    "\"" + " -e " + "\"" + "cd " + Allocator.getCourseInfo().getGradingDir() +
-                    "bin ; " + MATLAB_PATH + " -r setup " + "; read" + "\"";
-            //Execute the command in a seperate thread
-            BashConsole.writeThreaded(terminalCmd);
-            boolean serverExists = false;
-            long timeout = 60000;
-            long startTime = System.currentTimeMillis();
-            while (!serverExists && System.currentTimeMillis() < startTime + timeout) {
-                try {
-                    _client = new MatlabClient();
-                    serverExists = true;
-                } catch (Exception e) {
-                    serverExists = false;
-                }
-                long now = System.currentTimeMillis();
-                while (System.currentTimeMillis() < now + 1000);
-            }
-            if (!serverExists) {
-                new ErrorView(new Exception(), "Could not set up MATLAB server within specified timeout");
-            }
-        }
-    }
-
-
-    @Override //TODO: dynamically create setup.m script for use in
-    //courses other than CS4
-    public void run(String studentLogin)
-    {
-        this.setupRun(studentLogin);
-        try
-        {
-            _client.sendCommand("cd " + super.getStudentHandinDirectory(studentLogin));
-            //get all .m files from current working directory
-            //open up all .m files in MATLAB editor with 'edit' command
-        }
-        catch(Exception e) {
-            new ErrorView(e, "Could not connect to MATLAB server. If you were " +
-                    "running an active session of MATLAB before pressing the run " +
-                    "button, please close MATLAB and try again");
-        }
-    
-        //create the GUI to select which function to run
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0,1));
-        JComboBox cb = new JComboBox();
-        Collection<String> files = this.getMFiles(studentLogin);
-        for (String s : files ) {
-            cb.insertItemAt(s, cb.getItemCount());
-        }
-        if (cb.getModel().getSize() > 0) {
-            cb.setSelectedIndex(0);
-        }
-
-        JLabel label = new JLabel("Enter any function arguments here: ");
-        JTextField tf = new JTextField();
-
-        panel.add(cb);
-        panel.add(label);
-        panel.add(tf);
-
-        if (JOptionPane.showConfirmDialog(null, panel, "Select file to run:", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-               String cmd = (String) cb.getSelectedItem();
-               if(tf.getText() != null && !tf.getText().isEmpty()) {
-                   cmd += "(" + tf.getText() + ")";
-               }
-                _client.sendCommand(cmd);
-        }
-        
-    }
-
-    @Override
-    public void runDemo()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void runTester(String studentLogin)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    //TODO: After you have set up run properties properly, do not override this
-    //method as CodeHandin will determine this for you
-    public boolean hasRun()
-    {
-        return true;
     }
 
 }
