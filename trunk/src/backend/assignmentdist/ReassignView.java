@@ -52,7 +52,7 @@ public class ReassignView extends javax.swing.JFrame {
         //create dist for assignment passed in as parameter
         if (asgn != null) {
             asgnComboBox.setSelectedItem(asgn);
-            this.setTitle(asgnComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+            this.setTitle(asgnComboBox.getSelectedItem() + " - " + Allocator.getCourseInfo().getCourse() +" Assignment Distributor");
         }
         
         _unassignedStudents = new Vector<String>(_asgn.getHandinPart().getHandinLogins());
@@ -85,11 +85,7 @@ public class ReassignView extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         fromStudentList = new javax.swing.JList();
         fromStudentLabel = new javax.swing.JLabel();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        toTAList = new javax.swing.JList();
         toTALabel = new javax.swing.JLabel();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        toStudentList = new javax.swing.JList();
         toStudentsLabel = new javax.swing.JLabel();
         titleLabel = new javax.swing.JLabel();
         studentFilter = new javax.swing.JTextField();
@@ -105,13 +101,15 @@ public class ReassignView extends javax.swing.JFrame {
         numStudentsSpinner = new javax.swing.JSpinner();
         randomAssignButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
         selectedAssign = new javax.swing.JButton();
         unassignButton = new javax.swing.JButton();
         remainingLabel = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
-        generateRubricsButton = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        toTAList = new javax.swing.JList();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        toStudentList = new javax.swing.JList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -136,29 +134,8 @@ public class ReassignView extends javax.swing.JFrame {
         fromStudentLabel.setText(resourceMap.getString("fromStudentLabel.text")); // NOI18N
         fromStudentLabel.setName("fromStudentLabel"); // NOI18N
 
-        jScrollPane4.setName("jScrollPane4"); // NOI18N
-
-        toTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        toTAList.setName("toTAList"); // NOI18N
-        toTAList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                toTAListValueChanged(evt);
-            }
-        });
-        toTAList.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                toTAListKeyReleased(evt);
-            }
-        });
-        jScrollPane4.setViewportView(toTAList);
-
         toTALabel.setText(resourceMap.getString("toTALabel.text")); // NOI18N
         toTALabel.setName("toTALabel"); // NOI18N
-
-        jScrollPane5.setName("jScrollPane5"); // NOI18N
-
-        toStudentList.setName("toStudentList"); // NOI18N
-        jScrollPane5.setViewportView(toStudentList);
 
         toStudentsLabel.setText(resourceMap.getString("toStudentsLabel.text")); // NOI18N
         toStudentsLabel.setName("toStudentsLabel"); // NOI18N
@@ -237,7 +214,7 @@ public class ReassignView extends javax.swing.JFrame {
                     .addComponent(newXMLRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(keepXMLRadioButton)
                     .addComponent(assignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(299, Short.MAX_VALUE))
         );
         reassignPanelLayout.setVerticalGroup(
             reassignPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -248,7 +225,7 @@ public class ReassignView extends javax.swing.JFrame {
                 .addComponent(keepXMLRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(newXMLRadioButton)
-                .addContainerGap(134, Short.MAX_VALUE))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
 
         cardPanel.add(reassignPanel, "reassignCard");
@@ -267,8 +244,6 @@ public class ReassignView extends javax.swing.JFrame {
 
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
-
-        jSeparator1.setName("jSeparator1"); // NOI18N
 
         jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
         jLabel2.setName("jLabel2"); // NOI18N
@@ -304,65 +279,79 @@ public class ReassignView extends javax.swing.JFrame {
 
         jSeparator2.setName("jSeparator2"); // NOI18N
 
-        generateRubricsButton.setText(resourceMap.getString("generateRubricsButton.text")); // NOI18N
-        generateRubricsButton.setName("generateRubricsButton"); // NOI18N
+        jScrollPane4.setName("jScrollPane4"); // NOI18N
+
+        toTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        toTAList.setName("toTAList"); // NOI18N
+        toTAList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                toTAListValueChanged(evt);
+            }
+        });
+        toTAList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                toTAListKeyReleased(evt);
+            }
+        });
+        jScrollPane4.setViewportView(toTAList);
+
+        jScrollPane5.setName("jScrollPane5"); // NOI18N
+
+        toStudentList.setName("toStudentList"); // NOI18N
+        jScrollPane5.setViewportView(toStudentList);
 
         javax.swing.GroupLayout manualDistPanelLayout = new javax.swing.GroupLayout(manualDistPanel);
         manualDistPanel.setLayout(manualDistPanelLayout);
         manualDistPanelLayout.setHorizontalGroup(
             manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(manualDistPanelLayout.createSequentialGroup()
-                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(manualDistPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(manualDistPanelLayout.createSequentialGroup()
-                                .addGap(69, 69, 69)
-                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel2)
-                            .addGroup(manualDistPanelLayout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(unassignButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(generateRubricsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(selectedAssign, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addComponent(jLabel1)
-                            .addGroup(manualDistPanelLayout.createSequentialGroup()
-                                .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(randomAssignButton, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE))))
-                    .addGroup(manualDistPanelLayout.createSequentialGroup()
-                        .addGap(34, 34, 34)
+                        .addGap(7, 7, 7)
                         .addComponent(remainingLabel))
                     .addGroup(manualDistPanelLayout.createSequentialGroup()
-                        .addGap(69, 69, 69)
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(54, 54, 54)
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(manualDistPanelLayout.createSequentialGroup()
+                        .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(randomAssignButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(manualDistPanelLayout.createSequentialGroup()
+                        .addGap(9, 9, 9)
+                        .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(selectedAssign, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(unassignButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         manualDistPanelLayout.setVerticalGroup(
             manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(manualDistPanelLayout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(randomAssignButton)
-                    .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(5, 5, 5)
-                .addComponent(remainingLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(31, 31, 31)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectedAssign)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(unassignButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(generateRubricsButton)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(randomAssignButton)
+                    .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(remainingLabel)
+                .addContainerGap(76, Short.MAX_VALUE))
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
         );
 
         cardPanel.add(manualDistPanel, "manualDistCard");
@@ -387,27 +376,23 @@ public class ReassignView extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(fromStudentLabel)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(studentFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
-                                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(toTALabel)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(24, 24, 24)
-                        .addComponent(toStudentsLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(toTALabel)
+                                        .addGap(101, 101, 101)
+                                        .addComponent(toStudentsLabel)
+                                        .addGap(74, 74, 74))))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
@@ -423,15 +408,13 @@ public class ReassignView extends javax.swing.JFrame {
                             .addComponent(studentFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(reassignFromrb)))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(toTALabel)
-                        .addComponent(toStudentsLabel)))
+                        .addComponent(toStudentsLabel)
+                        .addComponent(toTALabel)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                     .addComponent(cardPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -452,6 +435,11 @@ public class ReassignView extends javax.swing.JFrame {
                 }
             }
             Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
+            Map<String,Collection<String>> dist = new HashMap<String,Collection<String>>();
+            Vector<String> assigned = new Vector<String>();
+            assigned.add(student);
+            dist.put(newTA.getLogin(), assigned);
+            Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(), dist, Allocator.getCourseInfo().getMinutesOfLeniency());
 
             _unassignedStudents.remove(student);
             this.updateGUI();
@@ -648,14 +636,12 @@ private void toTAListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     private javax.swing.JLabel fromStudentLabel;
     private javax.swing.JList fromStudentList;
     private javax.swing.JList fromTAList;
-    private javax.swing.JButton generateRubricsButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JRadioButton keepXMLRadioButton;
     private javax.swing.JPanel manualDistPanel;
