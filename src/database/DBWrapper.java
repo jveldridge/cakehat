@@ -294,14 +294,23 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    //TODO: Actually retrieve this from the database
     public Map<String, String> getAllTAs() {
-        HashMap<String, String> tas = new HashMap<String, String>();
-        for(config.TA ta : Allocator.getCourseInfo().getTAs()) {
-            tas.put(ta.getLogin(), Allocator.getGeneralUtilities().getUserName(ta.getLogin()));
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT t.login AS talogin, "
+                    + "t.name AS name "
+                    + "FROM ta AS t ");
+            HashMap<String, String> tas = new HashMap<String, String>();
+            while (rs.next()) {
+                tas.put(rs.getString("talogin"), rs.getString("name"));
+            }
+            this.closeConnection();
+            return tas;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get All TAs from DB");
+            this.closeConnection();
+            return new HashMap<String, String>();
         }
-
-        return tas;
     }
 
     public Map<String, String> getAllStudents() {
