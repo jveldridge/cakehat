@@ -8,6 +8,7 @@ import config.Assignment;
 import config.HandinPart;
 import config.LabPart;
 import config.Part;
+import gradesystem.GradeSystemApp;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -26,6 +27,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Allocator;
+import utils.GeneralUtilities;
 
 /**
  *
@@ -195,6 +198,10 @@ public class BackendView extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 Allocator.getGradingUtilities().removeUserGradingDirectory();
+                if (!GradeSystemApp.inTestMode()) {
+                    String bk_name = Allocator.getCourseInfo().getCourse() + "db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
+                    Allocator.getGeneralUtilities().copyFile(Allocator.getCourseInfo().getDatabaseBackupDir(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
+                }
             }
         });
 

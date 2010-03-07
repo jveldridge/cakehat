@@ -12,6 +12,11 @@ import org.jdesktop.application.SingleFrameApplication;
 public class GradeSystemApp extends SingleFrameApplication
 {
     private static String[] _args;
+    private static boolean testing;
+
+    public static boolean inTestMode() {
+        return testing;
+    }
 
     /**
      * At startup create and show the main frame of the application.
@@ -31,9 +36,11 @@ public class GradeSystemApp extends SingleFrameApplication
             {
                 FrontendView.launch();
             }
+            testing = false;
         }
         else
         {
+            testing = true;
             show(new GradeSystemView(this));
         }
 
