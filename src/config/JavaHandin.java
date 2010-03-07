@@ -61,7 +61,7 @@ class JavaHandin extends CodeHandin
     private static final String
     SPECIFY_MAIN="specify-main", MAIN="main", CLASSPATH="classpath",
     LIBRARY_PATH="librarypath", FIND_MAIN="find-main", JAR="jar",
-    JAR_LOC="jar-loc", CLASS="class", CODE_LOC="code-loc",
+    JAR_LOC="jar-loc", CLASS="class", CODE_LOC="code-loc", SCRIPT="script", SCRIPT_CMD="script-cmd",
     COMPILE_WITH="compile-with", TESTER_LOC="tester-loc", PACKAGE="package";
 
     //Run modes
@@ -78,6 +78,8 @@ class JavaHandin extends CodeHandin
                     new LanguageSpecification.Property(JAR_LOC, true),
                     new LanguageSpecification.Property(CLASSPATH, false),
                     new LanguageSpecification.Property(LIBRARY_PATH, false)),
+    DEMO_SCRIPT_MODE = new LanguageSpecification.Mode(SCRIPT,
+                      new LanguageSpecification.Property(SCRIPT_CMD, true)),
     DEMO_CLASS_MODE = new LanguageSpecification.Mode(CLASS,
                       new LanguageSpecification.Property(CODE_LOC, true),
                       new LanguageSpecification.Property(MAIN, true),
@@ -312,6 +314,10 @@ class JavaHandin extends CodeHandin
         {
             this.runClassDemo();
         }
+        else if(_demoMode.equals(SCRIPT))
+        {
+            this.runScriptDemo();
+        }
         else
         {
             System.err.println(this.getClass().getName() +
@@ -340,6 +346,18 @@ class JavaHandin extends CodeHandin
 
         //Add fully qualified path of main class
         cmd += " " + this.getDemoProperty(MAIN);
+
+        //Execute command
+        BashConsole.writeThreaded(cmd);
+    }
+
+    /**
+     * Runs a demo that is a script.
+     */
+    private void runScriptDemo()
+    {
+        //Build command
+        String cmd = this.getDemoProperty(SCRIPT_CMD);
 
         //Execute command
         BashConsole.writeThreaded(cmd);
