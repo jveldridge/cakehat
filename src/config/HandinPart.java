@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 import utils.Allocator;
 import utils.BashConsole;
 import utils.TextViewerView;
@@ -69,8 +70,8 @@ public abstract class HandinPart extends Part
             //Extract the file name
             String filename = entry.substring(entry.lastIndexOf("/")+1);
 
-            //See if the file name begins with README, regardless of case
-            if(filename.toUpperCase().startsWith("README"))
+            //See if the file name begins with README, regardless of case and doesn't end with ~
+            if(filename.toUpperCase().startsWith("README") && !filename.endsWith("~"))
             {
                 return true;
             }
@@ -79,21 +80,48 @@ public abstract class HandinPart extends Part
         return false;
     }
 
+    /**
+     * Views all readme files in the handin. Files that end in ~ will be ignored.
+     * Files that have no file extension or end in txt  will be interpreted as
+     * text files. Files that end in pdf will be interpreted as pdf files and
+     * will be opened with KPDF. If a readme of another file extension is found,
+     * tell the user.
+     *
+     * @param studentLogin
+     */
     public void viewReadme(String studentLogin)
     {
-        //Get the first readme that was found
-        File readme = this.getReadme(studentLogin).iterator().next();
+        //Get all of the readmes
+        Collection<File> readmes = this.getReadme(studentLogin);
 
-        //If a PDF
-        if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
+        //For each readme
+        for(File readme : readmes)
         {
-            BashConsole.write("kpdf " + readme.getAbsolutePath());
-        }
-        //Otherwise, we assume it's a text file
-        else
-        {
-            TextViewerView fv = new TextViewerView(readme);
-            fv.setTitle(studentLogin +"'s Readme");
+            String name = readme.getName().toLowerCase();
+
+            //Ignore ~ files if there are multiple READMEs
+            if(name.endsWith("~") && readmes.size() > 1)
+            {
+                continue;
+            }
+
+            //If a text file
+            if(!name.contains(".") || name.endsWith(".txt"))
+            {
+                TextViewerView fv = new TextViewerView(readme);
+                fv.setTitle(studentLogin +"'s Readme");
+            }
+            //If a PDF
+            else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
+            {
+                BashConsole.writeThreaded("kpdf " + readme.getAbsolutePath());
+            }
+            //Otherwise, we don't know what it is, tell the user
+            else
+            {
+                JOptionPane.showConfirmDialog(null, "Encountered README that cannot be opened by cakehat. \n"
+                                                    + readme.getAbsolutePath());
+            }
         }
     }
 

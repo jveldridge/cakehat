@@ -454,7 +454,7 @@ public class GeneralUtilities {
         }
 
         try {
-            TarArchive tar = new TarArchive(new FileInputStream(new File(tarPath)));
+            TarArchive tar = new TarArchive(stream);
 
             tar.setTarProgressDisplay(new TarProgressDisplay(){
                 public void showTarProgressMessage(String msg){
