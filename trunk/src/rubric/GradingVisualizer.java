@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.awt.Dimension;
 
 import java.awt.Point;
+import java.awt.event.InputEvent;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -28,6 +29,9 @@ import javax.imageio.ImageIO;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import utils.Allocator;
 
 /**
@@ -114,24 +118,7 @@ class GradingVisualizer extends JFrame
         {
             public void windowClosing(WindowEvent e)
             {
-                if (_stateManager.beenSaved())
-                {
-                    GradingVisualizer.this.dispose();
-                }
-                else
-                {
-                    int chosenOption = JOptionPane.showConfirmDialog(GradingVisualizer.this, "Would you like to save before exiting?");
-                    if (chosenOption == JOptionPane.YES_OPTION)
-                    {
-                        save();
-                        GradingVisualizer.this.dispose();
-                    }
-                    if (chosenOption == JOptionPane.NO_OPTION)
-                    {
-                        GradingVisualizer.this.dispose();
-                    }
-                    if (chosenOption == JOptionPane.CANCEL_OPTION) { }
-                }
+                handleClose();
             }
         });
 
@@ -143,6 +130,31 @@ class GradingVisualizer extends JFrame
         Set<AWTKeyStroke> newForwardKeys = new HashSet(forwardKeys);
         newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
+
+        //Menu bar for saving and closing
+        JMenuBar bar = new JMenuBar();
+        JMenu menu = new JMenu("File");
+        bar.add(menu);
+        JMenuItem item = new JMenuItem("Save");
+        item.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
+        item.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                save();
+            }
+        });
+        menu.add(item);
+        item = new JMenuItem("Close");
+        item.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                handleClose();
+            }
+        });
+        menu.add(item);
+        this.setJMenuBar(bar);
 
         //On window open, scroll to top
         this.addWindowListener(new WindowAdapter()
@@ -158,6 +170,34 @@ class GradingVisualizer extends JFrame
         this.setVisible(true);
     }
 
+    /**
+     * Handle a request to close the window. Prompts the user if they want to save, if applicable.
+     */
+    private void handleClose()
+    {
+        if (_stateManager.beenSaved())
+        {
+            this.dispose();
+        }
+        else
+        {
+            int chosenOption = JOptionPane.showConfirmDialog(GradingVisualizer.this, "Would you like to save before exiting?");
+            if (chosenOption == JOptionPane.YES_OPTION)
+            {
+                save();
+                this.dispose();
+            }
+            if (chosenOption == JOptionPane.NO_OPTION)
+            {
+                this.dispose();
+            }
+            if (chosenOption == JOptionPane.CANCEL_OPTION) { }
+        }
+    }
+
+    /**
+     * Saves the changes made to all of the effected GML files (can be multiple if part of a group).
+     */
     private void save()
     {
         for(String login : _group.keySet())
