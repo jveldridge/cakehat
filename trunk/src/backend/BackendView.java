@@ -57,7 +57,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Allocator;
-import utils.GeneralUtilities;
 
 /**
  *
@@ -200,7 +199,7 @@ public class BackendView extends JFrame
                 Allocator.getGradingUtilities().removeUserGradingDirectory();
                 if (!GradeSystemApp.inTestMode()) {
                     String bk_name = Allocator.getCourseInfo().getCourse() + "db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
-                    Allocator.getGeneralUtilities().copyFile(Allocator.getCourseInfo().getDatabaseBackupDir(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
+                    Allocator.getGeneralUtilities().copyFile(Allocator.getCourseInfo().getDatabaseFilePath(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
                 }
             }
         });
