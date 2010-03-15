@@ -85,6 +85,8 @@ public class ReassignView extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         fromStudentList = new javax.swing.JList();
         fromStudentLabel = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        toTAList = new javax.swing.JList();
         toTALabel = new javax.swing.JLabel();
         toStudentsLabel = new javax.swing.JLabel();
         titleLabel = new javax.swing.JLabel();
@@ -106,8 +108,6 @@ public class ReassignView extends javax.swing.JFrame {
         unassignButton = new javax.swing.JButton();
         remainingLabel = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        toTAList = new javax.swing.JList();
         jScrollPane5 = new javax.swing.JScrollPane();
         toStudentList = new javax.swing.JList();
 
@@ -133,6 +133,22 @@ public class ReassignView extends javax.swing.JFrame {
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(ReassignView.class);
         fromStudentLabel.setText(resourceMap.getString("fromStudentLabel.text")); // NOI18N
         fromStudentLabel.setName("fromStudentLabel"); // NOI18N
+
+        jScrollPane4.setName("jScrollPane4"); // NOI18N
+
+        toTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        toTAList.setName("toTAList"); // NOI18N
+        toTAList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                toTAListValueChanged(evt);
+            }
+        });
+        toTAList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                toTAListKeyReleased(evt);
+            }
+        });
+        jScrollPane4.setViewportView(toTAList);
 
         toTALabel.setText(resourceMap.getString("toTALabel.text")); // NOI18N
         toTALabel.setName("toTALabel"); // NOI18N
@@ -214,7 +230,7 @@ public class ReassignView extends javax.swing.JFrame {
                     .addComponent(newXMLRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(keepXMLRadioButton)
                     .addComponent(assignButton, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(299, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
         reassignPanelLayout.setVerticalGroup(
             reassignPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -225,12 +241,13 @@ public class ReassignView extends javax.swing.JFrame {
                 .addComponent(keepXMLRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(newXMLRadioButton)
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addContainerGap(130, Short.MAX_VALUE))
         );
 
         cardPanel.add(reassignPanel, "reassignCard");
 
         manualDistPanel.setName("manualDistPanel"); // NOI18N
+        manualDistPanel.setPreferredSize(new java.awt.Dimension(200, 297));
 
         numStudentsSpinner.setName("numStudentsSpinner"); // NOI18N
 
@@ -279,27 +296,6 @@ public class ReassignView extends javax.swing.JFrame {
 
         jSeparator2.setName("jSeparator2"); // NOI18N
 
-        jScrollPane4.setName("jScrollPane4"); // NOI18N
-
-        toTAList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        toTAList.setName("toTAList"); // NOI18N
-        toTAList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                toTAListValueChanged(evt);
-            }
-        });
-        toTAList.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                toTAListKeyReleased(evt);
-            }
-        });
-        jScrollPane4.setViewportView(toTAList);
-
-        jScrollPane5.setName("jScrollPane5"); // NOI18N
-
-        toStudentList.setName("toStudentList"); // NOI18N
-        jScrollPane5.setViewportView(toStudentList);
-
         javax.swing.GroupLayout manualDistPanelLayout = new javax.swing.GroupLayout(manualDistPanel);
         manualDistPanel.setLayout(manualDistPanelLayout);
         manualDistPanelLayout.setHorizontalGroup(
@@ -324,11 +320,7 @@ public class ReassignView extends javax.swing.JFrame {
                             .addComponent(unassignButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel1))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(45, Short.MAX_VALUE))
         );
         manualDistPanelLayout.setVerticalGroup(
             manualDistPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -349,12 +341,15 @@ public class ReassignView extends javax.swing.JFrame {
                     .addComponent(numStudentsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(remainingLabel)
-                .addContainerGap(76, Short.MAX_VALUE))
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                .addContainerGap(64, Short.MAX_VALUE))
         );
 
         cardPanel.add(manualDistPanel, "manualDistCard");
+
+        jScrollPane5.setName("jScrollPane5"); // NOI18N
+
+        toStudentList.setName("toStudentList"); // NOI18N
+        jScrollPane5.setViewportView(toStudentList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -379,16 +374,17 @@ public class ReassignView extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(studentFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
                                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(cardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(toTALabel)
-                                        .addGap(101, 101, 101)
-                                        .addComponent(toStudentsLabel)
-                                        .addGap(74, 74, 74))))))))
+                                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(toTALabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(toStudentsLabel)
+                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(19, 19, 19))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -412,9 +408,11 @@ public class ReassignView extends javax.swing.JFrame {
                         .addComponent(toTALabel)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                     .addComponent(cardPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
