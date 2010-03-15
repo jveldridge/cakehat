@@ -104,7 +104,9 @@
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="_sendButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="sendToOtherButton" min="-2" pref="166" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sendToStudsButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -140,11 +142,14 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="attachHistButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane3" pref="470" max="32767" attributes="0"/>
-                  <Component id="jSeparator1" alignment="1" pref="470" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" pref="476" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="1" pref="476" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="_sendButton" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="sendToStudsButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sendToOtherButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -228,13 +233,13 @@
         <Property name="name" type="java.lang.String" value="jSeparator1" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="_sendButton">
+    <Component class="javax.swing.JButton" name="sendToStudsButton">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="_sendButton.text"/>
-        <Property name="name" type="java.lang.String" value="_sendButton" noResource="true"/>
+        <Property name="text" type="java.lang.String" resourceKey="sendToStudsButton.text"/>
+        <Property name="name" type="java.lang.String" value="sendToStudsButton" noResource="true"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_sendButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendToStudsButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JCheckBox" name="attachScoreGraphButton">
@@ -263,6 +268,15 @@
         <Property name="text" type="java.lang.String" resourceKey="_toText.text"/>
         <Property name="name" type="java.lang.String" value="_toText" noResource="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="sendToOtherButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" resourceKey="sendToOtherButton.text"/>
+        <Property name="name" type="java.lang.String" value="sendToOtherButton" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendToOtherButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
