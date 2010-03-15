@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Vector;
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.text.html.HTMLEditorKit;
 import utils.Allocator;
 import utils.ErrorView;
@@ -90,7 +92,7 @@ public class GradeReportView extends javax.swing.JFrame {
     public String htmlBuilder(String student) {
         String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>" +
                 "<h1 style='font-weight: bold; font-size:11pt'>" +
-                "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report</h1>" +
+                "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>" +
                 "<hr />" + _messageText.getText();
         
         //constructing the message body
@@ -133,11 +135,12 @@ public class GradeReportView extends javax.swing.JFrame {
         _previewPane = new javax.swing.JEditorPane();
         jLabel5 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        _sendButton = new javax.swing.JButton();
+        sendToStudsButton = new javax.swing.JButton();
         attachScoreGraphButton = new javax.swing.JCheckBox();
         attachHistButton = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
         _toText = new javax.swing.JTextField();
+        sendToOtherButton = new javax.swing.JButton();
         jMenuBar5 = new javax.swing.JMenuBar();
         jMenu9 = new javax.swing.JMenu();
         jMenu10 = new javax.swing.JMenu();
@@ -183,11 +186,11 @@ public class GradeReportView extends javax.swing.JFrame {
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator1.setName("jSeparator1"); // NOI18N
 
-        _sendButton.setText(resourceMap.getString("_sendButton.text")); // NOI18N
-        _sendButton.setName("_sendButton"); // NOI18N
-        _sendButton.addActionListener(new java.awt.event.ActionListener() {
+        sendToStudsButton.setText(resourceMap.getString("sendToStudsButton.text")); // NOI18N
+        sendToStudsButton.setName("sendToStudsButton"); // NOI18N
+        sendToStudsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                _sendButtonActionPerformed(evt);
+                sendToStudsButtonActionPerformed(evt);
             }
         });
 
@@ -205,6 +208,14 @@ public class GradeReportView extends javax.swing.JFrame {
         _toText.setEditable(false);
         _toText.setText(resourceMap.getString("_toText.text")); // NOI18N
         _toText.setName("_toText"); // NOI18N
+
+        sendToOtherButton.setText(resourceMap.getString("sendToOtherButton.text")); // NOI18N
+        sendToOtherButton.setName("sendToOtherButton"); // NOI18N
+        sendToOtherButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendToOtherButtonActionPerformed(evt);
+            }
+        });
 
         jMenuBar5.setName("jMenuBar1"); // NOI18N
 
@@ -264,7 +275,9 @@ public class GradeReportView extends javax.swing.JFrame {
                                 .addComponent(jScrollPane3)
                                 .addContainerGap())))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(_sendButton)
+                        .addComponent(sendToOtherButton, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sendToStudsButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -295,7 +308,9 @@ public class GradeReportView extends javax.swing.JFrame {
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_sendButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sendToStudsButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sendToOtherButton))
                 .addContainerGap())
         );
 
@@ -306,7 +321,7 @@ public class GradeReportView extends javax.swing.JFrame {
         updatePreview();
     }//GEN-LAST:event__messageTextKeyReleased
 
-    private void _sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__sendButtonActionPerformed
+    private void sendToStudsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToStudsButtonActionPerformed
         ArrayDeque<File> fullFileList = new ArrayDeque<File>();
 
         //generate Assignment histograms
@@ -357,13 +372,28 @@ public class GradeReportView extends javax.swing.JFrame {
                                                                         + "] Grade Report", htmlBuilder(student),
                                                                     attachPaths);
         }
-    }//GEN-LAST:event__sendButtonActionPerformed
+    }//GEN-LAST:event_sendToStudsButtonActionPerformed
+
+    private void sendToOtherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToOtherButtonActionPerformed
+        JTextField addressBox = new JTextField();
+        int res = JOptionPane.showConfirmDialog(this, addressBox, "Enter email address", JOptionPane.OK_CANCEL_OPTION);
+        if (res == JOptionPane.OK_OPTION) {
+            for (String student : _students) {
+                Allocator.getCourseInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
+                                                                        + "headtas@cs.brown.edu",
+                                                                        new String[]{addressBox.getText()},
+                                                                        null, null,
+                                                                        "[" + Allocator.getCourseInfo().getCourse()
+                                                                            + "] Grade Report", htmlBuilder(student),
+                                                                        null);
+            }
+        }
+    }//GEN-LAST:event_sendToOtherButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField _fromText;
     private javax.swing.JTextArea _messageText;
     private javax.swing.JEditorPane _previewPane;
-    private javax.swing.JButton _sendButton;
     private javax.swing.JTextField _toText;
     private javax.swing.JCheckBox attachHistButton;
     private javax.swing.JCheckBox attachScoreGraphButton;
@@ -378,5 +408,7 @@ public class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton sendToOtherButton;
+    private javax.swing.JButton sendToStudsButton;
     // End of variables declaration//GEN-END:variables
 }
