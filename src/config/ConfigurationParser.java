@@ -509,6 +509,14 @@ public class ConfigurationParser
         {
             part = new TextHandin(asgn, name, points);
         }
+        else if(language.equalsIgnoreCase("Ant"))
+        {
+            part = new AntHandin(asgn, name, points);
+        }
+        else if(language.equalsIgnoreCase("Make"))
+        {
+            part = new MakeHandin(asgn, name, points);
+        }
         else
         {
             throw new ConfigurationException("Encountered CODE PART of unsupported" + LANGUAGE + ": " + language);
