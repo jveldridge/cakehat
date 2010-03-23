@@ -346,7 +346,7 @@ public interface DatabaseIO {
      * @param groupings
      * @return
      */
-    public boolean setGroups(HandinPart handin, Collection<Collection<String>> groupings);
+    public boolean setGroups(HandinPart handin, Map<String, Collection<String>> groupings);
 
     /**
      * adds a group for a handin part
@@ -354,7 +354,7 @@ public interface DatabaseIO {
      * @param group
      * @return
      */
-    public boolean setGroup(HandinPart handin, Collection<String> group);
+    public boolean setGroup(HandinPart handin, String groupName, Collection<String> group, Integer parID);
 
     /**
      * get the group for a student for a handin
@@ -372,10 +372,18 @@ public interface DatabaseIO {
     public Map<String, Collection<String>> getGroups(HandinPart handin);
 
     /**
-     * removes a group for a specfic handin
+     * removes a group for a specfic handin part
      * @param handin
      * @param group
      * @return
      */
     public boolean removeGroup(HandinPart handin, Collection<String> group);
+
+    /**
+     * removes all groups for a specfic handin part
+     * @param handin
+     * @param group
+     * @return
+     */
+    public boolean removeGroups(HandinPart handin);
 }

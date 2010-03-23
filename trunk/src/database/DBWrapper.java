@@ -1,5 +1,7 @@
 package database;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import utils.*;
 import config.Assignment;
 import config.HandinPart;
@@ -16,6 +18,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JOptionPane;
 
 /**
@@ -55,7 +58,7 @@ public class DBWrapper implements DatabaseIO {
             _connection = DriverManager.getConnection(_dbPath);
 
             _statement = _connection.createStatement();
-            _statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            _statement.setQueryTimeout(5);  // set timeout to 5 sec.
 
         } catch (Exception e) {
             new ErrorView(e, "Could not open a connection to the DB.");
@@ -74,6 +77,17 @@ public class DBWrapper implements DatabaseIO {
             }
         } catch (SQLException e) {
             new ErrorView(e, "Could not close connection to the DB.");
+        }
+    }
+
+    private Statement makeStatement() {
+        try {
+            Statement statement = _connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            return statement;
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not make new DB statement.");
+            return null;
         }
     }
 
@@ -167,11 +181,11 @@ public class DBWrapper implements DatabaseIO {
             if (count != 0) {
                 int asgnID = rs.getInt("aid");
                 rs = _statement.executeQuery("SELECT COUNT(p.pid) AS count "
-                        + "FROM part AS p " +
-                        "INNER JOIN asgn AS a " +
-                        "ON p.aid == a.aid "
-                        + "WHERE p.name == '" + part.getName() + "' " +
-                        "AND a.name == '" + part.getAssignment().getName() + "'");
+                        + "FROM part AS p "
+                        + "INNER JOIN asgn AS a "
+                        + "ON p.aid == a.aid "
+                        + "WHERE p.name == '" + part.getName() + "' "
+                        + "AND a.name == '" + part.getAssignment().getName() + "'");
                 count = rs.getInt("count");
                 if (count == 0) {
                     _statement.executeUpdate("INSERT INTO part "
@@ -298,14 +312,14 @@ public class DBWrapper implements DatabaseIO {
         this.openConnection();
         try {
             ResultSet rs = _statement.executeQuery("SELECT t.login AS talogin, "
-                    + "t.name AS name "
-                    + "FROM ta AS t ");
-            HashMap<String, String> tas = new HashMap<String, String>();
+                    + "t.name AS taname "
+                    + "FROM ta AS t");
+            HashMap<String, String> result = new HashMap<String, String>();
             while (rs.next()) {
-                tas.put(rs.getString("talogin"), rs.getString("name"));
+                result.put(rs.getString("talogin"), rs.getString("taname"));
             }
             this.closeConnection();
-            return tas;
+            return result;
         } catch (Exception e) {
             new ErrorView(e, "Could not get All TAs from DB");
             this.closeConnection();
@@ -332,7 +346,7 @@ public class DBWrapper implements DatabaseIO {
             return new HashMap<String, String>();
         }
     }
-    
+
     public Map<String, String> getEnabledStudents() {
         this.openConnection();
         try {
@@ -527,13 +541,13 @@ public class DBWrapper implements DatabaseIO {
     public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, String taLogin) {
         this.openConnection();
         try {
-                _statement.executeUpdate("DELETE FROM distribution " +
-                        "WHERE pid IN " +
-                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
-                         "AND sid IN " +
-                          "(SELECT sid FROM student WHERE login == '" + studentLogin + "') " +
-                         "AND tid IN " +
-                          "(SELECT tid FROM ta WHERE login == '" + taLogin + "')");
+            _statement.executeUpdate("DELETE FROM distribution "
+                    + "WHERE pid IN "
+                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
+                    + "AND sid IN "
+                    + "(SELECT sid FROM student WHERE login == '" + studentLogin + "') "
+                    + "AND tid IN "
+                    + "(SELECT tid FROM ta WHERE login == '" + taLogin + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
@@ -546,17 +560,17 @@ public class DBWrapper implements DatabaseIO {
     public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM extension " +
-                        "WHERE pid IN " +
-                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
-                         "AND sid IN " +
-                          "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
-                ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
-                int sID = rs.getInt("sid");
-                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
-                int pID = rs.getInt("pid");
-                int ontime = (int) (newDate.getTimeInMillis() / 1000);
-                _statement.executeUpdate("INSERT INTO extension ('sid', 'pid', 'ontime', 'note') VALUES (" + sID + ", " + pID + ", " + ontime + ", '" + note + "')");
+            _statement.executeUpdate("DELETE FROM extension "
+                    + "WHERE pid IN "
+                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
+                    + "AND sid IN "
+                    + "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
+            ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+            int sID = rs.getInt("sid");
+            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+            int pID = rs.getInt("pid");
+            int ontime = (int) (newDate.getTimeInMillis() / 1000);
+            _statement.executeUpdate("INSERT INTO extension ('sid', 'pid', 'ontime', 'note') VALUES (" + sID + ", " + pID + ", " + ontime + ", '" + note + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
@@ -569,16 +583,16 @@ public class DBWrapper implements DatabaseIO {
     public boolean grantExemption(String studentLogin, Part part, String note) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM exemption " +
-                        "WHERE pid IN " +
-                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
-                         "AND sid IN " +
-                          "(SELECT s.sid FROM student AS s WHERE login == '" + studentLogin + "')");
-                ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
-                int sID = rs.getInt("sid");
-                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
-                int pID = rs.getInt("pid");
-                _statement.executeUpdate("INSERT INTO exemption ('sid', 'pid', 'note') VALUES (" + sID + ", " + pID + ", '" + note + "')");
+            _statement.executeUpdate("DELETE FROM exemption "
+                    + "WHERE pid IN "
+                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
+                    + "AND sid IN "
+                    + "(SELECT s.sid FROM student AS s WHERE login == '" + studentLogin + "')");
+            ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+            int sID = rs.getInt("sid");
+            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+            int pID = rs.getInt("pid");
+            _statement.executeUpdate("INSERT INTO exemption ('sid', 'pid', 'note') VALUES (" + sID + ", " + pID + ", '" + note + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
@@ -588,7 +602,6 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    
     public Map<String, Calendar> getExtensions(Part part) {
         this.openConnection();
         try {
@@ -616,10 +629,10 @@ public class DBWrapper implements DatabaseIO {
             return null;
         }
     }
-                
+
     public Calendar getExtension(String studentLogin, Part part) {
         this.openConnection();
-        try { 
+        try {
             ResultSet rs = _statement.executeQuery("SELECT e.ontime AS date "
                     + "FROM extension AS e "
                     + "INNER JOIN student AS s "
@@ -706,9 +719,9 @@ public class DBWrapper implements DatabaseIO {
             int sID = rs.getInt("sid");
             rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
             int pID = rs.getInt("pid");
-            _statement.executeUpdate("DELETE FROM grade " +
-                        "WHERE pid == " + pID + " " +
-                         "AND sid == " + sID);
+            _statement.executeUpdate("DELETE FROM grade "
+                    + "WHERE pid == " + pID + " "
+                    + "AND sid == " + sID);
             _statement.executeUpdate("INSERT INTO grade ('sid', 'pid', 'score') VALUES (" + sID + ", " + pID + ", '" + score + "')");
             this.closeConnection();
             return true;
@@ -747,21 +760,22 @@ public class DBWrapper implements DatabaseIO {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    //TODO: add all parts if don't exist
     public boolean addAssignment(Assignment asgn) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS count " +
-                    "FROM asgn AS a " +
-                    "WHERE a.name == '" + asgn.getName() + "'");
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS count "
+                    + "FROM asgn AS a "
+                    + "WHERE a.name == '" + asgn.getName() + "'");
             int count = rs.getInt("count");
             if (count == 0) {
                 _statement.executeUpdate("INSERT INTO asgn "
                         + "('name') "
                         + "VALUES "
                         + "('" + asgn.getName() + "')");
-            }
-            else {
+                for (Part part : asgn.getParts()) {
+                    this.addAssignmentPart(part);
+                }
+            } else {
                 throw new CakeHatDBIOException("An assignment with that name already exisits.");
             }
             this.closeConnection();
@@ -776,11 +790,11 @@ public class DBWrapper implements DatabaseIO {
     public boolean unBlacklistStudent(String studentLogin, String taLogin) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM blacklist " +
-                        "WHERE tid IN " +
-                          "(SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "') " +
-                         "AND sid IN " +
-                          "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
+            _statement.executeUpdate("DELETE FROM blacklist "
+                    + "WHERE tid IN "
+                    + "(SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "') "
+                    + "AND sid IN "
+                    + "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
@@ -822,7 +836,7 @@ public class DBWrapper implements DatabaseIO {
             return new HashMap<String, Double>();
         }
     }
-    
+
     public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) {
         Map<String, Double> scores = new HashMap<String, Double>();
 
@@ -869,10 +883,11 @@ public class DBWrapper implements DatabaseIO {
                     + "s.login == '" + studentLogin + "'");
             int enabled = rs.getInt("enabled");
             this.closeConnection();
-            if (enabled == 1)
+            if (enabled == 1) {
                 return true;
-            else
+            } else {
                 return false;
+            }
         } catch (Exception e) {
             new ErrorView(e, "Could not determine if enabled.");
             this.closeConnection();
@@ -883,11 +898,11 @@ public class DBWrapper implements DatabaseIO {
     public boolean removeExemption(String studentLogin, Part part) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM exemption " +
-                        "WHERE pid IN " +
-                          "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')" +
-                         "AND sid IN " +
-                          "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
+            _statement.executeUpdate("DELETE FROM exemption "
+                    + "WHERE pid IN "
+                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
+                    + "AND sid IN "
+                    + "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
             this.closeConnection();
             return true;
         } catch (Exception e) {
@@ -928,8 +943,8 @@ public class DBWrapper implements DatabaseIO {
                     + "INNER JOIN asgn AS a "
                     + "ON p.aid == a.aid "
                     + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "' " +
-                    "ORDER BY t.tid");
+                    + "AND a.name == '" + handin.getAssignment().getName() + "' "
+                    + "ORDER BY t.tid");
             Map<String, Collection<String>> result = new HashMap<String, Collection<String>>();
             while (rs.next()) {
                 String taLogin = rs.getString("talogin");
@@ -937,7 +952,7 @@ public class DBWrapper implements DatabaseIO {
                 Collection taDist = result.get(taLogin);
                 if (taDist == null) {
                     taDist = new ArrayList<String>();
-                    result.put(taLogin,taDist);
+                    result.put(taLogin, taDist);
                 }
                 taDist.add(studLogin);
             }
@@ -950,37 +965,210 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    public boolean setGroups(HandinPart handin, Collection<Collection<String>> groupings) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean setGroups(HandinPart handin, Map<String, Collection<String>> groupings) {
+        this.openConnection();
+        int partID;
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT g.name AS groupname " + "FROM groups AS g ");
+            Set<String> groupNames = groupings.keySet();
+            while (rs.next()) {
+                String dbName = rs.getString("groupname");
+                if (groupNames.contains(dbName)) {
+                    JOptionPane.showMessageDialog(null, "A group with this name, " + dbName + ", already exist. Please pick another name and try again. No groups were added do to this conflict.");
+                    return false;
+                }
+            }
+            rs = _statement.executeQuery("SELECT p.pid AS partid "
+                    + "FROM part AS p "
+                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "'");
+            partID = rs.getInt("partid");
+            this.closeConnection();
+        } catch (Exception e) {
+            new ErrorView(e, "Getting all the group names for this assignment failed.");
+            this.closeConnection();
+            return false;
+        }
+        for (String groupName : groupings.keySet()) {
+            if (!this.setGroup(handin, groupName, groupings.get(groupName), partID)) {
+                break;
+            }
+        }
+        return true;
     }
 
-    public boolean setGroup(HandinPart handin, Collection<String> group) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean setGroup(HandinPart handin, String groupName, Collection<String> group, Integer partID) {
+        this.openConnection();
+        try {
+
+            if (partID == null) {
+                ResultSet rs = _statement.executeQuery("SELECT p.pid AS partid "
+                        + "FROM part AS p "
+                        + "INNER JOIN asgn AS a ON p.aid == a.aid "
+                        + "WHERE p.name == '" + handin.getName() + "' "
+                        + "AND a.name == '" + handin.getAssignment().getName() + "'");
+                partID = rs.getInt("partid");
+            }
+
+            ResultSet testSet = _statement.executeQuery("SELECT COUNT(g.gpid) AS numgroups "
+                    + "FROM groups AS g "
+                    + "WHERE g.name == '" + groupName + "' ");
+
+            if (testSet.getInt("numgroups") != 0) {
+                JOptionPane.showMessageDialog(null, "A group with this name, " + groupName + ", already exist. Please pick another name. This group was not added.");
+                return false;
+            }
+
+            _statement.executeUpdate("INSERT INTO groups "
+                    + "('name') "
+                    + "VALUES "
+                    + "('" + groupName + "')");
+            ResultSet rs = _statement.executeQuery("SELECT g.gpid AS groupid "
+                    + "FROM groups AS g "
+                    + "WHERE g.name == '" + groupName + "' ");
+            String groupID = rs.getString("groupid");
+
+            for (String student : group) {
+                rs = _statement.executeQuery("SELECT s.sid AS studentid "
+                        + "FROM student AS s "
+                        + "WHERE s.login == '" + student + "' ");
+                int studentID = rs.getInt("studentid");
+                _statement.executeUpdate("INSERT INTO groupmembers "
+                        + "('gpid', 'sid', 'pid') "
+                        + "VALUES "
+                        + "('" + groupID + "', '" + studentID + "', '" + partID + "')");
+            }
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get students in the group with: for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
+            this.closeConnection();
+            return false;
+        }
     }
 
     public Collection<String> getGroup(HandinPart handin, String student) {
-        Collection<String> group = new ArrayList<String>();
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin "
+                    + "FROM student AS s "
+                    + "INNER JOIN groupmembers AS gm "
+                    + "ON gm.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON gm.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "' "
+                    + "AND gm.gpid IN ("
+                    + "SELECT gm.gpid "
+                    + "FROM groupmembers AS gm "
+                    + "INNER JOIN student AS s "
+                    + "ON gm.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON gm.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "' "
+                    + "AND s.login == '" + student + "'"
+                    + ")");
+            Collection<String> group = new ArrayList<String>();
+            while (rs.next()) {
+                group.add(rs.getString("studlogin"));
+            }
 
-        group.add(student);
+            if (group.size() == 0) {
+                group.add(student);
+            }
 
-        return group;
+            this.closeConnection();
+            return group;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get students in the group with: " + student + " for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
+            this.closeConnection();
+            return new ArrayList<String>();
+        }
     }
 
+    /*
+     * build a mapping of students to all the students in their group
+     * @param HandinPart
+     * @return map of students to collections of group members
+     */
     public Map<String, Collection<String>> getGroups(HandinPart handin) {
-        Collection<String> students = this.getAllStudents().keySet();
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, gm.gpid AS groupID "
+                    + "FROM student AS s "
+                    + "INNER JOIN groupmembers AS gm "
+                    + "ON gm.sid == s.sid "
+                    + "INNER JOIN part AS p "
+                    + "ON gm.pid == p.pid "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "' ");
+            Multimap<Integer, String> group2studs = ArrayListMultimap.create();
+            Map<String, Integer> stud2groupID = new HashMap<String, Integer>();
+            while (rs.next()) {
+                group2studs.put(rs.getInt("groupID"), rs.getString("studlogin"));
+                stud2groupID.put(rs.getString("studlogin"), rs.getInt("groupID"));
+            }
 
-        Map<String, Collection<String>> groups = new HashMap<String, Collection<String>>();
+            Map<String, Collection<String>> groups = new HashMap<String, Collection<String>>();
+            for (String student : stud2groupID.keySet()) {
+                groups.put(student, group2studs.get(stud2groupID.get(student)));
+            }
 
-        for(String student : students){
-            Collection<String> group = new ArrayList<String>();
-            group.add(student);
-            groups.put(student, group);
+            for (String student : Allocator.getDatabaseIO().getAllStudents().keySet()) {
+                if (!groups.containsKey(student)) {
+                    Collection<String> singleMember = new ArrayList<String>();
+                    singleMember.add(student);
+                    groups.put(student, singleMember);
+                }
+            }
+
+            this.closeConnection();
+            return groups;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not get all the groups: for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
+            this.closeConnection();
+            return new HashMap<String, Collection<String>>();
         }
-
-        return groups;
     }
 
     public boolean removeGroup(HandinPart handin, Collection<String> group) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean removeGroups(HandinPart handin) {
+        this.openConnection();
+        try {
+            _statement.executeUpdate("DELETE FROM groups "
+                    + "WHERE gpid IN "
+                    + "(SELECT gm.gpid AS groupid "
+                    + "FROM groupmembers AS gm "
+                    + "INNER JOIN part AS p on gm.pid == p.pid "
+                    + "INNER JOIN asgn AS a on p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "')");
+
+            _statement.executeUpdate("DELETE FROM groupmembers "
+                    + "WHERE pid IN "
+                    + "(SELECT p.pid AS partid "
+                    + "FROM part AS p "
+                    + "INNER JOIN asgn AS a on p.aid == a.aid "
+                    + "WHERE p.name == '" + handin.getName() + "' "
+                    + "AND a.name == '" + handin.getAssignment().getName() + "')");
+
+            this.closeConnection();
+            return true;
+        } catch (Exception e) {
+            new ErrorView(e, "Could not remove all groups from assignment: " + handin.getAssignment().getName() + " for the part: " + handin.getName());
+            this.closeConnection();
+            return false;
+        }
     }
 }
