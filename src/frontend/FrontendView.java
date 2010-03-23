@@ -730,9 +730,10 @@ public class FrontendView extends JFrame
             SubmitDialog sd = new SubmitDialog(students);
             if (sd.showDialog() == JOptionPane.OK_OPTION)
             {
-                Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), _studentList.getItems());
 
                 Vector<String> selectedStudents = sd.getSelectedStudents();
+
+                Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), selectedStudents);
                 
                 if (sd.submitChecked())
                 {
@@ -745,7 +746,7 @@ public class FrontendView extends JFrame
 
                 if (sd.printChecked())
                 {
-                    Allocator.getGradingUtilities().printGRDFiles(asgn.getHandinPart(), _studentList.getItems());
+                    Allocator.getGradingUtilities().printGRDFiles(asgn.getHandinPart(), selectedStudents);
                 }
 
                 if (sd.notifyChecked())
