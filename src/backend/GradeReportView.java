@@ -64,6 +64,7 @@ public class GradeReportView extends javax.swing.JFrame {
         updatePreview();
         
         new File(".tmpdata").mkdirs();
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
     /** 
@@ -322,6 +323,9 @@ public class GradeReportView extends javax.swing.JFrame {
     }//GEN-LAST:event__messageTextKeyReleased
 
     private void sendToStudsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToStudsButtonActionPerformed
+        
+        this.sendToStudsButton.setEnabled(false);
+
         ArrayDeque<File> fullFileList = new ArrayDeque<File>();
 
         //generate Assignment histograms
@@ -331,7 +335,7 @@ public class GradeReportView extends javax.swing.JFrame {
                 try {
                         AssignmentChartPanel acp = new AssignmentChartPanel();
                         acp.updateChartData(p, Allocator.getDatabaseIO().getEnabledStudents().keySet());
-                        fullFileList.add(new File(".tmpdata/" + p.getName() + ".png"));
+                        fullFileList.add(new File(".tmpdata/" + a.getName() + "_" + p.getName() + ".png"));
                         ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
                     } catch (IOException ex) {
                         new ErrorView(ex, "Could not generate histogram image for assignment "
@@ -371,6 +375,9 @@ public class GradeReportView extends javax.swing.JFrame {
                                                                     "[" + Allocator.getCourseInfo().getCourse()
                                                                         + "] Grade Report", htmlBuilder(student),
                                                                     attachPaths);
+            this.sendToStudsButton.setEnabled(false);
+            this.setVisible(false);
+            this.dispose();
         }
     }//GEN-LAST:event_sendToStudsButtonActionPerformed
 
