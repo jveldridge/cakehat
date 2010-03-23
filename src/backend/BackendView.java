@@ -1575,7 +1575,7 @@ public class BackendView extends JFrame
 
     private void manageGroupsButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet implemented");
+        new GroupsView(this._assignmentList.getSelectedValue().getHandinPart());
     }
 
     private void assignmentListValueChanged()
