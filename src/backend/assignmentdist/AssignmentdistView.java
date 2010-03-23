@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -207,7 +208,9 @@ public class AssignmentdistView extends javax.swing.JFrame {
         for (TA ta : Allocator.getCourseInfo().getDefaultGraders()) {
             taLogins.add(ta.getLogin());
         }
-        String[] taNames = taLogins.toArray(new String[0]);
+
+        //get all the groups for this project
+        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(asgnObject.getHandinPart());
 
         //build distrobution hashmap
         HashMap<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
@@ -240,8 +243,8 @@ public class AssignmentdistView extends javax.swing.JFrame {
         }
 
         //make a list of all blacklisted students and hashmap of all ta blacklists
-        HashSet<String> blacklistedStudents = new HashSet<String>();
-        HashMap<String, Collection<String>> taBlacklists = new HashMap<String, Collection<String>>();
+        Set<String> blacklistedStudents = new HashSet<String>();
+        Map<String, Collection<String>> taBlacklists = new HashMap<String, Collection<String>>();
 
         for (String ta : taLogins) {
             Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
@@ -264,6 +267,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             for (String ta : taLogins) {
                 //if ta's blacklist does not contain student and ta's dist is not full
                 if (!taBlacklists.get(ta).contains(blStudent)
+                        && !Allocator.getGeneralUtilities().containsAny(taBlacklists.get(ta), groups.get(blStudent))
                         && numStudsNeeded.get(ta) > 0) {
 
                     distribution.get(ta).add(blStudent); //add student to ta's dist

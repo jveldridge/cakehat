@@ -432,6 +432,15 @@ public class ReassignView extends javax.swing.JFrame {
                     return;
                 }
             }
+            if (this.groupMemberOnTAsBlacklist(student, newTA)) {
+                if (JOptionPane.showConfirmDialog(null, "A member of " + student + "'s group is on TA "
+                                                + newTA.getLogin() + "'s blacklist.  Continue?",
+                                                "Distribute Blacklisted Student?",
+                                                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                    studentFilter.requestFocus();
+                    return;
+                }
+            }
             Allocator.getDatabaseIO().assignStudentToGrader(student, _asgn.getHandinPart(), newTA.getLogin());
             Map<String,Collection<String>> dist = new HashMap<String,Collection<String>>();
             Vector<String> assigned = new Vector<String>();
@@ -455,6 +464,15 @@ public class ReassignView extends javax.swing.JFrame {
                 if (JOptionPane.showConfirmDialog(null, "Student " + student + " is on TA "
                                                 + newTA.getLogin() + "'s blacklist.  Continue?", 
                                                 "Distribute Blacklisted Student?", 
+                                                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+                    studentFilter.requestFocus();
+                    return;
+                }
+            }
+            if (this.groupMemberOnTAsBlacklist(student, newTA)) {
+                if (JOptionPane.showConfirmDialog(null, "A member of " + student + "'s group is on TA "
+                                                + newTA.getLogin() + "'s blacklist.  Continue?",
+                                                "Distribute Blacklisted Student?",
                                                 JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                     studentFilter.requestFocus();
                     return;
@@ -548,11 +566,10 @@ private void randomAssignButtonActionPerformed(java.awt.event.ActionEvent evt) {
     int timesSeenFirst = 0;
     for (int i = 0; i < (Integer) numStudentsSpinner.getValue(); i++) {
         if (!students.isEmpty()) {
-            while (this.studentOnTAsBlacklist(students.getFirst(), ta)) {
+            while (this.studentOnTAsBlacklist(students.getFirst(), ta) || this.groupMemberOnTAsBlacklist(students.getFirst(), ta)) {
                 if (students.getFirst().equals(firstStud)) {
                     timesSeenFirst++;
                 }
-                System.out.println(timesSeenFirst);
                 if (timesSeenFirst == 2) {
                     new ErrorView(new Exception(), "Cannot assign this many students " +
                                   "without violating the blacklist.\nIf you would like to " +
@@ -622,6 +639,15 @@ private void toTAListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
                 return true;
             }
         }
+        return false;
+    }
+
+    private boolean groupMemberOnTAsBlacklist(String studentLogin, TA ta) {
+        Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta.getLogin());
+        Collection<String> group = Allocator.getDatabaseIO().getGroup(_asgn.getHandinPart(), studentLogin);
+            if (Allocator.getGeneralUtilities().containsAny(blackList, group)) {
+                return true;
+            }
         return false;
     }
     
