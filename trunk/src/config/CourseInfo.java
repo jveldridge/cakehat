@@ -367,6 +367,30 @@ public class CourseInfo
     }
 
     /**
+     * The path to the test database file.
+     *
+     * /course/<course>/cakehat/<current year>/database/test_database.db
+     *
+     * @return
+     */
+    public String getTestDatabaseFilePath()
+    {
+        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/test_database.db";
+    }
+
+    /**
+     * The path to the test database format file.
+     *
+     * /course/<course>/cakehat/<current year>/database/test_data.sql
+     *
+     * @return
+     */
+    public String getTestDataFilePath()
+    {
+        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/test_data.sql";
+    }
+
+    /**
      * The directory that backups of the database are put in.
      *
      * /course/<course>/cakehat/<current year>/database/backups/
