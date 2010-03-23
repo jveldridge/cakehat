@@ -610,4 +610,20 @@ public class GeneralUtilities {
 
         return files;
     }
+
+    /*
+     * Checks to see if any of col2 is in col1. If one or more are in both then it will return true.
+     *
+     * @param col1 collection to test membership in
+     * @param col2 collection to test who's elements we are testing
+     * @return true if there is overlap
+     */
+    public <T> boolean containsAny(Collection<T> col1, Collection<T> col2) {
+        for (T item : col2) {
+            if (col1.contains(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
