@@ -7,6 +7,7 @@ import config.Assignment;
 import config.Part;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Collection;
@@ -359,7 +360,9 @@ public class GradeReportView extends javax.swing.JFrame {
             //create student score chart
             if (attachScoreGraphButton.isSelected()) {
                 try {
-                    scp.updateChart(student, _asgnParts.keySet().toArray(new Assignment[0]));
+                    Assignment[] asgns = _asgnParts.keySet().toArray(new Assignment[0]);
+                    Arrays.sort(asgns);
+                    scp.updateChart(student, asgns);
                     fullFileList.add(new File(".tmpdata/" + student + ".png"));
                     ImageIO.write(scp.getImage(600, 250), "png", fullFileList.peekLast());
                     attachPaths[attachPaths.length-1] = (new File(".tmpdata/" + student + ".png")).getAbsolutePath();
