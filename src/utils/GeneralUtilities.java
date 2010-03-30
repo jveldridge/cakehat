@@ -1,15 +1,13 @@
 package utils;
 
-import com.ice.tar.TarArchive;
-import com.ice.tar.TarProgressDisplay;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -19,6 +17,11 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.utils.IOUtils;
 
 /**
  * Utilities that are useful for any course.
@@ -379,103 +382,136 @@ public class GeneralUtilities {
     }
 
     /**
-     * Extracts a tar or tgz archive file.
+     * Gets the appropriate stream depending the file extension of
+     * <code>archivePath</code>.
+     * <br><br>
+     * Supported extensions: zip, tar, tgz, tar.gz. Unsupported extensions will
+     * result in an extension being throw.
      *
-     * @param tarPath the absolute path of the archive file
-     * @param destPath the directory the archive file will be expanded into
-     *
-     * @boolean success of untarring file
-     */
-    public boolean untar(String tarPath, String destPath) {
-        //Get appropriate stream
-        InputStream stream = getTarInputStream(tarPath);
-        if(stream == null) {
-            return false;
-        }
-
-        //Extract
-        try {
-            TarArchive tar = new TarArchive(stream);
-            tar.extractContents(new File(destPath));
-
-            return true;
-        }
-        catch (Exception ex) {
-            new ErrorView(ex);
-            return false;
-        }
-    }
-
-    /**
-     * Gets the appropriate stream depending on whether the file is a tar
-     * file or a tgz file. This is determined by file extension. If the
-     * extension is neither tar nor tgz, null will be returned.
-     *
-     * @param tarPath
+     * @param archivePath
      * @return
      */
-    private InputStream getTarInputStream(String tarPath) {
-        //Create stream
-        InputStream stream = null;
-        if(tarPath.toLowerCase().endsWith(".tar")) {
-            try {
-                stream = new FileInputStream(new File(tarPath));
-            }
-            catch (FileNotFoundException ex) {
-                new ErrorView(ex);
-            }
+    private ArchiveInputStream getArchiveInputStream(String archivePath) throws IOException, ArchiveException
+    {
+        //Determine appropriate input stream and compression format
+        InputStream is;
+        String format;
+
+        String lowerCaseSrcFile = archivePath.toLowerCase();
+
+        if(lowerCaseSrcFile.endsWith(".zip"))
+        {
+            is = new FileInputStream(archivePath);
+            format = "zip";
         }
-        else if(tarPath.toLowerCase().endsWith(".tgz")) {
-            try {
-                stream = new GZIPInputStream(new FileInputStream(new File(tarPath)));
-            }
-            catch (Exception ex) {
-                new ErrorView(ex);
-            }
+        else if(lowerCaseSrcFile.endsWith(".tar"))
+        {
+            is = new FileInputStream(archivePath);
+            format = "tar";
+        }
+        else if(lowerCaseSrcFile.endsWith(".tgz") || archivePath.toLowerCase().endsWith(".tar.gz"))
+        {
+            is = new GZIPInputStream(new FileInputStream(new File(archivePath)));
+            format = "tar";
+        }
+        else
+        {
+            throw new IOException("Unsupported file extension. Supported extensions are: zip, tar, tgz, & tar.gz");
         }
 
-        return stream;
+        return new ArchiveStreamFactory().createArchiveInputStream(format, is);
     }
 
     /**
-     * Returns a listing of the files and directories of a tar or tgz file
+     * Returns a listing of the files and directories in the archive file
      * without extracting the file.
+     * <br><br>
+     * Supports: zip, tar, tgz/tar.gz
      *
-     * @param tarPath
-     * @return
+     * @param archivePath
+     *
+     * @return collection of Strings with the paths of files and directories in the archive
      */
-    public Collection<String> getTarContents(String tarPath) {
-        final Vector<String> contents = new Vector<String>();
+    public Collection<String> getArchiveContents(String archivePath)
+    {
+        Vector<String> contents = new Vector<String>();
 
-        //Get appropriate stream
-        InputStream stream = getTarInputStream(tarPath);
-        if(stream == null) {
-            return contents;
-        }
-
-        try {
-            TarArchive tar = new TarArchive(stream);
-
-            tar.setTarProgressDisplay(new TarProgressDisplay(){
-                public void showTarProgressMessage(String msg){
-                    String[] contentArray = msg.split("\n");
-                    for(String entry : contentArray){
-                        contents.add(entry);
-                    }
+        try
+        {
+            ArchiveInputStream in = getArchiveInputStream(archivePath);
+            while(true)
+            {
+                ArchiveEntry entry = in.getNextEntry();
+                if(entry == null)
+                {
+                    break;
                 }
-            });
 
-            tar.listContents();
+                contents.add(entry.getName());
+            }
+            in.close();
         }
-        catch (com.ice.tar.InvalidHeaderException e) {
-            //do nothing, as untarring works successfully even when
-            //an InvalidHeaderException is thrown
+        catch(IOException e)
+        {
+            new ErrorView(e);
         }
-        catch (Exception ex) {
-            new ErrorView(ex);
+        catch (ArchiveException e)
+        {
+            new ErrorView(e);
         }
 
         return contents;
+    }
+
+    /**
+     * Extracts an archive file. Supported extensions: zip, tar, tgz, tar.gz
+     *
+     * @param archivePath the absolute path of the archive file
+     * @param dstDir the directory the archive file will be expanded into
+     *
+     * @boolean success of extracing archive
+     */
+    public boolean extractArchive(String archivePath, String dstDir)
+    {
+        try
+        {
+            ArchiveInputStream in = getArchiveInputStream(archivePath);
+            while(true)
+            {
+                ArchiveEntry entry = in.getNextEntry();
+                if(entry == null)
+                {
+                    break;
+                }
+
+                File file = new File(dstDir, entry.getName());
+                if(entry.isDirectory())
+                {
+                    file.mkdirs();
+                }
+                else
+                {
+                    OutputStream out = new FileOutputStream(file);
+                    IOUtils.copy(in, out);
+                    out.close();
+                }
+            }
+            in.close();
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e);
+
+            return false;
+        }
+        catch (ArchiveException e)
+        {
+            new ErrorView(e);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
