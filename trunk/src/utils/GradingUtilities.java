@@ -47,7 +47,8 @@ public class GradingUtilities {
     /**
      * Returns whether or not the current user is a TA for the course as
      * specified by the configuration file.
-     * @return
+     *
+     * @return whether user is a TA
      */
     public boolean isUserTA(){
         String userLogin = Allocator.getGeneralUtilities().getUserLogin();
@@ -63,7 +64,8 @@ public class GradingUtilities {
     /**
      * Returns whether or not the current user is an admin for the course as
      * specified by the configuration file.
-     * @return
+     *
+     * @return whether the user is an Admin
      */
     public boolean isUserAdmin(){
         String userLogin = Allocator.getGeneralUtilities().getUserLogin();
@@ -76,26 +78,50 @@ public class GradingUtilities {
         return false;
     }
 
-
-    public void makeUserGradingDirectory() {
-        Allocator.getGeneralUtilities().makeDirectory(this.getUserGradingDirectory());
-    }
-
-    public void removeUserGradingDirectory() {
-        Allocator.getGeneralUtilities().removeDirectory(this.getUserGradingDirectory());
+    /**
+     * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
+     *
+     * @return success of making directory
+     */
+    public boolean makeUserGradingDiectory()
+    {
+        return Allocator.getGeneralUtilities().makeDirectory(this.getUserGradingDirectory());
     }
 
     /**
-     * @date 01/08/2009
-     * @return path to a TA's temporary grading directory.
-     *         currently, /course/<course>/<cakehat>/.<talogin>/
-     *         this directory is erased when the user closes the grader
+     * Removes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
+     *
+     * @return success of removing directory
      */
-    public String getUserGradingDirectory() {
+    public boolean removeUserGradingDirectory()
+    {
+        return Allocator.getGeneralUtilities().removeDirectory(this.getUserGradingDirectory());
+    }
+
+    /**
+     * Gets the path to the temporary directory that the user uses while running
+     * cakehat.
+     * <br><br>
+     * Path is: /course/<course>/cakehat/.<talogin>/
+     * <br><br>
+     * This directory <b>should</b> be deleted when cakehat is closed.
+     *
+     * @return path to a TA's temporary grading directory
+     */
+    public String getUserGradingDirectory()
+    {
         return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
     }
 
-    public String getStudentGRDPath(HandinPart part, String studentLogin) {
+    /**
+     * The absolute path to a student's GRD file for a given handin part.
+     *
+     * @param part
+     * @param studentLogin
+     * @return
+     */
+    public String getStudentGRDPath(HandinPart part, String studentLogin)
+    {
         return this.getUserGradingDirectory() + part.getAssignment().getName() + "/" + studentLogin + ".txt";
     }
 
@@ -127,8 +153,8 @@ public class GradingUtilities {
         }
 
         new EmailView(students, Allocator.getCourseInfo().getNotifyAddresses(), 
-                        "[" + Allocator.getCourseInfo().getCourse() + "] " + part.getAssignment().getName() + " Graded",
-                         part.getAssignment().getName() + " has been graded and is available for pickup in the handback bin.", attachments);
+                      "[" + Allocator.getCourseInfo().getCourse() + "] " + part.getAssignment().getName() + " Graded",
+                      part.getAssignment().getName() + " has been graded.", attachments);
                 
     }
 
@@ -155,7 +181,6 @@ public class GradingUtilities {
                 new ErrorView(ex);
             }
         }
-
 
         Allocator.getPortraitPrinter().print(requests, printer);
     }
