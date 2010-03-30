@@ -62,7 +62,7 @@ public abstract class HandinPart extends Part
     public boolean hasReadme(String studentLogin)
     {
         //Get contents of tar
-        Collection<String> contents = Allocator.getGeneralUtilities().getTarContents(this.getHandin(studentLogin).getAbsolutePath());
+        Collection<String> contents = Allocator.getGeneralUtilities().getArchiveContents(this.getHandin(studentLogin).getAbsolutePath());
 
         //For each entry (file and directory) in the tar
         for(String entry : contents)
@@ -286,7 +286,7 @@ public abstract class HandinPart extends Part
             File handin = this.getHandin(studentLogin);
             if(handin != null)
             {
-                Allocator.getGeneralUtilities().untar(handin.getAbsolutePath(), compileDir);
+                Allocator.getGeneralUtilities().extractArchive(handin.getAbsolutePath(), compileDir);
             }
 
             //record that student's code has been untarred
