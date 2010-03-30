@@ -83,7 +83,7 @@ public class GradingUtilities {
      *
      * @return success of making directory
      */
-    public boolean makeUserGradingDiectory()
+    public boolean makeUserGradingDirectory()
     {
         return Allocator.getGeneralUtilities().makeDirectory(this.getUserGradingDirectory());
     }
