@@ -20,7 +20,7 @@ public class ConfigurationParser
     private final static String CONFIG_FILE_NAME = "config.xml";
 
     //For testing purposes, specifies what root directory to look for config file
-    private final static String CONFIG_TEST_DIR_PATH = "/course/cs032/cakehat/";
+    private final static String CONFIG_TEST_DIR_PATH = "/course/cs004/cakehat/";
 
     //String constants that represent the tags used in the XML markup
     private final static String TEXT_NODE = "#text", COMMENT_NODE = "#comment",

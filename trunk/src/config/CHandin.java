@@ -17,24 +17,25 @@ import utils.BashConsole;
  *
  * RUN
  *      MODE
- *          makefile
- *          gcc
+ *          make-run
+ *              exec-name
+ *          gcc-run
  *
  * DEMO
  *      MODE
- *          makefile
- *          gcc
+ *          exec-demo
+ *              exec-loc
  *
- * @author spolett
+ * @author spoletto
  */
 class CHandin extends CodeHandin
 {
     private static final String[] _sourceFileTypes = { "c" };
     
     private static final String
-    MAKE_RUN = "make-run", GCC_RUN = "gcc-run",
-    MAKE_DEMO = "make-demo", GCC_DEMO = "gcc-demo",
-    MAKE_EXEC_NAME = "exec-name";
+    MAKE_RUN = "make-run", EXEC_DEMO = "exec-demo",
+    GCC_RUN = "gcc-run", MAKE_EXEC_NAME = "exec-name",
+    EXEC_LOC = "exec-loc";
 
     //Run modes
     private static final LanguageSpecification.Mode
@@ -42,15 +43,14 @@ class CHandin extends CodeHandin
             new LanguageSpecification.Property(MAKE_EXEC_NAME, true)),
     RUN_GCC_MODE = new LanguageSpecification.Mode(GCC_RUN),
     //Demo modes
-    DEMO_MAKE_MODE = new LanguageSpecification.Mode(MAKE_DEMO, 
-            new LanguageSpecification.Property(MAKE_EXEC_NAME, true)),
-    DEMO_GCC_MODE = new LanguageSpecification.Mode(GCC_DEMO);
-
+    DEMO_EXEC_MODE = new LanguageSpecification.Mode(EXEC_DEMO,
+            new LanguageSpecification.Property(EXEC_LOC, true));
+    
     //Specification of how this handin can be configured
     public static final LanguageSpecification SPECIFICATION =
             new LanguageSpecification("C",
                 new LanguageSpecification.Mode[] {RUN_MAKE_MODE, RUN_GCC_MODE },
-                new LanguageSpecification.Mode[] {DEMO_MAKE_MODE, DEMO_GCC_MODE }, 
+                new LanguageSpecification.Mode[] {DEMO_EXEC_MODE},
                 null); //no tester support yet
 
     CHandin(Assignment asgn, String name, int points)
@@ -58,13 +58,11 @@ class CHandin extends CodeHandin
         super(asgn,name,points);
     }
 
-    @Override
     protected String[] getSourceFileTypes()
     {
         return _sourceFileTypes;
     }
 
-    @Override
     public void run(String studentLogin)
     {
         //Untar student files
@@ -96,6 +94,11 @@ class CHandin extends CodeHandin
                      super.getStudentHandinDirectory(studentLogin) + "; make clean; "
                      + "make; ./" + this.getRunProperty(MAKE_EXEC_NAME));
         }
+        else
+        {
+            System.err.println(this.getClass().getName() +
+                               " does not support this run mode: " + _runMode);
+        }
     }
 
     private Collection<String> getCFiles(String directoryPath) {
@@ -126,11 +129,17 @@ class CHandin extends CodeHandin
         BashConsole.writeThreaded("./" + loc);
     }
 
-
-    @Override
     public void runDemo()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(_demoMode.equalsIgnoreCase(EXEC_DEMO))
+        {
+            BashConsole.writeThreaded("./" + this.getDemoProperty(EXEC_LOC));
+        }
+        else
+        {
+            System.err.println(this.getClass().getName() +
+                               " does not support this demo mode: " + _demoMode);
+        }
     }
 
     @Override
