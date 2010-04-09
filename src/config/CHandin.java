@@ -125,7 +125,7 @@ class CHandin extends CodeHandin
     private void compileAndRun(String dirPath, String filename)
     {
         String loc = dirPath + filename;
-        BashConsole.writeThreaded("gcc -Wall -o " + loc + " " + loc + ".c");
+        BashConsole.write("gcc -Wall -o " + loc + " " + loc + ".c");
         BashConsole.writeThreaded("./" + loc);
     }
 
