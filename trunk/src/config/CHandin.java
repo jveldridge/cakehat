@@ -90,9 +90,22 @@ class CHandin extends CodeHandin
         }
         else if(_runMode.equalsIgnoreCase(MAKE_RUN))
         {
-             BashConsole.writeThreaded("cd " + 
+            Vector<String> cmd = new Vector<String>();
+            cmd.add("cd " +
+                     super.getStudentHandinDirectory(studentLogin));
+            cmd.add("make clean");
+            cmd.add("make");
+            Collection<String> success = BashConsole.writeErrorStream(cmd);
+            if(success.isEmpty()) { //if make compilation successful
+                BashConsole.write("xterm -hold -e " +
+                     super.getStudentHandinDirectory(studentLogin) +
+                     this.getRunProperty(MAKE_EXEC_NAME));
+            }
+            else { //display compilation errors
+             BashConsole.write("xterm -hold -e 'cd " +
                      super.getStudentHandinDirectory(studentLogin) + "; make clean; "
-                     + "make; ./" + this.getRunProperty(MAKE_EXEC_NAME));
+                     + "make; exit && /bin/bash'");
+            }
         }
         else
         {
@@ -122,11 +135,18 @@ class CHandin extends CodeHandin
         return false;
     }
 
-    private void compileAndRun(String dirPath, String filename)
+    private void compileAndRun(String studentLogin, String filename)
     {
-        String loc = dirPath + filename;
-        BashConsole.write("gcc -Wall -o " + loc + " " + loc + ".c");
-        BashConsole.writeThreaded("./" + loc);
+        String loc = super.getStudentHandinDirectory(studentLogin) + filename;
+        Vector<String> cmd = new Vector<String>();
+        cmd.add("gcc -Wall -o " + loc + " " + loc + ".c -lm");
+        Collection<String> success = BashConsole.writeErrorStream(cmd);
+        if (success.isEmpty()) { //if compilation successful
+            BashConsole.write("xterm -hold -e " + loc);
+        }
+        else { //display compiler errors in visible terminal
+            BashConsole.write("xterm -hold -e gcc -Wall -o " + loc + " " + loc + ".c -lm");
+        }
     }
 
     public void runDemo()
