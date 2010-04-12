@@ -1,0 +1,12 @@
+#summary One-sentence summary of this page.
+Notes on things to fix in and to cakehat.
+
+= Introduction =
+
+This page should function as a general to-do list for things to work on before Fall 2010.  These will be added as issues once they are more ready to be more precisely defined; they are here right now so that they are not forgotten about.
+
+= Details =
+
+  *Implement file locking such that only one person can open a rubric for editing at a time.  (Others should be allowed to open while someone is editing, with a notification that the rubric is being opened read-only).
+
+  *Better manual assignment/reassignment.  In particular, need to be clear about when rubrics should/shouldn't be created new/modified from something previously existing.  Also should have easy ways to see the assignment status of a particular student (either unassigned, or the TA to whom that student is assigned).
