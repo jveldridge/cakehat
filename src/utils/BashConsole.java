@@ -123,4 +123,46 @@ public class BashConsole {
 		
 	return output;
     }
+
+    public static Collection<String> writeErrorStream(Iterable<String> input) {
+    Vector<String> output = new Vector<String>();
+
+	File wd = new File("/bin");
+	Process proc = null;
+
+	try{
+            proc = Runtime.getRuntime().exec("/bin/bash", null, wd);
+	}
+	catch (IOException e) {
+            new ErrorView(e);
+	}
+
+	if (proc != null) {
+            //This is slightly confusing:
+            //in  - the output stream of the bash console
+            //out - what we are going to write to the console (using the input parameter passed in)
+            //err - the error stream of the bash console
+            BufferedReader err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(proc.getOutputStream())), true);
+            for(String line : input) {
+                out.println(line);
+            }
+            out.println("exit");
+            try {
+                String line;
+                while ((line = err.readLine()) != null) {
+                    output.add(line);
+                }
+                proc.waitFor();
+                err.close();
+                out.close();
+                proc.destroy();
+            }
+            catch (Exception e) {
+                new ErrorView(e);
+            }
+	}
+
+	return output;
+    }
 }
