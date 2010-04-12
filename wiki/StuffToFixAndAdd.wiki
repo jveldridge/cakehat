@@ -1,5 +1,4 @@
-#summary One-sentence summary of this page.
-Notes on things to fix in and to cakehat.
+#summary Notes on things to fix in and to cakehat.
 
 = Introduction =
 
