@@ -142,10 +142,10 @@ class CHandin extends CodeHandin
         cmd.add("gcc -Wall -o " + loc + " " + loc + ".c -lm");
         Collection<String> success = BashConsole.writeErrorStream(cmd);
         if (success.isEmpty()) { //if compilation successful
-            BashConsole.write("xterm -hold -e " + loc);
+            BashConsole.writeThreaded("xterm -hold -e " + loc);
         }
         else { //display compiler errors in visible terminal
-            BashConsole.write("xterm -hold -e gcc -Wall -o " + loc + " " + loc + ".c -lm");
+            BashConsole.writeThreaded("xterm -hold -e gcc -Wall -o " + loc + " " + loc + ".c -lm");
         }
     }
 
