@@ -12,3 +12,5 @@ This page should function as a general to-do list for things to work on before F
 -->on a related note, backend users need to be informed in some way when a student who is not in the database has turned in work.  right now, that student will simply be silently not distributed (meaning that we had a student in cs4 whose work we didn't grade for about 5 weeks...)
 
   * Need ways to get grade reports and charts _out_ of cakehat (email to others, or save to file?)
+
+  * Need better handling of assignments going into the database.  At the very least, need to not get errors when adding new assignment parts, and need to not get an ErrorView for each student when importing lab grades for an assignment not yet added to the DB
