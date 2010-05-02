@@ -166,7 +166,6 @@ public class CSVExporter implements Exporter
                 printer.append(student);
                 printer.append(",");
 
-
                 for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
                 {
                     //If there is no attempt to cancel
@@ -175,11 +174,20 @@ public class CSVExporter implements Exporter
                         double total = 0;
                         for(Part part : asgn.getParts())
                         {
-                            double score = Allocator.getDatabaseIO().getStudentScore(login, part);
+                            //If no exemption
+                            if(Allocator.getDatabaseIO().getExemptionNote(login, part) == null)
+                            {
+                                double score = Allocator.getDatabaseIO().getStudentScore(login, part);
 
-                            total += score;
+                                total += score;
 
-                            printer.append(score + ",");
+                                printer.append(score + ",");
+                            }
+                            //If exemption
+                            else
+                            {
+                                printer.append("EXEMPT" + ",");
+                            }
 
                             if(part instanceof HandinPart)
                             {
