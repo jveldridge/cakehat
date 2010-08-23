@@ -173,36 +173,40 @@ public class DBWrapper implements DatabaseIO {
      */
     public boolean addAssignmentPart(Part part) {
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS count, a.aid AS aid "
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS asgnCount, a.aid AS aid "
                     + "FROM asgn AS a "
                     + "WHERE a.name == '" + part.getAssignment().getName() + "'");
-            int count = rs.getInt("count");
-            if (count != 0) {
-                int asgnID = rs.getInt("aid");
-                rs = _statement.executeQuery("SELECT COUNT(p.pid) AS count "
-                        + "FROM part AS p "
-                        + "INNER JOIN asgn AS a "
-                        + "ON p.aid == a.aid "
-                        + "WHERE p.name == '" + part.getName() + "' "
-                        + "AND a.name == '" + part.getAssignment().getName() + "'");
-                count = rs.getInt("count");
-                if (count == 0) {
-                    _statement.executeUpdate("INSERT INTO part "
-                            + "('name', 'aid') "
-                            + "VALUES "
-                            + "('" + part.getName()
-                            + "', " + asgnID + ")");
-                } else {
-                    throw new CakeHatDBIOException("An assignment part with that name already exists for that assignment.");
-                }
-            } else {
+            int asgnCount = rs.getInt("asgnCount");
+
+            if (asgnCount == 0) { //if asgn does not exist
                 throw new CakeHatDBIOException("The part being added does not have a corresponding assignment in the DB.");
             }
+
+            rs = _statement.executeQuery("SELECT COUNT(p.pid) AS partCount "
+                    + "FROM part AS p "
+                    + "INNER JOIN asgn AS a "
+                    + "ON p.aid == a.aid "
+                    + "WHERE p.name == '" + part.getName() + "' "
+                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+            int partCount = rs.getInt("partCount");
+
+            if (partCount != 0) { //if assignment part already exists
+                throw new CakeHatDBIOException("An assignment part with that name already exists for that assignment.");
+            }
+
+            int asgnID = rs.getInt("aid");
+            _statement.executeUpdate("INSERT INTO part "
+                    + "('name', 'aid') "
+                    + "VALUES "
+                    + "('" + part.getName()
+                    + "', " + asgnID + ")");
+
             this.closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e, "Could not insert new row for an assignment part.");
+            new ErrorView(e, "The assignment part: " + part.getName() + " could not be added to the Database.");
             this.closeConnection();
             return false;
         }
@@ -767,21 +771,20 @@ public class DBWrapper implements DatabaseIO {
                     + "FROM asgn AS a "
                     + "WHERE a.name == '" + asgn.getName() + "'");
             int count = rs.getInt("count");
-            if (count == 0) {
-                _statement.executeUpdate("INSERT INTO asgn "
-                        + "('name') "
-                        + "VALUES "
-                        + "('" + asgn.getName() + "')");
-                for (Part part : asgn.getParts()) {
-                    this.addAssignmentPart(part);
-                }
-            } else {
-                throw new CakeHatDBIOException("An assignment with that name already exisits.");
+
+            if (count == 0) { // if assignment already exists
+                throw new CakeHatDBIOException("An assignment with that name already exists.");
             }
+
+            _statement.executeUpdate("INSERT INTO asgn "
+                    + "('name') "
+                    + "VALUES "
+                    + "('" + asgn.getName() + "')");
+
             this.closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e, "Could not insert new row for an assignment part.");
+            new ErrorView(e, "The assignment: " + asgn.getName() + " could not be added to the Database.");
             this.closeConnection();
             return false;
         }
@@ -1167,6 +1170,26 @@ public class DBWrapper implements DatabaseIO {
             return true;
         } catch (Exception e) {
             new ErrorView(e, "Could not remove all groups from assignment: " + handin.getAssignment().getName() + " for the part: " + handin.getName());
+            this.closeConnection();
+            return false;
+        }
+    }
+
+    public boolean assignmentExists(Assignment asgn) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS count "
+                    + "FROM asgn AS a "
+                    + "WHERE a.name == '" + asgn.getName() + "'");
+            int count = rs.getInt("count");
+            
+            boolean returnVal = (count == 0);
+
+            this.closeConnection();
+            return returnVal;
+        } catch (Exception e) {
+            new ErrorView(e, "There was an error while trying to test if the assignment: "
+                    + asgn.getName() + " exists in the Database.");
             this.closeConnection();
             return false;
         }
