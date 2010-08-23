@@ -36,11 +36,19 @@ public class GradingUtilities {
         //We don't want to just input all the keys in scores, because if people
         //were checked off with the wrong login we would submit that to the database
 
-        //Input scores for those logins
-        for(String login : logins){
-            if(scores.containsKey(login)){
-                Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
+        boolean asgnExists = Allocator.getDatabaseIO().assignmentExists(part.getAssignment());
+        if (asgnExists) {
+            //Input scores for those logins
+            for(String login : logins){
+                if(scores.containsKey(login)){
+                    Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
+                }
             }
+        }
+        else {
+            new ErrorView(new Exception(), "The assignment: "
+                    + part.getAssignment().getName() +
+                    " does not exist in the Database. Therefore we cannot add grades for that assignment.");
         }
     }
 

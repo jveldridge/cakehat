@@ -54,6 +54,14 @@ public interface DatabaseIO {
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName);
 
     /**
+     * Checks if the assignment already exists.
+     *
+     * @param asgn - an Assignment subclass
+     * @return
+     */
+    public boolean assignmentExists(Assignment asgn);
+
+    /**
      * Marks the student as disabled; use instead of removing if a student has dropped
      * the course.  Disabled students will not be sent grade reports or counted for statistics.
      * 
