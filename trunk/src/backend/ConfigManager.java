@@ -68,7 +68,9 @@ public class ConfigManager extends javax.swing.JFrame {
         addAsgnsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Assignment asgn = (Assignment) asgnCombo.getSelectedItem();
-                Allocator.getDatabaseIO().addAssignment(asgn);
+                if (!Allocator.getDatabaseIO().assignmentExists(asgn)) {
+                    Allocator.getDatabaseIO().addAssignment(asgn);
+                }
                 if (allPartsRB.isSelected()) {
                     for (Part p : asgn.getParts()) {
                         Allocator.getDatabaseIO().addAssignmentPart(p);
