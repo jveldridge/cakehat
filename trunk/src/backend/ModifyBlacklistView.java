@@ -8,11 +8,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -23,10 +27,12 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import utils.Allocator;
 
 /**
- *
+ * Provides an interface to manage the students on each TA's blacklist.
+ * 
  * @author jveldridge
  */
 public class ModifyBlacklistView extends JFrame{
@@ -35,24 +41,28 @@ public class ModifyBlacklistView extends JFrame{
     private String[] _studentLogins;
     private JList _studentList;
     private ButtonGroup _taButtons;
-    private Map<String,JList> _lists;
+    private Map<String, JList> _lists;
+
+    private static final int DEFAULT_VIEW_HEIGHT = 800;
     
     public ModifyBlacklistView() {
         super("Modify Blacklist");
         this.setLayout(new BorderLayout());  
         
         JPanel blacklistPanel = new JPanel();
-        blacklistPanel.setPreferredSize(new Dimension(665,1000));
         blacklistPanel.setLayout(new GridLayout(0,1));
-        
-        _lists = new HashMap<String,JList>();
+        JScrollPane blacklistScrollPane = new JScrollPane(blacklistPanel);
+        blacklistScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        blacklistScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        blacklistScrollPane.setPreferredSize(new Dimension(700, DEFAULT_VIEW_HEIGHT));
+        _lists = new HashMap<String, JList>();
         
         _taButtons = new ButtonGroup();
         for (TA ta : Allocator.getCourseInfo().getTAs()) {
             JPanel panel = new JPanel();
             panel.setPreferredSize(new Dimension(665,50));
             
-            JRadioButton rb = new JRadioButton(ta.getLogin());
+            final JRadioButton rb = new JRadioButton(ta.getLogin());
             rb.setActionCommand(ta.getLogin());
             rb.setPreferredSize(new Dimension(95,50));
             rb.addActionListener(new ActionListener() {
@@ -62,7 +72,23 @@ public class ModifyBlacklistView extends JFrame{
             });
             _taButtons.add(rb);
             
-            JList list = new JList();
+            final JList list = new JList();
+            list.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    //clear the selections in any other JLists
+                    int selectedIndex = list.getSelectedIndex();
+                    for (Entry<String,JList> entry : _lists.entrySet()) {
+                        entry.getValue().clearSelection(); 
+                    }
+                    list.setSelectedIndex(selectedIndex);
+
+                    //select the radio button corresponding to the TA whose
+                    //blacklist this JList represents
+                    rb.setSelected(true);
+                }
+            });
+            
             list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
             list.setVisibleRowCount(0);
             list.setFixedCellWidth(75);
@@ -81,7 +107,7 @@ public class ModifyBlacklistView extends JFrame{
         
         
         JPanel controlPanel = new JPanel();
-        controlPanel.setPreferredSize(new Dimension(200,1000));
+        controlPanel.setPreferredSize(new Dimension(200, DEFAULT_VIEW_HEIGHT));
         
         final JButton blacklistButton = new JButton("<< Add to Blacklist");
         blacklistButton.addActionListener(new ActionListener() {
@@ -107,8 +133,9 @@ public class ModifyBlacklistView extends JFrame{
         JButton unBlacklistButton = new JButton("Remove From Blacklist >>");
         unBlacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Allocator.getDatabaseIO().unBlacklistStudent((String) _lists.get(_taButtons.getSelection().getActionCommand()).getSelectedValue(),
-                                                            _taButtons.getSelection().getActionCommand());
+                String taLogin = _taButtons.getSelection().getActionCommand();
+                String studentLogin = (String) _lists.get(taLogin).getSelectedValue();
+                Allocator.getDatabaseIO().unBlacklistStudent(studentLogin, taLogin);
                 ModifyBlacklistView.this.updateGUI();
             }
         });
@@ -117,7 +144,7 @@ public class ModifyBlacklistView extends JFrame{
         controlPanel.add(unBlacklistButton);
         
         JPanel listPanel = new JPanel();
-        listPanel.setPreferredSize(new Dimension(150,1000));
+        listPanel.setPreferredSize(new Dimension(150, DEFAULT_VIEW_HEIGHT));
         
         _filterBox = new JTextField();
         _filterBox.setPreferredSize(new Dimension(150,30));
@@ -163,7 +190,7 @@ public class ModifyBlacklistView extends JFrame{
         listPane.setPreferredSize(listPanel.getPreferredSize());
         listPanel.add(listPane);
         
-        this.add(blacklistPanel, BorderLayout.WEST);
+        this.add(blacklistScrollPane, BorderLayout.WEST);
         this.add(controlPanel, BorderLayout.CENTER);
         this.add(listPanel, BorderLayout.EAST);
         
