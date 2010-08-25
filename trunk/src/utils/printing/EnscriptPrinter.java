@@ -1,5 +1,6 @@
 package utils.printing;
 
+import gradesystem.GradeSystemApp;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,31 +18,31 @@ import utils.BashConsole;
  *
  * @author jak2
  */
-public class EnscriptPrinter extends Printer
-{
+public class EnscriptPrinter extends Printer {
     //So that it prints currentPage/totalNumberOfPages - e.g. 2/4 for page 2 of 4
     private static final String PAGE_NUMBER_FORMATTING = "$%/$=";
 
-    public void print(Iterable<PrintRequest> requests, String printer)
-    {
-        //TODO: Figure out how to supress cover sheet for all requests beyond the first
-        for(PrintRequest request : requests)
-        {
+    public void print(Iterable<PrintRequest> requests, String printer) {
+        //Set to '--no-job-header' after first request to prevent cover sheet printing after the first handin
+        String dontPrintCoverSheet = "";
+
+        for(PrintRequest request : requests) {
             //Convert request to one text file
             File tmpFile = convertRequest(request);
 
             //Build command
-            String cmd = "enscript --header=" + request.getStudentLogin() + "\\|" +
-                         request.getTALogin() + "\\|" + PAGE_NUMBER_FORMATTING +
-		         " --header-font=Courier5 -q -P" + printer + " -2 -r --ps-level=1 " +
-                         tmpFile.getAbsolutePath();
+            String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s",
+                    dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer, tmpFile.getAbsolutePath());
 
-
-            System.out.println("enscript Command:");
-            System.out.println(cmd);
+            if (GradeSystemApp.inTestMode()) {
+                System.out.println("enscript Command:");
+                System.out.println(cmd);
+            }
 
             //Execute command
             BashConsole.writeThreaded(cmd);
+
+            dontPrintCoverSheet = "--no-job-header ";  //prevent future jobs in the batch from having a cover sheet
         }
     }
 

@@ -3,9 +3,11 @@ package utils;
 import config.HandinPart;
 import config.LabPart;
 import config.TA;
+import gradesystem.GradeSystemApp;
 import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -242,7 +244,18 @@ public class GradingUtilities {
      * @return the name of the printer selected
      */
     public String getPrinter(String message) {
-        Object[] printerChoices = {"bw3", "bw4", "bw5"};
+
+        Object[] printerChoices = null;
+        Object[] printerChoices_testing = {"bw1", "bw2", "bw3", "bw4", "bw5"};
+        Object[] printerChoices_main = {"bw3", "bw4", "bw5"};
+
+        if (GradeSystemApp.inTestMode()) { // select printer choices based on testing mode
+            printerChoices = printerChoices_testing;
+        }
+        else {
+            printerChoices = printerChoices_main;
+        }
+
         ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png");
 
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");

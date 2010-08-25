@@ -5,6 +5,7 @@
 
 package utils.printing;
 
+import gradesystem.GradeSystemApp;
 import java.io.File;
 import utils.BashConsole;
 
@@ -28,9 +29,11 @@ public class LprPrinter extends Printer
             }
 	}
 
+    if (GradeSystemApp.inTestMode()) {
         //Testing
         System.out.println("lpr Command:");
         System.out.println(cmd);
+    }
 
 	//Execute command
 	BashConsole.writeThreaded(cmd);
