@@ -520,6 +520,13 @@ class SingleSelectionPanel extends JPanel
         }
         _submitGradeButton.setEnabled(asgn.hasNonHandinParts());
         _nonHandinBox.setEnabled(asgn.hasNonHandinParts());
+        _nonHandinEarnedField.setEnabled(asgn.hasNonHandinParts());
+        if (!asgn.hasNonHandinParts()) {
+            _nonHandinEarnedField.setBackground(Color.LIGHT_GRAY);
+        }
+        else {
+            _nonHandinEarnedField.setBackground(Color.WHITE);
+        }
 
         for(LabPart part : asgn.getLabParts())
         {
