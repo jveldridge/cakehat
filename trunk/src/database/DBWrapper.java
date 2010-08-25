@@ -760,6 +760,31 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public double getStudentAsgnScore(String studentLogin, Assignment asgn) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT SUM(g.score) AS asgnscore "
+                    + "FROM grade AS g "
+                    + "INNER JOIN student AS s ON g.sid == s.sid "
+                    + "INNER JOIN part AS p ON g.pid == p.pid "
+                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
+                    + "WHERE s.login == '" + studentLogin + "' "
+                    + "AND a.name == '" +asgn.getName() + "' ");
+            double grade = 0.0;
+            if (rs.next()) {
+                grade = rs.getDouble("asgnscore");
+            }
+            return grade;
+        } catch (Exception e) {
+            new ErrorView(e, String.format("Could not get a total score for: %s for for assignment: %s.",
+                    studentLogin, asgn.getName()));
+            return 0.0;
+        }
+        finally {
+            this.closeConnection();
+        }
+    }
+
     public boolean resetDatabase() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

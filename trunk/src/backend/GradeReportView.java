@@ -12,7 +12,10 @@ import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -96,23 +99,54 @@ public class GradeReportView extends javax.swing.JFrame {
                 "<h1 style='font-weight: bold; font-size:11pt'>" +
                 "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>" +
                 "<hr />" + _messageText.getText();
-        
+
+
+        // get number of asgns with choices
+        Set<Integer> asgnsWithChoices = Allocator.getCourseInfo().getAssignmentsWithChoices();
+        //which assignments, for which there is a choice, have a grade
+        Map<Assignment, Integer> choicesWithGrade = new HashMap<Assignment, Integer>();
+
+        for (Assignment a : _sortedAssignments) {
+            System.out.println(Allocator.getDatabaseIO().getStudentAsgnScore(student, a) != 0.0);
+            if (asgnsWithChoices.contains(a.getNumber()) && Allocator.getDatabaseIO().getStudentAsgnScore(student, a) != 0.0) {
+                choicesWithGrade.put(a,a.getNumber());
+            }
+        }
+
+        System.out.println(asgnsWithChoices);
+                System.out.println(choicesWithGrade);
+
         //constructing the message body
         for (Assignment a : _sortedAssignments) {
-            htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'><tbody><tr style='font-weight: bold; background: #F0F0F0'><td>" + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
-            for (Part p : _asgnParts.get(a)) {
-                Calendar extension = Allocator.getDatabaseIO().getExtension(student, p);
-                if (Allocator.getDatabaseIO().getExemptionNote(student, p) != null) {
-                    htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
+            //if the assignment has no choices OR the assignment has choices and this one was choosen OR the assignment has choices and none were choosen
+            //assignments that have not been choosen are left out of the report but when there is no grade for any of the choices then zeros are displayed for all of them.
+            if (!asgnsWithChoices.contains(a.getNumber()) ||
+                    (asgnsWithChoices.contains(a.getNumber()) && choicesWithGrade.containsKey(a)) ||
+                    !choicesWithGrade.containsValue(a.getNumber())) {
+
+                htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'>" +
+                        "<tbody><tr style='font-weight: bold; background: #F0F0F0'><td>" +
+                        a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
+
+                for (Part p : _asgnParts.get(a)) {
+                    Calendar extension = Allocator.getDatabaseIO().getExtension(student, p);
+
+                    if (Allocator.getDatabaseIO().getExemptionNote(student, p) != null) {
+                        htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
+                                p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
+                    } else if (extension != null && (extension.getTimeInMillis() < System.currentTimeMillis())) {
+                        htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
+                                p.getName() + "</td><td>Extension until: " +
+                                extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
+                    } else {
+                        htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
+                                p.getName() + "</td><td>" + Allocator.getDatabaseIO().getStudentScore(student, p) + "</td><td>" +
+                                p.getPoints() + "</td></tr>";
+                    }
                 }
-                else if (extension != null && (extension.getTimeInMillis() < System.currentTimeMillis())) {
-                    htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>Extension until: " + extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
-                }
-                else {
-                    htmlString += "<tr style='background: #FFFFFF" + "'><td>" + p.getName() + "</td><td>" + Allocator.getDatabaseIO().getStudentScore(student, p) + "</td><td>" + p.getPoints() + "</td></tr>";
-                }
+
+                htmlString += "</tbody></table>";
             }
-            htmlString += "</tbody></table>";
         }
         
         return htmlString;
@@ -161,6 +195,7 @@ public class GradeReportView extends javax.swing.JFrame {
         _messageText.setRows(5);
         _messageText.setName("_messageText"); // NOI18N
         _messageText.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 _messageTextKeyReleased(evt);
             }

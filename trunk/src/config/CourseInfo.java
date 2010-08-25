@@ -2,6 +2,8 @@ package config;
 
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import utils.Allocator;
@@ -424,5 +426,25 @@ public class CourseInfo
     public String getCakehatEmailAddress()
     {
         return "cakehat@cs.brown.edu";
+    }
+
+    private Set<Integer> _asgnsWithChoices = null;
+    /**
+     * Returns a set of the assignments where there is a choice of which one students can do. (cs15 fnl prjs)
+     * @return Set of assignment numbers
+     */
+    public Set<Integer> getAssignmentsWithChoices() {
+        if (_asgnsWithChoices == null) {
+            _asgnsWithChoices = new HashSet<Integer>();
+            Set<Integer> asgnNumbersSeenAlready = new HashSet<Integer>();
+            for (Assignment a : _config.getAssigments()) {
+                if (asgnNumbersSeenAlready.contains(a.getNumber())) { //if we've seen an assignment already and we're seeing it again
+                    _asgnsWithChoices.add(a.getNumber());
+                } else { //else we've never seen it before
+                    asgnNumbersSeenAlready.add(a.getNumber());
+                }
+            }
+        }
+        return _asgnsWithChoices;
     }
 }
