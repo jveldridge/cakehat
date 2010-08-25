@@ -177,9 +177,10 @@ public class GradeReportView extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         _toText = new javax.swing.JTextField();
         sendToOtherButton = new javax.swing.JButton();
-        jMenuBar5 = new javax.swing.JMenuBar();
-        jMenu9 = new javax.swing.JMenu();
-        jMenu10 = new javax.swing.JMenu();
+        menuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        closeMenuItem = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(GradeReportView.class);
@@ -255,17 +256,27 @@ public class GradeReportView extends javax.swing.JFrame {
             }
         });
 
-        jMenuBar5.setName("jMenuBar1"); // NOI18N
+        menuBar.setName("jMenuBar1"); // NOI18N
 
-        jMenu9.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu9.setName("jMenu1"); // NOI18N
-        jMenuBar5.add(jMenu9);
+        fileMenu.setText(resourceMap.getString("jMenu1.text")); // NOI18N
+        fileMenu.setName("jMenu1"); // NOI18N
 
-        jMenu10.setText(resourceMap.getString("jMenu2.text")); // NOI18N
-        jMenu10.setName("jMenu2"); // NOI18N
-        jMenuBar5.add(jMenu10);
+        closeMenuItem.setText(resourceMap.getString("closeMenuItem.text")); // NOI18N
+        closeMenuItem.setName("closeMenuItem"); // NOI18N
+        closeMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                closeMenuItemMousePressed(evt);
+            }
+        });
+        fileMenu.add(closeMenuItem);
 
-        setJMenuBar(jMenuBar5);
+        menuBar.add(fileMenu);
+
+        editMenu.setText(resourceMap.getString("jMenu2.text")); // NOI18N
+        editMenu.setName("jMenu2"); // NOI18N
+        menuBar.add(editMenu);
+
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -277,7 +288,7 @@ public class GradeReportView extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
                                 .addGap(305, 305, 305))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -288,8 +299,8 @@ public class GradeReportView extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
-                                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                                                     .addGroup(layout.createSequentialGroup()
                                                         .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE)
                                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -313,7 +324,7 @@ public class GradeReportView extends javax.swing.JFrame {
                                 .addComponent(jScrollPane3)
                                 .addContainerGap())))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(sendToOtherButton, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(sendToOtherButton, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(sendToStudsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
@@ -338,7 +349,7 @@ public class GradeReportView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addComponent(attachScoreGraphButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -436,6 +447,10 @@ public class GradeReportView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_sendToOtherButtonActionPerformed
 
+    private void closeMenuItemMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeMenuItemMousePressed
+        this.dispose();
+    }//GEN-LAST:event_closeMenuItemMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField _fromText;
     private javax.swing.JTextArea _messageText;
@@ -443,17 +458,18 @@ public class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JTextField _toText;
     private javax.swing.JCheckBox attachHistButton;
     private javax.swing.JCheckBox attachScoreGraphButton;
+    private javax.swing.JMenuItem closeMenuItem;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JMenu jMenu10;
-    private javax.swing.JMenu jMenu9;
-    private javax.swing.JMenuBar jMenuBar5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JButton sendToOtherButton;
     private javax.swing.JButton sendToStudsButton;
     // End of variables declaration//GEN-END:variables
