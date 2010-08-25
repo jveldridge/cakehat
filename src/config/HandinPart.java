@@ -7,6 +7,7 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 import utils.Allocator;
 import utils.BashConsole;
+import utils.ErrorView;
 import utils.TextViewerView;
 
 /**
@@ -61,8 +62,16 @@ public abstract class HandinPart extends Part
 
     public boolean hasReadme(String studentLogin)
     {
+        //Get path to the student's handin
+        File handin = this.getHandin(studentLogin);
+
+        if (handin == null) {
+            new ErrorView(new Exception(), "The handin for the student: " + studentLogin + " could not be found. This could be because the file was moved or you don't have access to that file.");
+            return false;
+        }
+
         //Get contents of tar
-        Collection<String> contents = Allocator.getGeneralUtilities().getArchiveContents(this.getHandin(studentLogin).getAbsolutePath());
+        Collection<String> contents = Allocator.getGeneralUtilities().getArchiveContents(handin.getAbsolutePath());
 
         //For each entry (file and directory) in the tar
         for(String entry : contents)
