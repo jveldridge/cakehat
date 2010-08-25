@@ -397,9 +397,6 @@ public abstract class CodeHandin extends HandinPart
      */
     public void openCode(String studentLogin)
     {
-        //Untar if necesary
-        this.untar(studentLogin);
-
         //Build command to open all of the source files in Kate
         Collection<File> files = getSourceFiles(studentLogin);
         if(!files.isEmpty())
@@ -422,12 +419,13 @@ public abstract class CodeHandin extends HandinPart
      * @param studentLogin
      * @return
      */
-    private Collection<File> getSourceFiles(String studentLogin)
-    {
+    private Collection<File> getSourceFiles(String studentLogin) {
+        //make sure the student's code has been extracted from the tar before asking for the source files
+        this.untar(studentLogin);
+
         Collection<File> sourceFiles = new Vector<File>();
 
-        for(String fileType : this.getSourceFileTypes())
-        {
+        for(String fileType : this.getSourceFileTypes()) {
             Collection<File> files =
                     Allocator.getGeneralUtilities().getFiles(this.getStudentHandinDirectory(studentLogin), fileType);
             sourceFiles.addAll(files);
