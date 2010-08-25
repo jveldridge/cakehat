@@ -308,12 +308,19 @@ public interface DatabaseIO {
      * Returns the score of student with login studentLogin on Part part.
      * 
      * @param studentLogin
-     * @param assignmentName
-     * @param score
-     * @param status
+     * @param part - part getting score for
      * @return
      */
     public double getStudentScore(String studentLogin, Part part);
+
+    /**
+     * Returns the score of student with login studentLogin on an Assignment asgn.
+     *
+     * @param studentLogin
+     * @param asgn - assignment getting score for
+     * @return
+     */
+    public double getStudentAsgnScore(String studentLogin, Assignment asgn);
     
     /**
      * Returns a map of all scores for the specified students for the 
