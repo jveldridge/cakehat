@@ -2,18 +2,29 @@
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
-    <Menu class="javax.swing.JMenuBar" name="jMenuBar5">
+    <Menu class="javax.swing.JMenuBar" name="menuBar">
       <Properties>
         <Property name="name" type="java.lang.String" value="jMenuBar1" noResource="true"/>
       </Properties>
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu9">
+        <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
             <Property name="text" type="java.lang.String" resourceKey="jMenu1.text"/>
             <Property name="name" type="java.lang.String" value="jMenu1" noResource="true"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="closeMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="closeMenuItem.text"/>
+                <Property name="name" type="java.lang.String" value="closeMenuItem" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="closeMenuItemMousePressed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu10">
+        <Menu class="javax.swing.JMenu" name="editMenu">
           <Properties>
             <Property name="text" type="java.lang.String" resourceKey="jMenu2.text"/>
             <Property name="name" type="java.lang.String" value="jMenu2" noResource="true"/>
@@ -28,7 +39,7 @@
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar5"/>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="menuBar"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
@@ -52,7 +63,7 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jLabel3" pref="194" max="32767" attributes="0"/>
+                              <Component id="jLabel3" pref="196" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="305" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
@@ -65,8 +76,8 @@
                                           </Group>
                                           <Group type="102" alignment="1" attributes="0">
                                               <Group type="103" groupAlignment="1" attributes="0">
-                                                  <Component id="jScrollPane1" alignment="1" pref="448" max="32767" attributes="2"/>
-                                                  <Component id="jLabel1" alignment="0" pref="448" max="32767" attributes="1"/>
+                                                  <Component id="jScrollPane1" alignment="1" pref="450" max="32767" attributes="2"/>
+                                                  <Component id="jLabel1" alignment="0" pref="450" max="32767" attributes="1"/>
                                                   <Group type="102" alignment="1" attributes="0">
                                                       <Component id="jLabel2" pref="43" max="32767" attributes="1"/>
                                                       <EmptySpace max="-2" attributes="0"/>
@@ -137,7 +148,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="319" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="326" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Component id="attachScoreGraphButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
