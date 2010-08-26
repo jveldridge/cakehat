@@ -37,6 +37,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Allocator;
+import utils.printing.Printer;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -659,7 +660,12 @@ public class FrontendView extends JFrame
      */
     private void printStudentButtonActionPerformed()
     {
-        this.getHandinPart().printCode(_studentList.getSelectedValue(), Allocator.getGradingUtilities().getPrinter());
+        String printer = Allocator.getGradingUtilities().getPrinter();
+        if (printer == null) {
+            return;
+        }
+        
+        this.getHandinPart().printCode(_studentList.getSelectedValue(), printer);
     }
 
     /**
@@ -699,7 +705,12 @@ public class FrontendView extends JFrame
      */
     private void printAllButtonActionPerformed()
     {
-        this.getHandinPart().printCode(_studentList.getItems(), Allocator.getGradingUtilities().getPrinter());
+        String printer = Allocator.getGradingUtilities().getPrinter();
+        if (printer == null) {
+            return;
+        }
+
+        this.getHandinPart().printCode(_studentList.getItems(), printer);
     }
 
     /**

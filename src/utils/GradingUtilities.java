@@ -7,7 +7,6 @@ import gradesystem.GradeSystemApp;
 import utils.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,6 +176,10 @@ public class GradingUtilities {
     public void printGRDFiles(HandinPart part, Iterable<String> studentLogins) {
         String printer = this.getPrinter("Select printer to print .GRD files");
 
+        if (printer == null) {
+            return;
+        }
+
         String taLogin = Allocator.getGeneralUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
@@ -204,6 +207,10 @@ public class GradingUtilities {
     public void printGRDFiles(Map<HandinPart, Iterable<String>> toPrint)
     {
         String printer = this.getPrinter("Select printer to print .GRD files");
+
+        if (printer == null) {
+            return;
+        }
 
         String taLogin = Allocator.getGeneralUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
