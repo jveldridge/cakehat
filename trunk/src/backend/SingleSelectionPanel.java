@@ -160,7 +160,7 @@ class SingleSelectionPanel extends JPanel
                     double earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
                     double outOf = part.getPoints();
 
-                    _nonHandinEarnedField.setNumberValue(earned);
+                    _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
                     _nonHandinOutOfField.setNumberValue(outOf);
                 }
             }
@@ -267,7 +267,7 @@ class SingleSelectionPanel extends JPanel
                     double earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
                     double outOf = part.getPoints();
 
-                    _labEarnedField.setNumberValue(earned);
+                    _labEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
                     _labOutOfField.setNumberValue(outOf);
                 }
             }
@@ -541,7 +541,7 @@ class SingleSelectionPanel extends JPanel
             double handinEarned = Allocator.getDatabaseIO().getStudentScore(studentLogin, handinPart);
             double handinOutOf = handinPart.getPoints();
 
-            _handinEarnedField.setNumberValue(handinEarned);
+            _handinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(handinEarned, 2));
             _handinOutOfField.setNumberValue(handinOutOf);
         }
 
@@ -684,8 +684,8 @@ class SingleSelectionPanel extends JPanel
             _overallScoreLabel.setText(totalScore + "");
         }
 
-        _overallEarnedPointsLabel.setText(totalEarned + "");
-        _overallTotalPointsLabel.setText(totalOutOf + "");
+        _overallEarnedPointsLabel.setText(Allocator.getGeneralUtilities().round(totalEarned, 2) + "");
+        _overallTotalPointsLabel.setText(Allocator.getGeneralUtilities().round(totalOutOf, 2) + "");
     }
 
     public JFormattedTextField getNonHandinEarnedField()
