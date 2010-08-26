@@ -36,8 +36,8 @@ public class DBWrapperTest {
 
     private static Connection _connection;
     private static Statement _statement;
-    private static String _dbPath = "jdbc:sqlite:/Users/alexku/NetBeansProjects/cakehat/db/testDB.sqlite";
-    private static String _testDataPath = "/Users/alexku/NetBeansProjects/cakehat/db/cakehat_test_data.sql";
+    private static String _dbPath = "jdbc:sqlite:/course/cs000/.cakehat/2010/db/testDB.sqlite";
+    private static String _testDataPath = "/course/cs000/.cakehat/2010/db/cakehat_test_data.sql";
     private DBWrapper _instance;
 
     public DBWrapperTest() {

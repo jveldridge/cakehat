@@ -16,7 +16,7 @@ abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
 course=${abspath:8:5}
 
 #location of jar to run
-grade_sys="/course/"$course"/cakehat/bin/GradeSystem.jar"
+grade_sys="/course/"$course"/.cakehat/bin/GradeSystem.jar"
 
 #if the number of arguments passed in is invalid
 if [[ !( $# == 1 || $# == 2 ) ]]

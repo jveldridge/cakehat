@@ -60,6 +60,7 @@ public class RubricMananger
                 GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
                 visualizer.addWindowListener(new WindowAdapter()
                 {
+                    @Override
                     public void windowClosed(WindowEvent e)
                     {
                         _graders.remove(graderViewName);
@@ -87,7 +88,7 @@ public class RubricMananger
      * @date 01/08/2010
      * @return path to student's rubric for a particular project
      *          Note: this is independent of the TA who graded the student
-     *         currently, /course/<course>/cakehat/<year>/rubrics/<assignmentName>/<studentLogin>.gml
+     *         currently, /course/<course>/.cakehat/<year>/rubrics/<assignmentName>/<studentLogin>.gml
      */
     protected String getStudentRubricPath(HandinPart part, String studentLogin) {
         return Allocator.getCourseInfo().getRubricDir() + part.getAssignment().getName() + "/" + studentLogin + ".gml";
