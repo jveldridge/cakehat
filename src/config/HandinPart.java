@@ -269,7 +269,7 @@ public abstract class HandinPart extends Part
     /**
      * Code directory is:
      *
-     * /course/<course>/cakehat/.<ta login>/<assignment name>/<student login>/
+     * /course/<course>/.cakehat/.<ta login>/<assignment name>/<student login>/
      *
      */
     protected String getStudentHandinDirectory(String studentLogin)

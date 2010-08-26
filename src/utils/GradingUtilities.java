@@ -111,7 +111,7 @@ public class GradingUtilities {
      * Gets the path to the temporary directory that the user uses while running
      * cakehat.
      * <br><br>
-     * Path is: /course/<course>/cakehat/.<talogin>/
+     * Path is: /course/<course>/.cakehat/.<talogin>/
      * <br><br>
      * This directory <b>should</b> be deleted when cakehat is closed.
      *

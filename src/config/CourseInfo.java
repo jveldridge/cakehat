@@ -323,19 +323,19 @@ public class CourseInfo
     /**
      * The directory where cakehat exists.
      *
-     * /course/<course>/cakehat/
+     * /course/<course>/.cakehat/
      *
      * @return
      */
     public String getGradingDir()
     {
-        return getCourseDir() + "cakehat/";
+        return getCourseDir() + ".cakehat/";
     }
 
     /**
      * The directory where the lab check off data is stored.
      *
-     * /course/<course>/cakehat/<current year>/labs/
+     * /course/<course>/.cakehat/<current year>/labs/
      *
      * @return
      */
@@ -347,7 +347,7 @@ public class CourseInfo
     /**
      * The top level directory that stores all of the GML rubric files.
      *
-     * /course/<course>/cakehat/<current year>/rubrics/
+     * /course/<course>/.cakehat/<current year>/rubrics/
      *
      * @return
      */
@@ -359,7 +359,7 @@ public class CourseInfo
     /**
      * The path to the database file.
      *
-     * /course/<course>/cakehat/<current year>/database/database.db
+     * /course/<course>/.cakehat/<current year>/database/database.db
      *
      * @return
      */
@@ -371,7 +371,7 @@ public class CourseInfo
     /**
      * The path to the test database file.
      *
-     * /course/<course>/cakehat/<current year>/database/test_database.db
+     * /course/<course>/.cakehat/<current year>/database/test_database.db
      *
      * @return
      */
@@ -383,7 +383,7 @@ public class CourseInfo
     /**
      * The path to the test database format file.
      *
-     * /course/<course>/cakehat/<current year>/database/test_data.sql
+     * /course/<course>/.cakehat/<current year>/database/test_data.sql
      *
      * @return
      */
@@ -395,7 +395,7 @@ public class CourseInfo
     /**
      * The directory that backups of the database are put in.
      *
-     * /course/<course>/cakehat/<current year>/database/backups/
+     * /course/<course>/.cakehat/<current year>/database/backups/
      *
      * @return
      */

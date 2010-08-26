@@ -6,7 +6,7 @@
 # of '10' was received then the file created would be named 'jak2,10'.
 #
 # The file is placed in:
-# /course/<course code>/cakehat/<current year>/labs/<lab number>/
+# /course/<course code>/.cakehat/<current year>/labs/<lab number>/
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 16, 2010
@@ -30,7 +30,7 @@ course=${abspath:8:5}
 year=`eval date +%Y`
 
 #path to the lab directory
-labs_dir_path="/course/"$course"/cakehat/"$year"/labs/"
+labs_dir_path="/course/"$course"/.cakehat/"$year"/labs/"
 
 #if lab directory does not exist, create
 if [ ! -e $labs_dir_path ]
