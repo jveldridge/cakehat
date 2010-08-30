@@ -995,6 +995,8 @@ public class DBWrapper implements DatabaseIO {
 
     public boolean setGroups(HandinPart handin, Map<String, Collection<String>> groupings) {
         this.openConnection();
+
+        //make sure all the groupnames are valid and get the partID
         int partID;
         try {
             ResultSet rs = _statement.executeQuery("SELECT g.name AS groupname " + "FROM groups AS g ");
@@ -1002,7 +1004,7 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 String dbName = rs.getString("groupname");
                 if (groupNames.contains(dbName)) {
-                    JOptionPane.showMessageDialog(null, "A group with this name, " + dbName + ", already exist. Please pick another name and try again. No groups were added do to this conflict.");
+                    JOptionPane.showMessageDialog(null, "A group with this name, " + dbName + ", already exists. Please pick another name and try again. No groups were added due to this conflict.");
                     return false;
                 }
             }
@@ -1018,6 +1020,8 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection();
             return false;
         }
+
+        //put all the groups into the DB
         for (String groupName : groupings.keySet()) {
             if (!this.setGroup(handin, groupName, groupings.get(groupName), partID)) {
                 break;
@@ -1044,7 +1048,7 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE g.name == '" + groupName + "' ");
 
             if (testSet.getInt("numgroups") != 0) {
-                JOptionPane.showMessageDialog(null, "A group with this name, " + groupName + ", already exist. Please pick another name. This group was not added.");
+                JOptionPane.showMessageDialog(null, "A group with this name, " + groupName + ", already exists. Please pick another name. This group was not added.");
                 return false;
             }
 
@@ -1121,7 +1125,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     /*
-     * build a mapping of students to all the students in their group
+     * build a mapping of all students to all the students in their group
      * @param HandinPart
      * @return map of students to collections of group members
      */

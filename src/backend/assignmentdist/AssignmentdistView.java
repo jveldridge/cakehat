@@ -6,6 +6,7 @@
 package backend.assignmentdist;
 
 import config.Assignment;
+import config.HandinPart;
 import config.TA;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -181,27 +182,28 @@ public class AssignmentdistView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void assignmentNameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assignmentNameComboBoxActionPerformed
-        this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
+    private void assignmentNameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
+        this.setTitle(assignmentNameComboBox.getSelectedItem() + " - Assignment Distributor");
         fillTable();
-    }//GEN-LAST:event_assignmentNameComboBoxActionPerformed
+    }
 
-    private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateDistButtonActionPerformed
-        String asgn = assignmentNameComboBox.getSelectedItem().toString();
-        Assignment asgnObject = (Assignment) assignmentNameComboBox.getSelectedItem();
+    private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        /** setup valiables **/
+
+        Assignment asgn = (Assignment) assignmentNameComboBox.getSelectedItem();
 
         //check to make sure that there is not a dist already
-        if (!Allocator.getDatabaseIO().isDistEmpty(asgnObject.getHandinPart())) {
-            int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + asgn + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
+        if (!Allocator.getDatabaseIO().isDistEmpty(asgn.getHandinPart())) {
+            int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + asgn.getName() + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.NO_OPTION) {
                 return;
             }
         }
 
-        //get studnet logins, shuffle logins, add to deque
-        ArrayList<String> studLogins = new ArrayList<String>(asgnObject.getHandinPart().getHandinLogins());
-        Collections.shuffle(studLogins);
-        ArrayDeque<String> students = new ArrayDeque<String>(studLogins);
+        //get handin logins, shuffle logins, add to deque
+        ArrayList<String> handinLoginsRaw = new ArrayList<String>(asgn.getHandinPart().getHandinLogins());
+        Collections.shuffle(handinLoginsRaw);
+        ArrayDeque<String> handinLogins = new ArrayDeque<String>(handinLoginsRaw);
 
         //get all grader logins
         ArrayList<String> taLogins = new ArrayList<String>();
@@ -209,104 +211,163 @@ public class AssignmentdistView extends javax.swing.JFrame {
             taLogins.add(ta.getLogin());
         }
 
-        //get all the groups for this project
-        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(asgnObject.getHandinPart());
-
-        //build distrobution hashmap
-        HashMap<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
+        //build distribution hashmap
+        Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
         for (String grader : taLogins) {
             distribution.put(grader, new ArrayList<String>());
         }
 
+        /** make distribution **/
+
+        //determine how many students to give to each TA
+        Map<String, Integer> numStudsNeeded = this.calculateNumberOfHandinsPerTA(handinLogins, taLogins.size());
+
+        //distribute all the blacklisted handins to TAs first
+        boolean distBlackListSuccessful = this.assignBlackListedHandinsToTAs(distribution, numStudsNeeded, handinLogins, asgn.getHandinPart(), taLogins);
+        if (!distBlackListSuccessful) {
+            JOptionPane.showMessageDialog(this, "There was an error "
+                        + "distributing blacklisted "
+                        + "students. Please try running "
+                        + "the distribution again.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        //distribute the rest if the handins to TAs
+        this.assignRemainingHandinsToTAs(distribution, numStudsNeeded, handinLogins, taLogins);
+
+        //but the distribution into the DB
+        Allocator.getDatabaseIO().setAsgnDist(asgn.getHandinPart(), distribution);
+    }
+
+    /**
+     * calculate how many handins each TA should get based on the modifiers entered
+     *
+     * @param handinLogins
+     * @param numberOfTAs
+     * @return - map between TA and number to grade
+     */
+    private Map<String, Integer> calculateNumberOfHandinsPerTA(Collection<String> handinLogins, int numberOfTAs) {
         //get the current distribution modifiers from table
         DefaultTableModel modelOfTable = (DefaultTableModel) mainTable.getModel();
 
-        //total number of students used in calculating the average
-        int calculatedTotalStudents = students.size();
+        //total number of handins used in calculating the average
+        int calculatedTotalStudents = handinLogins.size();
 
         //update total number of students based modifiers from table (only used for calc of avg)
         for (int rowCount = 0; rowCount < modelOfTable.getRowCount(); rowCount++) {
             int diffFromAvg = (Integer) Integer.parseInt(modelOfTable.getValueAt(rowCount, 1).toString());
+            //the extra (if TA gets less than average) students need to be go to the other TAs therefore the average and thus the total must be higher
             calculatedTotalStudents -= diffFromAvg;
         }
 
         //average number of students for each ta
-        int avg = (int) Math.floor((double) calculatedTotalStudents / (double) taLogins.size());
+        int avg = (int) Math.floor((double) calculatedTotalStudents / (double) numberOfTAs);
 
         //build hashmap of how many students each TA must grade
         HashMap<String, Integer> numStudsNeeded = new HashMap<String, Integer>();
         for (int rowCount = 0; rowCount < modelOfTable.getRowCount(); rowCount++) {
             String taLogin = (String) modelOfTable.getValueAt(rowCount, 0);
-            int numToGrade = (Integer) Integer.parseInt(modelOfTable.getValueAt(rowCount, 1).toString()) + avg;
+            int numToGrade = Integer.parseInt(modelOfTable.getValueAt(rowCount, 1).toString()) + avg;
 
             numStudsNeeded.put(taLogin, numToGrade);
         }
+
+        return numStudsNeeded;
+    }
+
+    /**
+     * assign all the blacklisted handins to TAs first so there the most possible TAs to give them to
+     *
+     * @param distribution
+     * @param numStudsNeeded
+     * @param handinLogins
+     * @return - did this step work?
+     */
+    private boolean assignBlackListedHandinsToTAs(Map<String, Collection<String>> distribution,
+                        Map<String, Integer> numStudsNeeded, Collection<String> handinLogins,
+                        HandinPart handinPart, ArrayList<String> taLogins) {
+        
+        //get all the groups for this project (maps student login to students in their group)
+        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
 
         //make a list of all blacklisted students and hashmap of all ta blacklists
         Set<String> blacklistedStudents = new HashSet<String>();
         Map<String, Collection<String>> taBlacklists = new HashMap<String, Collection<String>>();
 
-        for (String ta : taLogins) {
-            Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
+        for (String taLogin : taLogins) {
+            Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(taLogin);
             blacklistedStudents.addAll(tasBlackList);
-            taBlacklists.put(ta, tasBlackList);
+            taBlacklists.put(taLogin, tasBlackList);
         }
 
-        //remove blacklisted students who don't have a handin
-        Iterator<String> iterator = blacklistedStudents.iterator();
+        //get all handins to pick which are the blacklisted handins
+        Collection<String> blacklistedHandins = handinPart.getHandinLogins();
+
+        //remove handins which aren't blacklisted
+        Iterator<String> iterator = blacklistedHandins.iterator();
         while (iterator.hasNext()) {
-            if (!asgnObject.getHandinPart().hasHandin(iterator.next())) {
+            if (!Allocator.getGeneralUtilities().containsAny(blacklistedStudents, groups.get(iterator.next()))) {
                 iterator.remove();
             }
         }
 
-        //add all blacklisted students to a TA first
-        for (String blStudent : blacklistedStudents) {
+        //add all blacklisted handins to a TA first
+        for (String blStudent : blacklistedHandins) {
             Collections.shuffle(taLogins);
             boolean distributed = false;
-            for (String ta : taLogins) {
-                //if ta's blacklist does not contain student and ta's dist is not full
-                if (!taBlacklists.get(ta).contains(blStudent)
-                        && !Allocator.getGeneralUtilities().containsAny(taBlacklists.get(ta), groups.get(blStudent))
-                        && numStudsNeeded.get(ta) > 0) {
+            for (String taLogin : taLogins) {
+                //if ta's blacklist does not contain students from the handin group (individuals will have a group of size 1) and ta's dist is not full
+                if (!Allocator.getGeneralUtilities().containsAny(taBlacklists.get(taLogin), groups.get(blStudent))
+                        && numStudsNeeded.get(taLogin) > 0) {
 
-                    distribution.get(ta).add(blStudent); //add student to ta's dist
-                    students.remove(blStudent); //remove student from those that need dist
-                    numStudsNeeded.put(ta, numStudsNeeded.get(ta) - 1); //reduce num ta needs
+                    distribution.get(taLogin).add(blStudent); //add student to ta's dist
+                    numStudsNeeded.put(taLogin, numStudsNeeded.get(taLogin) - 1); //reduce num ta needs
                     distributed = true;
                     break;
                 }
             }
             if (!distributed) {
-                JOptionPane.showMessageDialog(this, "There was an error "
-                        + "distributing blacklisted "
-                        + "student: " + blStudent + ". Please try running "
-                        + "the distribution again.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
+                return false;
             }
         }
 
-        //fill TAs to limit
-        for (String ta : taLogins) {
-            Collection<String> students2TA = distribution.get(ta);
-            for (int i = 0; i < numStudsNeeded.get(ta); i++) {
-                students2TA.add(students.removeFirst());
-            }
-            distribution.put(ta, students2TA);
-        }
+        //remove all blacklisted students from student list since they are all distributed already
+        handinLogins.removeAll(blacklistedHandins);
+        return true;
+    }
 
-        //distribute remaining students (< n of them) to random TAs
+    /**
+     * take the handins which are not on any blacklist and distributes them to TAs at random until the TA is at their limit
+     *
+     * @param distribution - current distribution
+     * @param numStudsNeeded
+     * @param handinLogins
+     * @return - did this step work?
+     */
+    private boolean assignRemainingHandinsToTAs(Map<String, Collection<String>> distribution,
+                        Map<String, Integer> numStudsNeeded, ArrayDeque<String> handinLogins,
+                        ArrayList<String> taLogins) {
+        
         Collections.shuffle(taLogins);
-        for (String ta : taLogins) {
-            if (!students.isEmpty()) {
-                distribution.get(ta).add(students.removeFirst());
+        //fill TAs to limit
+        for (String taLogin : taLogins) {
+            for (int i = 0; i < numStudsNeeded.get(taLogin); i++) {
+                distribution.get(taLogin).add(handinLogins.removeFirst());
+            }
+        }
+
+        //distribute remaining students (< # TAs of them) to random TAs
+        //There will be < # TAs of them because we floored when we took the average so only at most n-1 could be left.
+        Collections.shuffle(taLogins);
+        for (String taLogin : taLogins) {
+            if (!handinLogins.isEmpty()) {
+                distribution.get(taLogin).add(handinLogins.removeFirst());
             } else {
                 break;
             }
         }
-
-        Allocator.getDatabaseIO().setAsgnDist(asgnObject.getHandinPart(), distribution);
-    }//GEN-LAST:event_generateDistButtonActionPerformed
+        return true;
+    }
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
         String asgn = assignmentNameComboBox.getSelectedItem().toString();
