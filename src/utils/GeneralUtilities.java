@@ -139,7 +139,7 @@ public class GeneralUtilities {
      * Gets a user's name.
      *
      * @param login the user's login
-     * @return user name
+     * @return user's name
      */
     public String getUserName(String login) {
         Collection<String> output = BashConsole.write("snoop " + login);
