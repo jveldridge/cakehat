@@ -548,14 +548,20 @@ private void toTAListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
 }//GEN-LAST:event_toTAListKeyReleased
 
 private void asgnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asgnComboBoxActionPerformed
-    _asgn = (Assignment) asgnComboBox.getSelectedItem();
-    _unassignedStudents = new Vector<String>(_asgn.getHandinPart().getHandinLogins());
-    for (TA ta : Allocator.getCourseInfo().getTAs()) {
-        for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin())) {
-            _unassignedStudents.remove(login);
+    boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents((Assignment) asgnComboBox.getSelectedItem());
+
+    if (resolved) {
+        _asgn = (Assignment) asgnComboBox.getSelectedItem();
+        _unassignedStudents = new Vector<String>(_asgn.getHandinPart().getHandinLogins());
+        for (TA ta : Allocator.getCourseInfo().getTAs()) {
+            for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin())) {
+                _unassignedStudents.remove(login);
+            }
         }
+        this.updateGUI();
+    } else {
+        asgnComboBox.setSelectedItem(_asgn);
     }
-    this.updateGUI();
 }//GEN-LAST:event_asgnComboBoxActionPerformed
 
 private void randomAssignButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_randomAssignButtonActionPerformed

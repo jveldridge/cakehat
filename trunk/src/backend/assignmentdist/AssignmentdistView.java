@@ -27,32 +27,37 @@ import utils.ErrorView;
 
 /**
  *
- * @author Paul
  * @author aunger
  */
 public class AssignmentdistView extends javax.swing.JFrame {
 
+    private Assignment _asgn;
+
     /** Creates new form AssignmentDistributorGUI */
     public AssignmentdistView(Assignment asgn) {
+        _asgn = asgn;
+
         initComponents();
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/accessories-text-editor.png")));
         } catch (Exception e) {
         }
 
-        for (Assignment s : Allocator.getCourseInfo().getHandinAssignments()) {
-            assignmentNameComboBox.insertItemAt(s, assignmentNameComboBox.getItemCount());
+        boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
+
+        if (resolved) {
+            this.setVisible(true);
+        }
+        else {
+            this.dispose();
+            return;
         }
 
-        //create dist for assignment passed in as parameter
-        if (asgn != null) {
-            assignmentNameComboBox.setSelectedItem(asgn);
-            this.setTitle(assignmentNameComboBox.getSelectedItem() + " - cs015 Assignment Distributor");
-        }
+        this.setTitle(_asgn.getName() + " - cs015 Assignment Distributor");
 
         fillTable();
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
     }
 
     private void fillTable() {
@@ -82,23 +87,14 @@ public class AssignmentdistView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        assignmentNameComboBox = new javax.swing.JComboBox();
         generateDistButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        explanationText = new javax.swing.JLabel();
+        allocationScrollPanel = new javax.swing.JScrollPane();
         mainTable = new backend.assignmentdist.AssignmentdistTable();
         setupGradingButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         mainMenuBar = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMcenu2 = new javax.swing.JMenu();
-
-        assignmentNameComboBox.setFocusable(false);
-        assignmentNameComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                assignmentNameComboBoxActionPerformed(evt);
-            }
-        });
+        fileMenu = new javax.swing.JMenu();
+        closeMenuItem = new javax.swing.JMenuItem();
 
         generateDistButton.setText("1. Distribute Students");
         generateDistButton.setFocusable(false);
@@ -108,7 +104,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("A negative value indicates no max number to grade.");
+        explanationText.setText("<html>Enter the number of handins above or below the average each TA should grade. (-2 = two less to grade)<br>(don't use a + symbol for positive numbers)</html>");
 
         mainTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -118,7 +114,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
 
             }
         ));
-        jScrollPane1.setViewportView(mainTable);
+        allocationScrollPanel.setViewportView(mainTable);
 
         setupGradingButton.setText("2. Set Up Grading");
         setupGradingButton.addActionListener(new java.awt.event.ActionListener() {
@@ -127,18 +123,17 @@ public class AssignmentdistView extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("ReAssign Grading");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+        fileMenu.setText("File");
+
+        closeMenuItem.setText("Close");
+        closeMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                closeMenuItemMouseReleased(evt);
             }
         });
+        fileMenu.add(closeMenuItem);
 
-        jMenu1.setText("File");
-        mainMenuBar.add(jMenu1);
-
-        jMcenu2.setText("Edit");
-        mainMenuBar.add(jMcenu2);
+        mainMenuBar.add(fileMenu);
 
         setJMenuBar(mainMenuBar);
 
@@ -147,61 +142,46 @@ public class AssignmentdistView extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 671, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 263, Short.MAX_VALUE)
+                .addContainerGap(49, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(explanationText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(generateDistButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(setupGradingButton)))
+                        .addComponent(setupGradingButton))
+                    .addComponent(allocationScrollPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(assignmentNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                .addComponent(explanationText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                .addComponent(allocationScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(generateDistButton)
-                    .addComponent(setupGradingButton)
-                    .addComponent(jButton1))
-                .addGap(14, 14, 14))
+                    .addComponent(setupGradingButton))
+                .addGap(23, 23, 23))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void assignmentNameComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        this.setTitle(assignmentNameComboBox.getSelectedItem() + " - Assignment Distributor");
-        fillTable();
-    }
-
     private void generateDistButtonActionPerformed(java.awt.event.ActionEvent evt) {
         /** setup valiables **/
 
-        Assignment asgn = (Assignment) assignmentNameComboBox.getSelectedItem();
-
         //check to make sure that there is not a dist already
-        if (!Allocator.getDatabaseIO().isDistEmpty(asgn.getHandinPart())) {
-            int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + asgn.getName() + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
+        if (!Allocator.getDatabaseIO().isDistEmpty(_asgn.getHandinPart())) {
+            int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + _asgn.getName() + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.NO_OPTION) {
                 return;
             }
         }
 
         //get handin logins, shuffle logins, add to deque
-        ArrayList<String> handinLoginsRaw = new ArrayList<String>(asgn.getHandinPart().getHandinLogins());
+        ArrayList<String> handinLoginsRaw = new ArrayList<String>(_asgn.getHandinPart().getHandinLogins());
         Collections.shuffle(handinLoginsRaw);
         ArrayDeque<String> handinLogins = new ArrayDeque<String>(handinLoginsRaw);
 
@@ -223,7 +203,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         Map<String, Integer> numStudsNeeded = this.calculateNumberOfHandinsPerTA(handinLogins, taLogins.size());
 
         //distribute all the blacklisted handins to TAs first
-        boolean distBlackListSuccessful = this.assignBlackListedHandinsToTAs(distribution, numStudsNeeded, handinLogins, asgn.getHandinPart(), taLogins);
+        boolean distBlackListSuccessful = this.assignBlackListedHandinsToTAs(distribution, numStudsNeeded, handinLogins, _asgn.getHandinPart(), taLogins);
         if (!distBlackListSuccessful) {
             JOptionPane.showMessageDialog(this, "There was an error "
                         + "distributing blacklisted "
@@ -236,7 +216,7 @@ public class AssignmentdistView extends javax.swing.JFrame {
         this.assignRemainingHandinsToTAs(distribution, numStudsNeeded, handinLogins, taLogins);
 
         //but the distribution into the DB
-        Allocator.getDatabaseIO().setAsgnDist(asgn.getHandinPart(), distribution);
+        Allocator.getDatabaseIO().setAsgnDist(_asgn.getHandinPart(), distribution);
     }
 
     /**
@@ -370,11 +350,9 @@ public class AssignmentdistView extends javax.swing.JFrame {
     }
 
     private void setupGradingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupGradingButtonActionPerformed
-        String asgn = assignmentNameComboBox.getSelectedItem().toString();
-        Assignment asgnObject = (Assignment) assignmentNameComboBox.getSelectedItem();
 
         //create rubric directory if it does not exist
-        String directoryPath = Allocator.getCourseInfo().getRubricDir() + asgn + "/";
+        String directoryPath = Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/";
         Allocator.getGeneralUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
@@ -384,33 +362,20 @@ public class AssignmentdistView extends javax.swing.JFrame {
             minsLeniency = Integer.parseInt(input);
         }
 
-        Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(asgnObject.getHandinPart());
-        Allocator.getRubricManager().distributeRubrics(asgnObject.getHandinPart(), distribution, minsLeniency);
+        Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
+        Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(), distribution, minsLeniency);
 }//GEN-LAST:event_setupGradingButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        //new ReassignView((String) assignmentNameComboBox.getSelectedItem());
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void closeMenuItemMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeMenuItemMouseReleased
+        this.dispose();
+    }//GEN-LAST:event_closeMenuItemMouseReleased
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new AssignmentdistView(null).setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox assignmentNameComboBox;
+    private javax.swing.JScrollPane allocationScrollPanel;
+    private javax.swing.JMenuItem closeMenuItem;
+    private javax.swing.JLabel explanationText;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JButton generateDistButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMcenu2;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuBar mainMenuBar;
     private backend.assignmentdist.AssignmentdistTable mainTable;
     private javax.swing.JButton setupGradingButton;
