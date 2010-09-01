@@ -54,6 +54,15 @@ public interface DatabaseIO {
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName);
 
     /**
+     * Returns the name of the TA with the given login.  If no such TA exists,
+     * an ErrorView will be shown, and this method will return null.
+     *
+     * @param taLogin
+     * @return the name of the TA with the given login.
+     */
+    public String getTaName(String taLogin);
+
+    /**
      * Checks if the assignment already exists.
      *
      * @param asgn - an Assignment subclass

@@ -312,6 +312,21 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public String getTaName(String taLogin) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT t.name AS name FROM t" +
+                    " WHERE t.login == '" + taLogin + "'");
+            String name = rs.getString("name");
+            return "";
+        }
+        catch (SQLException e) {
+            new ErrorView(e);
+            this.closeConnection();
+            return "";
+        }
+    }
+
     public Map<String, String> getAllTAs() {
         this.openConnection();
         try {

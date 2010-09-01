@@ -1,7 +1,7 @@
 package backend;
 
 import backend.assignmentdist.AssignmentdistView;
-import backend.assignmentdist.ReassignView;
+import backend.assignmentdist.NewReassignView;
 import backend.stathist.StatHistView;
 import components.GenericJList;
 import config.Assignment;
@@ -1317,7 +1317,7 @@ public class BackendView extends JFrame
 
     private void reassignGradingButtonActionPerformed()
     {
-        new ReassignView(_assignmentList.getSelectedValue());
+        new NewReassignView(_assignmentList.getSelectedValue());
     }
 
     private void importGradesButtonActionPerformed()
