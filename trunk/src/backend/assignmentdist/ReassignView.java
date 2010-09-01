@@ -692,4 +692,8 @@ private void toTAListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     private javax.swing.JButton unassignButton;
     // End of variables declaration//GEN-END:variables
 
+
+    public static void main(String[] argv) {
+        new ReassignView(Allocator.getCourseInfo().getHandinAssignments().toArray(new Assignment[0])[0]);
+    }
 }
