@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JOptionPane;
@@ -518,6 +519,27 @@ public class DBWrapper implements DatabaseIO {
             new ErrorView(e, "Could not get students assigned to ta: " + taLogin + " for assignment: " + part.getName());
             this.closeConnection();
             return new ArrayList<String>();
+        }
+    }
+
+    @Override
+    public Collection<String> getAllAssignedStudents(HandinPart part) {
+        this.openConnection();
+        Collection<String> assignedStudents = new LinkedList<String>();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT s.login AS login FROM student AS s" +
+                " INNER JOIN distribution AS d ON d.sid == s.sid" +
+                " INNER JOIN part AS p ON p.pid == d.pid" +
+                " INNER JOIN asgn AS a ON a.aid == p.aid" +
+                " WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "'");
+            while (rs.next()) {
+                assignedStudents.add(rs.getString("login"));
+            }
+            return assignedStudents;
+        } catch (SQLException e) {
+            new ErrorView(e, String.format("Could not get all assigned students " +
+                    "for assignment %s", part.getName()));
+            return assignedStudents;
         }
     }
 
