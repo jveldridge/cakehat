@@ -8,6 +8,7 @@ import config.HandinPart;
 import config.Part;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -214,23 +215,34 @@ public class DBWrapper implements DatabaseIO {
     }
 
     /**
-     * Inserts a new student into the DB (not check if already exists)
-     * TODO: make check for duplicate student
+     * Inserts a new student into the DB
+     * If the student already exists it will silently not add the student
+     *
      * @param studentLogin - String login
      * @param studentFirstName - String First Name
      * @param studentLastName - String Last Name
-     * @return status
+     * @return was student added
      */
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
         this.openConnection();
         try {
-            _statement.executeUpdate("INSERT INTO student "
-                    + "('login', 'firstname', 'lastname') "
-                    + "VALUES "
-                    + "('" + studentLogin
-                    + "', '" + studentFirstName
-                    + "', '" + studentLastName
-                    + "')");
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(s.sid) AS rowcount "
+                    + "FROM student AS s "
+                    + "WHERE s.login == '" + studentLogin + "'");
+            int rows = rs.getInt("rowcount");
+            if (rows != 0) {
+                this.closeConnection();
+                return false;
+
+            }
+            PreparedStatement ps = _connection.prepareStatement("INSERT INTO student "
+                        + "('login', 'firstname', 'lastname') "
+                        + "VALUES (?, ?, ?)");
+            ps.setString(1, studentLogin);
+            ps.setString(2, studentFirstName);
+            ps.setString(3, studentLastName);
+            ps.executeUpdate();
+            
             this.closeConnection();
             return true;
         } catch (Exception e) {
