@@ -399,13 +399,14 @@ public class NewReassignView extends JFrame {
         HandinPart handinPart = _asgn.getHandinPart();
 
         _assignSelectedButton.setEnabled(false);
+        List<String> loginsToDisplay;
 
         //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
             _unassignedStudents = handinPart.getHandinLogins();
             _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
+            loginsToDisplay = new LinkedList<String>(_unassignedStudents);
 
-            _fromStudentList.setListData(_unassignedStudents);
             _assignRandomButton.setEnabled(_unassignedStudents.size() > 0);
             _numUnassignedLabel.setText(String.format("%d unassigned students to choose from", _unassignedStudents.size()));
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
@@ -415,7 +416,8 @@ public class NewReassignView extends JFrame {
         else {
             String fromTALogin = _fromTAList.getSelectedValue().getLogin();
             Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTALogin);
-            _fromStudentList.setListData(studentsAssigned);
+            loginsToDisplay = new LinkedList<String>(studentsAssigned);
+            
             _assignRandomButton.setEnabled(studentsAssigned.size() > 0);
             _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
                                                       studentsAssigned.size(), fromTALogin));
@@ -423,21 +425,27 @@ public class NewReassignView extends JFrame {
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(studentsAssigned.size());
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(studentsAssigned.size() == 0 ? 0 : 1);
         }
-        
+
+        Collections.sort(loginsToDisplay);
+        _fromStudentList.setListData(loginsToDisplay);
     }
 
     private void updateToList() {
         HandinPart handinPart = _asgn.getHandinPart();
+        List<String> loginsToDisplay;
+
         if (!_toUnassigned.isSelectionEmpty()) {
             _unassignedStudents = handinPart.getHandinLogins();
             _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
-            
-            _toStudentList.setListData(_unassignedStudents);
+            loginsToDisplay = new LinkedList<String>(_unassignedStudents);
         }
         else {
             String toTALogin = _toTAList.getSelectedValue().getLogin();
-            _toStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, toTALogin));
+            loginsToDisplay = new LinkedList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, toTALogin));
         }
+
+        Collections.sort(loginsToDisplay);
+        _toStudentList.setListData(loginsToDisplay);
     }
 
     private void handleSelectedAssignButtonClick() {
