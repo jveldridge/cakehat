@@ -213,6 +213,16 @@ public interface DatabaseIO {
      */
     public Collection<String> getStudentsAssigned(HandinPart part, String taLogin);
 
+    /**
+     * Returns a Collection of Strings containing the logisn of all students who
+     * have been assinged to a TA to grade for the given HandinPart.  This can be
+     * used to find students who have not been assigned to any TA to grade.
+     *
+     * @param part
+     * @return
+     */
+    public Collection<String> getAllAssignedStudents(HandinPart part);
+
     //may add: public Map<String,String> getDistribution(String assignmentName);
 
     /**

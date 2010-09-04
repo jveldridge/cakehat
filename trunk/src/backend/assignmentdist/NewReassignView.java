@@ -14,9 +14,12 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,8 +33,11 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Allocator;
@@ -56,14 +62,18 @@ public class NewReassignView extends JFrame {
     private GenericJList<TA> _toTAList;
     private GenericJList<String> _toStudentList;
 
-    private JButton _assignButton;
+    private JButton _assignSelectedButton;
+    private JButton _assignRandomButton;
     private JTextField _studentFilterBox;
+    private JSpinner _numStudentsSpinner;
+    private JLabel _numUnassignedLabel;
 
     private Collection<String> _unassignedStudents;
 
     private Assignment _asgn;
 
     public NewReassignView(Assignment asgn) {
+        _asgn = asgn;
         boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
 
         if (resolved) {
@@ -74,7 +84,6 @@ public class NewReassignView extends JFrame {
             return;
         }
 
-        _asgn = asgn;
         _tas = new LinkedList<TA>(Allocator.getCourseInfo().getTAs());
         Collections.sort(_tas, new Comparator<TA>(){
             @Override
@@ -83,6 +92,7 @@ public class NewReassignView extends JFrame {
             }
 
         });
+
         _unassignedStudents = new Vector<String>();
 
         this.setLayout(new BorderLayout());
@@ -181,6 +191,13 @@ public class NewReassignView extends JFrame {
         fromTASP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
 
         _fromStudentList = new GenericJList<String>();
+        _fromStudentList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                _assignSelectedButton.setEnabled(_fromStudentList.getSelectedValue() != null);
+            }
+        });
+
         JScrollPane fromStudentSP = new JScrollPane();
         fromStudentSP.setViewportView(_fromStudentList);
         fromStudentSP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
@@ -226,27 +243,64 @@ public class NewReassignView extends JFrame {
         selectedStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         selectedStudentsPanel.add(selectedStudentsLabel);
 
-        _assignButton = new JButton("Assign >>");
-        _assignButton.addActionListener(new ActionListener() {
+        _assignSelectedButton = new JButton("Assign >>");
+        _assignSelectedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAssignButtonClick();
+                handleSelectedAssignButtonClick();
             }
         });
 
-        _assignButton.addKeyListener(new KeyAdapter() {
+        _assignSelectedButton.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    handleAssignButtonClick();
+                    handleSelectedAssignButtonClick();
                 }
             }
         });
 
-        _assignButton.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        selectedStudentsPanel.add(_assignButton);
+        _assignSelectedButton.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        selectedStudentsPanel.add(_assignSelectedButton);
+
+        JPanel randomStudentsPanel = new JPanel();
+        randomStudentsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        JLabel randomStudentsLabel = new JLabel("Random Students:");
+        randomStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        randomStudentsPanel.add(randomStudentsLabel);
+
+        _numStudentsSpinner = new JSpinner(new SpinnerNumberModel());
+        _numStudentsSpinner.setPreferredSize(new Dimension(LIST_WIDTH / 2, TEXT_HEIGHT));
+        randomStudentsPanel.add(_numStudentsSpinner);
+
+        _assignRandomButton = new JButton("Assign >>");
+        _assignRandomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleRandomAssignButtonClick();
+            }
+        });
+
+        _assignRandomButton.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent evt) {
+                if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+                    handleRandomAssignButtonClick();
+                }
+            }
+        });
+
+        _assignRandomButton.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        randomStudentsPanel.add(_assignRandomButton);
+
+        _numUnassignedLabel = new JLabel();
+        randomStudentsPanel.add(_numUnassignedLabel);
 
         centerPanel.add(selectedStudentsPanel);
+        centerPanel.add(new JSeparator());
+        centerPanel.add(randomStudentsPanel);
+        centerPanel.add(new JPanel());
 
         return centerPanel;
     }
@@ -343,28 +397,40 @@ public class NewReassignView extends JFrame {
 
     private void updateFromList() {
         HandinPart handinPart = _asgn.getHandinPart();
-        
+
+        _assignSelectedButton.setEnabled(false);
+
+        //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
             _unassignedStudents = handinPart.getHandinLogins();
-            for (TA ta : _tas) {
-                _unassignedStudents.removeAll(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin()));
-            }
+            _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
 
             _fromStudentList.setListData(_unassignedStudents);
+            _assignRandomButton.setEnabled(_unassignedStudents.size() > 0);
+            _numUnassignedLabel.setText(String.format("%d unassigned students to choose from", _unassignedStudents.size()));
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(_unassignedStudents.size());
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(_unassignedStudents.size() == 0 ? 0 : 1);
         }
         else {
             String fromTALogin = _fromTAList.getSelectedValue().getLogin();
-            _fromStudentList.setListData(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTALogin));
+            Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTALogin);
+            _fromStudentList.setListData(studentsAssigned);
+            _assignRandomButton.setEnabled(studentsAssigned.size() > 0);
+            _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
+                                                      studentsAssigned.size(), fromTALogin));
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(studentsAssigned.size());
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(studentsAssigned.size() == 0 ? 0 : 1);
         }
+        
     }
 
     private void updateToList() {
         HandinPart handinPart = _asgn.getHandinPart();
         if (!_toUnassigned.isSelectionEmpty()) {
             _unassignedStudents = handinPart.getHandinLogins();
-            for (TA ta : _tas) {
-                _unassignedStudents.removeAll(Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), ta.getLogin()));
-            }
+            _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
             
             _toStudentList.setListData(_unassignedStudents);
         }
@@ -374,7 +440,7 @@ public class NewReassignView extends JFrame {
         }
     }
 
-    private void handleAssignButtonClick() {
+    private void handleSelectedAssignButtonClick() {
         Collection<String> students = _fromStudentList.getGenericSelectedValues();
         HandinPart handinPart = _asgn.getHandinPart();
 
@@ -452,9 +518,105 @@ public class NewReassignView extends JFrame {
         _studentFilterBox.requestFocus();
     }
 
+    private void handleRandomAssignButtonClick() {
+        HandinPart handinPart = _asgn.getHandinPart();
+        TA toTA = _toTAList.getSelectedValue();
+        TA fromTA = _fromTAList.getSelectedValue();
+
+        List<String> studentsToChoseFrom;
+
+        //assigning students who were previously assigned to UNASSIGNED
+        if (!_fromUnassigned.isSelectionEmpty()) {
+            studentsToChoseFrom = new ArrayList<String>(_unassignedStudents);
+        }
+        else {
+            studentsToChoseFrom = new ArrayList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA.getLogin()));
+        }
+        Collections.shuffle(studentsToChoseFrom);
+        Deque<String> students = new ArrayDeque<String>(studentsToChoseFrom);
+
+        Collection<String> studentsToAssign = new LinkedList<String>();
+
+        int numStudentsToAssign = (Integer) _numStudentsSpinner.getValue();
+        int numStudsAssignedSoFar = 0;
+
+        //assigning to UNASSIGNED; no need to check blacklist
+        if (toTA == null) {
+            for (String student : students) {
+                if (numStudsAssignedSoFar == numStudentsToAssign) {
+                    break;
+                }
+
+                studentsToAssign.add(student);
+                numStudsAssignedSoFar++;
+            }
+        }
+        
+        //attempting to assing to a new TA; need to check blacklist
+        else {
+            for (String student : students) {
+                if (numStudsAssignedSoFar == numStudentsToAssign) {
+                    break;
+                }
+
+                if (toTA != null && !Allocator.getGradingUtilities().groupMemberOnTAsBlacklist(student, handinPart, toTA)) {
+                    studentsToAssign.add(student);
+                    numStudsAssignedSoFar++;
+                }
+            }
+        }
+
+        //we weren't able to assign as many students as requested; show error and return
+        if (numStudsAssignedSoFar < numStudentsToAssign) {
+            String errMsg = "Cannot assign this many students " +
+                                  "without violating the blacklist.\nIf you would like to " +
+                                  "override the blacklist, please manually select students " +
+                                  "to be distributed.\n";
+            JOptionPane.showMessageDialog(NewReassignView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        //if we haven't yet encountered a problem, modify the distribution and reassign rubrics
+
+        //assigning to a new TA
+        if (toTA != null) {
+            Iterator<String> iterator = studentsToAssign.iterator();
+            while (iterator.hasNext()) {
+                String student = iterator.next();
+
+                //update distribution
+                Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA.getLogin());
+                if (fromTA != null) {
+                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA.getLogin());
+                }
+
+                //if the student already has a rubric, reassign it
+                if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
+                    Allocator.getRubricManager().reassignRubric(handinPart, student, toTA.getLogin());
+                    iterator.remove();
+                }
+            }
+
+            Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
+            distribution.put(toTA.getLogin(), students);
+            Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
+                                                           Allocator.getCourseInfo().getMinutesOfLeniency());
+        }
+
+        //assigning to UNASSIGNED from a TA
+        else if (fromTA != null) {
+            for (String student : studentsToAssign) {
+                Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA.getLogin());
+            }
+        }
+
+        this.updateFromList();
+        this.updateToList();
+    }
+
     private boolean isOkToDistribute(String student, TA ta) {
         if (Allocator.getGradingUtilities().groupMemberOnTAsBlacklist(student, _asgn.getHandinPart(), ta)) {
-            int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + "' is on TA "
+            int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
                                                     + ta.getLogin() + "'s blacklist.  Continue?",
                                                     "Distribute Blacklisted Student?",
                                                     JOptionPane.YES_NO_OPTION);
@@ -494,7 +656,7 @@ public class NewReassignView extends JFrame {
             if (matchingLogins.size() > 0) {
                 _studentFilterBox.setText(matchingLogins.get(0));
                 _fromStudentList.setSelectedIndex(0);
-                _assignButton.requestFocus();
+                _assignSelectedButton.requestFocus();
             }
         }
     }
