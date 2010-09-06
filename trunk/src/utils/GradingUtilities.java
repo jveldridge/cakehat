@@ -107,6 +107,23 @@ public class GradingUtilities {
     }
 
     /**
+     * Returns whether or not the current user is an HTA for the course as
+     * specified by the configuration file.
+     *
+     * @return whether user is a HTA
+     */
+    public boolean isUserHTA(){
+        String userLogin = Allocator.getGeneralUtilities().getUserLogin();
+
+        for(TA ta : Allocator.getCourseInfo().getHTAs()){
+            if(ta.getLogin().equals(userLogin)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
      *
      * @return success of making directory
