@@ -8,6 +8,7 @@ import config.Assignment;
 import config.HandinPart;
 import config.LabPart;
 import config.Part;
+import config.TA;
 import gradesystem.GradeSystemApp;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -56,6 +57,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.application.SingleFrameApplication;
 import utils.Allocator;
 
 /**
@@ -1307,7 +1309,49 @@ public class BackendView extends JFrame
 
     private void resetDatabaseButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available");
+        //check that user performing reset is an HTA
+        if(!Allocator.getGradingUtilities().isUserHTA()) {
+            JOptionPane.showMessageDialog(this, "You are not authorized to reset the database; " +
+                    "only HTAs may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        //get confirmation
+        int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to reset the database?  " +
+                "This will delete all data it stores.", "Confirm Database Reset", JOptionPane.YES_NO_OPTION);
+        if (response == JOptionPane.NO_OPTION) {
+            return;
+        }
+
+        //clear database
+        Allocator.getDatabaseIO().clearDatabase();
+
+        //add all TAs
+        for (TA ta : Allocator.getCourseInfo().getTAs()) {
+            String login = ta.getLogin();
+            String name = Allocator.getGeneralUtilities().getUserName(login);
+            Allocator.getDatabaseIO().addTA(login, name);
+        }
+
+        //add all assignments, and their parts
+        for (Assignment asgn : Allocator.getCourseInfo().getAssignments()) {
+            Allocator.getDatabaseIO().addAssignment(asgn);
+            for (Part part : asgn.getParts()) {
+                Allocator.getDatabaseIO().addAssignmentPart(part);
+            }
+        }
+
+        //add all students in group
+        for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
+            String name = Allocator.getGeneralUtilities().getUserName(s);
+            String names[] = name.split(" ");
+            Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+        }
+
+        JOptionPane.showMessageDialog(this, "The database has been reset.  " +
+                "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
+        this.dispose();
+        SingleFrameApplication.launch(GradeSystemApp.class, new String[]{"backend"});
     }
 
     private void generateDistributionButtonActionPerformed()

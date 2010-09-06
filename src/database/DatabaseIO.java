@@ -420,4 +420,9 @@ public interface DatabaseIO {
      * @return
      */
     public boolean removeGroups(HandinPart handin);
+
+    /**
+     * Removes all data from database tables.
+     */
+    public void clearDatabase();
 }

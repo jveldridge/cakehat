@@ -1272,4 +1272,27 @@ public class DBWrapper implements DatabaseIO {
             return false;
         }
     }
+
+    public void clearDatabase() {
+        this.openConnection();
+        try {
+            _connection.setAutoCommit(false);
+
+            _statement.executeUpdate("DELETE FROM asgn");
+            _statement.executeUpdate("DELETE FROM blacklist");
+            _statement.executeUpdate("DELETE FROM distribution");
+            _statement.executeUpdate("DELETE FROM exemption");
+            _statement.executeUpdate("DELETE FROM extension");
+            _statement.executeUpdate("DELETE FROM grade");
+            _statement.executeUpdate("DELETE FROM groupmembers");
+            _statement.executeUpdate("DELETE FROM groups");
+            _statement.executeUpdate("DELETE FROM part");
+            _statement.executeUpdate("DELETE FROM student");
+            _statement.executeUpdate("DELETE FROM ta");
+
+            _connection.commit();
+        } catch (SQLException e) {
+            new ErrorView(e, "The database could not be cleared.");
+        }
+    }
 }
