@@ -1,4 +1,4 @@
-package backend;
+package components;
 
 import config.TA;
 import java.awt.BorderLayout;
@@ -10,8 +10,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,14 +38,14 @@ import utils.Allocator;
 public class ModifyBlacklistView extends JFrame{
 
     private JTextField _filterBox;
-    private String[] _studentLogins;
-    private JList _studentList;
+    private Student[] _studentLogins;
+    private GenericJList<Student> _studentList;
     private ButtonGroup _taButtons;
     private Map<String, JList> _lists;
 
     private static final int DEFAULT_VIEW_HEIGHT = 800;
     
-    public ModifyBlacklistView() {
+    public ModifyBlacklistView(Collection<TA> tas) {
         super("Modify Blacklist");
         this.setLayout(new BorderLayout());  
         
@@ -58,7 +58,7 @@ public class ModifyBlacklistView extends JFrame{
         _lists = new HashMap<String, JList>();
         
         _taButtons = new ButtonGroup();
-        for (TA ta : Allocator.getCourseInfo().getTAs()) {
+        for (TA ta : tas) {
             JPanel panel = new JPanel();
             panel.setPreferredSize(new Dimension(665,50));
             
@@ -104,6 +104,7 @@ public class ModifyBlacklistView extends JFrame{
             blacklistPanel.add(panel);
             
         }
+        _taButtons.getElements().nextElement().setSelected(true);
         
         
         JPanel controlPanel = new JPanel();
@@ -112,7 +113,7 @@ public class ModifyBlacklistView extends JFrame{
         final JButton blacklistButton = new JButton("<< Add to Blacklist");
         blacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Allocator.getDatabaseIO().blacklistStudent((String) _studentList.getSelectedValue(), 
+                Allocator.getDatabaseIO().blacklistStudent(_studentList.getSelectedValue().getLogin(),
                                                             _taButtons.getSelection().getActionCommand());
                 ModifyBlacklistView.this.updateGUI();
             }
@@ -121,7 +122,7 @@ public class ModifyBlacklistView extends JFrame{
             @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    Allocator.getDatabaseIO().blacklistStudent((String) _studentList.getSelectedValue(), 
+                    Allocator.getDatabaseIO().blacklistStudent(_studentList.getSelectedValue().getLogin(),
                                                             _taButtons.getSelection().getActionCommand());
                     ModifyBlacklistView.this.updateGUI();
                     _filterBox.requestFocus();
@@ -144,7 +145,7 @@ public class ModifyBlacklistView extends JFrame{
         controlPanel.add(unBlacklistButton);
         
         JPanel listPanel = new JPanel();
-        listPanel.setPreferredSize(new Dimension(150, DEFAULT_VIEW_HEIGHT));
+        listPanel.setPreferredSize(new Dimension(300, DEFAULT_VIEW_HEIGHT - 40));
         
         _filterBox = new JTextField();
         _filterBox.setPreferredSize(new Dimension(150,30));
@@ -152,17 +153,23 @@ public class ModifyBlacklistView extends JFrame{
             @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 String filterTerm = _filterBox.getText();
-                List<String> matchingLogins;
+                List<Student> matchingLogins;
                 //if no filter term, include all logins
                 if(filterTerm.isEmpty()) {
                     matchingLogins = Arrays.asList(_studentLogins);
                 }
                 //otherwise compared against beginning of each login
                 else {
-                    matchingLogins = new Vector<String>();
-                    for(String login : _studentLogins){
-                        if(login.startsWith(filterTerm)){
-                            matchingLogins.add(login);
+                    matchingLogins = new Vector<Student>();
+                    for(Student student : _studentLogins){
+                        if(student.getLogin().startsWith(filterTerm)){
+                            matchingLogins.add(student);
+                        }
+                        else if(student.getLastName().toLowerCase().startsWith(filterTerm.toLowerCase())){
+                            matchingLogins.add(student);
+                        }
+                        else if(student.getFirstName().toLowerCase().startsWith(filterTerm.toLowerCase())){
+                            matchingLogins.add(student);
                         }
                     }
                 }
@@ -172,18 +179,28 @@ public class ModifyBlacklistView extends JFrame{
                 _studentList.setSelectedIndex(0);
 
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    _filterBox.setText(matchingLogins.get(0));
-                    blacklistButton.requestFocus();
+                    if (matchingLogins.get(0) != null) {
+                        _filterBox.setText(matchingLogins.get(0).getLogin());
+                        blacklistButton.requestFocus();
+                    }
                 }
             }
         });
         listPanel.add(_filterBox);
         
-        _studentList = new JList();
+        _studentList = new GenericJList<Student>();
         _studentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
-        List<String> students = new LinkedList<String>(Allocator.getDatabaseIO().getAllStudents().keySet());
-        _studentLogins = students.toArray(new String[0]);
+        Map<String, String> studentMap = Allocator.getDatabaseIO().getAllStudents();
+        
+        List<Student> students = new LinkedList<Student>();
+
+        for (String studentLogin : studentMap.keySet()) {
+            String[] studentName = studentMap.get(studentLogin).split(" ");
+            students.add(new Student(studentLogin, studentName[0], studentName[1]));
+        }
+
+        _studentLogins = students.toArray(new Student[0]);
         Arrays.sort(_studentLogins);
         _studentList.setListData(_studentLogins);
         JScrollPane listPane = new JScrollPane(_studentList);
@@ -208,7 +225,7 @@ public class ModifyBlacklistView extends JFrame{
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ModifyBlacklistView();
+                new ModifyBlacklistView(Allocator.getCourseInfo().getTAs());
             }
         });
     }

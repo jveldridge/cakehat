@@ -1,5 +1,6 @@
 package backend;
 
+import components.ModifyBlacklistView;
 import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.NewReassignView;
 import backend.stathist.StatHistView;
@@ -1294,7 +1295,7 @@ public class BackendView extends JFrame
 
     private void modifyBlacklistButtonActionPerformed()
     {
-        new ModifyBlacklistView();
+        new ModifyBlacklistView(Allocator.getCourseInfo().getTAs());
     }
 
     private void editConfigurationButtionActionPerformed()
