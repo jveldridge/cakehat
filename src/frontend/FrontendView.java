@@ -1,8 +1,10 @@
 package frontend;
 
 import components.GenericJList;
+import components.ModifyBlacklistView;
 import config.Assignment;
 import config.HandinPart;
+import config.TA;
 import gradesystem.GradeSystemAboutBox;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -16,6 +18,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
@@ -432,7 +435,27 @@ public class FrontendView extends JFrame
         menuBar.add(menu);
 
         //Quit item
-        JMenuItem menuItem = new JMenuItem("Quit");
+        JMenuItem menuItem = new JMenuItem("Modify Blacklist");
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
+        menuItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae) {
+                TA user = null;
+                String username = Allocator.getGeneralUtilities().getUserLogin();
+                for (TA ta : Allocator.getCourseInfo().getTAs()) {
+                    if (ta.getLogin().equals(username)) {
+                        user = ta;
+                    }
+                }
+                Collection<TA> taList = new ArrayList();
+                taList.add(user);
+                new ModifyBlacklistView(taList);
+            }
+        });
+        menu.add(menuItem);
+
+        //Quit item
+        menuItem = new JMenuItem("Quit");
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(new ActionListener()
         {
