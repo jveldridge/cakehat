@@ -177,7 +177,7 @@ public class DBWrapper implements DatabaseIO {
         this.openConnection();
 
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS asgnCount, a.aid AS aid "
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS asgnCount, a.aid AS asgnID "
                     + "FROM asgn AS a "
                     + "WHERE a.name == '" + part.getAssignment().getName() + "'");
             int asgnCount = rs.getInt("asgnCount");
@@ -185,6 +185,8 @@ public class DBWrapper implements DatabaseIO {
             if (asgnCount == 0) { //if asgn does not exist
                 throw new CakeHatDBIOException("The part being added does not have a corresponding assignment in the DB.");
             }
+
+            int asgnID = rs.getInt("asgnID");
 
             rs = _statement.executeQuery("SELECT COUNT(p.pid) AS partCount "
                     + "FROM part AS p "
@@ -197,8 +199,7 @@ public class DBWrapper implements DatabaseIO {
             if (partCount != 0) { //if assignment part already exists
                 throw new CakeHatDBIOException("An assignment part with that name already exists for that assignment.");
             }
-
-            int asgnID = rs.getInt("aid");
+            
             _statement.executeUpdate("INSERT INTO part "
                     + "('name', 'aid') "
                     + "VALUES "
@@ -846,7 +847,7 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE a.name == '" + asgn.getName() + "'");
             int count = rs.getInt("count");
 
-            if (count == 0) { // if assignment already exists
+            if (count != 0) { // if assignment already exists
                 throw new CakeHatDBIOException("An assignment with that name already exists.");
             }
 
@@ -1261,7 +1262,7 @@ public class DBWrapper implements DatabaseIO {
                     + "WHERE a.name == '" + asgn.getName() + "'");
             int count = rs.getInt("count");
             
-            boolean returnVal = (count == 0);
+            boolean returnVal = (count != 0);
 
             this.closeConnection();
             return returnVal;
