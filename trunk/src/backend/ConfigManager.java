@@ -46,20 +46,24 @@ public class ConfigManager extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (allStudentsRB.isSelected()) {
                     for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
-                        String name = Allocator.getGeneralUtilities().getUserName(s);
-                        String names[] = name.split(" ");
-                        Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+                        if (!Allocator.getDatabaseIO().studentExists(s)) {
+                            String name = Allocator.getGeneralUtilities().getUserName(s);
+                            String names[] = name.split(" ");
+                            Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+                        }
                     }
                 }
                 else {
                     String login = loginText.getText();
-                    if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
-                        String name = Allocator.getGeneralUtilities().getUserName(login);
-                        String names[] = name.split(" ");
-                        Allocator.getDatabaseIO().addStudent(login, names[0], names[names.length-1]);
-                    }
-                    else {
-                        Allocator.getDatabaseIO().addStudent(login, firstNameText.getText(), lastNameText.getText());
+                    if (!Allocator.getDatabaseIO().studentExists(login)) {
+                        if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
+                            String name = Allocator.getGeneralUtilities().getUserName(login);
+                            String names[] = name.split(" ");
+                            Allocator.getDatabaseIO().addStudent(login, names[0], names[names.length-1]);
+                        }
+                        else {
+                            Allocator.getDatabaseIO().addStudent(login, firstNameText.getText(), lastNameText.getText());
+                        }
                     }
                 }
             }
