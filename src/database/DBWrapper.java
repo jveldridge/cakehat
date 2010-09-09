@@ -1274,6 +1274,25 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    public boolean studentExists(String login) {
+        this.openConnection();
+        try {
+            ResultSet rs = _statement.executeQuery("SELECT COUNT(s.sid) AS count "
+                    + "FROM student AS s "
+                    + "WHERE s.login == '" + login + "'");
+            int count = rs.getInt("count");
+
+            this.closeConnection();
+            return (count != 0);
+        } catch (Exception e) {
+            new ErrorView(e, "There was an error while trying to test if the student: "
+                    + login + " exists in the Database.");
+
+            this.closeConnection();
+            return false;
+        }
+    }
+
     public void clearDatabase() {
         this.openConnection();
         try {
