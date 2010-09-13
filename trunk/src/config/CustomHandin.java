@@ -12,8 +12,11 @@ class CustomHandin extends CodeHandin
 {
     private static final String
     SPECIFY_SCRIPT = "specify-script",
-    SPECIFY_USER_SCRIPT = "specify-user-script", STUDENT_LOGIN_TAG = "^student_login^",
+    SPECIFY_USER_SCRIPT = "specify-user-script", 
     COMMAND="command";
+
+    //this must use regex syntax to work correctly in String.replaceAll(...)
+    private static final String STUDENT_LOGIN_TAG = "\\^student_login\\^";
 
     //Mode
     private static final LanguageSpecification.Mode
@@ -57,13 +60,15 @@ class CustomHandin extends CodeHandin
     @Override
     public void run(String studentLogin)
     {
+        this.untar(studentLogin);
+
         if(_runMode.equalsIgnoreCase(SPECIFY_SCRIPT))
         {
             BashConsole.writeThreaded(this.getRunProperty(COMMAND));
         }
         else if(_runMode.equalsIgnoreCase(SPECIFY_USER_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getRunProperty(COMMAND.replaceAll(STUDENT_LOGIN_TAG, studentLogin)));
+            BashConsole.writeThreaded(this.getRunProperty(COMMAND).replaceAll(STUDENT_LOGIN_TAG, studentLogin));
         }
     }
 
@@ -79,13 +84,15 @@ class CustomHandin extends CodeHandin
     @Override
     public void runTester(String studentLogin)
     {
+        this.untar(studentLogin);
+
         if(_testerMode.equalsIgnoreCase(SPECIFY_SCRIPT))
         {
             BashConsole.writeThreaded(this.getTesterProperty(COMMAND));
         }
         else if(_testerMode.equalsIgnoreCase(SPECIFY_USER_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getTesterProperty(COMMAND.replaceAll(STUDENT_LOGIN_TAG, studentLogin)));
+            BashConsole.writeThreaded(this.getTesterProperty(COMMAND).replaceAll(STUDENT_LOGIN_TAG, studentLogin));
         }
     }
 }
