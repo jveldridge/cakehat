@@ -26,12 +26,14 @@ public class EnscriptPrinter extends Printer {
         //Set to '--no-job-header' after first request to prevent cover sheet printing after the first handin
         String dontPrintCoverSheet = "";
 
+        String fullCommand = "";
+
         for(PrintRequest request : requests) {
             //Convert request to one text file
             File tmpFile = convertRequest(request);
 
             //Build command
-            String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s",
+            String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
                     dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer, tmpFile.getAbsolutePath());
 
             if (GradeSystemApp.inTestMode()) {
@@ -40,10 +42,12 @@ public class EnscriptPrinter extends Printer {
             }
 
             //Execute command
-            BashConsole.writeThreaded(cmd);
+            fullCommand = fullCommand + cmd;
 
             dontPrintCoverSheet = "--no-job-header ";  //prevent future jobs in the batch from having a cover sheet
         }
+
+        BashConsole.writeThreaded(fullCommand);
     }
 
     /**
