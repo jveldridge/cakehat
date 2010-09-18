@@ -51,7 +51,7 @@ public class GradingUtilities {
         //Get logins
         Collection<String> logins = Allocator.getDatabaseIO().getAllStudents().keySet();
         //Get scores
-        Map<String, Integer> scores = part.getLabScores();
+        Map<String, Double> scores = part.getLabScores();
 
         //We don't want to just input all the keys in scores, because if people
         //were checked off with the wrong login we would submit that to the database
@@ -535,5 +535,38 @@ public class GradingUtilities {
         public String getStudentLogin() {
             return _studentLogin;
         }
+    }
+
+    /**
+     * updates the touched file that goes represents the student's lab grade
+     *
+     * @param labPart
+     * @param score
+     * @param student
+     * @author aunger
+     */
+    public void updateLabGradeFile(LabPart labPart, double score, String student) {
+        BashConsole.write(String.format("rm %s/%d/%s* -f",
+                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student));
+
+        String scoreText = new Double(score).toString();
+
+        char[] scoreChars = scoreText.toCharArray();
+        int endIndex = scoreText.length() - 1;
+
+        for (; endIndex >= 0 ; endIndex--) {
+            if (scoreChars[endIndex] != '0') {
+                break;
+            }
+        }
+
+        scoreText = scoreText.substring(0, endIndex+1);
+
+        BashConsole.write(String.format("touch %s/%d/%s,%s",
+                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText));
+        BashConsole.write(String.format("chmod 770 %s/%d/%s,%s",
+                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText));
+        BashConsole.write(String.format("chgrp %sta %s/%d/%s,%s",
+                Allocator.getCourseInfo().getCourse(), Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText));
     }
 }
