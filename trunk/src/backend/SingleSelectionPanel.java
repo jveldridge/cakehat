@@ -106,11 +106,19 @@ class SingleSelectionPanel extends JPanel
         _submitGradeButton = new JButton("Submit Non-Handin Grade");
         _submitGradeButton.addActionListener(new ActionListener()
         {
-            public void actionPerformed(ActionEvent ae)
-            {
-                double earned = _nonHandinEarnedField.getNumberValue();
-                Part part = (Part) _nonHandinBox.getSelectedItem();
-                Allocator.getDatabaseIO().enterGrade(_studentLogin, part, earned);
+            public void actionPerformed(ActionEvent ae) {
+                if (_asgn.hasNonHandinParts()) {
+                    double nonHandinEarned = _nonHandinEarnedField.getNumberValue();
+                    Part noneHandinPart = (Part) _nonHandinBox.getSelectedItem();
+                    Allocator.getDatabaseIO().enterGrade(_studentLogin, noneHandinPart, nonHandinEarned);
+                }
+
+                if (_asgn.hasLabParts()) {
+                    double labEarned = _labEarnedField.getNumberValue();
+                    Part labPart = (Part) _labBox.getSelectedItem();
+                    Allocator.getDatabaseIO().enterGrade(_studentLogin, labPart, labEarned);
+                    Allocator.getGradingUtilities().updateLabGradeFile((LabPart) labPart, labEarned, _studentLogin);
+                }
             }
         });
 
@@ -296,9 +304,7 @@ class SingleSelectionPanel extends JPanel
         pointsPanel.add(earnedLabel);
 
         _labEarnedField = new ScoreField();
-        _labEarnedField.setPreferredSize(earnedFieldSize);
-        _labEarnedField.setBackground(Color.LIGHT_GRAY);
-        _labEarnedField.setEditable(false);
+        _labEarnedField.setPreferredSize(earnedFieldSize);        
         pointsPanel.add(_labEarnedField);
 
         pointsPanel.add(Box.createRigidArea(pointsGapSize));
@@ -518,7 +524,8 @@ class SingleSelectionPanel extends JPanel
         {
             _nonHandinBox.addItem(part);
         }
-        _submitGradeButton.setEnabled(asgn.hasNonHandinParts());
+        _submitGradeButton.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
+        
         _nonHandinBox.setEnabled(asgn.hasNonHandinParts());
         _nonHandinEarnedField.setEnabled(asgn.hasNonHandinParts());
         if (!asgn.hasNonHandinParts()) {
@@ -532,7 +539,15 @@ class SingleSelectionPanel extends JPanel
         {
             _labBox.addItem(part);
         }
+
         _labBox.setEnabled(asgn.hasLabParts());
+        _labEarnedField.setEnabled(asgn.hasLabParts());
+        if (!asgn.hasLabParts()) {
+            _labEarnedField.setBackground(Color.LIGHT_GRAY);
+        }
+        else {
+            _labEarnedField.setBackground(Color.WHITE);
+        }
 
         if(asgn.hasHandinPart())
         {
@@ -691,6 +706,11 @@ class SingleSelectionPanel extends JPanel
     public JFormattedTextField getNonHandinEarnedField()
     {
         return _nonHandinEarnedField;
+    }
+
+    public JFormattedTextField getLabEarnedField()
+    {
+        return _labEarnedField;
     }
 
     public JComboBox getNonHandinBox()

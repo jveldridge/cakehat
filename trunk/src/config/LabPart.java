@@ -43,10 +43,10 @@ public class LabPart extends Part
      * @param studentLogin
      * @return lab score
      */
-    public int getScore(String studentLogin)
+    public double getScore(String studentLogin)
     {
         //If scores haven't been processed, process them
-        Map<String, Integer> scores = getLabScores();
+        Map<String, Double> scores = getLabScores();
 
         //If the student has a score, return it
         if(scores.containsKey(studentLogin))
@@ -68,11 +68,11 @@ public class LabPart extends Part
      *
      * @return mapping of student logins to lab scores
      */
-    public Map<String, Integer> getLabScores()
+    public Map<String, Double> getLabScores()
     {
         File dir = new File(Allocator.getCourseInfo().getLabsDir() + _labNumber + "/");
         
-        Map<String, Integer> scores = new HashMap<String, Integer>();
+        Map<String, Double> scores = new HashMap<String, Double>();
 
         if(dir.exists())
         {
@@ -80,10 +80,10 @@ public class LabPart extends Part
             {
                 String[] parts = file.getName().split(",");
 
-                int score = this.getPoints();
+                double score = this.getPoints();
                 if(parts.length == 2)
                 {
-                    score = Integer.valueOf(parts[1]);
+                    score = Double.parseDouble(parts[1]);
                 }
                 scores.put(parts[0], score);
             }

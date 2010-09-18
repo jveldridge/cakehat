@@ -259,6 +259,7 @@ public class BackendView extends JFrame
         {
             private JButton _submitButton = _singleSelectionPanel.getSubmitButton();
             private JFormattedTextField _nonHandinEarnedField = _singleSelectionPanel.getNonHandinEarnedField();
+            private JFormattedTextField _labEarnedField = _singleSelectionPanel.getLabEarnedField();
 
             @Override
             public Component getComponentAfter(Container cntnr, Component cmpnt)
@@ -289,6 +290,10 @@ public class BackendView extends JFrame
                     return _nonHandinEarnedField;
                 }
                 else if(cmpnt == _nonHandinEarnedField && _submitButton.isEnabled())
+                {
+                    return _submitButton;
+                }
+                else if(cmpnt == _labEarnedField && _submitButton.isEnabled())
                 {
                     return _submitButton;
                 }
