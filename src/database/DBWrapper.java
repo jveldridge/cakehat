@@ -128,7 +128,6 @@ public class DBWrapper implements DatabaseIO {
                 }
             }
             _statement.executeBatch();
-            JOptionPane.showMessageDialog(null, "Assignments have been successfully distributed to the grading TAs.", "Success", JOptionPane.INFORMATION_MESSAGE);
             this.closeConnection();
             return true;
         } catch (Exception e) {

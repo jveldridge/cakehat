@@ -1,7 +1,7 @@
 package backend;
 
+import backend.assignmentdist.NewAssignmentDistView;
 import components.ModifyBlacklistView;
-import backend.assignmentdist.AssignmentdistView;
 import backend.assignmentdist.ReassignView;
 import backend.stathist.StatHistView;
 import components.GenericJList;
@@ -275,7 +275,7 @@ public class BackendView extends JFrame
                         _filterField.setText(_studentList.getSelectedValue());
                     }
                 }
-                
+
                 //If submit grade button, invoke it
                 if(cmpnt == _submitButton)
                 {
@@ -283,7 +283,7 @@ public class BackendView extends JFrame
                 }
 
                 //Next component
-                
+
                 if(cmpnt == _filterField && _nonHandinEarnedField.isEnabled())
                 {
                     _nonHandinEarnedField.selectAll();
@@ -352,7 +352,7 @@ public class BackendView extends JFrame
           _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
           _resetDatabaseButton
         };
-        
+
         _studentButtons = new JButton[]
         {
           _chartsButton, _emailReportsButton, _extensionsButton,
@@ -466,7 +466,7 @@ public class BackendView extends JFrame
 
     private void initMultiSelectPanel(JPanel panel)
     {
-        
+
     }
 
     private void initWelcomePanel(JPanel panel)
@@ -538,7 +538,7 @@ public class BackendView extends JFrame
             }
         });
         buttonPanel.add(selectNoneButton, BorderLayout.EAST);
-        
+
         //Gap space
         controlPanel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
@@ -719,7 +719,7 @@ public class BackendView extends JFrame
             {
                 chartsButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_chartsButton);
 
@@ -731,7 +731,7 @@ public class BackendView extends JFrame
             {
                 emailReportsButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_emailReportsButton);
 
@@ -744,7 +744,7 @@ public class BackendView extends JFrame
             {
                 exemptionsButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_exemptionsButton);
 
@@ -758,7 +758,7 @@ public class BackendView extends JFrame
             {
                 extensionsButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_extensionsButton);
 
@@ -772,7 +772,7 @@ public class BackendView extends JFrame
             {
                 openCodeButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_openCodeButton);
 
@@ -784,7 +784,7 @@ public class BackendView extends JFrame
             {
                 runCodeButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_runCodeButton);
 
@@ -796,7 +796,7 @@ public class BackendView extends JFrame
             {
                 testCodeButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_testCodeButton);
 
@@ -808,7 +808,7 @@ public class BackendView extends JFrame
             {
                 printCodeButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_printCodeButton);
 
@@ -836,7 +836,7 @@ public class BackendView extends JFrame
             {
                 viewRubricButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_viewRubricButton);
 
@@ -861,12 +861,12 @@ public class BackendView extends JFrame
             {
                 printRubricButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_printRubricButton);
 
         buttonPanel.add(Box.createVerticalBox());//space
-        
+
         //Disable student
         _disableStudentButton = createButton("Disable Student", "/gradesystem/resources/icons/16x16/list-remove.png");
         _disableStudentButton.addActionListener(new ActionListener()
@@ -875,7 +875,7 @@ public class BackendView extends JFrame
             {
                 disableStudentButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_disableStudentButton);
     }
@@ -906,7 +906,7 @@ public class BackendView extends JFrame
             {
                 generateDistributionButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_createDistributionButton);
 
@@ -918,7 +918,7 @@ public class BackendView extends JFrame
             {
                 reassignGradingButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_reassignGradingButton);
 
@@ -930,7 +930,7 @@ public class BackendView extends JFrame
             {
                 importGradesButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_importLabsButton);
 
@@ -942,7 +942,7 @@ public class BackendView extends JFrame
             {
                 previewRubricButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_previewRubricButton);
 
@@ -954,7 +954,7 @@ public class BackendView extends JFrame
             {
                 viewDeductionsButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_viewDeductionsButton);
 
@@ -966,7 +966,7 @@ public class BackendView extends JFrame
             {
                 runDemoButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_runDemoButton);
 
@@ -1018,7 +1018,7 @@ public class BackendView extends JFrame
             {
                 modifyBlacklistButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_modifyBlacklistButton);
 
@@ -1030,7 +1030,7 @@ public class BackendView extends JFrame
             {
                 editConfigurationButtionActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_editConfigurationButton);
 
@@ -1042,7 +1042,7 @@ public class BackendView extends JFrame
             {
                 exportGradesButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_exportGradesButton);
 
@@ -1054,7 +1054,7 @@ public class BackendView extends JFrame
             {
                 resetDatabaseButtonActionPerformed();
             }
-            
+
         });
         buttonPanel.add(_resetDatabaseButton);
     }
@@ -1198,7 +1198,7 @@ public class BackendView extends JFrame
                 _previewRubricButton.setEnabled(part.hasRubric());
                 _viewDeductionsButton.setEnabled(part.hasDeductionList());
                 _runDemoButton.setEnabled(part.hasDemo());
-            }            
+            }
         }
         //If more than one assignment is selected, check if they have labs
         else
@@ -1321,40 +1321,72 @@ public class BackendView extends JFrame
                     "only HTAs may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
+        JCheckBox clearDatabaseRB = new JCheckBox("Clear Database");
+        clearDatabaseRB.setSelected(true);
+
+        JCheckBox addTAsRB = new JCheckBox("Add All TAs");
+        addTAsRB.setSelected(true);
+
+        JCheckBox addStudentsRB = new JCheckBox("Add All Students");
+        addStudentsRB.setSelected(true);
+
+        //often better not to add assignments until they're ready for grading,
+        //as this makes making mid-semester config file changes easier
+        JCheckBox addAssignmentsRB = new JCheckBox("Add All Assignments");
+        addAssignmentsRB.setSelected(false);
+
+        JPanel confirmDialogPanel = new JPanel();
+        confirmDialogPanel.setLayout(new GridLayout(0, 1));
+
+        confirmDialogPanel.add(new JLabel("Are you sure you want to reset the database?  " +
+                "This will delete all data it stores."));
+        confirmDialogPanel.add(clearDatabaseRB);
+        confirmDialogPanel.add(addTAsRB);
+        confirmDialogPanel.add(addStudentsRB);
+        confirmDialogPanel.add(addAssignmentsRB);
+
         //get confirmation
-        int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to reset the database?  " +
-                "This will delete all data it stores.", "Confirm Database Reset", JOptionPane.YES_NO_OPTION);
+        int response = JOptionPane.showConfirmDialog(this, confirmDialogPanel,
+                "Confirm Database Reset", JOptionPane.YES_NO_OPTION);
         if (response == JOptionPane.NO_OPTION) {
             return;
         }
 
         //clear database
-        Allocator.getDatabaseIO().clearDatabase();
+        if (clearDatabaseRB.isSelected()) {
+            Allocator.getDatabaseIO().clearDatabase();
+        }
 
         //add all TAs
-        for (TA ta : Allocator.getCourseInfo().getTAs()) {
-            String login = ta.getLogin();
-            String name = Allocator.getGeneralUtilities().getUserName(login);
-            Allocator.getDatabaseIO().addTA(login, name);
+        if (addTAsRB.isSelected()) {
+            for (TA ta : Allocator.getCourseInfo().getTAs()) {
+                String login = ta.getLogin();
+                String name = Allocator.getGeneralUtilities().getUserName(login);
+                Allocator.getDatabaseIO().addTA(login, name);
+            }
         }
 
         //add all assignments, and their parts
-        for (Assignment asgn : Allocator.getCourseInfo().getAssignments()) {
-            Allocator.getDatabaseIO().addAssignment(asgn);
-            for (Part part : asgn.getParts()) {
-                Allocator.getDatabaseIO().addAssignmentPart(part);
+        if (addAssignmentsRB.isSelected()) {
+            for (Assignment asgn : Allocator.getCourseInfo().getAssignments()) {
+                Allocator.getDatabaseIO().addAssignment(asgn);
+                for (Part part : asgn.getParts()) {
+                    Allocator.getDatabaseIO().addAssignmentPart(part);
+                }
             }
         }
 
         //add all students in group
-        for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
-            String name = Allocator.getGeneralUtilities().getUserName(s);
-            String names[] = name.split(" ");
-            Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+        if (addStudentsRB.isSelected()) {
+            for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
+                String name = Allocator.getGeneralUtilities().getUserName(s);
+                String names[] = name.split(" ");
+                Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+            }
         }
 
-        JOptionPane.showMessageDialog(this, "The database has been reset.  " +
+        JOptionPane.showMessageDialog(this, "Changes successful.  " +
                 "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
         this.dispose();
         SingleFrameApplication.launch(GradeSystemApp.class, new String[]{"backend"});
@@ -1362,7 +1394,7 @@ public class BackendView extends JFrame
 
     private void generateDistributionButtonActionPerformed()
     {
-        new AssignmentdistView(_assignmentList.getSelectedValue());
+        new NewAssignmentDistView(_assignmentList.getSelectedValue());
     }
 
     private void reassignGradingButtonActionPerformed()
@@ -1456,7 +1488,7 @@ public class BackendView extends JFrame
         if (a.hasHandinPart()) {
             new ExtensionView(a.getHandinPart(), _studentList.getSelectedValue());
         }
-        
+
     }
 
     private void exemptionsButtonActionPerformed() {
@@ -1468,15 +1500,15 @@ public class BackendView extends JFrame
     {
         HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-        
+
         part.openCode(login);
     }
 
     private void runCodeButtonActionPerformed()
-    {   
+    {
         HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-        
+
         part.run(login);
     }
 
@@ -1484,7 +1516,7 @@ public class BackendView extends JFrame
     {
         HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
         String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-        
+
         part.runTester(login);
     }
 
