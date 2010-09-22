@@ -177,6 +177,25 @@ public class CourseInfo
         return _defaultGraders;
     }
 
+    private Collection<TA> _nonDefaultGraders = null;
+    /**
+     * Returns a collection of TAs who are not default graders.
+     * @return
+     */
+    public Collection<TA> getNonDefaultGraders() {
+        if (_nonDefaultGraders == null) {
+            _nonDefaultGraders = new Vector<TA>();
+
+            for (TA ta : getTAs()) {
+                if (!ta.isDefaultGrader()) {
+                    _nonDefaultGraders.add(ta);
+                }
+            }
+        }
+
+        return _nonDefaultGraders;
+    }
+
     private Collection<TA> _admins = null;
     /**
      * Returns a collection of TAs that are default graders.

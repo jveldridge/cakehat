@@ -118,7 +118,12 @@ public class IntegerField extends JFormattedTextField
      */
     public int getIntValue()
     {
-        return Integer.parseInt(getText());
+        try {
+            return Integer.parseInt(getText());
+        }
+        catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     /**
@@ -129,11 +134,6 @@ public class IntegerField extends JFormattedTextField
      */
     public void setIntValue(int value)
     {
-        String valueText = value + "";
-        if(value > -1 && value < 10)
-        {
-            valueText = "0" + valueText;
-        }
-        this.setText(valueText);
+        this.setText(Integer.toString(value));
     }
 }

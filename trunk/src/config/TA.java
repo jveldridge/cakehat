@@ -4,7 +4,7 @@ package config;
  *
  * @author jak2
  */
-public class TA
+public class TA implements Comparable<TA>
 {
     private String _login;
     private boolean _isDefaultGrader, _isAdmin, _isHTA;
@@ -41,5 +41,9 @@ public class TA
     public String toString()
     {
         return _login;
+    }
+
+    public int compareTo(TA other) {
+        return this.getLogin().compareTo(other.getLogin());
     }
 }
