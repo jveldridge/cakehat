@@ -112,7 +112,7 @@ class MakeHandin extends JavaHandin {
             String termName) {
 
         //Build command to call xterm to run the code
-        String runCmd = "cd " + dirPath + studentLogin + "/projects/" + this.getAssignment().getName() + "; make run";
+        String runCmd = "cd " + dirPath + ";/course/cs123/lib/qt/qt/bin/qmake;make;./CS123";
 
         //Combine java command into command to launch an xterm window
         String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + runCmd + "; bash" + "\"";
