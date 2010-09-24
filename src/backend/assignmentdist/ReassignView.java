@@ -14,12 +14,10 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -52,6 +50,7 @@ public class ReassignView extends JFrame {
 
     private static final int LIST_HEIGHT = 300;
     private static final int LIST_WIDTH = 130;
+    private static final int BUTTON_WIDTH = 160;
     private static final int TEXT_HEIGHT = 25;
 
     private List<TA> _tas;
@@ -102,19 +101,19 @@ public class ReassignView extends JFrame {
         this.add(this.getRightPanel(), BorderLayout.EAST);
 
         this.updateAssignment();
-        
+
         this.pack();
         this.setVisible(true);
 
         _studentFilterBox.requestFocus();
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     /**
      * Sets up and returns a JPanel to be shown at the top of the screen.
      * This panel allows the user to select the assignment for which the
      * distribution should be modified.
-     * 
+     *
      * @return a JPanel to be shown at the top of the screen.
      */
     private JPanel getTopPanel() {
@@ -222,7 +221,7 @@ public class ReassignView extends JFrame {
 
         return leftPanel;
     }
-    
+
     /**
      * Sets up and returns a JPanel to be shown in the center of the screen.
      * This panel contains a JButton used to assign selected students from the
@@ -243,7 +242,7 @@ public class ReassignView extends JFrame {
         selectedStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         selectedStudentsPanel.add(selectedStudentsLabel);
 
-        _assignSelectedButton = new JButton("Assign >>");
+        _assignSelectedButton = new JButton("Assign Selected >>");
         _assignSelectedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -260,7 +259,7 @@ public class ReassignView extends JFrame {
             }
         });
 
-        _assignSelectedButton.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        _assignSelectedButton.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_HEIGHT));
         selectedStudentsPanel.add(_assignSelectedButton);
 
         JPanel randomStudentsPanel = new JPanel();
@@ -274,7 +273,7 @@ public class ReassignView extends JFrame {
         _numStudentsSpinner.setPreferredSize(new Dimension(LIST_WIDTH / 2, TEXT_HEIGHT));
         randomStudentsPanel.add(_numStudentsSpinner);
 
-        _assignRandomButton = new JButton("Assign >>");
+        _assignRandomButton = new JButton("Assign Random >>");
         _assignRandomButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -291,7 +290,7 @@ public class ReassignView extends JFrame {
             }
         });
 
-        _assignRandomButton.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        _assignRandomButton.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_HEIGHT));
         randomStudentsPanel.add(_assignRandomButton);
 
         _numUnassignedLabel = new JLabel();
@@ -367,11 +366,11 @@ public class ReassignView extends JFrame {
 
         JPanel rightPanel_upper = new JPanel();
         rightPanel_upper.setLayout(new BorderLayout(5, 5));
-        
+
         JLabel toTALabel = new JLabel("To TA:");
         toTALabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         rightPanel_upper.add(toTALabel, BorderLayout.WEST);
-        
+
         JLabel toStudentsLabel = new JLabel("Students:");
         toStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         rightPanel_upper.add(toStudentsLabel, BorderLayout.EAST);
@@ -417,7 +416,7 @@ public class ReassignView extends JFrame {
             String fromTALogin = _fromTAList.getSelectedValue().getLogin();
             Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTALogin);
             loginsToDisplay = new LinkedList<String>(studentsAssigned);
-            
+
             _assignRandomButton.setEnabled(studentsAssigned.size() > 0);
             _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
                                                       studentsAssigned.size(), fromTALogin));
@@ -491,7 +490,7 @@ public class ReassignView extends JFrame {
             //"reassigning" to UNASSIGNED (i.e., unassigning)
             if (!_toUnassigned.isSelectionEmpty()) {
                 TA oldTA = _fromTAList.getSelectedValue();
-                
+
                 for (String student : students) {
                     //modify the distribution
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA.getLogin());
@@ -541,7 +540,6 @@ public class ReassignView extends JFrame {
             studentsToChoseFrom = new ArrayList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA.getLogin()));
         }
         Collections.shuffle(studentsToChoseFrom);
-        Deque<String> students = new ArrayDeque<String>(studentsToChoseFrom);
 
         Collection<String> studentsToAssign = new LinkedList<String>();
 
@@ -550,7 +548,7 @@ public class ReassignView extends JFrame {
 
         //assigning to UNASSIGNED; no need to check blacklist
         if (toTA == null) {
-            for (String student : students) {
+            for (String student : studentsToChoseFrom) {
                 if (numStudsAssignedSoFar == numStudentsToAssign) {
                     break;
                 }
@@ -559,10 +557,10 @@ public class ReassignView extends JFrame {
                 numStudsAssignedSoFar++;
             }
         }
-        
+
         //attempting to assing to a new TA; need to check blacklist
         else {
-            for (String student : students) {
+            for (String student : studentsToChoseFrom) {
                 if (numStudsAssignedSoFar == numStudentsToAssign) {
                     break;
                 }
@@ -606,7 +604,7 @@ public class ReassignView extends JFrame {
             }
 
             Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
-            distribution.put(toTA.getLogin(), students);
+            distribution.put(toTA.getLogin(), studentsToAssign);
             Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
                                                            Allocator.getCourseInfo().getMinutesOfLeniency());
         }
@@ -673,4 +671,3 @@ public class ReassignView extends JFrame {
         new ReassignView(Allocator.getCourseInfo().getHandinAssignments().toArray(new Assignment[0])[0]);
     }
 }
-
