@@ -125,7 +125,7 @@ public class SubmitDialog{
     }
     
     /**
-     * @return whether the _printGRDcb checkbox is selected
+     * @return whether the _emailGRDcb checkbox is selected
      */
     public boolean emailChecked() {
         return _emailGRDcb.isSelected();
