@@ -177,10 +177,14 @@ public class GeneralUtilities {
     private String[] getMembers(String group) {
         Collection<String> output = BashConsole.write("members " + group);
 
-        String result = output.iterator().next();
-        String[] logins = result.split(" ");
+        if (output.iterator().hasNext()) {
+            String result = output.iterator().next();
+            String[] logins = result.split(" ");
 
-        return logins;
+            return logins;
+        }
+
+        return new String[0];
     }
 
     /**
