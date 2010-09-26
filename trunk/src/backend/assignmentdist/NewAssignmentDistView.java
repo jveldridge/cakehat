@@ -53,6 +53,13 @@ public class NewAssignmentDistView extends JFrame {
     public NewAssignmentDistView(Assignment asgn) {
         _asgn = asgn;
 
+        boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
+
+        if (!resolved) {
+            this.dispose();
+            return;
+        }
+
         _gradingTAs = new Vector<TA>(Allocator.getCourseInfo().getDefaultGraders());
         _nonGradingTAs = new Vector<TA>(Allocator.getCourseInfo().getNonDefaultGraders());
 
