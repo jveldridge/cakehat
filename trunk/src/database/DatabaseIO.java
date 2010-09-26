@@ -368,14 +368,6 @@ public interface DatabaseIO {
     public Map<String,Double> getAssignmentScores(Assignment asgn, Iterable<String> students);
 
     /**
-     * Resets the database: removes all students, scores, graders, distributions,
-     * and blacklists; then adds assignment parts as specified in the config file.
-     * 
-     * @return
-     */
-    public boolean resetDatabase();
-
-    /**
      * pulls the distribution for a handin part from the DB
      * @param handin
      * @return

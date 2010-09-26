@@ -30,7 +30,6 @@ import javax.swing.JOptionPane;
 public class DBWrapper implements DatabaseIO {
 
     private Connection _connection;
-    private Statement _statement;
     private String _dbPath;
 
     /**
@@ -58,10 +57,6 @@ public class DBWrapper implements DatabaseIO {
         try {
             Class.forName("org.sqlite.JDBC");
             _connection = DriverManager.getConnection(_dbPath);
-
-            _statement = _connection.createStatement();
-            _statement.setQueryTimeout(5);  // set timeout to 5 sec.
-
         } catch (Exception e) {
             new ErrorView(e, "Could not open a connection to the DB.");
         }
@@ -99,41 +94,61 @@ public class DBWrapper implements DatabaseIO {
      * @param asgn - string of assignment name
      * @param distribution - hashmap of ta login to arraylist of student logins
      */
+    @Override
     public boolean setAsgnDist(HandinPart part, Map<String, Collection<String>> distribution) {
         //add the distribution to the DB
         this.openConnection();
         try {
             HashMap<String, Integer> studentIDs = new HashMap<String, Integer>();
             HashMap<String, Integer> taIDs = new HashMap<String, Integer>();
-            int partID;
-
-            ResultSet rs = _statement.executeQuery("SELECT s.login, s.sid FROM student AS s");
+            
+            //get student logins and IDs
+            ResultSet rs = this.makeStatement().executeQuery("SELECT s.login, s.sid FROM student AS s");
             while (rs.next()) {
                 studentIDs.put(rs.getString("login"), rs.getInt("sid"));
             }
-            rs = _statement.executeQuery("SELECT t.login, t.tid FROM ta AS t");
+
+            //get TA logins and IDs
+            rs = this.makeStatement().executeQuery("SELECT t.login, t.tid FROM ta AS t");
             while (rs.next()) {
                 taIDs.put(rs.getString("login"), rs.getInt("tid"));
             }
-            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
-            partID = rs.getInt("pid");
 
-            _statement.executeUpdate("DELETE FROM distribution WHERE pid == " + partID);
+            //get assignment and part IDs
+            PreparedStatement ps = _connection.prepareStatement("SELECT p.pid AS pid FROM part AS p" +
+                    " INNER JOIN asgn AS a ON a.aid == p.aid" +
+                    " WHERE a.name == ? AND p.name ==?");
+            ps.setString(1, part.getAssignment().getName());
+            ps.setString(2, part.getName());
 
-            String insertCommand = "INSERT INTO distribution ('pid', 'sid', 'tid') VALUES"; //start of insert command
+            rs = ps.executeQuery();
+            int partID = rs.getInt("pid");
+
+            ps = _connection.prepareStatement("DELETE FROM distribution WHERE pid == ?");
+            ps.setInt(1, partID);
+            ps.executeUpdate();
+
+            ps = _connection.prepareStatement("INSERT INTO distribution ('pid', 'sid', 'tid')" +
+                    " VALUES (?, ?, ?)");
             for (String ta : distribution.keySet()) {
+                int taID = taIDs.get(ta);
                 Collection<String> distributedStudents = distribution.get(ta);
+
                 for (String student : distributedStudents) {
-                    _statement.addBatch(insertCommand + " (" + partID + ", '" + studentIDs.get(student) + "', '" + taIDs.get(ta) + "')");
+                    ps.setInt(1, partID);
+                    ps.setInt(2, studentIDs.get(student));
+                    ps.setInt(3, taID);
+                    ps.addBatch();
                 }
             }
-            _statement.executeBatch();
-            this.closeConnection();
+            ps.executeBatch();
+            
             return true;
         } catch (Exception e) {
             new ErrorView(e, "There was an error distributing the assignments to the grading TAs.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -143,74 +158,84 @@ public class DBWrapper implements DatabaseIO {
      * @param taLogin - string of single TA's login
      * @return list of student logins that have been blacklisted by the ta
      */
+    @Override
     public Collection<String> getTABlacklist(String taLogin) {
+        ArrayList<String> blackList = new ArrayList<String>();
         this.openConnection();
         try {
-            ArrayList<String> blackList = new ArrayList<String>();
-
-            ResultSet rs = _statement.executeQuery("SELECT s.login "
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login "
                     + "FROM student AS s "
                     + "INNER JOIN blacklist AS b "
                     + "ON b.sid == s.sid "
                     + "INNER JOIN ta AS t "
                     + "ON b.tid == t.tid "
-                    + "WHERE t.login == '" + taLogin + "'");
+                    + "WHERE t.login == ?");
+            ps.setString(1, taLogin);
+            
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 blackList.add(rs.getString("login"));
             }
-            this.closeConnection();
+
             return blackList;
         } catch (Exception e) {
             new ErrorView(e, "Could not get black list for TA.");
-            this.closeConnection();
             return null;
+        } finally {
+            this.closeConnection();
         }
     }
 
     /**
-     * Inserts a new assignment into the DB (not checking if that assignment already exists)
+     * Inserts a new assignment into the DB
      * @param assignmentName - Part
      * @return status
      */
+    @Override
     public boolean addAssignmentPart(Part part) {
         this.openConnection();
-
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS asgnCount, a.aid AS asgnID "
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(a.aid) AS asgnCount, a.aid AS asgnID "
                     + "FROM asgn AS a "
-                    + "WHERE a.name == '" + part.getAssignment().getName() + "'");
+                    + "WHERE a.name == ?");
+            ps.setString(1, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             int asgnCount = rs.getInt("asgnCount");
 
             if (asgnCount == 0) { //if asgn does not exist
                 throw new CakeHatDBIOException("The part being added does not have a corresponding assignment in the DB.");
             }
-
             int asgnID = rs.getInt("asgnID");
 
-            rs = _statement.executeQuery("SELECT COUNT(p.pid) AS partCount "
+            ps = _connection.prepareStatement("SELECT COUNT(p.pid) AS partCount "
                     + "FROM part AS p "
                     + "INNER JOIN asgn AS a "
                     + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + part.getName() + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+                    + "WHERE p.name == ?"
+                    + "AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+
+            rs = ps.executeQuery();
             int partCount = rs.getInt("partCount");
 
             if (partCount != 0) { //if assignment part already exists
                 throw new CakeHatDBIOException("An assignment part with that name already exists for that assignment.");
             }
-            
-            _statement.executeUpdate("INSERT INTO part "
-                    + "('name', 'aid') "
-                    + "VALUES "
-                    + "('" + part.getName()
-                    + "', " + asgnID + ")");
 
-            this.closeConnection();
+            ps = _connection.prepareStatement("INSERT INTO part "
+                    + "('name', 'aid') VALUES (?, ?)");
+            ps.setString(1, part.getName());
+            ps.setInt(2, asgnID);
+            ps.executeUpdate();
+
             return true;
         } catch (Exception e) {
             new ErrorView(e, "The assignment part: " + part.getName() + " could not be added to the Database.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -223,19 +248,22 @@ public class DBWrapper implements DatabaseIO {
      * @param studentLastName - String Last Name
      * @return was student added
      */
+    @Override
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(s.sid) AS rowcount "
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(s.sid) AS rowcount "
                     + "FROM student AS s "
-                    + "WHERE s.login == '" + studentLogin + "'");
+                    + "WHERE s.login == ?");
+            ps.setString(1, studentLogin);
+
+            ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
             if (rows != 0) {
-                this.closeConnection();
                 return false;
-
             }
-            PreparedStatement ps = _connection.prepareStatement("INSERT INTO student "
+            
+            ps = _connection.prepareStatement("INSERT INTO student "
                         + "('login', 'firstname', 'lastname') "
                         + "VALUES (?, ?, ?)");
             ps.setString(1, studentLogin);
@@ -243,12 +271,12 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(3, studentLastName);
             ps.executeUpdate();
             
-            this.closeConnection();
             return true;
         } catch (Exception e) {
             new ErrorView(e, "Could not insert new row for student.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -257,20 +285,21 @@ public class DBWrapper implements DatabaseIO {
      * @param studentLogin - String Student Login
      * @return status
      */
+    @Override
     public boolean disableStudent(String studentLogin) {
         this.openConnection();
         try {
-            _statement.executeUpdate("UPDATE student "
-                    + "SET "
-                    + "enabled = 0 "
-                    + "WHERE "
-                    + "login == '" + studentLogin + "'");
-            this.closeConnection();
+            PreparedStatement ps = _connection.prepareStatement("UPDATE student "
+                    + "SET enabled = 0 WHERE login == ?");
+            ps.setString(1, studentLogin);
+
+            ps.executeUpdate();
             return true;
         } catch (Exception e) {
             new ErrorView(e, "Could not update student " + studentLogin + " to be disabled.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -279,20 +308,21 @@ public class DBWrapper implements DatabaseIO {
      * @param studentLogin - String Student Login
      * @return status
      */
+    @Override
     public boolean enableStudent(String studentLogin) {
         this.openConnection();
         try {
-            _statement.executeUpdate("UPDATE student "
-                    + "SET "
-                    + "enabled = 1 "
-                    + "WHERE "
-                    + "login == '" + studentLogin + "'");
-            this.closeConnection();
+            PreparedStatement ps = _connection.prepareStatement("UPDATE student "
+                    + "SET enabled = 1 WHERE login == ?");
+            ps.setString(1, studentLogin);
+
+            ps.executeUpdate();
             return true;
         } catch (Exception e) {
             new ErrorView(e, "Could not update student " + studentLogin + " to be enabled.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -300,103 +330,123 @@ public class DBWrapper implements DatabaseIO {
      * Checks to see if TA already exists. If does not exist then inserts TA to DB
      * @param taLogin - String TA Login
      * @param taName - String TA Name
-     * @return status
+     * @return whether TA was added
      */
+    @Override
     public boolean addTA(String taLogin, String taName) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(t.tid) AS rowcount "
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(t.tid) AS rowcount "
                     + "FROM ta AS t "
-                    + "WHERE t.login == '" + taLogin + "'");
+                    + "WHERE t.login == ?");
+            ps.setString(1, taLogin);
+
+            ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
+
             if (rows == 0) {
-                _statement.executeUpdate("INSERT INTO ta "
+                ps = _connection.prepareStatement("INSERT INTO ta "
                         + "('login', 'name') "
-                        + "VALUES "
-                        + "('" + taLogin
-                        + "','" + taName + "')");
+                        + "VALUES (?, ?)");
+                ps.setString(1, taLogin);
+                ps.setString(2, taName);
+                ps.executeUpdate();
+                return true;
             }
-            this.closeConnection();
-            return true;
+            
+            return false;
         } catch (Exception e) {
             new ErrorView(e, "Could not insert new row for ta: " + taLogin);
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public String getTaName(String taLogin) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT t.name AS name FROM t" +
-                    " WHERE t.login == '" + taLogin + "'");
-            String name = rs.getString("name");
-            return "";
+            PreparedStatement ps = _connection.prepareStatement("SELECT t.name AS name FROM t" +
+                    " WHERE t.login == ?");
+            ps.setString(1, taLogin);
+
+            ResultSet rs = ps.executeQuery();
+            return rs.getString("name");
         }
         catch (SQLException e) {
             new ErrorView(e);
+            return "No Name in Database";
+        } finally {
             this.closeConnection();
-            return "";
         }
     }
 
+    @Override
     public Map<String, String> getAllTAs() {
+        HashMap<String, String> result = new HashMap<String, String>();
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT t.login AS talogin, "
+            ResultSet rs = this.makeStatement().executeQuery("SELECT t.login AS talogin, "
                     + "t.name AS taname "
                     + "FROM ta AS t");
-            HashMap<String, String> result = new HashMap<String, String>();
+
             while (rs.next()) {
                 result.put(rs.getString("talogin"), rs.getString("taname"));
             }
-            this.closeConnection();
-            return result;
+
         } catch (Exception e) {
             new ErrorView(e, "Could not get All TAs from DB");
+        } finally {
             this.closeConnection();
-            return new HashMap<String, String>();
+            return result;
         }
     }
 
+    @Override
     public Map<String, String> getAllStudents() {
+        HashMap<String, String> result = new HashMap<String, String>();
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, "
+            ResultSet rs = this.makeStatement().executeQuery("SELECT s.login AS studlogin, "
                     + "s.firstname AS fname, "
                     + "s.lastname AS lname "
                     + "FROM student AS s ");
-            HashMap<String, String> result = new HashMap<String, String>();
+
             while (rs.next()) {
                 result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
             }
-            this.closeConnection();
-            return result;
+
         } catch (Exception e) {
             new ErrorView(e, "Could not get All Students from DB");
+        } finally {
             this.closeConnection();
-            return new HashMap<String, String>();
+            return result;
         }
     }
 
+    @Override
     public Map<String, String> getEnabledStudents() {
+        HashMap<String, String> result = new HashMap<String, String>();
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, "
+            ResultSet rs = this.makeStatement().executeQuery("SELECT s.login AS studlogin, "
                     + "s.firstname AS fname, "
                     + "s.lastname AS lname "
                     + "FROM student AS s "
                     + "WHERE enabled == 1");
-            HashMap<String, String> result = new HashMap<String, String>();
+            
             while (rs.next()) {
                 result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
             }
-            this.closeConnection();
-            return result;
+
         } catch (Exception e) {
             new ErrorView(e, "Could not get All Enabled Students from DB");
+        } finally {
             this.closeConnection();
-            return new HashMap<String, String>();
+            return result;
         }
     }
 
@@ -406,25 +456,32 @@ public class DBWrapper implements DatabaseIO {
      * @param taLogin - String TA
      * @return status
      */
+    @Override
     public boolean blacklistStudent(String studentLogin, String taLogin) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(b.sid) AS value "
-                    + "FROM blacklist AS b "
-                    + "INNER JOIN student AS s "
-                    + "ON s.sid == b.sid "
-                    + "INNER JOIN ta AS t "
-                    + "ON t.tid == b.tid "
-                    + "WHERE s.login == '" + studentLogin + "' "
-                    + "AND  t.login == '" + taLogin + "' "
-                    + "UNION ALL "
-                    + "SELECT t.tid AS taid "
-                    + "FROM ta AS t "
-                    + "WHERE t.login == '" + taLogin + "' "
-                    + "UNION ALL "
-                    + "SELECT s.sid AS studentid "
-                    + "FROM student AS s "
-                    + "WHERE s.login == '" + studentLogin + "' ");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(b.sid) AS value"
+                    + " FROM blacklist AS b"
+                    + " INNER JOIN student AS s"
+                    + " ON s.sid == b.sid"
+                    + " INNER JOIN ta AS t"
+                    + " ON t.tid == b.tid"
+                    + " WHERE s.login == ?"
+                    + " AND  t.login == ?"
+                    + " UNION ALL"
+                    + " SELECT t.tid AS taid"
+                    + " FROM ta AS t"
+                    + " WHERE t.login == ?"
+                    + " UNION ALL"
+                    + " SELECT s.sid AS studentid"
+                    + " FROM student AS s"
+                    + " WHERE s.login == ?");
+            ps.setString(1, studentLogin);
+            ps.setString(2, taLogin);
+            ps.setString(3, taLogin);
+            ps.setString(4, studentLogin);
+
+            ResultSet rs = ps.executeQuery();
             rs.next();
             int rows = rs.getInt("value");
             rs.next();
@@ -432,19 +489,19 @@ public class DBWrapper implements DatabaseIO {
             rs.next();
             int studentID = rs.getInt("value");
             if (rows == 0) {
-                _statement.executeUpdate("INSERT INTO blacklist "
-                        + "('sid', 'tid') "
-                        + "VALUES "
-                        + "(" + studentID
-                        + ", " + taID
-                        + ")");
+                ps = _connection.prepareStatement("INSERT INTO blacklist "
+                        + "('sid', 'tid') VALUES (?, ?)");
+                ps.setInt(1, studentID);
+                ps.setInt(2, taID);
+                ps.executeUpdate();
             }
-            this.closeConnection();
+            
             return true;
         } catch (Exception e) {
             new ErrorView(e, "Could not blacklist the student: " + studentLogin + " for ta: " + taLogin);
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -453,24 +510,29 @@ public class DBWrapper implements DatabaseIO {
      * @param asgn - Part
      * @return Boolean - Empty = true, Not = false
      */
+    @Override
     public boolean isDistEmpty(HandinPart part) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(d.sid) AS rowcount "
-                    + "FROM distribution AS d "
-                    + "INNER JOIN part AS p "
-                    + "ON p.pid == d.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON a.aid == p.aid "
-                    + "WHERE a.name == '" + part.getAssignment().getName() + "' "
-                    + "AND p.name == '" + part.getName() + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(d.sid) AS rowcount"
+                    + " FROM distribution AS d"
+                    + " INNER JOIN part AS p"
+                    + " ON p.pid == d.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON a.aid == p.aid"
+                    + " WHERE a.name == ?"
+                    + " AND p.name == ?");
+            ps.setString(1, part.getAssignment().getName());
+            ps.setString(2, part.getName());
+
+            ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
-            this.closeConnection();
             return rows == 0;
         } catch (Exception e) {
             new ErrorView(e, "Could not determine the size of the dist for: " + part.getAssignment().getName());
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -478,10 +540,11 @@ public class DBWrapper implements DatabaseIO {
      * Return all students on any TA's blacklist
      * @return Collection - strings of all the student logins
      */
+    @Override
     public Collection<String> getBlacklistedStudents() {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin "
+            ResultSet rs = this.makeStatement().executeQuery("SELECT s.login AS studlogin "
                     + "FROM student AS s "
                     + "INNER JOIN blacklist AS b "
                     + "ON b.sid == s.sid");
@@ -489,12 +552,12 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 result.add(rs.getString("studlogin"));
             }
-            this.closeConnection();
             return result;
         } catch (Exception e) {
             new ErrorView(e, "Could not get BlackListed Students from DB");
-            this.closeConnection();
             return new ArrayList<String>();
+        } finally {
+            this.closeConnection();
         }
     }
 
@@ -505,32 +568,39 @@ public class DBWrapper implements DatabaseIO {
      * @param taLogin - String TA Login
      * @return Collection - list of student logins
      */
+    @Override
     public Collection<String> getStudentsAssigned(HandinPart part, String taLogin) {
+        ArrayList<String> result = new ArrayList<String>();
         this.openConnection();
+        
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin "
-                    + "FROM student AS s "
-                    + "INNER JOIN distribution AS d "
-                    + "ON d.sid == s.sid "
-                    + "INNER JOIN ta AS t "
-                    + "ON d.tid == t.tid "
-                    + "INNER JOIN part AS p "
-                    + "ON d.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE t.login == '" + taLogin + "' "
-                    + "AND p.name == '" + part.getName() + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
-            ArrayList<String> result = new ArrayList<String>();
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login AS studlogin"
+                    + " FROM student AS s"
+                    + " INNER JOIN distribution AS d"
+                    + " ON d.sid == s.sid"
+                    + " INNER JOIN ta AS t"
+                    + " ON d.tid == t.tid"
+                    + " INNER JOIN part AS p"
+                    + " ON d.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE t.login == ?"
+                    + " AND p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, taLogin);
+            ps.setString(2, part.getName());
+            ps.setString(3, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 result.add(rs.getString("studlogin"));
             }
-            this.closeConnection();
-            return result;
+            
         } catch (Exception e) {
             new ErrorView(e, "Could not get students assigned to ta: " + taLogin + " for assignment: " + part.getName());
+        } finally {
             this.closeConnection();
-            return new ArrayList<String>();
+            return result;
         }
     }
 
@@ -539,348 +609,501 @@ public class DBWrapper implements DatabaseIO {
         this.openConnection();
         Collection<String> assignedStudents = new LinkedList<String>();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS login FROM student AS s" +
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login AS login FROM student AS s" +
                 " INNER JOIN distribution AS d ON d.sid == s.sid" +
                 " INNER JOIN part AS p ON p.pid == d.pid" +
                 " INNER JOIN asgn AS a ON a.aid == p.aid" +
-                " WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "'");
+                " WHERE p.name == ? AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            
+            ResultSet rs =  ps.executeQuery();
             while (rs.next()) {
                 assignedStudents.add(rs.getString("login"));
             }
-            return assignedStudents;
+
         } catch (SQLException e) {
             new ErrorView(e, String.format("Could not get all assigned students " +
                     "for assignment %s", part.getName()));
+        } finally {
+            this.closeConnection();
             return assignedStudents;
         }
     }
 
+    @Override
     public boolean assignStudentToGrader(String studentLogin, HandinPart part, String taLogin) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(s.login) AS assigned "
-                    + "FROM student AS s "
-                    + "INNER JOIN distribution AS d "
-                    + "ON d.sid == s.sid "
-                    + "INNER JOIN ta AS t "
-                    + "ON d.tid == t.tid "
-                    + "INNER JOIN part AS p "
-                    + "ON d.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE t.login == '" + taLogin + "' "
-                    + "AND s.login == '" + studentLogin + "' "
-                    + "AND p.name == '" + part.getName() + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(s.login) AS assigned"
+                    + " FROM student AS s"
+                    + " INNER JOIN distribution AS d"
+                    + " ON d.sid == s.sid"
+                    + " INNER JOIN ta AS t"
+                    + " ON d.tid == t.tid"
+                    + " INNER JOIN part AS p"
+                    + " ON d.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE t.login == ?"
+                    + " AND s.login == ?"
+                    + " AND p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, taLogin);
+            ps.setString(2, studentLogin);
+            ps.setString(3, part.getName());
+            ps.setString(4, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             int isAssigned = rs.getInt("assigned");
+
             if (isAssigned == 0) {
-                rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+                ps = _connection.prepareStatement("SELECT s.sid FROM student AS s" +
+                        " WHERE s.login == ?");
+                ps.setString(1, studentLogin);
+                rs = ps.executeQuery();
                 int sID = rs.getInt("sid");
-                rs = _statement.executeQuery("SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "'");
+
+                ps = _connection.prepareStatement("SELECT t.tid FROM ta AS t WHERE t.login == ?");
+                ps.setString(1, taLogin);
+                rs = ps.executeQuery();
                 int tID = rs.getInt("tid");
-                rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+
+                ps = _connection.prepareStatement("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid" +
+                        " WHERE a.name == ? AND p.name == ?");
+                ps.setString(1, part.getAssignment().getName());
+                ps.setString(2, part.getName());
+                rs = ps.executeQuery();
                 int pID = rs.getInt("pid");
-                _statement.executeUpdate("INSERT INTO distribution ('sid', 'tid', 'pid') VALUES (" + sID + ", " + tID + ", " + pID + ")");
+
+                ps = _connection.prepareStatement("INSERT INTO distribution ('sid', 'tid', 'pid')" +
+                        " VALUES (?, ?, ?)");
+                ps.setInt(1, sID);
+                ps.setInt(2, tID);
+                ps.setInt(3, pID);
+                ps.executeUpdate();
             }
-            this.closeConnection();
+            
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not add student: " + studentLogin + " to the dist for assignment: " + part.getAssignment().getName() + " for: " + taLogin);
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, String taLogin) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM distribution "
-                    + "WHERE pid IN "
-                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
-                    + "AND sid IN "
-                    + "(SELECT sid FROM student WHERE login == '" + studentLogin + "') "
-                    + "AND tid IN "
-                    + "(SELECT tid FROM ta WHERE login == '" + taLogin + "')");
-            this.closeConnection();
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM distribution"
+                    + " WHERE pid IN "
+                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE p.name == ? AND a.name == ?)"
+                    + " AND sid IN"
+                    + " (SELECT sid FROM student WHERE login == ?)"
+                    + " AND tid IN"
+                    + " (SELECT tid FROM ta WHERE login ==  ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.setString(3, studentLogin);
+            ps.setString(4, taLogin);
+
+            ps.executeUpdate();
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not remove student: " + studentLogin + " from the dist for assignment: " + part.getAssignment().getName() + " for: " + taLogin);
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM extension "
-                    + "WHERE pid IN "
-                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
-                    + "AND sid IN "
-                    + "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
-            ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM extension"
+                    + " WHERE pid IN"
+                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE p.name == ? AND a.name == ?)"
+                    + " AND sid IN"
+                    + " (SELECT s.sid FROM student AS s WHERE s.login == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.setString(3, studentLogin);
+            ps.executeUpdate();
+
+            ps = _connection.prepareStatement("SELECT s.sid FROM student AS s WHERE s.login == ?");
+            ps.setString(1, studentLogin);
+            ResultSet rs = ps.executeQuery();
             int sID = rs.getInt("sid");
-            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+
+            ps = _connection.prepareStatement("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid" +
+                    " WHERE a.name == ? AND p.name == ?");
+            ps.setString(1, part.getAssignment().getName());
+            ps.setString(2, part.getName());
+
+            rs = ps.executeQuery();
             int pID = rs.getInt("pid");
             int ontime = (int) (newDate.getTimeInMillis() / 1000);
-            _statement.executeUpdate("INSERT INTO extension ('sid', 'pid', 'ontime', 'note') VALUES (" + sID + ", " + pID + ", " + ontime + ", '" + note + "')");
-            this.closeConnection();
+
+            ps = _connection.prepareStatement("INSERT INTO extension ('sid', 'pid', 'ontime', 'note')" +
+                    " VALUES (?, ?, ?, ?)");
+            ps.setInt(1, sID);
+            ps.setInt(2, pID);
+            ps.setInt(3, ontime);
+            ps.setString(4, note);
+
+            ps.executeUpdate();
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not grant extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean grantExemption(String studentLogin, Part part, String note) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM exemption "
-                    + "WHERE pid IN "
-                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
-                    + "AND sid IN "
-                    + "(SELECT s.sid FROM student AS s WHERE login == '" + studentLogin + "')");
-            ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM exemption"
+                    + " WHERE pid IN"
+                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE p.name == ? AND a.name == ?)"
+                    + " AND sid IN"
+                    + " (SELECT s.sid FROM student AS s WHERE login == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.setString(3, studentLogin);
+            ps.executeUpdate();
+
+            ps = _connection.prepareStatement("SELECT s.sid FROM student AS s" +
+                    " WHERE s.login == ?");
+            ps.setString(1, studentLogin);
+            ResultSet rs = ps.executeQuery();
             int sID = rs.getInt("sid");
-            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+
+            ps = _connection.prepareStatement("SELECT p.pid AS pid FROM part AS p" +
+                    " INNER JOIN asgn AS a ON a.aid == p.aid" +
+                    " WHERE a.name == ? AND p.name == ?");
+            ps.setString(1, part.getAssignment().getName());
+            ps.setString(2, part.getName());
+            rs = ps.executeQuery();
             int pID = rs.getInt("pid");
-            _statement.executeUpdate("INSERT INTO exemption ('sid', 'pid', 'note') VALUES (" + sID + ", " + pID + ", '" + note + "')");
-            this.closeConnection();
+
+            ps = _connection.prepareStatement("INSERT INTO exemption ('sid', 'pid', 'note')" +
+                    " VALUES (?, ?, ?)");
+            ps.setInt(1, sID);
+            ps.setInt(2, pID);
+            ps.setString(3, note);
+            ps.executeUpdate();
+            
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public Map<String, Calendar> getExtensions(Part part) {
+        HashMap<String, Calendar> result = new HashMap<String, Calendar>();
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, e.ontime AS date "
-                    + "FROM student AS s "
-                    + "INNER JOIN extension AS e "
-                    + "ON e.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON e.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + part.getName() + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
-            HashMap<String, Calendar> result = new HashMap<String, Calendar>();
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login AS studlogin, e.ontime AS date"
+                    + " FROM student AS s"
+                    + " INNER JOIN extension AS e"
+                    + " ON e.sid == s.sid"
+                    + " INNER JOIN part AS p"
+                    + " ON e.pid == p.pid"
+                    + " INNER JOIN asgn AS a "
+                    + " ON p.aid == a.aid "
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Calendar cal = new GregorianCalendar();
                 cal.setTimeInMillis(rs.getInt("date") * 1000L);
                 result.put(rs.getString("studlogin"), cal);
             }
+            
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get students with extensions for assignment part: " + part.getName());
+        } finally {
             this.closeConnection();
             return result;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get students with extensions for assignment part: " + part.getName());
-            this.closeConnection();
-            return null;
         }
     }
 
+    @Override
     public Calendar getExtension(String studentLogin, Part part) {
+        Calendar result = null;
         this.openConnection();
+        
         try {
-            ResultSet rs = _statement.executeQuery("SELECT e.ontime AS date "
-                    + "FROM extension AS e "
-                    + "INNER JOIN student AS s "
-                    + "ON e.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON e.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + part.getName() + "' "
-                    + "AND s.login == '" + studentLogin + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
-            Calendar result = null;
+            PreparedStatement ps = _connection.prepareStatement("SELECT e.ontime AS date"
+                    + " FROM extension AS e"
+                    + " INNER JOIN student AS s"
+                    + " ON e.sid == s.sid"
+                    + " INNER JOIN part AS p"
+                    + " ON e.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND s.login == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, studentLogin);
+            ps.setString(3, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 result = new GregorianCalendar();
                 result.setTimeInMillis(rs.getInt("date") * 1000L);
             }
+
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get extension for: " + studentLogin + " for assignment part: " + part.getName());
+        } finally {
             this.closeConnection();
             return result;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get extension for: " + studentLogin + " for assignment part: " + part.getName());
-            this.closeConnection();
-            return null;
         }
     }
 
+    @Override
     public String getExtensionNote(String studentLogin, Part part) {
+        String result = "";
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT e.note AS extnote "
-                    + "FROM extension AS e "
-                    + "INNER JOIN student AS s "
-                    + "ON e.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON e.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + part.getName() + "' "
-                    + "AND s.login == '" + studentLogin + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
-            String result = null;
+            PreparedStatement ps = _connection.prepareStatement("SELECT e.note AS extnote "
+                    + " FROM extension AS e "
+                    + " INNER JOIN student AS s "
+                    + " ON e.sid == s.sid "
+                    + " INNER JOIN part AS p "
+                    + " ON e.pid == p.pid "
+                    + " INNER JOIN asgn AS a "
+                    + " ON p.aid == a.aid "
+                    + " WHERE p.name == ?"
+                    + " AND s.login == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, studentLogin);
+            ps.setString(3, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 result = rs.getString("extnote");
             }
+
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get extension note for: " + studentLogin + " for assignment part: " + part.getName());
+        } finally {
             this.closeConnection();
             return result;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get extension note for: " + studentLogin + " for assignment part: " + part.getName());
-            this.closeConnection();
-            return null;
         }
     }
 
+    @Override
     public String getExemptionNote(String studentLogin, Part part) {
+        String result = "";
         this.openConnection();
+        
         try {
-            ResultSet rs = _statement.executeQuery("SELECT x.note AS exenote "
-                    + "FROM exemption AS x "
-                    + "INNER JOIN student AS s "
-                    + "ON x.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON x.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + part.getName() + "' "
-                    + "AND s.login == '" + studentLogin + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "'");
-            String result = null;
+            PreparedStatement ps = _connection.prepareStatement("SELECT x.note AS exenote"
+                    + " FROM exemption AS x"
+                    + " INNER JOIN student AS s"
+                    + " ON x.sid == s.sid"
+                    + " INNER JOIN part AS p"
+                    + " ON x.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND s.login == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, studentLogin);
+            ps.setString(3, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 result = rs.getString("exenote");
             }
+
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get exemption note for: " + studentLogin + " for assignment part: " + part.getName());
+        } finally {
             this.closeConnection();
             return result;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get exemption note for: " + studentLogin + " for assignment part: " + part.getName());
-            this.closeConnection();
-            return null;
         }
     }
 
+    @Override
     public boolean enterGrade(String studentLogin, Part part, double score) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.sid FROM student AS s" +
+                    " WHERE s.login == ?");
+            ps.setString(1, studentLogin);
+            ResultSet rs = ps.executeQuery();
             int sID = rs.getInt("sid");
-            rs = _statement.executeQuery("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid WHERE a.name == '" + part.getAssignment().getName() + "' AND p.name == '" + part.getName() + "'");
+
+            ps = _connection.prepareStatement("SELECT p.pid AS pid FROM part AS p" +
+                    " INNER JOIN asgn AS a ON a.aid == p.aid" +
+                    " WHERE a.name == ? AND p.name == ?");
+            ps.setString(1, part.getAssignment().getName());
+            ps.setString(2, part.getName());
+            rs = ps.executeQuery();
             int pID = rs.getInt("pid");
-            _statement.executeUpdate("DELETE FROM grade "
-                    + "WHERE pid == " + pID + " "
-                    + "AND sid == " + sID);
-            _statement.executeUpdate("INSERT INTO grade ('sid', 'pid', 'score') VALUES (" + sID + ", " + pID + ", '" + score + "')");
-            this.closeConnection();
+
+            ps = _connection.prepareStatement("DELETE FROM grade"
+                    + " WHERE pid == ?"
+                    + " AND sid == ?");
+            ps.setInt(1, pID);
+            ps.setInt(2, sID);
+            ps.executeUpdate();
+
+            ps = _connection.prepareStatement("INSERT INTO grade ('sid', 'pid', 'score')" +
+                    " VALUES (?, ?, ?)");
+            ps.setInt(1, sID);
+            ps.setInt(2, pID);
+            ps.setDouble(3, score);
+            ps.executeUpdate();
+
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not add a score of: " + score + " to the grade for assignment: " + part.getAssignment().getName() + " part: " + part.getName() + " for: " + studentLogin);
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public double getStudentScore(String studentLogin, Part part) {
+        double grade = 0;
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore "
-                    + "FROM grade AS g "
-                    + "INNER JOIN student AS s ON g.sid == s.sid "
-                    + "INNER JOIN part AS p ON g.pid == p.pid "
-                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
-                    + "WHERE s.login == '" + studentLogin + "' "
-                    + "AND p.name == '" + part.getName() + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "' ");
-            double grade = 0;
+            PreparedStatement ps = _connection.prepareStatement("SELECT g.score AS partscore"
+                    + " FROM grade AS g"
+                    + " INNER JOIN student AS s ON g.sid == s.sid"
+                    + " INNER JOIN part AS p ON g.pid == p.pid"
+                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE s.login == ?"
+                    + " AND p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, studentLogin);
+            ps.setString(2, part.getName());
+            ps.setString(3, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 grade = rs.getDouble("partscore");
             }
+
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+        } finally {
             this.closeConnection();
             return grade;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
-            this.closeConnection();
-            return 0;
         }
     }
 
+    @Override
     public double getStudentAsgnScore(String studentLogin, Assignment asgn) {
+        double grade = 0.0;
         this.openConnection();
+        
         try {
-            ResultSet rs = _statement.executeQuery("SELECT SUM(g.score) AS asgnscore "
-                    + "FROM grade AS g "
-                    + "INNER JOIN student AS s ON g.sid == s.sid "
-                    + "INNER JOIN part AS p ON g.pid == p.pid "
-                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
-                    + "WHERE s.login == '" + studentLogin + "' "
-                    + "AND a.name == '" +asgn.getName() + "' ");
-            double grade = 0.0;
+            PreparedStatement ps = _connection.prepareStatement("SELECT SUM(g.score) AS asgnscore"
+                    + " FROM grade AS g"
+                    + " INNER JOIN student AS s ON g.sid == s.sid"
+                    + " INNER JOIN part AS p ON g.pid == p.pid"
+                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE s.login == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, studentLogin);
+            ps.setString(2, asgn.getName());
+
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 grade = rs.getDouble("asgnscore");
             }
-            return grade;
-        } catch (Exception e) {
+
+        } catch (SQLException e) {
             new ErrorView(e, String.format("Could not get a total score for: %s for for assignment: %s.",
                     studentLogin, asgn.getName()));
-            return 0.0;
         }
         finally {
             this.closeConnection();
+            return grade;
         }
     }
 
-    public boolean resetDatabase() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+    @Override
     public boolean addAssignment(Assignment asgn) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS count "
-                    + "FROM asgn AS a "
-                    + "WHERE a.name == '" + asgn.getName() + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(a.aid) AS count"
+                    + " FROM asgn AS a"
+                    + " WHERE a.name == ?");
+            ps.setString(1, asgn.getName());
+
+            ResultSet rs = ps.executeQuery();
             int count = rs.getInt("count");
 
             if (count != 0) { // if assignment already exists
                 throw new CakeHatDBIOException("An assignment with that name already exists.");
             }
 
-            _statement.executeUpdate("INSERT INTO asgn "
-                    + "('name') "
-                    + "VALUES "
-                    + "('" + asgn.getName() + "')");
+            ps = _connection.prepareStatement("INSERT INTO asgn "
+                    + " ('name') VALUES (?)");
+            ps.setString(1, asgn.getName());
+            ps.executeUpdate();
 
-            this.closeConnection();
             return true;
         } catch (Exception e) {
             new ErrorView(e, "The assignment: " + asgn.getName() + " could not be added to the Database.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean unBlacklistStudent(String studentLogin, String taLogin) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM blacklist "
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM blacklist "
                     + "WHERE tid IN "
-                    + "(SELECT t.tid FROM ta AS t WHERE t.login == '" + taLogin + "') "
+                    + "(SELECT t.tid FROM ta AS t WHERE t.login == ?) "
                     + "AND sid IN "
-                    + "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
-            this.closeConnection();
+                    + "(SELECT s.sid FROM student AS s WHERE s.login == ?)");
+            ps.setString(1, taLogin);
+            ps.setString(2, studentLogin);
+
+            ps.executeUpdate();
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not remove student: " + studentLogin + " from the blacklist of: " + taLogin);
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public Map<String, Double> getPartScores(Part part, Iterable<String> students) {
         Map<String, Double> scores = new HashMap<String, Double>();
 
@@ -894,26 +1117,32 @@ public class DBWrapper implements DatabaseIO {
 
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore, s.login AS studLogin "
-                    + "FROM grade AS g "
-                    + "INNER JOIN student AS s ON g.sid == s.sid "
-                    + "INNER JOIN part AS p ON g.pid == p.pid "
-                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
-                    + "WHERE s.login IN (" + studLogins + ") "
-                    + "AND p.name == '" + part.getName() + "' "
-                    + "AND a.name == '" + part.getAssignment().getName() + "' ");
+            PreparedStatement ps = _connection.prepareStatement("SELECT g.score AS partscore, s.login AS studLogin"
+                    + " FROM grade AS g"
+                    + " INNER JOIN student AS s ON g.sid == s.sid"
+                    + " INNER JOIN part AS p ON g.pid == p.pid"
+                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE s.login IN (?)"
+                    + " AND p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, studLogins);
+            ps.setString(2, part.getName());
+            ps.setString(3, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 scores.put(rs.getString("studLogin"), rs.getDouble("partscore"));
             }
-            this.closeConnection();
-            return scores;
+            
         } catch (Exception e) {
             new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+        } finally {
             this.closeConnection();
-            return new HashMap<String, Double>();
+            return scores;
         }
     }
 
+    @Override
     public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) {
         Map<String, Double> scores = new HashMap<String, Double>();
 
@@ -927,13 +1156,17 @@ public class DBWrapper implements DatabaseIO {
 
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.score AS partscore, s.login AS studLogin "
-                    + "FROM grade AS g "
-                    + "INNER JOIN student AS s ON g.sid == s.sid "
-                    + "INNER JOIN part AS p ON g.pid == p.pid "
-                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
-                    + "WHERE s.login IN (" + studLogins + ") "
-                    + "AND a.name == '" + asgn.getName() + "' ");
+            PreparedStatement ps = _connection.prepareStatement("SELECT g.score AS partscore, s.login AS studLogin"
+                    + " FROM grade AS g"
+                    + " INNER JOIN student AS s ON g.sid == s.sid"
+                    + " INNER JOIN part AS p ON g.pid == p.pid"
+                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE s.login IN (?)"
+                    + " AND a.name == ?");
+            ps.setString(1, studLogins);
+            ps.setString(2, asgn.getName());
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String studLogin = rs.getString("studLogin");
                 Double score = rs.getDouble("partscore");
@@ -942,87 +1175,109 @@ public class DBWrapper implements DatabaseIO {
                 }
                 scores.put(studLogin, score);
             }
+
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + asgn.getName());
+        } finally {
             this.closeConnection();
             return scores;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + asgn.getName());
-            this.closeConnection();
-            return new HashMap<String, Double>();
         }
     }
 
+    @Override
     public boolean isStudentEnabled(String studentLogin) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.enabled FROM student "
-                    + "AS s "
-                    + "WHERE "
-                    + "s.login == '" + studentLogin + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.enabled FROM student"
+                    + " AS s"
+                    + " WHERE"
+                    + " s.login == ?");
+            ps.setString(1, studentLogin);
+
+            ResultSet rs = ps.executeQuery();
             int enabled = rs.getInt("enabled");
-            this.closeConnection();
-            if (enabled == 1) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception e) {
+
+            return (enabled == 1);
+        } catch (SQLException e) {
             new ErrorView(e, "Could not determine if enabled.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean removeExemption(String studentLogin, Part part) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM exemption "
-                    + "WHERE pid IN "
-                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
-                    + "AND sid IN "
-                    + "(SELECT sid FROM student WHERE login == '" + studentLogin + "')");
-            this.closeConnection();
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM exemption"
+                    + " WHERE pid IN"
+                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE p.name == ? AND a.name == ?')"
+                    + " AND sid IN"
+                    + " (SELECT sid FROM student WHERE login == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.setString(3, studentLogin);
+
+            ps.executeUpdate();
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not remove exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean removeExtension(String studentLogin, Part part) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM extension "
-                    + "WHERE pid IN "
-                    + "(SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid WHERE p.name == '" + part.getName() + "' AND a.name == '" + part.getAssignment().getName() + "')"
-                    + "AND sid IN "
-                    + "(SELECT s.sid FROM student AS s WHERE s.login == '" + studentLogin + "')");
-            this.closeConnection();
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM extension"
+                    + " WHERE pid IN"
+                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a" 
+                    + " ON p.aid == a.aid WHERE p.name == ?"
+                    + " AND a.name == ?)"
+                    + " AND sid IN"
+                    + " (SELECT s.sid FROM student AS s WHERE s.login == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.setString(3, studentLogin);
+
+            ps.executeUpdate();
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Could not remove extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
-    public Map<String, Collection<String>> getDistribution(HandinPart handin) {
+    @Override
+    public Map<String, Collection<String>> getDistribution(HandinPart part) {
+        Map<String, Collection<String>> result = new HashMap<String, Collection<String>>();
         this.openConnection();
+
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, t.login AS talogin "
-                    + "FROM student AS s "
-                    + "INNER JOIN distribution AS d "
-                    + "ON d.sid == s.sid "
-                    + "INNER JOIN ta AS t "
-                    + "ON d.tid == t.tid "
-                    + "INNER JOIN part AS p "
-                    + "ON d.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "' "
-                    + "ORDER BY t.tid");
-            Map<String, Collection<String>> result = new HashMap<String, Collection<String>>();
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login AS studlogin, t.login AS talogin"
+                    + " FROM student AS s"
+                    + " INNER JOIN distribution AS d"
+                    + " ON d.sid == s.sid"
+                    + " INNER JOIN ta AS t"
+                    + " ON d.tid == t.tid"
+                    + " INNER JOIN part AS p"
+                    + " ON d.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?"
+                    + " ORDER BY t.tid");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String taLogin = rs.getString("talogin");
                 String studLogin = rs.getString("studLogin");
@@ -1033,23 +1288,27 @@ public class DBWrapper implements DatabaseIO {
                 }
                 taDist.add(studLogin);
             }
+
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get students assigned for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
+        } finally {
             this.closeConnection();
             return result;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get students assigned for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
-            this.closeConnection();
-            return new HashMap<String, Collection<String>>();
         }
     }
 
-    public boolean setGroups(HandinPart handin, Map<String, Collection<String>> groupings) {
+    @Override
+    public boolean setGroups(HandinPart part, Map<String, Collection<String>> groupings) {
         this.openConnection();
 
         //make sure all the groupnames are valid and get the partID
         int partID;
+        Set<String> groupNames = groupings.keySet();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT g.name AS groupname " + "FROM groups AS g ");
-            Set<String> groupNames = groupings.keySet();
+            PreparedStatement ps = _connection.prepareStatement("SELECT g.name AS groupname" +
+                    " FROM groups AS g ");
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String dbName = rs.getString("groupname");
                 if (groupNames.contains(dbName)) {
@@ -1057,105 +1316,136 @@ public class DBWrapper implements DatabaseIO {
                     return false;
                 }
             }
-            rs = _statement.executeQuery("SELECT p.pid AS partid "
-                    + "FROM part AS p "
-                    + "INNER JOIN asgn AS a ON p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "'");
+            
+            ps = _connection.prepareStatement("SELECT p.pid AS partid"
+                    + " FROM part AS p"
+                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+
+            rs = ps.executeQuery();
             partID = rs.getInt("partid");
-            this.closeConnection();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "Getting all the group names for this assignment failed.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
 
         //put all the groups into the DB
         for (String groupName : groupings.keySet()) {
-            if (!this.setGroup(handin, groupName, groupings.get(groupName), partID)) {
+            if (!this.setGroup(part, groupName, groupings.get(groupName), partID)) {
                 break;
             }
         }
         return true;
     }
 
-    public boolean setGroup(HandinPart handin, String groupName, Collection<String> group, Integer partID) {
+    @Override
+    public boolean setGroup(HandinPart part, String groupName, Collection<String> group, Integer partID) {
         this.openConnection();
         try {
-
             if (partID == null) {
-                ResultSet rs = _statement.executeQuery("SELECT p.pid AS partid "
-                        + "FROM part AS p "
-                        + "INNER JOIN asgn AS a ON p.aid == a.aid "
-                        + "WHERE p.name == '" + handin.getName() + "' "
-                        + "AND a.name == '" + handin.getAssignment().getName() + "'");
+                PreparedStatement ps = _connection.prepareStatement("SELECT p.pid AS partid"
+                        + " FROM part AS p"
+                        + " INNER JOIN asgn AS a ON p.aid == a.aid"
+                        + " WHERE p.name == ?"
+                        + " AND a.name == ?");
+                ps.setString(1, part.getName());
+                ps.setString(1, part.getAssignment().getName());
+
+                ResultSet rs = ps.executeQuery();
                 partID = rs.getInt("partid");
             }
 
-            ResultSet testSet = _statement.executeQuery("SELECT COUNT(g.gpid) AS numgroups "
-                    + "FROM groups AS g "
-                    + "WHERE g.name == '" + groupName + "' ");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(g.gpid) AS numgroups"
+                    + " FROM groups AS g"
+                    + " WHERE g.name == ?");
+            ps.setString(1, groupName);
 
+            ResultSet testSet = ps.executeQuery();
             if (testSet.getInt("numgroups") != 0) {
                 JOptionPane.showMessageDialog(null, "A group with this name, " + groupName + ", already exists. Please pick another name. This group was not added.");
                 return false;
             }
 
-            _statement.executeUpdate("INSERT INTO groups "
-                    + "('name') "
-                    + "VALUES "
-                    + "('" + groupName + "')");
-            ResultSet rs = _statement.executeQuery("SELECT g.gpid AS groupid "
-                    + "FROM groups AS g "
-                    + "WHERE g.name == '" + groupName + "' ");
-            String groupID = rs.getString("groupid");
+            ps = _connection.prepareStatement("INSERT INTO groups"
+                    + " ('name') VALUES (?)");
+            ps.setString(1, groupName);
+            ps.executeUpdate();
+
+            ps = _connection.prepareStatement("SELECT g.gpid AS groupid"
+                    + " FROM groups AS g"
+                    + " WHERE g.name == ?");
+            ps.setString(1, groupName);
+
+            ResultSet rs = ps.executeQuery();
+            int groupID = rs.getInt("groupid");
 
             for (String student : group) {
-                rs = _statement.executeQuery("SELECT s.sid AS studentid "
-                        + "FROM student AS s "
-                        + "WHERE s.login == '" + student + "' ");
+                ps = _connection.prepareStatement("SELECT s.sid AS studentid"
+                        + " FROM student AS s"
+                        + " WHERE s.login == ?");
+                ps.setString(1, student);
+
+                rs = ps.executeQuery();
                 int studentID = rs.getInt("studentid");
-                _statement.executeUpdate("INSERT INTO groupmembers "
+
+                ps = _connection.prepareStatement("INSERT INTO groupmembers "
                         + "('gpid', 'sid', 'pid') "
-                        + "VALUES "
-                        + "('" + groupID + "', '" + studentID + "', '" + partID + "')");
+                        + "VALUES (?, ?, ?)");
+                ps.setInt(1, groupID);
+                ps.setInt(2, studentID);
+                ps.setInt(3, partID);
+                ps.executeUpdate();
             }
-            this.closeConnection();
+
             return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get students in the group with: for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
-            this.closeConnection();
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get students in the group with: for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
-    public Collection<String> getGroup(HandinPart handin, String student) {
+    @Override
+    public Collection<String> getGroup(HandinPart part, String student) {
+        Collection<String> group = new ArrayList<String>();
         this.openConnection();
+        
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin "
-                    + "FROM student AS s "
-                    + "INNER JOIN groupmembers AS gm "
-                    + "ON gm.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON gm.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "' "
-                    + "AND gm.gpid IN ("
-                    + "SELECT gm.gpid "
-                    + "FROM groupmembers AS gm "
-                    + "INNER JOIN student AS s "
-                    + "ON gm.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON gm.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "' "
-                    + "AND s.login == '" + student + "'"
-                    + ")");
-            Collection<String> group = new ArrayList<String>();
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login AS studlogin"
+                    + " FROM student AS s"
+                    + " INNER JOIN groupmembers AS gm"
+                    + " ON gm.sid == s.sid"
+                    + " INNER JOIN part AS p"
+                    + " ON gm.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?"
+                    + " AND gm.gpid IN"
+                    + " (SELECT gm.gpid"
+                    + " FROM groupmembers AS gm"
+                    + " INNER JOIN student AS s"
+                    + " ON gm.sid == s.sid"
+                    + " INNER JOIN part AS p"
+                    + " ON gm.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?"
+                    + " AND s.login == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.setString(3, part.getName());
+            ps.setString(4, part.getAssignment().getName());
+            ps.setString(5, student);
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 group.add(rs.getString("studlogin"));
             }
@@ -1164,12 +1454,11 @@ public class DBWrapper implements DatabaseIO {
                 group.add(student);
             }
 
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get students in the group with: " + student + " for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
+        } finally {
             this.closeConnection();
             return group;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get students in the group with: " + student + " for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
-            this.closeConnection();
-            return new ArrayList<String>();
         }
     }
 
@@ -1178,27 +1467,34 @@ public class DBWrapper implements DatabaseIO {
      * @param HandinPart
      * @return map of students to collections of group members
      */
-    public Map<String, Collection<String>> getGroups(HandinPart handin) {
+    @Override
+    public Map<String, Collection<String>> getGroups(HandinPart part) {
+        Map<String, Collection<String>> groups = new HashMap<String, Collection<String>>();
         this.openConnection();
+        
         try {
-            ResultSet rs = _statement.executeQuery("SELECT s.login AS studlogin, gm.gpid AS groupID "
-                    + "FROM student AS s "
-                    + "INNER JOIN groupmembers AS gm "
-                    + "ON gm.sid == s.sid "
-                    + "INNER JOIN part AS p "
-                    + "ON gm.pid == p.pid "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "' ");
+            PreparedStatement ps = _connection.prepareStatement("SELECT s.login AS studlogin, gm.gpid AS groupID"
+                    + " FROM student AS s"
+                    + " INNER JOIN groupmembers AS gm"
+                    + " ON gm.sid == s.sid"
+                    + " INNER JOIN part AS p"
+                    + " ON gm.pid == p.pid"
+                    + " INNER JOIN asgn AS a"
+                    + " ON p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+
             Multimap<Integer, String> group2studs = ArrayListMultimap.create();
             Map<String, Integer> stud2groupID = new HashMap<String, Integer>();
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 group2studs.put(rs.getInt("groupID"), rs.getString("studlogin"));
                 stud2groupID.put(rs.getString("studlogin"), rs.getInt("groupID"));
             }
 
-            Map<String, Collection<String>> groups = new HashMap<String, Collection<String>>();
             for (String student : stud2groupID.keySet()) {
                 groups.put(student, group2studs.get(stud2groupID.get(student)));
             }
@@ -1211,107 +1507,125 @@ public class DBWrapper implements DatabaseIO {
                 }
             }
 
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get all the groups: for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
+        } finally {
             this.closeConnection();
             return groups;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get all the groups: for handin part: " + handin.getName() + " for assignment: " + handin.getAssignment().getName());
-            this.closeConnection();
-            return new HashMap<String, Collection<String>>();
         }
     }
 
+    @Override
     public boolean removeGroup(HandinPart handin, Collection<String> group) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean removeGroups(HandinPart handin) {
+    @Override
+    public boolean removeGroups(HandinPart part) {
         this.openConnection();
         try {
-            _statement.executeUpdate("DELETE FROM groups "
-                    + "WHERE gpid IN "
-                    + "(SELECT gm.gpid AS groupid "
-                    + "FROM groupmembers AS gm "
-                    + "INNER JOIN part AS p on gm.pid == p.pid "
-                    + "INNER JOIN asgn AS a on p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "')");
+            PreparedStatement ps = _connection.prepareStatement("DELETE FROM groups"
+                    + " WHERE gpid IN"
+                    + " (SELECT gm.gpid AS groupid"
+                    + " FROM groupmembers AS gm"
+                    + " INNER JOIN part AS p on gm.pid == p.pid"
+                    + " INNER JOIN asgn AS a on p.aid == a.aid"
+                    + " WHERE p.name == ?"
+                    + " AND a.name == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.executeUpdate();
 
-            _statement.executeUpdate("DELETE FROM groupmembers "
+            ps = _connection.prepareStatement("DELETE FROM groupmembers "
                     + "WHERE pid IN "
                     + "(SELECT p.pid AS partid "
                     + "FROM part AS p "
                     + "INNER JOIN asgn AS a on p.aid == a.aid "
-                    + "WHERE p.name == '" + handin.getName() + "' "
-                    + "AND a.name == '" + handin.getAssignment().getName() + "')");
+                    + "WHERE p.name == ?"
+                    + "AND a.name == ?)");
+            ps.setString(1, part.getName());
+            ps.setString(2, part.getAssignment().getName());
+            ps.executeUpdate();
 
-            this.closeConnection();
             return true;
         } catch (Exception e) {
-            new ErrorView(e, "Could not remove all groups from assignment: " + handin.getAssignment().getName() + " for the part: " + handin.getName());
-            this.closeConnection();
+            new ErrorView(e, "Could not remove all groups from assignment: " + part.getAssignment().getName() + " for the part: " + part.getName());
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean assignmentExists(Assignment asgn) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(a.aid) AS count "
-                    + "FROM asgn AS a "
-                    + "WHERE a.name == '" + asgn.getName() + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(a.aid) AS count"
+                    + " FROM asgn AS a "
+                    + " WHERE a.name == ?");
+            ps.setString(1, asgn.getName());
+
+            ResultSet rs = ps.executeQuery();
             int count = rs.getInt("count");
             
-            boolean returnVal = (count != 0);
-
-            this.closeConnection();
-            return returnVal;
-        } catch (Exception e) {
+            return (count != 0);
+        } catch (SQLException e) {
             new ErrorView(e, "There was an error while trying to test if the assignment: "
                     + asgn.getName() + " exists in the Database.");
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public boolean studentExists(String login) {
         this.openConnection();
         try {
-            ResultSet rs = _statement.executeQuery("SELECT COUNT(s.sid) AS count "
-                    + "FROM student AS s "
-                    + "WHERE s.login == '" + login + "'");
+            PreparedStatement ps = _connection.prepareStatement("SELECT COUNT(s.sid) AS count"
+                    + " FROM student AS s"
+                    + " WHERE s.login == ?");
+            ps.setString(1, login);
+
+            ResultSet rs = ps.executeQuery();
             int count = rs.getInt("count");
 
-            this.closeConnection();
             return (count != 0);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             new ErrorView(e, "There was an error while trying to test if the student: "
                     + login + " exists in the Database.");
-
-            this.closeConnection();
             return false;
+        } finally {
+            this.closeConnection();
         }
     }
 
+    @Override
     public void clearDatabase() {
         this.openConnection();
         try {
             _connection.setAutoCommit(false);
 
-            _statement.executeUpdate("DELETE FROM asgn");
-            _statement.executeUpdate("DELETE FROM blacklist");
-            _statement.executeUpdate("DELETE FROM distribution");
-            _statement.executeUpdate("DELETE FROM exemption");
-            _statement.executeUpdate("DELETE FROM extension");
-            _statement.executeUpdate("DELETE FROM grade");
-            _statement.executeUpdate("DELETE FROM groupmembers");
-            _statement.executeUpdate("DELETE FROM groups");
-            _statement.executeUpdate("DELETE FROM part");
-            _statement.executeUpdate("DELETE FROM student");
-            _statement.executeUpdate("DELETE FROM ta");
+            this.makeStatement().executeUpdate("DELETE FROM asgn");
+            this.makeStatement().executeUpdate("DELETE FROM blacklist");
+            this.makeStatement().executeUpdate("DELETE FROM distribution");
+            this.makeStatement().executeUpdate("DELETE FROM exemption");
+            this.makeStatement().executeUpdate("DELETE FROM extension");
+            this.makeStatement().executeUpdate("DELETE FROM grade");
+            this.makeStatement().executeUpdate("DELETE FROM groupmembers");
+            this.makeStatement().executeUpdate("DELETE FROM groups");
+            this.makeStatement().executeUpdate("DELETE FROM part");
+            this.makeStatement().executeUpdate("DELETE FROM student");
+            this.makeStatement().executeUpdate("DELETE FROM ta");
 
             _connection.commit();
         } catch (SQLException e) {
+            try {
+                _connection.rollback();
+            } catch (SQLException ex) {}
             new ErrorView(e, "The database could not be cleared.");
+        } finally {
+            this.closeConnection();
         }
     }
 }
