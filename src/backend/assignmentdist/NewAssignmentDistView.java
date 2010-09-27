@@ -351,10 +351,31 @@ public class NewAssignmentDistView extends JFrame {
         Allocator.getGeneralUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
-        String input = (String) JOptionPane.showInputDialog(this, "Enter minutes of leniency:", "Set Grace Period", JOptionPane.PLAIN_MESSAGE, icon, null, "");
+        String input = (String) JOptionPane.showInputDialog(this, "Enter minutes of leniency:",
+                "Set Grace Period", JOptionPane.PLAIN_MESSAGE, icon, null, "");
+        
+        //return value will be null if cancel is clicked; should halt setup
+        if (input == null) {
+            return;
+        }
+        
         int minsLeniency = Allocator.getCourseInfo().getMinutesOfLeniency();
-        if ((input != null) && (input.length() != 0)) {
-            minsLeniency = Integer.parseInt(input);
+        if (!input.isEmpty()) {
+            try {
+                minsLeniency = Integer.parseInt(input);
+
+                if (minsLeniency < 0) {
+                    throw new NumberFormatException ("Minutes of leniency must be positive.");
+                }
+            } catch (NumberFormatException e) {
+                int shouldContinue = JOptionPane.showConfirmDialog(this, "Invalid minutes of leniency." +
+                        "  The course default will be used.",
+                        "Invalid Entry", JOptionPane.WARNING_MESSAGE);
+                
+                if (shouldContinue != JOptionPane.OK_OPTION) {
+                    return;
+                }
+            }
         }
 
         Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
