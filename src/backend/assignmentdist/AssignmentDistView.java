@@ -35,7 +35,7 @@ import utils.Allocator;
  * 
  * @author jeldridg
  */
-public class NewAssignmentDistView extends JFrame {
+public class AssignmentDistView extends JFrame {
 
     private static int GRADER_PANEL_WIDTH = 200;
     private static int GRADER_PANEL_HEIGHT = 30;
@@ -50,7 +50,7 @@ public class NewAssignmentDistView extends JFrame {
     private JComboBox _selectGraderToAddBox;
     private JButton _addGraderButton;
 
-    public NewAssignmentDistView(Assignment asgn) {
+    public AssignmentDistView(Assignment asgn) {
         _asgn = asgn;
 
         boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
@@ -428,7 +428,7 @@ public class NewAssignmentDistView extends JFrame {
     }
 
     public static void main(String[] argv) {
-        new NewAssignmentDistView(Allocator.getCourseInfo().getHandinAssignments().toArray(new Assignment[0])[0]);
+        new AssignmentDistView(Allocator.getCourseInfo().getHandinAssignments().toArray(new Assignment[0])[0]);
     }
 
 }

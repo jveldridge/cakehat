@@ -1,6 +1,6 @@
 package backend;
 
-import backend.assignmentdist.NewAssignmentDistView;
+import backend.assignmentdist.AssignmentDistView;
 import components.ModifyBlacklistView;
 import backend.assignmentdist.ReassignView;
 import backend.stathist.StatHistView;
@@ -1394,7 +1394,7 @@ public class BackendView extends JFrame
 
     private void generateDistributionButtonActionPerformed()
     {
-        new NewAssignmentDistView(_assignmentList.getSelectedValue());
+        new AssignmentDistView(_assignmentList.getSelectedValue());
     }
 
     private void reassignGradingButtonActionPerformed()
