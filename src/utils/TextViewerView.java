@@ -329,7 +329,9 @@ public class TextViewerView extends javax.swing.JFrame {
         m_textArea.setColumns(20);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(TextViewerView.class);
         m_textArea.setFont(resourceMap.getFont("m_textArea.font")); // NOI18N
+        m_textArea.setLineWrap(true);
         m_textArea.setRows(5);
+        m_textArea.setWrapStyleWord(true);
         m_textArea.setName("m_textArea"); // NOI18N
         m_scrollPane.setViewportView(m_textArea);
 
