@@ -5,6 +5,8 @@ import java.io.File;
 import matlab.MatlabConnectionException;
 import utils.*;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -89,7 +91,9 @@ class MatlabHandin extends CodeHandin {
 
         //close all open code and get new M-files to open
         MatlabProxyController.eval("com.mathworks.mlservices.MLEditorServices.closeAll");
-        Collection<String> files = this.getMFiles(super.getStudentHandinDirectory(studentLogin));
+        List<String> files = this.getMFiles(super.getStudentHandinDirectory(studentLogin));
+
+        Collections.sort(files, String.CASE_INSENSITIVE_ORDER);
 
         String openCommand = "edit ";
         for (String s : files ) {
@@ -250,10 +254,10 @@ class MatlabHandin extends CodeHandin {
         }
     }
 
-    private Collection<String> getMFiles(String directoryPath) {
+    private List<String> getMFiles(String directoryPath) {
         Collection<File> fileList = Allocator.getGeneralUtilities().getFiles
                 (directoryPath, "m");
-        Collection<String> mFiles = new Vector<String>();
+        List<String> mFiles = new Vector<String>();
         for(File f : fileList)
         {
             mFiles.add(f.getName().split("\\.")[0]);
