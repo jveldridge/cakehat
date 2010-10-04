@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -630,7 +631,7 @@ public class GeneralUtilities {
      * @return the files found with the specified extension
      */
     public Collection<File> getFiles(String dirPath, String extension) {
-        Vector<File> files = new Vector<File>();
+        Collection<File> files = new ArrayList<File>();
 
         File dir = new File(dirPath);
         if (dir == null || !dir.exists()) {

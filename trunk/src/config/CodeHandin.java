@@ -7,7 +7,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 import utils.Allocator;
 import utils.BashConsole;
@@ -395,15 +398,14 @@ public abstract class CodeHandin extends HandinPart
      *
      * @param studentLogin
      */
-    public void openCode(String studentLogin)
-    {
+    public void openCode(String studentLogin) {
         //Build command to open all of the source files in Kate
-        Collection<File> files = getSourceFiles(studentLogin);
-        if(!files.isEmpty())
-        {
+        List<File> files = getSourceFiles(studentLogin);
+        Collections.sort(files, new FileComparator());
+
+        if(!files.isEmpty()) {
             String cmd = "kate ";
-            for(File file : files)
-            {
+            for(File file : files) {
                 cmd += file.getAbsolutePath() + " ";
             }
 
@@ -419,11 +421,11 @@ public abstract class CodeHandin extends HandinPart
      * @param studentLogin
      * @return
      */
-    private Collection<File> getSourceFiles(String studentLogin) {
+    private List<File> getSourceFiles(String studentLogin) {
         //make sure the student's code has been extracted from the tar before asking for the source files
         this.untar(studentLogin);
 
-        Collection<File> sourceFiles = new Vector<File>();
+        List<File> sourceFiles = new Vector<File>();
 
         for(String fileType : this.getSourceFileTypes()) {
             Collection<File> files =
@@ -466,4 +468,11 @@ public abstract class CodeHandin extends HandinPart
     }
 
     protected abstract String[] getSourceFileTypes();
+
+    public class FileComparator implements Comparator<File> {
+
+        public int compare(File f1, File f2) {
+            return f1.getName().compareToIgnoreCase(f2.getName());
+        }
+    }
 }
