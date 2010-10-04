@@ -31,7 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -56,16 +55,17 @@ public class ReassignView extends JFrame {
     private List<TA> _tas;
     private GenericJList<String> _fromUnassigned;
     private GenericJList<TA> _fromTAList;
+    private GenericJList<String> _fromRandom;
     private GenericJList<String> _fromStudentList;
     private GenericJList<String> _toUnassigned;
     private GenericJList<TA> _toTAList;
     private GenericJList<String> _toStudentList;
 
-    private JButton _assignSelectedButton;
-    private JButton _assignRandomButton;
+    private JButton _assignButton;
     private JTextField _studentFilterBox;
     private JSpinner _numStudentsSpinner;
     private JLabel _numUnassignedLabel;
+    private JLabel _assignTypeLabel;
 
     private Collection<String> _unassignedStudents;
 
@@ -75,10 +75,7 @@ public class ReassignView extends JFrame {
         _asgn = asgn;
         boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
 
-        if (resolved) {
-            this.setVisible(true);
-        }
-        else {
+        if (!resolved) {
             this.dispose();
             return;
         }
@@ -99,6 +96,10 @@ public class ReassignView extends JFrame {
         this.add(this.getLeftPanel(), BorderLayout.WEST);
         this.add(this.getCenterPanel(), BorderLayout.CENTER);
         this.add(this.getRightPanel(), BorderLayout.EAST);
+
+        //initialize starting selection state
+        _fromUnassigned.setSelectedIndex(0);
+        _toTAList.setSelectedIndex(0);
 
         this.updateAssignment();
 
@@ -155,12 +156,6 @@ public class ReassignView extends JFrame {
 
         _fromUnassigned = new GenericJList<String>(new String[] {"UNASSIGNED"});
         _fromUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        _fromUnassigned.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                updateFromList();
-            }
-        });
         _fromUnassigned.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -170,7 +165,6 @@ public class ReassignView extends JFrame {
 
         _fromTAList = new GenericJList<TA>(_tas);
         _fromTAList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        _fromTAList.setSelectedIndex(0);
         _fromTAList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -186,20 +180,9 @@ public class ReassignView extends JFrame {
         });
 
         JScrollPane fromTASP = new JScrollPane();
+        
         fromTASP.setViewportView(_fromTAList);
         fromTASP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
-
-        _fromStudentList = new GenericJList<String>();
-        _fromStudentList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                _assignSelectedButton.setEnabled(_fromStudentList.getSelectedValue() != null);
-            }
-        });
-
-        JScrollPane fromStudentSP = new JScrollPane();
-        fromStudentSP.setViewportView(_fromStudentList);
-        fromStudentSP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
 
         _studentFilterBox = new JTextField();
         _studentFilterBox.addKeyListener(new KeyAdapter() {
@@ -210,14 +193,44 @@ public class ReassignView extends JFrame {
         });
         _studentFilterBox.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
 
+        _fromRandom = new GenericJList<String>(new String[] {"RANDOM"});
+        _fromRandom.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        _fromRandom.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                enableUseRandomAssignment();
+            }
+        });
+
+        _fromStudentList = new GenericJList<String>();
+        _fromStudentList.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                enableUseSelectedAssignment();
+            }
+        });
+
+        JScrollPane fromStudentSP = new JScrollPane();
+        fromStudentSP.setViewportView(_fromStudentList);
+
+        //height of fromStudentList needs to be shrunk by the height of the RANDOM list
+        //plus the buffer space to align with the bottoms of the fromTAList and the screen
+        int fromStudentListHeight = LIST_HEIGHT - (TEXT_HEIGHT + 10);
+        fromStudentSP.setPreferredSize(new Dimension(LIST_WIDTH, fromStudentListHeight));
+
         JPanel leftPanel_upper = new JPanel();
         leftPanel_upper.setLayout(new BorderLayout(5, 5));
         leftPanel_upper.add(_fromUnassigned, BorderLayout.WEST);
         leftPanel_upper.add(_studentFilterBox, BorderLayout.EAST);
 
+        JPanel studentPanel = new JPanel();
+        studentPanel.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
+        studentPanel.add(_fromRandom);
+        studentPanel.add(fromStudentSP);
+
         leftPanel.add(fromTASP, BorderLayout.WEST);
         leftPanel.add(leftPanel_upper, BorderLayout.NORTH);
-        leftPanel.add(fromStudentSP, BorderLayout.EAST);
+        leftPanel.add(studentPanel, BorderLayout.EAST);
 
         return leftPanel;
     }
@@ -235,70 +248,46 @@ public class ReassignView extends JFrame {
         centerPanel.setPreferredSize(new Dimension(2*LIST_WIDTH, LIST_HEIGHT));
         centerPanel.setLayout(new GridLayout(0, 1));
 
-        JPanel selectedStudentsPanel = new JPanel();
-        selectedStudentsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        JPanel assignControlPanel = new JPanel();
+        assignControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-        JLabel selectedStudentsLabel = new JLabel("Selected Student(s):");
-        selectedStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        selectedStudentsPanel.add(selectedStudentsLabel);
-
-        _assignSelectedButton = new JButton("Assign Selected >>");
-        _assignSelectedButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleSelectedAssignButtonClick();
-            }
-        });
-
-        _assignSelectedButton.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent evt) {
-                if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    handleSelectedAssignButtonClick();
-                }
-            }
-        });
-
-        _assignSelectedButton.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_HEIGHT));
-        selectedStudentsPanel.add(_assignSelectedButton);
-
-        JPanel randomStudentsPanel = new JPanel();
-        randomStudentsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        JLabel randomStudentsLabel = new JLabel("Random Students:");
-        randomStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        randomStudentsPanel.add(randomStudentsLabel);
+        _assignTypeLabel = new JLabel();
+        _assignTypeLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        assignControlPanel.add(_assignTypeLabel);
 
         _numStudentsSpinner = new JSpinner(new SpinnerNumberModel());
         _numStudentsSpinner.setPreferredSize(new Dimension(LIST_WIDTH / 2, TEXT_HEIGHT));
-        randomStudentsPanel.add(_numStudentsSpinner);
+        assignControlPanel.add(_numStudentsSpinner);
+        _numStudentsSpinner.setVisible(false);
 
-        _assignRandomButton = new JButton("Assign Random >>");
-        _assignRandomButton.addActionListener(new ActionListener() {
+        _assignButton = new JButton("Assign >>");
+        _assignButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleRandomAssignButtonClick();
+                handleAssignButtonClick();
             }
         });
 
-        _assignRandomButton.addKeyListener(new KeyAdapter() {
+        _assignButton.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    handleRandomAssignButtonClick();
+                    handleAssignButtonClick();
+                    _studentFilterBox.setText(null);
+                    _studentFilterBox.requestFocus();
                 }
             }
         });
 
-        _assignRandomButton.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_HEIGHT));
-        randomStudentsPanel.add(_assignRandomButton);
+        _assignButton.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_HEIGHT));
+        assignControlPanel.add(_assignButton);
 
         _numUnassignedLabel = new JLabel();
-        randomStudentsPanel.add(_numUnassignedLabel);
+        assignControlPanel.add(_numUnassignedLabel);
 
-        centerPanel.add(selectedStudentsPanel);
-        centerPanel.add(new JSeparator());
-        centerPanel.add(randomStudentsPanel);
+        //using JPanel buffers to center asgnControlPanel
+        centerPanel.add(new JPanel());
+        centerPanel.add(assignControlPanel);
         centerPanel.add(new JPanel());
 
         return centerPanel;
@@ -321,12 +310,6 @@ public class ReassignView extends JFrame {
 
         _toUnassigned = new GenericJList<String>(new String[] {"UNASSIGNED"});
         _toUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        _toUnassigned.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                updateToList();
-            }
-        });
         _toUnassigned.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -387,8 +370,33 @@ public class ReassignView extends JFrame {
         return rightPanel;
     }
 
+    private void enableUseRandomAssignment() {
+        _fromStudentList.clearSelection();
+
+        _numStudentsSpinner.setVisible(true);
+        _assignTypeLabel.setText("Random Student(s):");
+
+        _assignButton.setEnabled(_fromStudentList.getModel().getSize() > 0);
+    }
+
+    private void enableUseSelectedAssignment() {
+        _fromRandom.clearSelection();
+
+        _numStudentsSpinner.setVisible(false);
+        _assignTypeLabel.setText("Selected Student(s):");
+
+        _assignButton.setEnabled(_fromStudentList.getSelectedValue() != null);
+    }
+
     private void updateAssignment() {
         this.setTitle(_asgn + " - [" + Allocator.getCourseInfo().getCourse() +"] Assignment Distributor");
+
+        boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
+
+        if (!resolved) {
+            this.dispose();
+            return;
+        }
 
         this.updateFromList();
         this.updateToList();
@@ -397,7 +405,6 @@ public class ReassignView extends JFrame {
     private void updateFromList() {
         HandinPart handinPart = _asgn.getHandinPart();
 
-        _assignSelectedButton.setEnabled(false);
         List<String> loginsToDisplay;
 
         //if UNASSIGNED is selected
@@ -406,7 +413,7 @@ public class ReassignView extends JFrame {
             _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
             loginsToDisplay = new LinkedList<String>(_unassignedStudents);
 
-            _assignRandomButton.setEnabled(_unassignedStudents.size() > 0);
+            _assignButton.setEnabled(_unassignedStudents.size() > 0);
             _numUnassignedLabel.setText(String.format("%d unassigned students to choose from", _unassignedStudents.size()));
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(_unassignedStudents.size());
@@ -417,7 +424,7 @@ public class ReassignView extends JFrame {
             Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTALogin);
             loginsToDisplay = new LinkedList<String>(studentsAssigned);
 
-            _assignRandomButton.setEnabled(studentsAssigned.size() > 0);
+            _assignButton.setEnabled(studentsAssigned.size() > 0);
             _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
                                                       studentsAssigned.size(), fromTALogin));
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
@@ -427,6 +434,10 @@ public class ReassignView extends JFrame {
 
         Collections.sort(loginsToDisplay);
         _fromStudentList.setListData(loginsToDisplay);
+
+        if (_fromRandom.isSelectionEmpty()) {
+            _fromStudentList.setSelectedIndex(0);
+        }
     }
 
     private void updateToList() {
@@ -445,6 +456,15 @@ public class ReassignView extends JFrame {
 
         Collections.sort(loginsToDisplay);
         _toStudentList.setListData(loginsToDisplay);
+    }
+
+    private void handleAssignButtonClick() {
+        if (!_fromRandom.isSelectionEmpty()) {
+            this.handleRandomAssignButtonClick();
+        }
+        else {
+            this.handleSelectedAssignButtonClick();
+        }
     }
 
     private void handleSelectedAssignButtonClick() {
@@ -662,7 +682,7 @@ public class ReassignView extends JFrame {
             if (matchingLogins.size() > 0) {
                 _studentFilterBox.setText(matchingLogins.get(0));
                 _fromStudentList.setSelectedIndex(0);
-                _assignSelectedButton.requestFocus();
+                _assignButton.requestFocus();
             }
         }
     }
