@@ -1,18 +1,16 @@
 package rubric;
 
-import config.HandinPart;
-import config.LatePolicy;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.JComboBox;
-
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -24,6 +22,8 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import config.HandinPart;
+import config.LatePolicy;
 import rubric.Rubric.*;
 import utils.Allocator;
 
@@ -47,7 +47,7 @@ class RubricPanel extends JPanel
     private Vector<Component> _tabOrder = new Vector<Component>(7);
     private StateManager _stateManager;
     private boolean _isAdmin;
-    private HandinPart _part;
+    private HandinPart _handinPart;
 
     /**
      * Constructs a panel that displays the content of the passed in rubric.
@@ -63,7 +63,7 @@ class RubricPanel extends JPanel
         _rubric = rubric;
         _stateManager = manager;
         _isAdmin = isAdmin;
-        _part = rubric._handinPart;
+        _handinPart = rubric._handinPart;
 
         this.setBackground(Color.white);
 
@@ -485,15 +485,16 @@ class RubricPanel extends JPanel
         Map<String, String> allLogins = Allocator.getDatabaseIO().getAllStudents();
         String studentNames = "";
         String studentLogins = "";
-        for(String student : group)
-        {
-            if(group.size() != 1 && student != group.iterator().next())
-            {
+
+        int i = 0;
+        for (String student : group) {
+            if (i != 0) {
                 studentLogins += ", ";
                 studentNames += ", ";
             }
             studentLogins += student;
             studentNames += allLogins.get(student);
+            i++;
         }
 
         //Student
@@ -527,6 +528,33 @@ class RubricPanel extends JPanel
         this.addPanelBelow(panel);
     }
 
+    private Vector<HandinStatusPair> makeHandinStatusPairs(TimeStatus[] timeStatuses, HandinPart handinPart) {
+        Vector<HandinStatusPair> pairs = new Vector<HandinStatusPair>();
+
+        for (TimeStatus t : timeStatuses) {
+            switch (t) {
+                case ON_TIME:
+                    pairs.add(new HandinStatusPair(t, handinPart.getTimeInformation().getOntimeDate()));
+                    break;
+                case LATE:
+                    if (handinPart.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION) {
+                        pairs.add(new HandinStatusPair(t, null));
+                    } else if (handinPart.getTimeInformation().getLatePolicy() == LatePolicy.MULTIPLE_DEADLINES) {
+                        pairs.add(new HandinStatusPair(t, handinPart.getTimeInformation().getLateDate()));
+                    }
+                    break;
+                case EARLY:
+                    pairs.add(new HandinStatusPair(t, handinPart.getTimeInformation().getEarlyDate()));
+                    break;
+                case NC_LATE:
+                    pairs.add(new HandinStatusPair(t, null));
+                    break;
+            }
+        }
+
+        return pairs;
+    }
+
     private void displayStatus()
     {
         int height = 0;
@@ -535,7 +563,14 @@ class RubricPanel extends JPanel
         JPanel panel = new JPanel(layout);
 
         //Handin status
-        JLabel handinStatusLabel = new JLabel("<html><b>Handin Status</b></html>");
+        java.util.Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(_handinPart.getHandin(_rubric.getStudentAccount()));
+        String handinInfo = "";
+        if (_isAdmin) {
+            handinInfo = String.format(" ( Received at: <b>%s</b> )",
+                    Allocator.getGeneralUtilities().getCalendarAsHandinTime(handinTime));
+        }
+        JLabel handinStatusLabel = new JLabel(String.format("<html><b>Handin Status</b>%s</html>", handinInfo));
+
         int vGap = 10;
         layout.putConstraint(SpringLayout.NORTH, handinStatusLabel, vGap, SpringLayout.NORTH, panel);
         layout.putConstraint(SpringLayout.WEST, handinStatusLabel, 2, SpringLayout.WEST, panel);
@@ -550,7 +585,7 @@ class RubricPanel extends JPanel
         if(_isAdmin)
         {
             //Displays status
-            final JComboBox statusBox = new JComboBox(status.getAvailableStatuses(_part.getTimeInformation().getLatePolicy()));
+            final JComboBox statusBox = new JComboBox(this.makeHandinStatusPairs(status.getAvailableStatuses(_handinPart.getTimeInformation().getLatePolicy()), _handinPart));
             elemLeft = statusBox;
             statusBox.setSelectedItem(status);
             vGap = 10;
@@ -562,7 +597,7 @@ class RubricPanel extends JPanel
 
             //If the LatePolicy is DAILY_DEDUCTION then have a box for the amount of days late
             final JFormattedTextField daysLateField = new JFormattedTextField(NumberFormat.getIntegerInstance());
-            if(_part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
+            if(_handinPart.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
             {
                 panel.add(daysLateField);
                 layout.putConstraint(SpringLayout.WEST, daysLateField, 2, SpringLayout.EAST, statusBox);
@@ -611,12 +646,12 @@ class RubricPanel extends JPanel
                 public void actionPerformed(ActionEvent ae)
                 {
                     //Set new status
-                    TimeStatus newStatus = (TimeStatus) statusBox.getSelectedItem();
+                    TimeStatus newStatus = ((HandinStatusPair) statusBox.getSelectedItem())._timeStatus;
                     _rubric.setStatus(newStatus);
 
                     //If the new time status is LATE and LatePolicy is DAILY_DEDUCTION
                     //then enable the text box, otherwise disable it
-                    if(_part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
+                    if(_handinPart.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
                     {
                         boolean editable = (newStatus == TimeStatus.LATE);
                         daysLateField.setEditable(editable);
@@ -674,5 +709,23 @@ class RubricPanel extends JPanel
         panel.setPreferredSize(new Dimension(this.getWidth(), height + 5));
         this.addPanelBelow(panel);
     }
-    
+
+    private class HandinStatusPair {
+
+        private TimeStatus _timeStatus;
+        private Calendar _calendar;
+
+        private HandinStatusPair(TimeStatus timeStatus, Calendar calendar) {
+            _timeStatus = timeStatus;
+            _calendar = calendar;
+        }
+
+        @Override
+        public String toString() {
+            return _timeStatus +
+                    ((_calendar == null) ? "" : " - " + Allocator.getGeneralUtilities()
+                                                                    .getCalendarAsHandinTime(_calendar));
+        }
+    }
+
 }

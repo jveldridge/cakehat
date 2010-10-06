@@ -209,15 +209,60 @@ public class GeneralUtilities {
             return "";
         }
 
-        String date = entry.get(Calendar.YEAR) +
-                //Add to month as it is zero indexed
-                "-" + ensureLeadingZero((entry.get(Calendar.MONTH) + 1)) +
-                "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
-        String time = ensureLeadingZero(entry.get(Calendar.HOUR_OF_DAY)) +
-                ":" + ensureLeadingZero(entry.get(Calendar.MINUTE)) +
-                ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
+        return this.getDateAsString(entry) + " " + this.getTimeAsString(entry);
+    }
 
-        return date + " " + time;
+    /**
+     * Turns a calendar into a String. Returned in the format as
+     * HOUR:MINUTE MONTH-DAY-YEAR
+     *
+     * @param entry
+     * @return date and time formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND
+     */
+    public String getCalendarAsHandinTime(Calendar entry) {
+        if (entry == null) {
+            return "";
+        }
+
+        return entry.get(Calendar.HOUR_OF_DAY)
+                + ":" + ensureLeadingZero(entry.get(Calendar.MINUTE))
+                + " " + entry.get(Calendar.MONTH)
+                + "-" + entry.get(Calendar.DAY_OF_MONTH)
+                + "-" + entry.get(Calendar.YEAR);
+    }
+
+    /**
+     * Turns a calendar into a String. Returned in the format as
+     * YEAR-MONTH-DAY
+     *
+     * @param entry
+     * @return date and time formatted as YEAR-MONTH-DAY
+     */
+    public String getDateAsString(Calendar entry) {
+        if (entry == null) {
+            return "";
+        }
+
+        return entry.get(Calendar.YEAR)
+                + "-" + ensureLeadingZero(entry.get(Calendar.MONTH))
+                + "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
+    }
+
+    /**
+     * Turns a calendar into a String. Returned in the format as
+     * HOUR:MINUTE:SECOND
+     *
+     * @param entry
+     * @return date and time formatted as HOUR:MINUTE:SECOND
+     */
+    public String getTimeAsString(Calendar entry) {
+        if (entry == null) {
+            return "";
+        }
+
+        return ensureLeadingZero(entry.get(Calendar.HOUR_OF_DAY))
+                + ":" + ensureLeadingZero(entry.get(Calendar.MINUTE))
+                + ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
     }
 
     /**
