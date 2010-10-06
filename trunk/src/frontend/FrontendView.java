@@ -488,9 +488,7 @@ public class FrontendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                GradeSystemAboutBox aboutBox = new GradeSystemAboutBox(FrontendView.this);
-                aboutBox.setLocationRelativeTo(FrontendView.this);
-                aboutBox.setVisible(true);
+                GradeSystemAboutBox.displayRelativeTo(FrontendView.this);
             }
         });
         menu.add(menuItem);
