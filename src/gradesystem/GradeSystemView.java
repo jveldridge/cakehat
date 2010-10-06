@@ -82,12 +82,7 @@ public class GradeSystemView extends FrameView {
 
     @Action
     public void showAboutBox() {
-        if (aboutBox == null) {
-            JFrame mainFrame = GradeSystemApp.getApplication().getMainFrame();
-            aboutBox = new GradeSystemAboutBox(mainFrame);
-            aboutBox.setLocationRelativeTo(mainFrame);
-        }
-        GradeSystemApp.getApplication().show(aboutBox);
+        GradeSystemAboutBox.displayRelativeTo(mainPanel);
     }
 
     /** This method is called from within the constructor to
@@ -276,6 +271,4 @@ public class GradeSystemView extends FrameView {
     private final Icon idleIcon;
     private final Icon[] busyIcons = new Icon[15];
     private int busyIconIndex = 0;
-
-    private JDialog aboutBox;
 }
