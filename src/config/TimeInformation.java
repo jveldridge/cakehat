@@ -62,14 +62,14 @@ public class TimeInformation
             valid = false;
 
             writer.append(msgBeginning + " ONTIME date is likely incorrect." +
-                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_early) + "\n");
+                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_ontime) + "\n");
         }
         if(_late != null && _late.before(thisYear))
         {
             valid = false;
 
             writer.append(msgBeginning + " LATE date is likely incorrect." +
-                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_early) + "\n");
+                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_late) + "\n");
         }
 
         return valid;
