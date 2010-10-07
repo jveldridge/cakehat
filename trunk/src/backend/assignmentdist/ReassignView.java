@@ -69,16 +69,12 @@ public class ReassignView extends JFrame {
 
     private Collection<String> _unassignedStudents;
 
+    private Collection<String> _unresolvedStudents;
+
     private Assignment _asgn;
 
     public ReassignView(Assignment asgn) {
         _asgn = asgn;
-        boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
-
-        if (!resolved) {
-            this.dispose();
-            return;
-        }
 
         _tas = new LinkedList<TA>(Allocator.getCourseInfo().getTAs());
         Collections.sort(_tas, new Comparator<TA>(){
@@ -391,9 +387,9 @@ public class ReassignView extends JFrame {
     private void updateAssignment() {
         this.setTitle(_asgn + " - [" + Allocator.getCourseInfo().getCourse() +"] Assignment Distributor");
 
-        boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
+        _unresolvedStudents = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
 
-        if (!resolved) {
+        if (_unresolvedStudents == null) {
             this.dispose();
             return;
         }
@@ -411,6 +407,7 @@ public class ReassignView extends JFrame {
         if (!_fromUnassigned.isSelectionEmpty()) {
             _unassignedStudents = handinPart.getHandinLogins();
             _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
+            _unassignedStudents.removeAll(_unresolvedStudents);
             loginsToDisplay = new LinkedList<String>(_unassignedStudents);
 
             _assignButton.setEnabled(_unassignedStudents.size() > 0);

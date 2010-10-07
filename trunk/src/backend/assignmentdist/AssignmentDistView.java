@@ -44,6 +44,7 @@ public class AssignmentDistView extends JFrame {
 
     private Vector<TA> _gradingTAs;
     private Vector<TA> _nonGradingTAs;
+    private Collection<String> _remainingBadLogins;
 
     private Map<TA, GraderPanel> _graderPanels;
     private JPanel _graderPanelsPanel;
@@ -53,9 +54,10 @@ public class AssignmentDistView extends JFrame {
     public AssignmentDistView(Assignment asgn) {
         _asgn = asgn;
 
-        boolean resolved = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
+        _remainingBadLogins = Allocator.getGradingUtilities().resolveMissingStudents(_asgn);
 
-        if (!resolved) {
+        //null means that cancel was clicked
+        if (_remainingBadLogins == null) {
             this.dispose();
             return;
         }
@@ -181,6 +183,8 @@ public class AssignmentDistView extends JFrame {
         Collections.shuffle(handinLoginsRaw);
         ArrayDeque<String> handinLogins = new ArrayDeque<String>(handinLoginsRaw);
 
+        //remove disabled students and students that are not in the DB
+        handinLogins.removeAll(_remainingBadLogins);
 
         //get all grader logins
         ArrayList<String> taLogins = new ArrayList<String>();
@@ -277,7 +281,8 @@ public class AssignmentDistView extends JFrame {
         }
 
         //get all handins to pick which are the blacklisted handins
-        Collection<String> blacklistedHandins = handinPart.getHandinLogins();
+        Collection<String> blacklistedHandins = new ArrayList();
+        blacklistedHandins.addAll(handinLogins);
 
         //remove handins which aren't blacklisted
         Iterator<String> iterator = blacklistedHandins.iterator();
