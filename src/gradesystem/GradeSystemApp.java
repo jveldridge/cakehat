@@ -34,7 +34,7 @@ public class GradeSystemApp extends SingleFrameApplication
             {
                 public void run()
                 {
-                    show(new GradeSystemView(GradeSystemApp.this));
+                    show(new GradeSystemView());
                 }
             };
         }
