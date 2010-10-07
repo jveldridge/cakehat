@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
+ * The about box displays very basic information about cakehat.
  *
  * @author jak2 (Joshua Kaplan)
  */
@@ -70,6 +71,14 @@ public class GradeSystemAboutBox extends JFrame
         });
     }
 
+    /**
+     * Displays the about box. If the about box is already open it will be
+     * brought to the front and positioned relatove to <code>relativeTo</code>.
+     *
+     * @param relativeTo The component the about box will be displayed relative
+     * to. null may be passed in, in which case the about box is centered on the
+     * screen.
+     */
     public static void displayRelativeTo(Component relativeTo)
     {
         if(_currentlyDisplayedBox != null)
@@ -83,11 +92,4 @@ public class GradeSystemAboutBox extends JFrame
         _currentlyDisplayedBox.setLocationRelativeTo(relativeTo);
         _currentlyDisplayedBox.setVisible(true);
     }
-
-    //FOR TESTING ONLY
-    public static void main(String[] args)
-    {
-        displayRelativeTo(null);
-    }
-
 }
