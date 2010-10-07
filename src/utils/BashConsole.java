@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.Vector;
 import java.util.concurrent.Executors;
+import java.util.List;
 
 /**
  * A utility class that allows for sending commands to a hidden bash console
@@ -61,8 +61,8 @@ public class BashConsole {
      * @param cmd The command to execute in the bash console
      * @return output and error streams
      */
-    public static Collection<String> write(String cmd) {
-        Vector<String> cmds = new Vector<String>();
+    public static List<String> write(String cmd) {
+        List<String> cmds = new Vector<String>();
         cmds.add(cmd);
 
         return write(cmds);
@@ -77,8 +77,8 @@ public class BashConsole {
      * @param input The commands to execute in the bash console
      * @return output and error streams
      */
-    public static Collection<String> write(Iterable<String> input) {
-        Vector<String> output = new Vector<String>();
+    public static List<String> write(Iterable<String> input) {
+        List<String> output = new Vector<String>();
 		
 	File wd = new File("/bin");
 	Process proc = null;
@@ -124,7 +124,7 @@ public class BashConsole {
 	return output;
     }
 
-    public static Collection<String> writeErrorStream(Iterable<String> input) {
+    public static List<String> writeErrorStream(Iterable<String> input) {
     Vector<String> output = new Vector<String>();
 
 	File wd = new File("/bin");
