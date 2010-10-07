@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -143,15 +142,12 @@ public class GeneralUtilities {
      * @return user's name
      */
     public String getUserName(String login) {
-        Collection<String> output = BashConsole.write("snoop " + login);
-
-        for (String line : output) {
-            if (line.startsWith("Name")) {
-                String name = line.substring(line.indexOf(":") + 2, line.length());
-                return name;
-            }
+        List<String> output = BashConsole.write("f " + login);
+        String name = output.get(0).split("life: ")[1];
+        if (name.equals("???")) {
+            return "UNKNOWN_LOGIN";
         }
-        return "UNKNOWN_LOGIN";
+        return name;
     }
 
     /**
@@ -178,14 +174,10 @@ public class GeneralUtilities {
     private String[] getMembers(String group) {
         Collection<String> output = BashConsole.write("members " + group);
 
-        if (output.iterator().hasNext()) {
-            String result = output.iterator().next();
-            String[] logins = result.split(" ");
+        String result = output.iterator().next();
+        String[] logins = result.split(" ");
 
-            return logins;
-        }
-
-        return new String[0];
+        return logins;
     }
 
     /**
@@ -209,60 +201,15 @@ public class GeneralUtilities {
             return "";
         }
 
-        return this.getDateAsString(entry) + " " + this.getTimeAsString(entry);
-    }
+        String date = entry.get(Calendar.YEAR) +
+                //Add to month as it is zero indexed
+                "-" + ensureLeadingZero((entry.get(Calendar.MONTH) + 1)) +
+                "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
+        String time = ensureLeadingZero(entry.get(Calendar.HOUR_OF_DAY)) +
+                ":" + ensureLeadingZero(entry.get(Calendar.MINUTE)) +
+                ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
 
-    /**
-     * Turns a calendar into a String. Returned in the format as
-     * HOUR:MINUTE MONTH-DAY-YEAR
-     *
-     * @param entry
-     * @return date and time formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND
-     */
-    public String getCalendarAsHandinTime(Calendar entry) {
-        if (entry == null) {
-            return "";
-        }
-
-        return entry.get(Calendar.HOUR_OF_DAY)
-                + ":" + ensureLeadingZero(entry.get(Calendar.MINUTE))
-                + " " + entry.get(Calendar.MONTH)
-                + "-" + entry.get(Calendar.DAY_OF_MONTH)
-                + "-" + entry.get(Calendar.YEAR);
-    }
-
-    /**
-     * Turns a calendar into a String. Returned in the format as
-     * YEAR-MONTH-DAY
-     *
-     * @param entry
-     * @return date and time formatted as YEAR-MONTH-DAY
-     */
-    public String getDateAsString(Calendar entry) {
-        if (entry == null) {
-            return "";
-        }
-
-        return entry.get(Calendar.YEAR)
-                + "-" + ensureLeadingZero(entry.get(Calendar.MONTH))
-                + "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
-    }
-
-    /**
-     * Turns a calendar into a String. Returned in the format as
-     * HOUR:MINUTE:SECOND
-     *
-     * @param entry
-     * @return date and time formatted as HOUR:MINUTE:SECOND
-     */
-    public String getTimeAsString(Calendar entry) {
-        if (entry == null) {
-            return "";
-        }
-
-        return ensureLeadingZero(entry.get(Calendar.HOUR_OF_DAY))
-                + ":" + ensureLeadingZero(entry.get(Calendar.MINUTE))
-                + ":" + ensureLeadingZero(entry.get(Calendar.SECOND));
+        return date + " " + time;
     }
 
     /**
@@ -676,7 +623,7 @@ public class GeneralUtilities {
      * @return the files found with the specified extension
      */
     public Collection<File> getFiles(String dirPath, String extension) {
-        Collection<File> files = new ArrayList<File>();
+        Vector<File> files = new Vector<File>();
 
         File dir = new File(dirPath);
         if (dir == null || !dir.exists()) {
@@ -712,4 +659,5 @@ public class GeneralUtilities {
         }
         return false;
     }
+
 }
