@@ -327,9 +327,9 @@ public class GradingUtilities {
      * for resolution. either add/enable them or ignore the handin.
      *
      * @param asgn
-     * @return should the distibutor be displayed
+     * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
-    public boolean resolveMissingStudents(Assignment asgn) {
+    public Collection<String> resolveMissingStudents(Assignment asgn) {
         Collection<String> handinLogins = asgn.getHandinPart().getHandinLogins();
         Collection<String> allStudents = Allocator.getDatabaseIO().getAllStudents().keySet();
         Collection<String> enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
@@ -346,8 +346,9 @@ public class GradingUtilities {
             }
         }
 
+        // if there are no issues then return an list of no logins
         if (handinsNotInDB.isEmpty() && handinsDisabled.isEmpty()) {
-            return true;
+            return new ArrayList();
         }
 
         JPanel warningPanel = new JPanel();
@@ -467,17 +468,25 @@ public class GradingUtilities {
                     String studentName = Allocator.getGeneralUtilities().getUserName(studentLogin);
                     String[] studentSplitName = studentName.split(" ");
                     Allocator.getDatabaseIO().addStudent(studentLogin, studentSplitName[0], studentSplitName[studentSplitName.length - 1]);
+                    handinsNotInDB.remove(studentLogin);
                 }
             }
 
             for (IssueResolutionPanel disabledPanel : disabledPanels) {
                 if (disabledPanel.isChangeSelected()) {
-                    Allocator.getDatabaseIO().enableStudent(disabledPanel.getStudentLogin());
+                    String studentLogin = disabledPanel.getStudentLogin();
+                    Allocator.getDatabaseIO().enableStudent(studentLogin);
+                    handinsDisabled.remove(studentLogin);
                 }
             }
-            return true;
+
+            //create a list of the remaining badlogins
+            Collection badLogins = new ArrayList();
+            badLogins.addAll(handinsNotInDB);
+            badLogins.addAll(handinsDisabled);
+            return badLogins;
         }
-        return false;
+        return null;
     }
 
     /**
