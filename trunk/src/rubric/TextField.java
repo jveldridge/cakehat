@@ -1,12 +1,12 @@
 package rubric;
 
 import com.inet.jortho.SpellChecker;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import rubric.Rubric.Section;
 
 /**
@@ -73,13 +73,27 @@ class TextField extends JTextArea
         field.setWrapStyleWord(true);
         field.setBorder(BorderFactory.createEtchedBorder());
 
-        //If managed, add a listener
-        if(manager != null)
+        if (manager != null)
         {
-            //Add listener to update rubric with data as it is typed
-            field.addKeyListener(new KeyAdapter()
+            //If maanged, add listener to update rubric model with data as updated
+            field.getDocument().addDocumentListener(new DocumentListener()
             {
-                public void keyReleased(KeyEvent e)
+                public void insertUpdate(DocumentEvent e)
+                {
+                    this.updateOccurred();
+                }
+
+                public void removeUpdate(DocumentEvent e)
+                {
+                    this.updateOccurred();
+                }
+
+                public void changedUpdate(DocumentEvent e)
+                {
+                    this.updateOccurred();
+                }
+
+                private void updateOccurred()
                 {
                     //Inform manager
                     manager.rubricChanged();
