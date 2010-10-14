@@ -354,7 +354,7 @@ public abstract class CodeHandin extends HandinPart
         PrintRequest request = null;
         try
         {
-            request = new PrintRequest(sourceFiles,Allocator.getGeneralUtilities().getUserLogin(), studentLogin);
+            request = new PrintRequest(sourceFiles,Allocator.getUserUtilities().getUserLogin(), studentLogin);
         }
         catch (FileNotFoundException ex)
         {
@@ -380,7 +380,7 @@ public abstract class CodeHandin extends HandinPart
 
             try
             {
-                PrintRequest request = new PrintRequest(sourceFiles, Allocator.getGeneralUtilities().getUserLogin(), studentLogin);
+                PrintRequest request = new PrintRequest(sourceFiles, Allocator.getUserUtilities().getUserLogin(), studentLogin);
                 requests.add(request);
             }
             catch (FileNotFoundException ex)

@@ -84,14 +84,14 @@ public class FrontendView extends JFrame
 
     public static void launch()
     {
-        if(Allocator.getGradingUtilities().isUserTA())
+        if(Allocator.getUserUtilities().isUserTA())
         {
             new FrontendView();
         }
         else
         {
             JOptionPane.showMessageDialog(null, "You [" +
-                                         Allocator.getGeneralUtilities().getUserLogin() +
+                                         Allocator.getUserUtilities().getUserLogin() +
                                          "] are not an authorized user.");
             System.exit(0);
         }
@@ -110,7 +110,7 @@ public class FrontendView extends JFrame
     private FrontendView()
     {
         //Frame title
-        super("[cakehat] frontend - " + Allocator.getGeneralUtilities().getUserLogin());
+        super("[cakehat] frontend - " + Allocator.getUserUtilities().getUserLogin());
 
         //Create the directory to work in
         Allocator.getGradingUtilities().makeUserGradingDirectory();
@@ -441,7 +441,7 @@ public class FrontendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae) {
                 TA user = null;
-                String username = Allocator.getGeneralUtilities().getUserLogin();
+                String username = Allocator.getUserUtilities().getUserLogin();
                 for (TA ta : Allocator.getCourseInfo().getTAs()) {
                     if (ta.getLogin().equals(username)) {
                         user = ta;
@@ -870,7 +870,7 @@ public class FrontendView extends JFrame
     {
         if(this.getHandinPart() != null)
         {
-            Collection<String> students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getGeneralUtilities().getUserLogin());
+            Collection<String> students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserUtilities().getUserLogin());
         
             _studentList.setListData(students);
             _studentList.selectFirst();

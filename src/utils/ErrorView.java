@@ -139,7 +139,7 @@ public class ErrorView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                String from = Allocator.getGeneralUtilities().getUserLogin() + "@" +
+                String from = Allocator.getUserUtilities().getUserLogin() + "@" +
                               Allocator.getCourseInfo().getEmailDomain();
                 String[] to = new String[] { Allocator.getCourseInfo().getCakehatEmailAddress() };
                 String subject = "Grading System Error";

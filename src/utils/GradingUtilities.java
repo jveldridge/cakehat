@@ -73,57 +73,6 @@ public class GradingUtilities {
     }
 
     /**
-     * Returns whether or not the current user is a TA for the course as
-     * specified by the configuration file.
-     *
-     * @return whether user is a TA
-     */
-    public boolean isUserTA(){
-        String userLogin = Allocator.getGeneralUtilities().getUserLogin();
-        
-        for(TA ta : Allocator.getCourseInfo().getTAs()){
-            if(ta.getLogin().equals(userLogin)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns whether or not the current user is an admin for the course as
-     * specified by the configuration file.
-     *
-     * @return whether the user is an Admin
-     */
-    public boolean isUserAdmin(){
-        String userLogin = Allocator.getGeneralUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getTAs()){
-            if(ta.getLogin().equals(userLogin) && ta.isAdmin()){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns whether or not the current user is an HTA for the course as
-     * specified by the configuration file.
-     *
-     * @return whether user is a HTA
-     */
-    public boolean isUserHTA(){
-        String userLogin = Allocator.getGeneralUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getHTAs()){
-            if(ta.getLogin().equals(userLogin)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
      *
      * @return success of making directory
@@ -155,7 +104,7 @@ public class GradingUtilities {
      */
     public String getUserGradingDirectory()
     {
-        return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getGeneralUtilities().getUserLogin() + "/";
+        return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getUserUtilities().getUserLogin() + "/";
     }
 
     /**
@@ -216,7 +165,7 @@ public class GradingUtilities {
             return;
         }
 
-        String taLogin = Allocator.getGeneralUtilities().getUserLogin();
+        String taLogin = Allocator.getUserUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
 
@@ -248,7 +197,7 @@ public class GradingUtilities {
             return;
         }
 
-        String taLogin = Allocator.getGeneralUtilities().getUserLogin();
+        String taLogin = Allocator.getUserUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
         for(HandinPart part : toPrint.keySet())
@@ -465,7 +414,7 @@ public class GradingUtilities {
             for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
                 if (notInDBPanel.isChangeSelected()) {
                     String studentLogin = notInDBPanel.getStudentLogin();
-                    String studentName = Allocator.getGeneralUtilities().getUserName(studentLogin);
+                    String studentName = Allocator.getUserUtilities().getUserName(studentLogin);
                     String[] studentSplitName = studentName.split(" ");
                     Allocator.getDatabaseIO().addStudent(studentLogin, studentSplitName[0], studentSplitName[studentSplitName.length - 1]);
                     handinsNotInDB.remove(studentLogin);

@@ -75,14 +75,14 @@ public class BackendView extends JFrame
 
     public static void launch()
     {
-        if(Allocator.getGradingUtilities().isUserAdmin())
+        if(Allocator.getUserUtilities().isUserAdmin())
         {
             new BackendView();
         }
         else
         {
             JOptionPane.showMessageDialog(null, "You [" +
-                                         Allocator.getGeneralUtilities().getUserLogin() +
+                                         Allocator.getUserUtilities().getUserLogin() +
                                          "] are not an authorized user.");
             System.exit(0);
         }
@@ -185,7 +185,7 @@ public class BackendView extends JFrame
 
     private BackendView()
     {
-        super("[cakehat] backend - " + Allocator.getGeneralUtilities().getUserLogin());
+        super("[cakehat] backend - " + Allocator.getUserUtilities().getUserLogin());
 
         //student logins
         _studentLogins = new LinkedList(Allocator.getDatabaseIO().getAllStudents().keySet());
@@ -1292,7 +1292,7 @@ public class BackendView extends JFrame
     private void resetDatabaseButtonActionPerformed()
     {
         //check that user performing reset is an HTA
-        if(!Allocator.getGradingUtilities().isUserHTA()) {
+        if(!Allocator.getUserUtilities().isUserHTA()) {
             JOptionPane.showMessageDialog(this, "You are not authorized to reset the database; " +
                     "only HTAs may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
             return;
@@ -1338,7 +1338,7 @@ public class BackendView extends JFrame
         if (addTAsRB.isSelected()) {
             for (TA ta : Allocator.getCourseInfo().getTAs()) {
                 String login = ta.getLogin();
-                String name = Allocator.getGeneralUtilities().getUserName(login);
+                String name = Allocator.getUserUtilities().getUserName(login);
                 Allocator.getDatabaseIO().addTA(login, name);
             }
         }
@@ -1355,10 +1355,10 @@ public class BackendView extends JFrame
 
         //add all students in group
         if (addStudentsRB.isSelected()) {
-            for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
-                String name = Allocator.getGeneralUtilities().getUserName(s);
+            for (String s : Allocator.getUserUtilities().getStudentLogins()) {
+                String name = Allocator.getUserUtilities().getUserName(s);
                 String names[] = name.split(" ");
-                Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+                Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length - 1]);
             }
         }
 
