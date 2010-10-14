@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1129,49 +1130,37 @@ public class BackendView extends JFrame
             }
         }
 
-        //Check if there is any rubric available
-        boolean anyRubric = false;
-        for(Assignment asgn : selectedAssignments)
-        {
-            for(String stud : selectedStudents)
-            {
-                if(asgn.hasHandinPart() &&
-                   asgn.getHandinPart().hasRubric() &&
-                   Allocator.getRubricManager().hasRubric(asgn.getHandinPart(), stud))
-                {
-                    anyRubric = true;
-                    break;
-                }
-            }
-        }
-        _printRubricButton.setEnabled(anyRubric);
+        if (selectedAssignments.size() == 1) {
+            Assignment asgn = selectedAssignments.iterator().next();
 
-        //Check if there is any code available to print
-        boolean anyCode = false;
-        for(Assignment asgn : selectedAssignments)
-        {
-            if(asgn.hasHandinPart() && asgn.getHandinPart().hasPrint())
-            {
-                HandinPart part = asgn.getHandinPart();
-                Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(part);
+            if (asgn.hasHandinPart()) {
+                HandinPart handinPart = asgn.getHandinPart();
 
-                //For each selected student
-                for(String stud : selectedStudents)
-                {
-                    //For each login of this student's group
-                    for(String login : groups.get(stud))
-                    {
-                        if(part.hasHandin(login))
-                        {
+                boolean anyRubric = false;
+                boolean anyCode = false;
+                for (String student : selectedStudents) {
+                    if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
+                        anyRubric = true;
+                    }
+
+                    Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
+                    for (String groupMember : groups.get(student)) {
+                        if (handinPart.hasHandin(groupMember)) {
                             anyCode = true;
-                            break;
                         }
                     }
+
+                    if (anyRubric && anyCode) {
+                        break;
+                    }
                 }
+
+                _printRubricButton.setEnabled(handinPart.hasRubric() && anyRubric);
+                _emailStudentRubric.setEnabled(handinPart.hasRubric() && anyRubric);
+                _printCodeButton.setEnabled(handinPart.hasPrint() && anyCode);
             }
         }
-        _printCodeButton.setEnabled(anyCode);
-
+        
 
         //                 ASSIGNMENT BUTTONS
 
@@ -1235,19 +1224,6 @@ public class BackendView extends JFrame
         //Update labels
         _selectedStudentLabel.setText(selectedStudents);
         _selectedAssignmentLabel.setText(selectedAssignments);
-    }
-
-    /**
-     * Takes in a student login and a handin part and taking into account
-     * groups returns if there is handin for this student.
-     *
-     * @param studentLogin
-     * @param part
-     * @return
-     */
-    private boolean hasHandin(String studentLogin, HandinPart part)
-    {
-        return (this.getHandinLogin(studentLogin, part) != null);
     }
 
     /**
@@ -1520,46 +1496,53 @@ public class BackendView extends JFrame
         part.runTester(login);
     }
 
-    private void printCodeButtonActionPerformed()
-    {
-        String printer = Allocator.getGradingUtilities().getPrinter();
-        if(printer == null)
-        {
-            return;
-        }
+    private void printCodeButtonActionPerformed() {
+        
+        if (_assignmentList.getSelectedValue().hasHandinPart()) {
 
-        /*
-         * As this button can be selected for multiple students and multiple
-         * assignments, of which not all students may have code to print, and
-         * some may be code not of their login because of groups.
-         */
+            String printer = Allocator.getGradingUtilities().getPrinter();
 
-        //Map of handin parts to code for the selected assignments and students
-        HashMap<HandinPart, Iterable<String>> code = new HashMap<HandinPart, Iterable<String>>();
+            //printer == null if "Cancel" button was clicked on printer select dialog
+            if (printer == null) {
+                return;
+            }
 
-        for (Assignment asgn : _assignmentList.getGenericSelectedValues())
-        {
-            if(asgn.hasHandinPart() && asgn.getHandinPart().hasPrint())
-            {
-                HandinPart part = asgn.getHandinPart();
-                HashSet<String> logins = new HashSet<String>();
-                code.put(part, logins);
+            HandinPart handinPart = _assignmentList.getSelectedValue().getHandinPart();
 
-                for(String stud : _studentList.getGenericSelectedValues())
-                {
-                    String handinLogin = this.getHandinLogin(stud, part);
-                    if(handinLogin != null)
-                    {
-                        logins.add(handinLogin);
-                    }
+            Collection<String> loginsToPrint = new LinkedList<String>();
+            Collection<String> studentsWithoutCode = new LinkedList<String>();
+            
+            for (String student : _studentList.getGenericSelectedValues()) {
+                String handinLogin = this.getHandinLogin(student, handinPart);
+
+                if (handinLogin != null) {
+                    loginsToPrint.add(handinLogin);
+                }
+                else {
+                    studentsWithoutCode.add(student);
+                }
+            }
+
+            if (studentsWithoutCode.size() > 0) {
+                String message = "The following students do not have code\n"
+                        + "and will not be printed:\n";
+                for (String student : studentsWithoutCode) {
+                    message += student + "\n";
                 }
 
-                //TODO: Instead of printing for each part, do all printing in one batch
-                part.printCode(logins, printer);
+                Object[] options = {"Proceed", "Cancel"};
+                int shouldContinue = JOptionPane.showOptionDialog(this, message,
+                                                                  "Not all students have code!",
+                                                                  JOptionPane.YES_NO_OPTION,
+                                                                  JOptionPane.WARNING_MESSAGE,
+                                                                  null, options, options[0]);
+                if (shouldContinue != JOptionPane.OK_OPTION) {
+                    return;
+                }
             }
-        }
 
-        //TODO: Print the code here outside of the loop in one batch
+            handinPart.printCode(loginsToPrint, printer);
+        }
     }
 
     private void viewReadmeButtonActionPerformed()
@@ -1578,51 +1561,78 @@ public class BackendView extends JFrame
         }
     }
 
-    private void emailRubricButtonActionPerformed()
-    {
+    private void emailRubricButtonActionPerformed() {
         Vector<String> students = new Vector<String>(_studentList.getGenericSelectedValues());
-        for (Assignment a : _assignmentList.getGenericSelectedValues()) {
-            if (a.hasHandinPart()) {
-                Allocator.getRubricManager().convertToGRD(a.getHandinPart(), students);
-                Allocator.getGradingUtilities().notifyStudents(a.getHandinPart(), students, true);
+        if (_assignmentList.getSelectedValue().hasHandinPart()) {
+            HandinPart handinPart = _assignmentList.getSelectedValue().getHandinPart();
+
+            //remove any students who don't have rubrics
+            Iterator<String> studentIterator = students.iterator();
+            Collection<String> studentsWithoutRubrics = new LinkedList<String>();
+            while (studentIterator.hasNext()) {
+                String student = studentIterator.next();
+                if (!Allocator.getRubricManager().hasRubric(handinPart, student)) {
+                    studentIterator.remove();
+                    studentsWithoutRubrics.add(student);
+                }
             }
+
+            if (studentsWithoutRubrics.size() > 0) {
+                String message = "The following students do not have rubrics\n" +
+                        "and will not be emailed:\n";
+                for (String student : studentsWithoutRubrics) {
+                    message += student + "\n";
+                }
+
+                int shouldContinue = JOptionPane.showConfirmDialog(this, message, "Not all students have rubrics!", JOptionPane.WARNING_MESSAGE);
+                if (shouldContinue != JOptionPane.OK_OPTION) {
+                    return;
+                }
+            }
+
+            Allocator.getRubricManager().convertToGRD(handinPart, students);
+            Allocator.getGradingUtilities().notifyStudents(handinPart, students, true);
         }
     }
 
     private void printRubricButtonActionPerformed()
     {
-        /*
-         * As this button can be selected for multiple students and multiple
-         * assignments, of which not all students may have a rubric, first
-         * build a map for all of the rubrics that actually exist.
-         */
+        Vector<String> students = new Vector<String>(_studentList.getGenericSelectedValues());
+        if (_assignmentList.getSelectedValue().hasHandinPart()) {
+            HandinPart handinPart = _assignmentList.getSelectedValue().getHandinPart();
 
-        //Map of handin parts to rubrics for the selected assignments and students
-        HashMap<HandinPart, Iterable<String>> rubrics = new HashMap<HandinPart, Iterable<String>>();
-
-        for (Assignment asgn : _assignmentList.getGenericSelectedValues())
-        {
-            if(asgn.hasHandinPart())
-            {
-                HandinPart part = asgn.getHandinPart();
-                Vector<String> students = new Vector<String>();
-                rubrics.put(part, students);
-
-                for(String stud : _studentList.getGenericSelectedValues())
-                {
-                    if(Allocator.getRubricManager().hasRubric(part, stud))
-                    {
-                        students.add(stud);
-                    }
+            //remove any students who don't have rubrics
+            Iterator<String> studentIterator = students.iterator();
+            Collection<String> studentsWithoutRubrics = new LinkedList<String>();
+            while (studentIterator.hasNext()) {
+                String student = studentIterator.next();
+                if (!Allocator.getRubricManager().hasRubric(handinPart, student)) {
+                    studentIterator.remove();
+                    studentsWithoutRubrics.add(student);
                 }
             }
+
+            if (studentsWithoutRubrics.size() > 0) {
+                String message = "The following students do not have rubrics\n" +
+                        "and will not be printed:\n";
+                for (String student : studentsWithoutRubrics) {
+                    message += student + "\n";
+                }
+
+                Object[] options = {"Proceed", "Cancel"};
+                int shouldContinue = JOptionPane.showOptionDialog(this, message,
+                                                                  "Not all students have rubrics!",
+                                                                  JOptionPane.YES_NO_OPTION,
+                                                                  JOptionPane.WARNING_MESSAGE,
+                                                                  null, options, options[0]);
+                if (shouldContinue != JOptionPane.OK_OPTION) {
+                    return;
+                }
+            }
+
+            Allocator.getRubricManager().convertToGRD(handinPart, students);
+            Allocator.getGradingUtilities().printGRDFiles(handinPart, students);
         }
-
-        //Then convert these rubrics to GRD and print them
-        Allocator.getRubricManager().convertToGRD(rubrics);
-        JOptionPane.showConfirmDialog(rootPane, this, WELCOME_PANEL_TAG, WIDTH);
-
-        Allocator.getGradingUtilities().printGRDFiles(rubrics);
     }
 
     private void disableStudentButtonActionPerformed()
