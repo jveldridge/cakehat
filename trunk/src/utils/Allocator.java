@@ -40,6 +40,16 @@ public class Allocator {
         return GENERAL_UTILITIES;
     }
 
+    //User Utilities
+    private static UserUtilities USER_UTILITIES = null;
+    public static UserUtilities getUserUtilities(){
+        if(USER_UTILITIES == null){
+            USER_UTILITIES = new UserUtilities();
+        }
+
+        return USER_UTILITIES;
+    }
+
     //Grading Utilities
     private static GradingUtilities GRADING_UTILITIES = null;
     public static GradingUtilities getGradingUtilities(){

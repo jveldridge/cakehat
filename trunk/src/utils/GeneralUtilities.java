@@ -10,11 +10,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -121,63 +119,6 @@ public class GeneralUtilities {
             ex.printStackTrace();
         }
         return text.toString();
-    }
-
-    /**
-     * Returns the user login.
-     *
-     * @return user login
-     */
-    public String getUserLogin() {
-        return System.getProperty("user.name");
-    }
-
-    /**
-     * TODO: See if there is a command that just returns user's name instead of
-     *       having to parse snoop's output.
-     *
-     * Gets a user's name.
-     *
-     * @param login the user's login
-     * @return user's name
-     */
-    public String getUserName(String login) {
-        List<String> output = BashConsole.write("f " + login);
-        String name = output.get(0).split("life: ")[1];
-        if (name.equals("???")) {
-            return "UNKNOWN_LOGIN";
-        }
-        return name;
-    }
-
-    /**
-     * Returns the logins of all students in the class's student group.
-     * Removes the test account login.
-     *
-     * @return
-     */
-    public Iterable<String> getStudentLogins() {
-        //Get list of members to the student group
-        List<String> list = Arrays.asList(getMembers(Allocator.getCourseInfo().getStudentGroup()));
-        //Remove test account from list
-        //list.remove(Allocator.getCourseInfo().getTestAccount());
-        
-        return list;
-    }
-
-    /**
-     * Returns all members of a given group
-     *
-     * @param group
-     * @return array of all of the logins of a given group
-     */
-    private String[] getMembers(String group) {
-        Collection<String> output = BashConsole.write("members " + group);
-
-        String result = output.iterator().next();
-        String[] logins = result.split(" ");
-
-        return logins;
     }
 
     /**

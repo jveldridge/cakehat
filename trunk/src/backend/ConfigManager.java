@@ -45,9 +45,9 @@ public class ConfigManager extends javax.swing.JFrame {
         addStudentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (allStudentsRB.isSelected()) {
-                    for (String s : Allocator.getGeneralUtilities().getStudentLogins()) {
+                    for (String s : Allocator.getUserUtilities().getStudentLogins()) {
                         if (!Allocator.getDatabaseIO().studentExists(s)) {
-                            String name = Allocator.getGeneralUtilities().getUserName(s);
+                            String name = Allocator.getUserUtilities().getUserName(s);
                             String names[] = name.split(" ");
                             Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
                         }
@@ -57,7 +57,7 @@ public class ConfigManager extends javax.swing.JFrame {
                     String login = loginText.getText();
                     if (!Allocator.getDatabaseIO().studentExists(login)) {
                         if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
-                            String name = Allocator.getGeneralUtilities().getUserName(login);
+                            String name = Allocator.getUserUtilities().getUserName(login);
                             String names[] = name.split(" ");
                             Allocator.getDatabaseIO().addStudent(login, names[0], names[names.length-1]);
                         }
@@ -91,7 +91,7 @@ public class ConfigManager extends javax.swing.JFrame {
         addTAsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                    Allocator.getDatabaseIO().addTA(ta.getLogin(), Allocator.getGeneralUtilities().getUserName(ta.getLogin()));
+                    Allocator.getDatabaseIO().addTA(ta.getLogin(), Allocator.getUserUtilities().getUserName(ta.getLogin()));
                 }
             }
         } );

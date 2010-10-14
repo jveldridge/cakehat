@@ -27,7 +27,7 @@ class GradeSystemView extends JFrame
 {
     public GradeSystemView()
     {
-        super("[cakehat] test mode - " + Allocator.getGeneralUtilities().getUserLogin());
+        super("[cakehat] test mode - " + Allocator.getUserUtilities().getUserLogin());
 
          //Menu bar
         JMenuBar menuBar = new JMenuBar();

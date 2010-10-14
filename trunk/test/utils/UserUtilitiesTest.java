@@ -12,15 +12,15 @@ import static org.junit.Assert.*;
  *
  * @author hdrosen
  */
-public class GeneralUtilitiesTest {
+public class UserUtilitiesTest {
 
-    private GeneralUtilities _instance;
+    private UserUtilities _instance;
 
-    public GeneralUtilitiesTest() {
-        _instance = new GeneralUtilities();
+    public UserUtilitiesTest() {
+        _instance = new UserUtilities();
     }
 
-//This tests the getUserName method in the GeneralUtilities class.
+//This tests the getUserName method in the UserUtilities class.
     @Test
     public void testUserName() {
         assertEquals("Ashley Rose Tuccero", _instance.getUserName("ashley"));

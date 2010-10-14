@@ -25,7 +25,7 @@ public class EmailView extends javax.swing.JFrame {
     /** Creates new form EmailGUI */
     public EmailView() {
         initComponents();
-        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
+        this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
         } catch (Exception e) {
@@ -38,7 +38,7 @@ public class EmailView extends javax.swing.JFrame {
             }
         });
         
-        fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu");
+        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu");
         this.setLocationRelativeTo(null);
         SpellChecker.register(bodyText);
         SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
@@ -46,7 +46,7 @@ public class EmailView extends javax.swing.JFrame {
 
     public EmailView(Collection<String> students, Collection<String> toNotify, String subject, String body, Map<String,String> attachments) {
         initComponents();
-        this.setTitle(Allocator.getGeneralUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
+        this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
             this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class EmailView extends javax.swing.JFrame {
         studentsBox.setText(Arrays.toString(students.toArray()).replace("[", "").replace("]", ""));
         notifyBox.setText(Arrays.toString(toNotify.toArray()).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Allocator.getGeneralUtilities().getUserLogin() + "@" + Allocator.getCourseInfo().getEmailDomain());
+        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getCourseInfo().getEmailDomain());
         bodyText.setText(body);
         
         if (attachments == null) {
@@ -291,7 +291,7 @@ public class EmailView extends javax.swing.JFrame {
         //send notification of message sent to sender and to the course's notification addresses
         String[] toNotify = notifyBox.getText().replace(" ", "").split("(,|;)");
         
-        String notificationMessage = "At " + now + ", grader " + Allocator.getGeneralUtilities().getUserLogin() +
+        String notificationMessage = "At " + now + ", grader " + Allocator.getUserUtilities().getUserLogin() +
                 " submitted grading for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
         for (String student : students) {
             student = student.split("@")[0];

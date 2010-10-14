@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
+import utils.Allocator;
 
 /**
  * Object representation of the XML config file. Only meant to be used by
@@ -62,6 +63,20 @@ class Configuration
         }
 
         valid &= this.checkUniqueAssignments(writer);
+
+        //Check validity of TAs
+        for (TA ta : this.getTAs()) {
+            boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(ta.getLogin());
+            boolean isInTAGroup = Allocator.getUserUtilities().getMembers(this.getCourse() + "ta").contains(ta.getLogin());
+            if (!isLoginValid) {
+                writer.append(String.format("Login \"%s\" is not valid.\n", ta.getLogin()));
+            }
+            if (!isInTAGroup) {
+                writer.append(String.format("Login \"%s\" is not in the TA group.\n", ta.getLogin()));
+            }
+
+            valid &= (isLoginValid && isInTAGroup);
+        }
 
         return valid;
     }
