@@ -33,6 +33,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import utils.UserUtilities.ValidityCheck;
 
 /**
  * This class provides grading specific utility functions.
@@ -416,7 +417,10 @@ public class GradingUtilities {
                     String studentLogin = notInDBPanel.getStudentLogin();
                     String studentName = Allocator.getUserUtilities().getUserName(studentLogin);
                     String[] studentSplitName = studentName.split(" ");
-                    Allocator.getDatabaseIO().addStudent(studentLogin, studentSplitName[0], studentSplitName[studentSplitName.length - 1]);
+                    Allocator.getUserUtilities().addStudent(studentLogin,
+                                                            studentSplitName[0],
+                                                            studentSplitName[studentSplitName.length - 1],
+                                                            ValidityCheck.CHECK);
                     handinsNotInDB.remove(studentLogin);
                 }
             }
