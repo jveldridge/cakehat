@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import utils.Allocator;
+import utils.UserUtilities.ValidityCheck;
 
 /**
  *
@@ -49,7 +50,9 @@ public class ConfigManager extends javax.swing.JFrame {
                         if (!Allocator.getDatabaseIO().studentExists(s)) {
                             String name = Allocator.getUserUtilities().getUserName(s);
                             String names[] = name.split(" ");
-                            Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length-1]);
+                            Allocator.getUserUtilities().addStudent(s, names[0],
+                                                                    names[names.length - 1],
+                                                                    ValidityCheck.BYPASS);
                         }
                     }
                 }
@@ -59,10 +62,16 @@ public class ConfigManager extends javax.swing.JFrame {
                         if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
                             String name = Allocator.getUserUtilities().getUserName(login);
                             String names[] = name.split(" ");
-                            Allocator.getDatabaseIO().addStudent(login, names[0], names[names.length-1]);
+                            Allocator.getUserUtilities().addStudent(login,
+                                                                    names[0],
+                                                                    names[names.length - 1],
+                                                                    ValidityCheck.CHECK);
                         }
                         else {
-                            Allocator.getDatabaseIO().addStudent(login, firstNameText.getText(), lastNameText.getText());
+                            Allocator.getUserUtilities().addStudent(login,
+                                                                    firstNameText.getText(),
+                                                                    lastNameText.getText(),
+                                                                    ValidityCheck.CHECK);
                         }
                     }
                 }

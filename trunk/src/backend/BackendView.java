@@ -61,6 +61,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.application.SingleFrameApplication;
 import utils.Allocator;
+import utils.UserUtilities.ValidityCheck;
 
 /**
  *
@@ -1358,7 +1359,9 @@ public class BackendView extends JFrame
             for (String s : Allocator.getUserUtilities().getStudentLogins()) {
                 String name = Allocator.getUserUtilities().getUserName(s);
                 String names[] = name.split(" ");
-                Allocator.getDatabaseIO().addStudent(s, names[0], names[names.length - 1]);
+                Allocator.getUserUtilities().addStudent(s, names[0],
+                                                        names[names.length - 1],
+                                                        ValidityCheck.BYPASS);
             }
         }
 
