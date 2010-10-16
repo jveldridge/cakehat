@@ -124,6 +124,9 @@ public class DBWrapper implements DatabaseIO {
             rs = ps.executeQuery();
             int partID = rs.getInt("pid");
 
+            // stop committing so that all inserts happen in one FileIO
+            _connection.setAutoCommit(false);
+
             ps = _connection.prepareStatement("DELETE FROM distribution WHERE pid == ?");
             ps.setInt(1, partID);
             ps.executeUpdate();
@@ -142,9 +145,17 @@ public class DBWrapper implements DatabaseIO {
                 }
             }
             ps.executeBatch();
-            
+
+            // commit all the inserts to the DB file
+            _connection.commit();
+
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            try {
+                // if there was an issue then remove the distribution
+                _connection.rollback();
+            } catch (SQLException ex) { }
+
             new ErrorView(e, "There was an error distributing the assignments to the grading TAs.");
             return false;
         } finally {
