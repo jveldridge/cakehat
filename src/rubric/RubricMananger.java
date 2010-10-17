@@ -1,5 +1,6 @@
 package rubric;
 
+import backend.assignmentdist.DistributionRequester;
 import config.HandinPart;
 import config.LatePolicy;
 import java.awt.event.WindowAdapter;
@@ -217,11 +218,22 @@ public class RubricMananger
      * @param minutesOfLeniency
      * @return
      */
-    public void distributeRubrics(HandinPart part, Map<String,Collection<String>> distribution, int minutesOfLeniency)
+    public void distributeRubrics(HandinPart part,
+                                  Map<String,Collection<String>> distribution,
+                                  int minutesOfLeniency,
+                                  DistributionRequester requester)
     {
         Map<String, String> students = Allocator.getDatabaseIO().getAllStudents();
         Map<String, String> tas = Allocator.getDatabaseIO().getAllTAs();
         Map<String, Calendar> extensions = getExtensions(part, students.keySet());
+
+        int numToDistribute = 0;
+        for (String taLogin : distribution.keySet()) {
+            numToDistribute += distribution.get(taLogin).size();
+        }
+
+        int numDistributedSoFar = 0;
+        double fractionDone = 0.0;
 
         try
         {
@@ -250,6 +262,10 @@ public class RubricMananger
                     //write file
                     String gmlPath = getStudentRubricPath(part, studentLogin);
                     RubricGMLWriter.write(rubric, gmlPath);
+
+                    numDistributedSoFar++;
+                    fractionDone = (double) numDistributedSoFar / (double) numToDistribute;
+                    requester.updatePercentDone((int) (fractionDone * 100));
                 }
             }
         }
