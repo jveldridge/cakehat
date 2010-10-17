@@ -24,10 +24,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import utils.Allocator;
 
 /**
@@ -35,7 +37,7 @@ import utils.Allocator;
  * 
  * @author jeldridg
  */
-public class AssignmentDistView extends JFrame {
+public class AssignmentDistView extends JFrame implements DistributionRequester {
 
     private static int GRADER_PANEL_WIDTH = 200;
     private static int GRADER_PANEL_HEIGHT = 30;
@@ -50,6 +52,9 @@ public class AssignmentDistView extends JFrame {
     private JPanel _graderPanelsPanel;
     private JComboBox _selectGraderToAddBox;
     private JButton _addGraderButton;
+
+    private JDialog _progressDialog;
+    private JProgressBar _progressBar;
 
     public AssignmentDistView(Assignment asgn) {
         _asgn = asgn;
@@ -66,6 +71,18 @@ public class AssignmentDistView extends JFrame {
         _nonGradingTAs = new Vector<TA>(Allocator.getCourseInfo().getNonDefaultGraders());
 
         this.setTitle(String.format("Create Distribution for Assignment: %s", _asgn.getName()));
+
+        _progressDialog = new JDialog(this, "Distribution In Progress", true);
+        _progressDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        _progressBar = new JProgressBar(0, 100);
+        _progressBar.setStringPainted(true);
+
+        JPanel progressPanel = new JPanel();
+        progressPanel.add(new JLabel("Distributing rubrics..."));
+        progressPanel.add(_progressBar);
+
+        _progressDialog.add(progressPanel);
 
         this.setLayout(new BorderLayout(10, 10));
 
@@ -383,11 +400,37 @@ public class AssignmentDistView extends JFrame {
             }
         }
 
-        Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
-        Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(), distribution, minsLeniency);
+        final int finalMinsLeniency = minsLeniency;
+
+        Thread distributionThread = new Thread() {
+
+            @Override
+            public void run() {
+                //get dist from DB
+                Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
+
+                //actually distribute rubrics
+                Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(),
+                        distribution, finalMinsLeniency,
+                        AssignmentDistView.this);
+
+                //get rid of progress dialog
+                _progressDialog.dispose();
+            }
+        };
+
+        distributionThread.start();
+
+        _progressDialog.pack();
+        _progressDialog.setLocationRelativeTo(this);
+        _progressDialog.setVisible(true);
 
         JOptionPane.showMessageDialog(this, "Grading setup complete.",
                 "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void updatePercentDone(int newPercentDone) {
+        _progressBar.setValue(newPercentDone);
     }
 
     private class GraderPanel extends JPanel {

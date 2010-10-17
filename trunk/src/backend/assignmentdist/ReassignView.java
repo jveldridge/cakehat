@@ -498,7 +498,8 @@ public class ReassignView extends JFrame {
                 Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
                 distribution.put(ta.getLogin(), students);
                 Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
-                                                               Allocator.getCourseInfo().getMinutesOfLeniency());
+                                                               Allocator.getCourseInfo().getMinutesOfLeniency(),
+                                                               DistributionRequester.DO_NOTHING_REQUESTER);
             }
         }
 
@@ -623,7 +624,8 @@ public class ReassignView extends JFrame {
             Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
             distribution.put(toTA.getLogin(), studentsToAssign);
             Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
-                                                           Allocator.getCourseInfo().getMinutesOfLeniency());
+                                                           Allocator.getCourseInfo().getMinutesOfLeniency(),
+                                                           DistributionRequester.DO_NOTHING_REQUESTER);
         }
 
         //assigning to UNASSIGNED from a TA
