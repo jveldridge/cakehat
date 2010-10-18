@@ -100,7 +100,7 @@ public class GeneralUtilities {
      * Reads a text file into a String.
      *
      * @param the file to read
-     * @return a String of the text in teh file
+     * @return a String of the text in the file
      */
     public String readFile(File file) {
         StringBuilder text = new StringBuilder();
@@ -116,7 +116,7 @@ public class GeneralUtilities {
                 input.close();
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            new ErrorView(ex, "Unable to read text of: " + file.getAbsolutePath());
         }
         return text.toString();
     }

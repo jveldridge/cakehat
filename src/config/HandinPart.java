@@ -54,8 +54,7 @@ public abstract class HandinPart extends Part
 
     public void viewDeductionList()
     {
-        TextViewerView fv = new TextViewerView(_deductionsFile);
-        fv.setTitle(this.getAssignment().getName() + " Deductions List");
+        new TextViewerView(_deductionsFile, this.getAssignment().getName() + " Deductions List");
     }
 
     // Readme
@@ -117,8 +116,7 @@ public abstract class HandinPart extends Part
             //If a text file
             if(!name.contains(".") || name.endsWith(".txt"))
             {
-                TextViewerView fv = new TextViewerView(readme);
-                fv.setTitle(studentLogin +"'s Readme");
+                new TextViewerView(readme, studentLogin +"'s Readme");
             }
             //If a PDF
             else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
