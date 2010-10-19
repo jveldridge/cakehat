@@ -19,6 +19,10 @@ public class GradeSystemApp extends SingleFrameApplication
     private static final String BACKEND_ARG = "backend";
     private static final String FRONTEND_ARG = "frontend";
 
+    //package-protected so can be set by GradeSystemView when in test mode.
+    static boolean _isFrontend;
+    static boolean _isBackend;
+    
     /**
      * At startup create and show the main frame of the application.
      */
@@ -40,6 +44,7 @@ public class GradeSystemApp extends SingleFrameApplication
         }
         else if (_args[0].equalsIgnoreCase(BACKEND_ARG))
         {
+            _isBackend = true;
             initialWindowCommand = new Runnable()
             {
                 public void run()
@@ -50,6 +55,7 @@ public class GradeSystemApp extends SingleFrameApplication
         }
         else if (_args[0].equalsIgnoreCase(FRONTEND_ARG))
         {
+            _isFrontend = true;
             initialWindowCommand = new Runnable()
             {
                 public void run()
@@ -159,6 +165,28 @@ public class GradeSystemApp extends SingleFrameApplication
     public static boolean inTestMode()
     {
         return _args.length == 0;
+    }
+
+        /**
+     * Returns whether or not the application is running the frontend (grader)
+     * interface.
+     *
+     * @return true if running frontend; false otherwise
+     */
+    public static boolean isFrontend()
+    {
+        return _isFrontend;
+    }
+
+    /**
+     * Returns whether or not the application is running the backend (admin)
+     * interface.
+     *
+     * @return true if running backend; false otherwise
+     */
+    public static boolean isBackend()
+    {
+        return _isBackend;
     }
 
     /**
