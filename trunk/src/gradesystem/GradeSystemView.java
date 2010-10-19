@@ -86,7 +86,9 @@ class GradeSystemView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
+               GradeSystemApp._isFrontend = true;
                FrontendView.launch();
+               GradeSystemView.this.dispose();
            }
         });
         panel.add(frontendButton);
@@ -97,7 +99,9 @@ class GradeSystemView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
+               GradeSystemApp._isBackend = true;
                BackendView.launch();
+               GradeSystemView.this.dispose();
            }
         });
         panel.add(backendButton);

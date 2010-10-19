@@ -18,6 +18,10 @@ public class NewGradeSystemApp
     private static boolean _isSSHMode;
     private static boolean _isTestMode;
 
+    //package-protected so can be set by GradeSystemView when in test mode.
+    static boolean _isFrontend;
+    static boolean _isBackend;
+
     /**
      * If the application is being run in SSH mode. This is no guarantee that
      * the application is actually being run over ssh.
@@ -37,6 +41,28 @@ public class NewGradeSystemApp
     public static boolean inTestMode()
     {
         return _isTestMode;
+    }
+
+    /**
+     * Returns whether or not the application is running the frontend (grader)
+     * interface.
+     *
+     * @return true if running frontend; false otherwise
+     */
+    public static boolean isFrontend()
+    {
+        return _isFrontend;
+    }
+
+    /**
+     * Returns whether or not the application is running the backend (admin)
+     * interface.
+     *
+     * @return true if running backend; false otherwise
+     */
+    public static boolean isBackend()
+    {
+        return _isBackend;
     }
 
     public static void main(String[] args)
@@ -67,10 +93,12 @@ public class NewGradeSystemApp
         }
         else if(args[1].equalsIgnoreCase("frontend"))
         {
+            _isFrontend = true;
             FrontendView.launch();
         }
         else if(args[1].equalsIgnoreCase("backend"))
         {
+            _isBackend = true;
             BackendView.launch();
         }
         else

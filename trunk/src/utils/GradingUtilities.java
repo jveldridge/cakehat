@@ -105,7 +105,24 @@ public class GradingUtilities {
      */
     public String getUserGradingDirectory()
     {
-        return Allocator.getCourseInfo().getGradingDir() + "." + Allocator.getUserUtilities().getUserLogin() + "/";
+        String dirPath = Allocator.getCourseInfo().getGradingDir()
+                          +"."
+                          + Allocator.getUserUtilities().getUserLogin();
+
+        if (GradeSystemApp.isBackend()) {
+            dirPath += "-admin";
+        }
+        else if (!GradeSystemApp.isFrontend()) {
+            //should always be in frontend or backend; if not, show an error
+            //message (but don't throw error, as that seems that it would cause
+            //problems without being helpful)
+            new ErrorView(String.format("UNEXPECTED STATE:\n" +
+                    "User directory requested before launch of Frontend or Backend.  " +
+                    "The directory \"%s\" will be used for the current session.", dirPath));
+            new Exception().printStackTrace();
+        }
+
+        return dirPath + "/";
     }
 
     /**
