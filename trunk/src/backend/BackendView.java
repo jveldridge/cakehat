@@ -1675,10 +1675,13 @@ public class BackendView extends JFrame
 
     private void assignmentListValueChanged()
     {
-        //Create directory for the assignment so GRD files can be created,
-        //even if no assignments have been untarred
-        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
-                                                        + _assignmentList.getSelectedValue().getName());
+        if (!_assignmentList.isSelectionEmpty()) {
+            //Create directory for the assignment so GRD files can be created,
+            //even if no assignments have been untarred
+            Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
+                                                            + _assignmentList.getSelectedValue().getName());
+        }
+
         updateGUI();
     }
 
