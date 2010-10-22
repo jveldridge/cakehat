@@ -30,10 +30,12 @@ public class ConfigurationParser
                                 ASSIGNMENTS = "ASSIGNMENTS", TAS = "TAS", DEFAULTS = "DEFAULTS", EMAIL = "EMAIL",
 
                                 COURSE = "COURSE", LENIENCY = "LENIENCY",
+                                SUBMIT_OPTIONS = "SUBMIT-OPTIONS",
+                                SUBMIT = "SUBMIT", NOTIFY = "NOTIFY", EMAIL_GRD = "EMAIL-GRD", PRINT_GRD = "PRINT-GRD",
 
                                 TA = "TA", DEFAULT_GRADER = "DEFAULT-GRADER", ADMIN = "ADMIN", HTA = "HTA",
 
-                                NOTIFY = "NOTIFY", ADDRESS = "ADDRESS",
+                                NOTIFY_ADDRESS = "NOTIFY", ADDRESS = "ADDRESS",
                                 SEND_FROM = "SEND-FROM", LOGIN = "LOGIN", PASSWORD = "PASSWORD",
                                 CERT_PATH = "CERT-PATH", CERT_PASSWORD = "CERT-PASSWORD",
 
@@ -155,6 +157,8 @@ public class ConfigurationParser
 
     private static void processDefaults(NodeList defaultNodes, Configuration config) throws ConfigurationException
     {
+        SubmitOptions.Builder submitOptions = new SubmitOptions.Builder();
+
         for (int i = 0; i < defaultNodes.getLength(); i++)
         {
             Node defaultNode = defaultNodes.item(i);
@@ -174,11 +178,41 @@ public class ConfigurationParser
                 int leniency = Integer.parseInt(defaultNode.getFirstChild().getNodeValue());
                 config.setLeniency(leniency);
             }
+            else if (defaultNode.getNodeName().equals(SUBMIT_OPTIONS))
+            {
+                for(int j = 0; j < defaultNode.getAttributes().getLength(); j++)
+                {
+                    Node propertyNode = defaultNode.getAttributes().item(j);
+
+                    if(propertyNode.getNodeName().equals(SUBMIT))
+                    {
+                        submitOptions.setSubmit(Boolean.parseBoolean(propertyNode.getNodeValue()));
+                    }
+                    else if(propertyNode.getNodeName().equals(NOTIFY))
+                    {
+                        submitOptions.setNotify(Boolean.parseBoolean(propertyNode.getNodeValue()));
+                    }
+                    else if(propertyNode.getNodeName().equals(EMAIL_GRD))
+                    {
+                        submitOptions.setEmailGrd(Boolean.parseBoolean(propertyNode.getNodeValue()));
+                    }
+                    else if(propertyNode.getNodeName().equals(PRINT_GRD))
+                    {
+                        submitOptions.setPrintGrd(Boolean.parseBoolean(propertyNode.getNodeValue()));
+                    }
+                    else
+                    {
+                        throw new ConfigurationException(SUBMIT_OPTIONS, propertyNode, SUBMIT, NOTIFY, EMAIL_GRD, PRINT_GRD);
+                    }
+                }
+            }
             else
             {
                 throw new ConfigurationException(DEFAULTS, defaultNode, COURSE, LENIENCY);
             }
         }
+
+        config.setSubmitOptions(submitOptions.build());
     }
 
 /**
@@ -228,7 +262,7 @@ public class ConfigurationParser
             {
                 continue;
             }
-            else if (emailNode.getNodeName().equals(NOTIFY))
+            else if (emailNode.getNodeName().equals(NOTIFY_ADDRESS))
             {
                 NodeList notifyNodes = emailNode.getChildNodes();
                 for(int j = 0; j < notifyNodes.getLength(); j++)

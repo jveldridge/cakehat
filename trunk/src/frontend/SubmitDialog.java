@@ -1,5 +1,6 @@
 package frontend;
 
+import config.SubmitOptions;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -21,11 +22,11 @@ import javax.swing.*;
 
 public class SubmitDialog{
 
-    JCheckBox _submitcb, _printGRDcb, _emailGRDcb, _notifyStudentscb;
-    JPanel _panel;
-    Vector<JCheckBox> _studentBoxes;
+    private JCheckBox _submitcb, _printGRDcb, _emailGRDcb, _notifyStudentscb;
+    private JPanel _panel;
+    private Vector<JCheckBox> _studentBoxes;
 
-    public SubmitDialog(Collection<String> studentLogins) {
+    public SubmitDialog(Collection<String> studentLogins, SubmitOptions options) {
         _submitcb = new JCheckBox("Submit Grades");
         _printGRDcb = new JCheckBox("Print GRD Files");
         _emailGRDcb = new JCheckBox("Email GRD Files");
@@ -49,10 +50,10 @@ public class SubmitDialog{
             
         });
         
-        _submitcb.setSelected(true);
-        _printGRDcb.setSelected(false);
-        _emailGRDcb.setSelected(true);
-        _notifyStudentscb.setSelected(true);
+        _submitcb.setSelected(options.isSubmitDefaultEnabled());
+        _printGRDcb.setSelected(options.isPrintGrdDefaultEnabled());
+        _emailGRDcb.setSelected(options.isEmailGrdDefaultEnabled());
+        _notifyStudentscb.setSelected(options.isNotifyDefaultEnabled());
 
         _panel = new JPanel();
         _panel.setLayout(new BorderLayout());
