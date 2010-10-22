@@ -159,7 +159,7 @@ public class GeneralUtilities {
 
          return entry.get(Calendar.HOUR_OF_DAY)
                  + ":" + ensureLeadingZero(entry.get(Calendar.MINUTE))
-                 + " " + entry.get(Calendar.MONTH)
+                 + " " + (entry.get(Calendar.MONTH) + 1)
                  + "-" + entry.get(Calendar.DAY_OF_MONTH)
                  + "-" + entry.get(Calendar.YEAR);
      }
@@ -175,9 +175,8 @@ public class GeneralUtilities {
         if (entry == null) {
             return "";
         }
-
         return entry.get(Calendar.YEAR)
-                + "-" + ensureLeadingZero(entry.get(Calendar.MONTH))
+                + "-" + ensureLeadingZero(entry.get(Calendar.MONTH) + 1)
                 + "-" + ensureLeadingZero(entry.get(Calendar.DAY_OF_MONTH));
     }
 
