@@ -98,6 +98,16 @@ public class CourseInfo
     }
 
     /**
+     * Default options for how to submit a graded assignment.
+     *
+     * @return
+     */
+    public SubmitOptions getSubmitOptions()
+    {
+        return _config.getSubmitOptions();
+    }
+
+    /**
      * Returns a collection of all of the TAs.
      * @return
      */

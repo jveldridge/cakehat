@@ -20,6 +20,7 @@ class Configuration
     private EmailAccount _emailAccount;
     private String _course;
     private int _leniency;
+    private SubmitOptions _submitOptions;
 
     /**
      * Checks the validity of the configuration values. This checks for
@@ -195,5 +196,15 @@ class Configuration
     Collection<Assignment> getAssigments()
     {
         return _assignments;
+    }
+
+    void setSubmitOptions(SubmitOptions options)
+    {
+        _submitOptions = options;
+    }
+
+    SubmitOptions getSubmitOptions()
+    {
+        return _submitOptions;
     }
 }

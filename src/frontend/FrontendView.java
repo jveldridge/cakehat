@@ -40,7 +40,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import utils.Allocator;
-import utils.printing.Printer;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -759,7 +758,7 @@ public class FrontendView extends JFrame
                     students.add(s2);
                 }
             }
-            SubmitDialog sd = new SubmitDialog(students);
+            SubmitDialog sd = new SubmitDialog(students, Allocator.getCourseInfo().getSubmitOptions());
             if (sd.showDialog() == JOptionPane.OK_OPTION)
             {
 
