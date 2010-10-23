@@ -75,15 +75,30 @@ public class UserUtilities {
      * @return user's name
      */
     public String getUserName(String login) {
+        // If the login has not been cached, cache it
         if (!_loginNames.containsKey(login)) {
             List<String> output = BashConsole.write("f " + login);
 
-            String name = output.get(0).split("life: ")[1];
-            if (name.equals("???")) {
+            String name;
+            if(output.size() > 0) {
+                String[] line0Array = output.get(0).split("life: ");
+                if (line0Array.length > 2) {
+                    name = line0Array[1];
+                    if (name.equals("???")) {
+                        name = "UNKNOWN_LOGIN";
+                    }
+                }
+                else {
+                    name = "UNKNOWN_LOGIN";
+                }
+            }
+            else {
                 name = "UNKNOWN_LOGIN";
             }
+
             _loginNames.put(login, name);
         }
+
         return _loginNames.get(login);
     }
 
