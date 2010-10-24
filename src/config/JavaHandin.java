@@ -570,11 +570,7 @@ class JavaHandin extends CodeHandin
         //Put together entire java comand
         String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
 
-        //Combine java command into command to launch an xterm window
-        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + javaCmd + "; read" + "\"";
-
-        //Execute the command in a seperate thread
-        BashConsole.writeThreaded(terminalCmd);
+        Allocator.getGeneralUtilities().executeInVisibleTerminal(termName, javaCmd);
     }
 
 }

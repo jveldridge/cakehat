@@ -1,5 +1,6 @@
 package config;
 
+import utils.Allocator;
 import utils.BashConsole;
 
 /**
@@ -113,12 +114,7 @@ class MakeHandin extends JavaHandin {
 
         //Build command to call xterm to run the code
         String runCmd = "cd " + dirPath + studentLogin + "/projects/" + this.getAssignment().getName() + "; make run";
-
-        //Combine java command into command to launch an xterm window
-        String terminalCmd = "/usr/bin/xterm -title " + "\"" + termName + "\"" + " -e " + "\"" + runCmd + "; bash" + "\"";
-
-        //Execute the command in a seperate thread
-        BashConsole.writeThreaded(terminalCmd);
+        Allocator.getGeneralUtilities().executeInVisibleTerminal(termName, runCmd);
     }
 
     @Override
