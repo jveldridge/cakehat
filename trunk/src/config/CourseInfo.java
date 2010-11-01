@@ -326,6 +326,18 @@ public class CourseInfo
     }
 
     /**
+     * The course's TA group.
+     *
+     * <course>ta
+     *
+     * @return
+     */
+    public String getTAGroup()
+    {
+        return getCourse() + "ta";
+    }
+
+    /**
      * Course directory.
      *
      * /course/<course>/
