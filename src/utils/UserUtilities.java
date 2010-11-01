@@ -1,62 +1,51 @@
 package utils;
 
 import config.TA;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JOptionPane;
+import utils.system.NativeFunctions;
 
 /**
- * Utilities that are login-realated.
+ * Utilities that are login-related.
  */
-public class UserUtilities {
-
+public class UserUtilities
+{
     public enum ValidityCheck {BYPASS, CHECK};
 
-    private HashMap<String, String> _loginNames = new HashMap<String, String>();
-    private HashMap<String, Collection<String>> _groupLogins = new HashMap<String, Collection<String>>();
+    private static final NativeFunctions NATIVE_FUNCTIONS = new NativeFunctions();
+    private static final HashMap<String, List<String>> GROUP_MEMBERS = new HashMap<String, List<String>>();
+    private static final String USER_LOGIN = NATIVE_FUNCTIONS.getUserLogin();
 
-   /**
-     * Returns all members of a given group
+    /**
+     * Returns all logins of a given group. If the group does not exist, <code>
+     * null</code> is returned.
      *
      * @param group
-     * @return collection of all of the logins of a given group
+     * @return
      */
-    public Collection<String> getMembers(String group) {
-        if (!_groupLogins.containsKey(group)){
-            Collection<String> output = BashConsole.write("members " + group);
-            Iterator<String> outputIterator = output.iterator();
+    public List<String> getMembers(String group)
+    {
+        List<String> members = GROUP_MEMBERS.get(group);
 
-            if (outputIterator.hasNext()) {
-                String result = outputIterator.next();
-                String[] logins = result.split(" ");
-
-                _groupLogins.put(group, Arrays.asList(logins));
-            }
-            else {
-                _groupLogins.put(group, new LinkedList<String>());
-            }
+        if(!GROUP_MEMBERS.containsKey(group))
+        {
+            members = NATIVE_FUNCTIONS.getGroupMembers(group);
+            GROUP_MEMBERS.put(group, members);
         }
 
-        return _groupLogins.get(group);
+        return members;
     }
 
     /**
      * Returns the logins of all students in the class's student group.
-     * Removes the test account login.
      *
      * @return
      */
-    public Collection<String> getStudentLogins() {
-        //Get list of members to the student group
-        Collection<String> list = (List<String>) Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getStudentGroup());
-        //Remove test account from list
-        //list.remove(Allocator.getCourseInfo().getTestAccount());
-
-        return list;
+    public Collection<String> getStudentLogins()
+    {
+        return this.getMembers(Allocator.getCourseInfo().getStudentGroup());
     }
 
     /**
@@ -64,68 +53,52 @@ public class UserUtilities {
      *
      * @return user login
      */
-    public String getUserLogin() {
-        return BashConsole.write("/usr/bin/whoami").iterator().next();
+    public String getUserLogin()
+    {
+        return USER_LOGIN;
     }
 
     /**
-     * Gets a user's name.
+     * Returns a user's real name. If the login does not exist, <code>null
+     * </code> is returned.
      *
      * @param login the user's login
      * @return user's name
      */
-    public String getUserName(String login) {
-        // If the login has not been cached, cache it
-        if (!_loginNames.containsKey(login)) {
-            List<String> output = BashConsole.write("f " + login);
-
-            String name;
-            if(output.size() > 0) {
-                String[] line0Array = output.get(0).split("life: ");
-                if (line0Array.length > 2) {
-                    name = line0Array[1];
-                    if (name.equals("???")) {
-                        name = "UNKNOWN_LOGIN";
-                    }
-                }
-                else {
-                    name = "UNKNOWN_LOGIN";
-                }
-            }
-            else {
-                name = "UNKNOWN_LOGIN";
-            }
-
-            _loginNames.put(login, name);
-        }
-
-        return _loginNames.get(login);
+    public String getUserName(String login)
+    {
+        return NATIVE_FUNCTIONS.getRealName(login);
     }
 
     /**
-     * Check if a login is valid.
+     * Returns if a login is valid.
      *
      * @param login the user's login
-     * @return true if the login is snoopable
+     * @return true if the login exists
      */
-    public boolean isLoginValid(String login){
-        return !this.getUserName(login).equals("UNKNOWN_LOGIN");
+    public boolean isLoginValid(String login)
+    {
+        return NATIVE_FUNCTIONS.isLogin(login);
     }
 
-        /**
+    /**
      * Returns whether or not the current user is a TA for the course as
      * specified by the configuration file.
      *
      * @return whether user is a TA
      */
-    public boolean isUserTA(){
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
+    public boolean isUserTA()
+    {
+        String userLogin = this.getUserLogin();
 
-        for(TA ta : Allocator.getCourseInfo().getTAs()){
-            if(ta.getLogin().equals(userLogin)){
+        for(TA ta : Allocator.getCourseInfo().getTAs())
+        {
+            if(ta.getLogin().equals(userLogin))
+            {
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -135,14 +108,18 @@ public class UserUtilities {
      *
      * @return whether the user is an Admin
      */
-    public boolean isUserAdmin(){
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
+    public boolean isUserAdmin()
+    {
+        String userLogin = this.getUserLogin();
 
-        for(TA ta : Allocator.getCourseInfo().getTAs()){
-            if(ta.getLogin().equals(userLogin) && ta.isAdmin()){
+        for(TA ta : Allocator.getCourseInfo().getTAs())
+        {
+            if(ta.getLogin().equals(userLogin) && ta.isAdmin())
+            {
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -152,14 +129,18 @@ public class UserUtilities {
      *
      * @return whether user is a HTA
      */
-    public boolean isUserHTA() {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
+    public boolean isUserHTA()
+    {
+        String userLogin = this.getUserLogin();
 
-        for(TA ta : Allocator.getCourseInfo().getHTAs()){
-            if(ta.getLogin().equals(userLogin)){
+        for(TA ta : Allocator.getCourseInfo().getHTAs())
+        {
+            if(ta.getLogin().equals(userLogin))
+            {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -170,8 +151,20 @@ public class UserUtilities {
      * @return true if the student with login studentLogin is a member of the
      *         course's student group; false otherwise
      */
-    public boolean isInStudentGroup(String studentLogin) {
-        return getMembers(Allocator.getCourseInfo().getCourse() + "student").contains(studentLogin);
+    public boolean isInStudentGroup(String studentLogin)
+    {
+        return this.getMembers(Allocator.getCourseInfo().getStudentGroup()).contains(studentLogin);
+    }
+
+    /**
+     * Returns whether or not the user specified by <code>taLogin</code> is a
+     * member of the course's TA group.
+     * 
+     * @return true if the user is a member of the course's TA group
+     */
+    public boolean isInTAGroup(String taLogin)
+    {
+        return this.getMembers(Allocator.getCourseInfo().getTAGroup()).contains(taLogin);
     }
 
     /**
