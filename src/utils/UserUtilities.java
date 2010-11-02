@@ -153,7 +153,7 @@ public class UserUtilities
      */
     public boolean isInStudentGroup(String studentLogin)
     {
-        return this.getMembers(Allocator.getCourseInfo().getStudentGroup()).contains(studentLogin);
+        return this.isMemberOfGroup(studentLogin, Allocator.getCourseInfo().getStudentGroup());
     }
 
     /**
@@ -164,7 +164,28 @@ public class UserUtilities
      */
     public boolean isInTAGroup(String taLogin)
     {
-        return this.getMembers(Allocator.getCourseInfo().getTAGroup()).contains(taLogin);
+        return this.isMemberOfGroup(taLogin, Allocator.getCourseInfo().getTAGroup());
+    }
+
+    /**
+     * Returns whether or not the user specified by <code>login</code> is a
+     * member of the group specified by <code>group</code>. If the user is a
+     * member of the group true is returned. If the group does not exist or the
+     * user is not a member false is returned.
+     *
+     * @return if a member of the group
+     */
+    public boolean isMemberOfGroup(String login, String group)
+    {
+        boolean isMember = false;
+        List<String> logins = this.getMembers(group);
+
+        if(logins != null)
+        {
+            isMember = logins.contains(login);
+        }
+
+        return isMember;
     }
 
     /**
