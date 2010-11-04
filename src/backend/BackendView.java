@@ -1583,8 +1583,6 @@ public class BackendView extends JFrame
 
         //Then convert these rubrics to GRD and print them
         Allocator.getRubricManager().convertToGRD(rubrics);
-        JOptionPane.showConfirmDialog(rootPane, this, WELCOME_PANEL_TAG, WIDTH);
-
         Allocator.getGradingUtilities().printGRDFiles(rubrics);
     }
 
