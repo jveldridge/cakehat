@@ -563,11 +563,11 @@ class RubricPanel extends JPanel
         JPanel panel = new JPanel(layout);
 
         //Handin status
-        java.util.Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(_handinPart.getHandin(_rubric.getStudentAccount()));
+        java.util.Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(_handinPart.getHandin(_rubric.getStudentAccount()));
         String handinInfo = "";
         if (_isAdmin) {
             handinInfo = String.format(" ( Received at: <b>%s</b> )",
-                    Allocator.getGeneralUtilities().getCalendarAsHandinTime(handinTime));
+                    Allocator.getCalendarUtilities().getCalendarAsHandinTime(handinTime));
         }
         JLabel handinStatusLabel = new JLabel(String.format("<html><b>Handin Status</b>%s</html>", handinInfo));
 
@@ -723,7 +723,7 @@ class RubricPanel extends JPanel
         @Override
         public String toString() {
             return _timeStatus +
-                    ((_calendar == null) ? "" : " - " + Allocator.getGeneralUtilities()
+                    ((_calendar == null) ? "" : " - " + Allocator.getCalendarUtilities()
                                                                     .getCalendarAsHandinTime(_calendar));
         }
     }

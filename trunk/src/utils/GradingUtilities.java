@@ -80,7 +80,7 @@ public class GradingUtilities {
      */
     public boolean makeUserGradingDirectory()
     {
-        return Allocator.getGeneralUtilities().makeDirectory(this.getUserGradingDirectory());
+        return Allocator.getFileSystemUtilities().makeDirectory(this.getUserGradingDirectory());
     }
 
     /**
@@ -90,7 +90,7 @@ public class GradingUtilities {
      */
     public boolean removeUserGradingDirectory()
     {
-        return Allocator.getGeneralUtilities().removeDirectory(this.getUserGradingDirectory());
+        return Allocator.getFileSystemUtilities().removeDirectory(this.getUserGradingDirectory());
     }
 
     /**

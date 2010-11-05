@@ -83,7 +83,7 @@ public class TextViewerView extends JFrame
         //If file was passed in, load contents
         if(file != null)
         {
-            _textArea.setText(Allocator.getGeneralUtilities().readFile(file));
+            _textArea.setText(Allocator.getFileSystemUtilities().readFile(file));
             _textArea.setCaretPosition(0);
         }
         _linehighlighter = new Object[_textArea.getLineCount()];

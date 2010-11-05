@@ -130,7 +130,7 @@ class JavaHandin extends CodeHandin
     private boolean deleteCompiledFiles(String studentLogin)
     {
         //Get all compiled files for this project for the specified student
-        Collection<File> compiledFiles = Allocator.getGeneralUtilities().getFiles
+        Collection<File> compiledFiles = Allocator.getFileSystemUtilities().getFiles
                                             (this.getStudentHandinDirectory(studentLogin), "class");
 
         //Keep track of success of deleting all of the files
@@ -238,7 +238,7 @@ class JavaHandin extends CodeHandin
             Vector<String> entryPoints = new Vector<String>();
 
             //Get files
-            Collection<File> files = Allocator.getGeneralUtilities().getFiles(directory,"class");
+            Collection<File> files = Allocator.getFileSystemUtilities().getFiles(directory,"class");
 
             //Load classes
             for(File file : files)
@@ -416,7 +416,7 @@ class JavaHandin extends CodeHandin
                           this.getTesterProperty(PACKAGE).replace(".", "/") + "/" + testerName;
 
         //Copy file into student's code directory, print error and bail if copy fails
-        if(!Allocator.getGeneralUtilities().copyFile(testerPath, copyPath))
+        if(!Allocator.getFileSystemUtilities().copyFile(testerPath, copyPath))
         {
             System.err.println("Could not test " + studentLogin + "'s " + this.getName());
             System.err.println("Error in copying " + testerPath + " to " + copyPath);
@@ -478,7 +478,7 @@ class JavaHandin extends CodeHandin
         DiagnosticCollector collector = new DiagnosticCollector();
 
         //Get all of the java files in dirPath
-        Collection<File> files = Allocator.getGeneralUtilities().getFiles(dirPath, "java");
+        Collection<File> files = Allocator.getFileSystemUtilities().getFiles(dirPath, "java");
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
         //Attempt to compile
@@ -570,7 +570,7 @@ class JavaHandin extends CodeHandin
         //Put together entire java comand
         String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
 
-        Allocator.getGeneralUtilities().executeInVisibleTerminal(termName, javaCmd);
+        Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, javaCmd);
     }
 
 }

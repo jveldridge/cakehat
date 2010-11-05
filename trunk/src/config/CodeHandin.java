@@ -429,7 +429,7 @@ public abstract class CodeHandin extends HandinPart
 
         for(String fileType : this.getSourceFileTypes()) {
             Collection<File> files =
-                    Allocator.getGeneralUtilities().getFiles(this.getStudentHandinDirectory(studentLogin), fileType);
+                    Allocator.getFileSystemUtilities().getFiles(this.getStudentHandinDirectory(studentLogin), fileType);
             sourceFiles.addAll(files);
         }
 

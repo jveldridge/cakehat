@@ -203,8 +203,8 @@ public class BackendView extends JFrame
             {
                 Allocator.getGradingUtilities().removeUserGradingDirectory();
                 if (!GradeSystemApp.inTestMode()) {
-                    String bk_name = Allocator.getCourseInfo().getCourse() + "db_bk_" + Allocator.getGeneralUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
-                    Allocator.getGeneralUtilities().copyFile(Allocator.getCourseInfo().getDatabaseFilePath(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
+                    String bk_name = Allocator.getCourseInfo().getCourse() + "db_bk_" + Allocator.getCalendarUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
+                    Allocator.getFileSystemUtilities().copyFile(Allocator.getCourseInfo().getDatabaseFilePath(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
                 }
             }
         });
@@ -1678,7 +1678,7 @@ public class BackendView extends JFrame
         if (!_assignmentList.isSelectionEmpty()) {
             //Create directory for the assignment so GRD files can be created,
             //even if no assignments have been untarred
-            Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
+            Allocator.getFileSystemUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
                                                             + _assignmentList.getSelectedValue().getName());
         }
 

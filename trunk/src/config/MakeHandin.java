@@ -114,7 +114,7 @@ class MakeHandin extends JavaHandin {
 
         //Build command to call xterm to run the code
         String runCmd = "cd " + dirPath + studentLogin + "/projects/" + this.getAssignment().getName() + "; make run";
-        Allocator.getGeneralUtilities().executeInVisibleTerminal(termName, runCmd);
+        Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, runCmd);
     }
 
     @Override

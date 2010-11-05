@@ -218,7 +218,7 @@ class MatlabHandin extends CodeHandin {
             String copyPath = this.getStudentHandinDirectory(studentLogin) + testerName;
 
             //Copy file into student's code directory, print error and bail if copy fails
-            if(!Allocator.getGeneralUtilities().copyFile(testerPath, copyPath))
+            if(!Allocator.getFileSystemUtilities().copyFile(testerPath, copyPath))
             {
                 System.err.println("Could not test " + studentLogin + "'s " + this.getName());
                 System.err.println("Error in copying " + testerPath + " to " + copyPath);
@@ -255,7 +255,7 @@ class MatlabHandin extends CodeHandin {
     }
 
     private List<String> getMFiles(String directoryPath) {
-        Collection<File> fileList = Allocator.getGeneralUtilities().getFiles
+        Collection<File> fileList = Allocator.getFileSystemUtilities().getFiles
                 (directoryPath, "m");
         List<String> mFiles = new Vector<String>();
         for(File f : fileList)
