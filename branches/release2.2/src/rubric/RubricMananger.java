@@ -280,7 +280,7 @@ public class RubricMananger
         Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(part.getHandin(studentLogin));
         Calendar onTime = part.getTimeInformation().getOntimeDate();
         //if there is an extension, use that date
-        if(extensions.containsKey(studentLogin))
+        if(extensions.containsKey(studentLogin) && extensions.get(studentLogin) != null)
         {
             onTime = extensions.get(studentLogin);
         }
