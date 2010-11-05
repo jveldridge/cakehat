@@ -40,6 +40,46 @@ public class Allocator {
         return GENERAL_UTILITIES;
     }
 
+    //Archive Utilities
+    private static ArchiveUtilities ARCHIVE_UTILITIES = null;
+    public static ArchiveUtilities getArchiveUtilities(){
+        if(ARCHIVE_UTILITIES == null){
+            ARCHIVE_UTILITIES = new ArchiveUtilities();
+        }
+
+        return ARCHIVE_UTILITIES;
+    }
+
+    //Calendar Utilities
+    private static CalendarUtilities CALENDAR_UTILITIES = null;
+    public static CalendarUtilities getCalendarUtilities(){
+        if(CALENDAR_UTILITIES == null){
+            CALENDAR_UTILITIES = new CalendarUtilities();
+        }
+
+        return CALENDAR_UTILITIES;
+    }
+
+    //External Processes Utilities
+    private static ExternalProcessesUtilities EXTERNAL_PROCESSES_UTILITIES = null;
+    public static ExternalProcessesUtilities getExternalProcessesUtilities(){
+        if(EXTERNAL_PROCESSES_UTILITIES == null){
+            EXTERNAL_PROCESSES_UTILITIES = new ExternalProcessesUtilities();
+        }
+
+        return EXTERNAL_PROCESSES_UTILITIES;
+    }
+
+    //File System Utilities
+    private static FileSystemUtilities FILE_SYSTEM_UTILITIES = null;
+    public static FileSystemUtilities getFileSystemUtilities(){
+        if(FILE_SYSTEM_UTILITIES == null){
+            FILE_SYSTEM_UTILITIES = new FileSystemUtilities();
+        }
+
+        return FILE_SYSTEM_UTILITIES;
+    }
+
     //User Utilities
     private static UserUtilities USER_UTILITIES = null;
     public static UserUtilities getUserUtilities(){

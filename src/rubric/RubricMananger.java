@@ -277,15 +277,15 @@ public class RubricMananger
 
     private int getDaysLate(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
     {
-        Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(part.getHandin(studentLogin));
+        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(part.getHandin(studentLogin));
         Calendar onTime = part.getTimeInformation().getOntimeDate();
         //if there is an extension, use that date
-        if(extensions.containsKey(studentLogin))
+        if(extensions.containsKey(studentLogin) && extensions.get(studentLogin) != null)
         {
             onTime = extensions.get(studentLogin);
         }
 
-        return Allocator.getGeneralUtilities().daysAfterDeadline(handinTime, onTime, minutesOfLeniency);
+        return Allocator.getCalendarUtilities().daysAfterDeadline(handinTime, onTime, minutesOfLeniency);
     }
 
     /**
@@ -353,7 +353,7 @@ public class RubricMananger
 
     private TimeStatus getTimeStatus(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
     {
-        Calendar handinTime = Allocator.getGeneralUtilities().getModifiedDate(part.getHandin(studentLogin));
+        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(part.getHandin(studentLogin));
         
         Calendar extensionTime = null;
         if(extensions.containsKey(studentLogin))
@@ -372,7 +372,7 @@ public class RubricMananger
             }
 
             //If before deadline
-            if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
+            if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
             {
                 return TimeStatus.ON_TIME;
             }
@@ -390,7 +390,7 @@ public class RubricMananger
             }
 
             //If before deadline
-            if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
+            if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
             {
                 return TimeStatus.ON_TIME;
             }
@@ -406,17 +406,17 @@ public class RubricMananger
             Calendar lateTime = part.getTimeInformation().getLateDate();
 
             // If before early deadline
-            if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, earlyTime, minutesOfLeniency))
+            if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, earlyTime, minutesOfLeniency))
             {
                 return TimeStatus.EARLY;
             }
             // If before ontime deadline
-            else if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
+            else if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
             {
                 return TimeStatus.ON_TIME;
             }
             // If before late deadline
-            else if(Allocator.getGeneralUtilities().isBeforeDeadline(handinTime, lateTime, minutesOfLeniency))
+            else if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, lateTime, minutesOfLeniency))
             {
                 return TimeStatus.LATE;
             }

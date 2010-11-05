@@ -70,7 +70,7 @@ public abstract class HandinPart extends Part
         }
 
         //Get contents of tar
-        Collection<String> contents = Allocator.getGeneralUtilities().getArchiveContents(handin.getAbsolutePath());
+        Collection<String> contents = Allocator.getArchiveUtilities().getArchiveContents(handin.getAbsolutePath());
 
         //For each entry (file and directory) in the tar
         for(String entry : contents)
@@ -216,8 +216,8 @@ public abstract class HandinPart extends Part
         {
             _handins = new Vector<File>();
 
-            _handins.addAll(Allocator.getGeneralUtilities().getFiles(this.getHandinPath(), "tar"));
-            _handins.addAll(Allocator.getGeneralUtilities().getFiles(this.getHandinPath(), "tgz"));
+            _handins.addAll(Allocator.getFileSystemUtilities().getFiles(this.getHandinPath(), "tar"));
+            _handins.addAll(Allocator.getFileSystemUtilities().getFiles(this.getHandinPath(), "tgz"));
         }
         return _handins;
     }
@@ -231,7 +231,7 @@ public abstract class HandinPart extends Part
     private String getHandinPath()
     {
         String path = Allocator.getCourseInfo().getHandinDir()
-                      + this.getAssignment().getName() + "/" + Allocator.getGeneralUtilities().getCurrentYear() + "/";
+                      + this.getAssignment().getName() + "/" + Allocator.getCalendarUtilities().getCurrentYear() + "/";
         return path;
     }
 
@@ -287,13 +287,13 @@ public abstract class HandinPart extends Part
         {
             //Create an empty folder for grading compiled student code
             String compileDir = this.getStudentHandinDirectory(studentLogin);
-            Allocator.getGeneralUtilities().makeDirectory(compileDir);
+            Allocator.getFileSystemUtilities().makeDirectory(compileDir);
 
             //untar student handin
             File handin = this.getHandin(studentLogin);
             if(handin != null)
             {
-                Allocator.getGeneralUtilities().extractArchive(handin.getAbsolutePath(), compileDir);
+                Allocator.getArchiveUtilities().extractArchive(handin.getAbsolutePath(), compileDir);
             }
 
             //record that student's code has been untarred

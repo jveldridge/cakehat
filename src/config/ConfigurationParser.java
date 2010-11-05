@@ -76,7 +76,7 @@ public class ConfigurationParser
             System.out.println("Using hard-coded test value for config location");
             filepath = CONFIG_TEST_DIR_PATH;
         }
-        filepath += Allocator.getGeneralUtilities().getCurrentYear() + "/config/" + CONFIG_FILE_NAME;
+        filepath += Allocator.getCalendarUtilities().getCurrentYear() + "/config/" + CONFIG_FILE_NAME;
         
         //Check the config file exists
         if(!new File(filepath).exists())
@@ -814,7 +814,7 @@ public class ConfigurationParser
             }
         }
 
-        Calendar cal = Allocator.getGeneralUtilities().getCalendar(year, month, day, time);
+        Calendar cal = Allocator.getCalendarUtilities().getCalendar(year, month, day, time);
 
         return new ConfigurationParser.CalendarValue(cal, val);
     }

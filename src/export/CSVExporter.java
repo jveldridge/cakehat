@@ -36,7 +36,7 @@ public class CSVExporter implements Exporter
 
         File defaultFile = new File(Allocator.getCourseInfo().getCourseDir() + "/" +
                                     Allocator.getCourseInfo().getCourse() + "_grades_" +
-                                    Allocator.getGeneralUtilities().getCurrentYear() +
+                                    Allocator.getCalendarUtilities().getCurrentYear() +
                                     ".csv");
         chooser.setSelectedFile(defaultFile);
 

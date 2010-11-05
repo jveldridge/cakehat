@@ -114,7 +114,7 @@ class AntHandin extends JavaHandin {
 
         //Build command to call xterm to run the code
         String runCmd = "cd " + dirPath + studentLogin + "/projects/" + this.getAssignment().getName() + "; ant run";
-        Allocator.getGeneralUtilities().executeInVisibleTerminal(termName, runCmd);
+        Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, runCmd);
     }
 
     @Override

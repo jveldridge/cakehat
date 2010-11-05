@@ -166,7 +166,7 @@ public class FrontendView extends JFrame
     {
         //Create directory for the assignment so GRD files can be created,
         //even if no assignments have been untarred
-        Allocator.getGeneralUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
+        Allocator.getFileSystemUtilities().makeDirectory(Allocator.getGradingUtilities().getUserGradingDirectory()
                                                         + _assignmentList.getSelectedValue().getName());
 
         //Get the students assigned for this assignment

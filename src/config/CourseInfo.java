@@ -382,7 +382,7 @@ public class CourseInfo
      */
     public String getLabsDir()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/labs/";
+        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/labs/";
     }
 
     /**
@@ -394,7 +394,7 @@ public class CourseInfo
      */
     public String getRubricDir()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/rubrics/";
+        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/rubrics/";
     }
 
     /**
@@ -406,7 +406,7 @@ public class CourseInfo
      */
     public String getDatabaseFilePath()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/database.db";
+        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/database.db";
     }
 
     /**
@@ -418,7 +418,7 @@ public class CourseInfo
      */
     public String getTestDatabaseFilePath()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/test_database.db";
+        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/test_database.db";
     }
 
     /**
@@ -430,7 +430,7 @@ public class CourseInfo
      */
     public String getTestDataFilePath()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/test_data.sql";
+        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/test_data.sql";
     }
 
     /**
@@ -442,7 +442,7 @@ public class CourseInfo
      */
     public String getDatabaseBackupDir()
     {
-        return getGradingDir() + Allocator.getGeneralUtilities().getCurrentYear() + "/database/backups/";
+        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/backups/";
     }
 
     /**

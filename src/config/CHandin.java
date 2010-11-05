@@ -115,7 +115,7 @@ class CHandin extends CodeHandin
     }
 
     private Collection<String> getCFiles(String directoryPath) {
-        Collection<File> fileList = Allocator.getGeneralUtilities().getFiles
+        Collection<File> fileList = Allocator.getFileSystemUtilities().getFiles
                 (directoryPath, "c");
         Collection<String> cFiles = new Vector<String>();
         for(File f : fileList)

@@ -370,7 +370,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
     private void setUpGrading() {
         //create rubric directory if it does not exist
         String directoryPath = Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/";
-        Allocator.getGeneralUtilities().makeDirectory(directoryPath);
+        Allocator.getFileSystemUtilities().makeDirectory(directoryPath);
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String) JOptionPane.showInputDialog(this, "Enter minutes of leniency:",

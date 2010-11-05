@@ -40,7 +40,7 @@ public class TimeInformation
                               "'s";
 
         Calendar thisYear = GregorianCalendar.getInstance();
-        thisYear.set(Calendar.YEAR, Allocator.getGeneralUtilities().getCurrentYear());
+        thisYear.set(Calendar.YEAR, Allocator.getCalendarUtilities().getCurrentYear());
         thisYear.set(Calendar.MONTH, 0);
         thisYear.set(Calendar.DAY_OF_MONTH, 1);
         thisYear.set(Calendar.HOUR_OF_DAY, 0);
@@ -55,21 +55,21 @@ public class TimeInformation
             valid = false;
 
             writer.append(msgBeginning + " EARLY date is likely incorrect." +
-                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_early) + "\n");
+                          " Date specified: " + Allocator.getCalendarUtilities().getCalendarAsString(_early) + "\n");
         }
         if(_ontime != null && _ontime.before(thisYear))
         {
             valid = false;
 
             writer.append(msgBeginning + " ONTIME date is likely incorrect." +
-                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_ontime) + "\n");
+                          " Date specified: " + Allocator.getCalendarUtilities().getCalendarAsString(_ontime) + "\n");
         }
         if(_late != null && _late.before(thisYear))
         {
             valid = false;
 
             writer.append(msgBeginning + " LATE date is likely incorrect." +
-                          " Date specified: " + Allocator.getGeneralUtilities().getCalendarAsString(_late) + "\n");
+                          " Date specified: " + Allocator.getCalendarUtilities().getCalendarAsString(_late) + "\n");
         }
 
         return valid;
