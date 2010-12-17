@@ -1,7 +1,7 @@
 package gradesystem;
 
-import backend.BackendView;
-import frontend.FrontendView;
+import gradesystem.views.backend.BackendView;
+import gradesystem.views.frontend.FrontendView;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -15,7 +15,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import utils.Allocator;
+import gradesystem.utils.Allocator;
 
 /**
  * Window shown when running in testing mode that allows for selecting either
