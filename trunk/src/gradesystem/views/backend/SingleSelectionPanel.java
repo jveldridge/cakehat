@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Single selection panel of the backend.

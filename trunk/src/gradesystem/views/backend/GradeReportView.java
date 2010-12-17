@@ -20,7 +20,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.text.html.HTMLEditorKit;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 
 /**

@@ -1,6 +1,6 @@
 package gradesystem.config;
 
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.utils.BashConsole;
 
 /**

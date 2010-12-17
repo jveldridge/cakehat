@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Displays the progress of exporting.

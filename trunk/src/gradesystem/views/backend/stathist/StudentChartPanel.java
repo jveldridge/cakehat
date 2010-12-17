@@ -21,7 +21,7 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.statistics.Statistics;
 import org.jfree.data.xy.DefaultXYDataset;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  *

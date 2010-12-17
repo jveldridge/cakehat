@@ -15,7 +15,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import gradesystem.utils.Allocator;
 
 /**
  * Window shown when running in testing mode that allows for selecting either

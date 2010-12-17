@@ -1,9 +1,15 @@
-package gradesystem.utils;
+package gradesystem;
 
-import gradesystem.services.GradingUtilities;
+import gradesystem.services.GradingServices;
 import gradesystem.database.DBWrapper;
 import gradesystem.database.DatabaseIO;
 import gradesystem.services.StudentServices;
+import gradesystem.utils.ArchiveUtilities;
+import gradesystem.utils.CalendarUtilities;
+import gradesystem.utils.ExternalProcessesUtilities;
+import gradesystem.utils.FileSystemUtilities;
+import gradesystem.utils.GeneralUtilities;
+import gradesystem.utils.UserUtilities;
 
 /**
  * Used to statically get references to utility classes.
@@ -93,10 +99,10 @@ public class Allocator {
     }
 
     //Grading Services
-    private static GradingUtilities GRADING_SERVICES = null;
-    public static GradingUtilities getGradingServices(){
+    private static GradingServices GRADING_SERVICES = null;
+    public static GradingServices getGradingServices(){
         if(GRADING_SERVICES == null){
-            GRADING_SERVICES = new GradingUtilities();
+            GRADING_SERVICES = new GradingServices();
         }
 
         return GRADING_SERVICES;

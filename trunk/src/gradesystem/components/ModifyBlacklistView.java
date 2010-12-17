@@ -28,7 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Provides an interface to manage the students on each TA's blacklist.

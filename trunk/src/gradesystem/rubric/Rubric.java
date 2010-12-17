@@ -6,7 +6,7 @@ import gradesystem.config.TimeInformation;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.JOptionPane;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * An object representation of a GML file. Used internally within the the rubric

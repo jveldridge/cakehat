@@ -11,7 +11,7 @@ import gradesystem.config.TA;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.services.StudentServices.ValidityCheck;
 
 /**

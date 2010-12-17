@@ -12,7 +12,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import org.jdesktop.application.Action;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  *

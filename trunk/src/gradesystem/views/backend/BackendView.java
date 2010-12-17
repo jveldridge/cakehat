@@ -60,7 +60,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.application.SingleFrameApplication;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.services.StudentServices.ValidityCheck;
 
 /**

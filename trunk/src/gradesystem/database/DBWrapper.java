@@ -1,5 +1,6 @@
 package gradesystem.database;
 
+import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
