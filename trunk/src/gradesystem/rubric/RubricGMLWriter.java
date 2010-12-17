@@ -13,7 +13,7 @@ import gradesystem.rubric.Rubric.Section;
 import gradesystem.rubric.Rubric.Subsection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 
 /**

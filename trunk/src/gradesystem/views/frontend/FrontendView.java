@@ -83,7 +83,7 @@ public class FrontendView extends JFrame
 
     public static void launch()
     {
-        if(Allocator.getUserUtilities().isUserTA())
+        if(Allocator.getUserServices().isUserTA())
         {
             new FrontendView();
         }

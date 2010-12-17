@@ -61,7 +61,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.application.SingleFrameApplication;
 import gradesystem.Allocator;
-import gradesystem.services.StudentServices.ValidityCheck;
+import gradesystem.services.UserServices.ValidityCheck;
 
 /**
  *
@@ -76,7 +76,7 @@ public class BackendView extends JFrame
 
     public static void launch()
     {
-        if(Allocator.getUserUtilities().isUserAdmin())
+        if(Allocator.getUserServices().isUserAdmin())
         {
             new BackendView();
         }
@@ -1293,7 +1293,7 @@ public class BackendView extends JFrame
     private void resetDatabaseButtonActionPerformed()
     {
         //check that user performing reset is an HTA
-        if(!Allocator.getUserUtilities().isUserHTA()) {
+        if(!Allocator.getUserServices().isUserHTA()) {
             JOptionPane.showMessageDialog(this, "You are not authorized to reset the database; " +
                     "only HTAs may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
             return;
@@ -1356,10 +1356,10 @@ public class BackendView extends JFrame
 
         //add all students in group
         if (addStudentsRB.isSelected()) {
-            for (String s : Allocator.getUserUtilities().getStudentLogins()) {
+            for (String s : Allocator.getUserServices().getStudentLogins()) {
                 String name = Allocator.getUserUtilities().getUserName(s);
                 String names[] = name.split(" ");
-                Allocator.getStudentServices().addStudent(s, names[0],
+                Allocator.getUserServices().addStudent(s, names[0],
                                                         names[names.length - 1],
                                                         ValidityCheck.BYPASS);
             }

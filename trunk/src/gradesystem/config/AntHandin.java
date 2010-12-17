@@ -1,7 +1,7 @@
 package gradesystem.config;
 
 import gradesystem.Allocator;
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 
 /**
  * A Java (ant) subclass of CodePart.

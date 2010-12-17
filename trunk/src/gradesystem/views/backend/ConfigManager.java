@@ -12,7 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import gradesystem.Allocator;
-import gradesystem.services.StudentServices.ValidityCheck;
+import gradesystem.services.UserServices.ValidityCheck;
 
 /**
  *
@@ -40,11 +40,11 @@ public class ConfigManager extends javax.swing.JFrame {
         addStudentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (allStudentsRB.isSelected()) {
-                    for (String s : Allocator.getUserUtilities().getStudentLogins()) {
+                    for (String s : Allocator.getUserServices().getStudentLogins()) {
                         if (!Allocator.getDatabaseIO().studentExists(s)) {
                             String name = Allocator.getUserUtilities().getUserName(s);
                             String names[] = name.split(" ");
-                            Allocator.getStudentServices().addStudent(s, names[0],
+                            Allocator.getUserServices().addStudent(s, names[0],
                                                                     names[names.length - 1],
                                                                     ValidityCheck.BYPASS);
                         }
@@ -56,13 +56,13 @@ public class ConfigManager extends javax.swing.JFrame {
                         if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
                             String name = Allocator.getUserUtilities().getUserName(login);
                             String names[] = name.split(" ");
-                            Allocator.getStudentServices().addStudent(login,
+                            Allocator.getUserServices().addStudent(login,
                                                                     names[0],
                                                                     names[names.length - 1],
                                                                     ValidityCheck.CHECK);
                         }
                         else {
-                            Allocator.getStudentServices().addStudent(login,
+                            Allocator.getUserServices().addStudent(login,
                                                                     firstNameText.getText(),
                                                                     lastNameText.getText(),
                                                                     ValidityCheck.CHECK);
