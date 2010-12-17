@@ -28,7 +28,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Allows for viewing, submitting, and removing extensions.

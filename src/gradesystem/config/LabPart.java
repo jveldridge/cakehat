@@ -3,7 +3,7 @@ package gradesystem.config;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Represents a lab part of an assignment. Can retrieve check off scores for a

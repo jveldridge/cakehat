@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import gradesystem.rubric.Rubric.*;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 
 /**

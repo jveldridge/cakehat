@@ -36,7 +36,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * A simpler viewer for plain text files. Allows for searching within the

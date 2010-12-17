@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Allows for viewing and editing a rubric. Intended to be used to fill out a

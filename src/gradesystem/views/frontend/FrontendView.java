@@ -39,7 +39,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * A frontend view to be used by TAs that are grading.

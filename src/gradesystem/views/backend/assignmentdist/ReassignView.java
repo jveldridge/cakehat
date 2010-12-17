@@ -37,7 +37,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Provides an interface to allow administrators to manually distribute

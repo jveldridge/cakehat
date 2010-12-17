@@ -25,7 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  *

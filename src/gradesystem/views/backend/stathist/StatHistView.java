@@ -12,7 +12,7 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  *

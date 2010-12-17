@@ -30,7 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Provides an interface for creating a distribution for an assignment.

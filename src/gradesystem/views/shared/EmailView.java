@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  *

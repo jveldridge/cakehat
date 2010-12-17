@@ -35,7 +35,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.utils.BashConsole;
 
 /**
@@ -44,7 +44,7 @@ import gradesystem.utils.BashConsole;
  * @author jeldridg
  * @author jak2
  */
-public class GradingUtilities {
+public class GradingServices {
 
     /**
      * Import grades for a lab part into the database.

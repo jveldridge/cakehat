@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.jfree.data.statistics.Statistics;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  *

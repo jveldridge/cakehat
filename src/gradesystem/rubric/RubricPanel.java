@@ -25,7 +25,7 @@ import javax.swing.event.DocumentListener;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LatePolicy;
 import gradesystem.rubric.Rubric.*;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * A graphical view of a rubric.

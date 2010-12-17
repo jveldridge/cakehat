@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.services.printing.PrintRequest;

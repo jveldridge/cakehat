@@ -1,6 +1,6 @@
 package gradesystem.config;
 
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 import java.awt.GridLayout;
 import java.io.File;

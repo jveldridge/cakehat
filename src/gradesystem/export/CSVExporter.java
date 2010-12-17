@@ -12,7 +12,7 @@ import java.util.Vector;
 import java.util.concurrent.Executors;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 
 /**

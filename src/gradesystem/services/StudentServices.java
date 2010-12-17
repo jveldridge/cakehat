@@ -1,6 +1,6 @@
 package gradesystem.services;
 
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import javax.swing.JOptionPane;
 
 /**

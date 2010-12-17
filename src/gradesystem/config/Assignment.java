@@ -1,7 +1,7 @@
 package gradesystem.config;
 
 import java.util.Vector;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * A representation of an Assigment, composed of any number of non-handin parts,

@@ -4,7 +4,7 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Object representation of the XML config file. Only meant to be used by

@@ -7,7 +7,7 @@ import java.util.Vector;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 import gradesystem.utils.BashConsole;
 
 /**

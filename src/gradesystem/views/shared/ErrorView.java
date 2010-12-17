@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * Displays an error that occurs during runtime. Allows for sending reporting

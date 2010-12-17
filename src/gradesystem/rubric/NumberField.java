@@ -10,7 +10,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.rubric.Rubric.Subsection;
 
-import gradesystem.utils.Allocator;
+import gradesystem.Allocator;
 
 /**
  * A text field specifically meant for numbers. This class cannot be directly
