@@ -1,7 +1,7 @@
 package gradesystem;
 
-import backend.BackendView;
-import frontend.FrontendView;
+import gradesystem.views.backend.BackendView;
+import gradesystem.views.frontend.FrontendView;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
