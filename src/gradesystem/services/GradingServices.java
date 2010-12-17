@@ -15,7 +15,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import gradesystem.services.printing.PrintRequest;
+import gradesystem.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 
 /**
  * This class provides grading specific utility functions.
@@ -437,10 +437,10 @@ public class GradingServices {
                     String studentLogin = notInDBPanel.getStudentLogin();
                     String studentName = Allocator.getUserUtilities().getUserName(studentLogin);
                     String[] studentSplitName = studentName.split(" ");
-                    Allocator.getStudentServices().addStudent(studentLogin,
+                    Allocator.getUserServices().addStudent(studentLogin,
                                                             studentSplitName[0],
                                                             studentSplitName[studentSplitName.length - 1],
-                                                            StudentServices.ValidityCheck.CHECK);
+                                                            UserServices.ValidityCheck.CHECK);
                     handinsNotInDB.remove(studentLogin);
                 }
             }

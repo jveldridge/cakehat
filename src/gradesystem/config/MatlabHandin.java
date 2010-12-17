@@ -5,7 +5,6 @@ import gradesystem.views.shared.ErrorView;
 import java.awt.GridLayout;
 import java.io.File;
 import matlab.MatlabConnectionException;
-import gradesystem.utils.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

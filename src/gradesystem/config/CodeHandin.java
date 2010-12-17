@@ -13,9 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import gradesystem.Allocator;
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
-import gradesystem.services.printing.PrintRequest;
+import gradesystem.printing.PrintRequest;
 
 /**
  * A HANDIN that specifies a LANGUAGE.

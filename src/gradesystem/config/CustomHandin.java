@@ -1,6 +1,6 @@
 package gradesystem.config;
 
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 
 /**
  * Allows for a totally custom handin specification where an arbitratry command

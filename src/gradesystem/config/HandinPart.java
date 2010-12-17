@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.views.shared.TextViewerView;
 

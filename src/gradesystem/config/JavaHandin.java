@@ -17,7 +17,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import gradesystem.Allocator;
-import gradesystem.utils.BashConsole;
+import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 
 /**

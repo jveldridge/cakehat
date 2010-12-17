@@ -68,7 +68,7 @@ class Configuration
         //Check validity of TAs
         for (TA ta : this.getTAs()) {
             boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(ta.getLogin());
-            boolean isInTAGroup = Allocator.getUserUtilities().isInTAGroup(ta.getLogin());
+            boolean isInTAGroup = Allocator.getUserServices().isInTAGroup(ta.getLogin());
 
             if (!isLoginValid) {
                 writer.append(String.format("Login \"%s\" is not valid.\n", ta.getLogin()));

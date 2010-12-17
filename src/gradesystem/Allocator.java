@@ -3,13 +3,13 @@ package gradesystem;
 import gradesystem.services.GradingServices;
 import gradesystem.database.DBWrapper;
 import gradesystem.database.DatabaseIO;
-import gradesystem.services.StudentServices;
-import gradesystem.utils.ArchiveUtilities;
-import gradesystem.utils.CalendarUtilities;
-import gradesystem.utils.ExternalProcessesUtilities;
-import gradesystem.utils.FileSystemUtilities;
-import gradesystem.utils.GeneralUtilities;
-import gradesystem.utils.UserUtilities;
+import gradesystem.services.UserServices;
+import utils.ArchiveUtilities;
+import utils.CalendarUtilities;
+import utils.ExternalProcessesUtilities;
+import utils.FileSystemUtilities;
+import utils.GeneralUtilities;
+import utils.UserUtilities;
 
 /**
  * Used to statically get references to utility classes.
@@ -108,14 +108,14 @@ public class Allocator {
         return GRADING_SERVICES;
     }
 
-    //Student Services
-    private static StudentServices STUDENT_SERVICS = null;
-    public static StudentServices getStudentServices(){
-        if(STUDENT_SERVICS == null){
-            STUDENT_SERVICS = new StudentServices();
+    //User Services
+    private static UserServices USER_SERVICS = null;
+    public static UserServices getUserServices(){
+        if(USER_SERVICS == null){
+            USER_SERVICS = new UserServices();
         }
 
-        return STUDENT_SERVICS;
+        return USER_SERVICS;
     }
 
     //DatabaseIO
@@ -128,19 +128,19 @@ public class Allocator {
     }
 
     //Landscape Printer
-    private static gradesystem.services.printing.Printer LANDSCAPE_PRINTER = null;
-    public static gradesystem.services.printing.Printer getLandscapePrinter() {
+    private static gradesystem.printing.Printer LANDSCAPE_PRINTER = null;
+    public static gradesystem.printing.Printer getLandscapePrinter() {
         if(LANDSCAPE_PRINTER == null){
-            LANDSCAPE_PRINTER = new gradesystem.services.printing.EnscriptPrinter();
+            LANDSCAPE_PRINTER = new gradesystem.printing.EnscriptPrinter();
         }
         return LANDSCAPE_PRINTER;
     }
 
     //Portrait Printer
-    private static gradesystem.services.printing.Printer PORTRAIT_PRINTER = null;
-    public static gradesystem.services.printing.Printer getPortraitPrinter() {
+    private static gradesystem.printing.Printer PORTRAIT_PRINTER = null;
+    public static gradesystem.printing.Printer getPortraitPrinter() {
         if(PORTRAIT_PRINTER == null){
-            PORTRAIT_PRINTER = new gradesystem.services.printing.LprPrinter();
+            PORTRAIT_PRINTER = new gradesystem.printing.LprPrinter();
         }
         return PORTRAIT_PRINTER;
     }
