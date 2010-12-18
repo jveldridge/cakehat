@@ -112,35 +112,6 @@ public class CalendarUtilities
     }
 
     /**
-     * Converts a string formatted as either YEAR-MONTH-DAY HOUR:MINUTE:SECOND
-     * or YEAR-MONTH-DAY into a Calendar.
-     *
-     * @param timestamp formatted as YEAR-MONTH-DAY HOUR:MINUTE:SECOND or YEAR-MONTH-DAY
-     * @return a calendar
-     */
-    public Calendar getCalendarFromString(String timestamp)
-    {
-        String year, month, day, time = "";
-
-        //Try to split date from time
-        String[] parts = timestamp.split(" ");
-
-        //Date parts
-        String[] dateParts = parts[0].split("-");
-        year = dateParts[0];
-        month = dateParts[1];
-        day = dateParts[2];
-
-        //If it has a time part
-        if (parts.length == 2)
-        {
-            time = parts[1];
-        }
-
-        return getCalendar(year, month, day, time);
-    }
-
-    /**
      * Returns a Calendar from the Strings passed in.
      *
      * @param year

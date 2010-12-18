@@ -21,18 +21,6 @@ public class FileSystemUtilities
 {
     /**
      * Returns a Calendar that represents the last modified date and time
-     * of the file specified by the file path.
-     *
-     * @param filePath
-     * @return last modified date
-     */
-    public Calendar getModifiedDate(String filePath)
-    {
-        return getModifiedDate(new File(filePath));
-    }
-
-    /**
-     * Returns a Calendar that represents the last modified date and time
      * of the file.
      *
      * @param file
@@ -113,24 +101,9 @@ public class FileSystemUtilities
     }
 
     /**
-     * Copies the source file to the destination file. If the destination file
-     * does not exist it will be created. If it already exists, it will be
-     * overwritten. If permissions do not allow this copy then it will fail
-     * and false will be returned.
-     *
-     * @param sourceFile
-     * @param destPath
-     * @return success of copying file
-     */
-    public boolean copyFile(File sourceFile, String destPath)
-    {
-        return copyFile(sourceFile, new File(destPath));
-    }
-
-    /**
      * Reads a text file into a String.
      *
-     * @param the file to read
+     * @param file the file to read
      * @return a String of the text in the file
      */
     public String readFile(File file)
@@ -169,7 +142,7 @@ public class FileSystemUtilities
      * TODO: Check if changing the directory permission is working properly.
      *       In particular, check what it is considering the group (ugrad or TA group)
      *
-     * @param dirPath- directory to be created
+     * @param dirPath directory to be created
      * @return whether the directory creation was successful
      */
     public boolean makeDirectory(String dirPath)
