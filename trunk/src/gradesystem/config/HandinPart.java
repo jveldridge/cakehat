@@ -1,11 +1,13 @@
 package gradesystem.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
+import org.apache.commons.compress.archivers.ArchiveException;
 import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.views.shared.TextViewerView;
@@ -70,7 +72,21 @@ public abstract class HandinPart extends Part
         }
 
         //Get contents of tar
-        Collection<String> contents = Allocator.getArchiveUtilities().getArchiveContents(handin.getAbsolutePath());
+        Collection<String> contents;
+        try
+        {
+            contents = Allocator.getArchiveUtilities().getArchiveContents(handin.getAbsolutePath());
+        }
+        catch (IOException ex)
+        {
+            new ErrorView(ex, "Cannot determine if a readme exists - unable to get archive contents.");
+            return false;
+        }
+        catch (ArchiveException ex)
+        {
+            new ErrorView(ex, "Cannot determine if a readme exists - unable to get archive contents.");
+            return false;
+        }
 
         //For each entry (file and directory) in the tar
         for(String entry : contents)
@@ -293,11 +309,22 @@ public abstract class HandinPart extends Part
             File handin = this.getHandin(studentLogin);
             if(handin != null)
             {
-                Allocator.getArchiveUtilities().extractArchive(handin.getAbsolutePath(), compileDir);
-            }
+                try
+                {
+                    Allocator.getArchiveUtilities().extractArchive(handin.getAbsolutePath(), compileDir);
 
-            //record that student's code has been untarred
-            _untarredStudents.add(studentLogin);
+                    //record that student's code has been untarred
+                    _untarredStudents.add(studentLogin);
+                }
+                catch (IOException ex)
+                {
+                    new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
+                }
+                catch (ArchiveException ex)
+                {
+                    new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
+                }
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package utils;
 
-import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -76,33 +75,22 @@ public class ArchiveUtilities
      *
      * @return collection of Strings with the paths of files and directories in the archive
      */
-    public Collection<String> getArchiveContents(String archivePath)
+    public Collection<String> getArchiveContents(String archivePath) throws IOException, ArchiveException
     {
         Vector<String> contents = new Vector<String>();
 
-        try
+        ArchiveInputStream in = getArchiveInputStream(archivePath);
+        while(true)
         {
-            ArchiveInputStream in = getArchiveInputStream(archivePath);
-            while(true)
+            ArchiveEntry entry = in.getNextEntry();
+            if(entry == null)
             {
-                ArchiveEntry entry = in.getNextEntry();
-                if(entry == null)
-                {
-                    break;
-                }
-
-                contents.add(entry.getName());
+                break;
             }
-            in.close();
+
+            contents.add(entry.getName());
         }
-        catch(IOException e)
-        {
-            new ErrorView(e);
-        }
-        catch (ArchiveException e)
-        {
-            new ErrorView(e);
-        }
+        in.close();
 
         return contents;
     }
@@ -112,49 +100,30 @@ public class ArchiveUtilities
      *
      * @param archivePath the absolute path of the archive file
      * @param dstDir the directory the archive file will be expanded into
-     *
-     * @boolean success of extracing archive
      */
-    public boolean extractArchive(String archivePath, String dstDir)
+    public void extractArchive(String archivePath, String dstDir) throws IOException, ArchiveException
     {
-        try
+        ArchiveInputStream in = getArchiveInputStream(archivePath);
+        while(true)
         {
-            ArchiveInputStream in = getArchiveInputStream(archivePath);
-            while(true)
+            ArchiveEntry entry = in.getNextEntry();
+            if(entry == null)
             {
-                ArchiveEntry entry = in.getNextEntry();
-                if(entry == null)
-                {
-                    break;
-                }
-
-                File file = new File(dstDir, entry.getName());
-                if(entry.isDirectory())
-                {
-                    file.mkdirs();
-                }
-                else
-                {
-                    OutputStream out = new FileOutputStream(file);
-                    IOUtils.copy(in, out);
-                    out.close();
-                }
+                break;
             }
-            in.close();
-        }
-        catch(IOException e)
-        {
-            new ErrorView(e);
 
-            return false;
+            File file = new File(dstDir, entry.getName());
+            if(entry.isDirectory())
+            {
+                file.mkdirs();
+            }
+            else
+            {
+                OutputStream out = new FileOutputStream(file);
+                IOUtils.copy(in, out);
+                out.close();
+            }
         }
-        catch (ArchiveException e)
-        {
-            new ErrorView(e);
-
-            return false;
-        }
-
-        return true;
+        in.close();
     }
 }

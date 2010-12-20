@@ -17,6 +17,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.LinkedList;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -85,7 +87,18 @@ public class TextViewerView extends JFrame
         //If file was passed in, load contents
         if(file != null)
         {
-            _textArea.setText(Allocator.getFileSystemUtilities().readFile(file));
+            try
+            {
+                _textArea.setText(Allocator.getFileSystemUtilities().readFile(file));
+            }
+            catch (FileNotFoundException ex)
+            {
+                new ErrorView(ex, "TextViewerView cannot read file, file does not exist: " + file.getAbsolutePath());
+            }
+            catch (IOException ex)
+            {
+                new ErrorView(ex, "TextViewerView cannot read file: " + file.getAbsolutePath());
+            }
             _textArea.setCaretPosition(0);
         }
         _linehighlighter = new Object[_textArea.getLineCount()];

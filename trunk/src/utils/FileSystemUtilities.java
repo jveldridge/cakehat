@@ -1,9 +1,9 @@
 package utils;
 
-import gradesystem.views.shared.ErrorView;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -106,31 +106,24 @@ public class FileSystemUtilities
      * @param file the file to read
      * @return a String of the text in the file
      */
-    public String readFile(File file)
+    public String readFile(File file) throws FileNotFoundException, IOException
     {
         StringBuilder text = new StringBuilder();
+        BufferedReader input = new BufferedReader(new FileReader(file));
         try
         {
-            BufferedReader input = new BufferedReader(new FileReader(file));
-            try
+            String line = null;
+            while ((line = input.readLine()) != null)
             {
-                String line = null;
-                while ((line = input.readLine()) != null)
-                {
-                    text.append(line);
-                    text.append(System.getProperty("line.separator"));
-                }
-            }
-            finally
-            {
-                input.close();
+                text.append(line);
+                text.append(System.getProperty("line.separator"));
             }
         }
-        catch (IOException ex)
+        finally
         {
-            new ErrorView(ex, "Unable to read text of: " + file.getAbsolutePath());
+            input.close();
         }
-        
+
         return text.toString();
     }
 
