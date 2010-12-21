@@ -14,7 +14,7 @@ import gradesystem.rubric.Rubric.Person;
 import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 
-public class RubricManagerImpl implements RubricMananger
+public class RubricManagerImpl implements RubricManager
 {
     public void view(HandinPart part, String studentLogin)
     {

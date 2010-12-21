@@ -10,7 +10,7 @@ import gradesystem.export.Exporter;
 import gradesystem.printing.EnscriptPrinter;
 import gradesystem.printing.LprPrinter;
 import gradesystem.printing.Printer;
-import gradesystem.rubric.RubricMananger;
+import gradesystem.rubric.RubricManager;
 import gradesystem.rubric.RubricManagerImpl;
 import gradesystem.services.GradingServicesImpl;
 import gradesystem.services.UserServices;
@@ -103,7 +103,7 @@ public class Allocator
     }
     
     private final SingletonAllocation<CourseInfo> _courseInfo;
-    private final SingletonAllocation<RubricMananger> _rubricManager;
+    private final SingletonAllocation<RubricManager> _rubricManager;
     private final SingletonAllocation<GradingServices> _gradingServices;
     private final SingletonAllocation<UserServices> _userServices;
     private final SingletonAllocation<DatabaseIO> _database;
@@ -138,7 +138,7 @@ public class Allocator
      * @param userUtils
      */
     private Allocator(SingletonAllocation<CourseInfo> courseInfo,
-                      SingletonAllocation<RubricMananger> rubricManager,
+                      SingletonAllocation<RubricManager> rubricManager,
                       SingletonAllocation<GradingServices> gradingServices,
                       SingletonAllocation<UserServices> userServices,
                       SingletonAllocation<DatabaseIO> database,
@@ -164,8 +164,8 @@ public class Allocator
 
         if(rubricManager == null)
         {
-            _rubricManager = new SingletonAllocation<RubricMananger>()
-                             { public RubricMananger allocate() { return new RubricManagerImpl(); } };
+            _rubricManager = new SingletonAllocation<RubricManager>()
+                             { public RubricManager allocate() { return new RubricManagerImpl(); } };
         }
         else
         {
@@ -298,7 +298,7 @@ public class Allocator
         return getInstance()._courseInfo.getInstance();
     }
 
-    public static RubricMananger getRubricManager()
+    public static RubricManager getRubricManager()
     {
         return getInstance()._rubricManager.getInstance();
     }
@@ -373,7 +373,7 @@ public class Allocator
     public static class Customizer
     {
         private SingletonAllocation<CourseInfo> _courseInfo;
-        private SingletonAllocation<RubricMananger> _rubricManager;
+        private SingletonAllocation<RubricManager> _rubricManager;
         private SingletonAllocation<GradingServices> _gradingServices;
         private SingletonAllocation<UserServices> _userServices;
         private SingletonAllocation<DatabaseIO> _database;
@@ -394,7 +394,7 @@ public class Allocator
             return this;
         }
 
-        public Customizer setRubricManager(SingletonAllocation<RubricMananger> rubricManager)
+        public Customizer setRubricManager(SingletonAllocation<RubricManager> rubricManager)
         {
             _rubricManager = rubricManager;
 
