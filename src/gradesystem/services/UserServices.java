@@ -1,9 +1,6 @@
 package gradesystem.services;
 
-import gradesystem.Allocator;
-import gradesystem.config.TA;
 import java.util.Collection;
-import javax.swing.JOptionPane;
 
 /**
  * Services relating to users. Unlike <code>UserUtilities</code>, these methods
@@ -11,7 +8,7 @@ import javax.swing.JOptionPane;
  *
  * @author jak2
  */
-public class UserServices
+public interface UserServices
 {
     public enum ValidityCheck {BYPASS, CHECK};
 
@@ -34,44 +31,7 @@ public class UserServices
      *                    adding all members of the course group)
      */
     public void addStudent(String studentLogin, String firstName,
-            String lastName, ValidityCheck checkValidity)
-    {
-
-        if (checkValidity == ValidityCheck.CHECK)
-        {
-            boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(studentLogin);
-            boolean isInStudentGroup = this.isInStudentGroup(studentLogin);
-
-            String warningMessage = "";
-            if (!isLoginValid)
-            {
-                warningMessage += String.format("The login %s is not a valid (snoopable) login\n",
-                        studentLogin);
-            }
-            else if (!isInStudentGroup)
-            {
-                warningMessage += String.format("The login %s is not in the student group",
-                        studentLogin);
-            }
-
-            if (!isLoginValid || !isInStudentGroup)
-            {
-                Object[] options = {"Proceed", "Cancel"};
-                int shouldContinue = JOptionPane.showOptionDialog(null, warningMessage,
-                        "Invalid Student Login",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.WARNING_MESSAGE,
-                        null, options, options[0]);
-
-                if (shouldContinue != JOptionPane.OK_OPTION)
-                {
-                    return;
-                }
-            }
-        }
-
-        Allocator.getDatabaseIO().addStudent(studentLogin, firstName, lastName);
-    }
+            String lastName, ValidityCheck checkValidity);
 
     /**
      * Returns whether or not the current user is a TA for the course as
@@ -79,20 +39,7 @@ public class UserServices
      *
      * @return whether user is a TA
      */
-    public boolean isUserTA()
-    {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getTAs())
-        {
-            if(ta.getLogin().equals(userLogin))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    public boolean isUserTA();
 
     /**
      * Returns whether or not the current user is an admin for the course as
@@ -100,20 +47,7 @@ public class UserServices
      *
      * @return whether the user is an Admin
      */
-    public boolean isUserAdmin()
-    {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getTAs())
-        {
-            if(ta.getLogin().equals(userLogin) && ta.isAdmin())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    public boolean isUserAdmin();
 
     /**
      * Returns whether or not the current user is an HTA for the course as
@@ -121,20 +55,7 @@ public class UserServices
      *
      * @return whether user is a HTA
      */
-    public boolean isUserHTA()
-    {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getHTAs())
-        {
-            if(ta.getLogin().equals(userLogin))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    public boolean isUserHTA();
 
     /**
      * Returns whether or not the student with given login studentLogin is a
@@ -143,10 +64,7 @@ public class UserServices
      * @return true if the student with login studentLogin is a member of the
      *         course's student group; false otherwise
      */
-    public boolean isInStudentGroup(String studentLogin)
-    {
-        return Allocator.getUserUtilities().isMemberOfGroup(studentLogin, Allocator.getCourseInfo().getStudentGroup());
-    }
+    public boolean isInStudentGroup(String studentLogin);
 
     /**
      * Returns whether or not the user specified by <code>taLogin</code> is a
@@ -154,18 +72,12 @@ public class UserServices
      *
      * @return true if the user is a member of the course's TA group
      */
-    public boolean isInTAGroup(String taLogin)
-    {
-        return Allocator.getUserUtilities().isMemberOfGroup(taLogin, Allocator.getCourseInfo().getTAGroup());
-    }
+    public boolean isInTAGroup(String taLogin);
 
     /**
      * Returns the logins of all students in the class's student group.
      *
      * @return
      */
-    public Collection<String> getStudentLogins()
-    {
-        return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getStudentGroup());
-    }
+    public Collection<String> getStudentLogins();
 }

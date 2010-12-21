@@ -3,7 +3,7 @@ package utils;
 /**
  * Utility methods that involve external processes.
  */
-public class ExternalProcessesUtilities
+public interface ExternalProcessesUtilities
 {
     /**
      * Executes the given cmd in a separate visible terminal.  Upon the command's
@@ -12,14 +12,7 @@ public class ExternalProcessesUtilities
      * @param title
      * @param cmd
      */
-    public void executeInVisibleTerminal(String title, String cmd)
-    {
-        String terminalCmd = "/usr/bin/xterm -fg black -bg gray" +
-                " -title " + "\"" + title + "\"" +
-                " -e " + "\"" + cmd + "; bash" + "\"";
-
-        BashConsole.writeThreaded(terminalCmd);
-    }
+    public void executeInVisibleTerminal(String title, String cmd);
 
     //TODO: Method to open Kate
 
