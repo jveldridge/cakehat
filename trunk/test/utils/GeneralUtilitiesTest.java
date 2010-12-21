@@ -1,20 +1,19 @@
-/**This class contains methods that test the methods in the GeneralUtilities class.
- *
- * @author hdrosen
- */
-
 package utils;
 
-import utils.GeneralUtilities;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * This class contains methods that test the methods in the GeneralUtilities class.
+ *
+ * @author hdrosen
+ */
 public class GeneralUtilitiesTest {
 
     private GeneralUtilities _instance;
 
     public GeneralUtilitiesTest() {
-        _instance = new GeneralUtilities();
+        _instance = new GeneralUtilitiesImpl();
     }
 
     

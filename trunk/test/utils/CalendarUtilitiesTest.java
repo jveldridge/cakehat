@@ -1,21 +1,9 @@
 package utils;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-import utils.CalendarUtilities;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-
 
 /**
  *
@@ -27,7 +15,7 @@ public class CalendarUtilitiesTest {
     private GregorianCalendar _cal;
 
     public CalendarUtilitiesTest() {
-        _instance = new CalendarUtilities();
+        _instance = new CalendarUtilitiesImpl();
         _cal = new GregorianCalendar();
         //This sets the date and time of the calendar so that it is 3:45:32 on 10/31/2010.
         _cal.set(2010, 9, 31, 3, 45, 32);

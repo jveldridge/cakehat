@@ -1,6 +1,5 @@
 package utils;
 
-import utils.UserUtilities;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -13,7 +12,7 @@ public class UserUtilitiesTest {
     private UserUtilities _instance;
 
     public UserUtilitiesTest() {
-        _instance = new UserUtilities();
+        _instance = new UserUtilitiesImpl();
     }
 
 //This tests the getUserName method in the UserUtilities class.
