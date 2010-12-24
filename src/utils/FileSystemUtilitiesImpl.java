@@ -12,9 +12,13 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.Vector;
+import utils.system.NativeFunctions;
+import utils.FileSystemUtilities.Permission;
 
 public class FileSystemUtilitiesImpl implements FileSystemUtilities
 {
+    private static final NativeFunctions NATIVE_FUNCTIONS = new NativeFunctions();
+
     public Calendar getModifiedDate(File file)
     {
         GregorianCalendar calendar = new GregorianCalendar();
@@ -102,13 +106,81 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
 
         //If directory was made, change permissions to be totally accessible by user and group
+        boolean chmodSuccess = true;
         if(madeDir)
         {
-            BashConsole.write("chmod 770 -R" + dirPath);
+            try
+            {
+                this.chmodDirectory(dir);
+            }
+            catch (PermissionException ex)
+            {
+                chmodSuccess = false;
+            }
         }
 
-        //Return if the directory now exists
-        return dir.exists();
+        //Return if the directory now exists and has the correct permissions
+        return dir.exists() && chmodSuccess;
+    }
+
+    public void chmod(File file, boolean recursive, Permission... mode) throws PermissionException
+    {
+        int modeValue = 0;
+        for(Permission permission : mode)
+        {
+            modeValue += permission.getValue();
+        }
+
+        this.chmod(file, recursive, modeValue);
+    }
+
+    public void chmodFile(File file) throws PermissionException
+    {
+        this.chmod(file, false,
+                Permission.OWNER_READ, Permission.OWNER_WRITE,
+                Permission.GROUP_READ, Permission.GROUP_WRITE);
+    }
+
+    public void chmodDirectory(File directory) throws PermissionException
+    {
+        if(directory.isDirectory())
+        {
+            this.chmod(directory, false,
+                    Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
+                    Permission.GROUP_READ, Permission.GROUP_WRITE, Permission.GROUP_EXECUTE);
+
+            for(File entry : directory.listFiles())
+            {
+                if(entry.isFile())
+                {
+                    this.chmodFile(entry);
+                }
+                else if(entry.isDirectory())
+                {
+                    this.chmodDirectory(directory);
+                }
+            }
+        }
+        else
+        {
+            throw new PermissionException("Excepted directory, given file: " + directory.getAbsolutePath());
+        }
+    }
+
+    private void chmod(File file, boolean recursive, int mode) throws PermissionException
+    {
+        if(!NATIVE_FUNCTIONS.chmod(file, mode))
+        {
+            throw new PermissionException(file);
+        }
+
+        if(recursive && file.isDirectory())
+        {
+            for(File subfile : file.listFiles())
+            {
+                this.chmod(subfile, recursive, mode);
+            }
+        }
     }
 
     public boolean removeDirectory(String dirPath)
