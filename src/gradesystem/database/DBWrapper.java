@@ -1212,7 +1212,7 @@ public class DBWrapper implements DatabaseIO {
 
             return (enabled == 1);
         } catch (SQLException e) {
-            new ErrorView(e, "Could not determine if enabled.");
+            new ErrorView(e, "Could not determine if student: " + studentLogin + " is enabled.");
             return false;
         } finally {
             this.closeConnection(conn);
