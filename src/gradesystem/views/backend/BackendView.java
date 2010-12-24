@@ -1332,7 +1332,7 @@ public class BackendView extends JFrame
 
         //clear database
         if (clearDatabaseRB.isSelected()) {
-            Allocator.getDatabaseIO().clearDatabase();
+            Allocator.getDatabaseIO().resetDatabase();
         }
 
         //add all TAs

@@ -422,7 +422,15 @@ public interface DatabaseIO {
     public boolean removeGroups(HandinPart handin);
 
     /**
-     * Removes all data from database tables.
+     * returns all the graders for a specific student
+     * @param studentlogin
+     * @return map of asgn to ta
      */
-    public void clearDatabase();
+    public Map<Assignment, String> getAllGradersForStudent(String studentLogin);
+
+    /**
+     * Removes all data from database tables and rebuilds the tables. If no DB
+     * file exists or is empty then it will be set to the initial configuration.
+     */
+    public void resetDatabase();
 }
