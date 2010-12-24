@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import gradesystem.printing.PrintRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
 import utils.BashConsole;
+import utils.FileSystemUtilities.Permission;
+import utils.PermissionException;
 
 public class GradingServicesImpl implements GradingServices
 {
@@ -505,6 +508,7 @@ public class GradingServicesImpl implements GradingServices
      */
     public void updateLabGradeFile(LabPart labPart, double score, String student)
     {
+        //TODO: Switch this to pure Java
         BashConsole.write(String.format("rm %s/%d/%s* -f",
                 Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student));
 
@@ -523,11 +527,34 @@ public class GradingServicesImpl implements GradingServices
 
         scoreText = scoreText.substring(0, endIndex+1);
 
-        BashConsole.write(String.format("touch %s/%d/%s,%s",
-                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText));
-        BashConsole.write(String.format("chmod 770 %s/%d/%s,%s",
-                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText));
-        BashConsole.write(String.format("chgrp %sta %s/%d/%s,%s",
-                Allocator.getCourseInfo().getCourse(), Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText));
+        //File that will represent the lab grade
+        String scoreFilePath = String.format("%s%d/%s,%s",
+                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText);
+        File scoreFile = new File(scoreFilePath);
+
+        //Create the file
+        try
+        {
+            scoreFile.createNewFile();
+        }
+        catch (IOException ex)
+        {
+            new ErrorView(ex, "Previous lab grade was removed, " +
+                    "but it was not possible to add the new lab grade: " + scoreFilePath);
+        }
+
+        //Change permissions
+        try
+        {
+            Allocator.getFileSystemUtilities().chmodFile(scoreFile);
+        }
+        catch(PermissionException e)
+        {
+            new ErrorView(e, "Unable to change permissions for new lab grade.");
+        }
+
+        //Ensure group is the ta group
+        //TODO: Is this really necessary?
+        BashConsole.write("chgrp " + Allocator.getCourseInfo().getTAGroup() + " " + scoreFilePath);
     }
 }

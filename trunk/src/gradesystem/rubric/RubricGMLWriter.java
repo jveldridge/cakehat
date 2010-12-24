@@ -1,5 +1,6 @@
 package gradesystem.rubric;
 
+import gradesystem.Allocator;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -13,8 +14,9 @@ import gradesystem.rubric.Rubric.Section;
 import gradesystem.rubric.Rubric.Subsection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
+import utils.FileSystemUtilities.Permission;
+import utils.PermissionException;
 
 /**
  *
@@ -208,19 +210,30 @@ class RubricGMLWriter implements RubricConstants
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
             // ensure directory where the file is going to be saved exists
-            File file = new File(XMLFilePath);
-            file.getParentFile().mkdirs();
+            File xmlFile = new File(XMLFilePath);
+            if(!Allocator.getFileSystemUtilities().makeDirectory(xmlFile.getParent()))
+            {
+                new ErrorView("Unable to make directory to save rubric (gml file) in. \n" +
+                        "Rubric location is: " + xmlFile.getAbsolutePath());
+            }
+
             // write file
-            StreamResult result = new StreamResult(file);
+            StreamResult result = new StreamResult(xmlFile);
             transformer.transform(source, result);
 
             // ensure the file written has the correct permissions
-            BashConsole.write("chmod 660 " + XMLFilePath);
+            try
+            {
+                Allocator.getFileSystemUtilities().chmodFile(xmlFile);
+            }
+            catch(PermissionException e)
+            {
+                new ErrorView(e, "Unable to set correct permissions for rubric (gml file).");
+            }
         }
         catch (Exception e)
         {
-            new ErrorView(e);
+            new ErrorView(e, "Unable to save rubric (gml file): " + XMLFilePath);
         }
-    }
-    
+    }   
 }

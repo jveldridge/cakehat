@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import java.io.File;
 
 /**
  * Java wrappers for native C functions in Linux/Unix.
@@ -24,6 +25,7 @@ public class NativeFunctions
      */
     private static interface LibC extends Library
     {
+        public int chmod(String filename, int mode);
         public NativeGroup getgrnam(String which);
         public NativeUserInformation getpwnam(String login);
         public int getuid();
@@ -38,6 +40,22 @@ public class NativeFunctions
     }
 
     /**
+     * Changes the permissions on a file or directory.
+     *
+     * @param file the file or directory
+     * @param mode the <b>octal</b> form permission, such as 0770 or 0666
+     * @return success of performing chmod
+     */
+    public boolean chmod(File file, int mode)
+    {
+        int returnVal = _libC.chmod(file.getAbsolutePath(), mode);
+        //Returns 0 on success
+        boolean success = (returnVal == 0);
+
+        return success;
+    }
+
+    /**
      * Returns all of the logins of the members of the group. If the group does
      * not exist then <code>null</code> will be returned.
      *
@@ -46,7 +64,7 @@ public class NativeFunctions
     public List<String> getGroupMembers(String groupName)
     {
         List<String> members = null;
-        NativeGroup group =  _libC.getgrnam(groupName);
+        NativeGroup group = _libC.getgrnam(groupName);
 
         if(group != null)
         {
