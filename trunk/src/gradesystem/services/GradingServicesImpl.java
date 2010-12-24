@@ -37,8 +37,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
-import utils.BashConsole;
-import utils.FileSystemUtilities.Permission;
 import utils.PermissionException;
 
 public class GradingServicesImpl implements GradingServices
@@ -163,7 +161,20 @@ public class GradingServicesImpl implements GradingServices
             }
         }
 
-        Allocator.getPortraitPrinter().print(requests, printer);
+        try
+        {
+            Allocator.getPortraitPrinter().print(requests, printer);
+        }
+        catch(IOException e)
+        {
+          String loginsString = "";
+            for(String login : studentLogins)
+            {
+                loginsString += login + " ";
+            }
+            new ErrorView(e, "Unable to issue print command for " + part.getAssignment().getName() + ".\n" +
+                    "For the following students: " + loginsString);
+        }
     }
 
     public void printGRDFiles(Map<HandinPart, Iterable<String>> toPrint)
@@ -195,7 +206,14 @@ public class GradingServicesImpl implements GradingServices
             }
         }
 
-        Allocator.getPortraitPrinter().print(requests, printer);
+        try
+        {
+            Allocator.getPortraitPrinter().print(requests, printer);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to issue print command for GRD files.");
+        }
     }
 
     public String getPrinter()
@@ -509,8 +527,17 @@ public class GradingServicesImpl implements GradingServices
     public void updateLabGradeFile(LabPart labPart, double score, String student)
     {
         //TODO: Switch this to pure Java
-        BashConsole.write(String.format("rm %s/%d/%s* -f",
-                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student));
+        String removeCommand = String.format("rm %s/%d/%s* -f",
+                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student);
+        try
+        {
+            Allocator.getExternalProcessesUtilities().executeSynchronously(removeCommand);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to remove previous lab grade.");
+            return;
+        }
 
         String scoreText = new Double(score).toString();
 
@@ -555,6 +582,13 @@ public class GradingServicesImpl implements GradingServices
 
         //Ensure group is the ta group
         //TODO: Is this really necessary?
-        BashConsole.write("chgrp " + Allocator.getCourseInfo().getTAGroup() + " " + scoreFilePath);
+        try
+        {
+            Allocator.getExternalProcessesUtilities().executeSynchronously("chgrp " + Allocator.getCourseInfo().getTAGroup() + " " + scoreFilePath);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to change the group for the new lab grade.");
+        }
     }
 }

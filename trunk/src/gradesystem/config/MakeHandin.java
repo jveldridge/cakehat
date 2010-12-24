@@ -1,7 +1,8 @@
 package gradesystem.config;
 
 import gradesystem.Allocator;
-import utils.BashConsole;
+import gradesystem.views.shared.ErrorView;
+import java.io.IOException;
 
 /**
  * A Java/C++ (make) subclass of CodePart.
@@ -98,7 +99,13 @@ class MakeHandin extends JavaHandin {
     @Override
     public void runDemo() {
         if (_demoMode.equalsIgnoreCase(SCRIPT)) {
-            BashConsole.writeThreaded(this.getDemoProperty(COMMAND));
+
+            try {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(COMMAND);
+            }
+            catch(IOException e) {
+                new ErrorView(e);
+            }
         }
     }
 
@@ -114,7 +121,11 @@ class MakeHandin extends JavaHandin {
 
         //Build command to call xterm to run the code
         String runCmd = "cd " + dirPath + studentLogin + "/projects/" + this.getAssignment().getName() + "; make run";
-        Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, runCmd);
+        try {
+            Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, runCmd);
+        } catch(IOException e) {
+            new ErrorView(e, "MakeHandin: Unable to run " + studentLogin + "'s handin.");
+        }
     }
 
     @Override

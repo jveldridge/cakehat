@@ -17,7 +17,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import gradesystem.Allocator;
-import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 
 /**
@@ -348,7 +347,14 @@ class JavaHandin extends CodeHandin
         cmd += " " + this.getDemoProperty(MAIN);
 
         //Execute command
-        BashConsole.writeThreaded(cmd);
+        try
+        {
+            Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "JavaHandin: Unable to run class demo for " + this.getAssignment().getName());
+        }
     }
 
     /**
@@ -360,7 +366,14 @@ class JavaHandin extends CodeHandin
         String cmd = this.getDemoProperty(SCRIPT_CMD);
 
         //Execute command
-        BashConsole.writeThreaded(cmd);
+        try
+        {
+            Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "JavaHandin: Unable to run script demo for " + this.getAssignment().getName());
+        }
     }
 
     /**
@@ -386,7 +399,14 @@ class JavaHandin extends CodeHandin
 
         cmd += " -jar " + this.getDemoProperty(JAR_LOC);
 
-        BashConsole.writeThreaded(cmd);
+        try
+        {
+            Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "JavaHandin: Unable to run jar demo for " + this.getAssignment().getName());
+        }
     }
 
     @Override
@@ -570,7 +590,14 @@ class JavaHandin extends CodeHandin
         //Put together entire java comand
         String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + javaArg;
 
-        Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, javaCmd);
+        try
+        {
+            Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, javaCmd);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to execute Java in visible terminal.");
+        }
     }
 
 }

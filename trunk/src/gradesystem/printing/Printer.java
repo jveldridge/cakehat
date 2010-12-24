@@ -1,5 +1,6 @@
 package gradesystem.printing;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -15,7 +16,7 @@ public abstract class Printer
      * @param request
      * @param printer a CIT printer (e.g. bw3)
      */
-    public void print(PrintRequest request, String printer)
+    public void print(PrintRequest request, String printer) throws IOException
     {
         this.print(Arrays.asList(new PrintRequest[]{ request }), printer);
     }
@@ -26,5 +27,5 @@ public abstract class Printer
      * @param requests
      * @param printer a CIT printer (e.g. bw3)
      */
-    public abstract void print(Iterable<PrintRequest> requests, String printer);
+    public abstract void print(Iterable<PrintRequest> requests, String printer) throws IOException;
 }

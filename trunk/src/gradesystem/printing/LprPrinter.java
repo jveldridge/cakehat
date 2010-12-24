@@ -5,9 +5,10 @@
 
 package gradesystem.printing;
 
+import gradesystem.Allocator;
 import gradesystem.GradeSystemApp;
 import java.io.File;
-import utils.BashConsole;
+import java.io.IOException;
 
 /**
  * Uses lpr to print the PrintRequest in portrait.
@@ -16,7 +17,7 @@ import utils.BashConsole;
  */
 public class LprPrinter extends Printer
 {
-    public void print(Iterable<PrintRequest> requests, String printer)
+    public void print(Iterable<PrintRequest> requests, String printer) throws IOException
     {
         //Build command
         String cmd = "lpr -P" + printer + " ";
@@ -29,13 +30,14 @@ public class LprPrinter extends Printer
             }
 	}
 
-    if (GradeSystemApp.inTestMode()) {
-        //Testing
-        System.out.println("lpr Command:");
-        System.out.println(cmd);
-    }
+        if (GradeSystemApp.inTestMode())
+        {
+            //Testing
+            System.out.println("lpr Command:");
+            System.out.println(cmd);
+        }
 
 	//Execute command
-	BashConsole.writeThreaded(cmd);
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
     }
 }

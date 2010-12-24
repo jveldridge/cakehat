@@ -1,6 +1,8 @@
 package gradesystem.config;
 
-import utils.BashConsole;
+import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
+import java.io.IOException;
 
 /**
  * Allows for a totally custom handin specification where an arbitratry command
@@ -64,11 +66,25 @@ class CustomHandin extends CodeHandin
 
         if(_runMode.equalsIgnoreCase(SPECIFY_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getRunProperty(COMMAND));
+            try
+            {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(this.getRunProperty(COMMAND));
+            }
+            catch(IOException e)
+            {
+                new ErrorView(e);
+            }
         }
         else if(_runMode.equalsIgnoreCase(SPECIFY_USER_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getRunProperty(COMMAND).replaceAll(STUDENT_LOGIN_TAG, studentLogin));
+            try
+            {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(this.getRunProperty(COMMAND).replaceAll(STUDENT_LOGIN_TAG, studentLogin));
+            }
+            catch(IOException e)
+            {
+                new ErrorView(e);
+            }
         }
     }
 
@@ -77,7 +93,14 @@ class CustomHandin extends CodeHandin
     {
         if(_demoMode.equalsIgnoreCase(SPECIFY_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getDemoProperty(COMMAND));
+            try
+            {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(this.getDemoProperty(COMMAND));
+            }
+            catch(IOException e)
+            {
+                new ErrorView(e);
+            }
         }
     }
 
@@ -88,11 +111,25 @@ class CustomHandin extends CodeHandin
 
         if(_testerMode.equalsIgnoreCase(SPECIFY_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getTesterProperty(COMMAND));
+            try
+            {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(this.getTesterProperty(COMMAND));
+            }
+            catch(IOException e)
+            {
+                new ErrorView(e);
+            }
         }
         else if(_testerMode.equalsIgnoreCase(SPECIFY_USER_SCRIPT))
         {
-            BashConsole.writeThreaded(this.getTesterProperty(COMMAND).replaceAll(STUDENT_LOGIN_TAG, studentLogin));
+            try
+            {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(this.getTesterProperty(COMMAND).replaceAll(STUDENT_LOGIN_TAG, studentLogin));
+            }
+            catch(IOException e)
+            {
+                new ErrorView(e);
+            }
         }
     }
 }
