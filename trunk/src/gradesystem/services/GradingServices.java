@@ -112,7 +112,7 @@ public interface GradingServices
      * @param ta
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta);
+    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, String ta);
 
     /**
      * present the user with a dialog warning them that some of the handins are for students

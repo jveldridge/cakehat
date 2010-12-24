@@ -583,7 +583,7 @@ public class ReassignView extends JFrame {
                     break;
                 }
 
-                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, handinPart, toTA)) {
+                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, handinPart, toTA.getLogin())) {
                     studentsToAssign.add(student);
                     numStudsAssignedSoFar++;
                 }
@@ -640,7 +640,7 @@ public class ReassignView extends JFrame {
     }
 
     private boolean isOkToDistribute(String student, TA ta) {
-        if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, _asgn.getHandinPart(), ta)) {
+        if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, _asgn.getHandinPart(), ta.getLogin())) {
             int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
                                                     + ta.getLogin() + "'s blacklist.  Continue?",
                                                     "Distribute Blacklisted Student?",

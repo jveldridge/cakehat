@@ -250,9 +250,9 @@ public class GradingServicesImpl implements GradingServices
      * @param ta
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta)
+    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, String ta)
     {
-        Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta.getLogin());
+        Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta);
         Collection<String> group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
         if (Allocator.getGeneralUtilities().containsAny(blackList, group))
         {
