@@ -13,9 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import gradesystem.Allocator;
-import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.printing.PrintRequest;
+import java.io.IOException;
 
 /**
  * A HANDIN that specifies a LANGUAGE.
@@ -361,7 +361,14 @@ public abstract class CodeHandin extends HandinPart
             new ErrorView(ex);
         }
 
-        Allocator.getLandscapePrinter().print(request, printer);
+        try
+        {
+            Allocator.getLandscapePrinter().print(request, printer);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to issue print command for " + studentLogin + "'s " + this.getAssignment().getName());
+        }
     }
 
     /**
@@ -389,7 +396,20 @@ public abstract class CodeHandin extends HandinPart
             }
         }
 
-        Allocator.getLandscapePrinter().print(requests, printer);
+        try
+        {
+            Allocator.getLandscapePrinter().print(requests, printer);
+        }
+        catch(IOException e)
+        {
+            String loginsString = "";
+            for(String login : studentLogins)
+            {
+                loginsString += login + " ";
+            }
+            new ErrorView(e, "Unable to issue print command for " + this.getAssignment().getName() + ".\n" +
+                    "For the following students: " + loginsString);
+        }
     }
 
     /**
@@ -403,13 +423,10 @@ public abstract class CodeHandin extends HandinPart
         List<File> files = getSourceFiles(studentLogin);
         Collections.sort(files, new FileComparator());
 
-        if(!files.isEmpty()) {
-            String cmd = "kate ";
-            for(File file : files) {
-                cmd += file.getAbsolutePath() + " ";
-            }
-
-            BashConsole.writeThreaded(cmd);
+        try {
+            Allocator.getExternalProcessesUtilities().kate(files);
+        } catch(IOException e) {
+            new ErrorView(e, "Unable to open kate.");
         }
     }
 

@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import gradesystem.Allocator;
-import utils.BashConsole;
 
 /**
  * Uses enscript to print the PrintRequest in landscape with a small font, and
@@ -22,7 +21,7 @@ public class EnscriptPrinter extends Printer {
     //So that it prints currentPage/totalNumberOfPages - e.g. 2/4 for page 2 of 4
     private static final String PAGE_NUMBER_FORMATTING = "$%/$=";
 
-    public void print(Iterable<PrintRequest> requests, String printer) {
+    public void print(Iterable<PrintRequest> requests, String printer) throws IOException {
         //Set to '--no-job-header' after first request to prevent cover sheet printing after the first handin
         String dontPrintCoverSheet = "";
 
@@ -47,7 +46,7 @@ public class EnscriptPrinter extends Printer {
             dontPrintCoverSheet = "--no-job-header ";  //prevent future jobs in the batch from having a cover sheet
         }
 
-        BashConsole.writeThreaded(fullCommand);
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand);
     }
 
     /**

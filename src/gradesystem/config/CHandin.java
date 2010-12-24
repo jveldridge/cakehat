@@ -8,7 +8,8 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import gradesystem.Allocator;
-import utils.BashConsole;
+import gradesystem.views.shared.ErrorView;
+import java.io.IOException;
 
 /**
  * A C subclass of CodeHandin.
@@ -95,16 +96,33 @@ class CHandin extends CodeHandin
                      super.getStudentHandinDirectory(studentLogin));
             cmd.add("make clean");
             cmd.add("make");
-            Collection<String> success = BashConsole.writeErrorStream(cmd);
+
+            Collection<String> success;
+            try {
+                success = Allocator.getExternalProcessesUtilities().executeSynchronously(cmd).getErrorResponse();
+            } catch(IOException e) {
+                new ErrorView(e);
+                return;
+            }
             if(success.isEmpty()) { //if make compilation successful
-                BashConsole.write("xterm -hold -e " +
+                String execCmd = "xterm -hold -e " +
                      super.getStudentHandinDirectory(studentLogin) +
-                     this.getRunProperty(MAKE_EXEC_NAME));
+                     this.getRunProperty(MAKE_EXEC_NAME);
+                try {
+                    Allocator.getExternalProcessesUtilities().executeSynchronously(execCmd);
+                } catch(IOException e) {
+                    new ErrorView(e);
+                }
             }
             else { //display compilation errors
-             BashConsole.write("xterm -hold -e 'cd " +
+                String execCmd = "xterm -hold -e 'cd " +
                      super.getStudentHandinDirectory(studentLogin) + "; make clean; "
-                     + "make; exit && /bin/bash'");
+                     + "make; exit && /bin/bash'";
+                try {
+                    Allocator.getExternalProcessesUtilities().executeSynchronously(execCmd);
+                } catch(IOException e) {
+                    new ErrorView(e);
+                }
             }
         }
         else
@@ -140,12 +158,28 @@ class CHandin extends CodeHandin
         String loc = super.getStudentHandinDirectory(studentLogin) + filename;
         Vector<String> cmd = new Vector<String>();
         cmd.add("gcc -Wall -o " + loc + " " + loc + ".c -lm");
-        Collection<String> success = BashConsole.writeErrorStream(cmd);
+        Collection<String> success;
+        try {
+            success = Allocator.getExternalProcessesUtilities().executeSynchronously(cmd).getErrorResponse();
+        } catch(IOException e) {
+            new ErrorView(e);
+            return;
+        }
         if (success.isEmpty()) { //if compilation successful
-            BashConsole.writeThreaded("xterm -hold -e " + loc);
+            String execCmd = "xterm -hold -e " + loc;
+            try {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+            } catch(IOException e) {
+                new ErrorView(e);
+            }
         }
         else { //display compiler errors in visible terminal
-            BashConsole.writeThreaded("xterm -hold -e gcc -Wall -o " + loc + " " + loc + ".c -lm");
+            String execCmd = "xterm -hold -e gcc -Wall -o " + loc + " " + loc + ".c -lm";
+            try {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(execCmd);
+            } catch(IOException e) {
+                new ErrorView(e);
+            }
         }
     }
 
@@ -153,7 +187,12 @@ class CHandin extends CodeHandin
     {
         if(_demoMode.equalsIgnoreCase(EXEC_DEMO))
         {
-            BashConsole.writeThreaded("./" + this.getDemoProperty(EXEC_LOC));
+            String cmd = "./" + this.getDemoProperty(EXEC_LOC);
+            try {
+                Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+            } catch(IOException e) {
+                new ErrorView(e);
+            }
         }
         else
         {

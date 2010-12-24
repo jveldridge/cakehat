@@ -8,7 +8,6 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
 import org.apache.commons.compress.archivers.ArchiveException;
-import utils.BashConsole;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.views.shared.TextViewerView;
 
@@ -137,7 +136,14 @@ public abstract class HandinPart extends Part
             //If a PDF
             else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
             {
-                BashConsole.writeThreaded("kpdf " + readme.getAbsolutePath());
+                try
+                {
+                    Allocator.getExternalProcessesUtilities().kpdf(readme);
+                }
+                catch(IOException e)
+                {
+                    new ErrorView(e, "Unable to open " + studentLogin + "'s readme: " + readme.getAbsolutePath());
+                }
             }
             //Otherwise, we don't know what it is, tell the user
             else
