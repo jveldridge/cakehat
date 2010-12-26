@@ -929,7 +929,7 @@ public class DBWrapper implements DatabaseIO {
 
     @Override
     public String getExemptionNote(String studentLogin, Part part) {
-        String result = "";
+        String result = null;
         Connection conn = this.openConnection();
         
         try {
@@ -1135,12 +1135,13 @@ public class DBWrapper implements DatabaseIO {
                     + " INNER JOIN student AS s ON g.sid == s.sid"
                     + " INNER JOIN part AS p ON g.pid == p.pid"
                     + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE s.login IN (?)"
-                    + " AND p.name == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, studLogins);
-            ps.setString(2, part.getName());
-            ps.setString(3, part.getAssignment().getName());
+                    + " WHERE s.login IN (" + studLogins + ")"
+                    + " AND p.name == '" + part.getName() + "'"
+                    + " AND a.name == '" + part.getAssignment().getName() + "'");
+            //TODO: restore prepared statement functionality
+            //ps.setString(1, studLogins);
+            //ps.setString(1, part.getName());
+            //ps.setString(2, part.getAssignment().getName());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1174,10 +1175,11 @@ public class DBWrapper implements DatabaseIO {
                     + " INNER JOIN student AS s ON g.sid == s.sid"
                     + " INNER JOIN part AS p ON g.pid == p.pid"
                     + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE s.login IN (?)"
-                    + " AND a.name == ?");
-            ps.setString(1, studLogins);
-            ps.setString(2, asgn.getName());
+                    + " WHERE s.login IN (" + studLogins + ")"
+                    + " AND a.name == '" + asgn.getName() + "'");
+            //TODO: restore prepared statement functionality
+            //ps.setString(1, studLogins);
+            //ps.setString(2, asgn.getName());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
