@@ -1,17 +1,9 @@
 package gradesystem.database;
 
-import gradesystem.database.DBWrapper;
-import gradesystem.config.Part;
+import java.util.UUID;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,15 +23,8 @@ import static org.junit.Assert.*;
  */
 public class DBWrapperTest {
 
-    private static Connection _connection;
-    private static Statement _statement;
-    private static String _dbPath = "jdbc:sqlite:/course/cs000/.cakehat/2010/db/testDB.sqlite";
-    private static String _testDataPath = "/course/cs000/.cakehat/2010/db/cakehat_test_data.sql";
     private DBWrapper _instance;
-
-    public DBWrapperTest() {
-        _instance = new DBWrapper(_dbPath);
-    }
+    private ConnectionProvider _connProvider;
 
     /**
      * runs before any tests
@@ -47,41 +32,6 @@ public class DBWrapperTest {
      */
     @BeforeClass
     public static void setUpClass() throws Exception {
-        _connection = null;
-        try {
-            Class.forName("org.sqlite.JDBC");
-            _connection = DriverManager.getConnection(_dbPath);
-
-            _statement = _connection.createStatement();
-            _statement.setQueryTimeout(30);  // set timeout to 30 sec.
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        File sql = new File(_testDataPath);
-
-        try {
-            BufferedReader input = new BufferedReader(new FileReader(sql));
-            try {
-                String line = null;
-                while ((line = input.readLine()) != null) {
-                    _statement.addBatch(line);
-                }
-            } finally {
-                input.close();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        _statement.executeBatch();
-        try {
-            if (_connection != null) {
-                _connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -97,6 +47,9 @@ public class DBWrapperTest {
      */
     @Before
     public void setUp() {
+        _connProvider = new InMemoryConnectionProvider();
+        _instance = new DBWrapper(_connProvider);
+        _instance.resetDatabase();
     }
 
     /**
@@ -104,26 +57,18 @@ public class DBWrapperTest {
      */
     @After
     public void tearDown() {
+        try {
+            _connProvider.closeConnection(_connProvider.createConnection());
+        } catch (SQLException ex) {
+            System.out.println("there was an error closing the test DB");
+        }
     }
 
-    /**
-     * Test of setAsgnDist method, of class DBWrapper.
-     */
-    @Test
-    public void testSetAsgnDist() {
-        System.out.println("setAsgnDist");
-        String asgn = "TASafeHouse";
-        ArrayList<String> aunger = new ArrayList<String>();
-        aunger.add("dmorrill");
-        aunger.add("drs");
-        ArrayList<String> spoletto = new ArrayList<String>();
-        spoletto.add("nvarone");
-        Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
-        distribution.put("aunger", aunger);
-        distribution.put("spoletto", spoletto);
-
-        boolean result = false;//_instance.setAsgnDist(asgn, distribution);
-        assertTrue(result);
+    private String generateUsername() {
+        String uid = UUID.randomUUID().toString();
+        uid.replaceAll("-", "");
+        uid = uid.substring(8);
+        return uid;
     }
 
     /**
@@ -132,11 +77,49 @@ public class DBWrapperTest {
     @Test
     public void testGetTABlacklist() {
         System.out.println("getTABlacklist");
-        String taLogin = "aunger";
-        Collection<String> expResult = new ArrayList<String>();
-        expResult.add("drs");
-        Collection<String> result = _instance.getTABlacklist(taLogin);
-        assertEquals(expResult, result);
+
+        //setup data in DB
+        String ta = this.generateUsername();
+        String student = this.generateUsername();
+        _instance.addTA(ta, "Alex Unger");
+        _instance.addStudent(student, "The", "Doctors");
+        _instance.addStudent(this.generateUsername(), "Dasw", "Masdfasd");
+        _instance.blacklistStudent(student, ta);
+
+        //can get blacklist?
+        Collection<String> expectedBlacklist = new ArrayList<String>();
+        expectedBlacklist.add(student);
+        Collection<String> blacklist = _instance.getTABlacklist(ta);
+
+        assertEquals(expectedBlacklist, blacklist);
+    }
+
+    /**
+     * Test of setAsgnDist method, of class DBWrapper.
+     */
+    @Test
+    public void testSetAsgnDist() {
+        System.out.println("setAsgnDist");
+
+        //setup data in DB
+        _instance.addTA("aunger", "Alex Unger");
+        _instance.addTA("sefcda", "Sadfge Padfads");
+        _instance.addStudent("dsr", "The", "Doctors");
+        _instance.addStudent("dasf", "Daht", "Medsa");
+        _instance.addStudent("ndawes", "Nads", "Haowdb");
+
+        String asgn = "TASafeHouse";
+        ArrayList<String> aunger = new ArrayList<String>();
+        aunger.add("sefcda");
+        aunger.add("dsr");
+        ArrayList<String> sefcda = new ArrayList<String>();
+        sefcda.add("ndawes");
+        Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
+        distribution.put("aunger", aunger);
+        distribution.put("sefcda", sefcda);
+
+        boolean result = false;//_instance.setAsgnDist(asgn, distribution);
+        assertTrue(result);
     }
 
     /**
@@ -145,10 +128,14 @@ public class DBWrapperTest {
     @Test
     public void testAddAssignment() {
         System.out.println("addAssignment");
-        Part asgnPart = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0]).getHandinPart();
-        boolean expResult = true;
-        boolean result = _instance.addAssignmentPart(asgnPart);
-        assertEquals(expResult, result);
+
+        //no setup needed
+
+        //can add assignment?
+        Assignment asgn = (Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0];
+        boolean result = _instance.addAssignment(asgn);
+        
+        assertTrue(result);
     }
 
     /**
@@ -157,19 +144,30 @@ public class DBWrapperTest {
     @Test
     public void testAddStudent() {
         System.out.println("addStudent");
-        String studentLogin = "hbhardin";
+
+        //setup data in DB
+        _instance.addStudent("dsr", "The", "Doctors");
+        _instance.addStudent("dmas", "Draws", "More");
+        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
+
+        //can add student?
+        String studentLogin = "hbhard";
         String studentFirstName = "CardBoard";
         String studentLastName = "Kid";
-        boolean expResult = true;
-        boolean result = _instance.addStudent(studentLogin, studentFirstName, studentLastName);
-        assertEquals(expResult, result);
-        Map<String, String> result2 = _instance.getEnabledStudents();
-        Map<String, String> expResult2 = new HashMap<String, String>();
-        expResult2.put("drs", "The Doctors");
-        expResult2.put("dmorrill", "Drew Morrill");
-        expResult2.put("nvarone", "Nick Varone");
-        expResult2.put("hbhardin", "CardBoard Kid");
-        assertEquals(expResult2, result2);
+        boolean studentAdded = _instance.addStudent(studentLogin, studentFirstName, studentLastName);
+
+        assertTrue(studentAdded);
+
+        //can we get them back out?
+        Map<String, String> all_students = _instance.getEnabledStudents();
+
+        Map<String, String> expected_students = new HashMap<String, String>();
+        expected_students.put("dsr", "The Doctors");
+        expected_students.put("nvasdsw", "Nick Vasdt");
+        expected_students.put("dmas", "Draws More");
+        expected_students.put(studentLogin, studentFirstName + " " + studentLastName);
+       
+        assertEquals(expected_students, all_students);
     }
 
     /**
@@ -178,15 +176,13 @@ public class DBWrapperTest {
     @Test
     public void testDisableStudent() {
         System.out.println("disableStudent");
-        String studentLogin = "hbhardin";
+        String studentLogin = "hbhard";
         boolean expResult = true;
         boolean result = _instance.disableStudent(studentLogin);
         assertEquals(expResult, result);
         Map<String, String> result2 = _instance.getEnabledStudents();
         Map<String, String> expResult2 = new HashMap<String, String>();
         expResult2.put("drs", "The Doctors");
-        expResult2.put("dmorrill", "Drew Morrill");
-        expResult2.put("nvarone", "Nick Varone");
         assertEquals(expResult2, result2);
     }
 
@@ -196,17 +192,28 @@ public class DBWrapperTest {
     @Test
     public void testEnableStudent() {
         System.out.println("enableStudent");
-        String studentLogin = "hbhardin";
-        boolean expResult = true;
-        boolean result = _instance.enableStudent(studentLogin);
-        assertEquals(expResult, result);
-        Map<String, String> result2 = _instance.getEnabledStudents();
-        Map<String, String> expResult2 = new HashMap<String, String>();
-        expResult2.put("drs", "The Doctors");
-        expResult2.put("dmorrill", "Drew Morrill");
-        expResult2.put("nvarone", "Nick Varone");
-        expResult2.put("hbhardin", "CardBoard Kid");
-        assertEquals(expResult2, result2);
+
+        //setup data in DB
+        _instance.addStudent("dsr", "The", "Doctors");
+        _instance.addStudent("dmore", "Draws", "More");
+        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
+        _instance.addStudent("hbhard", "CardBoard", "Kid");
+        _instance.disableStudent("hbhard");
+
+        //can enable student?
+        String studentLogin = "hbhard";
+        boolean canEnable = _instance.enableStudent(studentLogin);
+        assertTrue(canEnable);
+
+        //has the enable happened?
+        Map<String, String> enabledStuds = _instance.getEnabledStudents();
+
+        Map<String, String> expectedEnabled = new HashMap<String, String>();
+        expectedEnabled.put("dsr", "The Doctors");
+        expectedEnabled.put("dmore", "Draws More");
+        expectedEnabled.put("nvasdsw", "Nick Vasdt");
+        expectedEnabled.put("hbhard", "CardBoard Kid");
+        assertEquals(expectedEnabled, enabledStuds);
     }
 
     /**
@@ -215,27 +222,32 @@ public class DBWrapperTest {
     @Test
     public void testAddTA() {
         System.out.println("addTA");
-        String taLogin = "ashley";
-        String taFirstName = "Ashley";
-        String taLastName = "T";
-        String type = "HTA";
         boolean expResult = true;
         boolean result = false;//_instance.addTA(taLogin);
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of getStudents method, of class DBWrapper.
+     * Test of geAlltStudents method, of class DBWrapper.
      */
     @Test
-    public void testGetStudents() {
-        System.out.println("getStudents");
-        Map<String, String> result = _instance.getEnabledStudents();
+    public void testGetAllStudents() {
+        System.out.println("getAllStudents");
+
+        //setup data in DB
+        _instance.addStudent("dsr", "The", "Doctors");
+        _instance.addStudent("dmore", "Draws", "More");
+        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
+        _instance.addStudent("hbhard", "CardBoard", "Kid");
+        _instance.disableStudent("hbhard");
+
+        //did all the students get returned?
+        Map<String, String> result = _instance.getAllStudents();
         Map<String, String> expResult = new HashMap<String, String>();
-        expResult.put("drs", "The Doctors");
-        expResult.put("dmorrill", "Drew Morrill");
-        expResult.put("nvarone", "Nick Varone");
-        expResult.put("hbhardin", "CardBoard Kid");
+        expResult.put("dsr", "The Doctors");
+        expResult.put("dmore", "Draws More");
+        expResult.put("nvasdsw", "Nick Vasdt");
+        expResult.put("hbhard", "CardBoard Kid");
         assertEquals(expResult, result);
     }
 
