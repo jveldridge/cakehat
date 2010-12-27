@@ -1,42 +1,20 @@
 package utils.system;
 
 import java.util.List;
-
-import com.sun.jna.Library;
-import com.sun.jna.Native;
 import java.io.File;
 
 /**
- * Java wrappers for native C functions in Linux/Unix.
- * <br/><br/>
- * <strong>Note:</strong> This code will not run properly if the underlying
- * native function library does not exist, so there may be issues of running
- * this code on non-department machines.
+ * Methods that build directly upon native functions.
  *
  * @author jak2 (Joshua Kaplan)
  */
 public class NativeFunctions
 {
-    /**
-     * This interface matches the native functions of the LibC library. To see
-     * more information about any of these functions, consult the man pages.
-     * For instance to see information on 'getlogin' then in a terminal the
-     * command would be 'man getlogin'.
-     */
-    private static interface LibC extends Library
-    {
-        public int chmod(String filename, int mode);
-        public NativeGroup getgrnam(String which);
-        public NativeUserInformation getpwnam(String login);
-        public int getuid();
-        public NativeUserInformation getpwuid(int uid);
-    }
-
-    private final LibC _libC;
+    private final LibCWrapper _wrapper;
 
     public NativeFunctions()
     {
-        _libC = (LibC) Native.loadLibrary("c", LibC.class);
+        _wrapper = new LibCWrapper();
     }
 
     /**
@@ -44,58 +22,44 @@ public class NativeFunctions
      *
      * @param file the file or directory
      * @param mode the <b>octal</b> form permission, such as 0770 or 0666
-     * @return success of performing chmod
+     *
+     * @throws NativeException thrown if the file/directory does not exist or
+     * the permissions cannot be changed
      */
-    public boolean chmod(File file, int mode)
+    public void chmod(File file, int mode) throws NativeException
     {
-        int returnVal = _libC.chmod(file.getAbsolutePath(), mode);
-        //Returns 0 on success
-        boolean success = (returnVal == 0);
-
-        return success;
+        _wrapper.chmod(file.getAbsolutePath(), mode);
     }
 
     /**
-     * Returns all of the logins of the members of the group. If the group does
-     * not exist then <code>null</code> will be returned.
+     * Returns all of the logins of the members of the group.
      *
      * @return
+     *
+     * @throws NativeException thrown if the group does not exist
      */
-    public List<String> getGroupMembers(String groupName)
+    public List<String> getGroupMembers(String groupName) throws NativeException
     {
-        List<String> members = null;
-        NativeGroup group = _libC.getgrnam(groupName);
-
-        if(group != null)
-        {
-            members = group.getMembers();
-        }
-
-        return members;
+        return _wrapper.getgrnam(groupName).getMembers();
     }
 
     /**
      * Returns the real name (e.g. Joshua Kaplan) that corresponds with <code>
-     * login</code>. If the login does not exist then <code>null</code>
-     * will be returned. <code>null</code> may also be returned if the login
-     * exists but there is no real name associated with it. This should not
-     * occur on Brown CS Department machines, but it may when running cakehat
-     * locally.
+     * login</code>. If the login does not exist then an exception will be
+     * thrown.
+     * <br/><br/>
+     * <code>null</code> will be returned if the login exists but there is no
+     * real name associated with it. This should not occur on Brown CS
+     * Department machines, but it may when running cakehat locally.
      *
      * @param login
-     * @return
+     * @return the real name of the user specified by login
+     *
+     * @throws NativeException thrown if login does not exist
      */
-    public String getRealName(String login)
+    public String getRealName(String login) throws NativeException
     {
-        String name = null;
-        NativeUserInformation info = _libC.getpwnam(login);
-
-        if(info != null)
-        {
-            name = info.getRealName();
-        }
-
-        return name;
+        return _wrapper.getpwnam(login).getRealName();
     }
 
     /**
@@ -106,9 +70,15 @@ public class NativeFunctions
      */
     public boolean isLogin(String login)
     {
-        NativeUserInformation info = _libC.getpwnam(login);
+        boolean exists = false;
+        try
+        {
+            _wrapper.getpwnam(login);
+            exists = true;
+        }
+        catch(NativeException e) { }
 
-        return (info != null);
+        return exists;
     }
 
     /**
@@ -118,14 +88,20 @@ public class NativeFunctions
      */
     public String getUserLogin()
     {
-        String login = null;
-        NativeUserInformation info = _libC.getpwuid(_libC.getuid());
-
-        if(info != null)
+        //getuid is guaranteed to never fail
+        //getpwuid should never fail for a valid uid
+        //Therefore, if an exception occurs, something is seriously wrong with
+        //native system calls, and there is no hope of handling it
+        try
         {
-            login = info.getUserName();
-        }
 
-        return login;
+            return _wrapper.getpwuid(_wrapper.getuid()).getUserName();
+        }
+        catch (NativeException ex)
+        {
+            throw new RuntimeException("Unable to retrieve user's login. " +
+                    "This should never happen, something is very wrong with " +
+                    "native functionality.", ex);
+        }
     }
 }

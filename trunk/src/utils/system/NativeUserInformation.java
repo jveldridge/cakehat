@@ -109,12 +109,21 @@ public class NativeUserInformation extends Structure
 
     /**
      * The user's real name.
+     * <br/><br/>
+     * Note: pw_gecos should contain the name; however, on OS X this information
+     * is actually stored in the pw_shell variable.
      *
      * @return
      */
     public String getRealName()
     {
-    	return pw_gecos;
+        String name = pw_gecos;
+        if(name == null)
+        {
+            name = pw_shell;
+        }
+
+    	return name;
     }
 
     /**

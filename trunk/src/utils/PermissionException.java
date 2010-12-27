@@ -16,6 +16,11 @@ public class PermissionException extends IOException
         super("Permission could not be changed for: " + file.getAbsolutePath());
     }
 
+    public PermissionException(Throwable cause)
+    {
+        super(cause);
+    }
+
     public PermissionException(String message)
     {
         super(message);

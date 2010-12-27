@@ -62,6 +62,9 @@ import javax.swing.event.ListSelectionListener;
 import org.jdesktop.application.SingleFrameApplication;
 import gradesystem.Allocator;
 import gradesystem.services.UserServices.ValidityCheck;
+import gradesystem.views.shared.ErrorView;
+import java.util.ArrayList;
+import utils.system.NativeException;
 
 /**
  *
@@ -1339,8 +1342,14 @@ public class BackendView extends JFrame
         if (addTAsRB.isSelected()) {
             for (TA ta : Allocator.getCourseInfo().getTAs()) {
                 String login = ta.getLogin();
-                String name = Allocator.getUserUtilities().getUserName(login);
-                Allocator.getDatabaseIO().addTA(login, name);
+                try {
+                    String name = Allocator.getUserUtilities().getUserName(login);
+                    Allocator.getDatabaseIO().addTA(login, name);
+                }
+                catch(NativeException e) {
+                    new ErrorView(e, "Unable to add student because his/her " +
+                            "real name could not be retrieved");
+                }
             }
         }
 
@@ -1356,12 +1365,12 @@ public class BackendView extends JFrame
 
         //add all students in group
         if (addStudentsRB.isSelected()) {
-            for (String s : Allocator.getUserServices().getStudentLogins()) {
-                String name = Allocator.getUserUtilities().getUserName(s);
-                String names[] = name.split(" ");
-                Allocator.getUserServices().addStudent(s, names[0],
-                                                        names[names.length - 1],
-                                                        ValidityCheck.BYPASS);
+            try {
+                for (String login : Allocator.getUserServices().getStudentLogins()) {
+                    Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                }
+            } catch(NativeException e) {
+                new ErrorView(e, "Unable to add all students in the group");
             }
         }
 

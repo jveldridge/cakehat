@@ -1,6 +1,7 @@
 package gradesystem.services;
 
-import java.util.Collection;
+import java.util.List;
+import utils.system.NativeException;
 
 /**
  * Services relating to users. Unlike <code>UserUtilities</code>, these methods
@@ -14,11 +15,10 @@ public interface UserServices
 
     /**
      * Adds the given studentLogin to the database.  A warning will be shown
-     * if the given studentLogin is not a valid login (i.e., is not snoopable)
-     * or is not in the course's student group; the user will then have the option
-     * of adding the student anyway or cancelling the operation.  The user's
-     * first and last name will be set to the firstName and lastName parameters,
-     * respectively.
+     * if the given studentLogin is not a valid login or is not in the course's
+     * student group; the user will then have the option of adding the student
+     * anyway or cancelling the operation.  The students's first and last name
+     * will be set to the firstName and lastName parameters, respectively.
      *
      * @param studentLogin
      * @param firstName
@@ -30,8 +30,25 @@ public interface UserServices
      *                    these conditions are known to be true (for example, when
      *                    adding all members of the course group)
      */
-    public void addStudent(String studentLogin, String firstName,
-            String lastName, ValidityCheck checkValidity);
+    public void addStudent(String studentLogin, String firstName, String lastName,
+            ValidityCheck checkValidity);
+
+    /**
+     * Adds the given studentLogin to the database.  A warning will be shown
+     * if the given studentLogin is not a valid login or is not in the course's
+     * student group; the user will then have the option of adding the student
+     * anyway or cancelling the operation.  The students's first and last name
+     * will be looked up.
+     *
+     * @param studentLogin
+     * @param checkValidity parameter that indicates whether the student should be
+     *                    added to the database without checking that the login is
+     *                    valid and that the the student is in the course student
+     *                    group.  This should be passed as BYPASS when both of
+     *                    these conditions are known to be true (for example, when
+     *                    adding all members of the course group)
+     */
+    public void addStudent(String studentLogin, ValidityCheck checkValidity);
 
     /**
      * Returns whether or not the current user is a TA for the course as
@@ -63,21 +80,27 @@ public interface UserServices
      *
      * @return true if the student with login studentLogin is a member of the
      *         course's student group; false otherwise
+     *
+     * @throws NativeException thrown if the student group does not exist
      */
-    public boolean isInStudentGroup(String studentLogin);
+    public boolean isInStudentGroup(String studentLogin) throws NativeException;
 
     /**
      * Returns whether or not the user specified by <code>taLogin</code> is a
      * member of the course's TA group.
      *
      * @return true if the user is a member of the course's TA group
+     *
+     * @throws NativeException thrown if the TA group does not exist
      */
-    public boolean isInTAGroup(String taLogin);
+    public boolean isInTAGroup(String taLogin) throws NativeException;
 
     /**
      * Returns the logins of all students in the class's student group.
      *
-     * @return
+     * @return logins of the student in the class's student group
+     *
+     * @throws NativeException thrown if the student group does not exist
      */
-    public Collection<String> getStudentLogins();
+    public List<String> getStudentLogins() throws NativeException;
 }

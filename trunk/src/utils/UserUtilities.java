@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.List;
+import utils.system.NativeException;
 
 /**
  * Utilities that are login-related.
@@ -8,13 +9,14 @@ import java.util.List;
 public interface UserUtilities
 {
     /**
-     * Returns all logins of a given group. If the group does not exist, <code>
-     * null</code> is returned.
+     * Returns all logins of a given group.
      *
      * @param group
      * @return
+     *
+     * @throws NativeException thrown if the group does not exist
      */
-    public List<String> getMembers(String group);
+    public List<String> getMembers(String group) throws NativeException;
 
     /**
      * Returns the user login.
@@ -24,13 +26,14 @@ public interface UserUtilities
     public String getUserLogin();
 
     /**
-     * Returns a user's real name. If the login does not exist, <code>null
-     * </code> is returned.
+     * Returns a user's real name.
      *
      * @param login the user's login
      * @return user's name
+     *
+     * @throws NativeException thrown if the login is not valid (does not exist)
      */
-    public String getUserName(String login);
+    public String getUserName(String login) throws NativeException;
 
     /**
      * Returns if a login is valid.
@@ -43,10 +46,11 @@ public interface UserUtilities
     /**
      * Returns whether or not the user specified by <code>login</code> is a
      * member of the group specified by <code>group</code>. If the user is a
-     * member of the group true is returned. If the group does not exist or the
-     * user is not a member false is returned.
+     * member of the group true is returned.
      *
      * @return if a member of the group
+     *
+     * @throws NativeException thrown if the group does not exist
      */
-    public boolean isMemberOfGroup(String login, String group);
+    public boolean isMemberOfGroup(String login, String group) throws NativeException;
 }

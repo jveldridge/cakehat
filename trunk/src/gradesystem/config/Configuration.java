@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
 import gradesystem.Allocator;
+import utils.system.NativeException;
 
 /**
  * Object representation of the XML config file. Only meant to be used by
@@ -68,13 +69,19 @@ class Configuration
         //Check validity of TAs
         for (TA ta : this.getTAs()) {
             boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(ta.getLogin());
-            boolean isInTAGroup = Allocator.getUserServices().isInTAGroup(ta.getLogin());
+            boolean isInTAGroup = false;
+
+            try {
+                isInTAGroup = Allocator.getUserServices().isInTAGroup(ta.getLogin());
+                if (!isInTAGroup) {
+                    writer.append(String.format("Login \"%s\" is not in the TA group.\n", ta.getLogin()));
+                }
+            } catch(NativeException e) {
+                writer.append("Members of TA group (for course " + this.getCourse() + ") could not be retrieved. (NativeException)\n");
+            }
 
             if (!isLoginValid) {
                 writer.append(String.format("Login \"%s\" is not valid.\n", ta.getLogin()));
-            }
-            if (!isInTAGroup) {
-                writer.append(String.format("Login \"%s\" is not in the TA group.\n", ta.getLogin()));
             }
 
             valid &= (isLoginValid && isInTAGroup);
