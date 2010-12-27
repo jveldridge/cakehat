@@ -1370,7 +1370,8 @@ public class BackendView extends JFrame
                     Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
                 }
             } catch(NativeException e) {
-                new ErrorView(e, "Unable to add all students in the group");
+                new ErrorView(e, "Unable to add any students in the group " +
+                        "because members of the student group could not be retrieved");
             }
         }
 
