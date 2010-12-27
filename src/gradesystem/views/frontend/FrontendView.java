@@ -40,6 +40,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
+import java.io.File;
+import utils.system.NativeException;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -166,8 +169,16 @@ public class FrontendView extends JFrame
     {
         //Create directory for the assignment so GRD files can be created,
         //even if no assignments have been untarred
-        Allocator.getFileSystemUtilities().makeDirectory(Allocator.getGradingServices().getUserGradingDirectory()
-                                                        + _assignmentList.getSelectedValue().getName());
+        File assignmentDir = new File(Allocator.getGradingServices().getUserGradingDirectory() +
+                                      _assignmentList.getSelectedValue().getName());
+        try
+        {
+            Allocator.getFileSystemServices().makeDirectory(assignmentDir);
+        }
+        catch(NativeException e)
+        {
+            new ErrorView(e, "Unable to create directory assignment: " + assignmentDir.getAbsolutePath());
+        }
 
         //Get the students assigned for this assignment
         this.populateStudentList();

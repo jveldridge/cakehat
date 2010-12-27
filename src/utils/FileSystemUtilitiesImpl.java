@@ -95,36 +95,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return text.toString();
     }
 
-    public boolean makeDirectory(String dirPath)
-    {
-        //Make directory if necessary
-        boolean madeDir = false;
-
-        File dir = new File(dirPath);
-        if(!dir.exists())
-        {
-            madeDir = dir.mkdirs();
-        }
-
-        //If directory was made, change permissions to be totally accessible by user and group
-        boolean chmodSuccess = true;
-        if(madeDir)
-        {
-            try
-            {
-                this.chmodDirectory(dir);
-            }
-            catch (PermissionException ex)
-            {
-                chmodSuccess = false;
-            }
-        }
-
-        //Return if the directory now exists and has the correct permissions
-        return dir.exists() && chmodSuccess;
-    }
-
-    public void chmod(File file, boolean recursive, Permission... mode) throws PermissionException
+    public void chmod(File file, boolean recursive, Permission... mode) throws NativeException
     {
         int modeValue = 0;
         for(Permission permission : mode)
@@ -135,55 +106,49 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         this.chmod(file, recursive, modeValue);
     }
 
-    public void chmodFile(File file) throws PermissionException
+    public void chmodDefault(File file) throws NativeException
     {
-        this.chmod(file, false,
-                Permission.OWNER_READ, Permission.OWNER_WRITE,
-                Permission.GROUP_READ, Permission.GROUP_WRITE);
-    }
-
-    public void chmodDirectory(File directory) throws PermissionException
-    {
-        if(directory.isDirectory())
+        if(file.isDirectory())
         {
-            this.chmod(directory, false,
+            this.chmod(file, false,
                     Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
                     Permission.GROUP_READ, Permission.GROUP_WRITE, Permission.GROUP_EXECUTE);
 
-            for(File entry : directory.listFiles())
+            for(File entry : file.listFiles())
             {
-                if(entry.isFile())
-                {
-                    this.chmodFile(entry);
-                }
-                else if(entry.isDirectory())
-                {
-                    this.chmodDirectory(directory);
-                }
+                this.chmodDefault(entry);
             }
         }
         else
         {
-            throw new PermissionException("Excepted directory, given file: " + directory.getAbsolutePath());
+            this.chmod(file, false,
+                    Permission.OWNER_READ, Permission.OWNER_WRITE,
+                    Permission.GROUP_READ, Permission.GROUP_WRITE);
         }
     }
 
-    private void chmod(File file, boolean recursive, int mode) throws PermissionException
+    private void chmod(File file, boolean recursive, int mode) throws NativeException
     {
-        try
-        {
-            NATIVE_FUNCTIONS.chmod(file, mode);
-        }
-        catch(NativeException e)
-        {
-            throw new PermissionException(e);
-        }
+        NATIVE_FUNCTIONS.chmod(file, mode);
 
         if(recursive && file.isDirectory())
         {
             for(File subfile : file.listFiles())
             {
                 this.chmod(subfile, recursive, mode);
+            }
+        }
+    }
+
+    public void changeGroup(File file, String group, boolean recursive) throws NativeException
+    {
+        NATIVE_FUNCTIONS.changeGroup(file, group);
+
+        if(file.isDirectory() && recursive)
+        {
+            for(File entry : file.listFiles())
+            {
+                this.changeGroup(entry, group, recursive);
             }
         }
     }

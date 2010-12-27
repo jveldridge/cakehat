@@ -10,6 +10,7 @@ import gradesystem.Allocator;
 import org.apache.commons.compress.archivers.ArchiveException;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.views.shared.TextViewerView;
+import utils.system.NativeException;
 
 /**
  *
@@ -74,7 +75,7 @@ public abstract class HandinPart extends Part
         Collection<String> contents;
         try
         {
-            contents = Allocator.getArchiveUtilities().getArchiveContents(handin.getAbsolutePath());
+            contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
         }
         catch (IOException ex)
         {
@@ -308,28 +309,35 @@ public abstract class HandinPart extends Part
         if(!_untarredStudents.contains(studentLogin))
         {
             //Create an empty folder for grading compiled student code
-            String compileDir = this.getStudentHandinDirectory(studentLogin);
-            Allocator.getFileSystemUtilities().makeDirectory(compileDir);
-
-            //untar student handin
-            File handin = this.getHandin(studentLogin);
-            if(handin != null)
+            try
             {
-                try
-                {
-                    Allocator.getArchiveUtilities().extractArchive(handin.getAbsolutePath(), compileDir);
+                File compileDir = new File(this.getStudentHandinDirectory(studentLogin));
+                Allocator.getFileSystemServices().makeDirectory(compileDir);
 
-                    //record that student's code has been untarred
-                    _untarredStudents.add(studentLogin);
-                }
-                catch (IOException ex)
+                //untar student handin
+                File handin = this.getHandin(studentLogin);
+                if(handin != null)
                 {
-                    new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
+                    try
+                    {
+                        Allocator.getArchiveUtilities().extractArchive(handin, compileDir);
+
+                        //record that student's code has been untarred
+                        _untarredStudents.add(studentLogin);
+                    }
+                    catch (IOException ex)
+                    {
+                        new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
+                    }
+                    catch (ArchiveException ex)
+                    {
+                        new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
+                    }
                 }
-                catch (ArchiveException ex)
-                {
-                    new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
-                }
+            }
+            catch(NativeException e)
+            {
+                new ErrorView(e, "Unable to create directory to untar " + studentLogin + "'s handin into.");
             }
         }
     }

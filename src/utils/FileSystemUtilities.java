@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
+import utils.system.NativeException;
 
 /**
  * Utility methods for interacting with the file system.
@@ -83,19 +84,6 @@ public interface FileSystemUtilities
     public String readFile(File file) throws FileNotFoundException, IOException;
 
     /**
-     * Makes a directory and sets the permissions to owner and group read,
-     * write, and execute (commonly known as 0770).
-     *
-     * TODO: Have this method throw an exception if it fails so that it must
-     * be handled, as opposed to returning an easily ignorable boolean.
-     *
-     * @param dirPath directory to be created
-     * @return whether the directory creation and permissions setting was
-     *         successful
-     */
-    public boolean makeDirectory(String dirPath);
-
-    /**
      * Changes the permissions on a file or directory. If changing the
      * permissions on a directory and <code>recursive</code> is true then the
      * permissions of the files and directories within the directory provided
@@ -110,32 +98,35 @@ public interface FileSystemUtilities
      * @param recursive
      * @param mode
      */
-    public void chmod(File file, boolean recursive, Permission... mode) throws PermissionException;
+    public void chmod(File file, boolean recursive, Permission... mode) throws NativeException;
 
     /**
-     * Changes the permissions on the file to be readable and writable by the
-     * owner and group.
-     *
-     * @param file
-     *
-     * @see #chmod(java.io.File, boolean, utils.FileSystemUtilities.Permission[])
-     */
-    public void chmodFile(File file) throws PermissionException;
-
-    /**
-     * Changes the permissions on the directory to be readable, writable, and
-     * accessible by the owner and group. All subdirectories are given the
-     * same permissions. All files are made readable and writable by the owner
-     * and group.
+     * Changes permissions of a file to be readable and writable by the owner
+     * and group. Changes the permissions of a directory to be readable,
+     * writable, and accessible by the owner and group. All subdirectories are
+     * given the same permissions. All files are made readable and writable by
+     * the owner and group.
      * <b>NOTE: symlinks are not detected, therefore circular references are not
      * detected and as such this method is not guaranteed to terminate if the
      * directory provided or any of its subdirectories contain a symlink.</b>
      *
      * @param file
      *
-     * @see #chmod(java.io.File, boolean, utils.FileSystemUtilities.Permission[]) 
+     * @see #chmod(java.io.File, boolean, utils.FileSystemUtilities.Permission[])
      */
-    public void chmodDirectory(File directory) throws PermissionException;
+    public void chmodDefault(File file) throws NativeException;
+
+    /**
+     * Changes the specified file or directory's group. The user calling this
+     * method must own the file or directory in order to succesfully change the
+     * group.
+     *
+     * @param file
+     * @param group the name of the group, such as cs000ta
+     * @param recursive
+     * @throws NativeException
+     */
+    public void changeGroup(File file, String group, boolean recursive) throws NativeException;
 
     /**
      *

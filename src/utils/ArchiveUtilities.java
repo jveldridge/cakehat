@@ -1,5 +1,6 @@
 package utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -19,17 +20,17 @@ public interface ArchiveUtilities
      * <br><br>
      * Supports: zip, tar, tgz/tar.gz
      *
-     * @param archivePath
+     * @param archive
      *
      * @return collection of Strings with the paths of files and directories in the archive
      */
-    public Collection<String> getArchiveContents(String archivePath) throws IOException, ArchiveException;
+    public Collection<String> getArchiveContents(File archive) throws IOException, ArchiveException;
 
     /**
      * Extracts an archive file. Supported extensions: zip, tar, tgz, tar.gz
      *
-     * @param archivePath the absolute path of the archive file
+     * @param archive the archive file
      * @param dstDir the directory the archive file will be expanded into
      */
-    public void extractArchive(String archivePath, String dstDir) throws IOException, ArchiveException;
+    public void extractArchive(File archive, File dstDir) throws IOException, ArchiveException;
 }

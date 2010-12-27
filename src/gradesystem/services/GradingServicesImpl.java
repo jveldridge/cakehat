@@ -36,7 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
-import utils.PermissionException;
+import utils.system.NativeException;
 
 public class GradingServicesImpl implements GradingServices
 {
@@ -70,9 +70,17 @@ public class GradingServicesImpl implements GradingServices
         }
     }
 
-    public boolean makeUserGradingDirectory()
+    public void makeUserGradingDirectory()
     {
-        return Allocator.getFileSystemUtilities().makeDirectory(this.getUserGradingDirectory());
+        File gradingDir = new File(this.getUserGradingDirectory());
+        try
+        {
+            Allocator.getFileSystemServices().makeDirectory(gradingDir);
+        }
+        catch(NativeException e)
+        {
+            new ErrorView(e, "Unable to create grading directory: " + gradingDir.getAbsolutePath());
+        }
     }
 
     public boolean removeUserGradingDirectory()
@@ -564,25 +572,14 @@ public class GradingServicesImpl implements GradingServices
                     "but it was not possible to add the new lab grade: " + scoreFilePath);
         }
 
-        //Change permissions
+        //Change permissions and group
         try
         {
-            Allocator.getFileSystemUtilities().chmodFile(scoreFile);
+            Allocator.getFileSystemServices().sanitize(scoreFile);
         }
-        catch(PermissionException e)
+        catch(NativeException e)
         {
-            new ErrorView(e, "Unable to change permissions for new lab grade.");
-        }
-
-        //Ensure group is the ta group
-        //TODO: Is this really necessary?
-        try
-        {
-            Allocator.getExternalProcessesUtilities().executeSynchronously("chgrp " + Allocator.getCourseInfo().getTAGroup() + " " + scoreFilePath);
-        }
-        catch(IOException e)
-        {
-            new ErrorView(e, "Unable to change the group for the new lab grade.");
+            new ErrorView(e, "Unable to change permissions and group for new lab grade.");
         }
     }
 }

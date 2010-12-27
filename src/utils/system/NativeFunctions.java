@@ -32,6 +32,29 @@ public class NativeFunctions
     }
 
     /**
+     * Changes the group of the file or directory to be the group passed in. In
+     * order to change the group, the user invoking this method must be the
+     * owner of the file.
+     *
+     * @param file
+     * @param group
+     *
+     * @throws NativeException thrown if unable to change the file to the
+     * specified group. Can occur for reasons including: file does not exist,
+     * group does not exist, or group is not owned by user.
+     */
+    public void changeGroup(File file, String group) throws NativeException
+    {
+        int gid = _wrapper.getgrnam(group).getGID();
+
+        //Per the chown(2) documentation:
+        //One of the owner or group id's may be left unchanged by specifying it as -1.
+        int uid = -1;
+
+        _wrapper.chown(file.getAbsolutePath(), uid, gid);
+    }
+
+    /**
      * Returns all of the logins of the members of the group.
      *
      * @return

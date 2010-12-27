@@ -24,6 +24,7 @@ class LibCWrapper
     private static interface LibC extends Library
     {
         public int chmod(String filepath, int mode) throws LastErrorException;
+        public int chown(String filepath, int uid, int gid) throws LastErrorException;
         public NativeGroup getgrnam(String group) throws LastErrorException;
         public NativeUserInformation getpwnam(String login) throws LastErrorException;
         public NativeUserInformation getpwuid(int uid) throws LastErrorException;
@@ -55,6 +56,30 @@ class LibCWrapper
         {
             String errorMsg = "Failure to change permissions to: " + mode +
                               " (in octal), for: " + filepath;
+            throw new NativeException(e, errorMsg);
+        }
+    }
+
+    /**
+     * Changes the user owner and group owner of the specified file. For this
+     * to succeed the file or directory specified by <code>filepath</code> must
+     * be owned by the user.
+     *
+     * @param filepath
+     * @param uid user id; to remain unchanged use -1
+     * @param gid group id; to remain unchanged use -1
+     * @throws NativeException
+     */
+    public void chown(String filepath, int uid, int gid) throws NativeException
+    {
+        try
+        {
+            _libC.chown(filepath, uid, gid);
+        }
+        catch(LastErrorException e)
+        {
+            String errorMsg = "Failure to change user id to: " + uid +
+                              ", and group id to: " + gid + ", for: " + filepath;
             throw new NativeException(e, errorMsg);
         }
     }

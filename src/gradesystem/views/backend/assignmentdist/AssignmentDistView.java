@@ -31,6 +31,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
+import java.io.File;
+import utils.system.NativeException;
 
 /**
  * Provides an interface for creating a distribution for an assignment.
@@ -369,8 +372,15 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
     private void setUpGrading() {
         //create rubric directory if it does not exist
-        String directoryPath = Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/";
-        Allocator.getFileSystemUtilities().makeDirectory(directoryPath);
+        File directory = new File(Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/");
+        try
+        {
+            Allocator.getFileSystemServices().makeDirectory(directory);
+        }
+        catch(NativeException e)
+        {
+            new ErrorView(e, "Unable to create rubric directory: " + directory.getAbsolutePath());
+        }
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
         String input = (String) JOptionPane.showInputDialog(this, "Enter minutes of leniency:",
