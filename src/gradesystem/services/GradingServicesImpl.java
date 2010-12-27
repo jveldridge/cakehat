@@ -5,7 +5,6 @@ import gradesystem.views.shared.ErrorView;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
-import gradesystem.config.TA;
 import gradesystem.GradeSystemApp;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -425,12 +424,7 @@ public class GradingServicesImpl implements GradingServices
                 if (notInDBPanel.isChangeSelected())
                 {
                     String studentLogin = notInDBPanel.getStudentLogin();
-                    String studentName = Allocator.getUserUtilities().getUserName(studentLogin);
-                    String[] studentSplitName = studentName.split(" ");
-                    Allocator.getUserServices().addStudent(studentLogin,
-                                                            studentSplitName[0],
-                                                            studentSplitName[studentSplitName.length - 1],
-                                                            UserServices.ValidityCheck.CHECK);
+                    Allocator.getUserServices().addStudent(studentLogin, UserServices.ValidityCheck.CHECK);
                     handinsNotInDB.remove(studentLogin);
                 }
             }

@@ -92,7 +92,7 @@ public class NativeGroup extends Structure
         Pointer memberPtr;
         for(int i = 0; (memberPtr = gr_mem.getPointer(i)) != null; i += Pointer.SIZE)
         {
-        	members.add(memberPtr.getString(0));
+            members.add(memberPtr.getString(0));
         }
 
         return members;

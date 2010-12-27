@@ -14,6 +14,7 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 import utils.system.NativeFunctions;
 import utils.FileSystemUtilities.Permission;
+import utils.system.NativeException;
 
 public class FileSystemUtilitiesImpl implements FileSystemUtilities
 {
@@ -169,9 +170,13 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
     private void chmod(File file, boolean recursive, int mode) throws PermissionException
     {
-        if(!NATIVE_FUNCTIONS.chmod(file, mode))
+        try
         {
-            throw new PermissionException(file);
+            NATIVE_FUNCTIONS.chmod(file, mode);
+        }
+        catch(NativeException e)
+        {
+            throw new PermissionException(e);
         }
 
         if(recursive && file.isDirectory())

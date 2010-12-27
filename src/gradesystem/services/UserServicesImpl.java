@@ -2,24 +2,35 @@ package gradesystem.services;
 
 import gradesystem.Allocator;
 import gradesystem.config.TA;
-import java.util.Collection;
+import gradesystem.views.shared.ErrorView;
+import java.util.List;
 import javax.swing.JOptionPane;
+import utils.system.NativeException;
 
 public class UserServicesImpl implements UserServices
 {
-    public void addStudent(String studentLogin, String firstName,
-            String lastName, ValidityCheck checkValidity)
+    public void addStudent(String studentLogin, String firstName, String lastName,
+            ValidityCheck checkValidity)
     {
-
         if (checkValidity == ValidityCheck.CHECK)
         {
-            boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(studentLogin);
-            boolean isInStudentGroup = this.isInStudentGroup(studentLogin);
-
             String warningMessage = "";
+            boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(studentLogin);
+            boolean isInStudentGroup = false;
+
+            try
+            {
+                isInStudentGroup = this.isInStudentGroup(studentLogin);
+            }
+            catch(NativeException e)
+            {
+                new ErrorView(e, "Unable to retrieve student group");
+                warningMessage += "Unable to retrieve student group\n";
+            }
+
             if (!isLoginValid)
             {
-                warningMessage += String.format("The login %s is not a valid (snoopable) login\n",
+                warningMessage += String.format("The login %s is not a valid login\n",
                         studentLogin);
             }
             else if (!isInStudentGroup)
@@ -45,6 +56,24 @@ public class UserServicesImpl implements UserServices
         }
 
         Allocator.getDatabaseIO().addStudent(studentLogin, firstName, lastName);
+    }
+
+    public void addStudent(String studentLogin, ValidityCheck checkValidity)
+    {
+        try
+        {
+            String name = Allocator.getUserUtilities().getUserName(studentLogin);
+            String names[] = name.split(" ");
+            String firstName = names[0];
+            String lastName = names[names.length - 1];
+
+            this.addStudent(studentLogin, firstName, lastName, checkValidity);
+        }
+        catch(NativeException e)
+        {
+            new ErrorView(e, "Student will not be added to the database because " +
+                    "the user's real name cannot be retrieved");
+        }
     }
 
     public boolean isUserTA()
@@ -92,17 +121,17 @@ public class UserServicesImpl implements UserServices
         return false;
     }
 
-    public boolean isInStudentGroup(String studentLogin)
+    public boolean isInStudentGroup(String studentLogin) throws NativeException
     {
         return Allocator.getUserUtilities().isMemberOfGroup(studentLogin, Allocator.getCourseInfo().getStudentGroup());
     }
 
-    public boolean isInTAGroup(String taLogin)
+    public boolean isInTAGroup(String taLogin) throws NativeException
     {
         return Allocator.getUserUtilities().isMemberOfGroup(taLogin, Allocator.getCourseInfo().getTAGroup());
     }
 
-    public Collection<String> getStudentLogins()
+    public List<String> getStudentLogins() throws NativeException
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getStudentGroup());
     }

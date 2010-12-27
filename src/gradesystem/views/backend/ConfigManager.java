@@ -1,8 +1,3 @@
-/*
- * ConfigManager.java
- *
- * Created on Feb 5, 2010, 1:11:00 PM
- */
 package gradesystem.views.backend;
 
 import gradesystem.config.Assignment;
@@ -13,6 +8,8 @@ import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import gradesystem.Allocator;
 import gradesystem.services.UserServices.ValidityCheck;
+import gradesystem.views.shared.ErrorView;
+import utils.system.NativeException;
 
 /**
  *
@@ -40,25 +37,21 @@ public class ConfigManager extends javax.swing.JFrame {
         addStudentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (allStudentsRB.isSelected()) {
-                    for (String s : Allocator.getUserServices().getStudentLogins()) {
-                        if (!Allocator.getDatabaseIO().studentExists(s)) {
-                            String name = Allocator.getUserUtilities().getUserName(s);
-                            String names[] = name.split(" ");
-                            Allocator.getUserServices().addStudent(s, names[0],
-                                                                    names[names.length - 1],
-                                                                    ValidityCheck.BYPASS);
+                    try {
+                        for (String login : Allocator.getUserServices().getStudentLogins()) {
+                            if (!Allocator.getDatabaseIO().studentExists(login)) {
+                                Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                            }
                         }
+                    } catch(NativeException ex) {
+                        new ErrorView(ex, "Unable to add students because student logins could not be retrieved");
                     }
                 }
                 else {
                     String login = loginText.getText();
                     if (!Allocator.getDatabaseIO().studentExists(login)) {
                         if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
-                            String name = Allocator.getUserUtilities().getUserName(login);
-                            String names[] = name.split(" ");
                             Allocator.getUserServices().addStudent(login,
-                                                                    names[0],
-                                                                    names[names.length - 1],
                                                                     ValidityCheck.CHECK);
                         }
                         else {
@@ -94,7 +87,13 @@ public class ConfigManager extends javax.swing.JFrame {
         addTAsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                    Allocator.getDatabaseIO().addTA(ta.getLogin(), Allocator.getUserUtilities().getUserName(ta.getLogin()));
+                    try {
+                        Allocator.getDatabaseIO().addTA(ta.getLogin(),
+                                Allocator.getUserUtilities().getUserName(ta.getLogin()));
+                    } catch(NativeException ex) {
+                        new ErrorView(ex, "TA (" + ta.getLogin() + ") was not " +
+                                " added to the database because real name could not be retrieved");
+                    }
                 }
             }
         } );
