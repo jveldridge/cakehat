@@ -3,7 +3,6 @@ package gradesystem.services;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
-import gradesystem.config.TA;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
@@ -25,10 +24,8 @@ public interface GradingServices
 
     /**
      * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
-     *
-     * @return success of making directory
      */
-    public boolean makeUserGradingDirectory();
+    public void makeUserGradingDirectory();
 
     /**
      * Removes the user's grading directory as specified by {@link #getUserGradingDirectory()}.

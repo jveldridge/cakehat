@@ -15,8 +15,7 @@ import gradesystem.rubric.Rubric.Subsection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import gradesystem.views.shared.ErrorView;
-import utils.FileSystemUtilities.Permission;
-import utils.PermissionException;
+import utils.system.NativeException;
 
 /**
  *
@@ -211,9 +210,13 @@ class RubricGMLWriter implements RubricConstants
 
             // ensure directory where the file is going to be saved exists
             File xmlFile = new File(XMLFilePath);
-            if(!Allocator.getFileSystemUtilities().makeDirectory(xmlFile.getParent()))
+            try
             {
-                new ErrorView("Unable to make directory to save rubric (gml file) in. \n" +
+                Allocator.getFileSystemServices().makeDirectory(xmlFile.getParentFile());
+            }
+            catch(NativeException e)
+            {
+                new ErrorView(e, "Unable to make directory to save rubric (gml file) in. \n" +
                         "Rubric location is: " + xmlFile.getAbsolutePath());
             }
 
@@ -221,14 +224,14 @@ class RubricGMLWriter implements RubricConstants
             StreamResult result = new StreamResult(xmlFile);
             transformer.transform(source, result);
 
-            // ensure the file written has the correct permissions
+            // ensure the file written has the correct permissions and group
             try
             {
-                Allocator.getFileSystemUtilities().chmodFile(xmlFile);
+                Allocator.getFileSystemServices().sanitize(xmlFile);
             }
-            catch(PermissionException e)
+            catch(NativeException e)
             {
-                new ErrorView(e, "Unable to set correct permissions for rubric (gml file).");
+                new ErrorView(e, "Unable to set correct permissions and group for rubric (gml file).");
             }
         }
         catch (Exception e)

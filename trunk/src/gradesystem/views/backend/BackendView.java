@@ -63,6 +63,7 @@ import org.jdesktop.application.SingleFrameApplication;
 import gradesystem.Allocator;
 import gradesystem.services.UserServices.ValidityCheck;
 import gradesystem.views.shared.ErrorView;
+import java.io.File;
 import java.util.ArrayList;
 import utils.system.NativeException;
 
@@ -1688,8 +1689,16 @@ public class BackendView extends JFrame
         if (!_assignmentList.isSelectionEmpty()) {
             //Create directory for the assignment so GRD files can be created,
             //even if no assignments have been untarred
-            Allocator.getFileSystemUtilities().makeDirectory(Allocator.getGradingServices().getUserGradingDirectory()
-                                                            + _assignmentList.getSelectedValue().getName());
+            File assigmentDir = new File(Allocator.getGradingServices().getUserGradingDirectory() +
+                                         _assignmentList.getSelectedValue().getName());
+            try
+            {
+                Allocator.getFileSystemServices().makeDirectory(assigmentDir);
+            }
+            catch(NativeException e)
+            {
+                new ErrorView(e, "Unable to create directory for assignment: " + _assignmentList.getSelectedValue().getName());
+            }
         }
 
         updateGUI();

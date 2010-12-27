@@ -27,27 +27,27 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
      * @param archivePath
      * @return
      */
-    private ArchiveInputStream getArchiveInputStream(String archivePath) throws IOException, ArchiveException
+    private ArchiveInputStream getArchiveInputStream(File archive) throws IOException, ArchiveException
     {
         //Determine appropriate input stream and compression format
         InputStream is;
         String format;
 
-        String lowerCaseSrcFile = archivePath.toLowerCase();
+        String lowerCaseSrcFile = archive.getAbsolutePath().toLowerCase();
 
         if(lowerCaseSrcFile.endsWith(".zip"))
         {
-            is = new FileInputStream(archivePath);
+            is = new FileInputStream(archive);
             format = "zip";
         }
         else if(lowerCaseSrcFile.endsWith(".tar"))
         {
-            is = new FileInputStream(archivePath);
+            is = new FileInputStream(archive);
             format = "tar";
         }
-        else if(lowerCaseSrcFile.endsWith(".tgz") || archivePath.toLowerCase().endsWith(".tar.gz"))
+        else if(lowerCaseSrcFile.endsWith(".tgz") || lowerCaseSrcFile.endsWith(".tar.gz"))
         {
-            is = new GZIPInputStream(new FileInputStream(new File(archivePath)));
+            is = new GZIPInputStream(new FileInputStream(archive));
             format = "tar";
         }
         else
@@ -58,11 +58,11 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         return new ArchiveStreamFactory().createArchiveInputStream(format, is);
     }
 
-    public Collection<String> getArchiveContents(String archivePath) throws IOException, ArchiveException
+    public Collection<String> getArchiveContents(File archive) throws IOException, ArchiveException
     {
         Vector<String> contents = new Vector<String>();
 
-        ArchiveInputStream in = getArchiveInputStream(archivePath);
+        ArchiveInputStream in = getArchiveInputStream(archive);
         while(true)
         {
             ArchiveEntry entry = in.getNextEntry();
@@ -78,9 +78,9 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         return contents;
     }
 
-    public void extractArchive(String archivePath, String dstDir) throws IOException, ArchiveException
+    public void extractArchive(File archive, File dstDir) throws IOException, ArchiveException
     {
-        ArchiveInputStream in = getArchiveInputStream(archivePath);
+        ArchiveInputStream in = getArchiveInputStream(archive);
         while(true)
         {
             ArchiveEntry entry = in.getNextEntry();
