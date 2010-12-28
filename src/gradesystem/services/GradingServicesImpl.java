@@ -249,14 +249,6 @@ public class GradingServicesImpl implements GradingServices
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }
 
-    /**
-     * Returns whether or not some member of the given student's group for the given
-     * project is on the given TA's blacklist.
-     *
-     * @param studentLogin
-     * @param ta
-     * @return true if a group member is on the TA's blacklist; false otherwise
-     */
     public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, String ta)
     {
         Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta);
@@ -269,14 +261,6 @@ public class GradingServicesImpl implements GradingServices
         return false;
     }
 
-    /**
-     * present the user with a dialog warning them that some of the handins are for students
-     * who are not in the database or who are not enabled. allow the user to choose a method
-     * for resolution. either add/enable them or ignore the handin.
-     *
-     * @param asgn
-     * @return what are the remaining bad logins (null if the user clicked Cancel)
-     */
     public Collection<String> resolveMissingStudents(Assignment asgn)
     {
         Collection<String> handinLogins = asgn.getHandinPart().getHandinLogins();
@@ -518,34 +502,29 @@ public class GradingServicesImpl implements GradingServices
         }
     }
 
-    /**
-     * updates the touched file that goes represents the student's lab grade
-     *
-     * @param labPart
-     * @param score
-     * @param student
-     * @author aunger
-     */
     public void updateLabGradeFile(LabPart labPart, double score, String student)
     {
-        //TODO: Switch this to pure Java
-        String removeCommand = String.format("rm %s/%d/%s* -f",
-                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student);
-        try
+        //Deletes existing lab grade(s) for this lab and student. There should
+        //only be 1, but to be safe, allow for deleting all
+        File labDir = new File(Allocator.getCourseInfo().getLabsDir() + labPart.getLabNumber());
+        for(File labFile : labDir.listFiles())
         {
-            Allocator.getExternalProcessesUtilities().executeSynchronously(removeCommand);
-        }
-        catch(IOException e)
-        {
-            new ErrorView(e, "Unable to remove previous lab grade.");
-            return;
+            if(labFile.getName().startsWith(student))
+            {
+                if(!labFile.delete())
+                {
+                    new ErrorView("Unable to remove previous lab grade: " +
+                            labFile.getAbsolutePath() + ". \n" +
+                            "The lab grade cannot be updated.");
+                    return;
+                }
+            }
         }
 
+        //Convert score to string and trim (to avoid something like 1.5000000000)
         String scoreText = new Double(score).toString();
-
         char[] scoreChars = scoreText.toCharArray();
         int endIndex = scoreText.length() - 1;
-
         for (; endIndex >= 0 ; endIndex--)
         {
             if (scoreChars[endIndex] != '0')
@@ -553,33 +532,31 @@ public class GradingServicesImpl implements GradingServices
                 break;
             }
         }
-
         scoreText = scoreText.substring(0, endIndex+1);
 
-        //File that will represent the lab grade
-        String scoreFilePath = String.format("%s%d/%s,%s",
-                Allocator.getCourseInfo().getLabsDir(), labPart.getLabNumber(), student, scoreText);
-        File scoreFile = new File(scoreFilePath);
+        //File that will represent the new lab grade
+        File scoreFile = new File(labDir, student + "," + scoreText);
 
         //Create the file
         try
         {
             scoreFile.createNewFile();
+
+            //Change permissions and group ownership
+            try
+            {
+                Allocator.getFileSystemServices().sanitize(scoreFile);
+            }
+            catch(NativeException e)
+            {
+                new ErrorView(e, "Unable to change permissions and group for new lab grade.");
+            }
         }
         catch (IOException ex)
         {
             new ErrorView(ex, "Previous lab grade was removed, " +
-                    "but it was not possible to add the new lab grade: " + scoreFilePath);
-        }
-
-        //Change permissions and group
-        try
-        {
-            Allocator.getFileSystemServices().sanitize(scoreFile);
-        }
-        catch(NativeException e)
-        {
-            new ErrorView(e, "Unable to change permissions and group for new lab grade.");
+                    "but it was not possible to add the new lab grade: " +
+                    scoreFile.getAbsolutePath());
         }
     }
 }
