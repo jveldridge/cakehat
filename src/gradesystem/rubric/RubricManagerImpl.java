@@ -148,7 +148,6 @@ public class RubricManagerImpl implements RubricManager
                                   DistributionRequester requester)
     {
         Map<String, String> students = Allocator.getDatabaseIO().getAllStudents();
-        Map<String, String> tas = Allocator.getDatabaseIO().getAllTAs();
         Map<String, Calendar> extensions = getExtensions(part, students.keySet());
 
         int numToDistribute = 0;
@@ -167,9 +166,6 @@ public class RubricManagerImpl implements RubricManager
             //for each TA
             for (String taLogin : distribution.keySet())
             {
-                Person grader = new Person(tas.get(taLogin), taLogin);
-                rubric.setGrader(grader);
-
                 //for each student
                 for (String studentLogin : distribution.get(taLogin))
                 {
@@ -428,27 +424,6 @@ public class RubricManagerImpl implements RubricManager
              new ErrorView(e);
          }
      }
-
-    public void reassignRubric(HandinPart part, String studentLogin, String newGraderLogin)
-    {
-        try
-        {
-            //Get rubric
-            String xmlPath = getStudentRubricPath(part, studentLogin);
-            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
-
-            //Change grader
-            String graderName = Allocator.getDatabaseIO().getAllTAs().get(newGraderLogin);
-            rubric.setGrader(graderName, newGraderLogin);
-
-            //Write rubric
-            RubricGMLWriter.write(rubric, xmlPath);
-        }
-        catch(RubricException e)
-        {
-            new ErrorView(e);
-        }
-    }
 
     public void convertToGRD(HandinPart part, String studentLogin)
     {

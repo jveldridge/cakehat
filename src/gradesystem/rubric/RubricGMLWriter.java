@@ -51,14 +51,6 @@ class RubricGMLWriter implements RubricConstants
         //Add the student node to the root node
         rubricNode.appendChild(student);
 
-        //Create the grader node and set attributes
-        Element grader = document.createElement(GRADER);
-        grader.setAttribute(NAME, rubric.getGraderName());
-        grader.setAttribute(ACCT, rubric.getGraderAccount());
-
-        //Add the grader node to the root node
-        rubricNode.appendChild(grader);
-
         for (Section section : rubric.getSections())
         {
             Element sectionNode = document.createElement(SECTION);

@@ -139,16 +139,6 @@ public interface RubricManager
      public void setTimeStatus(HandinPart part, String studentLogin, TimeStatus status, int daysLate);
 
     /**
-     * Changes the grader of the rubric. Only makes changes in the rubric itself,
-     * this has no effect on any information in the database.
-     *
-     * @param part
-     * @param studentLogin
-     * @param newGraderLogin
-     */
-    public void reassignRubric(HandinPart part, String studentLogin, String newGraderLogin);
-
-    /**
      * Converts a rubric to a GRD file.
      *
      * @param part

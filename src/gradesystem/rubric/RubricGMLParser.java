@@ -157,11 +157,6 @@ class RubricGMLParser implements RubricConstants
             {
                 rubric.setStudent(parsePerson(currNode.getAttributes()));
             }
-            //Grader
-            else if (currNode.getNodeName().equals(GRADER))
-            {
-                rubric.setGrader(parsePerson(currNode.getAttributes()));
-            }
             //Section
             else if (currNode.getNodeName().equals(SECTION))
             {
@@ -174,7 +169,7 @@ class RubricGMLParser implements RubricConstants
             }
             else
             {
-                throw new RubricException(RUBRIC, currNode, STUDENT, GRADER, SECTION, EXTRA_CREDIT);
+                throw new RubricException(RUBRIC, currNode, STUDENT, SECTION, EXTRA_CREDIT);
             }
         }
     }

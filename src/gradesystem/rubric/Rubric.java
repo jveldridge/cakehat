@@ -22,7 +22,6 @@ class Rubric
     private int _number = 0;
     private int _daysLate = 0;
     private Person _student = new Person();
-    private Person _grader = new Person();
     private Vector<Section> _sections = new Vector<Section>();
     private Section _extraCredit = new Section();
     protected HandinPart _handinPart;
@@ -113,34 +112,6 @@ class Rubric
     public String getStudentAccount()
     {
         return _student.getAccount();
-    }
-
-    // Grader
-
-    void setGrader(String name, String acct)
-    {
-        _grader.setName(name);
-        _grader.setAccount(acct);
-    }
-
-    void setGrader(Person grader)
-    {
-        _grader = grader;
-    }
-
-    public Person getGrader()
-    {
-        return _grader;
-    }
-
-    public String getGraderName()
-    {
-        return _grader.getName();
-    }
-
-    public String getGraderAccount()
-    {
-        return _grader.getAccount();
     }
 
     // Sections
