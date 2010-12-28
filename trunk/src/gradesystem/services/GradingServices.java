@@ -122,12 +122,13 @@ public interface GradingServices
     public Collection<String> resolveMissingStudents(Assignment asgn);
 
     /**
-     * updates the touched file that goes represents the student's lab grade
+     * Updates the student's lab grade by deleting the file that previously
+     * represented the lab grade and creating a new one.
      *
      * @param labPart
      * @param score
-     * @param student
-     * @author aunger
+     * @param student the student's login
+     * @author aunger, jak2
      */
     public void updateLabGradeFile(LabPart labPart, double score, String student);
 }
