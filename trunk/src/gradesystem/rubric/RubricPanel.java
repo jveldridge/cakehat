@@ -26,6 +26,7 @@ import gradesystem.config.HandinPart;
 import gradesystem.config.LatePolicy;
 import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
+import gradesystem.config.Assignment;
 
 /**
  * A graphical view of a rubric.
@@ -509,19 +510,29 @@ class RubricPanel extends JPanel
         panel.add(studentName);
         height += studentName.getPreferredSize().height + vGap;
 
+        Assignment asgn = _rubric._handinPart.getAssignment();
+        String graderLogin = Allocator.getDatabaseIO().getAllGradersForStudent(_rubric.getStudentAccount()).get(asgn);
+        String graderName;
+        if (graderLogin == null) {
+            graderLogin = "UNASSIGNED";
+            graderName = "UNASSIGNED";
+        }
+        else {
+            graderName = Allocator.getDatabaseIO().getTaName(graderLogin);
+        }
 
         //Grader
-        JLabel graderAcct = new JLabel(" Grader's account: " + _rubric.getGraderAccount());
+        JLabel graderAcctLabel = new JLabel(" Grader's account: " + graderLogin);
         vGap = 10;
-        layout.putConstraint(SpringLayout.NORTH, graderAcct, vGap, SpringLayout.SOUTH, studentName);
-        panel.add(graderAcct);
-        height += graderAcct.getPreferredSize().height + vGap;
+        layout.putConstraint(SpringLayout.NORTH, graderAcctLabel, vGap, SpringLayout.SOUTH, studentName);
+        panel.add(graderAcctLabel);
+        height += graderAcctLabel.getPreferredSize().height + vGap;
 
-        JLabel graderName = new JLabel(" Grader's name: " + _rubric.getGraderName());
+        JLabel graderNameLabel = new JLabel(" Grader's name: " + graderName);
         vGap = 2;
-        layout.putConstraint(SpringLayout.NORTH, graderName, vGap, SpringLayout.SOUTH, graderAcct);
-        panel.add(graderName);
-        height += graderName.getPreferredSize().height + vGap;
+        layout.putConstraint(SpringLayout.NORTH, graderNameLabel, vGap, SpringLayout.SOUTH, graderAcctLabel);
+        panel.add(graderNameLabel);
+        height += graderNameLabel.getPreferredSize().height + vGap;
 
         panel.setPreferredSize(new Dimension(this.getWidth(), height));
 

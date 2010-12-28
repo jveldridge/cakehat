@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
+import gradesystem.config.Assignment;
 import gradesystem.views.shared.ErrorView;
 
 /**
@@ -68,7 +69,18 @@ class RubricGRDWriter
         writeLine(HANDIN_STATUS_LBL + status + '\n', output);
 
         writeLine(STUDENT_LBL + rubric.getStudentName() + " (" + rubric.getStudentAccount() + ")", output);
-        writeLine(GRADER_LBL + rubric.getGraderName() + " (" + rubric.getGraderAccount() + ")", output);
+
+        Assignment asgn = rubric._handinPart.getAssignment();
+        String graderLogin = Allocator.getDatabaseIO().getAllGradersForStudent(rubric.getStudentAccount()).get(asgn);
+        String graderName;
+        if (graderLogin == null) {
+            graderLogin = "UNASSIGNED";
+            graderName = "UNASSIGNED";
+        }
+        else {
+            graderName = Allocator.getDatabaseIO().getTaName(graderLogin);
+        }
+        writeLine(GRADER_LBL + graderName + " (" + graderLogin + ")", output);
 
         printHeader(output);
     }

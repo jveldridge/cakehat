@@ -14,7 +14,7 @@ interface RubricConstants
     RUBRIC = "RUBRIC",
     NAME = "NAME", NUMBER = "NUMBER", STATUS = "STATUS", DAYS_LATE = "DAYS-LATE",
 
-    STUDENT = "STUDENT", GRADER = "GRADER", ACCT = "ACCT",
+    STUDENT = "STUDENT", ACCT = "ACCT",
             
     SECTION = "SECTION", EXTRA_CREDIT = "EXTRA-CREDIT",
 
