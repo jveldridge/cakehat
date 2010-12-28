@@ -486,9 +486,8 @@ public class ReassignView extends JFrame {
                     //modify the distribution
                     Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, ta.getLogin());
 
-                    //reassign rubrics for students who already have them
+                    //don't need to make rubrics for students who already have them
                     if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
-                        Allocator.getRubricManager().reassignRubric(handinPart, student, ta.getLogin());
                         iterator.remove();
                     }
 
@@ -512,9 +511,6 @@ public class ReassignView extends JFrame {
                 for (String student : students) {
                     //modify the distribution
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA.getLogin());
-
-                    //reassign the rubric
-                    Allocator.getRubricManager().reassignRubric(handinPart, student, "Nobody");
                 }
             }
 
@@ -531,9 +527,6 @@ public class ReassignView extends JFrame {
                     //modify the distribution
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA.getLogin());
                     Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, newTA.getLogin());
-
-                    //reassign the rubric
-                    Allocator.getRubricManager().reassignRubric(handinPart, student, newTA.getLogin());
                 }
             }
         }
@@ -612,12 +605,6 @@ public class ReassignView extends JFrame {
                 Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA.getLogin());
                 if (fromTA != null) {
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA.getLogin());
-                }
-
-                //if the student already has a rubric, reassign it
-                if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
-                    Allocator.getRubricManager().reassignRubric(handinPart, student, toTA.getLogin());
-                    iterator.remove();
                 }
             }
 

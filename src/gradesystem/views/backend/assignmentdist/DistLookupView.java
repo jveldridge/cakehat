@@ -245,13 +245,10 @@ public class DistLookupView extends JFrame {
             if (asgnRow.hasNewTA() && this.isOkToDistribute(student, asgnRow.getNewTA(), asgnRow.getAsgn())) {
                 // already assigned
                 if (_graders.containsKey(asgnRow.getAsgn())) {
+
                     //modify the distribution
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, asgnRow.getAsgn().getHandinPart(), _graders.get(asgnRow.getAsgn()));
                     Allocator.getDatabaseIO().assignStudentToGrader(student, asgnRow.getAsgn().getHandinPart(), asgnRow.getNewTA());
-
-                    //reassign the rubric
-                    Allocator.getRubricManager().reassignRubric(asgnRow.getAsgn().getHandinPart(), student, asgnRow.getNewTA());
-
                 } // not assigned
                 else {
                     //modify the distribution
