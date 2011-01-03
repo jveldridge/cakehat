@@ -1,7 +1,7 @@
 package gradesystem.views.backend;
 
 import gradesystem.views.backend.assignmentdist.AssignmentDistView;
-import gradesystem.components.ModifyBlacklistView;
+import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.views.backend.assignmentdist.ReassignView;
 import gradesystem.views.backend.stathist.StatHistView;
 import gradesystem.components.GenericJList;

@@ -1,7 +1,7 @@
 package gradesystem.views.frontend;
 
 import gradesystem.components.GenericJList;
-import gradesystem.components.ModifyBlacklistView;
+import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
