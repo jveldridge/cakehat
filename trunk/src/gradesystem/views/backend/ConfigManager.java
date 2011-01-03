@@ -87,13 +87,7 @@ public class ConfigManager extends javax.swing.JFrame {
         addTAsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                    try {
-                        Allocator.getDatabaseIO().addTA(ta.getLogin(),
-                                Allocator.getUserUtilities().getUserName(ta.getLogin()));
-                    } catch(NativeException ex) {
-                        new ErrorView(ex, "TA (" + ta.getLogin() + ") was not " +
-                                " added to the database because real name could not be retrieved");
-                    }
+                    Allocator.getDatabaseIO().addTA(ta);
                 }
             }
         } );

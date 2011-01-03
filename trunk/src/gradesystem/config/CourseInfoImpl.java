@@ -8,6 +8,8 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Constants used throughout the program. This information is based off of the
@@ -176,6 +178,19 @@ public class CourseInfoImpl implements CourseInfo
         }
 
         return _admins;
+    }
+
+    private Map<String, TA> _taMap = null;
+    public TA getTA(String taLogin) {
+        if (_taMap == null) {
+            _taMap = new HashMap<String, TA>();
+
+            for (TA ta : getTAs()) {
+                _taMap.put(ta.getLogin(), ta);
+            }
+        }
+
+        return _taMap.get(taLogin);
     }
 
     private Collection<Assignment> _handinAssignments = null;

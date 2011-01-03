@@ -1,5 +1,6 @@
 package gradesystem.services;
 
+import gradesystem.config.TA;
 import java.util.List;
 import utils.system.NativeException;
 
@@ -49,6 +50,13 @@ public interface UserServices
      *                    adding all members of the course group)
      */
     public void addStudent(String studentLogin, ValidityCheck checkValidity);
+
+    /**
+     * Returns the TA object representing the current user.
+     *
+     * @return the TA object representing the current user.
+     */
+    public TA getUser();
 
     /**
      * Returns whether or not the current user is a TA for the course as
@@ -103,4 +111,22 @@ public interface UserServices
      * @throws NativeException thrown if the student group does not exist
      */
     public List<String> getStudentLogins() throws NativeException;
+
+    /**
+     * Returns the login of the given TA, or, if the given TA object is null,
+     * "UNASSIGNED"
+     * 
+     * @param ta
+     * @return
+     */
+    public String getSanitizedTALogin(TA ta);
+
+    /**
+     * Returns the name of the given TA, or, if the given TA object is null,
+     * "UNASSIGNED"
+     *
+     * @param ta
+     * @return
+     */
+    public String getSanitizedTAName(TA ta);
 }

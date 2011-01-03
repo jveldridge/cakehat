@@ -2,6 +2,7 @@ package gradesystem.rubric;
 
 import gradesystem.views.backend.assignmentdist.DistributionRequester;
 import gradesystem.config.HandinPart;
+import gradesystem.config.TA;
 import java.util.Collection;
 import java.util.Map;
 
@@ -89,8 +90,8 @@ public interface RubricManager
     public Map<String, Double> getRubricTotals(HandinPart part, Iterable<String> studentLogins);
 
     /**
-     * Distributes the rubric for the HandinPart part, mapping TA logins (as
-     * strings) to Collections of Strings of studentLogins that TA is assigned
+     * Distributes the rubric for the HandinPart part, mapping TAs to
+     * Collections of Strings of studentLogins that TA is assigned
      * to grade. When determining handin time status, takes into account the
      * specified minutes of leniency to apply to deadlines. Also takes into
      * account extensions that have been recorded in the database. If an
@@ -103,7 +104,7 @@ public interface RubricManager
      * @return
      */
     public void distributeRubrics(HandinPart part,
-                                  Map<String,Collection<String>> distribution,
+                                  Map<TA, Collection<String>> distribution,
                                   int minutesOfLeniency,
                                   DistributionRequester requester);
 

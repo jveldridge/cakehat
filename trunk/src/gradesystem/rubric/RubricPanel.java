@@ -27,6 +27,7 @@ import gradesystem.config.LatePolicy;
 import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
 import gradesystem.config.Assignment;
+import gradesystem.config.TA;
 
 /**
  * A graphical view of a rubric.
@@ -511,15 +512,9 @@ class RubricPanel extends JPanel
         height += studentName.getPreferredSize().height + vGap;
 
         Assignment asgn = _rubric._handinPart.getAssignment();
-        String graderLogin = Allocator.getDatabaseIO().getAllGradersForStudent(_rubric.getStudentAccount()).get(asgn);
-        String graderName;
-        if (graderLogin == null) {
-            graderLogin = "UNASSIGNED";
-            graderName = "UNASSIGNED";
-        }
-        else {
-            graderName = Allocator.getDatabaseIO().getTaName(graderLogin);
-        }
+        TA ta = Allocator.getDatabaseIO().getAllGradersForStudent(_rubric.getStudentAccount()).get(asgn);
+        String graderLogin = Allocator.getUserServices().getSanitizedTALogin(ta);
+        String graderName = Allocator.getUserServices().getSanitizedTAName(ta);
 
         //Grader
         JLabel graderAcctLabel = new JLabel(" Grader's account: " + graderLogin);

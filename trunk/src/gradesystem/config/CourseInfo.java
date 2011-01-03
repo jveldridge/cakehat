@@ -59,6 +59,7 @@ public interface CourseInfo
      */
     public Collection<TA> getTAs();
 
+
     public Collection<TA> getUTAs();
 
     /**
@@ -84,6 +85,14 @@ public interface CourseInfo
      * @return
      */
     public Collection<TA> getAdmins();
+
+    /**
+     * Returns the TA object representing the TA with the given login.
+     * Returns null if no such TA exists.
+     *
+     * @return the TA object representing the TA with the given login.
+     */
+    public TA getTA(String taLogin);
 
     /**
      * Returns a collection of all assignments that have a handin part.

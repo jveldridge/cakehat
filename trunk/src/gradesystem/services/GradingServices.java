@@ -3,6 +3,7 @@ package gradesystem.services;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
+import gradesystem.config.TA;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
@@ -109,7 +110,7 @@ public interface GradingServices
      * @param ta
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, String ta);
+    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta);
 
     /**
      * present the user with a dialog warning them that some of the handins are for students

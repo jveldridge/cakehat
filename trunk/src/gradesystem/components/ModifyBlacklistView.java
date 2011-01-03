@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -29,6 +28,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import gradesystem.Allocator;
+import javax.swing.ButtonModel;
 
 /**
  * Provides an interface to manage the students on each TA's blacklist.
@@ -41,7 +41,8 @@ public class ModifyBlacklistView extends JFrame{
     private Student[] _studentLogins;
     private GenericJList<Student> _studentList;
     private ButtonGroup _taButtons;
-    private Map<String, JList> _lists;
+    private Map<TA, GenericJList<String>> _taToList;
+    private Map<ButtonModel, TA> _rbToTA;
 
     private static final int DEFAULT_VIEW_HEIGHT = 800;
     
@@ -55,7 +56,8 @@ public class ModifyBlacklistView extends JFrame{
         blacklistScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         blacklistScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         blacklistScrollPane.setPreferredSize(new Dimension(700, DEFAULT_VIEW_HEIGHT));
-        _lists = new HashMap<String, JList>();
+        _taToList = new HashMap<TA, GenericJList<String>>();
+        _rbToTA = new HashMap<ButtonModel, TA>();
         
         _taButtons = new ButtonGroup();
         for (TA ta : tas) {
@@ -63,7 +65,6 @@ public class ModifyBlacklistView extends JFrame{
             panel.setPreferredSize(new Dimension(665,50));
             
             final JRadioButton rb = new JRadioButton(ta.getLogin());
-            rb.setActionCommand(ta.getLogin());
             rb.setPreferredSize(new Dimension(95,50));
             rb.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -71,15 +72,16 @@ public class ModifyBlacklistView extends JFrame{
                 }
             });
             _taButtons.add(rb);
+            _rbToTA.put(rb.getModel(), ta);
             
-            final JList list = new JList();
+            final GenericJList<String> list = new GenericJList<String>();
             list.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     //clear the selections in any other JLists
                     int selectedIndex = list.getSelectedIndex();
-                    for (Entry<String,JList> entry : _lists.entrySet()) {
-                        entry.getValue().clearSelection(); 
+                    for (GenericJList<String> list : _taToList.values()) {
+                        list.clearSelection();
                     }
                     list.setSelectedIndex(selectedIndex);
 
@@ -92,8 +94,8 @@ public class ModifyBlacklistView extends JFrame{
             list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
             list.setVisibleRowCount(0);
             list.setFixedCellWidth(75);
-            list.setListData(Allocator.getDatabaseIO().getTABlacklist(ta.getLogin()).toArray(new String[0]));
-            _lists.put(ta.getLogin(), list);
+            list.setListData(Allocator.getDatabaseIO().getTABlacklist(ta).toArray(new String[0]));
+            _taToList.put(ta, list);
             
             JScrollPane jsp = new JScrollPane(list);
             jsp.setPreferredSize(new Dimension(560,50));
@@ -114,7 +116,7 @@ public class ModifyBlacklistView extends JFrame{
         blacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Allocator.getDatabaseIO().blacklistStudent(_studentList.getSelectedValue().getLogin(),
-                                                            _taButtons.getSelection().getActionCommand());
+                                                           _rbToTA.get(_taButtons.getSelection()));
                 ModifyBlacklistView.this.updateGUI();
             }
         });
@@ -123,7 +125,7 @@ public class ModifyBlacklistView extends JFrame{
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
                     Allocator.getDatabaseIO().blacklistStudent(_studentList.getSelectedValue().getLogin(),
-                                                            _taButtons.getSelection().getActionCommand());
+                                                               _rbToTA.get(_taButtons.getSelection()));
                     ModifyBlacklistView.this.updateGUI();
                     _filterBox.requestFocus();
                     _filterBox.setText("");
@@ -134,9 +136,9 @@ public class ModifyBlacklistView extends JFrame{
         JButton unBlacklistButton = new JButton("Remove From Blacklist >>");
         unBlacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String taLogin = _taButtons.getSelection().getActionCommand();
-                String studentLogin = (String) _lists.get(taLogin).getSelectedValue();
-                Allocator.getDatabaseIO().unBlacklistStudent(studentLogin, taLogin);
+                TA ta = _rbToTA.get(_taButtons.getSelection());
+                String student = _taToList.get(ta).getSelectedValue();
+                Allocator.getDatabaseIO().unBlacklistStudent(student, ta);
                 ModifyBlacklistView.this.updateGUI();
             }
         });
@@ -218,8 +220,8 @@ public class ModifyBlacklistView extends JFrame{
     
     
     private void updateGUI() {
-        String taLogin = _taButtons.getSelection().getActionCommand();
-        _lists.get(taLogin).setListData(Allocator.getDatabaseIO().getTABlacklist(taLogin).toArray(new String[0]));
+        TA ta = _rbToTA.get(_taButtons.getSelection());
+        _taToList.get(ta).setListData(Allocator.getDatabaseIO().getTABlacklist(ta).toArray(new String[0]));
     }
     
     public static void main(String args[]) {

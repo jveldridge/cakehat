@@ -3,6 +3,7 @@ package gradesystem.database;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
+import gradesystem.config.TA;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
@@ -37,10 +38,12 @@ public interface DatabaseIO {
      * Checks to see if the TA already exists. If not, creates a new entry
      * in the database.
      * 
-     * @param taLogin
+     * @param ta
      * @return status
+     * @deprecated TA table names will soon not be stored in database
      */
-    public boolean addTA(String taLogin, String taName);
+    @Deprecated
+    public boolean addTA(TA ta);
 
     /**
      * Checks to see if the student already exists. If not, creates new entry
@@ -52,15 +55,6 @@ public interface DatabaseIO {
      * @return status
      */
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName);
-
-    /**
-     * Returns the name of the TA with the given login.  If no such TA exists,
-     * an ErrorView will be shown, and this method will return null.
-     *
-     * @param taLogin
-     * @return the name of the TA with the given login.
-     */
-    public String getTaName(String taLogin);
 
     /**
      * Checks if the assignment already exists.
@@ -111,15 +105,6 @@ public interface DatabaseIO {
      * @return
      */
     public Map<String,String> getAllStudents();
-
-    /**
-     * Returns a Map of all TAs currently in the database
-     * Key: String taLogin
-     * Value: String taName (as "FirstName LastName")
-     *
-     * @return
-     */
-    public Map<String,String> getAllTAs();
     
     /**
      * Returns a Map of all currently enabled student
@@ -131,25 +116,24 @@ public interface DatabaseIO {
     public Map<String,String> getEnabledStudents();
 
     /**
-     * Adds student with login studentLogin to the blacklist of TA
-     * with login taLogin.  This ensures that this TA will not be 
-     * distributed this student to grade.
+     * Adds student with login studentLogin to the blacklist of the given TA.
+     * This ensures that this TA will not be  distributed this student to grade.
      * 
      * @param studentLogin
      * @param taLogin
      * @return
      */
-    public boolean blacklistStudent(String studentLogin, String taLogin);
+    public boolean blacklistStudent(String studentLogin, TA ta);
     
     /**
-     * Removes student with login studentLogin from the blacklist of TA
-     * with login taLogin, if the student was on that TA's blacklist.
+     * Removes student with login studentLogin from the blacklist of the given TA,
+     * if the student was on that TA's blacklist.
      * 
      * @param studentLogin
-     * @param taLogin
+     * @param ta
      * @return
      */
-    public boolean unBlacklistStudent(String studentLogin, String taLogin);
+    public boolean unBlacklistStudent(String studentLogin, TA ta);
 
     /**
      * Indicates whether the HandinPart has a distribution.  Returns true if
@@ -169,13 +153,13 @@ public interface DatabaseIO {
 
     /**
      * Returns the logins of all students who are on this TA's blacklist
-     * @param taLogin
+     * @param ta
      * @return
      */
-    public Collection<String> getTABlacklist(String taLogin);
+    public Collection<String> getTABlacklist(TA ta);
 
     /**
-     * Assigns student with login studentLogin to TA with login taLogin to grade for
+     * Assigns student with login studentLogin to the given TA to grade for
      * HandinPart part.  This will enable the TA to open, run, grade, etc. the student's
      * code for the given HandinPart.
      * 
@@ -185,41 +169,41 @@ public interface DatabaseIO {
      * 
      * @param studentLogin
      * @param assignmentName
-     * @param taLogin
+     * @param ta
      * @return
      */
-    public boolean assignStudentToGrader(String studentLogin, HandinPart part, String taLogin);
+    public boolean assignStudentToGrader(String studentLogin, HandinPart part, TA ta);
 
     /**
-     * Unassigns student with login studentLogin to TA with login taLogin to grade for
+     * Unassigns student with login studentLogin to the given TA to grade for
      * HandinPart part.
      * 
      * @param studentLogin
      * @param assignmentName
-     * @param taLogin
+     * @param ta
      * @return
      */
-    public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, String taLogin);
+    public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta);
 
     /**
-     * Creates a distribution for the HandinPart part, mapping TA logins (as strings)
+     * Creates a distribution for the HandinPart part, mapping TAs
      * to Collections of Strings of studentLogins that TA is assigned to grade.
      * 
      * @param assignmentName
      * @param distribution
      * @return
      */
-    public boolean setAsgnDist(HandinPart part, Map<String,Collection<String>> distribution);
+    public boolean setAsgnDist(HandinPart part, Map<TA, Collection<String>> distribution);
 
     /**
-     * Returns a Collection of Strings of student logins that the TA with login
-     * taLogin is assigned to grade for the HandinPart part.
+     * Returns a Collection of Strings of student logins that the given TA
+     * is assigned to grade for the HandinPart part.
      * 
      * @param assignmentName
      * @param taLogin
      * @return
      */
-    public Collection<String> getStudentsAssigned(HandinPart part, String taLogin);
+    public Collection<String> getStudentsAssigned(HandinPart part, TA ta);
 
     /**
      * Returns a Collection of Strings containing the logisn of all students who
@@ -372,7 +356,7 @@ public interface DatabaseIO {
      * @param handin
      * @return
      */
-    public Map<String,Collection<String>> getDistribution(HandinPart handin);
+    public Map<TA, Collection<String>> getDistribution(HandinPart handin);
 
     /**
      * adds a set of groups for a handin part
@@ -426,7 +410,7 @@ public interface DatabaseIO {
      * @param studentlogin
      * @return map of asgn to ta
      */
-    public Map<Assignment, String> getAllGradersForStudent(String studentLogin);
+    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin);
 
     /**
      * Removes all data from database tables and rebuilds the tables. If no DB

@@ -1342,15 +1342,7 @@ public class BackendView extends JFrame
         //add all TAs
         if (addTAsRB.isSelected()) {
             for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                String login = ta.getLogin();
-                try {
-                    String name = Allocator.getUserUtilities().getUserName(login);
-                    Allocator.getDatabaseIO().addTA(login, name);
-                }
-                catch(NativeException e) {
-                    new ErrorView(e, "Unable to add student because his/her " +
-                            "real name could not be retrieved");
-                }
+                Allocator.getDatabaseIO().addTA(ta);
             }
         }
 

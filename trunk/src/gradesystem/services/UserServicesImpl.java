@@ -9,6 +9,8 @@ import utils.system.NativeException;
 
 public class UserServicesImpl implements UserServices
 {
+    private final TA USER = Allocator.getCourseInfo().getTA(Allocator.getUserUtilities().getUserLogin());
+
     public void addStudent(String studentLogin, String firstName, String lastName,
             ValidityCheck checkValidity)
     {
@@ -75,6 +77,10 @@ public class UserServicesImpl implements UserServices
                     "the user's real name cannot be retrieved");
         }
     }
+    
+    public TA getUser() {
+        return USER;
+    }
 
     public boolean isUserTA()
     {
@@ -134,5 +140,21 @@ public class UserServicesImpl implements UserServices
     public List<String> getStudentLogins() throws NativeException
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getStudentGroup());
+    }
+
+    public String getSanitizedTALogin(TA ta) {
+        if (ta == null) {
+            return "UNASSIGNED";
+        }
+
+        return ta.getLogin();
+    }
+
+    public String getSanitizedTAName(TA ta) {
+        if (ta == null) {
+            return "UNASSIGNED";
+        }
+
+        return ta.getName();
     }
 }

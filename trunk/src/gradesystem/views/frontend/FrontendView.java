@@ -450,13 +450,7 @@ public class FrontendView extends JFrame
         menuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae) {
-                TA user = null;
-                String username = Allocator.getUserUtilities().getUserLogin();
-                for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                    if (ta.getLogin().equals(username)) {
-                        user = ta;
-                    }
-                }
+                TA user = Allocator.getUserServices().getUser();
                 Collection<TA> taList = new ArrayList();
                 taList.add(user);
                 new ModifyBlacklistView(taList);
@@ -880,7 +874,7 @@ public class FrontendView extends JFrame
     {
         if(this.getHandinPart() != null)
         {
-            Collection<String> students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserUtilities().getUserLogin());
+            Collection<String> students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserServices().getUser());
         
             _studentList.setListData(students);
             _studentList.selectFirst();

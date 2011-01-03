@@ -417,13 +417,13 @@ public class ReassignView extends JFrame {
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(_unassignedStudents.size() == 0 ? 0 : 1);
         }
         else {
-            String fromTALogin = _fromTAList.getSelectedValue().getLogin();
-            Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTALogin);
+            TA fromTA = _fromTAList.getSelectedValue();
+            Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA);
             loginsToDisplay = new LinkedList<String>(studentsAssigned);
 
             _assignButton.setEnabled(studentsAssigned.size() > 0);
             _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
-                                                      studentsAssigned.size(), fromTALogin));
+                                                      studentsAssigned.size(), fromTA));
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(studentsAssigned.size());
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(studentsAssigned.size() == 0 ? 0 : 1);
@@ -447,8 +447,8 @@ public class ReassignView extends JFrame {
             loginsToDisplay = new LinkedList<String>(_unassignedStudents);
         }
         else {
-            String toTALogin = _toTAList.getSelectedValue().getLogin();
-            loginsToDisplay = new LinkedList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, toTALogin));
+            TA toTA = _toTAList.getSelectedValue();
+            loginsToDisplay = new LinkedList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, toTA));
         }
 
         Collections.sort(loginsToDisplay);
@@ -484,7 +484,7 @@ public class ReassignView extends JFrame {
                     }
 
                     //modify the distribution
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, ta.getLogin());
+                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, ta);
 
                     //don't need to make rubrics for students who already have them
                     if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
@@ -494,8 +494,8 @@ public class ReassignView extends JFrame {
                 }
 
                 //create and assign rubrics for students who previously did not have them
-                Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
-                distribution.put(ta.getLogin(), students);
+                Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
+                distribution.put(ta, students);
                 Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
                                                                Allocator.getCourseInfo().getMinutesOfLeniency(),
                                                                DistributionRequester.DO_NOTHING_REQUESTER);
@@ -510,7 +510,7 @@ public class ReassignView extends JFrame {
 
                 for (String student : students) {
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA.getLogin());
+                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA);
                 }
             }
 
@@ -525,8 +525,8 @@ public class ReassignView extends JFrame {
                     }
 
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA.getLogin());
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, newTA.getLogin());
+                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA);
+                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, newTA);
                 }
             }
         }
@@ -548,7 +548,7 @@ public class ReassignView extends JFrame {
             studentsToChoseFrom = new ArrayList<String>(_unassignedStudents);
         }
         else {
-            studentsToChoseFrom = new ArrayList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA.getLogin()));
+            studentsToChoseFrom = new ArrayList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA));
         }
         Collections.shuffle(studentsToChoseFrom);
 
@@ -576,7 +576,7 @@ public class ReassignView extends JFrame {
                     break;
                 }
 
-                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, handinPart, toTA.getLogin())) {
+                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, handinPart, toTA)) {
                     studentsToAssign.add(student);
                     numStudsAssignedSoFar++;
                 }
@@ -602,14 +602,14 @@ public class ReassignView extends JFrame {
                 String student = iterator.next();
 
                 //update distribution
-                Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA.getLogin());
+                Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA);
                 if (fromTA != null) {
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA.getLogin());
+                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA);
                 }
             }
 
-            Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
-            distribution.put(toTA.getLogin(), studentsToAssign);
+            Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
+            distribution.put(toTA, studentsToAssign);
             Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
                                                            Allocator.getCourseInfo().getMinutesOfLeniency(),
                                                            DistributionRequester.DO_NOTHING_REQUESTER);
@@ -618,7 +618,7 @@ public class ReassignView extends JFrame {
         //assigning to UNASSIGNED from a TA
         else if (fromTA != null) {
             for (String student : studentsToAssign) {
-                Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA.getLogin());
+                Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA);
             }
         }
 
@@ -627,7 +627,7 @@ public class ReassignView extends JFrame {
     }
 
     private boolean isOkToDistribute(String student, TA ta) {
-        if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, _asgn.getHandinPart(), ta.getLogin())) {
+        if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, _asgn.getHandinPart(), ta)) {
             int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
                                                     + ta.getLogin() + "'s blacklist.  Continue?",
                                                     "Distribute Blacklisted Student?",
@@ -655,7 +655,7 @@ public class ReassignView extends JFrame {
         //otherwise, filter from the selected TA's assigned students
         else {
             TA selectedTA = _fromTAList.getSelectedValue();
-            for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), selectedTA.getLogin())) {
+            for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), selectedTA)) {
                 if (login.startsWith(filterTerm)) {
                     matchingLogins.add(login);
                 }

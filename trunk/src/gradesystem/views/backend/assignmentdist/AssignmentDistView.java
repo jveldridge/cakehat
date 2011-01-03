@@ -207,24 +207,24 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         handinLogins.removeAll(_remainingBadLogins);
 
         //get all grader logins
-        ArrayList<String> taLogins = new ArrayList<String>();
+        ArrayList<TA> tas = new ArrayList<TA>();
         for (TA ta : _gradingTAs) {
-            taLogins.add(ta.getLogin());
+            tas.add(ta);
         }
 
         //build distribution hashmap
-        Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
-        for (String grader : taLogins) {
+        Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
+        for (TA grader : tas) {
             distribution.put(grader, new ArrayList<String>());
         }
 
         /** make distribution **/
 
         //determine how many students to give to each TA
-        Map<String, Integer> numStudsNeeded = this.calculateNumberOfHandinsPerTA(handinLogins, taLogins.size());
+        Map<TA, Integer> numStudsNeeded = this.calculateNumberOfHandinsPerTA(handinLogins, tas.size());
 
         //distribute all the blacklisted handins to TAs first
-        boolean distBlackListSuccessful = this.assignBlackListedHandinsToTAs(distribution, numStudsNeeded, handinLogins, _asgn.getHandinPart(), taLogins);
+        boolean distBlackListSuccessful = this.assignBlackListedHandinsToTAs(distribution, numStudsNeeded, handinLogins, _asgn.getHandinPart(), tas);
         if (!distBlackListSuccessful) {
             JOptionPane.showMessageDialog(this, "There was an error "
                         + "distributing blacklisted "
@@ -234,7 +234,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         }
 
         //distribute the rest if the handins to TAs
-        this.assignRemainingHandinsToTAs(distribution, numStudsNeeded, handinLogins, taLogins);
+        this.assignRemainingHandinsToTAs(distribution, numStudsNeeded, handinLogins, tas);
 
         //put the distribution into the DB
         Allocator.getDatabaseIO().setAsgnDist(_asgn.getHandinPart(), distribution);
@@ -250,7 +250,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
      * @param numberOfTAs
      * @return - map between TA and number to grade
      */
-    private Map<String, Integer> calculateNumberOfHandinsPerTA(Collection<String> handinLogins, int numberOfTAs) {
+    private Map<TA, Integer> calculateNumberOfHandinsPerTA(Collection<String> handinLogins, int numberOfTAs) {
 
         //total number of handins used in calculating the average
         int calculatedTotalStudents = handinLogins.size();
@@ -267,9 +267,9 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         int avg = (int) Math.floor((double) calculatedTotalStudents / (double) numberOfTAs);
 
         //build hashmap of how many students each TA must grade
-        HashMap<String, Integer> numStudsNeeded = new HashMap<String, Integer>();
+        HashMap<TA, Integer> numStudsNeeded = new HashMap<TA, Integer>();
         for (TA grader : _gradingTAs) {
-            numStudsNeeded.put(grader.getLogin(), _graderPanels.get(grader).getNumDiff() + avg);
+            numStudsNeeded.put(grader, _graderPanels.get(grader).getNumDiff() + avg);
         }
 
         return numStudsNeeded;
@@ -283,21 +283,21 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
      * @param handinLogins
      * @return - did this step work?
      */
-    private boolean assignBlackListedHandinsToTAs(Map<String, Collection<String>> distribution,
-                        Map<String, Integer> numStudsNeeded, Collection<String> handinLogins,
-                        HandinPart handinPart, ArrayList<String> taLogins) {
+    private boolean assignBlackListedHandinsToTAs(Map<TA, Collection<String>> distribution,
+                        Map<TA, Integer> numStudsNeeded, Collection<String> handinLogins,
+                        HandinPart handinPart, ArrayList<TA> tas) {
 
         //get all the groups for this project (maps student login to students in their group)
         Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
 
         //make a list of all blacklisted students and hashmap of all ta blacklists
         Set<String> blacklistedStudents = new HashSet<String>();
-        Map<String, Collection<String>> taBlacklists = new HashMap<String, Collection<String>>();
+        Map<TA, Collection<String>> taBlacklists = new HashMap<TA, Collection<String>>();
 
-        for (String taLogin : taLogins) {
-            Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(taLogin);
+        for (TA ta : tas) {
+            Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
             blacklistedStudents.addAll(tasBlackList);
-            taBlacklists.put(taLogin, tasBlackList);
+            taBlacklists.put(ta, tasBlackList);
         }
 
         //get all handins to pick which are the blacklisted handins
@@ -314,15 +314,15 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         //add all blacklisted handins to a TA first
         for (String blStudent : blacklistedHandins) {
-            Collections.shuffle(taLogins);
+            Collections.shuffle(tas);
             boolean distributed = false;
-            for (String taLogin : taLogins) {
+            for (TA ta : tas) {
                 //if ta's blacklist does not contain students from the handin group (individuals will have a group of size 1) and ta's dist is not full
-                if (!Allocator.getGeneralUtilities().containsAny(taBlacklists.get(taLogin), groups.get(blStudent))
-                        && numStudsNeeded.get(taLogin) > 0) {
+                if (!Allocator.getGeneralUtilities().containsAny(taBlacklists.get(ta), groups.get(blStudent))
+                        && numStudsNeeded.get(ta) > 0) {
 
-                    distribution.get(taLogin).add(blStudent); //add student to ta's dist
-                    numStudsNeeded.put(taLogin, numStudsNeeded.get(taLogin) - 1); //reduce num ta needs
+                    distribution.get(ta).add(blStudent); //add student to ta's dist
+                    numStudsNeeded.put(ta, numStudsNeeded.get(ta) - 1); //reduce num ta needs
                     distributed = true;
                     break;
                 }
@@ -345,24 +345,24 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
      * @param handinLogins
      * @return - did this step work?
      */
-    private boolean assignRemainingHandinsToTAs(Map<String, Collection<String>> distribution,
-                        Map<String, Integer> numStudsNeeded, ArrayDeque<String> handinLogins,
-                        ArrayList<String> taLogins) {
+    private boolean assignRemainingHandinsToTAs(Map<TA, Collection<String>> distribution,
+                        Map<TA, Integer> numStudsNeeded, ArrayDeque<String> handinLogins,
+                        ArrayList<TA> tas) {
 
-        Collections.shuffle(taLogins);
+        Collections.shuffle(tas);
         //fill TAs to limit
-        for (String taLogin : taLogins) {
-            for (int i = 0; i < numStudsNeeded.get(taLogin); i++) {
-                distribution.get(taLogin).add(handinLogins.removeFirst());
+        for (TA ta : tas) {
+            for (int i = 0; i < numStudsNeeded.get(ta); i++) {
+                distribution.get(ta).add(handinLogins.removeFirst());
             }
         }
 
         //distribute remaining students (< # TAs of them) to random TAs
         //There will be < # TAs of them because we floored when we took the average so only at most n-1 could be left.
-        Collections.shuffle(taLogins);
-        for (String taLogin : taLogins) {
+        Collections.shuffle(tas);
+        for (TA ta : tas) {
             if (!handinLogins.isEmpty()) {
-                distribution.get(taLogin).add(handinLogins.removeFirst());
+                distribution.get(ta).add(handinLogins.removeFirst());
             } else {
                 break;
             }
@@ -417,7 +417,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             @Override
             public void run() {
                 //get dist from DB
-                Map<String, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
+                Map<TA, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
 
                 //actually distribute rubrics
                 Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(),

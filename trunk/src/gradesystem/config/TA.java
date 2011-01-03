@@ -6,12 +6,13 @@ package gradesystem.config;
  */
 public class TA implements Comparable<TA>
 {
-    private String _login;
+    private String _login, _name;
     private boolean _isDefaultGrader, _isAdmin, _isHTA;
 
-    TA(String login, boolean isDefaultGrader, boolean isAdmin, boolean isHTA)
+    TA(String login, String name, boolean isDefaultGrader, boolean isAdmin, boolean isHTA)
     {
         _login = login;
+        _name = name;
         _isDefaultGrader = isDefaultGrader;
         _isHTA = isHTA;
         _isAdmin = isAdmin;
@@ -20,6 +21,11 @@ public class TA implements Comparable<TA>
     public String getLogin()
     {
         return _login;
+    }
+
+    public String getName()
+    {
+        return _name;
     }
 
     public boolean isDefaultGrader()
@@ -43,7 +49,23 @@ public class TA implements Comparable<TA>
         return _login;
     }
 
+    @Override
     public int compareTo(TA other) {
         return this.getLogin().compareTo(other.getLogin());
     }
+
+    @Override
+    public int hashCode() {
+        return _login.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+       if (!(o instanceof TA)) {
+           return false;
+       }
+
+       return this._login.equals(((TA) o).getLogin());
+    }
+
 }

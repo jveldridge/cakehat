@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
+import gradesystem.config.TA;
 import utils.system.NativeException;
 
 public class GradingServicesImpl implements GradingServices
@@ -249,7 +250,7 @@ public class GradingServicesImpl implements GradingServices
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }
 
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, String ta)
+    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta)
     {
         Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta);
         Collection<String> group = Allocator.getDatabaseIO().getGroup(part, studentLogin);

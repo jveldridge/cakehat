@@ -2,6 +2,7 @@ package utils;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import utils.system.NativeException;
 
 /**
  *
@@ -18,9 +19,16 @@ public class UserUtilitiesTest {
 //This tests the getUserName method in the UserUtilities class.
     @Test
     public void testUserName() {
-        assertEquals("Ashley Rose Tuccero", _instance.getUserName("ashley"));
-        assertEquals("UNKNOWN_LOGIN", _instance.getUserName("hello"));
+        boolean error = false;
 
+        try {
+            assertEquals("Ashley Rose Tuccero", _instance.getUserName("ashley"));
+            assertEquals("UNKNOWN_LOGIN", _instance.getUserName("hello"));
+        } catch (NativeException ex) {
+            error = true;
+        }
+
+        assertFalse(error);
     }
 
 }
