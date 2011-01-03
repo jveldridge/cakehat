@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
+import gradesystem.config.TA;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -97,7 +98,7 @@ public class DBWrapper implements DatabaseIO {
      * @param distribution - hashmap of ta login to arraylist of student logins
      */
     @Override
-    public boolean setAsgnDist(HandinPart part, Map<String, Collection<String>> distribution) {
+    public boolean setAsgnDist(HandinPart part, Map<TA, Collection<String>> distribution) {
         //add the distribution to the DB
         Connection conn = this.openConnection();
         try {
@@ -135,8 +136,8 @@ public class DBWrapper implements DatabaseIO {
 
             ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'sid', 'tid')" +
                     " VALUES (?, ?, ?)");
-            for (String ta : distribution.keySet()) {
-                int taID = taIDs.get(ta);
+            for (TA ta : distribution.keySet()) {
+                int taID = taIDs.get(ta.getLogin());
                 Collection<String> distributedStudents = distribution.get(ta);
 
                 for (String student : distributedStudents) {
@@ -168,11 +169,11 @@ public class DBWrapper implements DatabaseIO {
     /**
      * gets a single TA's blacklist from the DB as arraylist of student logins
      * @param messageFrame - frame in which errors will show up
-     * @param taLogin - string of single TA's login
+     * @param ta
      * @return list of student logins that have been blacklisted by the ta
      */
     @Override
-    public Collection<String> getTABlacklist(String taLogin) {
+    public Collection<String> getTABlacklist(TA ta) {
         ArrayList<String> blackList = new ArrayList<String>();
         Connection conn = this.openConnection();
         try {
@@ -183,7 +184,7 @@ public class DBWrapper implements DatabaseIO {
                     + "INNER JOIN ta AS t "
                     + "ON b.tid == t.tid "
                     + "WHERE t.login == ?");
-            ps.setString(1, taLogin);
+            ps.setString(1, ta.getLogin());
             
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -192,7 +193,7 @@ public class DBWrapper implements DatabaseIO {
 
             return blackList;
         } catch (Exception e) {
-            new ErrorView(e, "Could not get black list for TA.");
+            new ErrorView(e, "Could not get black list for TA + " + ta + ".");
             return null;
         } finally {
             this.closeConnection(conn);
@@ -339,20 +340,14 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    /**
-     * Checks to see if TA already exists. If does not exist then inserts TA to DB
-     * @param taLogin - String TA Login
-     * @param taName - String TA Name
-     * @return whether TA was added
-     */
     @Override
-    public boolean addTA(String taLogin, String taName) {
+    public boolean addTA(TA ta) {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(t.tid) AS rowcount "
                     + "FROM ta AS t "
                     + "WHERE t.login == ?");
-            ps.setString(1, taLogin);
+            ps.setString(1, ta.getLogin());
 
             ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
@@ -361,58 +356,18 @@ public class DBWrapper implements DatabaseIO {
                 ps = conn.prepareStatement("INSERT INTO ta "
                         + "('login', 'name') "
                         + "VALUES (?, ?)");
-                ps.setString(1, taLogin);
-                ps.setString(2, taName);
+                ps.setString(1, ta.getLogin());
+                ps.setString(2, ta.getName());
                 ps.executeUpdate();
                 return true;
             }
             
             return false;
         } catch (Exception e) {
-            new ErrorView(e, "Could not insert new row for ta: " + taLogin);
+            new ErrorView(e, "Could not insert new row for ta: " + ta);
             return false;
         } finally {
             this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public String getTaName(String taLogin) {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT t.name AS name FROM ta AS t" +
-                    " WHERE t.login == ?");
-            ps.setString(1, taLogin);
-
-            ResultSet rs = ps.executeQuery();
-            return rs.getString("name");
-        }
-        catch (SQLException e) {
-            new ErrorView(e);
-            return "No Name in Database";
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<String, String> getAllTAs() {
-        HashMap<String, String> result = new HashMap<String, String>();
-        Connection conn = this.openConnection();
-        try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT t.login AS talogin, "
-                    + "t.name AS taname "
-                    + "FROM ta AS t");
-
-            while (rs.next()) {
-                result.put(rs.getString("talogin"), rs.getString("taname"));
-            }
-
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get All TAs from DB");
-        } finally {
-            this.closeConnection(conn);
-            return result;
         }
     }
 
@@ -466,11 +421,11 @@ public class DBWrapper implements DatabaseIO {
     /**
      * Check to see if TA has already BlackListed Student. If has not then adds Student to TA's blacklist
      * @param studentLogin - String Student
-     * @param taLogin - String TA
+     * @param ta
      * @return status
      */
     @Override
-    public boolean blacklistStudent(String studentLogin, String taLogin) {
+    public boolean blacklistStudent(String studentLogin, TA ta) {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(b.sid) AS value"
@@ -490,8 +445,8 @@ public class DBWrapper implements DatabaseIO {
                     + " FROM student AS s"
                     + " WHERE s.login == ?");
             ps.setString(1, studentLogin);
-            ps.setString(2, taLogin);
-            ps.setString(3, taLogin);
+            ps.setString(2, ta.getLogin());
+            ps.setString(3, ta.getLogin());
             ps.setString(4, studentLogin);
 
             ResultSet rs = ps.executeQuery();
@@ -511,7 +466,7 @@ public class DBWrapper implements DatabaseIO {
             
             return true;
         } catch (Exception e) {
-            new ErrorView(e, "Could not blacklist the student: " + studentLogin + " for ta: " + taLogin);
+            new ErrorView(e, "Could not blacklist the student: " + studentLogin + " for ta: " + ta);
             return false;
         } finally {
             this.closeConnection(conn);
@@ -582,7 +537,7 @@ public class DBWrapper implements DatabaseIO {
      * @return Collection - list of student logins
      */
     @Override
-    public Collection<String> getStudentsAssigned(HandinPart part, String taLogin) {
+    public Collection<String> getStudentsAssigned(HandinPart part, TA ta) {
         ArrayList<String> result = new ArrayList<String>();
         Connection conn = this.openConnection();
         
@@ -600,7 +555,7 @@ public class DBWrapper implements DatabaseIO {
                     + " WHERE t.login == ?"
                     + " AND p.name == ?"
                     + " AND a.name == ?");
-            ps.setString(1, taLogin);
+            ps.setString(1, ta.getLogin());
             ps.setString(2, part.getName());
             ps.setString(3, part.getAssignment().getName());
 
@@ -610,7 +565,7 @@ public class DBWrapper implements DatabaseIO {
             }
             
         } catch (Exception e) {
-            new ErrorView(e, "Could not get students assigned to ta: " + taLogin + " for assignment: " + part.getName());
+            new ErrorView(e, "Could not get students assigned to ta: " + ta + " for assignment: " + part.getName());
         } finally {
             this.closeConnection(conn);
             return result;
@@ -645,7 +600,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean assignStudentToGrader(String studentLogin, HandinPart part, String taLogin) {
+    public boolean assignStudentToGrader(String studentLogin, HandinPart part, TA ta) {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.login) AS assigned"
@@ -662,7 +617,7 @@ public class DBWrapper implements DatabaseIO {
                     + " AND s.login == ?"
                     + " AND p.name == ?"
                     + " AND a.name == ?");
-            ps.setString(1, taLogin);
+            ps.setString(1, ta.getLogin());
             ps.setString(2, studentLogin);
             ps.setString(3, part.getName());
             ps.setString(4, part.getAssignment().getName());
@@ -678,7 +633,7 @@ public class DBWrapper implements DatabaseIO {
                 int sID = rs.getInt("sid");
 
                 ps = conn.prepareStatement("SELECT t.tid FROM ta AS t WHERE t.login == ?");
-                ps.setString(1, taLogin);
+                ps.setString(1, ta.getLogin());
                 rs = ps.executeQuery();
                 int tID = rs.getInt("tid");
 
@@ -699,7 +654,7 @@ public class DBWrapper implements DatabaseIO {
             
             return true;
         } catch (SQLException e) {
-            new ErrorView(e, "Could not add student: " + studentLogin + " to the dist for assignment: " + part.getAssignment().getName() + " for: " + taLogin);
+            new ErrorView(e, "Could not add student: " + studentLogin + " to the dist for assignment: " + part.getAssignment().getName() + " for: " + ta);
             return false;
         } finally {
             this.closeConnection(conn);
@@ -707,7 +662,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, String taLogin) {
+    public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta) {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
@@ -721,12 +676,12 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(1, part.getName());
             ps.setString(2, part.getAssignment().getName());
             ps.setString(3, studentLogin);
-            ps.setString(4, taLogin);
+            ps.setString(4, ta.getLogin());
 
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
-            new ErrorView(e, "Could not remove student: " + studentLogin + " from the dist for assignment: " + part.getAssignment().getName() + " for: " + taLogin);
+            new ErrorView(e, "Could not remove student: " + studentLogin + " from the dist for assignment: " + part.getAssignment().getName() + " for: " + ta);
             return false;
         } finally {
             this.closeConnection(conn);
@@ -1095,7 +1050,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean unBlacklistStudent(String studentLogin, String taLogin) {
+    public boolean unBlacklistStudent(String studentLogin, TA ta) {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
@@ -1103,13 +1058,13 @@ public class DBWrapper implements DatabaseIO {
                     + "(SELECT t.tid FROM ta AS t WHERE t.login == ?) "
                     + "AND sid IN "
                     + "(SELECT s.sid FROM student AS s WHERE s.login == ?)");
-            ps.setString(1, taLogin);
+            ps.setString(1, ta.getLogin());
             ps.setString(2, studentLogin);
 
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
-            new ErrorView(e, "Could not remove student: " + studentLogin + " from the blacklist of: " + taLogin);
+            new ErrorView(e, "Could not remove student: " + studentLogin + " from the blacklist of: " + ta);
             return false;
         } finally {
             this.closeConnection(conn);
@@ -1271,8 +1226,8 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public Map<String, Collection<String>> getDistribution(HandinPart part) {
-        Map<String, Collection<String>> result = new HashMap<String, Collection<String>>();
+    public Map<TA, Collection<String>> getDistribution(HandinPart part) {
+        Map<TA, Collection<String>> result = new HashMap<TA, Collection<String>>();
         Connection conn = this.openConnection();
 
         try {
@@ -1295,11 +1250,12 @@ public class DBWrapper implements DatabaseIO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String taLogin = rs.getString("talogin");
+                TA ta = Allocator.getCourseInfo().getTA(taLogin);
                 String studLogin = rs.getString("studLogin");
-                Collection taDist = result.get(taLogin);
+                Collection taDist = result.get(ta);
                 if (taDist == null) {
                     taDist = new ArrayList<String>();
-                    result.put(taLogin, taDist);
+                    result.put(ta, taDist);
                 }
                 taDist.add(studLogin);
             }
@@ -1707,9 +1663,9 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public Map<Assignment, String> getAllGradersForStudent(String studentLogin) {
+    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) {
         Connection conn = this.openConnection();
-        Map<Assignment, String> graders = new HashMap<Assignment, String>();
+        Map<Assignment, TA> graders = new HashMap<Assignment, TA>();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT t.login AS login, a.name AS asgn FROM ta AS t"
                     + " INNER JOIN distribution AS d ON d.tid == t.tid"
@@ -1721,10 +1677,19 @@ public class DBWrapper implements DatabaseIO {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                HandinPart part = null;
                 for (Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()) {
                     if (asgn.getName().equals(rs.getString("asgn"))) {
-                        graders.put(asgn, rs.getString("login"));
+                        String taLogin = rs.getString("login");
+                        TA ta = Allocator.getCourseInfo().getTA(taLogin);
+                        if (ta == null) {
+                            new ErrorView("TA with login " + taLogin + " is not in the config file, " +
+                                          "but is assigned to grade student " + studentLogin + " for " +
+                                          "assignment " + asgn.getName() + ".");
+                            //returning the map so far, even though it's invalid, to avoid
+                            //an immediate NullPointerException
+                            return graders;
+                        }
+                        graders.put(asgn, Allocator.getCourseInfo().getTA(taLogin));
                     }
                 }
             }

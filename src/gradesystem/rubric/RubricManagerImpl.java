@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import gradesystem.rubric.Rubric.Person;
 import gradesystem.Allocator;
+import gradesystem.config.TA;
 import gradesystem.views.shared.ErrorView;
 
 public class RubricManagerImpl implements RubricManager
@@ -143,7 +144,7 @@ public class RubricManagerImpl implements RubricManager
     }
 
     public void distributeRubrics(HandinPart part,
-                                  Map<String,Collection<String>> distribution,
+                                  Map<TA, Collection<String>> distribution,
                                   int minutesOfLeniency,
                                   DistributionRequester requester)
     {
@@ -151,8 +152,8 @@ public class RubricManagerImpl implements RubricManager
         Map<String, Calendar> extensions = getExtensions(part, students.keySet());
 
         int numToDistribute = 0;
-        for (String taLogin : distribution.keySet()) {
-            numToDistribute += distribution.get(taLogin).size();
+        for (TA ta : distribution.keySet()) {
+            numToDistribute += distribution.get(ta).size();
         }
 
         int numDistributedSoFar = 0;
@@ -164,10 +165,10 @@ public class RubricManagerImpl implements RubricManager
             Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
 
             //for each TA
-            for (String taLogin : distribution.keySet())
+            for (TA ta : distribution.keySet())
             {
                 //for each student
-                for (String studentLogin : distribution.get(taLogin))
+                for (String studentLogin : distribution.get(ta))
                 {
                     //student login and name
                     Person student = new Person(students.get(studentLogin), studentLogin);

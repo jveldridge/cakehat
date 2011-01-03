@@ -237,11 +237,12 @@ public class ConfigurationParser
             else if(taNode.getNodeName().equals(TA))
             {
                 String taLogin = taNode.getAttributes().getNamedItem(LOGIN).getNodeValue();
+                String taName = taNode.getAttributes().getNamedItem(NAME).getNodeValue();
                 boolean isDefaultGrader = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(DEFAULT_GRADER).getNodeValue());
                 boolean isAdmin = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(ADMIN).getNodeValue());
                 boolean isHTA = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(HTA).getNodeValue());
 
-                config.addTA(new TA(taLogin, isDefaultGrader, isAdmin, isHTA));
+                config.addTA(new TA(taLogin, taName, isDefaultGrader, isAdmin, isHTA));
             }
             else
             {

@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -27,6 +26,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJComboBox;
+import gradesystem.config.TA;
 import java.util.ArrayList;
 
 /**
@@ -49,7 +50,7 @@ public class DistLookupView extends JFrame {
     private Collection<Assignment> _assignments;
     private JPanel _graderGrid;
     private JScrollPane _gradeScrollPane;
-    private Map<Assignment, String> _graders;
+    private Map<Assignment, TA> _graders;
     private JButton _saveButton;
     private JButton _resetButton;
     private JTextField _studentFilterBox;
@@ -57,7 +58,7 @@ public class DistLookupView extends JFrame {
     private JLabel _studentStatus;
     private JButton _enableButton;
     private JPanel _studentStatusPanel;
-    private Collection<String> _tas;
+    private Collection<TA> _tas;
 
     public DistLookupView() {
 
@@ -66,7 +67,7 @@ public class DistLookupView extends JFrame {
 
         _assignments = Allocator.getCourseInfo().getHandinAssignments();
 
-        _tas = Allocator.getDatabaseIO().getAllTAs().keySet();
+        _tas = Allocator.getCourseInfo().getTAs();
 
         this.setLayout(new BorderLayout());
         this.add(this.getStudentPanel(), BorderLayout.WEST);
@@ -255,7 +256,7 @@ public class DistLookupView extends JFrame {
                     Allocator.getDatabaseIO().assignStudentToGrader(student, asgnRow.getAsgn().getHandinPart(), asgnRow.getNewTA());
 
                     //assign the rubrics
-                    Map<String, Collection<String>> distribution = new HashMap<String, Collection<String>>();
+                    Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
                     ArrayList<String> students = new ArrayList<String>();
                     students.add(student);
                     distribution.put(asgnRow.getNewTA(), students);
@@ -270,7 +271,7 @@ public class DistLookupView extends JFrame {
         _studentFilterBox.requestFocus();
     }
 
-    private boolean isOkToDistribute(String student, String ta, Assignment asgn) {
+    private boolean isOkToDistribute(String student, TA ta, Assignment asgn) {
         if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, asgn.getHandinPart(), ta)) {
             int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
                     + ta + "'s blacklist.  Continue?",
@@ -318,22 +319,22 @@ public class DistLookupView extends JFrame {
     }
 
     private class AsgnRow extends JPanel {
-        private JComboBox _taList;
+        private GenericJComboBox<TA> _taList;
         private Assignment _rowAsgn;
-        private String _origTA;
+        private TA _origTA;
 
-        public AsgnRow(Assignment asgn, String taLogin, boolean studentEnabled) {
+        public AsgnRow(Assignment asgn, TA ta, boolean studentEnabled) {
             _rowAsgn = asgn;
-            _origTA = taLogin;
+            _origTA = ta;
 
             this.setLayout(new GridLayout(1, 2));
 
             this.add(new JLabel(_rowAsgn.getName()));
 
             if (asgn.getHandinPart().hasHandin(_studentList.getSelectedValue())) {
-                _taList = new JComboBox(_tas.toArray());
+                _taList = new GenericJComboBox<TA>(_tas);
                 _taList.addActionListener(new NewTAListener(this));
-                _taList.setSelectedItem(taLogin);
+                _taList.setSelectedItem(ta);
                 _taList.setEnabled(studentEnabled);
                 this.add(_taList);
             } else {
@@ -350,11 +351,8 @@ public class DistLookupView extends JFrame {
                     (!_origTA.equals(_taList.getSelectedItem())));
         }
 
-        public String getNewTA() {
-            if (_taList == null) {
-                return "nologin";
-            }
-            return (String) _taList.getSelectedItem();
+        public TA getNewTA() {
+            return _taList.getSelectedItem();
         }
 
         public Assignment getAsgn() {
