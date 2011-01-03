@@ -18,17 +18,31 @@ class LibCWrapper
     /**
      * This interface matches the native functions of the LibC library. To see
      * more information about any of these functions, consult the man pages.
-     * For instance to see information on 'getuid' then in a terminal the
-     * command would be 'man getuid'.
      */
     private static interface LibC extends Library
     {
+        //Documentation: man 2 chmod
         public int chmod(String filepath, int mode) throws LastErrorException;
+
+        //Documentation: man 2 chown
         public int chown(String filepath, int uid, int gid) throws LastErrorException;
-        public NativeGroup getgrnam(String group) throws LastErrorException;
+
+        //Documentation: man 3 getgrent
+        //Getting information on a group with many members will generate a native
+        //error but the group information it returns is completely accurate,
+        //therefore LastErrorException is not to be thrown from this function.
+        public NativeGroup getgrnam(String group);
+
+        //Documentation: man 3 getpwent
         public NativeUserInformation getpwnam(String login) throws LastErrorException;
+
+        //Documentation: man 3 getpwent
         public NativeUserInformation getpwuid(int uid) throws LastErrorException;
-        public int getuid(); //Per man page, this function cannot fail
+
+        //Documentation: man 2 getuid
+        //Per the man page, this function cannot fail. Therefore
+        //LastErrorException does not need to be thrown.
+        public int getuid();
     }
 
     private final LibC _libC;
@@ -89,26 +103,18 @@ class LibCWrapper
      *
      * @param group name of the group
      * @return group information
-     * @throws NativeException thrown if the group does not exist or an error
-     * occurs in native code
+     * @throws NativeException thrown if the group does not exist
      */
     public NativeGroup getgrnam(String group) throws NativeException
     {
-        String errorMsg = "Unable to obtain information for group: " + group;
-        try
+        NativeGroup groupInfo = _libC.getgrnam(group);
+        if(groupInfo == null)
         {
-            NativeGroup groupInfo = _libC.getgrnam(group);
-            if(groupInfo == null)
-            {
-                throw new NativeException(errorMsg);
-            }
+            String errorMsg = "Unable to obtain information for group: " + group;
+            throw new NativeException(errorMsg);
+        }
 
-            return groupInfo;
-        }
-        catch(LastErrorException e)
-        {
-            throw new NativeException(e, errorMsg);
-        }
+        return groupInfo;
     }
 
     /**
