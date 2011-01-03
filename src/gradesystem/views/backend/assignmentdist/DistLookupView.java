@@ -243,7 +243,8 @@ public class DistLookupView extends JFrame {
         }
 
         for (AsgnRow asgnRow : _asgnRows) {
-            if (asgnRow.hasNewTA() && this.isOkToDistribute(student, asgnRow.getNewTA(), asgnRow.getAsgn())) {
+            if (asgnRow.hasNewTA() &&
+                Allocator.getGradingServices().isOkToDistribute(asgnRow.getAsgn(), student, asgnRow.getNewTA())) {
                 // already assigned
                 if (_graders.containsKey(asgnRow.getAsgn())) {
 
@@ -269,17 +270,6 @@ public class DistLookupView extends JFrame {
         }
         this.updateGraderList();
         _studentFilterBox.requestFocus();
-    }
-
-    private boolean isOkToDistribute(String student, TA ta, Assignment asgn) {
-        if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, asgn.getHandinPart(), ta)) {
-            int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
-                    + ta + "'s blacklist.  Continue?",
-                    "Distribute Blacklisted Student?",
-                    JOptionPane.YES_NO_OPTION);
-            return (shouldContinue == JOptionPane.YES_OPTION);
-        }
-        return true;
     }
 
     private void filterStudentLogins(KeyEvent evt) {

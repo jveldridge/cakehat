@@ -103,6 +103,21 @@ public interface GradingServices
     public String getPrinter(String message);
 
     /**
+     * Returns whether or not it is OK to distribute the student with the given
+     * login to the given TA for the given assignment.  It is always OK to distribute
+     * the student if no member of the student's group is on the TA's blacklist.
+     * If a group member is on the TA's blacklist, a dialog will be shown asking
+     * the user whether or not to continue.  If the user selects the continue option,
+     * this method returns true; otherwise, it will return false.
+     * 
+     * @param asgn
+     * @param student
+     * @param ta
+     * @return true if it is OK to distribute the student's handin to the TA
+     */
+    public boolean isOkToDistribute(Assignment asgn, String student, TA ta);
+
+    /**
      * Returns whether or not some member of the given student's group for the given
      * project is on the given TA's blacklist.
      *

@@ -250,6 +250,18 @@ public class GradingServicesImpl implements GradingServices
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }
 
+    public boolean isOkToDistribute(Assignment asgn, String student, TA ta) {
+        if (groupMemberOnTAsBlacklist(student, asgn.getHandinPart(), ta)) {
+            int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
+                                                    + ta.getLogin() + "'s blacklist.  Continue?",
+                                                    "Distribute Blacklisted Student?",
+                                                    JOptionPane.YES_NO_OPTION);
+            return (shouldContinue == JOptionPane.YES_OPTION);
+        }
+
+        return true;
+    }
+
     public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta)
     {
         Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta);
