@@ -478,7 +478,7 @@ public class ReassignView extends JFrame {
                 Iterator<String> iterator = students.iterator();
                 while (iterator.hasNext()) {
                     String student = iterator.next();
-                    if (!this.isOkToDistribute(student, ta)) {
+                    if (!Allocator.getGradingServices().isOkToDistribute(_asgn, student, ta)) {
                         iterator.remove();
                         continue;
                     }
@@ -520,7 +520,7 @@ public class ReassignView extends JFrame {
                 TA newTA = _toTAList.getSelectedValue();
 
                 for (String student : students) {
-                    if (!this.isOkToDistribute(student, newTA)) {
+                    if (!Allocator.getGradingServices().isOkToDistribute(_asgn, student, newTA)) {
                         continue;
                     }
 
@@ -624,17 +624,6 @@ public class ReassignView extends JFrame {
 
         this.updateFromList();
         this.updateToList();
-    }
-
-    private boolean isOkToDistribute(String student, TA ta) {
-        if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, _asgn.getHandinPart(), ta)) {
-            int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
-                                                    + ta.getLogin() + "'s blacklist.  Continue?",
-                                                    "Distribute Blacklisted Student?",
-                                                    JOptionPane.YES_NO_OPTION);
-            return (shouldContinue == JOptionPane.YES_OPTION);
-        }
-        return true;
     }
 
     private void filterStudentLogins(KeyEvent evt) {
