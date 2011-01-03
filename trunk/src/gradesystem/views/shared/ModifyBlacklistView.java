@@ -1,4 +1,4 @@
-package gradesystem.components;
+package gradesystem.views.shared;
 
 import gradesystem.config.TA;
 import java.awt.BorderLayout;
@@ -28,6 +28,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJList;
+import gradesystem.components.Student;
 import javax.swing.ButtonModel;
 
 /**
