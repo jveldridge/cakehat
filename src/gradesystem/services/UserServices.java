@@ -32,7 +32,7 @@ public interface UserServices
      *                    adding all members of the course group)
      */
     public void addStudent(String studentLogin, String firstName, String lastName,
-            ValidityCheck checkValidity);
+            ValidityCheck checkValidity) throws ServicesException;
 
     /**
      * Adds the given studentLogin to the database.  A warning will be shown
@@ -49,7 +49,7 @@ public interface UserServices
      *                    these conditions are known to be true (for example, when
      *                    adding all members of the course group)
      */
-    public void addStudent(String studentLogin, ValidityCheck checkValidity);
+    public void addStudent(String studentLogin, ValidityCheck checkValidity) throws ServicesException;
 
     /**
      * Returns the TA object representing the current user.

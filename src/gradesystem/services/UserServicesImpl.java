@@ -3,6 +3,7 @@ package gradesystem.services;
 import gradesystem.Allocator;
 import gradesystem.config.TA;
 import gradesystem.views.shared.ErrorView;
+import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import utils.system.NativeException;
@@ -12,7 +13,7 @@ public class UserServicesImpl implements UserServices
     private final TA USER = Allocator.getCourseInfo().getTA(Allocator.getUserUtilities().getUserLogin());
 
     public void addStudent(String studentLogin, String firstName, String lastName,
-            ValidityCheck checkValidity)
+            ValidityCheck checkValidity) throws ServicesException
     {
         if (checkValidity == ValidityCheck.CHECK)
         {
@@ -26,8 +27,7 @@ public class UserServicesImpl implements UserServices
             }
             catch(NativeException e)
             {
-                new ErrorView(e, "Unable to retrieve student group");
-                warningMessage += "Unable to retrieve student group\n";
+                throw new ServicesException("Unable to retrieve student group", e);
             }
 
             if (!isLoginValid)
@@ -57,10 +57,17 @@ public class UserServicesImpl implements UserServices
             }
         }
 
-        Allocator.getDatabaseIO().addStudent(studentLogin, firstName, lastName);
+        try {
+            Allocator.getDatabaseIO().addStudent(studentLogin, firstName, lastName);
+        } catch (SQLException e) {
+            throw new ServicesException(String.format("Student %s (%s %s) could not " +
+                                                      "be added to the database",
+                                                      studentLogin, firstName, lastName),
+                                        e);
+        }
     }
 
-    public void addStudent(String studentLogin, ValidityCheck checkValidity)
+    public void addStudent(String studentLogin, ValidityCheck checkValidity) throws ServicesException
     {
         try
         {

@@ -1,5 +1,6 @@
 package gradesystem.rubric;
 
+import gradesystem.database.CakeHatDBIOException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -28,6 +29,10 @@ import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
 import gradesystem.config.Assignment;
 import gradesystem.config.TA;
+import gradesystem.views.shared.ErrorView;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * A graphical view of a rubric.
@@ -482,11 +487,28 @@ class RubricPanel extends JPanel
         SpringLayout layout = new SpringLayout();
         JPanel panel = new JPanel(layout);
 
-        //Get all students in the group
-        Collection<String> group = Allocator.getDatabaseIO().getGroup(_rubric._handinPart, _rubric.getStudentAccount());
-        Map<String, String> allLogins = Allocator.getDatabaseIO().getAllStudents();
         String studentNames = "";
         String studentLogins = "";
+
+        //Get all students in the group
+        Collection<String> group = null;
+        Map<String, String> allLogins = null;
+        try {
+            group = Allocator.getDatabaseIO().getGroup(_rubric._handinPart, _rubric.getStudentAccount());
+        } catch (SQLException e) {
+            new ErrorView(e, "The members of the group could not be retrieved from the database.");
+            group = new LinkedList<String>();
+            studentLogins = _rubric.getStudentAccount() + "; any other group members unknown";
+        }
+
+        try {
+            allLogins = Allocator.getDatabaseIO().getAllStudents();
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not retrieve student list from the database " +
+                             "(needed to get the names of this rubric's students).");
+            allLogins = new HashMap<String, String>();
+            studentNames = "Student names could not be read from the database.";
+        }
 
         int i = 0;
         for (String student : group) {
@@ -495,7 +517,9 @@ class RubricPanel extends JPanel
                 studentNames += ", ";
             }
             studentLogins += student;
-            studentNames += allLogins.get(student);
+
+            String studentName = allLogins.get(student);
+            studentNames += (studentName == null) ? "" : studentName;
             i++;
         }
 
@@ -512,7 +536,15 @@ class RubricPanel extends JPanel
         height += studentName.getPreferredSize().height + vGap;
 
         Assignment asgn = _rubric._handinPart.getAssignment();
-        TA ta = Allocator.getDatabaseIO().getAllGradersForStudent(_rubric.getStudentAccount()).get(asgn);
+        TA ta = null;
+        try {
+            ta = Allocator.getDatabaseIO().getAllGradersForStudent(_rubric.getStudentAccount()).get(asgn);
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get the grading TA.");
+        } catch (CakeHatDBIOException e) {
+            new ErrorView(e, "Could not get the grading TA.");
+        }
+
         String graderLogin = Allocator.getUserServices().getSanitizedTALogin(ta);
         String graderName = Allocator.getUserServices().getSanitizedTAName(ta);
 

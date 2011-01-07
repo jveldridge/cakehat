@@ -3,11 +3,15 @@ package gradesystem.views.backend.stathist;
 import gradesystem.config.Assignment;
 import gradesystem.config.Part;
 import java.awt.image.BufferedImage;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.jfree.data.statistics.Statistics;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
+import java.util.Collection;
+import java.util.HashMap;
 
 /**
  *
@@ -21,8 +25,16 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void updateChartData(Assignment asgn, Iterable<String> students) {
-        Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAssignmentScores(asgn, students);
+    public void updateChartData(Assignment asgn, Collection<String> students) {
+        Map<String, Double> scoreMap;
+        try {
+            scoreMap = Allocator.getDatabaseIO().getAssignmentScores(asgn, students);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not retrieve scores on assignment " + asgn + " " +
+                              "for students " + students + ".");
+            scoreMap = new HashMap<String, Double>();
+        }
+
         double outOf = asgn.getTotalPoints();
         
         List<Double> scores = new ArrayList<Double>();
@@ -35,7 +47,15 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
     }
     
     public void updateChartData(Part part, Iterable<String> students) {
-        Map<String, Double> scoreMap = Allocator.getDatabaseIO().getPartScores(part, students);
+        Map<String, Double> scoreMap;
+        try {
+            scoreMap = Allocator.getDatabaseIO().getPartScores(part, students);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not get scores on part " + part + " " +
+                              "for students " + students + ".");
+            scoreMap = new HashMap<String, Double>();
+        }
+
         double outOf = part.getPoints();
 
         List<Double> scores = new ArrayList<Double>();

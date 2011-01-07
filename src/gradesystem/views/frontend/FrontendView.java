@@ -1,6 +1,7 @@
 package gradesystem.views.frontend;
 
 import gradesystem.components.GenericJList;
+import gradesystem.services.ServicesException;
 import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
@@ -18,6 +19,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -42,6 +44,7 @@ import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
+import java.util.LinkedList;
 import utils.system.NativeException;
 
 /**
@@ -113,9 +116,16 @@ public class FrontendView extends JFrame
     {
         //Frame title
         super("[cakehat] frontend - " + Allocator.getUserUtilities().getUserLogin());
-
+        
         //Create the directory to work in
-        Allocator.getGradingServices().makeUserGradingDirectory();
+        try {
+            Allocator.getGradingServices().makeUserGradingDirectory();
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "Could not make user grading directory; " +
+                             "functionality will be significantly impaired.  " +
+                             "You are advised to restart cakehat and to send an " +
+                             "error report if the problem persists.");
+        }
 
         //Initialize GUI components
         this.initializeFrameIcon();
@@ -757,7 +767,14 @@ public class FrontendView extends JFrame
         {
             
             Vector<String> students = new Vector<String>();
-            Map<String,Collection<String>> groups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
+            Map<String,Collection<String>> groups;
+            try {
+                groups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Could not get groups from the database; grades cannot be submitted.");
+                return;
+            }
+
             for (String s1 : _studentList.getItems()) {
                 for (String s2 : groups.get(s1)) {
                     students.add(s2);
@@ -776,7 +793,12 @@ public class FrontendView extends JFrame
                     Map<String, Double> handinTotals = Allocator.getRubricManager().getHandinTotals(asgn.getHandinPart(), selectedStudents);
                     for (String login : handinTotals.keySet())
                     {
-                        Allocator.getDatabaseIO().enterGrade(login, asgn.getHandinPart(), handinTotals.get(login));
+                        try {
+                            Allocator.getDatabaseIO().enterGrade(login, asgn.getHandinPart(), handinTotals.get(login));
+                        } catch (SQLException ex) {
+                            new ErrorView(ex, "Could not enter grade for student " + login + " " +
+                                              "for assignment " + asgn + ".");
+                        }
                     }
                 }
 
@@ -874,13 +896,25 @@ public class FrontendView extends JFrame
     {
         if(this.getHandinPart() != null)
         {
-            Collection<String> students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserServices().getUser());
+            Collection<String> students;
+            try {
+                students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserServices().getUser());
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Could not get assigned students for assignment " +
+                                  _assignmentList.getSelectedValue() + ".");
+                students = new LinkedList<String>();
+            }
         
             _studentList.setListData(students);
             _studentList.selectFirst();
-
+            
             //Get groups
-            _studentGroups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
+            try {
+                _studentGroups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Could not get groups for assignment " +
+                                  _assignmentList.getSelectedValue() + ".");
+            }
 
             updateSelectedStudent();
         }

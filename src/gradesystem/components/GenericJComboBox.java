@@ -12,6 +12,10 @@ import javax.swing.JComboBox;
  */
 public class GenericJComboBox<E> extends JComboBox {
 
+    public GenericJComboBox() {
+        super();
+    }
+
     public GenericJComboBox(Collection<E> items) {
         super(items.toArray());
     }

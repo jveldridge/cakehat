@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -29,6 +30,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
 
 /**
  * Allows for viewing, submitting, and removing extensions.
@@ -121,9 +123,15 @@ public class ExtensionView extends JFrame
         _studentLogin = studentLogin;
 
         this.setTitle(part.getAssignment().getName() + " extension for " + studentLogin);
+        try {
+            //Get extension, if none available default to on time date
+            _extensionDate = Allocator.getDatabaseIO().getExtension(studentLogin, part);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not retrieve extension information for student " +
+                               studentLogin + " for part " + part + ".  Assuming that the " +
+                               "student does not have an extension.");
+        }
 
-        //Get extension, if none available default to on time date
-        _extensionDate = Allocator.getDatabaseIO().getExtension(studentLogin, part);
         _hasExtension = (_extensionDate != null);
         if(_extensionDate == null)
         {
@@ -195,7 +203,13 @@ public class ExtensionView extends JFrame
         datePanel.add(lateLabel);
 
         //Comment area
-        String comment = Allocator.getDatabaseIO().getExtensionNote(_studentLogin, _part);
+        String comment = null;
+        try {
+            comment = Allocator.getDatabaseIO().getExtensionNote(_studentLogin, _part);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not retrieve the extension note for student " +
+                              _studentLogin + " " + "on part " + _part + ".");
+        }
         boolean noComment = (comment == null);
         if(noComment)
         {
@@ -234,7 +248,12 @@ public class ExtensionView extends JFrame
             public void actionPerformed(ActionEvent ae)
             {
                 //Call to remove extension
-                Allocator.getDatabaseIO().removeExtension(_studentLogin, _part);
+                try {
+                    Allocator.getDatabaseIO().removeExtension(_studentLogin, _part);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Removing the extension for student " + _studentLogin + " " +
+                                      "on part " + _part + " failed.");
+                }
 
                 //Close window
                 ExtensionView.this.dispose();
@@ -250,8 +269,12 @@ public class ExtensionView extends JFrame
             {
                 String text = commentArea.getText();
                 Calendar cal = getCalendar();
-
-                Allocator.getDatabaseIO().grantExtension(_studentLogin, _part, cal, text);
+                try {
+                    Allocator.getDatabaseIO().grantExtension(_studentLogin, _part, cal, text);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Granting the extension for student " + _studentLogin + " " +
+                                      "on part " + _part + " failed.");
+                }
 
                 //Close window
                 ExtensionView.this.dispose();

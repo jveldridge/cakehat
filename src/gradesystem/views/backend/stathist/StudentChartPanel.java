@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Vector;
@@ -22,6 +23,8 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.statistics.Statistics;
 import org.jfree.data.xy.DefaultXYDataset;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
+import java.util.HashMap;
 
 /**
  *
@@ -46,14 +49,30 @@ public class StudentChartPanel extends javax.swing.JPanel {
             data[0][i] = i;
             double studentScore = 0;
             for (Part p : assignments[i].getParts()) {
-                studentScore += Allocator.getDatabaseIO().getStudentScore(studName, p);
+
+                double partScore = 0;
+                try {
+                    partScore = Allocator.getDatabaseIO().getStudentScore(studName, p);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not read the score for student " + studName + " " +
+                                      "on part " + p + ".  FOR THESE CHARTS AND STATISTICS, THE " +
+                                      "SCORE WILL BE TREATED AS A 0.");
+                }
+
+                studentScore += partScore;
             }
 
             data[1][i] = studentScore / assignments[i].getTotalPoints() * 100;
             
             Vector<Double> scores = new Vector<Double>();
-            Map<String, Double> scoreMap = Allocator.getDatabaseIO().getAssignmentScores(assignments[i], 
-                                                                                            Allocator.getDatabaseIO().getEnabledStudents().keySet());
+            Map<String, Double> scoreMap;
+            try {
+                scoreMap = Allocator.getDatabaseIO().getAssignmentScores(assignments[i], Allocator.getDatabaseIO().getEnabledStudents().keySet());
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Could not get scores for assignment " + assignments[i] + ".");
+                scoreMap = new HashMap<String, Double>();
+            }
+
             for (String student : scoreMap.keySet()) {
                 scores.add(scoreMap.get(student));
             }

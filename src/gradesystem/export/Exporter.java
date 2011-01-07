@@ -7,7 +7,7 @@ package gradesystem.export;
  */
 public interface Exporter
 {
-    public void export();
-    public void export(java.io.File file);
+    public void export() throws ExportException;
+    public void export(java.io.File file) throws ExportException;
     public void cancelExport();
 }
