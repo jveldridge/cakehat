@@ -6,6 +6,7 @@ import gradesystem.config.HandinPart;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.Set;
 import javax.swing.JFileChooser;
@@ -13,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import org.jdesktop.application.Action;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
 
 /**
  *
@@ -136,7 +138,11 @@ public class GroupsView extends javax.swing.JFrame {
 
     @Action
     public void removeGroups() {
-        Allocator.getDatabaseIO().removeGroups(_handin);
+        try {
+            Allocator.getDatabaseIO().removeGroups(_handin);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Groups could not be removed from the database.");
+        }
     }
 
     @Action
@@ -148,7 +154,15 @@ public class GroupsView extends javax.swing.JFrame {
         fc.setMultiSelectionEnabled(false);
         int selection = fc.showOpenDialog(this);
 
-        Set<String> studLogins = Allocator.getDatabaseIO().getAllStudents().keySet();
+        Set<String> studLogins;
+        try {
+            studLogins = Allocator.getDatabaseIO().getAllStudents().keySet();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Students could not be retrieved from the database; " +
+                              "groups info. cannot be imported.  If this problem persists, " +
+                              "please send an error report.");
+            return;
+        }
 
         if (selection == JFileChooser.APPROVE_OPTION) {
 
@@ -175,7 +189,11 @@ public class GroupsView extends javax.swing.JFrame {
                     }
                 }
             }
-            Allocator.getDatabaseIO().setGroups(_handin, namesAndGroups.asMap());
+            try {
+                Allocator.getDatabaseIO().setGroups(_handin, namesAndGroups.asMap());
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Saving groups info. to the database failed.");
+            }
         }
     }
 

@@ -1,20 +1,12 @@
 package gradesystem.database;
 
 import java.util.UUID;
-import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import gradesystem.Allocator;
 import gradesystem.config.TA;
 import org.easymock.EasyMock;
 import static org.junit.Assert.*;
@@ -51,7 +43,14 @@ public class DBWrapperTest {
     public void setUp() {
         _connProvider = new InMemoryConnectionProvider();
         _instance = new DBWrapper(_connProvider);
-        _instance.resetDatabase();
+
+        boolean exception = false;
+        try {
+            _instance.resetDatabase();
+        } catch (SQLException ex) {
+            exception = true;
+        }
+        assertFalse(exception);
     }
 
     /**
@@ -66,6 +65,243 @@ public class DBWrapperTest {
         }
     }
 
+
+    //this test relies on the bad getAssignmentForTesting method, so it is being
+    //removed for now.  It will not be needed after the DB factor anyway since the
+    //addAssignment method will no longer exist (b/c there won't be an Assignments
+    //table in the database.  After the DB refactor is done, Josh will show us all
+    //the right way to test a database method :)
+
+    /**
+     * Test of addAssignment method, of class DBWrapper.
+     */
+//    @Test
+//    public void testAddAssignment() {
+//        //no setup needed
+//
+//        Assignment asgn = getAssignmentforTesting();
+//
+//        //adding the assignment should not cause an error
+//        //and the return value should be true to indicate that the assignment was added
+//        boolean result = false;
+//        boolean exception = false;
+//        try {
+//            result = _instance.addAssignment(asgn);
+//        } catch (SQLException ex) {
+//            exception = true;
+//        }
+//        assertFalse(exception);
+//        assertTrue(result);
+//
+//        //adding the same assignment again should not cause an error
+//        //but should produce a return value of false to indicate that the assignment
+//        //was not added again
+//        result = true;
+//        exception = false;
+//        try {
+//            result = _instance.addAssignment(asgn);
+//        } catch (SQLException ex) {
+//            exception = true;
+//        }
+//        assertFalse(exception);
+//        assertFalse(result);
+//    }
+
+
+    /**
+     * Test of addStudent method, of class DBWrapper.
+     */
+    @Test
+    public void testAddStudent() {
+        String s1login = generateLogin();
+        String s1first = generateLogin();
+        String s1last = generateLogin();
+
+        //adding the student should not cause an error
+        //and the return value should be true to indicate that the student was added
+        boolean exception = false;
+        boolean result = false;
+        try {
+            result = _instance.addStudent(s1login, s1first, s1last);
+        } catch (SQLException e) {
+            exception = true;
+        }
+        assertFalse(exception);
+        assertTrue(result);
+
+        //adding the same student again should not cause an error
+        //but the return value should be false to indicate that the student was
+        //not added again
+        exception = false;
+        result = true;
+        try {
+            result = _instance.addStudent(s1login, s1first, s1last);
+        } catch (SQLException e) {
+            exception = true;
+        }
+        assertFalse(exception);
+        assertFalse(result);
+
+        //TODO add some more students
+        //TODO should this method also test getAllStudents()?
+        //     it seems like you can't really test one of these two w/out the other
+    }
+
+//    /**
+//     * Test of getTABlacklist method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testGetTABlacklist() {
+//        System.out.println("getTABlacklist");
+//
+//        //setup data in DB
+//        TA ta = this.generateTA();
+//        String student = this.generateLogin();
+//        _instance.addTA(ta);
+//        _instance.addStudent(student, "The", "Doctors");
+//        _instance.addStudent(this.generateLogin(), "Dasw", "Masdfasd");
+//        _instance.blacklistStudent(student, ta);
+//
+//        //can get blacklist?
+//        Collection<String> expectedBlacklist = new ArrayList<String>();
+//        expectedBlacklist.add(student);
+//        Collection<String> blacklist = _instance.getTABlacklist(ta);
+//
+//        assertEquals(expectedBlacklist, blacklist);
+//    }
+//
+
+// not bothering to update this test since this DB method is deprecated
+//    /**
+//     * Test of addTA method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testAddTA() {
+//        System.out.println("addTA");
+//        boolean expResult = true;
+//        boolean result = false;//_instance.addTA(taLogin);
+//        assertEquals(expResult, result);
+//    }
+//
+
+
+//
+//    /**
+//     * Test of disableStudent method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testDisableStudent() {
+//        System.out.println("disableStudent");
+//        String studentLogin = "hbhard";
+//        boolean expResult = true;
+//        boolean result = _instance.disableStudent(studentLogin);
+//        assertEquals(expResult, result);
+//        Map<String, String> result2 = _instance.getEnabledStudents();
+//        Map<String, String> expResult2 = new HashMap<String, String>();
+//        expResult2.put("drs", "The Doctors");
+//        assertEquals(expResult2, result2);
+//    }
+//
+//    /**
+//     * Test of enableStudent method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testEnableStudent() {
+//        System.out.println("enableStudent");
+//
+//        //setup data in DB
+//        _instance.addStudent("dsr", "The", "Doctors");
+//        _instance.addStudent("dmore", "Draws", "More");
+//        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
+//        _instance.addStudent("hbhard", "CardBoard", "Kid");
+//        _instance.disableStudent("hbhard");
+//
+//        //can enable student?
+//        String studentLogin = "hbhard";
+//        boolean canEnable = _instance.enableStudent(studentLogin);
+//        assertTrue(canEnable);
+//
+//        //has the enable happened?
+//        Map<String, String> enabledStuds = _instance.getEnabledStudents();
+//
+//        Map<String, String> expectedEnabled = new HashMap<String, String>();
+//        expectedEnabled.put("dsr", "The Doctors");
+//        expectedEnabled.put("dmore", "Draws More");
+//        expectedEnabled.put("nvasdsw", "Nick Vasdt");
+//        expectedEnabled.put("hbhard", "CardBoard Kid");
+//        assertEquals(expectedEnabled, enabledStuds);
+//    }
+//
+//    /**
+//     * Test of geAlltStudents method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testGetAllStudents() {
+//        System.out.println("getAllStudents");
+//
+//        //setup data in DB
+//        _instance.addStudent("dsr", "The", "Doctors");
+//        _instance.addStudent("dmore", "Draws", "More");
+//        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
+//        _instance.addStudent("hbhard", "CardBoard", "Kid");
+//        _instance.disableStudent("hbhard");
+//
+//        //did all the students get returned?
+//        Map<String, String> result = _instance.getAllStudents();
+//        Map<String, String> expResult = new HashMap<String, String>();
+//        expResult.put("dsr", "The Doctors");
+//        expResult.put("dmore", "Draws More");
+//        expResult.put("nvasdsw", "Nick Vasdt");
+//        expResult.put("hbhard", "CardBoard Kid");
+//        assertEquals(expResult, result);
+//    }
+//
+//    /**
+//     * Test of blacklistStudent method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testBlacklistStudent() {
+//        System.out.println("blacklistStudent");
+//        String studentLogin = "drs";
+//        TA ta = generateTA();
+//        boolean expResult = true;
+//        boolean result = _instance.blacklistStudent(studentLogin, ta);
+//        assertEquals(expResult, result);
+//        Collection<String> result2 = _instance.getTABlacklist(ta);
+//        Collection<String> expResult2 = new ArrayList<String>();
+//        expResult2.add(studentLogin);
+//        assertEquals(expResult2, result2);
+//    }
+//
+//    /**
+//     * Test of isDistEmpty method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testIsDistEmpty() {
+//        System.out.println("isDistEmpty");
+//        HandinPart asgn = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0]).getHandinPart();
+//        System.out.println(asgn.getAssignment().getName());
+//        boolean expResult = false;
+//        boolean result = _instance.isDistEmpty(asgn);
+//        assertEquals(expResult, result);
+//        HandinPart asgn2 = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[1]).getHandinPart();
+//        boolean expResult2 = true;
+//        boolean result2 = _instance.isDistEmpty(asgn2);
+//        assertEquals(expResult2, result2);
+//    }
+//
+//    /**
+//     * Test of getBlacklistedStudents method, of class DBWrapper.
+//     */
+//    @Test
+//    public void testGetBlacklistedStudents() {
+//        System.out.println("getBlacklistedStudents");
+//        Collection<String> expResult = new HashSet<String>();
+//        expResult.add("drs");
+//        Collection<String> result = _instance.getBlacklistedStudents();
+//        assertEquals(expResult, result);
+//    }
+
     private TA generateTA() {
         TA ta = EasyMock.createMock(TA.class);
         EasyMock.expect(ta.getLogin()).andReturn(generateLogin());
@@ -73,6 +309,11 @@ public class DBWrapperTest {
         EasyMock.replay(ta);
         return ta;
     }
+
+    //this should use EasyMock to generate a test Assignment object
+//    private Assignment getAssignmentforTesting() {
+//        return Allocator.getCourseInfo().getHandinAssignments().iterator().next();
+//    }
 
     private String generateName() {
         String name = "";
@@ -89,30 +330,8 @@ public class DBWrapperTest {
         return uid;
     }
 
-    /**
-     * Test of getTABlacklist method, of class DBWrapper.
-     */
-    @Test
-    public void testGetTABlacklist() {
-        System.out.println("getTABlacklist");
 
-        //setup data in DB
-        TA ta = this.generateTA();
-        String student = this.generateLogin();
-        _instance.addTA(ta);
-        _instance.addStudent(student, "The", "Doctors");
-        _instance.addStudent(this.generateLogin(), "Dasw", "Masdfasd");
-        _instance.blacklistStudent(student, ta);
-
-        //can get blacklist?
-        Collection<String> expectedBlacklist = new ArrayList<String>();
-        expectedBlacklist.add(student);
-        Collection<String> blacklist = _instance.getTABlacklist(ta);
-
-        assertEquals(expectedBlacklist, blacklist);
-    }
-
-//    /**
+    //    /**
 //     * Test of setAsgnDist method, of class DBWrapper.
 //     */
 //    @Test
@@ -139,182 +358,6 @@ public class DBWrapperTest {
 //        boolean result = false;//_instance.setAsgnDist(asgn, distribution);
 //        assertTrue(result);
 //    }
-
-    /**
-     * Test of addAssignment method, of class DBWrapper.
-     */
-    @Test
-    public void testAddAssignment() {
-        System.out.println("addAssignment");
-
-        //no setup needed
-
-        //can add assignment?
-        Assignment asgn = (Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0];
-        boolean result = _instance.addAssignment(asgn);
-        
-        assertTrue(result);
-    }
-
-    /**
-     * Test of addStudent method, of class DBWrapper.
-     */
-    @Test
-    public void testAddStudent() {
-        System.out.println("addStudent");
-
-        //setup data in DB
-        _instance.addStudent("dsr", "The", "Doctors");
-        _instance.addStudent("dmas", "Draws", "More");
-        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
-
-        //can add student?
-        String studentLogin = "hbhard";
-        String studentFirstName = "CardBoard";
-        String studentLastName = "Kid";
-        boolean studentAdded = _instance.addStudent(studentLogin, studentFirstName, studentLastName);
-
-        assertTrue(studentAdded);
-
-        //can we get them back out?
-        Map<String, String> all_students = _instance.getEnabledStudents();
-
-        Map<String, String> expected_students = new HashMap<String, String>();
-        expected_students.put("dsr", "The Doctors");
-        expected_students.put("nvasdsw", "Nick Vasdt");
-        expected_students.put("dmas", "Draws More");
-        expected_students.put(studentLogin, studentFirstName + " " + studentLastName);
-       
-        assertEquals(expected_students, all_students);
-    }
-
-    /**
-     * Test of disableStudent method, of class DBWrapper.
-     */
-    @Test
-    public void testDisableStudent() {
-        System.out.println("disableStudent");
-        String studentLogin = "hbhard";
-        boolean expResult = true;
-        boolean result = _instance.disableStudent(studentLogin);
-        assertEquals(expResult, result);
-        Map<String, String> result2 = _instance.getEnabledStudents();
-        Map<String, String> expResult2 = new HashMap<String, String>();
-        expResult2.put("drs", "The Doctors");
-        assertEquals(expResult2, result2);
-    }
-
-    /**
-     * Test of enableStudent method, of class DBWrapper.
-     */
-    @Test
-    public void testEnableStudent() {
-        System.out.println("enableStudent");
-
-        //setup data in DB
-        _instance.addStudent("dsr", "The", "Doctors");
-        _instance.addStudent("dmore", "Draws", "More");
-        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
-        _instance.addStudent("hbhard", "CardBoard", "Kid");
-        _instance.disableStudent("hbhard");
-
-        //can enable student?
-        String studentLogin = "hbhard";
-        boolean canEnable = _instance.enableStudent(studentLogin);
-        assertTrue(canEnable);
-
-        //has the enable happened?
-        Map<String, String> enabledStuds = _instance.getEnabledStudents();
-
-        Map<String, String> expectedEnabled = new HashMap<String, String>();
-        expectedEnabled.put("dsr", "The Doctors");
-        expectedEnabled.put("dmore", "Draws More");
-        expectedEnabled.put("nvasdsw", "Nick Vasdt");
-        expectedEnabled.put("hbhard", "CardBoard Kid");
-        assertEquals(expectedEnabled, enabledStuds);
-    }
-
-    /**
-     * Test of addTA method, of class DBWrapper.
-     */
-    @Test
-    public void testAddTA() {
-        System.out.println("addTA");
-        boolean expResult = true;
-        boolean result = false;//_instance.addTA(taLogin);
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of geAlltStudents method, of class DBWrapper.
-     */
-    @Test
-    public void testGetAllStudents() {
-        System.out.println("getAllStudents");
-
-        //setup data in DB
-        _instance.addStudent("dsr", "The", "Doctors");
-        _instance.addStudent("dmore", "Draws", "More");
-        _instance.addStudent("nvasdsw", "Nick", "Vasdt");
-        _instance.addStudent("hbhard", "CardBoard", "Kid");
-        _instance.disableStudent("hbhard");
-
-        //did all the students get returned?
-        Map<String, String> result = _instance.getAllStudents();
-        Map<String, String> expResult = new HashMap<String, String>();
-        expResult.put("dsr", "The Doctors");
-        expResult.put("dmore", "Draws More");
-        expResult.put("nvasdsw", "Nick Vasdt");
-        expResult.put("hbhard", "CardBoard Kid");
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of blacklistStudent method, of class DBWrapper.
-     */
-    @Test
-    public void testBlacklistStudent() {
-        System.out.println("blacklistStudent");
-        String studentLogin = "drs";
-        TA ta = generateTA();
-        boolean expResult = true;
-        boolean result = _instance.blacklistStudent(studentLogin, ta);
-        assertEquals(expResult, result);
-        Collection<String> result2 = _instance.getTABlacklist(ta);
-        Collection<String> expResult2 = new ArrayList<String>();
-        expResult2.add(studentLogin);
-        assertEquals(expResult2, result2);
-    }
-
-    /**
-     * Test of isDistEmpty method, of class DBWrapper.
-     */
-    @Test
-    public void testIsDistEmpty() {
-        System.out.println("isDistEmpty");
-        HandinPart asgn = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[0]).getHandinPart();
-        System.out.println(asgn.getAssignment().getName());
-        boolean expResult = false;
-        boolean result = _instance.isDistEmpty(asgn);
-        assertEquals(expResult, result);
-        HandinPart asgn2 = ((Assignment) Allocator.getCourseInfo().getHandinAssignments().toArray()[1]).getHandinPart();
-        boolean expResult2 = true;
-        boolean result2 = _instance.isDistEmpty(asgn2);
-        assertEquals(expResult2, result2);
-    }
-
-    /**
-     * Test of getBlacklistedStudents method, of class DBWrapper.
-     */
-    @Test
-    public void testGetBlacklistedStudents() {
-        System.out.println("getBlacklistedStudents");
-        Collection<String> expResult = new HashSet<String>();
-        expResult.add("drs");
-        Collection<String> result = _instance.getBlacklistedStudents();
-        assertEquals(expResult, result);
-    }
-
 //
 //    /**
 //     * Test of assignStudentToGrader method, of class DBWrapper.
@@ -513,4 +556,6 @@ public class DBWrapperTest {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
+
+
 }

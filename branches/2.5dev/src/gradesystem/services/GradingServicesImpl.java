@@ -37,41 +37,42 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
 import gradesystem.config.TA;
+import java.sql.SQLException;
+import java.util.Calendar;
 import utils.system.NativeException;
 
 public class GradingServicesImpl implements GradingServices
 {
-    public void importLabGrades(LabPart part)
-    {
-        //Get logins
-        Collection<String> logins = Allocator.getDatabaseIO().getAllStudents().keySet();
-        //Get scores
-        Map<String, Double> scores = part.getLabScores();
+    public void importLabGrades(LabPart part) throws ServicesException {
+        try {
+            //Get logins
+            Collection<String> logins = Allocator.getDatabaseIO().getAllStudents().keySet();
+            //Get scores
+            Map<String, Double> scores = part.getLabScores();
 
-        //We don't want to just input all the keys in scores, because if people
-        //were checked off with the wrong login we would submit that to the database
+            //We don't want to just input all the keys in scores, because if people
+            //were checked off with the wrong login we would submit that to the database
 
-        boolean asgnExists = Allocator.getDatabaseIO().assignmentExists(part.getAssignment());
-        if (asgnExists)
-        {
-            //Input scores for those logins
-            for(String login : logins)
-            {
-                if(scores.containsKey(login))
-                {
-                    Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
+            boolean asgnExists = Allocator.getDatabaseIO().assignmentExists(part.getAssignment());
+            if (asgnExists) {
+                //Input scores for those logins
+                for (String login : logins) {
+                    if (scores.containsKey(login)) {
+                        Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
+                    }
                 }
             }
-        }
-        else
-        {
-            new ErrorView(new Exception(), "The assignment: "
-                    + part.getAssignment().getName() +
-                    " does not exist in the Database. Therefore we cannot add grades for that assignment.");
+            else {
+                throw new ServicesException("The assignment: "
+                        + part.getAssignment().getName()
+                        + " does not exist in the Database. Therefore we cannot add grades for that assignment.");
+            }
+        } catch (SQLException e) {
+            throw new ServicesException("Lab grades could not be imported for lab part " + part + ".", e);
         }
     }
 
-    public void makeUserGradingDirectory()
+    public void makeUserGradingDirectory() throws ServicesException
     {
         File gradingDir = new File(this.getUserGradingDirectory());
         try
@@ -80,7 +81,7 @@ public class GradingServicesImpl implements GradingServices
         }
         catch(NativeException e)
         {
-            new ErrorView(e, "Unable to create grading directory: " + gradingDir.getAbsolutePath());
+            throw new ServicesException("Unable to create grading directory: " + gradingDir.getAbsolutePath() + ".", e);
         }
     }
 
@@ -250,7 +251,7 @@ public class GradingServicesImpl implements GradingServices
         return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
     }
 
-    public boolean isOkToDistribute(Assignment asgn, String student, TA ta) {
+    public boolean isOkToDistribute(Assignment asgn, String student, TA ta) throws ServicesException {
         if (groupMemberOnTAsBlacklist(student, asgn.getHandinPart(), ta)) {
             int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + student + " is on TA "
                                                     + ta.getLogin() + "'s blacklist.  Continue?",
@@ -262,23 +263,31 @@ public class GradingServicesImpl implements GradingServices
         return true;
     }
 
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta)
+    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta) throws ServicesException
     {
-        Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta);
-        Collection<String> group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
-        if (Allocator.getGeneralUtilities().containsAny(blackList, group))
-        {
-            return true;
+        try {
+            Collection<String> blackList = Allocator.getDatabaseIO().getTABlacklist(ta);
+            Collection<String> group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
+            if (Allocator.getGeneralUtilities().containsAny(blackList, group)) {
+                return true;
+            }
+            return false;
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not determine if a group member is on the TA's blacklist.", ex);
         }
-        
-        return false;
     }
 
-    public Collection<String> resolveMissingStudents(Assignment asgn)
+    public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException
     {
         Collection<String> handinLogins = asgn.getHandinPart().getHandinLogins();
-        Collection<String> allStudents = Allocator.getDatabaseIO().getAllStudents().keySet();
-        Collection<String> enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+        Collection<String> allStudents;
+        Collection<String> enabledStudents;
+        try {
+            allStudents = Allocator.getDatabaseIO().getAllStudents().keySet();
+            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+        } catch (SQLException e) {
+            throw new ServicesException("Students could not be retrieved from the database.", e);
+        }
 
         Set<String> handinsNotInDB = new HashSet<String>();
         Set<String> handinsDisabled = new HashSet<String>();
@@ -439,8 +448,12 @@ public class GradingServicesImpl implements GradingServices
                 if (disabledPanel.isChangeSelected())
                 {
                     String studentLogin = disabledPanel.getStudentLogin();
-                    Allocator.getDatabaseIO().enableStudent(studentLogin);
-                    handinsDisabled.remove(studentLogin);
+                    try {
+                        Allocator.getDatabaseIO().enableStudent(studentLogin);
+                        handinsDisabled.remove(studentLogin);
+                    } catch (SQLException e) {
+                        new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
+                    }
                 }
             }
 
@@ -572,4 +585,67 @@ public class GradingServicesImpl implements GradingServices
                     scoreFile.getAbsolutePath());
         }
     }
+
+    @Override
+    public Map<String, Calendar> getExtensions(HandinPart part, Iterable<String> studentLogins) throws ServicesException
+    {
+        //Info from the database
+        Map<String, Calendar> individualExtensions;
+        Map<String, Collection<String>> groups;
+        try {
+            individualExtensions = Allocator.getDatabaseIO().getExtensions(part);
+            groups = Allocator.getDatabaseIO().getGroups(part);
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not get extensions for part " + part + ".", ex);
+        }
+
+
+        //Extensions for each student, taking into account the extensions that
+        //apply for each member of the group
+        Map<String, Calendar> groupExtensions = new HashMap<String, Calendar>();
+
+        for(String studentLogin : studentLogins)
+        {
+            groupExtensions.put(studentLogin,
+                                getExtensionCalendar(studentLogin, individualExtensions, groups));
+        }
+
+        return groupExtensions;
+    }
+
+     /**
+     * Gets the the extension calendar for this student. Gets all calendars for
+     * each member of the group and then returns the latest one. If there is no
+     * applicable extension calendar, then null is returned.
+     *
+     * @param studentLogin
+     * @param extensions
+     * @param groups
+     * @return
+     */
+    private Calendar getExtensionCalendar(String studentLogin, Map<String, Calendar> extensions, Map<String, Collection<String>> groups)
+    {
+        Collection<String> groupLogins = groups.get(studentLogin);
+
+        Calendar latestCal = null;
+
+        for(String login : groupLogins)
+        {
+            Calendar cal = extensions.get(login);
+
+            //If no calendar so far, set this one
+            if(latestCal == null)
+            {
+                latestCal = cal;
+            }
+            //Else if this student has a calendar and is after the latest so far
+            else if(cal != null && cal.after(latestCal))
+            {
+                latestCal = cal;
+            }
+        }
+
+        return latestCal;
+    }
+    
 }

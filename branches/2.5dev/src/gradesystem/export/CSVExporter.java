@@ -5,6 +5,7 @@ import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
 import java.io.File;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,8 @@ public class CSVExporter implements Exporter
 {
     private boolean _attemptCancel;
 
-    public void export()
+    @Override
+    public void export() throws ExportException
     {
         JFileChooser chooser = new JFileChooser(Allocator.getCourseInfo().getCourseDir());
 
@@ -48,7 +50,8 @@ public class CSVExporter implements Exporter
         }
     }
 
-    public void export(File file)
+    @Override
+    public void export(File file) throws ExportException
     {
         _attemptCancel = false;
 
@@ -58,12 +61,13 @@ public class CSVExporter implements Exporter
         Executors.newSingleThreadExecutor().submit(task);
     }
 
+    @Override
     public void cancelExport()
     {
         _attemptCancel = true;
     }
 
-    private int getNumberOfSteps()
+    private int getNumberOfSteps() throws ExportException
     {
         int numParts = 0;
 
@@ -75,7 +79,13 @@ public class CSVExporter implements Exporter
             }
         }
 
-        int numStudents = Allocator.getDatabaseIO().getEnabledStudents().size();
+        int numStudents;
+        try {
+            numStudents = Allocator.getDatabaseIO().getEnabledStudents().size();
+        } catch (SQLException ex) {
+            throw new ExportException("Export failed; enabled students could not be " +
+                                      "retrieved from the database.", ex);
+        }
 
         return numParts * numStudents;
     }
@@ -151,7 +161,7 @@ public class CSVExporter implements Exporter
             printer.println(line3);
         }
 
-        private void writeStudentGrades(PrintWriter printer, ProgressView pView)
+        private void writeStudentGrades(PrintWriter printer, ProgressView pView) throws ExportException
         {
             List<String> students = this.sortStudents();
 
@@ -174,28 +184,25 @@ public class CSVExporter implements Exporter
                         double total = 0;
                         for(Part part : asgn.getParts())
                         {
-                            //If no exemption
-                            if(Allocator.getDatabaseIO().getExemptionNote(login, part) == null)
-                            {
-                                double score = Allocator.getDatabaseIO().getStudentScore(login, part);
-
-                                total += score;
-
-                                printer.append(score + ",");
+                            try {
+                                //If no exemption
+                                if (Allocator.getDatabaseIO().getExemptionNote(login, part) == null) {
+                                    double score = Allocator.getDatabaseIO().getStudentScore(login, part);
+                                    total += score;
+                                    printer.append(score + ",");
+                                } else {
+                                    printer.append("EXEMPT" + ",");
+                                }
+                                if (part instanceof HandinPart) {
+                                    String status = Allocator.getRubricManager().getTimeStatusDescriptor((HandinPart) part, login);
+                                    printer.append(status + ",");
+                                }
+                                pView.updateProgress(login, asgn, part, ++currStep);
+                            } catch (SQLException ex) {
+                                _exportFile.delete();
+                                throw new ExportException("Export failed; grades data could not be retrieved " +
+                                                          "from the database.", ex);
                             }
-                            //If exemption
-                            else
-                            {
-                                printer.append("EXEMPT" + ",");
-                            }
-
-                            if(part instanceof HandinPart)
-                            {
-                                String status = Allocator.getRubricManager().getTimeStatusDescriptor((HandinPart) part, login);
-                                printer.append(status + ",");
-                            }
-
-                            pView.updateProgress(login, asgn, part, ++currStep);
                         }
                         printer.append(total + ",");
 
@@ -221,9 +228,15 @@ public class CSVExporter implements Exporter
          *
          * @return
          */
-        private List<String> sortStudents()
+        private List<String> sortStudents() throws ExportException
         {
-            Map<String, String> students = Allocator.getDatabaseIO().getEnabledStudents();
+            Map<String, String> students;
+            try {
+                students = Allocator.getDatabaseIO().getEnabledStudents();
+            } catch (SQLException ex) {
+                throw new ExportException("Export failed; enabled students could not be " +
+                                          "retrieved from the database.", ex);
+            }
 
             List<String> descriptors = new Vector<String>();
 

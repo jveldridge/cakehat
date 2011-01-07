@@ -4,6 +4,8 @@ import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
+import gradesystem.rubric.RubricException;
+import gradesystem.services.ServicesException;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -14,6 +16,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,6 +41,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
 
 /**
  * Provides an interface to allow administrators to manually distribute
@@ -96,8 +100,19 @@ public class ReassignView extends JFrame {
         //initialize starting selection state
         _fromUnassigned.setSelectedIndex(0);
         _toTAList.setSelectedIndex(0);
-
-        this.updateAssignment();
+        try {
+            this.updateAssignment();
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "An error occurred while initializing the interface. " +
+                              "The ReassignView will now close.  If this problem " +
+                              "persists, please send an error report.");
+            ReassignView.this.dispose();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "An error occurred while initializing the interface. " +
+                              "The ReassignView will now close.  If this problem " +
+                              "persists, please send an error report.");
+            ReassignView.this.dispose();
+        }
 
         this.pack();
         this.setVisible(true);
@@ -126,7 +141,19 @@ public class ReassignView extends JFrame {
         asgnComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 _asgn = (Assignment) asgnComboBox.getSelectedItem();
-                updateAssignment();
+                try {
+                    updateAssignment();
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                }
             }
         });
 
@@ -164,7 +191,14 @@ public class ReassignView extends JFrame {
         _fromTAList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                updateFromList();
+                try {
+                    updateFromList();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                }
             }
         });
         _fromTAList.addFocusListener(new FocusAdapter() {
@@ -184,7 +218,11 @@ public class ReassignView extends JFrame {
         _studentFilterBox.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                filterStudentLogins(e);
+                try {
+                    filterStudentLogins(e);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "There was an error filtering student logins.");
+                }
             }
         });
         _studentFilterBox.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
@@ -260,7 +298,19 @@ public class ReassignView extends JFrame {
         _assignButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAssignButtonClick();
+                try {
+                    handleAssignButtonClick();
+                } catch (SQLException ex) {
+                    //TODO ensure that all changes are rolled back properly!
+                    new ErrorView(ex, "An error occurred during assignment. " +
+                                      "No changes have been made.");
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "An error occurred during assignment. " +
+                                      "No changes have been made.");
+                } catch (RubricException ex) {
+                    new ErrorView(ex, "An error occurred during assignment. " +
+                                      "No changes have been made.");
+                }
             }
         });
 
@@ -268,7 +318,20 @@ public class ReassignView extends JFrame {
             @Override
             public void keyReleased(KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    handleAssignButtonClick();
+                    try {
+                        handleAssignButtonClick();
+                    } catch (SQLException ex) {
+                        //TODO ensure that all changes are rolled back properly!
+                        new ErrorView(ex, "An error occurred during assignment. " +
+                                          "No changes have been made.");
+                    } catch (ServicesException ex) {
+                        new ErrorView(ex, "An error occurred during assignment. " +
+                                          "No changes have been made.");
+                    } catch (RubricException ex) {
+                        new ErrorView(ex, "An error occurred during assignment. " +
+                                          "No changes have been made.");
+                    }
+
                     _studentFilterBox.setText(null);
                     _studentFilterBox.requestFocus();
                 }
@@ -319,7 +382,14 @@ public class ReassignView extends JFrame {
         _toTAList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                updateToList();
+                try {
+                    updateToList();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                }
             }
         });
         _toTAList.addFocusListener(new FocusAdapter() {
@@ -384,7 +454,7 @@ public class ReassignView extends JFrame {
         _assignButton.setEnabled(_fromStudentList.getSelectedValue() != null);
     }
 
-    private void updateAssignment() {
+    private void updateAssignment() throws ServicesException, SQLException {
         this.setTitle(_asgn + " - [" + Allocator.getCourseInfo().getCourse() +"] Assignment Distributor");
 
         _unresolvedStudents = Allocator.getGradingServices().resolveMissingStudents(_asgn);
@@ -398,7 +468,7 @@ public class ReassignView extends JFrame {
         this.updateToList();
     }
 
-    private void updateFromList() {
+    private void updateFromList() throws SQLException {
         HandinPart handinPart = _asgn.getHandinPart();
 
         List<String> loginsToDisplay;
@@ -437,7 +507,7 @@ public class ReassignView extends JFrame {
         }
     }
 
-    private void updateToList() {
+    private void updateToList() throws SQLException {
         HandinPart handinPart = _asgn.getHandinPart();
         List<String> loginsToDisplay;
 
@@ -455,7 +525,7 @@ public class ReassignView extends JFrame {
         _toStudentList.setListData(loginsToDisplay);
     }
 
-    private void handleAssignButtonClick() {
+    private void handleAssignButtonClick() throws SQLException, ServicesException, RubricException {
         if (!_fromRandom.isSelectionEmpty()) {
             this.handleRandomAssignButtonClick();
         }
@@ -464,7 +534,7 @@ public class ReassignView extends JFrame {
         }
     }
 
-    private void handleSelectedAssignButtonClick() {
+    private void handleSelectedAssignButtonClick() throws SQLException, ServicesException, RubricException {
         Collection<String> students = _fromStudentList.getGenericSelectedValues();
         HandinPart handinPart = _asgn.getHandinPart();
 
@@ -536,7 +606,7 @@ public class ReassignView extends JFrame {
         _studentFilterBox.requestFocus();
     }
 
-    private void handleRandomAssignButtonClick() {
+    private void handleRandomAssignButtonClick() throws SQLException, ServicesException, RubricException {
         HandinPart handinPart = _asgn.getHandinPart();
         TA toTA = _toTAList.getSelectedValue();
         TA fromTA = _fromTAList.getSelectedValue();
@@ -626,7 +696,7 @@ public class ReassignView extends JFrame {
         this.updateToList();
     }
 
-    private void filterStudentLogins(KeyEvent evt) {
+    private void filterStudentLogins(KeyEvent evt) throws SQLException {
         //term to filter against
         String filterTerm = _studentFilterBox.getText();
 

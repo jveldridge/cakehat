@@ -3,6 +3,7 @@ package gradesystem.rubric;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
 import gradesystem.config.TimeInformation;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.JOptionPane;
@@ -355,7 +356,7 @@ class Rubric
 
         // Subsections
 
-        Subsection addSubsection(String name, double score, double outof, String source)
+        Subsection addSubsection(String name, double score, double outof, String source) throws RubricException
         {
             Subsection subsection = new Subsection(name, score, outof, source);
             _subsections.add(subsection);
@@ -443,7 +444,7 @@ class Rubric
         //What part this subsection pulls from in the database (if at all)
         private String _source = null;
 
-        Subsection(String name, double score, double outOf, String source)
+        Subsection(String name, double score, double outOf, String source) throws RubricException
         {
             this.setName(name);
             this.setOutOf(outOf);
@@ -459,7 +460,7 @@ class Rubric
             }
         }
 
-        private void loadScoreFromSource()
+        private void loadScoreFromSource() throws RubricException
         {
             //Get corresponding part
             Part sourcePart = null;
@@ -485,7 +486,12 @@ class Rubric
             if(!Rubric.this.getStudentAccount().isEmpty())
             {
                 String studentLogin = Rubric.this.getStudentAccount();
-                _score = Allocator.getDatabaseIO().getStudentScore(studentLogin, sourcePart);
+                try {
+                    _score = Allocator.getDatabaseIO().getStudentScore(studentLogin, sourcePart);
+                } catch (SQLException ex) {
+                    throw new RubricException("The grade for part " + sourcePart + " could not be " +
+                                              "loaded from the database.", ex);
+                }
             }
         }
 

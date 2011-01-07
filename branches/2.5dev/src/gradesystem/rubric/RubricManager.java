@@ -106,7 +106,7 @@ public interface RubricManager
     public void distributeRubrics(HandinPart part,
                                   Map<TA, Collection<String>> distribution,
                                   int minutesOfLeniency,
-                                  DistributionRequester requester);
+                                  DistributionRequester requester) throws RubricException;
 
     /**
      * Reads out the time status information from a student's rubric.

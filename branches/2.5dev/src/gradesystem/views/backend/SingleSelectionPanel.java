@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -22,6 +23,8 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJComboBox;
+import gradesystem.views.shared.ErrorView;
 
 /**
  * Single selection panel of the backend.
@@ -38,7 +41,7 @@ class SingleSelectionPanel extends JPanel
     private Assignment _asgn;
 
     //GUI components
-    private JComboBox _nonHandinBox, _labBox;
+    private GenericJComboBox<Part> _nonHandinBox, _labBox;
     private ScoreField _nonHandinEarnedField, _nonHandinOutOfField,
                        _labEarnedField, _labOutOfField,
                        _handinEarnedField, _handinOutOfField;
@@ -109,15 +112,28 @@ class SingleSelectionPanel extends JPanel
             public void actionPerformed(ActionEvent ae) {
                 if (_asgn.hasNonHandinParts()) {
                     double nonHandinEarned = _nonHandinEarnedField.getNumberValue();
-                    Part noneHandinPart = (Part) _nonHandinBox.getSelectedItem();
-                    Allocator.getDatabaseIO().enterGrade(_studentLogin, noneHandinPart, nonHandinEarned);
+                    Part nonHandinPart = _nonHandinBox.getSelectedItem();
+                    try {
+                        Allocator.getDatabaseIO().enterGrade(_studentLogin, nonHandinPart, nonHandinEarned);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Saving the grade for student " + _studentLogin + " " +
+                                          "on part " + nonHandinPart + " of assignment " +
+                                          _asgn + " failed.");
+                    }
                 }
 
                 if (_asgn.hasLabParts()) {
                     double labEarned = _labEarnedField.getNumberValue();
-                    Part labPart = (Part) _labBox.getSelectedItem();
-                    Allocator.getDatabaseIO().enterGrade(_studentLogin, labPart, labEarned);
-                    Allocator.getGradingServices().updateLabGradeFile((LabPart) labPart, labEarned, _studentLogin);
+                    Part labPart = _labBox.getSelectedItem();
+
+                    try {
+                        Allocator.getDatabaseIO().enterGrade(_studentLogin, labPart, labEarned);
+                        Allocator.getGradingServices().updateLabGradeFile((LabPart) labPart, labEarned, _studentLogin);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Saving the lab grade for student " + _studentLogin + " " +
+                                          "on part " + labPart + " of assignment " +
+                                          _asgn + " failed.");
+                    }
                 }
             }
         });
@@ -157,15 +173,23 @@ class SingleSelectionPanel extends JPanel
 
         Dimension boxSize = new Dimension(sectionPanelSize.width - selectLabelSize.width,
                                           22);
-        _nonHandinBox = new JComboBox();
+        _nonHandinBox = new GenericJComboBox<Part>();
         _nonHandinBox.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Part part = (Part) _nonHandinBox.getSelectedItem();
+                Part part = _nonHandinBox.getSelectedItem();
                 if(part != null)
                 {
-                    double earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    double earned = 0;
+                    try {
+                        earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                                          "lab part " + part + " from the database.  A SCORE OF 0 WILL BE " +
+                                          "ASSUMED for displaying the student's lab part grade.");
+                    }
+
                     double outOf = part.getPoints();
 
                     _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
@@ -264,15 +288,22 @@ class SingleSelectionPanel extends JPanel
 
         Dimension boxSize = new Dimension(sectionPanelSize.width - selectLabelSize.width,
                                           22);
-        _labBox = new JComboBox();
+        _labBox = new GenericJComboBox<Part>();
         _labBox.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Part part = (Part) _labBox.getSelectedItem();
+                Part part = _labBox.getSelectedItem();
                 if(part != null)
                 {
-                    double earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    double earned = 0;
+                    try {
+                        earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                                          "lab part " + part + " from the database.  A SCORE OF 0 WILL BE " +
+                                          "ASSUMED for displaying the student's lab part grade.");
+                    }
                     double outOf = part.getPoints();
 
                     _labEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
@@ -553,7 +584,14 @@ class SingleSelectionPanel extends JPanel
         {
             HandinPart handinPart = asgn.getHandinPart();
 
-            double handinEarned = Allocator.getDatabaseIO().getStudentScore(studentLogin, handinPart);
+            double handinEarned = 0;
+            try {
+                handinEarned = Allocator.getDatabaseIO().getStudentScore(studentLogin, handinPart);
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Could not read score for student " + studentLogin + " on " +
+                                  "part " + handinPart + " from the database.  A SCORE OF 0 WILL BE " +
+                                  "ASSUMED for displaying the student's handin part grade.");
+            }
             double handinOutOf = handinPart.getPoints();
 
             _handinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(handinEarned, 2));
@@ -656,7 +694,7 @@ class SingleSelectionPanel extends JPanel
         //Non-handin
         if(_asgn.hasHandinPart())
         {
-            Part selectedPart = (Part) _nonHandinBox.getSelectedItem();
+            Part selectedPart = _nonHandinBox.getSelectedItem();
             totalEarned += nonHandinEarned;
             totalOutOf += nonHandinOutOf;
 
@@ -665,7 +703,16 @@ class SingleSelectionPanel extends JPanel
             {
                 if(part != selectedPart)
                 {
-                    totalEarned += Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    double partScore = 0;
+                    try {
+                        partScore = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                                          "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
+                                          "ASSUMED for displaying the student's overall grade.");
+                    }
+                    
+                    totalEarned += partScore;
                     totalOutOf += part.getPoints();
                 }
             }
@@ -673,7 +720,7 @@ class SingleSelectionPanel extends JPanel
         //Lab
         if(_asgn.hasLabParts())
         {
-            Part selectedPart = (Part) _labBox.getSelectedItem();
+            Part selectedPart = _labBox.getSelectedItem();
             totalEarned += labEarned;
             totalOutOf += labOutOf;
 
@@ -681,7 +728,16 @@ class SingleSelectionPanel extends JPanel
             {
                 if(part != selectedPart)
                 {
-                    totalEarned += Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    double partScore = 0;
+                    try {
+                        partScore = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                                          "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
+                                          "ASSUMED for displaying the student's overall grade.");
+                    }
+                    
+                    totalEarned += partScore;
                     totalOutOf += part.getPoints();
                 }
             }

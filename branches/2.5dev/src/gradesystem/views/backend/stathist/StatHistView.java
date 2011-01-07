@@ -3,6 +3,7 @@ package gradesystem.views.backend.stathist;
 import gradesystem.config.Assignment;
 import gradesystem.config.Part;
 import java.awt.CardLayout;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
 
 /**
  *
@@ -362,6 +364,15 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private void updateCharts() {
         CardLayout cl = (CardLayout) cardPanel.getLayout();
 
+        Collection<String> enabledStudents;
+        try {
+            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not read enabled students from the database. " +
+                              "Charts cannot be updated.");
+            return;
+        }
+
         //see assignment histograms
         if (selectViewBox.getSelectedItem().equals("By Assignment")) {
             cl.show(cardPanel, "assignment");
@@ -378,7 +389,7 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                         chart.updateChartData(a, _students);
                     }
                     else {
-                        chart.updateChartData(a, Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                        chart.updateChartData(a, enabledStudents);
                     }
                     chart.setVisible(true);
                 }
@@ -393,7 +404,7 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                         chart.updateChartData(p, _students);
                     }
                     else {
-                        chart.updateChartData(p, Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                        chart.updateChartData(p, enabledStudents);
                     }
                     chart.setVisible(true);
                 }
@@ -424,7 +435,11 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new StatHistView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
+                try {
+                    new StatHistView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not read enabled students from the database.");
+                }
             }
         });
     }

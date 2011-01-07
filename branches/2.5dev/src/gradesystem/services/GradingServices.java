@@ -4,6 +4,8 @@ import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
 import gradesystem.config.TA;
+import gradesystem.rubric.RubricException;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
@@ -21,12 +23,12 @@ public interface GradingServices
      *
      * @param part
      */
-    public void importLabGrades(LabPart part);
+    public void importLabGrades(LabPart part) throws ServicesException;
 
     /**
      * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
      */
-    public void makeUserGradingDirectory();
+    public void makeUserGradingDirectory() throws ServicesException;
 
     /**
      * Removes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
@@ -115,7 +117,7 @@ public interface GradingServices
      * @param ta
      * @return true if it is OK to distribute the student's handin to the TA
      */
-    public boolean isOkToDistribute(Assignment asgn, String student, TA ta);
+    public boolean isOkToDistribute(Assignment asgn, String student, TA ta) throws ServicesException;
 
     /**
      * Returns whether or not some member of the given student's group for the given
@@ -125,7 +127,7 @@ public interface GradingServices
      * @param ta
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta);
+    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta) throws ServicesException;
 
     /**
      * present the user with a dialog warning them that some of the handins are for students
@@ -135,7 +137,7 @@ public interface GradingServices
      * @param asgn
      * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
-    public Collection<String> resolveMissingStudents(Assignment asgn);
+    public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException;
 
     /**
      * Updates the student's lab grade by deleting the file that previously
@@ -147,4 +149,16 @@ public interface GradingServices
      * @author aunger, jak2
      */
     public void updateLabGradeFile(LabPart labPart, double score, String student);
+
+    /**
+     * Gets the extensions for each student in studentLogins. Takes into account
+     * the group the student is in; using the latest date of all group members.
+     * If there is no extension for any member of the group, null is assigned.
+     *
+     *
+     * @param part
+     * @param studentLogins
+     * @return
+     */
+    public Map<String, Calendar> getExtensions(HandinPart part, Iterable<String> studentLogins) throws ServicesException;
 }

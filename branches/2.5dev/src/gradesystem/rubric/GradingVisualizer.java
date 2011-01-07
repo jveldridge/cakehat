@@ -12,6 +12,7 @@ import java.awt.Dimension;
 
 import java.awt.Point;
 import java.awt.event.InputEvent;
+import java.sql.SQLException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -33,6 +34,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import gradesystem.Allocator;
+import gradesystem.config.HandinPart;
+import gradesystem.views.shared.ErrorView;
 
 /**
  * Allows for viewing and editing a rubric. Intended to be used to fill out a
@@ -86,8 +89,18 @@ class GradingVisualizer extends JFrame
         this.add(scrollPane, BorderLayout.CENTER);
 
         //Get all members of the group and their names
-        Collection<String> groupLogins = Allocator.getDatabaseIO().getGroup(rubric._handinPart, rubric.getStudentAccount());
-        Map<String, String> allStudents = Allocator.getDatabaseIO().getAllStudents();
+        Collection<String> groupLogins = null;
+        Map<String, String> allStudents = null;
+        try {
+            groupLogins = Allocator.getDatabaseIO().getGroup(rubric._handinPart, rubric.getStudentAccount());
+            allStudents = Allocator.getDatabaseIO().getAllStudents();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "The rubric cannot be displayed because group data could not " +
+                              "be retrieved from the database.");
+            this.dispose();
+            return;
+        }
+        
         _group = new HashMap<String, String>();
         for(String login : groupLogins)
         {
@@ -116,6 +129,7 @@ class GradingVisualizer extends JFrame
         //Open up a dialog on window close to save rubric data
         this.addWindowListener(new WindowAdapter()
         {
+            @Override
             public void windowClosing(WindowEvent e)
             {
                 handleClose();
@@ -159,6 +173,7 @@ class GradingVisualizer extends JFrame
         //On window open, scroll to top
         this.addWindowListener(new WindowAdapter()
         {
+            @Override
             public void windowOpened(WindowEvent e)
             {
                 scrollPane.getViewport().setViewPosition(new Point(0, 0));
@@ -196,7 +211,7 @@ class GradingVisualizer extends JFrame
     }
 
     /**
-     * Saves the changes made to all of the effected GML files (can be multiple if part of a group).
+     * Saves the changes made to all of the affected GML files (can be multiple if part of a group).
      */
     private void save()
     {
@@ -207,17 +222,28 @@ class GradingVisualizer extends JFrame
             RubricGMLWriter.write(_rubric, gmlPath);
         }
 
+        boolean saveSuccessful = true;
         //If an admin is saving this rubric, write to that database
         if(_isAdmin)
         {
             double score = _rubric.getTotalHandinScore();
+            HandinPart part = _rubric._handinPart;
 
             for(String login : _group.keySet())
             {
-                Allocator.getDatabaseIO().enterGrade(login, _rubric._handinPart, score);
+                try {
+                    Allocator.getDatabaseIO().enterGrade(login, part, score);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "The new grade could for student " + login + " on part " +
+                                      part + " of assignment " + part.getAssignment() + " could not be " +
+                                      "stored in the database.");
+                    saveSuccessful = false;
+                }
             }
         }
 
-        _stateManager.rubricSaved();
+        if (saveSuccessful) {
+            _stateManager.rubricSaved();
+        }
     }
 }
