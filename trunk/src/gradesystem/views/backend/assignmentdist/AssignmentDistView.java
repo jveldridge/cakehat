@@ -4,11 +4,14 @@ import gradesystem.components.IntegerField;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
+import gradesystem.rubric.RubricException;
+import gradesystem.services.ServicesException;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +36,7 @@ import javax.swing.JProgressBar;
 import gradesystem.Allocator;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
+import java.util.LinkedList;
 import utils.system.NativeException;
 
 /**
@@ -61,8 +65,13 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
     public AssignmentDistView(Assignment asgn) {
         _asgn = asgn;
-
-        _remainingBadLogins = Allocator.getGradingServices().resolveMissingStudents(_asgn);
+        try {
+            _remainingBadLogins = Allocator.getGradingServices().resolveMissingStudents(_asgn);
+        } catch (ServicesException ex) {
+            new ErrorView(ex);
+            this.dispose();
+            return;
+        }
 
         //null means that cancel was clicked
         if (_remainingBadLogins == null) {
@@ -189,13 +198,25 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                                           "Distribution Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        //check to make sure that there is not a dist already
-        if (!Allocator.getDatabaseIO().isDistEmpty(_asgn.getHandinPart())) {
-            int n = JOptionPane.showConfirmDialog(new JFrame(), "A distribution already exists for " + _asgn.getName() + ".\nAre you sure you want to overwrite the existing distribution?", "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
-            if (n == JOptionPane.NO_OPTION) {
-                return;
+        try {
+            if (!Allocator.getDatabaseIO().isDistEmpty(_asgn.getHandinPart())) {
+                int n = JOptionPane.showConfirmDialog(this, "A distribution already exists for " + _asgn.getName() +
+                                                             ".\nAre you sure you want to overwrite the existing distribution?",
+                                                             "Confirm Overwrite",
+                                                             JOptionPane.YES_NO_OPTION);
+                if (n == JOptionPane.NO_OPTION) {
+                    return;
+                }
             }
+        } catch (SQLException ex) {
+            int n = JOptionPane.showConfirmDialog(this, "Could not determine whether a distribution already exists " +
+                                                        "for assignment " + _asgn.getName() + ".\nDo you wish to proceed?  " +
+                                                        "Doing so will overwrite any existing distribution.",
+                                                        "Proceed?",
+                                                        JOptionPane.YES_NO_OPTION);
+                if (n == JOptionPane.NO_OPTION) {
+                    return;
+                }
         }
 
         //get handin logins, shuffle logins, add to deque
@@ -236,11 +257,15 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         //distribute the rest if the handins to TAs
         this.assignRemainingHandinsToTAs(distribution, numStudsNeeded, handinLogins, tas);
 
-        //put the distribution into the DB
-        Allocator.getDatabaseIO().setAsgnDist(_asgn.getHandinPart(), distribution);
-
-        JOptionPane.showMessageDialog(this, "Assignments have been successfully distributed to the grading TAs.",
+        try {
+            //put the distribution into the DB
+            Allocator.getDatabaseIO().setAsgnDist(_asgn.getHandinPart(), distribution);
+            JOptionPane.showMessageDialog(this, "Assignments have been successfully distributed to the grading TAs.",
                 "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Saving the distribution to the database failed.");
+        }
+
     }
 
     /**
@@ -288,14 +313,30 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                         HandinPart handinPart, ArrayList<TA> tas) {
 
         //get all the groups for this project (maps student login to students in their group)
-        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
+        Map<String, Collection<String>> groups;
+        try {
+            groups = Allocator.getDatabaseIO().getGroups(handinPart);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Groups for the project could not be read from the database.  " +
+                              "Distribution cannot continue.");
+            return false;
+        }
 
         //make a list of all blacklisted students and hashmap of all ta blacklists
         Set<String> blacklistedStudents = new HashSet<String>();
         Map<TA, Collection<String>> taBlacklists = new HashMap<TA, Collection<String>>();
 
         for (TA ta : tas) {
-            Collection<String> tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
+            Collection<String> tasBlackList;
+            try {
+                tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Blacklist could not be read from the database for " +
+                                  "TA " + ta + ".  THE RESULTING DISTRIBUTION MAY NOT " +
+                                  "RESPECT THIS TA'S BLACKLIST.");
+                tasBlackList = new LinkedList<String>();
+            }
+
             blacklistedStudents.addAll(tasBlackList);
             taBlacklists.put(ta, tasBlackList);
         }
@@ -416,16 +457,19 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
             @Override
             public void run() {
-                //get dist from DB
-                Map<TA, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
-
-                //actually distribute rubrics
-                Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(),
-                        distribution, finalMinsLeniency,
-                        AssignmentDistView.this);
-
-                //get rid of progress dialog
-                _progressDialog.dispose();
+                try {
+                    //get dist from DB
+                    Map<TA, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
+                    //actually distribute rubrics
+                    Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(), distribution, finalMinsLeniency, AssignmentDistView.this);
+                    //get rid of progress dialog
+                    _progressDialog.dispose();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "The distribution for assignment " + _asgn + " " +
+                                      "could not be read from the database.");
+                } catch (RubricException ex) {
+                    new ErrorView(ex, "Disributing rubrics for asignment " + _asgn + " failed.");
+                }
             }
         };
 

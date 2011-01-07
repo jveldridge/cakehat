@@ -1,5 +1,7 @@
 package gradesystem.views.backend;
 
+import gradesystem.database.CakeHatDBIOException;
+import gradesystem.export.ExportException;
 import gradesystem.views.backend.assignmentdist.AssignmentDistView;
 import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.views.backend.assignmentdist.ReassignView;
@@ -61,10 +63,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.application.SingleFrameApplication;
 import gradesystem.Allocator;
+import gradesystem.services.ServicesException;
 import gradesystem.services.UserServices.ValidityCheck;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import utils.system.NativeException;
 
 /**
@@ -192,12 +195,28 @@ public class BackendView extends JFrame
     {
         super("[cakehat] backend - " + Allocator.getUserUtilities().getUserLogin());
 
-        //student logins
-        _studentLogins = new LinkedList(Allocator.getDatabaseIO().getAllStudents().keySet());
-        Collections.sort(_studentLogins);
+        try {
+            //student logins
+            _studentLogins = new LinkedList(Allocator.getDatabaseIO().getAllStudents().keySet());
+            Collections.sort(_studentLogins);
+        } catch (SQLException e) {
+            new ErrorView(e, "Could not get students from database; " +
+                             "functionality will be significantly impaired.  " +
+                             "You are advised to restart cakehat and to send an " +
+                             "error report if the problem persists.");
+            //initialize _studentLogins to avoid NullPointerExceptions
+            _studentLogins = new LinkedList();
+        }
 
-        //make the user's temporary grading directory
-        Allocator.getGradingServices().makeUserGradingDirectory();
+        try {
+            //make the user's temporary grading directory
+            Allocator.getGradingServices().makeUserGradingDirectory();
+        } catch (ServicesException e) {
+            new ErrorView(e, "Could not make user grading directory; " +
+                             "functionality will be significantly impaired.  " +
+                             "You are advised to restart cakehat and to send an " +
+                             "error report if the problem persists.");
+        }
 
         //on window close, remove user's temporary grading directory
         this.addWindowListener(new WindowAdapter()
@@ -1090,8 +1109,15 @@ public class BackendView extends JFrame
             //If zero or more assignments
             if(selectedAssignments.size() >= 0)
             {
-                this.updateDisableEnableButton(Allocator.getDatabaseIO().isStudentEnabled(_studentList.getSelectedValue()));
-                _disableStudentButton.setEnabled(true);
+                String studentLogin = _studentList.getSelectedValue();
+                try {
+                    this.updateDisableEnableButton(Allocator.getDatabaseIO().isStudentEnabled(studentLogin));
+                    _disableStudentButton.setEnabled(true);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "WARNING: Could not determine whether or not " +
+                                      "student " + studentLogin + " is enabled.");
+                    _disableStudentButton.setEnabled(false);
+                }
             }
             //If one or more assignments
             if(selectedAssignments.size() >= 1)
@@ -1109,7 +1135,13 @@ public class BackendView extends JFrame
                 {
                     HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
 
-                    String handinLogin = getHandinLogin(_studentList.getSelectedValue(), part);
+                    String studentLogin = _studentList.getSelectedValue();
+                    String handinLogin = null;
+                    try {
+                        handinLogin = getHandinLogin(studentLogin, part);
+                    } catch (CakeHatDBIOException ex) {
+                        new ErrorView(ex);
+                    }
                     boolean hasHandin = (handinLogin != null);
 
                     _testCodeButton.setEnabled(hasHandin && part.hasTester());
@@ -1148,11 +1180,17 @@ public class BackendView extends JFrame
                         anyRubric = true;
                     }
 
-                    Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
-                    for (String groupMember : groups.get(student)) {
-                        if (handinPart.hasHandin(groupMember)) {
-                            anyCode = true;
+                    try {
+                        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
+                        for (String groupMember : groups.get(student)) {
+                            if (handinPart.hasHandin(groupMember)) {
+                                anyCode = true;
+                            }
                         }
+                    } catch (SQLException e) {
+                        new ErrorView(e, "Could not determine if there is a handin for " +
+                                         "student " + student + " because the student's " +
+                                         "group could not be retrieved from the database.");
                     }
 
                     if (anyRubric && anyCode) {
@@ -1240,9 +1278,16 @@ public class BackendView extends JFrame
      * @param part
      * @return
      */
-    private String getHandinLogin(String studentLogin, HandinPart part)
+    private String getHandinLogin(String studentLogin, HandinPart part) throws CakeHatDBIOException
     {
-        Collection<String> group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
+        Collection<String> group;
+        try {
+            group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
+        } catch (SQLException e) {
+            throw new CakeHatDBIOException("The handin for student " + studentLogin + " could not " +
+                                           "be determined because the student's group could not be " +
+                                           "retrieved from the database.", e);
+        }
 
         for(String login : group)
         {
@@ -1291,7 +1336,11 @@ public class BackendView extends JFrame
 
     private void exportGradesButtonActionPerformed()
     {
-        Allocator.getCSVExporter().export();
+        try {
+            Allocator.getCSVExporter().export();
+        } catch (ExportException ex) {
+            new ErrorView(ex, "Export failed.");
+        }
     }
 
     private void resetDatabaseButtonActionPerformed()
@@ -1336,22 +1385,42 @@ public class BackendView extends JFrame
 
         //clear database
         if (clearDatabaseRB.isSelected()) {
-            Allocator.getDatabaseIO().resetDatabase();
+            try {
+                Allocator.getDatabaseIO().resetDatabase();
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Resetting the database failed.");
+                return;
+            }
         }
 
         //add all TAs
         if (addTAsRB.isSelected()) {
             for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                Allocator.getDatabaseIO().addTA(ta);
+                try {
+                    Allocator.getDatabaseIO().addTA(ta);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not add TA " + ta + " to the database.");
+                }
             }
         }
 
         //add all assignments, and their parts
         if (addAssignmentsRB.isSelected()) {
             for (Assignment asgn : Allocator.getCourseInfo().getAssignments()) {
-                Allocator.getDatabaseIO().addAssignment(asgn);
+                try {
+                    Allocator.getDatabaseIO().addAssignment(asgn);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not add assignment " + asgn + " to the database.");
+                }
+
                 for (Part part : asgn.getParts()) {
-                    Allocator.getDatabaseIO().addAssignmentPart(part);
+                    try {
+                        Allocator.getDatabaseIO().addAssignmentPart(part);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not add part " + part + " to the database.");
+                    } catch (CakeHatDBIOException ex) {
+                        new ErrorView(ex, "Could not add part " + part + " to the database.");
+                    }
                 }
             }
         }
@@ -1359,8 +1428,18 @@ public class BackendView extends JFrame
         //add all students in group
         if (addStudentsRB.isSelected()) {
             try {
+                Collection<String> studentsNotAdded = new LinkedList<String>();
                 for (String login : Allocator.getUserServices().getStudentLogins()) {
-                    Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                    try {
+                        Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                    } catch (ServicesException ex) {
+                       studentsNotAdded.add(login);
+                    }
+                }
+
+                if (!studentsNotAdded.isEmpty()) {
+                    new ErrorView("The following students could not be added to " +
+                                  "the database: " + studentsNotAdded + ".");
                 }
             } catch(NativeException e) {
                 new ErrorView(e, "Unable to add any students in the group " +
@@ -1390,7 +1469,11 @@ public class BackendView extends JFrame
         {
             for(LabPart part : asgn.getLabParts())
             {
-                Allocator.getGradingServices().importLabGrades(part);
+                try {
+                    Allocator.getGradingServices().importLabGrades(part);
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Importing lab grades failed.");
+                }
             }
         }
     }
@@ -1453,11 +1536,23 @@ public class BackendView extends JFrame
             }
 
             Vector<String> students = new Vector<String>();
+            Collection<String> undeterminedStudents = new LinkedList<String>();
             for (String student : _studentList.getGenericSelectedValues()) {
-                if (Allocator.getDatabaseIO().isStudentEnabled(student)) {
-                    students.add(student);
+                try {
+                    if (Allocator.getDatabaseIO().isStudentEnabled(student)) {
+                        students.add(student);
+                    }
+                } catch (SQLException ex) {
+                    undeterminedStudents.add(student);
                 }
             }
+
+            if (!undeterminedStudents.isEmpty()) {
+                new ErrorView("It could not be determined if the following students "
+                        + "are enabled: " + undeterminedStudents + ".\n\n"
+                        + "Their grades will not be included in the grade reports.");
+            }
+            
             GradeReportView grv = new GradeReportView(map, students);
             grv.setLocationRelativeTo(null);
             grv.setVisible(true);
@@ -1480,26 +1575,38 @@ public class BackendView extends JFrame
 
     private void openCodeButtonActionPerformed()
     {
-        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-
-        part.openCode(login);
+        String studentLogin = _studentList.getSelectedValue();
+        try {
+            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+            String handinLogin = this.getHandinLogin(studentLogin, part);
+            part.openCode(handinLogin);
+        } catch (CakeHatDBIOException ex) {
+            new ErrorView(ex, "Could not open code.");
+        }
     }
 
     private void runCodeButtonActionPerformed()
     {
-        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-
-        part.run(login);
+        String studentLogin = _studentList.getSelectedValue();
+        try {
+            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+            String handinLogin = this.getHandinLogin(studentLogin, part);
+            part.run(handinLogin);
+        } catch (CakeHatDBIOException ex) {
+            new ErrorView(ex, "Could not run code.");
+        }
     }
 
     private void testCodeButtonActionPerformed()
     {
-        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-
-        part.runTester(login);
+        String studentLogin = _studentList.getSelectedValue();
+        try {
+            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+            String login = this.getHandinLogin(studentLogin, part);
+            part.runTester(login);
+        } catch (CakeHatDBIOException ex) {
+            new ErrorView(ex, "Could not test code.");
+        }
     }
 
     private void printCodeButtonActionPerformed() {
@@ -1519,7 +1626,13 @@ public class BackendView extends JFrame
             Collection<String> studentsWithoutCode = new LinkedList<String>();
             
             for (String student : _studentList.getGenericSelectedValues()) {
-                String handinLogin = this.getHandinLogin(student, handinPart);
+                String handinLogin;
+                try {
+                    handinLogin = this.getHandinLogin(student, handinPart);
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "Could not print code.");
+                    continue;
+                }
 
                 if (handinLogin != null) {
                     loginsToPrint.add(handinLogin);
@@ -1553,10 +1666,14 @@ public class BackendView extends JFrame
 
     private void viewReadmeButtonActionPerformed()
     {
-        HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-        String login = this.getHandinLogin(_studentList.getSelectedValue(), part);
-
-        part.viewReadme(login);
+        String studentLogin = _studentList.getSelectedValue();
+        try {
+            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+            String login = this.getHandinLogin(studentLogin, part);
+            part.viewReadme(login);
+        } catch (CakeHatDBIOException ex) {
+            new ErrorView(ex, "Could not show README.");
+        }
     }
 
     private void viewRubricButtonActionPerformed()
@@ -1644,16 +1761,18 @@ public class BackendView extends JFrame
     private void disableStudentButtonActionPerformed()
     {
         String studentLogin = _studentList.getSelectedValue();
-
-        if(Allocator.getDatabaseIO().isStudentEnabled(studentLogin))
-        {
-            Allocator.getDatabaseIO().disableStudent(studentLogin);
-            this.updateDisableEnableButton(false);
-        }
-        else
-        {
-            Allocator.getDatabaseIO().enableStudent(studentLogin);
-            this.updateDisableEnableButton(true);
+        
+        try {
+            if (Allocator.getDatabaseIO().isStudentEnabled(studentLogin)) {
+                Allocator.getDatabaseIO().disableStudent(studentLogin);
+                this.updateDisableEnableButton(false);
+            }
+            else {
+                Allocator.getDatabaseIO().enableStudent(studentLogin);
+                this.updateDisableEnableButton(true);
+            }
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Enabling/disabling student " + studentLogin + " failed.");
         }
     }
 

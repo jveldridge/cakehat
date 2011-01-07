@@ -15,6 +15,7 @@ public class CakeHatDBIOException extends Exception {
      * Creates a new instance of <code>CakeHatDBIOException</code> without detail message.
      */
     public CakeHatDBIOException() {
+        super();
     }
 
 
@@ -24,5 +25,9 @@ public class CakeHatDBIOException extends Exception {
      */
     public CakeHatDBIOException(String msg) {
         super(msg);
+    }
+
+    public CakeHatDBIOException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 }

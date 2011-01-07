@@ -70,41 +70,26 @@ public class DBWrapper implements DatabaseIO {
      * opens a new connection to the DB
      * @param messageFrame - frame in which errors will show up
      */
-    private Connection openConnection() {
-        try {
-            return _connProvider.createConnection();
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not open a connection to the DB.");
-        }
-        return null;
+    private Connection openConnection() throws SQLException {
+        return _connProvider.createConnection();
     }
 
     /**
      * closes current connection to DB
      * @param messageFrame - frame in which errors will show up
      */
-    private void closeConnection(Connection c) {
-        try {
-            _connProvider.closeConnection(c);
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not close connection to the DB.");
-        }
+    private void closeConnection(Connection c) throws SQLException {
+        _connProvider.closeConnection(c);
     }
 
-    /**
-     * delete's assignment's current distribution and adds a new distribution
-     * @param messageFrame - frame in which errors will show up
-     * @param asgn - string of assignment name
-     * @param distribution - hashmap of ta login to arraylist of student logins
-     */
     @Override
-    public boolean setAsgnDist(HandinPart part, Map<TA, Collection<String>> distribution) {
+    public void setAsgnDist(HandinPart part, Map<TA, Collection<String>> distribution) throws SQLException {
         //add the distribution to the DB
         Connection conn = this.openConnection();
         try {
             HashMap<String, Integer> studentIDs = new HashMap<String, Integer>();
             HashMap<String, Integer> taIDs = new HashMap<String, Integer>();
-            
+
             //get student logins and IDs
             ResultSet rs = conn.createStatement().executeQuery("SELECT s.login, s.sid FROM student AS s");
             while (rs.next()) {
@@ -151,29 +136,19 @@ public class DBWrapper implements DatabaseIO {
 
             // commit all the inserts to the DB file
             conn.commit();
-
-            return true;
         } catch (SQLException e) {
-            try {
-                // if there was an issue then remove the distribution
-                conn.rollback();
-            } catch (SQLException ex) { }
+            // the exception is caught so that any old distribution is preserved
+            conn.rollback();
 
-            new ErrorView(e, "There was an error distributing the assignments to the grading TAs.");
-            return false;
+            //then the exception is re-thrown to inform the client of the error
+            throw e;
         } finally {
             this.closeConnection(conn);
         }
     }
 
-    /**
-     * gets a single TA's blacklist from the DB as arraylist of student logins
-     * @param messageFrame - frame in which errors will show up
-     * @param ta
-     * @return list of student logins that have been blacklisted by the ta
-     */
     @Override
-    public Collection<String> getTABlacklist(TA ta) {
+    public Collection<String> getTABlacklist(TA ta) throws SQLException {
         ArrayList<String> blackList = new ArrayList<String>();
         Connection conn = this.openConnection();
         try {
@@ -185,28 +160,20 @@ public class DBWrapper implements DatabaseIO {
                     + "ON b.tid == t.tid "
                     + "WHERE t.login == ?");
             ps.setString(1, ta.getLogin());
-            
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 blackList.add(rs.getString("login"));
             }
 
             return blackList;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get black list for TA + " + ta + ".");
-            return null;
         } finally {
             this.closeConnection(conn);
         }
     }
 
-    /**
-     * Inserts a new assignment into the DB
-     * @param assignmentName - Part
-     * @return status
-     */
     @Override
-    public boolean addAssignmentPart(Part part) {
+    public boolean addAssignmentPart(Part part) throws SQLException, CakeHatDBIOException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(a.aid) AS asgnCount, a.aid AS asgnID "
@@ -235,7 +202,7 @@ public class DBWrapper implements DatabaseIO {
             int partCount = rs.getInt("partCount");
 
             if (partCount != 0) { //if assignment part already exists
-                throw new CakeHatDBIOException("An assignment part with that name already exists for that assignment.");
+                return false;
             }
 
             ps = conn.prepareStatement("INSERT INTO part "
@@ -245,25 +212,13 @@ public class DBWrapper implements DatabaseIO {
             ps.executeUpdate();
 
             return true;
-        } catch (Exception e) {
-            new ErrorView(e, "The assignment part: " + part.getName() + " could not be added to the Database.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
-    /**
-     * Inserts a new student into the DB
-     * If the student already exists it will silently not add the student
-     *
-     * @param studentLogin - String login
-     * @param studentFirstName - String First Name
-     * @param studentLastName - String Last Name
-     * @return was student added
-     */
     @Override
-    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) {
+    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.sid) AS rowcount "
@@ -276,7 +231,7 @@ public class DBWrapper implements DatabaseIO {
             if (rows != 0) {
                 return false;
             }
-            
+
             ps = conn.prepareStatement("INSERT INTO student "
                         + "('login', 'firstname', 'lastname') "
                         + "VALUES (?, ?, ?)");
@@ -284,11 +239,8 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(2, studentFirstName);
             ps.setString(3, studentLastName);
             ps.executeUpdate();
-            
+
             return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not insert new row for student.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
@@ -297,10 +249,9 @@ public class DBWrapper implements DatabaseIO {
     /**
      * Set enabled to 0 for student passed in
      * @param studentLogin - String Student Login
-     * @return status
      */
     @Override
-    public boolean disableStudent(String studentLogin) {
+    public void disableStudent(String studentLogin) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("UPDATE student "
@@ -308,10 +259,6 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(1, studentLogin);
 
             ps.executeUpdate();
-            return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not update student " + studentLogin + " to be disabled.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
@@ -320,10 +267,9 @@ public class DBWrapper implements DatabaseIO {
     /**
      * Set enabled to 1 for student passed in
      * @param studentLogin - String Student Login
-     * @return status
      */
     @Override
-    public boolean enableStudent(String studentLogin) {
+    public void enableStudent(String studentLogin) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("UPDATE student "
@@ -331,17 +277,13 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(1, studentLogin);
 
             ps.executeUpdate();
-            return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not update student " + studentLogin + " to be enabled.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean addTA(TA ta) {
+    public boolean addTA(TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(t.tid) AS rowcount "
@@ -361,10 +303,7 @@ public class DBWrapper implements DatabaseIO {
                 ps.executeUpdate();
                 return true;
             }
-            
-            return false;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not insert new row for ta: " + ta);
+
             return false;
         } finally {
             this.closeConnection(conn);
@@ -372,7 +311,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public Map<String, String> getAllStudents() {
+    public Map<String, String> getAllStudents() throws SQLException {
         HashMap<String, String> result = new HashMap<String, String>();
         Connection conn = this.openConnection();
 
@@ -386,16 +325,14 @@ public class DBWrapper implements DatabaseIO {
                 result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
             }
 
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get All Students from DB");
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public Map<String, String> getEnabledStudents() {
+    public Map<String, String> getEnabledStudents() throws SQLException {
         HashMap<String, String> result = new HashMap<String, String>();
         Connection conn = this.openConnection();
 
@@ -405,27 +342,19 @@ public class DBWrapper implements DatabaseIO {
                     + "s.lastname AS lname "
                     + "FROM student AS s "
                     + "WHERE enabled == 1");
-            
+
             while (rs.next()) {
                 result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
             }
 
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get All Enabled Students from DB");
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
-    /**
-     * Check to see if TA has already BlackListed Student. If has not then adds Student to TA's blacklist
-     * @param studentLogin - String Student
-     * @param ta
-     * @return status
-     */
     @Override
-    public boolean blacklistStudent(String studentLogin, TA ta) {
+    public boolean blacklistStudent(String studentLogin, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(b.sid) AS value"
@@ -449,6 +378,7 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(3, ta.getLogin());
             ps.setString(4, studentLogin);
 
+            //TODO: can this code be simplified?  or at least better commented?
             ResultSet rs = ps.executeQuery();
             rs.next();
             int rows = rs.getInt("value");
@@ -462,24 +392,18 @@ public class DBWrapper implements DatabaseIO {
                 ps.setInt(1, studentID);
                 ps.setInt(2, taID);
                 ps.executeUpdate();
+
+                return true;
             }
-            
-            return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not blacklist the student: " + studentLogin + " for ta: " + ta);
+
             return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
-    /**
-     * Checks to see if the dist for an assignment is empty. If yes return true.
-     * @param asgn - Part
-     * @return Boolean - Empty = true, Not = false
-     */
     @Override
-    public boolean isDistEmpty(HandinPart part) {
+    public boolean isDistEmpty(HandinPart part) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.sid) AS rowcount"
@@ -496,20 +420,13 @@ public class DBWrapper implements DatabaseIO {
             ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
             return rows == 0;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not determine the size of the dist for: " + part.getAssignment().getName());
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
-    /**
-     * Return all students on any TA's blacklist
-     * @return Collection - strings of all the student logins
-     */
     @Override
-    public Collection<String> getBlacklistedStudents() {
+    public Collection<String> getBlacklistedStudents() throws SQLException {
         Connection conn = this.openConnection();
         try {
             ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin "
@@ -521,26 +438,16 @@ public class DBWrapper implements DatabaseIO {
                 result.add(rs.getString("studlogin"));
             }
             return result;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get BlackListed Students from DB");
-            return new ArrayList<String>();
         } finally {
             this.closeConnection(conn);
         }
     }
 
-    /**
-     * Get all the logins of the students assigned to a particular TA for an assignment.
-     * Dist could be empty and will then return empty ArrayList
-     * @param assignmentName - Part
-     * @param taLogin - String TA Login
-     * @return Collection - list of student logins
-     */
     @Override
-    public Collection<String> getStudentsAssigned(HandinPart part, TA ta) {
+    public Collection<String> getStudentsAssigned(HandinPart part, TA ta) throws SQLException {
         ArrayList<String> result = new ArrayList<String>();
         Connection conn = this.openConnection();
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin"
                     + " FROM student AS s"
@@ -563,17 +470,15 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 result.add(rs.getString("studlogin"));
             }
-            
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get students assigned to ta: " + ta + " for assignment: " + part.getName());
+
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public Collection<String> getAllAssignedStudents(HandinPart part) {
+    public Collection<String> getAllAssignedStudents(HandinPart part) throws SQLException {
         Connection conn = this.openConnection();
         Collection<String> assignedStudents = new LinkedList<String>();
         try {
@@ -584,23 +489,20 @@ public class DBWrapper implements DatabaseIO {
                 " WHERE p.name == ? AND a.name == ?");
             ps.setString(1, part.getName());
             ps.setString(2, part.getAssignment().getName());
-            
+
             ResultSet rs =  ps.executeQuery();
             while (rs.next()) {
                 assignedStudents.add(rs.getString("login"));
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, String.format("Could not get all assigned students " +
-                    "for assignment %s", part.getName()));
+            return assignedStudents;
         } finally {
             this.closeConnection(conn);
-            return assignedStudents;
         }
     }
 
     @Override
-    public boolean assignStudentToGrader(String studentLogin, HandinPart part, TA ta) {
+    public boolean assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.login) AS assigned"
@@ -650,11 +552,10 @@ public class DBWrapper implements DatabaseIO {
                 ps.setInt(2, tID);
                 ps.setInt(3, pID);
                 ps.executeUpdate();
+
+                return true;
             }
-            
-            return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not add student: " + studentLogin + " to the dist for assignment: " + part.getAssignment().getName() + " for: " + ta);
+
             return false;
         } finally {
             this.closeConnection(conn);
@@ -662,7 +563,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta) {
+    public void unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
@@ -679,19 +580,17 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(4, ta.getLogin());
 
             ps.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not remove student: " + studentLogin + " from the dist for assignment: " + part.getAssignment().getName() + " for: " + ta);
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean grantExtension(String studentLogin, Part part, Calendar newDate, String note) {
+    public void grantExtension(String studentLogin, Part part, Calendar newDate, String note) throws SQLException {
         Connection conn = this.openConnection();
         try {
+            conn.setAutoCommit(false);
+
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
                     + " WHERE pid IN"
                     + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
@@ -725,17 +624,21 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(4, note);
 
             ps.executeUpdate();
-            return true;
+
+            conn.commit();
         } catch (SQLException e) {
-            new ErrorView(e, "Could not grant extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            return false;
+            // the exception is caught so any old extension is preserved
+            conn.rollback();
+
+            // then the exception is re-thrown to inform the client of the error
+            throw e;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean grantExemption(String studentLogin, Part part, String note) {
+    public void grantExemption(String studentLogin, Part part, String note) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
@@ -769,18 +672,14 @@ public class DBWrapper implements DatabaseIO {
             ps.setInt(2, pID);
             ps.setString(3, note);
             ps.executeUpdate();
-            
-            return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not grant exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            return false;
+
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public Map<String, Calendar> getExtensions(Part part) {
+    public Map<String, Calendar> getExtensions(Part part) throws SQLException {
         HashMap<String, Calendar> result = new HashMap<String, Calendar>();
         Connection conn = this.openConnection();
 
@@ -804,20 +703,18 @@ public class DBWrapper implements DatabaseIO {
                 cal.setTimeInMillis(rs.getInt("date") * 1000L);
                 result.put(rs.getString("studlogin"), cal);
             }
-            
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get students with extensions for assignment part: " + part.getName());
+
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public Calendar getExtension(String studentLogin, Part part) {
+    public Calendar getExtension(String studentLogin, Part part) throws SQLException {
         Calendar result = null;
         Connection conn = this.openConnection();
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT e.ontime AS date"
                     + " FROM extension AS e"
@@ -840,16 +737,14 @@ public class DBWrapper implements DatabaseIO {
                 result.setTimeInMillis(rs.getInt("date") * 1000L);
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get extension for: " + studentLogin + " for assignment part: " + part.getName());
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public String getExtensionNote(String studentLogin, Part part) {
+    public String getExtensionNote(String studentLogin, Part part) throws SQLException {
         String result = "";
         Connection conn = this.openConnection();
 
@@ -874,19 +769,17 @@ public class DBWrapper implements DatabaseIO {
                 result = rs.getString("extnote");
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get extension note for: " + studentLogin + " for assignment part: " + part.getName());
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public String getExemptionNote(String studentLogin, Part part) {
+    public String getExemptionNote(String studentLogin, Part part) throws SQLException {
         String result = null;
         Connection conn = this.openConnection();
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT x.note AS exenote"
                     + " FROM exemption AS x"
@@ -908,18 +801,18 @@ public class DBWrapper implements DatabaseIO {
                 result = rs.getString("exenote");
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get exemption note for: " + studentLogin + " for assignment part: " + part.getName());
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public boolean enterGrade(String studentLogin, Part part, double score) {
+    public void enterGrade(String studentLogin, Part part, double score) throws SQLException {
         Connection conn = this.openConnection();
         try {
+            conn.setAutoCommit(false);
+
             PreparedStatement ps = conn.prepareStatement("SELECT s.sid FROM student AS s" +
                     " WHERE s.login == ?");
             ps.setString(1, studentLogin);
@@ -948,17 +841,20 @@ public class DBWrapper implements DatabaseIO {
             ps.setDouble(3, score);
             ps.executeUpdate();
 
-            return true;
+            conn.commit();
         } catch (SQLException e) {
-            new ErrorView(e, "Could not add a score of: " + score + " to the grade for assignment: " + part.getAssignment().getName() + " part: " + part.getName() + " for: " + studentLogin);
-            return false;
+            //if there was an error, rollback to preserve the old grade
+            conn.rollback();
+
+            //then rethrow exception to inform user of the error
+            throw e;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public double getStudentScore(String studentLogin, Part part) {
+    public double getStudentScore(String studentLogin, Part part) throws SQLException {
         double grade = 0;
         Connection conn = this.openConnection();
 
@@ -980,19 +876,17 @@ public class DBWrapper implements DatabaseIO {
                 grade = rs.getDouble("partscore");
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get a score for: " + studentLogin + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+            return grade;
         } finally {
             this.closeConnection(conn);
-            return grade;
         }
     }
 
     @Override
-    public double getStudentAsgnScore(String studentLogin, Assignment asgn) {
+    public double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException {
         double grade = 0.0;
         Connection conn = this.openConnection();
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore"
                     + " FROM grade AS g"
@@ -1009,18 +903,14 @@ public class DBWrapper implements DatabaseIO {
                 grade = rs.getDouble("asgnscore");
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, String.format("Could not get a total score for: %s for for assignment: %s.",
-                    studentLogin, asgn.getName()));
-        }
-        finally {
-            this.closeConnection(conn);
             return grade;
+        } finally {
+            this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean addAssignment(Assignment asgn) {
+    public boolean addAssignment(Assignment asgn) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(a.aid) AS count"
@@ -1032,7 +922,7 @@ public class DBWrapper implements DatabaseIO {
             int count = rs.getInt("count");
 
             if (count != 0) { // if assignment already exists
-                throw new CakeHatDBIOException("An assignment with that name already exists.");
+                return false;
             }
 
             ps = conn.prepareStatement("INSERT INTO asgn "
@@ -1041,16 +931,13 @@ public class DBWrapper implements DatabaseIO {
             ps.executeUpdate();
 
             return true;
-        } catch (Exception e) {
-            new ErrorView(e, "The assignment: " + asgn.getName() + " could not be added to the Database.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean unBlacklistStudent(String studentLogin, TA ta) {
+    public void unBlacklistStudent(String studentLogin, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
@@ -1062,17 +949,13 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(2, studentLogin);
 
             ps.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not remove student: " + studentLogin + " from the blacklist of: " + ta);
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public Map<String, Double> getPartScores(Part part, Iterable<String> students) {
+    public Map<String, Double> getPartScores(Part part, Iterable<String> students) throws SQLException {
         Map<String, Double> scores = new HashMap<String, Double>();
 
         String studLogins = "";
@@ -1102,17 +985,15 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 scores.put(rs.getString("studLogin"), rs.getDouble("partscore"));
             }
-            
-        } catch (Exception e) {
-            new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + part.getAssignment().getName() + " part: " + part.getName());
+
+            return scores;
         } finally {
             this.closeConnection(conn);
-            return scores;
         }
     }
 
     @Override
-    public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) {
+    public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) throws SQLException {
         Map<String, Double> scores = new HashMap<String, Double>();
 
         String studLogins = "";
@@ -1146,16 +1027,14 @@ public class DBWrapper implements DatabaseIO {
                 scores.put(studLogin, score);
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get a score for: " + studLogins + " for for assignment: " + asgn.getName());
+            return scores;
         } finally {
             this.closeConnection(conn);
-            return scores;
         }
     }
 
     @Override
-    public boolean isStudentEnabled(String studentLogin) {
+    public boolean isStudentEnabled(String studentLogin) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT s.enabled FROM student"
@@ -1168,16 +1047,13 @@ public class DBWrapper implements DatabaseIO {
             int enabled = rs.getInt("enabled");
 
             return (enabled == 1);
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not determine if student: " + studentLogin + " is enabled.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean removeExemption(String studentLogin, Part part) {
+    public void removeExemption(String studentLogin, Part part) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
@@ -1191,22 +1067,18 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(3, studentLogin);
 
             ps.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not remove exemption for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean removeExtension(String studentLogin, Part part) {
+    public void removeExtension(String studentLogin, Part part) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
                     + " WHERE pid IN"
-                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a" 
+                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a"
                     + " ON p.aid == a.aid WHERE p.name == ?"
                     + " AND a.name == ?)"
                     + " AND sid IN"
@@ -1216,17 +1088,13 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(3, studentLogin);
 
             ps.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not remove extension for student: " + studentLogin + " for the assignment: " + part.getAssignment().getName());
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public Map<TA, Collection<String>> getDistribution(HandinPart part) {
+    public Map<TA, Collection<String>> getDistribution(HandinPart part) throws SQLException {
         Map<TA, Collection<String>> result = new HashMap<TA, Collection<String>>();
         Connection conn = this.openConnection();
 
@@ -1260,16 +1128,14 @@ public class DBWrapper implements DatabaseIO {
                 taDist.add(studLogin);
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get students assigned for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
+            return result;
         } finally {
             this.closeConnection(conn);
-            return result;
         }
     }
 
     @Override
-    public boolean setGroups(HandinPart part, Map<String, Collection<String>> groupings) {
+    public boolean setGroups(HandinPart part, Map<String, Collection<String>> groupings) throws SQLException {
         Connection conn = this.openConnection();
 
         //make sure all the groupnames are valid and get the partID
@@ -1283,11 +1149,12 @@ public class DBWrapper implements DatabaseIO {
             while (rs.next()) {
                 String dbName = rs.getString("groupname");
                 if (groupNames.contains(dbName)) {
+                    //not bothering to fix this b/c groups methods will be rewritten soon
                     JOptionPane.showMessageDialog(null, "A group with this name, " + dbName + ", already exists. Please pick another name and try again. No groups were added due to this conflict.");
                     return false;
                 }
             }
-            
+
             ps = conn.prepareStatement("SELECT p.pid AS partid"
                     + " FROM part AS p"
                     + " INNER JOIN asgn AS a ON p.aid == a.aid"
@@ -1298,9 +1165,6 @@ public class DBWrapper implements DatabaseIO {
 
             rs = ps.executeQuery();
             partID = rs.getInt("partid");
-        } catch (SQLException e) {
-            new ErrorView(e, "Getting all the group names for this assignment failed.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
@@ -1315,7 +1179,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean setGroup(HandinPart part, String groupName, Collection<String> group, Integer partID) {
+    public boolean setGroup(HandinPart part, String groupName, Collection<String> group, Integer partID) throws SQLException {
         Connection conn = this.openConnection();
         try {
             if (partID == null) {
@@ -1338,6 +1202,7 @@ public class DBWrapper implements DatabaseIO {
 
             ResultSet testSet = ps.executeQuery();
             if (testSet.getInt("numgroups") != 0) {
+                //not bothering to fix this b/c groups methods will be rewritten soon
                 JOptionPane.showMessageDialog(null, "A group with this name, " + groupName + ", already exists. Please pick another name. This group was not added.");
                 return false;
             }
@@ -1374,19 +1239,16 @@ public class DBWrapper implements DatabaseIO {
             }
 
             return true;
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get students in the group with: for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public Collection<String> getGroup(HandinPart part, String student) {
+    public Collection<String> getGroup(HandinPart part, String student) throws SQLException {
         Collection<String> group = new ArrayList<String>();
         Connection conn = this.openConnection();
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin"
                     + " FROM student AS s"
@@ -1425,11 +1287,9 @@ public class DBWrapper implements DatabaseIO {
                 group.add(student);
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get students in the group with: " + student + " for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
+            return group;
         } finally {
             this.closeConnection(conn);
-            return group;
         }
     }
 
@@ -1439,10 +1299,10 @@ public class DBWrapper implements DatabaseIO {
      * @return map of students to collections of group members
      */
     @Override
-    public Map<String, Collection<String>> getGroups(HandinPart part) {
+    public Map<String, Collection<String>> getGroups(HandinPart part) throws SQLException {
         Map<String, Collection<String>> groups = new HashMap<String, Collection<String>>();
         Connection conn = this.openConnection();
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin, gm.gpid AS groupID"
                     + " FROM student AS s"
@@ -1478,21 +1338,19 @@ public class DBWrapper implements DatabaseIO {
                 }
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get all the groups: for handin part: " + part.getName() + " for assignment: " + part.getAssignment().getName());
+            return groups;
         } finally {
             this.closeConnection(conn);
-            return groups;
         }
     }
 
     @Override
-    public boolean removeGroup(HandinPart handin, Collection<String> group) {
+    public void removeGroup(HandinPart handin, Collection<String> group) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean removeGroups(HandinPart part) {
+    public void removeGroups(HandinPart part) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM groups"
@@ -1518,17 +1376,13 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(2, part.getAssignment().getName());
             ps.executeUpdate();
 
-            return true;
-        } catch (Exception e) {
-            new ErrorView(e, "Could not remove all groups from assignment: " + part.getAssignment().getName() + " for the part: " + part.getName());
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean assignmentExists(Assignment asgn) {
+    public boolean assignmentExists(Assignment asgn) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(a.aid) AS count"
@@ -1538,19 +1392,15 @@ public class DBWrapper implements DatabaseIO {
 
             ResultSet rs = ps.executeQuery();
             int count = rs.getInt("count");
-            
+
             return (count != 0);
-        } catch (SQLException e) {
-            new ErrorView(e, "There was an error while trying to test if the assignment: "
-                    + asgn.getName() + " exists in the Database.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public boolean studentExists(String login) {
+    public boolean studentExists(String login) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.sid) AS count"
@@ -1562,17 +1412,13 @@ public class DBWrapper implements DatabaseIO {
             int count = rs.getInt("count");
 
             return (count != 0);
-        } catch (SQLException e) {
-            new ErrorView(e, "There was an error while trying to test if the student: "
-                    + login + " exists in the Database.");
-            return false;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public void resetDatabase() {
+    public void resetDatabase() throws SQLException {
         Connection conn = this.openConnection();
         try {
 
@@ -1653,17 +1499,16 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("CREATE INDEX ta_login ON ta (login);");
             conn.commit();
         } catch (SQLException e) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {}
-            new ErrorView(e, "The database could not be cleared and reset.");
+            conn.rollback();
+            
+            throw e;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) {
+    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException {
         Connection conn = this.openConnection();
         Map<Assignment, TA> graders = new HashMap<Assignment, TA>();
         try {
@@ -1682,23 +1527,18 @@ public class DBWrapper implements DatabaseIO {
                         String taLogin = rs.getString("login");
                         TA ta = Allocator.getCourseInfo().getTA(taLogin);
                         if (ta == null) {
-                            new ErrorView("TA with login " + taLogin + " is not in the config file, " +
+                            throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, " +
                                           "but is assigned to grade student " + studentLogin + " for " +
                                           "assignment " + asgn.getName() + ".");
-                            //returning the map so far, even though it's invalid, to avoid
-                            //an immediate NullPointerException
-                            return graders;
                         }
                         graders.put(asgn, Allocator.getCourseInfo().getTA(taLogin));
                     }
                 }
             }
 
-        } catch (SQLException e) {
-            new ErrorView(e, String.format("Could not get all the graders for the students: %s", studentLogin));
+            return graders;
         } finally {
             this.closeConnection(conn);
-            return graders;
         }
     }
 }

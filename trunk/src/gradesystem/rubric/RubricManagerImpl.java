@@ -1,11 +1,13 @@
 package gradesystem.rubric;
 
+import gradesystem.services.ServicesException;
 import gradesystem.views.backend.assignmentdist.DistributionRequester;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LatePolicy;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -146,10 +148,23 @@ public class RubricManagerImpl implements RubricManager
     public void distributeRubrics(HandinPart part,
                                   Map<TA, Collection<String>> distribution,
                                   int minutesOfLeniency,
-                                  DistributionRequester requester)
+                                  DistributionRequester requester) throws RubricException
     {
-        Map<String, String> students = Allocator.getDatabaseIO().getAllStudents();
-        Map<String, Calendar> extensions = getExtensions(part, students.keySet());
+        Map<String, String> students;
+        try {
+            students = Allocator.getDatabaseIO().getAllStudents();
+        } catch (SQLException ex) {
+            throw new RubricException("Rubrics could not be distributed for part " + part + " " +
+                                      "because the student list could not be read from the database.", ex);
+        }
+
+        Map<String, Calendar> extensions;
+        try {
+            extensions = Allocator.getGradingServices().getExtensions(part, students.keySet());
+        } catch (ServicesException ex) {
+            throw new RubricException("Rubrics could not be distributed for part " + part + " " +
+                                      "because extnsions data could not be read from the database.", ex);
+        }
 
         int numToDistribute = 0;
         for (TA ta : distribution.keySet()) {
@@ -207,69 +222,6 @@ public class RubricManagerImpl implements RubricManager
         }
 
         return Allocator.getCalendarUtilities().daysAfterDeadline(handinTime, onTime, minutesOfLeniency);
-    }
-
-    /**
-     * Gets the extensions for each student in studentLogins. Takes into account
-     * the group the student is in; using the latest date of all group members.
-     * If there is no extension for any member of the group, null is assigned.
-     *
-     * @param part
-     * @param studentLogins
-     * @return
-     */
-    private Map<String, Calendar> getExtensions(HandinPart part, Iterable<String> studentLogins)
-    {
-        //Info from the database
-        Map<String, Calendar> individualExtensions = Allocator.getDatabaseIO().getExtensions(part);
-        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(part);
-
-        //Extensions for each student, taking into account the extensions that
-        //apply for each member of the group
-        Map<String, Calendar> groupExtensions = new HashMap<String, Calendar>();
-
-        for(String studentLogin : studentLogins)
-        {
-            groupExtensions.put(studentLogin,
-                                getExtensionCalendar(studentLogin, individualExtensions, groups));
-        }
-
-        return groupExtensions;
-    }
-
-    /**
-     * Gets the the extension calendar for this student. Gets all calendars for
-     * each member of the group and then returns the latest one. If there is no
-     * applicable extension calendar, then null is returned.
-     *
-     * @param studentLogin
-     * @param extensions
-     * @param groups
-     * @return
-     */
-    private Calendar getExtensionCalendar(String studentLogin, Map<String, Calendar> extensions, Map<String, Collection<String>> groups)
-    {
-        Collection<String> groupLogins = groups.get(studentLogin);
-
-        Calendar latestCal = null;
-
-        for(String login : groupLogins)
-        {
-            Calendar cal = extensions.get(login);
-
-            //If no calendar so far, set this one
-            if(latestCal == null)
-            {
-                latestCal = cal;
-            }
-            //Else if this student has a calendar and is after the latest so far
-            else if(cal != null && cal.after(latestCal))
-            {
-                latestCal = cal;
-            }
-        }
-
-        return latestCal;
     }
 
     private TimeStatus getTimeStatus(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)

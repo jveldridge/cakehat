@@ -11,6 +11,7 @@ import gradesystem.config.Part;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,10 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import gradesystem.Allocator;
+import gradesystem.views.shared.ErrorView;
+
+//NOTE: The exception handling in this class has been done entirely without thought.
+//      This interface does not work properly and is being rewritten.
 
 /**
  *
@@ -242,7 +247,11 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             panel.add(reason);
             int num = JOptionPane.showConfirmDialog(null, panel, "Enter reason for exemption", JOptionPane.OK_CANCEL_OPTION);
             if (num == JOptionPane.OK_OPTION) {
-                Allocator.getDatabaseIO().grantExemption(student, p, reason.getText());
+                    try {
+                        Allocator.getDatabaseIO().grantExemption(student, p, reason.getText());
+                    } catch (SQLException ex) {
+                        new ErrorView(ex);
+                    }
             }
         }
     }
@@ -254,7 +263,11 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ExemptionView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
+                try {
+                    new ExemptionView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
+                } catch (SQLException ex) {
+                    new ErrorView(ex);
+                }
             }
         });
     }
@@ -348,7 +361,12 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                 partLabelMap.put(p, pLab);
                 Vector<JPanel> v = new Vector<JPanel>();
                 for (final String s : _students) {
-                    String note = Allocator.getDatabaseIO().getExemptionNote(s, p);
+                    String note = null;
+                        try {
+                            note = Allocator.getDatabaseIO().getExemptionNote(s, p);
+                        } catch (SQLException ex) {
+                            new ErrorView(ex);
+                        }
                     if (note != null) {
                         JPanel sPan = new JPanel();
                         JLabel sLab = new JLabel("\t\t" + s + ": " + note);
@@ -357,7 +375,11 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         JButton delete = new JButton("Delete");
                         delete.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                Allocator.getDatabaseIO().removeExemption(s, p);
+                                    try {
+                                        Allocator.getDatabaseIO().removeExemption(s, p);
+                                    } catch (SQLException ex) {
+                                        new ErrorView(ex);
+                                    }
                                 asgnPanel.removeAll();
                                 updateViewGUI();
                             }

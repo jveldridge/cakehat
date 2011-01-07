@@ -7,6 +7,7 @@ import gradesystem.config.Assignment;
 import gradesystem.config.Part;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.ArrayDeque;
 import java.util.Calendar;
@@ -106,8 +107,14 @@ public class GradeReportView extends javax.swing.JFrame {
         Map<Assignment, Integer> choicesWithGrade = new HashMap<Assignment, Integer>();
 
         for (Assignment a : _sortedAssignments) {
-            System.out.println(Allocator.getDatabaseIO().getStudentAsgnScore(student, a) != 0.0);
-            if (asgnsWithChoices.contains(a.getNumber()) && Allocator.getDatabaseIO().getStudentAsgnScore(student, a) != 0.0) {
+            double score = 0;
+            try {
+                score = Allocator.getDatabaseIO().getStudentAsgnScore(student, a);
+            } catch (SQLException ex) {
+                new ErrorView(ex, String.format("Could not get student %s's score for " +
+                                                "assignment %s", student, a));
+            }
+            if (asgnsWithChoices.contains(a.getNumber()) && score != 0.0) {
                 choicesWithGrade.put(a,a.getNumber());
             }
         }
@@ -128,18 +135,47 @@ public class GradeReportView extends javax.swing.JFrame {
                         a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
 
                 for (Part p : _asgnParts.get(a)) {
-                    Calendar extension = Allocator.getDatabaseIO().getExtension(student, p);
+                    Calendar extension = null;
+                    try {
+                        extension = Allocator.getDatabaseIO().getExtension(student, p);
+                    } catch (SQLException e) {
+                        new ErrorView(e, "Could not determine if student " + student + " has " +
+                                         "an extension for part " + p + ".  It will be assumed that " +
+                                         "the student does not have an extension.");
+                    }
 
-                    if (Allocator.getDatabaseIO().getExemptionNote(student, p) != null) {
+                    String exemptionNote = null;
+                    try {
+                        exemptionNote = Allocator.getDatabaseIO().getExemptionNote(student, p);
+                    } catch (SQLException e) {
+                        new ErrorView(e, "Could not determine if student " + student + " has " +
+                                         "an exemption for part " + p + ".  It will be assumed that " +
+                                         "the student does not have an extensexemptionion.");
+                    }
+
+                    if (exemptionNote != null) {
                         htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
                                 p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
-                    } else if (extension != null && (extension.getTimeInMillis() < System.currentTimeMillis())) {
+                    }
+                    else if (extension != null && (extension.getTimeInMillis() < System.currentTimeMillis())) {
                         htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
                                 p.getName() + "</td><td>Extension until: " +
                                 extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
-                    } else {
+                    }
+                    else {
+                        String scoreString;
+                        try {
+                            double studentScore = Allocator.getDatabaseIO().getStudentScore(student, p);
+                            scoreString = Double.toString(studentScore);
+                        } catch (SQLException e) {
+                            new ErrorView(e, "Could not retrieve the socre for student student " + student +
+                                             "on part " + p + ".  The student's score will be displayed " +
+                                             "as \"UNKNOWN\".");
+                            scoreString = "UNKNOWN";
+                        }
+
                         htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
-                                p.getName() + "</td><td>" + Allocator.getDatabaseIO().getStudentScore(student, p) + "</td><td>" +
+                                p.getName() + "</td><td>" + scoreString + "</td><td>" +
                                 p.getPoints() + "</td></tr>";
                     }
                 }
@@ -377,11 +413,21 @@ public class GradeReportView extends javax.swing.JFrame {
 
         //generate Assignment histograms
         if (attachHistButton.isSelected()) {
+            Collection<String> enabledStudents;
+            try {
+                enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+            } catch (SQLException ex) {
+                new ErrorView(ex, "The list of enabled students could not be retrieved from " +
+                                  "the database to generate histograms.  Grade reports will not " +
+                                  "be sent.");
+                return;
+            }
+
             for (Assignment a : _sortedAssignments) {
                 for (Part p : a.getParts()) {
                 try {
                         AssignmentChartPanel acp = new AssignmentChartPanel();
-                        acp.updateChartData(p, Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                        acp.updateChartData(p, enabledStudents);
                         fullFileList.add(new File(".tmpdata/" + a.getName() + "_" + p.getName() + ".png"));
                         ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
                     } catch (IOException ex) {
