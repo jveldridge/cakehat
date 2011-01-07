@@ -2,6 +2,7 @@ package gradesystem.rubric;
 
 import gradesystem.config.GradeUnits;
 import gradesystem.config.LatePolicy;
+import gradesystem.database.CakeHatDBIOException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,7 +11,7 @@ import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
 import gradesystem.config.Assignment;
 import gradesystem.config.TA;
-import gradesystem.views.shared.ErrorView;
+import java.sql.SQLException;
 
 /**
  * Responsible for writing a Rubric instance to a GRD text file.
@@ -35,7 +36,7 @@ class RubricGRDWriter
     private final static int TOTAL_INDENT_WIDTH = 49;
     private final static int STATIC_TEXT_WIDTH = 28;
 
-    static void write(Rubric rubric, String GRDFilePath)
+    static void write(Rubric rubric, String GRDFilePath) throws RubricGMLException
     {
         //Get the writer to write to file
         BufferedWriter output = openGRDFile(GRDFilePath);
@@ -50,7 +51,7 @@ class RubricGRDWriter
         writeScores(rubric, output);
     }
 
-    private static void writeAssignmentDetails(Rubric rubric, BufferedWriter output)
+    private static void writeAssignmentDetails(Rubric rubric, BufferedWriter output) throws RubricGMLException
     {
         //For centering the first line
         int emptySpace = TOTAL_TEXT_WIDTH - STATIC_TEXT_WIDTH - rubric.getName().length();
@@ -71,8 +72,18 @@ class RubricGRDWriter
 
         writeLine(STUDENT_LBL + rubric.getStudentName() + " (" + rubric.getStudentAccount() + ")", output);
 
+        //TODO: get database data before start writing so don't create inaccurate file
+        //      if a failure occurs
         Assignment asgn = rubric._handinPart.getAssignment();
-        TA ta = Allocator.getDatabaseIO().getAllGradersForStudent(rubric.getStudentAccount()).get(asgn);
+        TA ta = null;
+        try {
+            ta = Allocator.getDatabaseIO().getAllGradersForStudent(rubric.getStudentAccount()).get(asgn);
+        } catch (SQLException ex) {
+            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
+        } catch (CakeHatDBIOException ex) {
+            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
+        }
+
         String graderLogin = Allocator.getUserServices().getSanitizedTALogin(ta);
         String graderName = Allocator.getUserServices().getSanitizedTAName(ta);
         writeLine(GRADER_LBL + graderName + " (" + graderLogin + ")", output);
@@ -80,7 +91,7 @@ class RubricGRDWriter
         printHeader(output);
     }
 
-    private static void writeSection(Section section, BufferedWriter output, boolean isEC)
+    private static void writeSection(Section section, BufferedWriter output, boolean isEC) throws RubricGMLException
     {
         String name = section.getName();
         if(isEC)
@@ -138,7 +149,7 @@ class RubricGRDWriter
         printSectionTotal(studentScore, availScore, isEC, output);
     }
 
-    private static void writeSubsection(Subsection subsection, BufferedWriter output, boolean isEC)
+    private static void writeSubsection(Subsection subsection, BufferedWriter output, boolean isEC) throws RubricGMLException
     {
         printWithinBounds(SECTION_INDENT_WIDTH, SECTION_TEXT_WIDTH, subsection.getName(), output);
         if(isEC)
@@ -156,7 +167,7 @@ class RubricGRDWriter
         }
     }
 
-    private static void writeDetail(Detail detail, BufferedWriter output)
+    private static void writeDetail(Detail detail, BufferedWriter output) throws RubricGMLException
     {
         String msg;
         if (detail.getValue() == 0)
@@ -171,14 +182,14 @@ class RubricGRDWriter
         writeLine("", output);
     }
 
-    private static void writeEntry(String entry, BufferedWriter output)
+    private static void writeEntry(String entry, BufferedWriter output) throws RubricGMLException
     {
         printWithinBounds(SECTION_INDENT_WIDTH, SECTION_TEXT_WIDTH, entry, output);
         printEnd(null, null, output);
         writeLine("", output);
     }
 
-    private static void writeScores(Rubric rubric, BufferedWriter output)
+    private static void writeScores(Rubric rubric, BufferedWriter output) throws RubricGMLException
     {
         // Total score & outof
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Total Points", output);
@@ -210,14 +221,14 @@ class RubricGRDWriter
         closeFile(output);
     }
 
-    private static void printTotal(double studentScore, double availScore, BufferedWriter output)
+    private static void printTotal(double studentScore, double availScore, BufferedWriter output) throws RubricGMLException
     {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Final Grade", output);
         printEnd(Allocator.getGeneralUtilities().doubleToString(studentScore), Allocator.getGeneralUtilities().doubleToString(availScore), output);
         printDivider(output);
     }
 
-    private static void closeFile(BufferedWriter output)
+    private static void closeFile(BufferedWriter output) throws RubricGMLException
     {
         try
         {
@@ -225,11 +236,11 @@ class RubricGRDWriter
         }
         catch (IOException e)
         {
-            new ErrorView(e);
+            throw new RubricGMLException("The GML file could not be closed.", e);
         }
     }
 
-    private static void writeStatusPoints(Rubric rubric, BufferedWriter output)
+    private static void writeStatusPoints(Rubric rubric, BufferedWriter output) throws RubricGMLException
     {
         if(rubric.getStatus() == TimeStatus.ON_TIME)
         {
@@ -285,7 +296,7 @@ class RubricGRDWriter
         printDivider(output);
     }
 
-    private static BufferedWriter openGRDFile(String GRDFilePath)
+    private static BufferedWriter openGRDFile(String GRDFilePath) throws RubricGMLException
     {
         File grdFile = new File(GRDFilePath);
         BufferedWriter output = null;
@@ -295,12 +306,12 @@ class RubricGRDWriter
         }
         catch (IOException e)
         {
-            new ErrorView(e);
+            throw new RubricGMLException("Opening the file to write failed.", e);
         }
         return output;
     }
 
-    private static void writeLine(String s, BufferedWriter output)
+    private static void writeLine(String s, BufferedWriter output) throws RubricGMLException
     {
         try
         {
@@ -308,11 +319,11 @@ class RubricGRDWriter
         }
         catch (IOException e)
         {
-            new ErrorView(e);
+            throw new RubricGMLException("Line \"" + s + "\" could not be written.", e);
         }
     }
 
-    private static void write(String s, BufferedWriter output)
+    private static void write(String s, BufferedWriter output) throws RubricGMLException
     {
         try
         {
@@ -320,11 +331,11 @@ class RubricGRDWriter
         }
         catch (IOException e)
         {
-            new ErrorView(e);
+            throw new RubricGMLException("String \"" + s + "\" could not be written.", e);
         }
     }
 
-    private static void printWithinBounds(int charsSoFar, int charsPerLine, String message, BufferedWriter output)
+    private static void printWithinBounds(int charsSoFar, int charsPerLine, String message, BufferedWriter output) throws RubricGMLException
     {
         //Split by word
         String[] words = message.split(" ");
@@ -374,13 +385,13 @@ class RubricGRDWriter
         write(currentLine, output);
     }
 
-    private static void printDivider(BufferedWriter output)
+    private static void printDivider(BufferedWriter output) throws RubricGMLException
     {
         printDashes(TOTAL_TEXT_WIDTH, output);
         writeLine("", output);
     }
 
-    private static void printSpaces(int numSpaces, BufferedWriter output)
+    private static void printSpaces(int numSpaces, BufferedWriter output) throws RubricGMLException
     {
         for (int i = 0; i < numSpaces; i++)
         {
@@ -388,7 +399,7 @@ class RubricGRDWriter
         }
     }
 
-    private static void printDashes(int numDashes, BufferedWriter output)
+    private static void printDashes(int numDashes, BufferedWriter output) throws RubricGMLException
     {
         for (int i = 0; i < numDashes; i++)
         {
@@ -396,7 +407,7 @@ class RubricGRDWriter
         }
     }
 
-    private static void printHeader(BufferedWriter output)
+    private static void printHeader(BufferedWriter output) throws RubricGMLException
     {
         printSpaces(SECTION_TEXT_WIDTH + 1, output);
         write("YOUR", output);
@@ -428,14 +439,14 @@ class RubricGRDWriter
         return toReturn;
     }
 
-    private static void printEnd(double score, double outOf, BufferedWriter output)
+    private static void printEnd(double score, double outOf, BufferedWriter output) throws RubricGMLException
     {
         printEnd(Allocator.getGeneralUtilities().doubleToString(score),
                  Allocator.getGeneralUtilities().doubleToString(outOf),
                  output);
     }
 
-    private static void printEnd(String score, String outOf, BufferedWriter output)
+    private static void printEnd(String score, String outOf, BufferedWriter output) throws RubricGMLException
     {
         if (score == null || outOf == null)
         {
@@ -451,7 +462,7 @@ class RubricGRDWriter
         }
     }
 
-    private static void printEndPlusMinus(double score, double outOf, BufferedWriter output)
+    private static void printEndPlusMinus(double score, double outOf, BufferedWriter output) throws RubricGMLException
     {
         if (score > 0)
         {
@@ -474,7 +485,7 @@ class RubricGRDWriter
         }
     }
 
-    private static void printSectionTotal(double score, double outOf, boolean isEC, BufferedWriter output)
+    private static void printSectionTotal(double score, double outOf, boolean isEC, BufferedWriter output) throws RubricGMLException
     {
         printSpaces(SECTION_TEXT_WIDTH, output);
         printEnd(null, null, output);

@@ -2,6 +2,9 @@ package gradesystem.views.backend.assignmentdist;
 
 import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
+import gradesystem.database.CakeHatDBIOException;
+import gradesystem.rubric.RubricException;
+import gradesystem.services.ServicesException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +22,6 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -28,6 +31,7 @@ import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.config.TA;
+import gradesystem.views.shared.ErrorView;
 import java.util.ArrayList;
 
 /**
@@ -61,8 +65,15 @@ public class DistLookupView extends JFrame {
     private Collection<TA> _tas;
 
     public DistLookupView() {
+        try {
+            _students = new ArrayList<String>(Allocator.getDatabaseIO().getAllStudents().keySet());
+        } catch (SQLException ex) {
+            new ErrorView(ex, "The student list could not be read from the database. " +
+                              "Aborting. If this problem persists, please send an error report.");
+            this.dispose();
+            return;
+        }
 
-        _students = new ArrayList<String>(Allocator.getDatabaseIO().getAllStudents().keySet());
         Collections.sort(_students);
 
         _assignments = Allocator.getCourseInfo().getHandinAssignments();
@@ -183,10 +194,6 @@ public class DistLookupView extends JFrame {
     }
 
     private void updateGraderList() {
-        _gradeScrollPane.setVisible(true);
-        _saveButton.setEnabled(true);
-        _resetButton.setEnabled(true);
-
         _graderGrid.removeAll();
         _asgnRows.clear();
 
@@ -197,9 +204,28 @@ public class DistLookupView extends JFrame {
             return;
         }
 
-        _graders = Allocator.getDatabaseIO().getAllGradersForStudent(student);
+        try {
+            _graders = Allocator.getDatabaseIO().getAllGradersForStudent(student);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not get graders for student " + student + ".");
+            return;
+        } catch (CakeHatDBIOException ex) {
+            new ErrorView(ex, "Could not get graders for student " + student + ".");
+            return;
+        }
 
-        boolean studentEnabled = Allocator.getDatabaseIO().isStudentEnabled(student);
+        boolean studentEnabled = false;
+        try {
+            studentEnabled = Allocator.getDatabaseIO().isStudentEnabled(student);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not determine whether student " + student + " " +
+                              "is enabled.");
+            return;
+        }
+
+        _gradeScrollPane.setVisible(true);
+        _saveButton.setEnabled(true);
+        _resetButton.setEnabled(true);
 
         if (studentEnabled || _studentList.getSelectedValue() == null) {
             _studentStatusPanel.setVisible(false);
@@ -226,7 +252,12 @@ public class DistLookupView extends JFrame {
 
     public void handleEnable() {
         if (_studentList.getSelectedValue() != null) {
-            Allocator.getDatabaseIO().enableStudent(_studentList.getSelectedValue());
+            String student = _studentList.getSelectedValue();
+            try {
+                Allocator.getDatabaseIO().enableStudent(student);
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Enabling student " + student + " failed.");
+            }
         }
         this.updateGraderList();
     }
@@ -243,27 +274,54 @@ public class DistLookupView extends JFrame {
         }
 
         for (AsgnRow asgnRow : _asgnRows) {
-            if (asgnRow.hasNewTA() &&
-                Allocator.getGradingServices().isOkToDistribute(asgnRow.getAsgn(), student, asgnRow.getNewTA())) {
+            if (asgnRow.hasNewTA()) {
+                boolean isOkToDistribute;
+                try {
+                    isOkToDistribute = Allocator.getGradingServices().isOkToDistribute(asgnRow.getAsgn(), student, asgnRow.getNewTA());
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Could not determine if it is OK to distribute " +
+                                      "student " + student + " to TA " + asgnRow.getNewTA() + " " +
+                                      "for assignment " + asgnRow.getAsgn() + "." +
+                                      "This reassignment will not be made.");
+                    continue;
+                }
+
+                if (!isOkToDistribute) {
+                    continue;
+                }
+
                 // already assigned
                 if (_graders.containsKey(asgnRow.getAsgn())) {
-
-                    //modify the distribution
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, asgnRow.getAsgn().getHandinPart(), _graders.get(asgnRow.getAsgn()));
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, asgnRow.getAsgn().getHandinPart(), asgnRow.getNewTA());
+                    try {
+                        //modify the distribution
+                        //TODO have a DB reassign method so that unassigning and reassigning are done atomically
+                        Allocator.getDatabaseIO().unassignStudentFromGrader(student, asgnRow.getAsgn().getHandinPart(), _graders.get(asgnRow.getAsgn()));
+                        Allocator.getDatabaseIO().assignStudentToGrader(student, asgnRow.getAsgn().getHandinPart(), asgnRow.getNewTA());
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Reassigning student " + student + " from TA " + _graders.get(asgnRow.getAsgn()) + " " +
+                                          "to TA " + asgnRow.getNewTA() + " for assignment " + asgnRow.getAsgn() + " failed.");
+                    }
                 } // not assigned
                 else {
-                    //modify the distribution
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, asgnRow.getAsgn().getHandinPart(), asgnRow.getNewTA());
+                    try {
+                        //modify the distribution
+                        Allocator.getDatabaseIO().assignStudentToGrader(student, asgnRow.getAsgn().getHandinPart(), asgnRow.getNewTA());
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Assigning student " + student + " to TA " + asgnRow.getNewTA() + " " +
+                                           "for assignment " + asgnRow.getAsgn() + " failed.");
+                    }
 
                     //assign the rubrics
                     Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
                     ArrayList<String> students = new ArrayList<String>();
                     students.add(student);
                     distribution.put(asgnRow.getNewTA(), students);
-                    Allocator.getRubricManager().distributeRubrics(asgnRow.getAsgn().getHandinPart(), distribution,
-                            Allocator.getCourseInfo().getMinutesOfLeniency(),
-                            DistributionRequester.DO_NOTHING_REQUESTER);
+                    try {
+                        Allocator.getRubricManager().distributeRubrics(asgnRow.getAsgn().getHandinPart(), distribution, Allocator.getCourseInfo().getMinutesOfLeniency(), DistributionRequester.DO_NOTHING_REQUESTER);
+                    } catch (RubricException ex) {
+                        new ErrorView(ex, "Creating the rubric for student " + student + " " +
+                                          "on assignment " + asgnRow.getAsgn() + " failed.");
+                    }
 
                 }
             }

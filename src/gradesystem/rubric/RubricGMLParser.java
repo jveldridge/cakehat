@@ -71,7 +71,7 @@ class RubricGMLParser implements RubricConstants
         }
         catch (Exception e)
         {
-            throw new RubricException("Exception thrown during parsing, " + filepath + " is illegally formatted. \n" + e.getMessage());
+            throw new RubricGMLException("Exception thrown during parsing, " + filepath + " is illegally formatted. \n" + e.getMessage());
         }
 
         return document;
@@ -90,18 +90,18 @@ class RubricGMLParser implements RubricConstants
         return (node.getNodeName().equals(TEXT_NODE) || node.getNodeName().equals(COMMENT_NODE));
     }
 
-    private static Node getRootNode(Document document) throws RubricException
+    private static Node getRootNode(Document document) throws RubricGMLException
     {
         Node rubricNode = document.getDocumentElement();
         if (!rubricNode.getNodeName().equals(RUBRIC))
         {
-            throw new RubricException("Expected root node " + RUBRIC + ", encountered: " + rubricNode.getNodeName());
+            throw new RubricGMLException("Expected root node " + RUBRIC + ", encountered: " + rubricNode.getNodeName());
         }
 
         return rubricNode;
     }
 
-    private static void assignRootAttributes(Node rubricNode, Rubric rubric) throws RubricException
+    private static void assignRootAttributes(Node rubricNode, Rubric rubric) throws RubricGMLException
     {
         //Default a time status if not provided
         rubric.setStatus(TimeStatus.ON_TIME);
@@ -134,14 +134,14 @@ class RubricGMLParser implements RubricConstants
             }
             else
             {
-                throw new RubricException("Unsupported attribute node: " + attrNode.getNodeName() + ", only " +
+                throw new RubricGMLException("Unsupported attribute node: " + attrNode.getNodeName() + ", only " +
                                           " [" + NAME + ", " + NUMBER + ", " + STATUS + ", " + DAYS_LATE + "]" +
                                           " are supported.");
             }
         }
     }
 
-    private static void assignChildrenAttributes(Node rubricNode, Rubric rubric) throws RubricException
+    private static void assignChildrenAttributes(Node rubricNode, Rubric rubric) throws RubricGMLException, RubricException
     {
         NodeList rubricList = rubricNode.getChildNodes();
         for (int i = 0; i < rubricList.getLength(); i++)
@@ -169,7 +169,7 @@ class RubricGMLParser implements RubricConstants
             }
             else
             {
-                throw new RubricException(RUBRIC, currNode, STUDENT, SECTION, EXTRA_CREDIT);
+                throw new RubricGMLException(RUBRIC, currNode, STUDENT, SECTION, EXTRA_CREDIT);
             }
         }
     }
@@ -202,7 +202,7 @@ class RubricGMLParser implements RubricConstants
         return person;
     }
 
-    private static void parseSection(Node sectionNode, Rubric rubric, boolean isEC) throws RubricException
+    private static void parseSection(Node sectionNode, Rubric rubric, boolean isEC) throws RubricGMLException, RubricException
     {
         Section section;
         
@@ -244,12 +244,12 @@ class RubricGMLParser implements RubricConstants
             }
             else
             {
-                throw new RubricException(SECTION, subsectionNode, SUBSECTION, NOTES, COMMENTS);
+                throw new RubricGMLException(SECTION, subsectionNode, SUBSECTION, NOTES, COMMENTS);
             }
         }
     }
 
-    private static Collection<String> parseNotesComments(Node node) throws RubricException
+    private static Collection<String> parseNotesComments(Node node) throws RubricGMLException
     {
         Vector<String> entries = new Vector<String>();
 
@@ -267,14 +267,14 @@ class RubricGMLParser implements RubricConstants
             }
             else
             {
-                throw new RubricException(COMMENTS, entry, ENTRY);
+                throw new RubricGMLException(COMMENTS, entry, ENTRY);
             }
         }
 
         return entries;
     }
 
-    private static void parseSubsection(Node subsectionNode, Section section) throws RubricException
+    private static void parseSubsection(Node subsectionNode, Section section) throws RubricGMLException, RubricException
     {
         //Subsection attributes
         String name = "", source = "";

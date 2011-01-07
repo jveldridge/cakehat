@@ -2,13 +2,18 @@ package gradesystem.views.backend;
 
 import gradesystem.config.Assignment;
 import gradesystem.config.Part;
-import gradesystem.config.TA;
+import gradesystem.database.CakeHatDBIOException;
+import gradesystem.services.ServicesException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import javax.swing.DefaultComboBoxModel;
 import gradesystem.Allocator;
+import gradesystem.config.TA;
 import gradesystem.services.UserServices.ValidityCheck;
 import gradesystem.views.shared.ErrorView;
+import java.util.Collection;
+import java.util.LinkedList;
 import utils.system.NativeException;
 
 /**
@@ -37,11 +42,19 @@ public class ConfigManager extends javax.swing.JFrame {
         addStudentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (allStudentsRB.isSelected()) {
+                    Collection<String> studentsNotAdded = new LinkedList<String>();
                     try {
                         for (String login : Allocator.getUserServices().getStudentLogins()) {
-                            if (!Allocator.getDatabaseIO().studentExists(login)) {
+                            try {
                                 Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                            } catch (ServicesException ex) {
+                                studentsNotAdded.add(login);
                             }
+                        }
+
+                        if (!studentsNotAdded.isEmpty()) {
+                            new ErrorView("The following students were not added to the database: " +
+                                          studentsNotAdded + ".");
                         }
                     } catch(NativeException ex) {
                         new ErrorView(ex, "Unable to add students because student logins could not be retrieved");
@@ -49,17 +62,19 @@ public class ConfigManager extends javax.swing.JFrame {
                 }
                 else {
                     String login = loginText.getText();
-                    if (!Allocator.getDatabaseIO().studentExists(login)) {
+                    try {
                         if (firstNameText.getText().equals("") || lastNameText.getText().equals("")) {
                             Allocator.getUserServices().addStudent(login,
-                                                                    ValidityCheck.CHECK);
+                                    ValidityCheck.CHECK);
                         }
                         else {
                             Allocator.getUserServices().addStudent(login,
-                                                                    firstNameText.getText(),
-                                                                    lastNameText.getText(),
-                                                                    ValidityCheck.CHECK);
+                                    firstNameText.getText(),
+                                    lastNameText.getText(),
+                                    ValidityCheck.CHECK);
                         }
+                    } catch (ServicesException ex) {
+                        new ErrorView(ex, "Adding student " + login + " to the database failed.");
                     }
                 }
             }
@@ -68,17 +83,31 @@ public class ConfigManager extends javax.swing.JFrame {
         addAsgnsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Assignment asgn = (Assignment) asgnCombo.getSelectedItem();
-                if (!Allocator.getDatabaseIO().assignmentExists(asgn)) {
+                try {
                     Allocator.getDatabaseIO().addAssignment(asgn);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Adding assignment " + asgn + " to the database failed.");
                 }
+
                 if (allPartsRB.isSelected()) {
                     for (Part p : asgn.getParts()) {
-                        Allocator.getDatabaseIO().addAssignmentPart(p);
+                        try {
+                            Allocator.getDatabaseIO().addAssignmentPart(p);
+                        } catch (CakeHatDBIOException ex) {
+                            new ErrorView(ex, "Adding assignment part " + p + " to the database failed.");
+                        } catch (SQLException ex) {
+                            new ErrorView(ex, "Adding assignment part " + p + " to the database failed.");
+                        }
                     }
-                }
-                else {
+                } else {
                     if (partCombo.getSelectedItem() != null) {
-                        Allocator.getDatabaseIO().addAssignmentPart((Part) partCombo.getSelectedItem());
+                        try {
+                            Allocator.getDatabaseIO().addAssignmentPart((Part) partCombo.getSelectedItem());
+                        } catch (SQLException ex) {
+                            new ErrorView(ex, "Adding assignment " + asgn + " to the database failed.");
+                        } catch (CakeHatDBIOException ex) {
+                            new ErrorView(ex, "Adding assignment " + asgn + " to the database failed.");
+                        }
                     }
                 }
             }
@@ -87,7 +116,11 @@ public class ConfigManager extends javax.swing.JFrame {
         addTAsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                    Allocator.getDatabaseIO().addTA(ta);
+                    try {
+                        Allocator.getDatabaseIO().addTA(ta);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Adding TA " + ta + " to the database failed.");
+                    }
                 }
             }
         } );
