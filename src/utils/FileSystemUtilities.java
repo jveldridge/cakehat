@@ -1,10 +1,13 @@
 package utils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import utils.system.NativeException;
 
 /**
@@ -161,4 +164,27 @@ public interface FileSystemUtilities
      * @return the files found with the specified extension
      */
     public Collection<File> getFiles(String dirPath, String extension);
+
+
+    /**
+     * Returns all files that satisfy the filter. If the file is a directory
+     * the directory will be recursively searched to find all accepting files.
+     *
+     * @param file
+     * @param filter
+     * @return
+     */
+    public List<File> getFiles(File file, FileFilter filter);
+
+    /**
+     * Returns all files that satisfy the filter. If the file is a directory
+     * the directory will be recursively searched to find all accepting files.
+     * Sorts the files according to the comparator.
+     *
+     * @param file
+     * @param filter
+     * @param comparator
+     * @return
+     */
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator);
 }

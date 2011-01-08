@@ -37,6 +37,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
 import gradesystem.config.TA;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 import java.sql.SQLException;
 import java.util.Calendar;
 import utils.system.NativeException;
@@ -112,6 +114,26 @@ public class GradingServicesImpl implements GradingServices
         }
 
         return dirPath + "/";
+    }
+
+    public File getUnarchiveHandinDirectory(DistributablePart part, Group group)
+    {
+        File path = new File(new File(new File
+                (Allocator.getGradingServices().getUserGradingDirectory(),
+                part.getAssignment().getName()),
+                part.getName()),
+                group.getName());
+
+        return path;
+    }
+
+    public File getHandinDirectory(Assignment assignment)
+    {
+        File path = new File(new File(Allocator.getCourseInfo().getHandinDir(),
+                assignment.getName()),
+                Integer.toString(Allocator.getCalendarUtilities().getCurrentYear()));
+
+        return path;
     }
 
     public String getStudentGRDPath(HandinPart part, String studentLogin)
