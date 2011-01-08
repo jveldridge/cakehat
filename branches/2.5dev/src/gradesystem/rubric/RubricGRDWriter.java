@@ -38,10 +38,22 @@ class RubricGRDWriter
 
     static void write(Rubric rubric, String GRDFilePath) throws RubricGMLException
     {
+        // get the TA who graded this assignment
+        TA grader = null;
+        try {
+            Assignment asgn = rubric._handinPart.getAssignment();
+            String studentLogin = rubric.getStudentAccount();
+            grader = Allocator.getDatabaseIO().getAllGradersForStudent(studentLogin).get(asgn);
+        } catch (SQLException ex) {
+            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
+        } catch (CakeHatDBIOException ex) {
+            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
+        }
+
         //Get the writer to write to file
         BufferedWriter output = openGRDFile(GRDFilePath);
 
-        writeAssignmentDetails(rubric, output);
+        writeAssignmentDetails(grader, rubric, output);
 
         for (Section section : rubric.getSections())
         {
@@ -51,7 +63,7 @@ class RubricGRDWriter
         writeScores(rubric, output);
     }
 
-    private static void writeAssignmentDetails(Rubric rubric, BufferedWriter output) throws RubricGMLException
+    private static void writeAssignmentDetails(TA grader, Rubric rubric, BufferedWriter output) throws RubricGMLException
     {
         //For centering the first line
         int emptySpace = TOTAL_TEXT_WIDTH - STATIC_TEXT_WIDTH - rubric.getName().length();
@@ -72,20 +84,8 @@ class RubricGRDWriter
 
         writeLine(STUDENT_LBL + rubric.getStudentName() + " (" + rubric.getStudentAccount() + ")", output);
 
-        //TODO: get database data before start writing so don't create inaccurate file
-        //      if a failure occurs
-        Assignment asgn = rubric._handinPart.getAssignment();
-        TA ta = null;
-        try {
-            ta = Allocator.getDatabaseIO().getAllGradersForStudent(rubric.getStudentAccount()).get(asgn);
-        } catch (SQLException ex) {
-            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
-        } catch (CakeHatDBIOException ex) {
-            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
-        }
-
-        String graderLogin = Allocator.getUserServices().getSanitizedTALogin(ta);
-        String graderName = Allocator.getUserServices().getSanitizedTAName(ta);
+        String graderLogin = Allocator.getUserServices().getSanitizedTALogin(grader);
+        String graderName = Allocator.getUserServices().getSanitizedTAName(grader);
         writeLine(GRADER_LBL + graderName + " (" + graderLogin + ")", output);
 
         printHeader(output);
