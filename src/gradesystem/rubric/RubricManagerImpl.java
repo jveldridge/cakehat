@@ -380,19 +380,28 @@ public class RubricManagerImpl implements RubricManager
 
     public void convertToGRD(HandinPart part, String studentLogin)
     {
+        String xmlPath = getStudentRubricPath(part, studentLogin);
+        String grdPath = Allocator.getGradingServices().getStudentGRDPath(part, studentLogin);
+
         try
         {
             //Get rubric
-            String xmlPath = getStudentRubricPath(part, studentLogin);
             Rubric rubric = RubricGMLParser.parse(xmlPath, part);
 
             //Write to grd
-            String grdPath = Allocator.getGradingServices().getStudentGRDPath(part, studentLogin);
             RubricGRDWriter.write(rubric, grdPath);
         }
         catch(RubricException e)
         {
-            new ErrorView(e);
+            //delete the incomplete GRD file, if it was written
+            File grdFile = new File(grdPath);
+            if (grdFile.exists()) {
+                grdFile.delete();
+            }
+
+            //display the error to the user
+            new ErrorView(e, "The rubric ould not be written.  " +
+                             "No GRD file has been created.");
         }
     }
 
