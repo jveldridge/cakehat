@@ -77,11 +77,6 @@ public abstract class HandinPart extends Part
         {
             contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
         }
-        catch (IOException ex)
-        {
-            new ErrorView(ex, "Cannot determine if a readme exists - unable to get archive contents.");
-            return false;
-        }
         catch (ArchiveException ex)
         {
             new ErrorView(ex, "Cannot determine if a readme exists - unable to get archive contents.");
@@ -324,10 +319,6 @@ public abstract class HandinPart extends Part
 
                         //record that student's code has been untarred
                         _untarredStudents.add(studentLogin);
-                    }
-                    catch (IOException ex)
-                    {
-                        new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
                     }
                     catch (ArchiveException ex)
                     {

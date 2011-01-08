@@ -2,15 +2,20 @@ package utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Vector;
 import utils.system.NativeFunctions;
 import utils.FileSystemUtilities.Permission;
@@ -209,6 +214,34 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 files.add(entry);
             }
         }
+
+        return files;
+    }
+
+    public List<File> getFiles(File file, FileFilter filter)
+    {
+        ArrayList<File> acceptedFiles = new ArrayList<File>();
+
+        if(filter.accept(file))
+        {
+            acceptedFiles.add(file);
+        }
+
+        if(file.isDirectory())
+        {
+            for(File entry : file.listFiles())
+            {
+                acceptedFiles.addAll(this.getFiles(entry, filter));
+            }
+        }
+
+        return acceptedFiles;
+    }
+
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator)
+    {
+        List<File> files = this.getFiles(file, filter);
+        Collections.sort(files, comparator);
 
         return files;
     }

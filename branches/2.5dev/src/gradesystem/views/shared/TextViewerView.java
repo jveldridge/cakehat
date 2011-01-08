@@ -79,17 +79,34 @@ public class TextViewerView extends JFrame
 
     public TextViewerView(File file, String title)
     {
-        initIcon();
-        initMenu();
-        initComponents();
+        this(loadTextFromFile(file), title);
+    }
+
+    public TextViewerView(String text, String title)
+    {
+        this.initIcon();
+        this.initMenu();
+        this.initComponents();
         this.setTitle(title);
 
-        //If file was passed in, load contents
+        _textArea.setText(text);
+        _textArea.setCaretPosition(0);
+        _linehighlighter = new Object[_textArea.getLineCount()];
+
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.pack();
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+    }
+
+    private static String loadTextFromFile(File file)
+    {
+        String text = "";
         if(file != null)
         {
             try
             {
-                _textArea.setText(Allocator.getFileSystemUtilities().readFile(file));
+                text = Allocator.getFileSystemUtilities().readFile(file);
             }
             catch (FileNotFoundException ex)
             {
@@ -99,14 +116,9 @@ public class TextViewerView extends JFrame
             {
                 new ErrorView(ex, "TextViewerView cannot read file: " + file.getAbsolutePath());
             }
-            _textArea.setCaretPosition(0);
         }
-        _linehighlighter = new Object[_textArea.getLineCount()];
 
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        this.pack();
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
+        return text;
     }
 
     private void initIcon()

@@ -4,7 +4,9 @@ import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
 import gradesystem.config.TA;
-import gradesystem.rubric.RubricException;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
+import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
@@ -48,6 +50,25 @@ public interface GradingServices
      * @return path to a TA's temporary grading directory
      */
     public String getUserGradingDirectory();
+
+    /**
+     * The directory the handin is unarchived into.
+     *
+     * /course/<course>/.cakehat/.<ta login>/<assignment name>/<distributable part name>/<group name>/
+     *
+     * @return
+     */
+    public File getUnarchiveHandinDirectory(DistributablePart part, Group group);
+
+    /**
+     * The directory containing all of the handins for an assignment.
+     *
+     * /course/<course>/handin/<assignment name>/<current year>/
+     *
+     * @param assignment
+     * @return
+     */
+    public File getHandinDirectory(Assignment assignment);
 
     /**
      * The absolute path to a student's GRD file for a given handin part.
