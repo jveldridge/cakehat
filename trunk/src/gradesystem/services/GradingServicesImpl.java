@@ -53,21 +53,14 @@ public class GradingServicesImpl implements GradingServices
             //We don't want to just input all the keys in scores, because if people
             //were checked off with the wrong login we would submit that to the database
 
-            boolean asgnExists = Allocator.getDatabaseIO().assignmentExists(part.getAssignment());
-            if (asgnExists) {
-                //Input scores for those logins
-                for (String login : logins) {
-                    if (scores.containsKey(login)) {
-                        Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
-                    }
+            //Input scores for those logins
+            for (String login : logins) {
+                if (scores.containsKey(login)) {
+                    Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
                 }
             }
-            else {
-                throw new ServicesException("The assignment: "
-                        + part.getAssignment().getName()
-                        + " does not exist in the Database. Therefore we cannot add grades for that assignment.");
-            }
         } catch (SQLException e) {
+            //TODO: list logins that weren't imported
             throw new ServicesException("Lab grades could not be imported for lab part " + part + ".", e);
         }
     }

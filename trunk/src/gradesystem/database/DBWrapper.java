@@ -37,6 +37,7 @@ public class DBWrapper implements DatabaseIO {
      */
     public DBWrapper() {
         _connProvider = new ConnectionProvider() {
+
             public Connection createConnection() throws SQLException {
                 Connection c = null;
                 try {
@@ -68,7 +69,6 @@ public class DBWrapper implements DatabaseIO {
 
     /**
      * opens a new connection to the DB
-     * @param messageFrame - frame in which errors will show up
      */
     private Connection openConnection() throws SQLException {
         return _connProvider.createConnection();
@@ -76,7 +76,6 @@ public class DBWrapper implements DatabaseIO {
 
     /**
      * closes current connection to DB
-     * @param messageFrame - frame in which errors will show up
      */
     private void closeConnection(Connection c) throws SQLException {
         _connProvider.closeConnection(c);
@@ -87,48 +86,22 @@ public class DBWrapper implements DatabaseIO {
         //add the distribution to the DB
         Connection conn = this.openConnection();
         try {
-            HashMap<String, Integer> studentIDs = new HashMap<String, Integer>();
-            HashMap<String, Integer> taIDs = new HashMap<String, Integer>();
-
-            //get student logins and IDs
-            ResultSet rs = conn.createStatement().executeQuery("SELECT s.login, s.sid FROM student AS s");
-            while (rs.next()) {
-                studentIDs.put(rs.getString("login"), rs.getInt("sid"));
-            }
-
-            //get TA logins and IDs
-            rs = conn.createStatement().executeQuery("SELECT t.login, t.tid FROM ta AS t");
-            while (rs.next()) {
-                taIDs.put(rs.getString("login"), rs.getInt("tid"));
-            }
-
-            //get assignment and part IDs
-            PreparedStatement ps = conn.prepareStatement("SELECT p.pid AS pid FROM part AS p" +
-                    " INNER JOIN asgn AS a ON a.aid == p.aid" +
-                    " WHERE a.name == ? AND p.name ==?");
-            ps.setString(1, part.getAssignment().getName());
-            ps.setString(2, part.getName());
-
-            rs = ps.executeQuery();
-            int partID = rs.getInt("pid");
-
             // stop committing so that all inserts happen in one FileIO
             conn.setAutoCommit(false);
 
-            ps = conn.prepareStatement("DELETE FROM distribution WHERE pid == ?");
-            ps.setInt(1, partID);
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution WHERE pid == ?");
+            ps.setString(1, part.getDBID());
             ps.executeUpdate();
 
-            ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'sid', 'tid')" +
-                    " VALUES (?, ?, ?)");
+            ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'sid', 'tid')"
+                    + " VALUES (?, ?, ?)");
             for (TA ta : distribution.keySet()) {
-                int taID = taIDs.get(ta.getLogin());
                 Collection<String> distributedStudents = distribution.get(ta);
 
                 for (String student : distributedStudents) {
-                    ps.setInt(1, partID);
-                    ps.setInt(2, studentIDs.get(student));
-                    ps.setInt(3, taID);
+                    ps.setString(1, part.getDBID());
+                    ps.setString(2, student);
+                    ps.setString(3, ta.getLogin());
                     ps.addBatch();
                 }
             }
@@ -152,13 +125,9 @@ public class DBWrapper implements DatabaseIO {
         ArrayList<String> blackList = new ArrayList<String>();
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login "
-                    + "FROM student AS s "
-                    + "INNER JOIN blacklist AS b "
-                    + "ON b.sid == s.sid "
-                    + "INNER JOIN ta AS t "
-                    + "ON b.tid == t.tid "
-                    + "WHERE t.login == ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT b.sid AS login"
+                    + "FROM blacklist AS b "
+                    + "WHERE b.tid == ?");
             ps.setString(1, ta.getLogin());
 
             ResultSet rs = ps.executeQuery();
@@ -173,55 +142,10 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean addAssignmentPart(Part part) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(a.aid) AS asgnCount, a.aid AS asgnID "
-                    + "FROM asgn AS a "
-                    + "WHERE a.name == ?");
-            ps.setString(1, part.getAssignment().getName());
-
-            ResultSet rs = ps.executeQuery();
-            int asgnCount = rs.getInt("asgnCount");
-
-            if (asgnCount == 0) { //if asgn does not exist
-                throw new CakeHatDBIOException("The part being added does not have a corresponding assignment in the DB.");
-            }
-            int asgnID = rs.getInt("asgnID");
-
-            ps = conn.prepareStatement("SELECT COUNT(p.pid) AS partCount "
-                    + "FROM part AS p "
-                    + "INNER JOIN asgn AS a "
-                    + "ON p.aid == a.aid "
-                    + "WHERE p.name == ?"
-                    + "AND a.name == ?");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-
-            rs = ps.executeQuery();
-            int partCount = rs.getInt("partCount");
-
-            if (partCount != 0) { //if assignment part already exists
-                return false;
-            }
-
-            ps = conn.prepareStatement("INSERT INTO part "
-                    + "('name', 'aid') VALUES (?, ?)");
-            ps.setString(1, part.getName());
-            ps.setInt(2, asgnID);
-            ps.executeUpdate();
-
-            return true;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.sid) AS rowcount "
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.login) AS rowcount "
                     + "FROM student AS s "
                     + "WHERE s.login == ?");
             ps.setString(1, studentLogin);
@@ -233,8 +157,8 @@ public class DBWrapper implements DatabaseIO {
             }
 
             ps = conn.prepareStatement("INSERT INTO student "
-                        + "('login', 'firstname', 'lastname') "
-                        + "VALUES (?, ?, ?)");
+                    + "('login', 'firstname', 'lastname') "
+                    + "VALUES (?, ?, ?)");
             ps.setString(1, studentLogin);
             ps.setString(2, studentFirstName);
             ps.setString(3, studentLastName);
@@ -283,38 +207,10 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean addTA(TA ta) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(t.tid) AS rowcount "
-                    + "FROM ta AS t "
-                    + "WHERE t.login == ?");
-            ps.setString(1, ta.getLogin());
-
-            ResultSet rs = ps.executeQuery();
-            int rows = rs.getInt("rowcount");
-
-            if (rows == 0) {
-                ps = conn.prepareStatement("INSERT INTO ta "
-                        + "('login', 'name') "
-                        + "VALUES (?, ?)");
-                ps.setString(1, ta.getLogin());
-                ps.setString(2, ta.getName());
-                ps.executeUpdate();
-                return true;
-            }
-
-            return false;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
     public Map<String, String> getAllStudents() throws SQLException {
         HashMap<String, String> result = new HashMap<String, String>();
         Connection conn = this.openConnection();
-
+        
         try {
             ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin, "
                     + "s.firstname AS fname, "
@@ -357,42 +253,23 @@ public class DBWrapper implements DatabaseIO {
     public boolean blacklistStudent(String studentLogin, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(b.sid) AS value"
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(b.sid) AS timesOnBlacklist"
                     + " FROM blacklist AS b"
-                    + " INNER JOIN student AS s"
-                    + " ON s.sid == b.sid"
-                    + " INNER JOIN ta AS t"
-                    + " ON t.tid == b.tid"
-                    + " WHERE s.login == ?"
-                    + " AND  t.login == ?"
-                    + " UNION ALL"
-                    + " SELECT t.tid AS taid"
-                    + " FROM ta AS t"
-                    + " WHERE t.login == ?"
-                    + " UNION ALL"
-                    + " SELECT s.sid AS studentid"
-                    + " FROM student AS s"
-                    + " WHERE s.login == ?");
+                    + " WHERE b.sid == ?"
+                    + " AND  b.tid == ?");
             ps.setString(1, studentLogin);
             ps.setString(2, ta.getLogin());
-            ps.setString(3, ta.getLogin());
-            ps.setString(4, studentLogin);
 
-            //TODO: can this code be simplified?  or at least better commented?
             ResultSet rs = ps.executeQuery();
-            rs.next();
-            int rows = rs.getInt("value");
-            rs.next();
-            int taID = rs.getInt("value");
-            rs.next();
-            int studentID = rs.getInt("value");
-            if (rows == 0) {
+            boolean isBlacklisted = (rs.getInt("timesOnBlacklist") != 0);
+
+            if (!isBlacklisted) {
                 ps = conn.prepareStatement("INSERT INTO blacklist "
                         + "('sid', 'tid') VALUES (?, ?)");
-                ps.setInt(1, studentID);
-                ps.setInt(2, taID);
+                ps.setString(1, studentLogin);
+                ps.setString(2, ta.getLogin());
                 ps.executeUpdate();
-
+                
                 return true;
             }
 
@@ -408,14 +285,8 @@ public class DBWrapper implements DatabaseIO {
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.sid) AS rowcount"
                     + " FROM distribution AS d"
-                    + " INNER JOIN part AS p"
-                    + " ON p.pid == d.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON a.aid == p.aid"
-                    + " WHERE a.name == ?"
-                    + " AND p.name == ?");
-            ps.setString(1, part.getAssignment().getName());
-            ps.setString(2, part.getName());
+                    + " WHERE d.pid == ?");
+            ps.setString(1, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
@@ -429,11 +300,9 @@ public class DBWrapper implements DatabaseIO {
     public Collection<String> getBlacklistedStudents() throws SQLException {
         Connection conn = this.openConnection();
         try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin "
-                    + "FROM student AS s "
-                    + "INNER JOIN blacklist AS b "
-                    + "ON b.sid == s.sid");
-            HashSet<String> result = new HashSet<String>();
+            ResultSet rs = conn.createStatement().executeQuery("SELECT DISTINCT b.sid AS studlogin "
+                    + "FROM blacklist AS b");
+            Collection<String> result = new ArrayList<String>();
             while (rs.next()) {
                 result.add(rs.getString("studlogin"));
             }
@@ -449,22 +318,12 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin"
-                    + " FROM student AS s"
-                    + " INNER JOIN distribution AS d"
-                    + " ON d.sid == s.sid"
-                    + " INNER JOIN ta AS t"
-                    + " ON d.tid == t.tid"
-                    + " INNER JOIN part AS p"
-                    + " ON d.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE t.login == ?"
-                    + " AND p.name == ?"
-                    + " AND a.name == ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT d.sid AS studlogin"
+                    + " FROM distribution AS d"
+                    + " WHERE d.tid == ?"
+                    + " AND d.pid == ?");
             ps.setString(1, ta.getLogin());
-            ps.setString(2, part.getName());
-            ps.setString(3, part.getAssignment().getName());
+            ps.setString(2, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -482,15 +341,12 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         Collection<String> assignedStudents = new LinkedList<String>();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login AS login FROM student AS s" +
-                " INNER JOIN distribution AS d ON d.sid == s.sid" +
-                " INNER JOIN part AS p ON p.pid == d.pid" +
-                " INNER JOIN asgn AS a ON a.aid == p.aid" +
-                " WHERE p.name == ? AND a.name == ?");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
+            PreparedStatement ps = conn.prepareStatement("SELECT d.sid AS login"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid == ?");
+            ps.setString(1, part.getDBID());
 
-            ResultSet rs =  ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 assignedStudents.add(rs.getString("login"));
             }
@@ -502,61 +358,32 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException {
+    public void assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException, CakeHatDBIOException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.login) AS assigned"
-                    + " FROM student AS s"
-                    + " INNER JOIN distribution AS d"
-                    + " ON d.sid == s.sid"
-                    + " INNER JOIN ta AS t"
-                    + " ON d.tid == t.tid"
-                    + " INNER JOIN part AS p"
-                    + " ON d.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE t.login == ?"
-                    + " AND s.login == ?"
-                    + " AND p.name == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, ta.getLogin());
-            ps.setString(2, studentLogin);
-            ps.setString(3, part.getName());
-            ps.setString(4, part.getAssignment().getName());
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.sid) AS timesAssigned"
+                    + " FROM distribution AS d"
+                    + " WHERE d.sid == ?"
+                    + " AND d.pid == ?");
+            ps.setString(1, studentLogin);
+            ps.setString(2, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
-            int isAssigned = rs.getInt("assigned");
+            boolean isAssigned = (rs.getInt("timesAssigned") != 0);
 
-            if (isAssigned == 0) {
-                ps = conn.prepareStatement("SELECT s.sid FROM student AS s" +
-                        " WHERE s.login == ?");
+            if (!isAssigned) {
+                ps = conn.prepareStatement("INSERT INTO distribution ('sid', 'tid', 'pid')"
+                        + " VALUES (?, ?, ?)");
                 ps.setString(1, studentLogin);
-                rs = ps.executeQuery();
-                int sID = rs.getInt("sid");
-
-                ps = conn.prepareStatement("SELECT t.tid FROM ta AS t WHERE t.login == ?");
-                ps.setString(1, ta.getLogin());
-                rs = ps.executeQuery();
-                int tID = rs.getInt("tid");
-
-                ps = conn.prepareStatement("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid" +
-                        " WHERE a.name == ? AND p.name == ?");
-                ps.setString(1, part.getAssignment().getName());
-                ps.setString(2, part.getName());
-                rs = ps.executeQuery();
-                int pID = rs.getInt("pid");
-
-                ps = conn.prepareStatement("INSERT INTO distribution ('sid', 'tid', 'pid')" +
-                        " VALUES (?, ?, ?)");
-                ps.setInt(1, sID);
-                ps.setInt(2, tID);
-                ps.setInt(3, pID);
+                ps.setString(2, ta.getLogin());
+                ps.setString(3, part.getDBID());
                 ps.executeUpdate();
-
-                return true;
+            } else {
+                throw new CakeHatDBIOException("The student: " + studentLogin
+                        + " is already assigned to a TA. You can't assign them to"
+                        + " another TA without removing them from the other TA's"
+                        + " dist.");
             }
-
-            return false;
         } finally {
             this.closeConnection(conn);
         }
@@ -567,17 +394,12 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
-                    + " WHERE pid IN "
-                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE p.name == ? AND a.name == ?)"
-                    + " AND sid IN"
-                    + " (SELECT sid FROM student WHERE login == ?)"
-                    + " AND tid IN"
-                    + " (SELECT tid FROM ta WHERE login ==  ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-            ps.setString(3, studentLogin);
-            ps.setString(4, ta.getLogin());
+                    + " WHERE pid == ?"
+                    + " AND sid == ?"
+                    + " AND tid ==  ?");
+            ps.setString(1, part.getDBID());
+            ps.setString(2, studentLogin);
+            ps.setString(3, ta.getLogin());
 
             ps.executeUpdate();
         } finally {
@@ -592,34 +414,18 @@ public class DBWrapper implements DatabaseIO {
             conn.setAutoCommit(false);
 
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
-                    + " WHERE pid IN"
-                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE p.name == ? AND a.name == ?)"
-                    + " AND sid IN"
-                    + " (SELECT s.sid FROM student AS s WHERE s.login == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-            ps.setString(3, studentLogin);
+                    + " WHERE pid == ?"
+                    + " AND sid == ?");
+            ps.setString(1, part.getDBID());
+            ps.setString(2, studentLogin);
             ps.executeUpdate();
 
-            ps = conn.prepareStatement("SELECT s.sid FROM student AS s WHERE s.login == ?");
-            ps.setString(1, studentLogin);
-            ResultSet rs = ps.executeQuery();
-            int sID = rs.getInt("sid");
-
-            ps = conn.prepareStatement("SELECT p.pid AS pid FROM part AS p INNER JOIN asgn AS a ON a.aid == p.aid" +
-                    " WHERE a.name == ? AND p.name == ?");
-            ps.setString(1, part.getAssignment().getName());
-            ps.setString(2, part.getName());
-
-            rs = ps.executeQuery();
-            int pID = rs.getInt("pid");
             int ontime = (int) (newDate.getTimeInMillis() / 1000);
 
-            ps = conn.prepareStatement("INSERT INTO extension ('sid', 'pid', 'ontime', 'note')" +
-                    " VALUES (?, ?, ?, ?)");
-            ps.setInt(1, sID);
-            ps.setInt(2, pID);
+            ps = conn.prepareStatement("INSERT INTO extension ('sid', 'pid', 'ontime', 'note')"
+                    + " VALUES (?, ?, ?, ?)");
+            ps.setString(1, studentLogin);
+            ps.setString(2, part.getDBID());
             ps.setInt(3, ontime);
             ps.setString(4, note);
 
@@ -642,34 +448,16 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
-                    + " WHERE pid IN"
-                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE p.name == ? AND a.name == ?)"
-                    + " AND sid IN"
-                    + " (SELECT s.sid FROM student AS s WHERE login == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-            ps.setString(3, studentLogin);
+                    + " WHERE pid == ?"
+                    + " AND sid == ?");
+            ps.setString(1, part.getDBID());
+            ps.setString(2, studentLogin);
             ps.executeUpdate();
 
-            ps = conn.prepareStatement("SELECT s.sid FROM student AS s" +
-                    " WHERE s.login == ?");
+            ps = conn.prepareStatement("INSERT INTO exemption ('sid', 'pid', 'note')"
+                    + " VALUES (?, ?, ?)");
             ps.setString(1, studentLogin);
-            ResultSet rs = ps.executeQuery();
-            int sID = rs.getInt("sid");
-
-            ps = conn.prepareStatement("SELECT p.pid AS pid FROM part AS p" +
-                    " INNER JOIN asgn AS a ON a.aid == p.aid" +
-                    " WHERE a.name == ? AND p.name == ?");
-            ps.setString(1, part.getAssignment().getName());
-            ps.setString(2, part.getName());
-            rs = ps.executeQuery();
-            int pID = rs.getInt("pid");
-
-            ps = conn.prepareStatement("INSERT INTO exemption ('sid', 'pid', 'note')" +
-                    " VALUES (?, ?, ?)");
-            ps.setInt(1, sID);
-            ps.setInt(2, pID);
+            ps.setString(2, part.getDBID());
             ps.setString(3, note);
             ps.executeUpdate();
 
@@ -684,18 +472,10 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin, e.ontime AS date"
-                    + " FROM student AS s"
-                    + " INNER JOIN extension AS e"
-                    + " ON e.sid == s.sid"
-                    + " INNER JOIN part AS p"
-                    + " ON e.pid == p.pid"
-                    + " INNER JOIN asgn AS a "
-                    + " ON p.aid == a.aid "
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
+            PreparedStatement ps = conn.prepareStatement("SELECT e.sid AS studlogin, e.ontime AS date"
+                    + " FROM extension AS e"
+                    + " WHERE e.pid == ?");
+            ps.setString(1, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -718,18 +498,10 @@ public class DBWrapper implements DatabaseIO {
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT e.ontime AS date"
                     + " FROM extension AS e"
-                    + " INNER JOIN student AS s"
-                    + " ON e.sid == s.sid"
-                    + " INNER JOIN part AS p"
-                    + " ON e.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND s.login == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, part.getName());
+                    + " WHERE e.pid == ?"
+                    + " AND e.sid == ?");
+            ps.setString(1, part.getDBID());
             ps.setString(2, studentLogin);
-            ps.setString(3, part.getAssignment().getName());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -750,19 +522,11 @@ public class DBWrapper implements DatabaseIO {
 
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT e.note AS extnote "
-                    + " FROM extension AS e "
-                    + " INNER JOIN student AS s "
-                    + " ON e.sid == s.sid "
-                    + " INNER JOIN part AS p "
-                    + " ON e.pid == p.pid "
-                    + " INNER JOIN asgn AS a "
-                    + " ON p.aid == a.aid "
-                    + " WHERE p.name == ?"
-                    + " AND s.login == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, part.getName());
+                    + " FROM extension AS e"
+                    + " WHERE e.pid == ?"
+                    + " AND e.sid == ?");
+            ps.setString(1, part.getDBID());
             ps.setString(2, studentLogin);
-            ps.setString(3, part.getAssignment().getName());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -783,18 +547,10 @@ public class DBWrapper implements DatabaseIO {
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT x.note AS exenote"
                     + " FROM exemption AS x"
-                    + " INNER JOIN student AS s"
-                    + " ON x.sid == s.sid"
-                    + " INNER JOIN part AS p"
-                    + " ON x.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND s.login == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, part.getName());
+                    + " WHERE x.pid == ?"
+                    + " AND x.sid == ?");
+            ps.setString(1, part.getDBID());
             ps.setString(2, studentLogin);
-            ps.setString(3, part.getAssignment().getName());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -812,32 +568,17 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         try {
             conn.setAutoCommit(false);
-
-            PreparedStatement ps = conn.prepareStatement("SELECT s.sid FROM student AS s" +
-                    " WHERE s.login == ?");
-            ps.setString(1, studentLogin);
-            ResultSet rs = ps.executeQuery();
-            int sID = rs.getInt("sid");
-
-            ps = conn.prepareStatement("SELECT p.pid AS pid FROM part AS p" +
-                    " INNER JOIN asgn AS a ON a.aid == p.aid" +
-                    " WHERE a.name == ? AND p.name == ?");
-            ps.setString(1, part.getAssignment().getName());
-            ps.setString(2, part.getName());
-            rs = ps.executeQuery();
-            int pID = rs.getInt("pid");
-
-            ps = conn.prepareStatement("DELETE FROM grade"
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM grade"
                     + " WHERE pid == ?"
                     + " AND sid == ?");
-            ps.setInt(1, pID);
-            ps.setInt(2, sID);
+            ps.setString(1, part.getDBID());
+            ps.setString(2, studentLogin);
             ps.executeUpdate();
 
-            ps = conn.prepareStatement("INSERT INTO grade ('sid', 'pid', 'score')" +
-                    " VALUES (?, ?, ?)");
-            ps.setInt(1, sID);
-            ps.setInt(2, pID);
+            ps = conn.prepareStatement("INSERT INTO grade ('sid', 'pid', 'score')"
+                    + " VALUES (?, ?, ?)");
+            ps.setString(1, studentLogin);
+            ps.setString(2, part.getDBID());
             ps.setDouble(3, score);
             ps.executeUpdate();
 
@@ -861,15 +602,10 @@ public class DBWrapper implements DatabaseIO {
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore"
                     + " FROM grade AS g"
-                    + " INNER JOIN student AS s ON g.sid == s.sid"
-                    + " INNER JOIN part AS p ON g.pid == p.pid"
-                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE s.login == ?"
-                    + " AND p.name == ?"
-                    + " AND a.name == ?");
+                    + " WHERE g.sid == ?"
+                    + " AND g.pid == ?");
             ps.setString(1, studentLogin);
-            ps.setString(2, part.getName());
-            ps.setString(3, part.getAssignment().getName());
+            ps.setString(2, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -888,15 +624,21 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
+            //make a list of all the parts for the assignment so that the sum can be made.
+            //  grade only containts part IDs not asgn IDs
+            String parts = "";
+            for (Part p : asgn.getParts()) {
+                parts += ",'" + p.getDBID() + "'";
+            }
+            if (parts.length() > 1) {
+                parts = parts.substring(1);
+            }
+
             PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore"
                     + " FROM grade AS g"
-                    + " INNER JOIN student AS s ON g.sid == s.sid"
-                    + " INNER JOIN part AS p ON g.pid == p.pid"
-                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE s.login == ?"
-                    + " AND a.name == ?");
+                    + " WHERE g.sid == ?"
+                    + " AND g.pid IN (" + parts + ")");
             ps.setString(1, studentLogin);
-            ps.setString(2, asgn.getName());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -910,41 +652,12 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean addAssignment(Assignment asgn) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(a.aid) AS count"
-                    + " FROM asgn AS a"
-                    + " WHERE a.name == ?");
-            ps.setString(1, asgn.getName());
-
-            ResultSet rs = ps.executeQuery();
-            int count = rs.getInt("count");
-
-            if (count != 0) { // if assignment already exists
-                return false;
-            }
-
-            ps = conn.prepareStatement("INSERT INTO asgn "
-                    + " ('name') VALUES (?)");
-            ps.setString(1, asgn.getName());
-            ps.executeUpdate();
-
-            return true;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
     public void unBlacklistStudent(String studentLogin, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
-                    + "WHERE tid IN "
-                    + "(SELECT t.tid FROM ta AS t WHERE t.login == ?) "
-                    + "AND sid IN "
-                    + "(SELECT s.sid FROM student AS s WHERE s.login == ?)");
+                    + "WHERE tid == ? "
+                    + "AND sid == ?");
             ps.setString(1, ta.getLogin());
             ps.setString(2, studentLogin);
 
@@ -968,18 +681,13 @@ public class DBWrapper implements DatabaseIO {
 
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, s.login AS studLogin"
+            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, g.sid AS studLogin"
                     + " FROM grade AS g"
-                    + " INNER JOIN student AS s ON g.sid == s.sid"
-                    + " INNER JOIN part AS p ON g.pid == p.pid"
-                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE s.login IN (" + studLogins + ")"
-                    + " AND p.name == '" + part.getName() + "'"
-                    + " AND a.name == '" + part.getAssignment().getName() + "'");
+                    + " WHERE g.sid IN (" + studLogins + ")"
+                    + " AND g.pid == '" + part.getDBID() + "'");
             //TODO: restore prepared statement functionality
             //ps.setString(1, studLogins);
-            //ps.setString(1, part.getName());
-            //ps.setString(2, part.getAssignment().getName());
+            //ps.setString(1, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1004,18 +712,23 @@ public class DBWrapper implements DatabaseIO {
             studLogins = studLogins.substring(1);
         }
 
+        String parts = "";
+        for (Part p : asgn.getParts()) {
+            parts += ",'" + p.getDBID() + "'";
+        }
+        if (parts.length() > 1) {
+            parts = parts.substring(1);
+        }
+
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, s.login AS studLogin"
+            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, g.sid AS studLogin"
                     + " FROM grade AS g"
-                    + " INNER JOIN student AS s ON g.sid == s.sid"
-                    + " INNER JOIN part AS p ON g.pid == p.pid"
-                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE s.login IN (" + studLogins + ")"
-                    + " AND a.name == '" + asgn.getName() + "'");
+                    + " WHERE g.sid IN (" + studLogins + ")"
+                    + " AND g.pid IN (" + parts + ")");
             //TODO: restore prepared statement functionality
             //ps.setString(1, studLogins);
-            //ps.setString(2, asgn.getName());
+            //ps.setString(2, parts);
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1057,14 +770,10 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
-                    + " WHERE pid IN"
-                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE p.name == ? AND a.name == ?')"
-                    + " AND sid IN"
-                    + " (SELECT sid FROM student WHERE login == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-            ps.setString(3, studentLogin);
+                    + " WHERE pid == ?"
+                    + " AND sid == ?");
+            ps.setString(1, part.getDBID());
+            ps.setString(2, studentLogin);
 
             ps.executeUpdate();
         } finally {
@@ -1077,15 +786,10 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
-                    + " WHERE pid IN"
-                    + " (SELECT p.pid FROM part AS p INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid WHERE p.name == ?"
-                    + " AND a.name == ?)"
-                    + " AND sid IN"
-                    + " (SELECT s.sid FROM student AS s WHERE s.login == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-            ps.setString(3, studentLogin);
+                    + " WHERE pid == ?"
+                    + " AND sid == ?");
+            ps.setString(1, part.getDBID());
+            ps.setString(2, studentLogin);
 
             ps.executeUpdate();
         } finally {
@@ -1099,21 +803,10 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin, t.login AS talogin"
-                    + " FROM student AS s"
-                    + " INNER JOIN distribution AS d"
-                    + " ON d.sid == s.sid"
-                    + " INNER JOIN ta AS t"
-                    + " ON d.tid == t.tid"
-                    + " INNER JOIN part AS p"
-                    + " ON d.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?"
-                    + " ORDER BY t.tid");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
+            PreparedStatement ps = conn.prepareStatement("SELECT d.sid AS studlogin, d.tid AS talogin"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid == ?");
+            ps.setString(1, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1138,12 +831,11 @@ public class DBWrapper implements DatabaseIO {
     public boolean setGroups(HandinPart part, Map<String, Collection<String>> groupings) throws SQLException {
         Connection conn = this.openConnection();
 
-        //make sure all the groupnames are valid and get the partID
-        int partID;
+        //make sure all the groupnames are valid
         Set<String> groupNames = groupings.keySet();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.name AS groupname" +
-                    " FROM groups AS g ");
+            PreparedStatement ps = conn.prepareStatement("SELECT g.name AS groupname"
+                    + " FROM groups AS g ");
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1155,23 +847,13 @@ public class DBWrapper implements DatabaseIO {
                 }
             }
 
-            ps = conn.prepareStatement("SELECT p.pid AS partid"
-                    + " FROM part AS p"
-                    + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-
-            rs = ps.executeQuery();
-            partID = rs.getInt("partid");
         } finally {
             this.closeConnection(conn);
         }
 
         //put all the groups into the DB
         for (String groupName : groupings.keySet()) {
-            if (!this.setGroup(part, groupName, groupings.get(groupName), partID)) {
+            if (!this.setGroup(part, groupName, groupings.get(groupName))) {
                 break;
             }
         }
@@ -1179,22 +861,9 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean setGroup(HandinPart part, String groupName, Collection<String> group, Integer partID) throws SQLException {
+    public boolean setGroup(HandinPart part, String groupName, Collection<String> group) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            if (partID == null) {
-                PreparedStatement ps = conn.prepareStatement("SELECT p.pid AS partid"
-                        + " FROM part AS p"
-                        + " INNER JOIN asgn AS a ON p.aid == a.aid"
-                        + " WHERE p.name == ?"
-                        + " AND a.name == ?");
-                ps.setString(1, part.getName());
-                ps.setString(1, part.getAssignment().getName());
-
-                ResultSet rs = ps.executeQuery();
-                partID = rs.getInt("partid");
-            }
-
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(g.gpid) AS numgroups"
                     + " FROM groups AS g"
                     + " WHERE g.name == ?");
@@ -1221,20 +890,12 @@ public class DBWrapper implements DatabaseIO {
             int groupID = rs.getInt("groupid");
 
             for (String student : group) {
-                ps = conn.prepareStatement("SELECT s.sid AS studentid"
-                        + " FROM student AS s"
-                        + " WHERE s.login == ?");
-                ps.setString(1, student);
-
-                rs = ps.executeQuery();
-                int studentID = rs.getInt("studentid");
-
                 ps = conn.prepareStatement("INSERT INTO groupmembers "
                         + "('gpid', 'sid', 'pid') "
                         + "VALUES (?, ?, ?)");
                 ps.setInt(1, groupID);
-                ps.setInt(2, studentID);
-                ps.setInt(3, partID);
+                ps.setString(2, student);
+                ps.setString(3, part.getDBID());
                 ps.executeUpdate();
             }
 
@@ -1250,33 +911,17 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin"
-                    + " FROM student AS s"
-                    + " INNER JOIN groupmembers AS gm"
-                    + " ON gm.sid == s.sid"
-                    + " INNER JOIN part AS p"
-                    + " ON gm.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?"
+            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS studlogin"
+                    + " FROM groupmembers AS gm"
+                    + " WHERE gm.pid == ?"
                     + " AND gm.gpid IN"
                     + " (SELECT gm.gpid"
                     + " FROM groupmembers AS gm"
-                    + " INNER JOIN student AS s"
-                    + " ON gm.sid == s.sid"
-                    + " INNER JOIN part AS p"
-                    + " ON gm.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?"
-                    + " AND s.login == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
-            ps.setString(3, part.getName());
-            ps.setString(4, part.getAssignment().getName());
-            ps.setString(5, student);
+                    + " WHERE gm.pid == ?"
+                    + " AND gm.sid == ?)");
+            ps.setString(1, part.getDBID());
+            ps.setString(2, part.getDBID());
+            ps.setString(3, student);
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1304,18 +949,10 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.login AS studlogin, gm.gpid AS groupID"
-                    + " FROM student AS s"
-                    + " INNER JOIN groupmembers AS gm"
-                    + " ON gm.sid == s.sid"
-                    + " INNER JOIN part AS p"
-                    + " ON gm.pid == p.pid"
-                    + " INNER JOIN asgn AS a"
-                    + " ON p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
+            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS studlogin, gm.gpid AS groupID"
+                    + " FROM groupmembers AS gm"
+                    + " WHERE gm.pid == ?");
+            ps.setString(1, part.getDBID());
 
             Multimap<Integer, String> group2studs = ArrayListMultimap.create();
             Map<String, Integer> stud2groupID = new HashMap<String, Integer>();
@@ -1357,23 +994,13 @@ public class DBWrapper implements DatabaseIO {
                     + " WHERE gpid IN"
                     + " (SELECT gm.gpid AS groupid"
                     + " FROM groupmembers AS gm"
-                    + " INNER JOIN part AS p on gm.pid == p.pid"
-                    + " INNER JOIN asgn AS a on p.aid == a.aid"
-                    + " WHERE p.name == ?"
-                    + " AND a.name == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
+                    + " WHERE gm.pid == ?");
+            ps.setString(1, part.getDBID());
             ps.executeUpdate();
 
             ps = conn.prepareStatement("DELETE FROM groupmembers "
-                    + "WHERE pid IN "
-                    + "(SELECT p.pid AS partid "
-                    + "FROM part AS p "
-                    + "INNER JOIN asgn AS a on p.aid == a.aid "
-                    + "WHERE p.name == ?"
-                    + "AND a.name == ?)");
-            ps.setString(1, part.getName());
-            ps.setString(2, part.getAssignment().getName());
+                    + "WHERE pid == ?");
+            ps.setString(1, part.getDBID());
             ps.executeUpdate();
 
         } finally {
@@ -1382,36 +1009,32 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean assignmentExists(Assignment asgn) throws SQLException {
+    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException {
         Connection conn = this.openConnection();
+        Map<Assignment, TA> graders = new HashMap<Assignment, TA>();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(a.aid) AS count"
-                    + " FROM asgn AS a "
-                    + " WHERE a.name == ?");
-            ps.setString(1, asgn.getName());
+            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS login, d.pid AS partID"
+                    + " FROM distribution AS d"
+                    + " WHERE d.sid == ?");
+            ps.setString(1, studentLogin);
 
             ResultSet rs = ps.executeQuery();
-            int count = rs.getInt("count");
+            while (rs.next()) {
+                for (Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()) {
+                    if (asgn.getHandinPart().getDBID().equals(rs.getString("partID"))) {
+                        String taLogin = rs.getString("login");
+                        TA ta = Allocator.getCourseInfo().getTA(taLogin);
+                        if (ta == null) {
+                            throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, "
+                                    + "but is assigned to grade student " + studentLogin + " for "
+                                    + "assignment " + asgn.getName() + ".");
+                        }
+                        graders.put(asgn, ta);
+                    }
+                }
+            }
 
-            return (count != 0);
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public boolean studentExists(String login) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.sid) AS count"
-                    + " FROM student AS s"
-                    + " WHERE s.login == ?");
-            ps.setString(1, login);
-
-            ResultSet rs = ps.executeQuery();
-            int count = rs.getInt("count");
-
-            return (count != 0);
+            return graders;
         } finally {
             this.closeConnection(conn);
         }
@@ -1424,7 +1047,6 @@ public class DBWrapper implements DatabaseIO {
 
             //DROP all tables in DB
             conn.setAutoCommit(false);
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'asgn';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'blacklist';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'distribution';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'exemption';");
@@ -1432,57 +1054,39 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'grade';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'groupmembers';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'groups';");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'part';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'student';");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'ta';");
             conn.commit();
 
             //CREATE all DB tables
             conn.setAutoCommit(false);
-            conn.createStatement().executeUpdate("CREATE TABLE 'asgn' ('aid' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-                                                                     + "'name' VARCHAR NOT NULL);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'blacklist' ('bid' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-                                                                          + "'tid' INTEGER NOT NULL, "
-                                                                          + "'sid' INTEGER NOT NULL );");
-            conn.createStatement().executeUpdate("CREATE TABLE 'distribution' ('did' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-                                                                             + "'sid' INTEGER NOT NULL, "
-                                                                             + "'pid' INTEGER NOT NULL, "
-                                                                             + "'tid' INTEGER NOT NULL);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'exemption' ('xid' INTEGER PRIMARY KEY NOT NULL, "
-                                                                          + "'sid' INTEGER NOT NULL, "
-                                                                          + "'pid' INTEGER NOT NULL, "
-                                                                          + "'note' TEXT);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'extension' ('eid' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-                                                                          + "'sid' INTEGER NOT NULL, "
-                                                                          + "'pid' INTEGER NOT NULL, "
-                                                                          + "'ontime' DATETIME NOT NULL, "
-                                                                          + "'note' TEXT);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'grade' ('gid' INTEGER PRIMARY KEY NOT NULL, "
-                                                                      + "'pid' INTEGER NOT NULL, "
-                                                                      + "'sid' INTEGER NOT NULL, "
-                                                                      + "'score' DOUBLE NOT NULL);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'groupmembers' ('gmid' INTEGER PRIMARY KEY NOT NULL, "
-                                                                             + "'gpid' INTEGER NOT NULL, "
-                                                                             + "'sid' INTEGER NOT NULL,"
-                                                                             + "'pid' INTEGER NOT NULL);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'groups' ('gpid' INTEGER PRIMARY KEY NOT NULL, "
-                                                                       + "'name' VARCHAR NOT NULL );");
-            conn.createStatement().executeUpdate("CREATE TABLE 'part' ('pid' INTEGER PRIMARY KEY  NOT NULL, "
-                                                                     + "'name' VARCHAR NOT NULL, "
-                                                                     + "'aid' INTEGER NOT NULL);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'student' ('sid' INTEGER PRIMARY KEY NOT NULL, "
-                                                                        + "'login' VARCHAR NOT NULL, "
-                                                                        + "'firstname' VARCHAR NOT NULL, "
-                                                                        + "'lastname' VARCHAR NOT NULL, "
-                                                                        + "'enabled' INTEGER NOT NULL DEFAULT 1 );");
-            conn.createStatement().executeUpdate("CREATE TABLE 'ta' ('tid' INTEGER PRIMARY KEY NOT NULL, "
-                                                                   + "'login' VARCHAR NOT NULL,"
-                                                                   + "'name' VARCHAR NOT NULL DEFAULT not_listed);");
+            conn.createStatement().executeUpdate("CREATE TABLE 'blacklist' ('tid' VARCHAR NOT NULL, "
+                    + "'sid' VARCHAR NOT NULL );");
+            conn.createStatement().executeUpdate("CREATE TABLE 'distribution' ('sid' VARCHAR NOT NULL, "
+                    + "'pid' VARCHAR NOT NULL, "
+                    + "'tid' VARCHAR NOT NULL);");
+            conn.createStatement().executeUpdate("CREATE TABLE 'exemption' ('sid' VARCHAR NOT NULL, "
+                    + "'pid' VARCHAR NOT NULL, "
+                    + "'note' TEXT);");
+            conn.createStatement().executeUpdate("CREATE TABLE 'extension' ('sid' VARCHAR NOT NULL, "
+                    + "'pid' VARCHAR NOT NULL, "
+                    + "'ontime' INTEGER NOT NULL, "
+                    + "'note' TEXT);");
+            conn.createStatement().executeUpdate("CREATE TABLE 'grade' ('pid' VARCHAR NOT NULL, "
+                    + "'sid' VARCHAR NOT NULL, "
+                    + "'score' DOUBLE NOT NULL);");
+            conn.createStatement().executeUpdate("CREATE TABLE 'groupmembers' ('gpid' INTEGER NOT NULL, "
+                    + "'sid' VARCHAR NOT NULL,"
+                    + "'pid' VARCHAR NOT NULL);");
+            conn.createStatement().executeUpdate("CREATE TABLE 'groups' ('gpid' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                    + "'name' VARCHAR NOT NULL );");
+            conn.createStatement().executeUpdate("CREATE TABLE 'student' ('login' VARCHAR PRIMARY KEY NOT NULL, "
+                    + "'firstname' VARCHAR NOT NULL, "
+                    + "'lastname' VARCHAR NOT NULL, "
+                    + "'enabled' INTEGER NOT NULL DEFAULT 1 );");
             conn.commit();
 
             //CREATE all tables indices
             conn.setAutoCommit(false);
-            conn.createStatement().executeUpdate("CREATE INDEX asgn_name ON asgn (name);");
             conn.createStatement().executeUpdate("CREATE INDEX blacklist_student ON blacklist (sid);");
             conn.createStatement().executeUpdate("CREATE INDEX blacklist_ta ON blacklist (tid);");
             conn.createStatement().executeUpdate("CREATE INDEX dist_pid ON distribution (pid);");
@@ -1493,50 +1097,11 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("CREATE INDEX exten_sid ON extension (sid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_pid ON grade (pid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_sid ON grade (sid);");
-            conn.createStatement().executeUpdate("CREATE INDEX part_aid ON part (aid);");
-            conn.createStatement().executeUpdate("CREATE INDEX part_name ON part (name);");
-            conn.createStatement().executeUpdate("CREATE INDEX student_login ON student (login);");
-            conn.createStatement().executeUpdate("CREATE INDEX ta_login ON ta (login);");
             conn.commit();
         } catch (SQLException e) {
             conn.rollback();
-            
+
             throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-        Map<Assignment, TA> graders = new HashMap<Assignment, TA>();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT t.login AS login, a.name AS asgn FROM ta AS t"
-                    + " INNER JOIN distribution AS d ON d.tid == t.tid"
-                    + " INNER JOIN student AS s ON d.sid == s.sid"
-                    + " INNER JOIN part AS p ON p.pid == d.pid"
-                    + " INNER JOIN asgn AS a ON a.aid == p.aid"
-                    + " WHERE s.login == ?");
-            ps.setString(1, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                for (Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()) {
-                    if (asgn.getName().equals(rs.getString("asgn"))) {
-                        String taLogin = rs.getString("login");
-                        TA ta = Allocator.getCourseInfo().getTA(taLogin);
-                        if (ta == null) {
-                            throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, " +
-                                          "but is assigned to grade student " + studentLogin + " for " +
-                                          "assignment " + asgn.getName() + ".");
-                        }
-                        graders.put(asgn, Allocator.getCourseInfo().getTA(taLogin));
-                    }
-                }
-            }
-
-            return graders;
         } finally {
             this.closeConnection(conn);
         }
