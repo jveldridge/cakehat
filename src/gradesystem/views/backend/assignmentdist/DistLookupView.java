@@ -300,6 +300,9 @@ public class DistLookupView extends JFrame {
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Reassigning student " + student + " from TA " + _graders.get(asgnRow.getAsgn()) + " " +
                                           "to TA " + asgnRow.getNewTA() + " for assignment " + asgnRow.getAsgn() + " failed.");
+                    } catch (CakeHatDBIOException ex) {
+                        new ErrorView(ex, "Reassigning failed because the student"
+                                + " was still in another TA's distribution.");
                     }
                 } // not assigned
                 else {
@@ -309,6 +312,10 @@ public class DistLookupView extends JFrame {
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Assigning student " + student + " to TA " + asgnRow.getNewTA() + " " +
                                            "for assignment " + asgnRow.getAsgn() + " failed.");
+                    } catch (CakeHatDBIOException ex) {
+                        new ErrorView(ex, "Reassigning failed because the student"
+                                + " was still in another TA's distribution even-though"
+                                + " they were listed as unassigned.");
                     }
 
                     //assign the rubrics

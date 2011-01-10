@@ -19,38 +19,6 @@ public interface DatabaseIO {
     
 
     /**
-     * Checks if the assignment part already exists.  If not, creates a new
-     * entry in the database
-     *
-     * @param part - a Part subclass
-     * @return true if the assigment was added; false if it was already in the
-     *         database and thus not added again
-     */
-    public boolean addAssignmentPart(Part part) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * Checks if the assignment already exists.  If not, creates a new
-     * entry in the database
-     *
-     * @param asgn - a Assignment subclass
-     * @return true if the assigment was added; false if it was already in the
-     *         database and thus not added again
-     */
-    public boolean addAssignment(Assignment asgn) throws SQLException;
-
-    /**
-     * Checks to see if the TA already exists. If not, creates a new entry
-     * in the database.
-     *
-     * @param ta
-     * @return status true if the TA was added to the database; false if the TA
-     *         was already in the database and thus not added again
-     * @deprecated TA table names will soon not be stored in database
-     */
-    @Deprecated
-    public boolean addTA(TA ta) throws SQLException;
-
-    /**
      * Checks to see if the student already exists. If not, creates new entry
      * in the database.  Newly added students are enabled by default.
      *
@@ -61,22 +29,6 @@ public interface DatabaseIO {
      *         already in the database and thus not added
      */
     public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
-
-    /**
-     * Checks if the assignment already exists.
-     *
-     * @param asgn - an Assignment subclass
-     * @return
-     */
-    public boolean assignmentExists(Assignment asgn) throws SQLException;
-
-    /**
-     * Checks if the student already exists.
-     *
-     * @param login - string of the student's login
-     * @return
-     */
-    public boolean studentExists(String login) throws SQLException;
 
     /**
      * Marks the student as disabled; use instead of removing if a student has dropped
@@ -179,10 +131,8 @@ public interface DatabaseIO {
      * @param studentLogin
      * @param assignmentName
      * @param ta
-     * @return true if the student was assigned to the TA; false if the student
-     *         was already assigned to the TA and thus not assigned again
      */
-    public boolean assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException;
+    public void assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException, CakeHatDBIOException;
 
     /**
      * Unassigns student with login studentLogin to the given TA to grade for
@@ -384,7 +334,7 @@ public interface DatabaseIO {
      * @param group
      * @return
      */
-    public boolean setGroup(HandinPart handin, String groupName, Collection<String> group, Integer parID) throws SQLException;
+    public boolean setGroup(HandinPart handin, String groupName, Collection<String> group) throws SQLException;
 
     /**
      * get the group for a student for a handin

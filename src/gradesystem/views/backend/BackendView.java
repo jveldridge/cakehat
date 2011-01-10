@@ -11,7 +11,6 @@ import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
 import gradesystem.config.Part;
-import gradesystem.config.TA;
 import gradesystem.GradeSystemApp;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -1355,16 +1354,8 @@ public class BackendView extends JFrame
         JCheckBox clearDatabaseRB = new JCheckBox("Clear Database");
         clearDatabaseRB.setSelected(true);
 
-        JCheckBox addTAsRB = new JCheckBox("Add All TAs");
-        addTAsRB.setSelected(true);
-
         JCheckBox addStudentsRB = new JCheckBox("Add All Students");
         addStudentsRB.setSelected(true);
-
-        //often better not to add assignments until they're ready for grading,
-        //as this makes making mid-semester config file changes easier
-        JCheckBox addAssignmentsRB = new JCheckBox("Add All Assignments");
-        addAssignmentsRB.setSelected(false);
 
         JPanel confirmDialogPanel = new JPanel();
         confirmDialogPanel.setLayout(new GridLayout(0, 1));
@@ -1372,9 +1363,7 @@ public class BackendView extends JFrame
         confirmDialogPanel.add(new JLabel("Are you sure you want to reset the database?  " +
                 "This will delete all data it stores."));
         confirmDialogPanel.add(clearDatabaseRB);
-        confirmDialogPanel.add(addTAsRB);
         confirmDialogPanel.add(addStudentsRB);
-        confirmDialogPanel.add(addAssignmentsRB);
 
         //get confirmation
         int response = JOptionPane.showConfirmDialog(this, confirmDialogPanel,
@@ -1390,38 +1379,6 @@ public class BackendView extends JFrame
             } catch (SQLException ex) {
                 new ErrorView(ex, "Resetting the database failed.");
                 return;
-            }
-        }
-
-        //add all TAs
-        if (addTAsRB.isSelected()) {
-            for (TA ta : Allocator.getCourseInfo().getTAs()) {
-                try {
-                    Allocator.getDatabaseIO().addTA(ta);
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not add TA " + ta + " to the database.");
-                }
-            }
-        }
-
-        //add all assignments, and their parts
-        if (addAssignmentsRB.isSelected()) {
-            for (Assignment asgn : Allocator.getCourseInfo().getAssignments()) {
-                try {
-                    Allocator.getDatabaseIO().addAssignment(asgn);
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not add assignment " + asgn + " to the database.");
-                }
-
-                for (Part part : asgn.getParts()) {
-                    try {
-                        Allocator.getDatabaseIO().addAssignmentPart(part);
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, "Could not add part " + part + " to the database.");
-                    } catch (CakeHatDBIOException ex) {
-                        new ErrorView(ex, "Could not add part " + part + " to the database.");
-                    }
-                }
             }
         }
 

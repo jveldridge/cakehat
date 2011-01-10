@@ -4,6 +4,7 @@ import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
+import gradesystem.database.CakeHatDBIOException;
 import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
 import java.awt.BorderLayout;
@@ -516,9 +517,12 @@ public class ReassignView extends JFrame {
             _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
             loginsToDisplay = new LinkedList<String>(_unassignedStudents);
         }
-        else {
+        else if (!_toTAList.isSelectionEmpty()) {
             TA toTA = _toTAList.getSelectedValue();
             loginsToDisplay = new LinkedList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, toTA));
+        }
+        else {
+            loginsToDisplay = new LinkedList<String>();
         }
 
         Collections.sort(loginsToDisplay);
@@ -553,8 +557,13 @@ public class ReassignView extends JFrame {
                         continue;
                     }
 
-                    //modify the distribution
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, ta);
+                    try {
+                        Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, ta);
+                    } catch (CakeHatDBIOException ex) {
+                        new ErrorView(ex, "Reassigning failed because the student"
+                                + " was still in another TA's distribution even-though"
+                                + " they were listed as unassigned.");
+                    }
 
                     //don't need to make rubrics for students who already have them
                     if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
@@ -596,7 +605,15 @@ public class ReassignView extends JFrame {
 
                     //modify the distribution
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA);
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, newTA);
+
+                    try {
+                        Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, newTA);
+                    } catch (CakeHatDBIOException ex) {
+                        new ErrorView(ex, "Reassigning failed because the student"
+                                + " was still in another TA's distribution. There"
+                                + " must have been an issue removing them from the"
+                                + " old TAs distribution.");
+                    }
                 }
             }
         }
@@ -671,8 +688,14 @@ public class ReassignView extends JFrame {
             while (iterator.hasNext()) {
                 String student = iterator.next();
 
-                //update distribution
-                Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA);
+                try {
+                    //update distribution
+                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA);
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "Reassigning failed because the student"
+                                + " was still in another TA's distribution.");
+                }
+
                 if (fromTA != null) {
                     Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA);
                 }

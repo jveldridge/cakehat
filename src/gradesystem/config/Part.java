@@ -28,6 +28,11 @@ public abstract class Part
         return _name;
     }
 
+    public String getDBID()
+    {
+        return _asgn.getName() + "-" + _name;
+    }
+
     public int getPoints()
     {
         return _points;
