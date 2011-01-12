@@ -33,6 +33,10 @@ public class Assignment implements Comparable<Assignment>
         return _name;
     }
 
+    public String getDBID() {
+        return _name;
+    }
+
     /**
      * The number of this assignment. It does not need to be unique; assignments
      * with the same number are considered to be alternatives, e.g. multiple

@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
  */
 public class DBWrapperTest {
 
-    private DBWrapper _instance;
+    private DatabaseIO _instance;
     private ConnectionProvider _connProvider;
 
     /**
@@ -64,49 +64,6 @@ public class DBWrapperTest {
             System.out.println("there was an error closing the test DB");
         }
     }
-
-
-    //this test relies on the bad getAssignmentForTesting method, so it is being
-    //removed for now.  It will not be needed after the DB factor anyway since the
-    //addAssignment method will no longer exist (b/c there won't be an Assignments
-    //table in the database.  After the DB refactor is done, Josh will show us all
-    //the right way to test a database method :)
-
-    /**
-     * Test of addAssignment method, of class DBWrapper.
-     */
-//    @Test
-//    public void testAddAssignment() {
-//        //no setup needed
-//
-//        Assignment asgn = getAssignmentforTesting();
-//
-//        //adding the assignment should not cause an error
-//        //and the return value should be true to indicate that the assignment was added
-//        boolean result = false;
-//        boolean exception = false;
-//        try {
-//            result = _instance.addAssignment(asgn);
-//        } catch (SQLException ex) {
-//            exception = true;
-//        }
-//        assertFalse(exception);
-//        assertTrue(result);
-//
-//        //adding the same assignment again should not cause an error
-//        //but should produce a return value of false to indicate that the assignment
-//        //was not added again
-//        result = true;
-//        exception = false;
-//        try {
-//            result = _instance.addAssignment(asgn);
-//        } catch (SQLException ex) {
-//            exception = true;
-//        }
-//        assertFalse(exception);
-//        assertFalse(result);
-//    }
-
 
     /**
      * Test of addStudent method, of class DBWrapper.
@@ -168,19 +125,6 @@ public class DBWrapperTest {
 //        Collection<String> blacklist = _instance.getTABlacklist(ta);
 //
 //        assertEquals(expectedBlacklist, blacklist);
-//    }
-//
-
-// not bothering to update this test since this DB method is deprecated
-//    /**
-//     * Test of addTA method, of class DBWrapper.
-//     */
-//    @Test
-//    public void testAddTA() {
-//        System.out.println("addTA");
-//        boolean expResult = true;
-//        boolean result = false;//_instance.addTA(taLogin);
-//        assertEquals(expResult, result);
 //    }
 //
 
@@ -305,7 +249,6 @@ public class DBWrapperTest {
     private TA generateTA() {
         TA ta = EasyMock.createMock(TA.class);
         EasyMock.expect(ta.getLogin()).andReturn(generateLogin());
-        EasyMock.expect(ta.getName()).andReturn(generateName());
         EasyMock.replay(ta);
         return ta;
     }
@@ -329,7 +272,6 @@ public class DBWrapperTest {
         uid = uid.substring(8);
         return uid;
     }
-
 
     //    /**
 //     * Test of setAsgnDist method, of class DBWrapper.
