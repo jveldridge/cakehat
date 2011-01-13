@@ -28,34 +28,18 @@ public class EmailAccount
     private static final String EMAIL_HOST = "smtps.cs.brown.edu";
     private static final String EMAIL_PORT = "465";
 
-    private String _login, _password, _certPath, _certPassword;
+    private final String _login, _password, _certPath, _certPassword;
 
     private Properties _properties = null;
     private Authenticator _authenticator = null;
 
-    EmailAccount() { }
-
-
-    void setLogin(String login)
+    EmailAccount(String login, String password, String certPath, String certPassword)
     {
         _login = login;
-    }
-
-    void setPassword(String pass)
-    {
-        _password = pass;
-    }
-
-    void setCertPath(String certPath)
-    {
+        _password = password;
         _certPath = certPath;
-    }
-
-    void setCertPassword(String certPassword)
-    {
         _certPassword = certPassword;
     }
-
     /**
      * Properties needed for email.
      *
@@ -116,7 +100,6 @@ public class EmailAccount
     {
         return Session.getInstance(getProperties(), getAuthenticator());
     }
-
 
     /**
      * Sends email from the account specified in the configuration file;

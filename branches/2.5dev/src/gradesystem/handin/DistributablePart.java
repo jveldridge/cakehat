@@ -25,7 +25,6 @@ import utils.system.NativeException;
 public class DistributablePart extends Part
 {
     private final Handin _handin;
-    private final int _id;
     private final FilterProvider _filterProvider;
 
     private final File _deductionsList;
@@ -57,8 +56,8 @@ public class DistributablePart extends Part
      *
      * @param handin the handin this part belongs to
      * @param name unique name for this part, unique amongst all parts of this assignment
-     * @param id id number for this part, if the same as another part that means
-     * the parts are mutually exclusive (a student/group does only one of them)
+     * @param number if the same as another part that means the parts are
+     * mutually exclusive (a student/group does only one of them)
      * @param points point value for this part
      * @param deductionsList plain text file that contains deduction information
      * @param rubricTemplate template gml file
@@ -72,7 +71,7 @@ public class DistributablePart extends Part
      * @param openAction action used to open the part for a given group, may be null
      * @param printAction action used to print the part for a given group, may be null
      */
-    public DistributablePart(Handin handin, String name, int id, int points,
+    public DistributablePart(Handin handin, String name, int number, int points,
             File deductionsList,
             File rubricTemplate,
             FilterProvider filterProvider,
@@ -82,10 +81,9 @@ public class DistributablePart extends Part
             DistributableAction openAction,
             DistributableAction printAction)
     {
-        super(handin.getAssignment(), name, points);
+        super(handin.getAssignment(), name, number, points);
 
         _handin = handin;
-        _id = id;
         _filterProvider = filterProvider;
 
         _deductionsList = deductionsList;
@@ -96,14 +94,6 @@ public class DistributablePart extends Part
         _testAction = testAction;
         _openAction = openAction;
         _printAction = printAction;
-    }
-
-    /**
-     * Unique ID of this DistributablePart.
-     */
-    public int getID()
-    {
-        return _id;
     }
 
     /**

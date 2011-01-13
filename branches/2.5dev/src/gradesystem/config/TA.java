@@ -6,8 +6,8 @@ package gradesystem.config;
  */
 public class TA implements Comparable<TA>
 {
-    private String _login, _name;
-    private boolean _isDefaultGrader, _isAdmin, _isHTA;
+    private final String _login, _name;
+    private final boolean _isDefaultGrader, _isAdmin, _isHTA;
 
     TA(String login, String name, boolean isDefaultGrader, boolean isAdmin, boolean isHTA)
     {

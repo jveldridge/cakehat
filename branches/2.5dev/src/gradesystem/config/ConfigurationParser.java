@@ -2,13 +2,24 @@ package gradesystem.config;
 
 import java.io.File;
 import java.util.Calendar;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import gradesystem.Allocator;
+import gradesystem.handin.ActionRepository;
+import gradesystem.handin.DistributableAction;
+import gradesystem.handin.DistributableActionDescription.ActionMode;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import gradesystem.handin.file.AlwaysAcceptingFilterProvider;
+import gradesystem.handin.file.DirectoryFilterProvider;
+import gradesystem.handin.file.FileFilterProvider;
+import gradesystem.handin.file.FilterProvider;
+import gradesystem.handin.file.OrFilterProvider;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import static gradesystem.config.XMLParsingUtilities.*;
+import static gradesystem.config.ConfigurationParserHelper.*;
 
 /**
  * Parses the configuration file.
@@ -17,39 +28,7 @@ import gradesystem.Allocator;
  */
 public class ConfigurationParser
 {
-    private final static String CONFIG_FILE_NAME = "config.xml";
-
-    //For testing purposes, specifies what root directory to look for config file
-    private final static String CONFIG_TEST_DIR_PATH = "/course/cs000/.cakehat/";
-
-    //String constants that represent the tags used in the XML markup
-    private final static String TEXT_NODE = "#text", COMMENT_NODE = "#comment",
-
-                                CONFIG = "CONFIG",
-          
-                                ASSIGNMENTS = "ASSIGNMENTS", TAS = "TAS", DEFAULTS = "DEFAULTS", EMAIL = "EMAIL",
-
-                                COURSE = "COURSE", LENIENCY = "LENIENCY",
-                                SUBMIT_OPTIONS = "SUBMIT-OPTIONS",
-                                SUBMIT = "SUBMIT", NOTIFY = "NOTIFY", EMAIL_GRD = "EMAIL-GRD", PRINT_GRD = "PRINT-GRD",
-
-                                TA = "TA", DEFAULT_GRADER = "DEFAULT-GRADER", ADMIN = "ADMIN", HTA = "HTA",
-
-                                NOTIFY_ADDRESS = "NOTIFY", ADDRESS = "ADDRESS",
-                                SEND_FROM = "SEND-FROM", LOGIN = "LOGIN", PASSWORD = "PASSWORD",
-                                CERT_PATH = "CERT-PATH", CERT_PASSWORD = "CERT-PASSWORD",
-
-                                ASSIGNMENT = "ASSIGNMENT", NAME = "NAME", NUMBER = "NUMBER",
-                                RUBRIC="RUBRIC", DEDUCTIONS="DEDUCTIONS", LOCATION = "LOCATION",
-
-                                PART = "PART", LAB_NUMBER="LAB-NUMBER", TYPE="TYPE", POINTS="POINTS", LANGUAGE="LANGUAGE",
-                                LATE_POLICY="LATE-POLICY", UNITS="UNITS", AFFECT_ALL="AFFECT-ALL", EC_IF_LATE="EC-IF-LATE",
-
-                                EARLY = "EARLY", ONTIME="ONTIME", LATE = "LATE",
-                                MONTH = "MONTH", DAY = "DAY", YEAR = "YEAR", TIME = "TIME",
-                                VALUE = "VALUE",
-                                RUN = "RUN", DEMO = "DEMO", TESTER = "TESTER", MODE = "MODE",
-                                PROPERTY = "PROPERTY", KEY = "KEY";
+    private final static ActionRepository ACTION_REPOSITORY = new ActionRepository();
 
     /**
      * Parses the configuration file. 
@@ -60,52 +39,10 @@ public class ConfigurationParser
     static Configuration parse() throws ConfigurationException
     {
         Configuration config = new Configuration();
-
-        //Determine where the config file is
-        String filepath;
-        //Get the location of where this code is running
-        String loc = ConfigurationParser.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        //If this is actually the jar we are running from
-        if(loc.endsWith("jar") && loc.startsWith("/course/cs"))
-        {
-            filepath = loc.substring(0,loc.lastIndexOf("bin/"));
-        }
-        //Otherwise we are testing, use the hardcoded testing path
-        else
-        {
-            System.out.println("Using hard-coded test value for config location");
-            filepath = CONFIG_TEST_DIR_PATH;
-        }
-        filepath += Allocator.getCalendarUtilities().getCurrentYear() + "/config/" + CONFIG_FILE_NAME;
-        
-        //Check the config file exists
-        if(!new File(filepath).exists())
-        {
-            throw new ConfigurationException("Could not find configuration file at: " + filepath);
-        }
-
-        //Get XML as a document
-        Document document = getDocument(filepath);
-
-        //Get root node
-        Node configNode = getRootNode(document);
-
-        //Children
-        assignChildrenAttributes(configNode, config);
+        assignChildrenAttributes(getConfigurationRoot(), config);
+        config.setCourse(getCourse());
 
         return config;
-    }
-
-    /**
-     * Indicates whether a node should be skipped or not. A node should not be
-     * processed if it is a text node or a comment node.
-     *
-     * @param node
-     * @return whether a node should be skipped
-     */
-    private static boolean skipNode(Node node)
-    {
-        return (node.getNodeName().equals(TEXT_NODE) || node.getNodeName().equals(COMMENT_NODE));
     }
 
     /**
@@ -119,658 +56,594 @@ public class ConfigurationParser
      */
     private static void assignChildrenAttributes(Node configNode, Configuration config) throws ConfigurationException
     {
-        NodeList configList = configNode.getChildNodes();
-        for (int i = 0; i < configList.getLength(); i++)
-        {
-            Node currNode = configList.item(i);
-            //Skip if appropriate
-            if(skipNode(currNode))
-            {
-                continue;
-            }
-            //Assignments
-            else if (currNode.getNodeName().equals(ASSIGNMENTS))
-            {
-                processAssignments(currNode.getChildNodes(), config);
-            }
-            //DEFAULTS
-            else if (currNode.getNodeName().equals(DEFAULTS))
-            {
-                processDefaults(currNode.getChildNodes(), config);
-            }
-            //TAS
-            else if (currNode.getNodeName().equals(TAS))
-            {
-                processTAs(currNode.getChildNodes(), config);
-            }
-            //EMAIL
-            else if (currNode.getNodeName().equals(EMAIL))
-            {
-                processEmail(currNode.getChildNodes(), config);
-            }
-            else
-            {
-                throw new ConfigurationException(CONFIG, currNode, ASSIGNMENTS, DEFAULTS, TAS, EMAIL);
-            }
-        }
+        Map<String, Node> children = getUniqueChildren(configNode,
+                new String[] { DEFAULTS, EMAIL, ASSIGNMENTS, TAS },
+                new String[] { DEFAULTS, EMAIL, ASSIGNMENTS, TAS });
+
+        processAssignments(children.get(ASSIGNMENTS), config);
+        processDefaults(children.get(DEFAULTS), config);
+        processTAs(children.get(TAS), config);
+        processEmail(children.get(EMAIL), config);
     }
 
-    private static void processDefaults(NodeList defaultNodes, Configuration config) throws ConfigurationException
+    /**
+     * Parses DEFAULTS from <code>defaultNode</code> and adds information to
+     * <code>config</code>.
+     *
+     * <pre>
+     * {@code
+     * <DEFAULTS>
+     *     <LENIENCY>10</LENIENCY>
+     *
+     *     <!-- Tag optional, all attributes optional -->
+     *     <SUBMIT-OPTIONS SUBMIT="TRUE" NOTIFY="FALSE" EMAIL-GRD="FALSE" PRINT-GRD="FALSE" />
+     * </DEFAULTS>
+     * }
+     * </pre>
+     * 
+     * @param defaultNode
+     * @param config
+     * @throws ConfigurationException
+     */
+    private static void processDefaults(Node defaultNode, Configuration config) throws ConfigurationException
     {
-        SubmitOptions.Builder submitOptions = new SubmitOptions.Builder();
+        Map<String, Node> children = getUniqueChildren(defaultNode,
+                new String[] { LENIENCY }, new String[] { LENIENCY, SUBMIT_OPTIONS });
 
-        for (int i = 0; i < defaultNodes.getLength(); i++)
+        config.setLeniency(Integer.parseInt(children.get(LENIENCY).getFirstChild().getNodeValue()));
+
+        SubmitOptions submitOptions = new SubmitOptions();
+        if(children.containsKey(SUBMIT_OPTIONS))
         {
-            Node defaultNode = defaultNodes.item(i);
+            AttributeMap submitAttr = getAttributes(children.get(SUBMIT_OPTIONS),
+                    new String[] { }, new String[] { SUBMIT, NOTIFY, EMAIL_GRD, PRINT_GRD });
 
-            //Skip if appropriate
-            if(skipNode(defaultNode))
-            {
-                continue;
-            }
-            else if (defaultNode.getNodeName().equals(COURSE))
-            {
-                String course = defaultNode.getFirstChild().getNodeValue();
-                config.setCourse(course);
-            }
-            else if (defaultNode.getNodeName().equals(LENIENCY))
-            {
-                int leniency = Integer.parseInt(defaultNode.getFirstChild().getNodeValue());
-                config.setLeniency(leniency);
-            }
-            else if (defaultNode.getNodeName().equals(SUBMIT_OPTIONS))
-            {
-                for(int j = 0; j < defaultNode.getAttributes().getLength(); j++)
-                {
-                    Node propertyNode = defaultNode.getAttributes().item(j);
-
-                    if(propertyNode.getNodeName().equals(SUBMIT))
-                    {
-                        submitOptions.setSubmit(Boolean.parseBoolean(propertyNode.getNodeValue()));
-                    }
-                    else if(propertyNode.getNodeName().equals(NOTIFY))
-                    {
-                        submitOptions.setNotify(Boolean.parseBoolean(propertyNode.getNodeValue()));
-                    }
-                    else if(propertyNode.getNodeName().equals(EMAIL_GRD))
-                    {
-                        submitOptions.setEmailGrd(Boolean.parseBoolean(propertyNode.getNodeValue()));
-                    }
-                    else if(propertyNode.getNodeName().equals(PRINT_GRD))
-                    {
-                        submitOptions.setPrintGrd(Boolean.parseBoolean(propertyNode.getNodeValue()));
-                    }
-                    else
-                    {
-                        throw new ConfigurationException(SUBMIT_OPTIONS, propertyNode, SUBMIT, NOTIFY, EMAIL_GRD, PRINT_GRD);
-                    }
-                }
-            }
-            else
-            {
-                throw new ConfigurationException(DEFAULTS, defaultNode, COURSE, LENIENCY);
-            }
+            submitOptions = new SubmitOptions(
+                    submitAttr.getBoolean(SUBMIT, true),
+                    submitAttr.getBoolean(NOTIFY, true),
+                    submitAttr.getBoolean(EMAIL_GRD, true),
+                    submitAttr.getBoolean(PRINT_GRD, false));
         }
-
-        config.setSubmitOptions(submitOptions.build());
+        
+        config.setSubmitOptions(submitOptions);
     }
 
-/**
+    /**
      * Parses out the TA information.
+     *
+     * <pre>
+     * {@code
+     * <TAS>
+     *     <TA LOGIN="jak2" NAME="Joshua Kaplan" DEFAULT-GRADER="TRUE" ADMIN="TRUE" HTA="TRUE" />
+     *     ...
+     * </TAS>
+     * }
+     * </pre>
      *
      * @param taNodes
      * @param config
      * @throws ConfigurationException
      */
-    private static void processTAs(NodeList taNodes, Configuration config) throws ConfigurationException
+    private static void processTAs(Node tasNode, Configuration config) throws ConfigurationException
     {
-        for (int i = 0; i < taNodes.getLength(); i++)
+        Map<String, List<Node>> taNodes = getChildren(tasNode, new String[] { TA });
+
+        for(Node taNode : taNodes.get(TA))
         {
-            Node taNode = taNodes.item(i);
+            AttributeMap taAttrs = getAttributes(taNode,
+                    new String[] { LOGIN, NAME, DEFAULT_GRADER, ADMIN, HTA },
+                    new String[] { LOGIN, NAME, DEFAULT_GRADER, ADMIN, HTA });
 
-            //Skip if appropriate
-            if(skipNode(taNode))
-            {
-                continue;
-            }
-            //TA
-            else if(taNode.getNodeName().equals(TA))
-            {
-                String taLogin = taNode.getAttributes().getNamedItem(LOGIN).getNodeValue();
-                String taName = taNode.getAttributes().getNamedItem(NAME).getNodeValue();
-                boolean isDefaultGrader = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(DEFAULT_GRADER).getNodeValue());
-                boolean isAdmin = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(ADMIN).getNodeValue());
-                boolean isHTA = Boolean.parseBoolean(taNode.getAttributes().getNamedItem(HTA).getNodeValue());
+            String taLogin = taAttrs.getString(LOGIN);
+            String taName = taAttrs.getString(NAME);
+            boolean isDefaultGrader = taAttrs.getBoolean(DEFAULT_GRADER);
+            boolean isAdmin = taAttrs.getBoolean(ADMIN);
+            boolean isHTA = taAttrs.getBoolean(HTA);
 
-                config.addTA(new TA(taLogin, taName, isDefaultGrader, isAdmin, isHTA));
-            }
-            else
-            {
-                throw new ConfigurationException(TAS, taNode, TA);
-            }
-        }
-    }
-
-
-    private static void processEmail(NodeList emailNodes, Configuration config) throws ConfigurationException
-    {
-        for (int i = 0; i < emailNodes.getLength(); i++)
-        {
-            Node emailNode = emailNodes.item(i);
-
-            //Skip if appropriate
-            if(skipNode(emailNode))
-            {
-                continue;
-            }
-            else if (emailNode.getNodeName().equals(NOTIFY_ADDRESS))
-            {
-                NodeList notifyNodes = emailNode.getChildNodes();
-                for(int j = 0; j < notifyNodes.getLength(); j++)
-                {
-                    Node notifyNode = notifyNodes.item(j);
-                    if(skipNode(notifyNode))
-                    {
-                        continue;
-                    }
-                    else if(notifyNode.getNodeName().equals(ADDRESS))
-                    {
-                        String address = notifyNode.getFirstChild().getNodeValue();
-                        config.addNotifyAddress(address);
-                    }
-                    else
-                    {
-                        throw new ConfigurationException(NOTIFY, notifyNode, ADDRESS);
-                    }
-                }
-            }
-            else if (emailNode.getNodeName().equals(SEND_FROM))
-            {
-                EmailAccount account = new EmailAccount();
-
-                NodeList sendFromNodes = emailNode.getChildNodes();
-                for(int j = 0; j < sendFromNodes.getLength(); j++)
-                {
-                    Node sendFromNode = sendFromNodes.item(j);
-
-                    if(skipNode(sendFromNode))
-                    {
-                        continue;
-                    }
-                    else if(sendFromNode.getNodeName().equals(LOGIN))
-                    {
-                        String login = sendFromNode.getFirstChild().getNodeValue();
-                        account.setLogin(login);
-                    }
-                    else if(sendFromNode.getNodeName().equals(PASSWORD))
-                    {
-                        String password = sendFromNode.getFirstChild().getNodeValue();
-                        account.setPassword(password);
-                    }
-                    else if(sendFromNode.getNodeName().equals(CERT_PATH))
-                    {
-                        String certPath = sendFromNode.getFirstChild().getNodeValue();
-                        account.setCertPath(certPath);
-                    }
-                    else if(sendFromNode.getNodeName().equals(CERT_PASSWORD))
-                    {
-                        String certPass = sendFromNode.getFirstChild().getNodeValue();
-                        account.setCertPassword(certPass);
-                    }
-                    else
-                    {
-                        throw new ConfigurationException(SEND_FROM, sendFromNode, LOGIN, PASSWORD, SEND_FROM);
-                    }
-                }
-
-                config.setEmailAccount(account);
-            }
-            else
-            {
-                throw new ConfigurationException(EMAIL, emailNode, NOTIFY, SEND_FROM);
-            }
+            config.addTA(new TA(taLogin, taName, isDefaultGrader, isAdmin, isHTA));
         }
     }
 
     /**
-     * Parses the assignments out of the XML file and assigns them to the Configuration.
+     * Parses out the information for which email accounts to notify and
+     * information necessary to send email from.
+     * 
+     * <pre>
+     * {@code
+     * <EMAIL>
+     *     <NOTIFY>
+     *       <ADDRESS>account@cs.brown.edu</ADDRESS>
+     *       ...
+     *     </NOTIFY>
+     *     <SEND-FROM>
+     *         <LOGIN>cs101000</LOGIN>
+     *         <PASSWORD>thePassword</PASSWORD>
+     *         <CERT-PATH>/course/cs101/grading/smtp_certs/browncscerts.cert</CERT-PATH>
+     *         <CERT-PASSWORD>anotherPassword</CERT-PASSWORD>
+     *     </SEND-FROM>
+     * </EMAIL>
+     * }
+     * </pre>
      *
-     * @param assignmentNodes NodeList of the assignment nodes
+     * @param emailNode
+     * @param config
+     * @throws ConfigurationException
+     */
+    private static void processEmail(Node emailNode, Configuration config) throws ConfigurationException
+    {
+        Map<String, Node> emailNodes = getUniqueChildren(emailNode,
+                new String[] { NOTIFY_ADDRESS, SEND_FROM },
+                new String[] { NOTIFY_ADDRESS, SEND_FROM });
+        
+        // Add all email addresses to notify
+        Map<String, List<Node>> notifyNodes = getChildren(emailNodes.get(NOTIFY_ADDRESS),
+                new String[] { ADDRESS });
+        for(Node notifyNode : notifyNodes.get(ADDRESS))
+        {
+            config.addNotifyAddress(notifyNode.getFirstChild().getNodeValue());
+        }
+
+        // Email account info
+        Map<String, Node> sendFromNodes = getUniqueChildren(emailNodes.get(SEND_FROM),
+                new String[] { LOGIN, PASSWORD, CERT_PATH, CERT_PASSWORD},
+                new String[] { LOGIN, PASSWORD, CERT_PATH, CERT_PASSWORD});
+        EmailAccount account = new EmailAccount(
+                sendFromNodes.get(LOGIN).getFirstChild().getNodeValue(),
+                sendFromNodes.get(PASSWORD).getFirstChild().getNodeValue(),
+                sendFromNodes.get(CERT_PATH).getFirstChild().getNodeValue(),
+                sendFromNodes.get(CERT_PASSWORD).getFirstChild().getNodeValue());
+        config.setEmailAccount(account);
+    }
+
+    /**
+     * Parses the assignments from <code>assignmentsNode</code> and adds them
+     * to <code>config</code>.
+     *
+     * <pre>
+     * {@code
+     * <ASSIGNMENTS>
+     *     <ASSIGNMENT ... >
+     *     </ASSIGNMENT>
+     *     ...
+     * </ASSIGNMENTS>
+     * }
+     * </pre>
+     *
+     * @param assignmentsNode
      * @param config the Configuration object that will represent the config XML
      * @throws ConfigurationException
      */
-    private static void processAssignments(NodeList assignmentNodes, Configuration config) throws ConfigurationException
+    private static void processAssignments(Node assignmentsNode, Configuration config) throws ConfigurationException
     {
-        for (int i = 0; i < assignmentNodes.getLength(); i++)
+        Map<String, List<Node>> children = getChildren(assignmentsNode,
+                new String[] { ASSIGNMENT } );
+
+        for(Node asgnNode : children.get(ASSIGNMENT))
         {
-            Node currNode = assignmentNodes.item(i);
-            if(skipNode(currNode))
-            {
-                continue;
-            }
-            else if (currNode.getNodeName().equals(ASSIGNMENT))
-            {
-                addAssignment(currNode, config);
-            }
-            else
-            {
-                throw new ConfigurationException(ASSIGNMENTS, currNode, ASSIGNMENT);
-            }
+            config.addAssignment(getAssignment(asgnNode));
         }
     }
 
     /**
-     * Adds an individual assignment from the XML file and adds it to the Configuration.
+     * Parses out an assignment from <code>asgnNode</code>.
+     *
+     * <pre>
+     * {@code
+     * <ASSIGNMENT NAME="Awesome Assignment" NUMBER="1">
+     *     ...
+     * </ASSIGNMENT>
+     * }
+     * </pre>
      *
      * @param asgnNode Node of an assignment
-     * @param config the Configuration object that will represent the config XML
      * @throws ConfigurationException
      */
-    private static void addAssignment(Node asgnNode, Configuration config) throws ConfigurationException
+    private static Assignment getAssignment(Node asgnNode) throws ConfigurationException
     {
-        String name = asgnNode.getAttributes().getNamedItem(NAME).getNodeValue();
-        int number = Integer.valueOf(asgnNode.getAttributes().getNamedItem(NUMBER).getNodeValue());
+        AttributeMap asgnAttrs = getAttributes(asgnNode,
+                new String[] { NAME, NUMBER }, new String[] { NAME, NUMBER });
+        Assignment asgn = new Assignment(asgnAttrs.getString(NAME), asgnAttrs.getInt(NUMBER));
 
-        Assignment asgn = new Assignment(name, number);
+        Map<String, List<Node>> children =
+                getChildren(asgnNode, new String[] { LAB, NON_HANDIN, HANDIN });
 
-        NodeList childrenNodes = asgnNode.getChildNodes();
-        for (int i = 0; i < childrenNodes.getLength(); i++)
+        for(Node labNode : children.get(LAB))
         {
-            Node currNode = childrenNodes.item(i);
-            if(skipNode(currNode))
-            {
-                continue;
-            }
-            //Part
-            else if (currNode.getNodeName().equals(PART))
-            {
-                processPart(currNode, asgn);
-            }
-            else
-            {
-                throw new ConfigurationException(ASSIGNMENT, currNode, RUBRIC, DEDUCTIONS, PART);
-            }
+            asgn.addLabPart(getLabPart(labNode, asgn));
         }
 
-        config.addAssignment(asgn);
+        for(Node nonHandinNode : children.get((NON_HANDIN)))
+        {
+            asgn.addNonHandinPart(getNonHandinPart(nonHandinNode, asgn));
+        }
+
+        //Only one handin child per assignment allowed
+        if(children.get(HANDIN).size() > 1)
+        {
+            throw new ConfigurationException(asgnNode.getNodeName() + " may " +
+                    "have at most one " + HANDIN + " child node");
+        }
+        //Iterate, because this is more convenient than handling the cases of 0
+        //or 1 handin nodes separately
+        for(Node handinNode : children.get((HANDIN)))
+        {
+            processHandin(handinNode, asgn);
+        }
+
+        return asgn;
     }
 
     /**
-     * Adds a part to the assignment. Supports PARTs of
-     * TYPE: NON-CODE, CODE, & LAB
+     * Parses out a lab from <code>labNode</code>.
      *
-     * @param partNode
+     * <pre>
+     * {@code
+     * <LAB NAME="Image Processing" NUMBER="2" LAB-NUMBER="8" POINTS="15"/>
+     * }
+     * </pre>
+     *
+     * @param labNode
      * @param asgn
+     * @return
      * @throws ConfigurationException
      */
-    private static void processPart(Node partNode, Assignment asgn) throws ConfigurationException
+    private static LabPart getLabPart(Node labNode, Assignment asgn) throws ConfigurationException
     {
-        String name = partNode.getAttributes().getNamedItem(NAME).getNodeValue();
-        int points = Integer.valueOf(partNode.getAttributes().getNamedItem(POINTS).getNodeValue());
-        String type = partNode.getAttributes().getNamedItem(TYPE).getNodeValue();
+        AttributeMap labAttrs = getAttributes(labNode,
+                new String[] { NAME, POINTS, NUMBER, LAB_NUMBER },
+                new String[] { NAME, POINTS, NUMBER, LAB_NUMBER });
 
-        if(type.equalsIgnoreCase("NON-HANDIN"))
-        {
-            asgn.addNonHandinPart(new NonHandinPart(asgn, name, points));
-        }
-        else if(type.equalsIgnoreCase("HANDIN"))
-        {
-            processHandinPart(partNode, asgn, name, points);
-        }
-        else if(type.equalsIgnoreCase("LAB"))
-        {
-            int labNumber = Integer.valueOf(partNode.getAttributes().getNamedItem(LAB_NUMBER).getNodeValue());
+        String name = labAttrs.getString(NAME);
+        int points = labAttrs.getInt(POINTS);
+        int number = labAttrs.getInt(NUMBER);
+        int labNumber = labAttrs.getInt(LAB_NUMBER);
 
-            asgn.addLabPart(new LabPart(asgn, name, points, labNumber));
-        }
-        else
-        {
-            throw new ConfigurationException("Encountered " + PART + " of unsupported "+ TYPE + ": " + type);
-        }
-    }
-
-    private static void processHandinPart(Node partNode, Assignment asgn, String name, int points) throws ConfigurationException
-    {
-        String language = null;
-
-        //Look for language tag
-        NamedNodeMap attributes = partNode.getAttributes();
-        for(int i = 0; i < attributes.getLength(); i++)
-        {
-            Node attribute = attributes.item(i);
-
-            if(skipNode(attribute))
-            {
-                continue;
-            }
-            else if(attribute.getNodeName().equals(LANGUAGE))
-            {
-                language = attribute.getNodeValue();
-            }
-        }
-
-        HandinPart part = null;
-        
-        //Create CodePart
-        if(language != null)
-        {
-            part = processCodePart(partNode, language, asgn, name, points);
-        }
-        //Create NonCodePart
-        else
-        {
-            part = new NonCodeHandin(asgn, name, points);
-        }
-
-        //Find rubric and deduction list
-        NodeList childNodes = partNode.getChildNodes();
-        for(int i = 0; i < childNodes.getLength(); i++)
-        {
-            Node currNode = childNodes.item(i);
-
-            if(skipNode(currNode))
-            {
-                continue;
-            }
-            //Time information (LATE-POLICY)
-            else if(currNode.getNodeName().equals(LATE_POLICY))
-            {
-                processTimeInfo(currNode, part);
-            }
-            //Rubric
-            else if (currNode.getNodeName().equals(RUBRIC))
-            {
-                String location = currNode.getAttributes().getNamedItem(LOCATION).getNodeValue();
-                part.setRubric(location);
-            }
-            //Deduction list
-            else if (currNode.getNodeName().equals(DEDUCTIONS))
-            {
-                String location = currNode.getAttributes().getNamedItem(LOCATION).getNodeValue();
-                part.setDeductionList(location);
-            }
-            else if(language != null && currNode.getNodeName().equals(RUN)) {}
-            else if(language != null && currNode.getNodeName().equals(DEMO)) {}
-            else if(language != null && currNode.getNodeName().equals(TESTER)) {}
-            else
-            {
-                throw new ConfigurationException("HANDIN node only supports children of types " +
-                                                 RUBRIC + " and " + DEDUCTIONS + ". Encountered node:" +
-                                                 currNode.getNodeName());
-            }
-        }
-
-        asgn.addHandinPart(part);
-
+        return new LabPart(asgn, name, number, points, labNumber);
     }
 
     /**
-     * Parses out a code part. Currently supports Java, C, C++, & Matlab.
+     * Parses out a non-handin from <code>nonHandinNode</code>.
      *
-     * @param partNode
+     * <pre>
+     * {@code
+     * <NON-HANDIN NAME="Design Check" NUMBER="3" POINTS="10"/>
+     * }
+     * </pre>
+     *
+     * @param nonHandinNode
      * @param asgn
-     * @param name
-     * @param points
+     * @return
      * @throws ConfigurationException
      */
-    private static HandinPart processCodePart(Node partNode, String language, Assignment asgn, String name, int points) throws ConfigurationException
+    private static NonHandinPart getNonHandinPart(Node nonHandinNode, Assignment asgn) throws ConfigurationException
     {
-        CodeHandin part = null;
-        
-        //String language = partNode.getAttributes().getNamedItem(LANGUAGE).getNodeValue();
+        AttributeMap nonHandinAttr = getAttributes(nonHandinNode,
+                new String[] { NAME, POINTS, NUMBER },
+                new String[] { NAME, POINTS, NUMBER });
 
-        //Create the appropriate subclass of CodePart based on the language
-        if(language.equalsIgnoreCase("Java"))
+        String name = nonHandinAttr.getString(NAME);
+        int points = nonHandinAttr.getInt(POINTS);
+        int number = nonHandinAttr.getInt(NUMBER);
+
+        return new NonHandinPart(asgn, name, number, points);
+    }
+
+    /**
+     * Parses out a handin from <code>handinNode</code> and adds it to
+     * <code>asgn</code>.
+     *
+     * <pre>
+     * {@code
+     * <HANDIN>
+     *     <LATE-POLICY ...>
+     *         ...
+     *     </LATE-POLICY>
+     *
+     *     <PART ...>
+     *         ...
+     *     </PART>
+     *     ...
+     * </HANDIN>
+     * }
+     * </pre>
+     *
+     * @param handinNode
+     * @param asgn
+     * @throws ConfigurationException
+     */
+    private static void processHandin(Node handinNode, Assignment asgn) throws ConfigurationException
+    {
+        Map<String, List<Node>> children = getChildren(handinNode,
+                new String[] { LATE_POLICY, PART });
+
+        //Time information
+        TimeInformation timeInfo = null;
+        if(children.get(LATE_POLICY).size() == 1)
         {
-            part = new JavaHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("C"))
-        {
-            part = new CHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("C++"))
-        {
-            part = new CPPHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("Matlab"))
-        {
-            part = new MatlabHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("custom"))
-        {
-            part = new CustomHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("text"))
-        {
-            part = new TextHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("Ant"))
-        {
-            part = new AntHandin(asgn, name, points);
-        }
-        else if(language.equalsIgnoreCase("Make"))
-        {
-            part = new MakeHandin(asgn, name, points);
+            timeInfo = getTimeInfo(children.get(LATE_POLICY).get(0));
         }
         else
         {
-            throw new ConfigurationException("Encountered CODE PART of unsupported" + LANGUAGE + ": " + language);
+            throw new ConfigurationException(handinNode.getNodeName() +
+                    " requires 1 " + LATE_POLICY + " child node. There are " +
+                    children.get(LATE_POLICY).size() + " children nodes.");
         }
 
-        //Process out LATE-POLICY, RUN, DEMO, TESTER tags
-        NodeList childrenNodes = partNode.getChildNodes();
-        for (int i = 0; i < childrenNodes.getLength(); i++)
+        //Handin
+        Handin handin = new Handin(asgn, timeInfo);
+        asgn.setHandin(handin);
+
+        //Parts
+        List<Node> parts = children.get(PART);
+        if(parts.isEmpty())
         {
-            Node childNode = childrenNodes.item(i);
+            throw new ConfigurationException(handinNode.getNodeName() +
+                    " must have 1 or more " + PART + " children nodes.");
+        }
+        for(Node partNode : parts)
+        {
+            asgn.addDistributablePart(getDistributablePart(partNode, handin));
+        }
+    }
 
-            if(skipNode(childNode))
+    /**
+     * Parses out a distributable part from <code>partNode</code>. All children
+     * of PART are optional and must be unique if present.
+     *
+     * <pre>
+     * {@code
+     * <PART NAME="Code" NUMBER="4" POINTS="80">
+     *     <RUBRIC LOCATION="..."/>
+     *     <DEDUCTIONS LOCATION="..."/>
+     *
+     *     <RUN MODE="java:magic-run">
+     *         <PROPERTY KEY="propName" VALUE="greaaaat"/>
+     *         ...
+     *     </RUN>
+     *
+     *     <DEMO MODE="awesome:intimidate-students">
+     *         <PROPERTY KEY="propName" VALUE="greaaaat"/>
+     *         ...
+     *     </DEMO>
+     *
+     *     <TEST MODE="amazing:fail-all">
+     *         <PROPERTY KEY="propName" VALUE="greaaaat"/>
+     *         ...
+     *     </TEST>
+     *
+     *     <OPEN MODE="incredible:abracadabra">
+     *         <PROPERTY KEY="propName" VALUE="greaaaat"/>
+     *         ...
+     *     </OPEN>
+     *
+     *     <PRINT MODE="external:command">
+     *         <PROPERTY KEY="propName" VALUE="greaaaat"/>
+     *         ...
+     *     </OPEN>
+     * </PART>
+     * }
+     * </pre>
+     *
+     * @param partNode
+     * @param handin
+     * @return
+     * @throws ConfigurationException
+     */
+    private static DistributablePart getDistributablePart(Node partNode,
+            Handin handin) throws ConfigurationException
+    {
+        Map<String, Node> children = getUniqueChildren(partNode, new String[] { },
+            new String[] { INCLUDE_FILES, RUBRIC, DEDUCTIONS, RUN, DEMO, TEST, OPEN, PRINT });
+
+        File deductions = null;
+        if(children.containsKey(DEDUCTIONS))
+        {
+            AttributeMap attrs = getAttributes(children.get(DEDUCTIONS),
+                    new String[] { LOCATION }, new String[] { LOCATION });
+
+            deductions = new File(attrs.getString(LOCATION));
+        }
+
+        File rubric = null;
+        if(children.containsKey(RUBRIC))
+        {
+            AttributeMap attrs = getAttributes(children.get(RUBRIC),
+                    new String[] { LOCATION }, new String[] { LOCATION });
+
+            rubric = new File(attrs.getString(LOCATION));
+        }
+
+        FilterProvider provider = new AlwaysAcceptingFilterProvider();
+        if(children.containsKey(INCLUDE_FILES))
+        {
+            provider = getInclusionFilter(children.get(INCLUDE_FILES));
+        }
+
+        //Read out the RUN, OPEN, DEMO, TEST, OPEN, & PRINT modes
+        Map<ActionMode, DistributableAction> actions =
+                new HashMap<ActionMode, DistributableAction>();
+        for(ActionMode mode : ActionMode.values())
+        {
+            if(children.containsKey(mode.toString()))
             {
-                continue;
-            }
-            //RUN
-            else if(childNode.getNodeName().equals(RUN))
-            {
-                //Run mode
-                String mode = childNode.getAttributes().getNamedItem(MODE).getNodeValue();
-                part.setRunMode(mode);
+                Node modeNode = children.get(mode.toString());
 
-                //Properties
-                NodeList propertyNodes = childNode.getChildNodes();
-                for (int j = 0; j < propertyNodes.getLength(); j++)
-                {
-                    Node propertyNode = propertyNodes.item(j);
+                AttributeMap attrs = getAttributes(modeNode,
+                        new String[] { MODE }, new String[] { MODE });
+                String actionName = attrs.getString(MODE);
 
-                    if(skipNode(propertyNode))
-                    {
-                        continue;
-                    }
-                    else if(propertyNode.getNodeName().equals(PROPERTY))
-                    {
-                        String key = propertyNode.getAttributes().getNamedItem(KEY).getNodeValue();
-                        String value = propertyNode.getAttributes().getNamedItem(VALUE).getNodeValue();
-                        part.setRunProperty(key, value);
-                    }
-                    else
-                    {
-                        throw new ConfigurationException(RUN, propertyNode, PROPERTY);
-                    }
-                }
+                Map<String, String> properties = getPropertyMap(modeNode);
 
-            }
-            //DEMO
-            else if(childNode.getNodeName().equals(DEMO))
-            {
-                //Demo mode
-                String mode = childNode.getAttributes().getNamedItem(MODE).getNodeValue();
-                part.setDemoMode(mode);
-
-                //Properties
-                NodeList propertyNodes = childNode.getChildNodes();
-                for (int j = 0; j < propertyNodes.getLength(); j++)
-                {
-                    Node propertyNode = propertyNodes.item(j);
-
-                    if(skipNode(propertyNode))
-                    {
-                        continue;
-                    }
-                    else if(propertyNode.getNodeName().equals(PROPERTY))
-                    {
-                        String key = propertyNode.getAttributes().getNamedItem(KEY).getNodeValue();
-                        String value = propertyNode.getAttributes().getNamedItem(VALUE).getNodeValue();
-                        part.setDemoProperty(key, value);
-                    }
-                    else
-                    {
-                        throw new ConfigurationException(DEMO, propertyNode, PROPERTY);
-                    }
-                }
-
-            }
-            //TESTER
-            else if(childNode.getNodeName().equals(TESTER))
-            {
-                //Tester mode
-                String mode = childNode.getAttributes().getNamedItem(MODE).getNodeValue();
-                part.setTesterMode(mode);
-
-                //Properties
-                NodeList propertyNodes = childNode.getChildNodes();
-                for (int j = 0; j < propertyNodes.getLength(); j++)
-                {
-                    Node propertyNode = propertyNodes.item(j);
-
-                    if(skipNode(propertyNode))
-                    {
-                        continue;
-                    }
-                    else if(propertyNode.getNodeName().equals(PROPERTY))
-                    {
-                        String key = propertyNode.getAttributes().getNamedItem(KEY).getNodeValue();
-                        String value = propertyNode.getAttributes().getNamedItem(VALUE).getNodeValue();
-                        part.setTesterProperty(key, value);
-                    }
-                    else
-                    {
-                        throw new ConfigurationException(TESTER, propertyNode, PROPERTY);
-                    }
-                }
-            }
-            else if(childNode.getNodeName().equals(RUBRIC)) {}
-            else if(childNode.getNodeName().equals(DEDUCTIONS)) {}
-            else if(childNode.getNodeName().equals(LATE_POLICY)) {}
-            else
-            {
-                throw new ConfigurationException(PART, childNode, LATE_POLICY, RUN, DEMO, TESTER, RUBRIC, DEDUCTIONS);
+                //This will throw an exception if the action name does not exist,
+                //there are required properties missing or invalid properties are present
+                actions.put(mode, ACTION_REPOSITORY.getAction(mode, actionName, properties));
             }
         }
-        
+
+        AttributeMap partAttrs = getAttributes(partNode,
+                new String[] { NAME, POINTS, NUMBER },
+                new String[] { NAME, POINTS, NUMBER });
+
+        DistributablePart part = new DistributablePart(handin,
+                partAttrs.getString(NAME),
+                partAttrs.getInt(NUMBER),
+                partAttrs.getInt(POINTS),
+                deductions, rubric, provider,
+                actions.get(ActionMode.RUN),
+                actions.get(ActionMode.DEMO),
+                actions.get(ActionMode.TEST),
+                actions.get(ActionMode.OPEN),
+                actions.get(ActionMode.PRINT));
+
         return part;
     }
 
     /**
-     * Processes the LATE-POLICY tag information.
+     * Creates a FilterProvider from <code>inclusionNode</code>.
      *
-     * @param timeNode
-     * @param part
+     * <pre>
+     * {@code
+     * <INCLUDE-FILES>
+     *     <FILE PATH=”hw1_1a.m” />
+     *     <DIRECTORY PATH=”problem_2/” />
+     * </INCLUDE-FILES>
+     * }
+     * </pre>
+     *
+     * @param inclusionNode
+     * @return
      * @throws ConfigurationException
      */
-    private static void processTimeInfo(Node timeNode, HandinPart part) throws ConfigurationException
+    private static FilterProvider getInclusionFilter(Node inclusionNode)
+            throws ConfigurationException
     {
-        // Get attributes
+        FilterProvider provider;
 
-        // Late Policy
-        LatePolicy policy = null;
-        // Grade Units (Not necessary if the policy is NO_LATE)
-        GradeUnits units = null;
-        // Affect-All (optional, defaults to false) - whether late policy deductions
-        // apply to all (entire assignment) or just the handin parts of the rubric
-        boolean affectAll = false;
-        // If extra credit is allowed for late handins (optional, defaults to true)
-        boolean ecIfLate = true;
+        Map<String, List<Node>> children = getChildren(inclusionNode,
+                new String[] { DIRECTORY, FILE });
 
-        NamedNodeMap attrMap = timeNode.getAttributes();
-        for(int i = 0; i < attrMap.getLength(); i++)
+
+        ArrayList<FilterProvider> providers = new ArrayList<FilterProvider>();
+
+        for(Node includeNode : children.get(DIRECTORY))
         {
-            Node attrNode = attrMap.item(i);
-
-            if(skipNode(attrNode))
-            {
-                continue;
-            }
-            else if(attrNode.getNodeName().equals(TYPE))
-            {
-                policy = LatePolicy.valueOf(attrNode.getNodeValue());
-            }
-            else if(attrNode.getNodeName().equals(UNITS))
-            {
-                units = GradeUnits.valueOf(attrNode.getNodeValue());
-            }
-            else if(attrNode.getNodeName().equals(AFFECT_ALL))
-            {
-                affectAll = Boolean.parseBoolean(attrNode.getNodeValue());
-            }
-            else if(attrNode.getNodeName().equals(EC_IF_LATE))
-            {
-                ecIfLate = Boolean.parseBoolean(attrNode.getNodeValue());
-            }
-            else
-            {
-
-            }
+            AttributeMap attrs = getAttributes(includeNode,
+                    new String[] { PATH }, new String[] { PATH });
+            String relativePath = attrs.getString(PATH);
+            providers.add(new DirectoryFilterProvider(relativePath));
+        }
+        for(Node includeNode : children.get(FILE))
+        {
+            AttributeMap attrs = getAttributes(includeNode,
+                    new String[] { PATH }, new String[] { PATH });
+            String relativePath = attrs.getString(PATH);
+            providers.add(new FileFilterProvider(relativePath));
         }
 
-        TimeInformation timeInfo = new TimeInformation(policy, units, affectAll, ecIfLate);
-
-        NodeList childrenNodes = timeNode.getChildNodes();
-        for (int i = 0; i < childrenNodes.getLength(); i++)
+        if(providers.isEmpty())
         {
-            Node childNode = childrenNodes.item(i);
-
-            if(skipNode(childNode))
-            {
-                continue;
-            }
-            else if (childNode.getNodeName().equals(EARLY))
-            {
-                CalendarValue calval = getTimeFromNode(childNode);
-                timeInfo.setEarly(calval.cal, calval.val);
-            }
-            else if (childNode.getNodeName().equals(ONTIME))
-            {
-                CalendarValue calval = getTimeFromNode(childNode);
-                timeInfo.setOntime(calval.cal, calval.val);
-            }
-            else if (childNode.getNodeName().equals(LATE))
-            {
-                CalendarValue calval = getTimeFromNode(childNode);
-                timeInfo.setLate(calval.cal, calval.val);
-            }
-            else
-            {
-                throw new ConfigurationException(LATE_POLICY, childNode, EARLY, ONTIME, LATE);
-            }
+            provider = new AlwaysAcceptingFilterProvider();
+        }
+        else
+        {
+            provider = new OrFilterProvider(providers);
         }
 
-        part.setTimeInfo(timeInfo);
+        return provider;
     }
-
 
     /**
-     * A simple data structure that holds a Calendar and an integer value
+     * Parses out the properties for a RUN, DEMO, OPEN, TEST, or PRINT mode.
+     * Maps a property's KEY to its VALUE.
+     *
+     * @param modeNode
+     * @return
+     * @throws ConfigurationException
      */
-    private static class CalendarValue
+    private static Map<String, String> getPropertyMap(Node modeNode)
+            throws ConfigurationException
     {
-        Calendar cal;
-        int val;
+        Map<String, List<Node>> propertyNodes = getChildren(modeNode,
+                        new String[] { PROPERTY });
+        Map<String, String> properties = new HashMap<String, String>();
 
-        CalendarValue(Calendar cal, int val)
+        for(Node propertyNode : propertyNodes.get(PROPERTY))
         {
-            this.cal = cal;
-            this.val = val;
+            AttributeMap attrs = getAttributes(propertyNode,
+                    new String[] { KEY, VALUE }, new String[] { KEY, VALUE });
+
+            properties.put(attrs.getString(KEY), attrs.getString(VALUE));
         }
+
+        return properties;
     }
 
+    /**
+     * Parses out the LATE-POLICY information from <code>timeNode</code>.
+     *
+     * <pre>
+     * {@code
+     * <LATE-POLICY TYPE="NO_LATE" AFFECT-ALL="TRUE" EC-IF-LATE="FALSE" UNITS="PERCENTAGE">
+     *     <ONTIME MONTH="9" DAY="14" YEAR="2010" TIME="23:59:59"/>
+     * </LATE-POLICY>
+     * }
+     * </pre>
+     *
+     * @param timeNode
+     * @return
+     * @throws ConfigurationException
+     */
+    private static TimeInformation getTimeInfo(Node timeNode) throws ConfigurationException
+    {
+        AttributeMap timeAttrs = getAttributes(timeNode,
+                new String[] { TYPE }, new String [] { TYPE, UNITS, AFFECT_ALL, EC_IF_LATE });
+
+        // Late Policy
+        LatePolicy policy = LatePolicy.valueOf(timeAttrs.getString(TYPE));
+
+        // Grade Units (not necessary if the policy is NO_LATE)
+        GradeUnits units = null;
+        if(policy != LatePolicy.NO_LATE)
+        {
+            if(timeAttrs.hasAttribute(UNITS))
+            {
+                units = GradeUnits.valueOf(timeAttrs.getString(UNITS));
+            }
+            else
+            {
+                throw new ConfigurationException(LATE_POLICY + " must have a " +
+                        UNITS + " attribute when " + TYPE + "=" + policy);
+            }
+        }
+
+        // Affect-All (optional, defaults to false) - whether late policy deductions
+        // apply to all (entire assignment) or just the handin parts of the rubric
+        boolean affectAll = timeAttrs.getBoolean(AFFECT_ALL, false);
+        
+        // If extra credit is allowed for late handins (optional, defaults to true)
+        boolean ecIfLate = timeAttrs.getBoolean(EC_IF_LATE, true);
+
+        // TimeInformation
+        TimeInformation timeInfo = new TimeInformation(policy, units, affectAll, ecIfLate);
+
+        Map<String, Node> times = getUniqueChildren(timeNode,
+                new String[] { ONTIME }, new String[] { EARLY, ONTIME, LATE });
+
+        CalendarValue calval = getTimeFromNode(times.get(ONTIME));
+        timeInfo.setOntime(calval.cal, calval.val);
+        if(times.containsKey(EARLY))
+        {
+            calval = getTimeFromNode(times.get(EARLY));
+            timeInfo.setEarly(calval.cal, calval.val);
+        }
+        if(times.containsKey(LATE))
+        {
+            calval = getTimeFromNode(times.get(LATE));
+            timeInfo.setLate(calval.cal, calval.val);
+        }
+
+        return timeInfo;
+    }
 
     /**
      * Parses the date information out of a node that has date and value
@@ -782,38 +655,15 @@ public class ConfigurationParser
      */
     private static CalendarValue getTimeFromNode(Node node) throws ConfigurationException
     {
-        String month = "", day = "", year = "", time = "";
-        int val = 0;
+        AttributeMap attrs = getAttributes(node,
+                new String[] { MONTH, DAY, YEAR, TIME },
+                new String[] { MONTH, DAY, YEAR, TIME, VALUE });
 
-        for (int i = 0; i < node.getAttributes().getLength(); i++)
-        {
-            Node attributeNode = node.getAttributes().item(i);
-
-            if (attributeNode.getNodeName().equals(MONTH))
-            {
-                month = attributeNode.getNodeValue();
-            }
-            else if (attributeNode.getNodeName().equals(DAY))
-            {
-                day = attributeNode.getNodeValue();
-            }
-            else if (attributeNode.getNodeName().equals(YEAR))
-            {
-                year = attributeNode.getNodeValue();
-            }
-            else if (attributeNode.getNodeName().equals(TIME))
-            {
-                time = attributeNode.getNodeValue();
-            }
-            else if (attributeNode.getNodeName().equals(VALUE))
-            {
-                val = Integer.valueOf(attributeNode.getNodeValue());
-            }
-            else
-            {
-                throw new ConfigurationException("Could not process date information from " + attributeNode.getNodeName());
-            }
-        }
+        String month = attrs.getString(MONTH);
+        String day = attrs.getString(DAY);
+        String year = attrs.getString(YEAR);
+        String time = attrs.getString(TIME);
+        int val = attrs.getInt(VALUE, 0);
 
         Calendar cal = Allocator.getCalendarUtilities().getCalendar(year, month, day, time);
 
@@ -821,52 +671,19 @@ public class ConfigurationParser
     }
 
     /**
-     * Get the Document representing the XML file specified by the string passed in.
-     *
-     * @param XMLFilePath Absolute file path to the XML file
-     * @return Document representing the XML file
+     * A simple data structure that holds a Calendar and an integer value.
+     * Used by {@link #getTimeFromNode(Node}) to return both the calendar
+     * and associated point or percentage value from either a late or early handin.
      */
-    private static Document getDocument(String XMLFilePath) throws ConfigurationException
+    private static class CalendarValue
     {
-        //Check if file exists
-        File file = new File(XMLFilePath);
-        if(!file.exists())
-        {
-            throw new ConfigurationException("Configuration could not be read, location specified: " + XMLFilePath);
-        }
+        final Calendar cal;
+        final int val;
 
-        //Parse document
-        Document document = null;
-        try
+        CalendarValue(Calendar cal, int val)
         {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.parse(new File(XMLFilePath));
+            this.cal = cal;
+            this.val = val;
         }
-        catch (Exception e)
-        {
-            throw new ConfigurationException("Exception thrown during parsing, " + XMLFilePath + " is illegally formatted");
-        }
-
-        return document;
     }
-
-    /**
-     * Returns the root CONFIG node. If it cannot be found, an error is printed and null is returned.
-     *
-     * @param document Document representing this XML file
-     * @return root CONFIG node
-     */
-    private static Node getRootNode(Document document) throws ConfigurationException
-    {
-        Node rubricNode = document.getDocumentElement();
-
-        if (!rubricNode.getNodeName().equals(CONFIG))
-        {
-            throw new ConfigurationException("XML not formatted properly. The root " + CONFIG + " node cannot be found.");
-        }
-
-        return rubricNode;
-    }
-
 }
