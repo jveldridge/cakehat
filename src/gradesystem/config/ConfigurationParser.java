@@ -131,16 +131,15 @@ public class ConfigurationParser
         for(Node taNode : taNodes.get(TA))
         {
             AttributeMap taAttrs = getAttributes(taNode,
-                    new String[] { LOGIN, NAME, DEFAULT_GRADER, ADMIN, HTA },
-                    new String[] { LOGIN, NAME, DEFAULT_GRADER, ADMIN, HTA });
+                    new String[] { LOGIN, NAME, DEFAULT_GRADER, ADMIN },
+                    new String[] { LOGIN, NAME, DEFAULT_GRADER, ADMIN });
 
             String taLogin = taAttrs.getString(LOGIN);
             String taName = taAttrs.getString(NAME);
             boolean isDefaultGrader = taAttrs.getBoolean(DEFAULT_GRADER);
             boolean isAdmin = taAttrs.getBoolean(ADMIN);
-            boolean isHTA = taAttrs.getBoolean(HTA);
 
-            config.addTA(new TA(taLogin, taName, isDefaultGrader, isAdmin, isHTA));
+            config.addTA(new TA(taLogin, taName, isDefaultGrader, isAdmin));
         }
     }
 
