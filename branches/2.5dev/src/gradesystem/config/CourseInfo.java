@@ -60,19 +60,6 @@ public interface CourseInfo
     public Collection<TA> getTAs();
 
     /**
-     * Returns a collection of TAs that are not HTAs. (Therefore this could
-     * include TAs who are actually grad students.)
-     * @return
-     */
-    public Collection<TA> getUTAs();
-
-    /**
-     * Returns a collection of HTAs.
-     * @return
-     */
-    public Collection<TA> getHTAs();
-
-    /**
      * Returns a collection of TAs that are default graders.
      * @return
      */

@@ -1344,10 +1344,10 @@ public class BackendView extends JFrame
 
     private void resetDatabaseButtonActionPerformed()
     {
-        //check that user performing reset is an HTA
-        if(!Allocator.getUserServices().isUserHTA()) {
+        //check that user performing reset is an administrator
+        if(!Allocator.getUserServices().getUser().isAdmin()) {
             JOptionPane.showMessageDialog(this, "You are not authorized to reset the database; " +
-                    "only HTAs may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
+                    "only administrators may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

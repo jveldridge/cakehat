@@ -75,14 +75,6 @@ public interface UserServices
     public boolean isUserAdmin();
 
     /**
-     * Returns whether or not the current user is an HTA for the course as
-     * specified by the configuration file.
-     *
-     * @return whether user is a HTA
-     */
-    public boolean isUserHTA();
-
-    /**
      * Returns whether or not the student with given login studentLogin is a
      * member of the course's student group.
      *

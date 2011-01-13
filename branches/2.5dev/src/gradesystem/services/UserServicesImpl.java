@@ -119,21 +119,6 @@ public class UserServicesImpl implements UserServices
         return false;
     }
 
-    public boolean isUserHTA()
-    {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getHTAs())
-        {
-            if(ta.getLogin().equals(userLogin))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public boolean isInStudentGroup(String studentLogin) throws NativeException
     {
         return Allocator.getUserUtilities().isMemberOfGroup(studentLogin, Allocator.getCourseInfo().getStudentGroup());

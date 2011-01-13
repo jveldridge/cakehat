@@ -85,44 +85,6 @@ public class CourseInfoImpl implements CourseInfo
 
     //             Built from configuration data
 
-    private Collection<TA> _utas = null;
-    public Collection<TA> getUTAs()
-    {
-        if(_utas == null)
-        {
-            _utas = new Vector<TA>();
-
-            for(TA ta : getTAs())
-            {
-                if(!ta.isHTA())
-                {
-                    _utas.add(ta);
-                }
-            }
-        }
-
-        return _utas;
-    }
-
-    private Collection<TA> _htas = null;
-    public Collection<TA> getHTAs()
-    {
-        if(_htas == null)
-        {
-            _htas = new Vector<TA>();
-
-            for(TA ta : getTAs())
-            {
-                if(ta.isHTA())
-                {
-                    _htas.add(ta);
-                }
-            }
-        }
-
-        return _htas;
-    }
-
     private Collection<TA> _defaultGraders = null;
     public Collection<TA> getDefaultGraders()
     {

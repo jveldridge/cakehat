@@ -28,7 +28,7 @@ class ConfigurationParserHelper
                         SUBMIT_OPTIONS = "SUBMIT-OPTIONS",
                         SUBMIT = "SUBMIT", NOTIFY = "NOTIFY", EMAIL_GRD = "EMAIL-GRD", PRINT_GRD = "PRINT-GRD",
 
-                        TA = "TA", DEFAULT_GRADER = "DEFAULT-GRADER", ADMIN = "ADMIN", HTA = "HTA",
+                        TA = "TA", DEFAULT_GRADER = "DEFAULT-GRADER", ADMIN = "ADMIN",
 
                         NOTIFY_ADDRESS = "NOTIFY", ADDRESS = "ADDRESS",
                         SEND_FROM = "SEND-FROM", LOGIN = "LOGIN", PASSWORD = "PASSWORD",
