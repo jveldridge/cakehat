@@ -59,7 +59,11 @@ public interface CourseInfo
      */
     public Collection<TA> getTAs();
 
-
+    /**
+     * Returns a collection of TAs that are not HTAs. (Therefore this could
+     * include TAs who are actually grad students.)
+     * @return
+     */
     public Collection<TA> getUTAs();
 
     /**
@@ -98,6 +102,7 @@ public interface CourseInfo
      * Returns a collection of all assignments that have a handin part.
      * 
      * @return
+     * @deprecated 
      */
     public Collection<Assignment> getHandinAssignments();
 
@@ -238,12 +243,17 @@ public interface CourseInfo
      *
      * (Technically this isn't course info, but this is a convenient place to
      * put it.)
+     *
+     * @return
      */
     public String getCakehatEmailAddress();
 
     /**
      * Returns a set of the assignments where there is a choice of which one students can do. (cs15 fnl prjs)
      * @return Set of assignment numbers
+     *
+     * @deprecated Assignment numbers must now be unique, but part numbers do
+     * not need to be
      */
     public Set<Integer> getAssignmentsWithChoices();
 }

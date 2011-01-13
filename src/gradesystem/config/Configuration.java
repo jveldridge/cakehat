@@ -5,11 +5,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
 import gradesystem.Allocator;
+import gradesystem.handin.Handin;
 import utils.system.NativeException;
 
 /**
  * Object representation of the XML config file. Only meant to be used by
- * ConfigurationParser and ConfigurationManager.
+ * {@link ConfigurationParser} and {@link CourseInfoImpl}.
  *
  * @author jak2
  */
@@ -27,15 +28,7 @@ class Configuration
      * Checks the validity of the configuration values. This checks for
      * invalid or unreasonable values unrelated to parsing issues.
      *
-     * Checks the validity of HANDIN's RUN, DEMO, and TESTER properties.
-     *
-     * Checks if EARLY, ONTIME, and LATE dates are reasonable. They are
-     * not considered reasonable if the dates are not this year.
-     *
-     * Checks that Assignment names are unique, that for each Assignment each
-     * of its Parts have unique names, and that all lab numbers are unique.
-     *
-     * Returns the validity and writers errors to the writer.
+     * Returns the validity and writes errors to the writer.
      *
      * @param writer to write errors to
      * @return validity
@@ -44,43 +37,37 @@ class Configuration
     {
         boolean valid = true;
 
-        //Check validity of assignments
-        for(Assignment asgn : this.getAssigments())
+        valid &= this.checkAssignmentValidity(writer);
+        valid &= this.checkTAValidity(writer);
+        //TODO: Check validity of email account information
+
+        return valid;
+    }
+
+    private boolean checkTAValidity(StringWriter writer)
+    {
+        boolean valid = true;
+
+        for(TA ta : this.getTAs())
         {
-            if(asgn.hasHandinPart())
-            {
-                HandinPart part = asgn.getHandinPart();
-
-                //Check if the handin parts have reasonable dates
-                valid &= part.getTimeInformation().areDatesReasonable(writer, part);
-
-                if(part instanceof CodeHandin)
-                {
-                    CodeHandin code = (CodeHandin) part;
-
-                    //Check if the RUN, DEMO, & TESTER properties are properly configured
-                    valid &= code.checkValidity(writer);
-                }
-            }
-        }
-
-        valid &= this.checkUniqueAssignments(writer);
-
-        //Check validity of TAs
-        for (TA ta : this.getTAs()) {
             boolean isLoginValid = Allocator.getUserUtilities().isLoginValid(ta.getLogin());
             boolean isInTAGroup = false;
 
-            try {
+            try
+            {
                 isInTAGroup = Allocator.getUserServices().isInTAGroup(ta.getLogin());
-                if (!isInTAGroup) {
+                if(!isInTAGroup)
+                {
                     writer.append(String.format("Login \"%s\" is not in the TA group.\n", ta.getLogin()));
                 }
-            } catch(NativeException e) {
+            }
+            catch(NativeException e)
+            {
                 writer.append("Members of TA group (for course " + this.getCourse() + ") could not be retrieved. (NativeException)\n");
             }
 
-            if (!isLoginValid) {
+            if(!isLoginValid)
+            {
                 writer.append(String.format("Login \"%s\" is not valid.\n", ta.getLogin()));
             }
 
@@ -91,28 +78,50 @@ class Configuration
     }
 
     /**
-     * Checks that Assignment names are unique, that for each Assignment its Part
-     * names are unique, and that all lab numbers are unique.
+     * Checks that Assignment names and numbers are unique, that for each
+     * Assignment its Part names are unique, and that all lab numbers are
+     * unique.
+     *
+     * Checks if EARLY, ONTIME, and LATE dates are reasonable for each
+     * Assignment's handin. They are not considered reasonable if the dates are
+     * not this year.
      *
      * @param writer to write error messages to
      * @return
      */
-    private boolean checkUniqueAssignments(StringWriter writer)
+    private boolean checkAssignmentValidity(StringWriter writer)
     {
         boolean valid = true;
 
         HashSet<String> asgnNames = new HashSet<String>();
+        HashSet<Integer> asgnNumbers = new HashSet<Integer>();
         HashSet<Integer> labNumbers = new HashSet<Integer>();
 
         for(Assignment asgn : this.getAssigments())
         {
-            //If name is not unique
+            //Check if the Handin's information has reasonable dates
+            if(asgn.hasHandin())
+            {
+                Handin handin = asgn.getHandin();
+                valid &= handin.getTimeInformation().areDatesReasonable(writer, handin);
+            }
+
+            //If Assignment name is not unique
             if(asgnNames.contains(asgn.getName()))
             {
                 valid = false;
                 writer.append(asgn.getName() + " is not a unique ASSIGNMENT name. \n");
             }
             asgnNames.add(asgn.getName());
+
+            //If Assignment number is not unique
+            if(asgnNumbers.contains(asgn.getNumber()))
+            {
+                valid = false;
+                writer.append(asgn.getName() + " does not have a unique " +
+                        "ASSIGNMENT number: " + asgn.getNumber() + ".\n");
+            }
+            asgnNumbers.add(asgn.getNumber());
 
             //Check each part name is unique
             HashSet<String> partNames = new HashSet<String>();

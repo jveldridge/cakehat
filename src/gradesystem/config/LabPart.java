@@ -13,11 +13,11 @@ import gradesystem.Allocator;
  */
 public class LabPart extends Part
 {
-    private int _labNumber;
+    private final int _labNumber;
 
-    LabPart(Assignment asgn, String name, int points, int labNumber)
+    LabPart(Assignment asgn, String name, int number, int points, int labNumber)
     {
-        super(asgn, name, points);
+        super(asgn, name, number, points);
 
         _labNumber = labNumber;
     }

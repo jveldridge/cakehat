@@ -2,25 +2,33 @@ package gradesystem.config;
 
 import java.util.Vector;
 import gradesystem.Allocator;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
 
 /**
  * A representation of an Assigment, composed of any number of non-handin parts,
- * any number of lab parts, and zero or one handin parts. This assignment has
- * a name, that must be unique, and a number that does not need to be unique. If
- * the number of this assignment is the same as that of another assignment then
- * those assignments will be considered alternatives of one another, e.g.
- * multiple options for a final project.
+ * any number of lab parts, any number of distributable parts and zero or one
+ * handins. If there are any distributable parts then there will be a handin,
+ * and if there is a handin there will be at least one distributle part. This
+ * assignment has a name and number, that must both be unique.
  *
  * @author jak2
  */
 public class Assignment implements Comparable<Assignment>
 {
-    private String _name;
-    private int _number;
-    private Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
-    private Vector<LabPart> _labParts = new Vector<LabPart>();
-    private HandinPart _handinPart;
+    private final String _name;
+    private final int _number;
+    private final Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
+    private final Vector<LabPart> _labParts = new Vector<LabPart>();
+    private final Vector<DistributablePart> _distributableParts = new Vector<DistributablePart>();
     private Vector<Part> _allParts = null;
+    private Handin _handin = null;
+
+    /**
+     * To be replaced by {@link #_handin} and {@link #_distributableParts}.
+     * @deprecated
+     */
+    private HandinPart _handinPart;
 
     Assignment(String name, int number)
     {
@@ -81,19 +89,50 @@ public class Assignment implements Comparable<Assignment>
         return !_labParts.isEmpty();
     }
 
-    void addHandinPart(HandinPart codePart)
-    {
-        _handinPart = codePart;
-    }
-
+    /**
+     * @deprecated
+     */
     public HandinPart getHandinPart()
     {
         return _handinPart;
     }
 
+    /**
+     * @deprecated
+     */
     public boolean hasHandinPart()
     {
         return (_handinPart != null);
+    }
+
+    void addDistributablePart(DistributablePart part)
+    {
+        _distributableParts.add(part);
+    }
+
+    public Iterable<DistributablePart> getDistributableParts()
+    {
+        return _distributableParts;
+    }
+
+    public boolean hasDistributablePart()
+    {
+        return !_distributableParts.isEmpty();
+    }
+
+    void setHandin(Handin handin)
+    {
+        _handin = handin;
+    }
+
+    public Handin getHandin()
+    {
+        return _handin;
+    }
+
+    public boolean hasHandin()
+    {
+        return _handin != null;
     }
 
     /**
@@ -110,10 +149,7 @@ public class Assignment implements Comparable<Assignment>
 
             _allParts.addAll(_labParts);
             _allParts.addAll(_nonHandinParts);
-            if(this.hasHandinPart())
-            {
-                _allParts.add(_handinPart);
-            }
+            _allParts.addAll(_distributableParts);
         }
 
         return _allParts;

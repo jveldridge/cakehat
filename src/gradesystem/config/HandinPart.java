@@ -14,6 +14,7 @@ import utils.system.NativeException;
 
 /**
  *
+ * @deprecated To be replaced with {@link Handin} and {@link DistributablePart}.
  * @author jak2
  */
 public abstract class HandinPart extends Part
@@ -25,7 +26,7 @@ public abstract class HandinPart extends Part
 
     HandinPart(Assignment asgn, String name, int points)
     {
-        super(asgn, name, points);
+        super(asgn, name, Integer.MIN_VALUE, points);
     }
 
     // Time Info

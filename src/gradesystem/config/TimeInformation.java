@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import gradesystem.Allocator;
+import gradesystem.handin.Handin;
 
 /**
  * Represents the time information a CodePart has.
@@ -12,11 +13,11 @@ import gradesystem.Allocator;
  */
 public class TimeInformation
 {
-    private LatePolicy _latePolicy;
-    private GradeUnits _units;
+    private final LatePolicy _latePolicy;
+    private final GradeUnits _units;
     private Calendar _early, _ontime, _late;
     private int _earlyValue, _ontimeValue, _lateValue;
-    private boolean _affectAll, _ecIfLate;
+    private final boolean _affectAll, _ecIfLate;
 
     TimeInformation(LatePolicy policy, GradeUnits units, boolean affectAll, boolean ecIfLate)
     {
@@ -31,13 +32,12 @@ public class TimeInformation
      * as being in the same calendar year.
      *
      * @param writer to write error messages to
-     * @param part in order to give helpful error messages
+     * @param handin in order to give helpful error messages
      * @return whether dates are reasonable
      */
-    boolean areDatesReasonable(StringWriter writer, HandinPart part)
+    boolean areDatesReasonable(StringWriter writer, Handin handin)
     {
-        String msgBeginning = part.getAssignment().getName() + " - " + part.getName() +
-                              "'s";
+        String msgBeginning = handin.getAssignment().getName() + " HANDIN's";
 
         Calendar thisYear = GregorianCalendar.getInstance();
         thisYear.set(Calendar.YEAR, Allocator.getCalendarUtilities().getCurrentYear());
