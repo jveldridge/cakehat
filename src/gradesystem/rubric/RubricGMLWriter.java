@@ -6,16 +6,18 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import gradesystem.rubric.Rubric.Detail;
 import gradesystem.rubric.Rubric.Section;
 import gradesystem.rubric.Rubric.Subsection;
+import gradesystem.services.ServicesException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import gradesystem.views.shared.ErrorView;
-import utils.system.NativeException;
+import javax.xml.transform.TransformerException;
 
 /**
  *
@@ -30,7 +32,7 @@ class RubricGMLWriter implements RubricConstants
      * @param rubric
      * @param filepath location to write file to
      */
-    static void write(Rubric rubric, String filepath)
+    static void write(Rubric rubric, String filepath) throws RubricException
     {
         Document document = createXMLDocument();
 
@@ -187,48 +189,59 @@ class RubricGMLWriter implements RubricConstants
         return document;
     }
 
-    private static void saveXMLFile(Document document, String XMLFilePath)
+    private static void saveXMLFile(Document document, String XMLFilePath) throws RubricException
     {
+        // dom source and transformer
+        DOMSource source = new DOMSource(document);
+        Transformer transformer;
         try
         {
-            // dom source and transformer
-            DOMSource source = new DOMSource(document);
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-
-            // properties
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-            // ensure directory where the file is going to be saved exists
-            File xmlFile = new File(XMLFilePath);
-            try
-            {
-                Allocator.getFileSystemServices().makeDirectory(xmlFile.getParentFile());
-            }
-            catch(NativeException e)
-            {
-                new ErrorView(e, "Unable to make directory to save rubric (gml file) in. \n" +
-                        "Rubric location is: " + xmlFile.getAbsolutePath());
-            }
-
-            // write file
-            StreamResult result = new StreamResult(xmlFile);
-            transformer.transform(source, result);
-
-            // ensure the file written has the correct permissions and group
-            try
-            {
-                Allocator.getFileSystemServices().sanitize(xmlFile);
-            }
-            catch(NativeException e)
-            {
-                new ErrorView(e, "Unable to set correct permissions and group for rubric (gml file).");
-            }
+            transformer = TransformerFactory.newInstance().newTransformer();
         }
-        catch (Exception e)
+        catch (TransformerConfigurationException e)
         {
-            new ErrorView(e, "Unable to save rubric (gml file): " + XMLFilePath);
+            throw new RubricException("Unable to save rubric (gml file).\n" +
+                    "Rubric location: " + XMLFilePath, e);
+        }
+
+        // properties
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+        // ensure directory where the file is going to be saved exists
+        File xmlFile = new File(XMLFilePath);
+        try
+        {
+            Allocator.getFileSystemServices().makeDirectory(xmlFile.getParentFile());
+        }
+        catch(ServicesException e)
+        {
+            throw new RubricException("Unable to make directory to save rubric (gml file) in. \n" +
+                    "Rubric location is: " + xmlFile.getAbsolutePath(), e);
+        }
+
+        // write file
+        StreamResult result = new StreamResult(xmlFile);
+        try
+        {
+            transformer.transform(source, result);
+        }
+        catch(TransformerException e)
+        {
+            throw new RubricException("Unable to save rubric (gml file).\n" +
+                    "Rubric location: " + XMLFilePath, e);
+        }
+
+        // ensure the file written has the correct permissions and group
+        try
+        {
+            Allocator.getFileSystemServices().sanitize(xmlFile);
+        }
+        catch(ServicesException e)
+        {
+            throw new RubricException("Unable to set correct permissions and " +
+                    "group for rubric (gml file).", e);
         }
     }   
 }

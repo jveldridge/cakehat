@@ -185,7 +185,7 @@ public class FrontendView extends JFrame
         {
             Allocator.getFileSystemServices().makeDirectory(assignmentDir);
         }
-        catch(NativeException e)
+        catch(ServicesException e)
         {
             new ErrorView(e, "Unable to create directory assignment: " + assignmentDir.getAbsolutePath());
         }

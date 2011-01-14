@@ -257,16 +257,6 @@ public class CourseInfoImpl implements CourseInfo
         return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/database.db";
     }
 
-    public String getTestDatabaseFilePath()
-    {
-        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/test_database.db";
-    }
-
-    public String getTestDataFilePath()
-    {
-        return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/test_data.sql";
-    }
-
     public String getDatabaseBackupDir()
     {
         return getGradingDir() + Allocator.getCalendarUtilities().getCurrentYear() + "/database/backups/";

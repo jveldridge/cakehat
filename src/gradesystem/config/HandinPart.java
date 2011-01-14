@@ -7,10 +7,12 @@ import java.util.HashSet;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import gradesystem.services.ServicesException;
 import org.apache.commons.compress.archivers.ArchiveException;
 import gradesystem.views.shared.ErrorView;
 import gradesystem.views.shared.TextViewerView;
-import utils.system.NativeException;
 
 /**
  *
@@ -327,7 +329,7 @@ public abstract class HandinPart extends Part
                     }
                 }
             }
-            catch(NativeException e)
+            catch(ServicesException e)
             {
                 new ErrorView(e, "Unable to create directory to untar " + studentLogin + "'s handin into.");
             }

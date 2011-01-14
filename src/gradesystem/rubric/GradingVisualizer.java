@@ -219,7 +219,15 @@ class GradingVisualizer extends JFrame
         {
             _rubric.setStudent(_group.get(login), login);
             String gmlPath = Allocator.getRubricManager().getStudentRubricPath(_rubric._handinPart, login);
-            RubricGMLWriter.write(_rubric, gmlPath);
+
+            try
+            {
+                RubricGMLWriter.write(_rubric, gmlPath);
+            }
+            catch(RubricException e)
+            {
+                new ErrorView(e, "Unable to save rubric.");
+            }
         }
 
         boolean saveSuccessful = true;
