@@ -5,6 +5,7 @@ import gradesystem.config.Part;
 import gradesystem.database.Group;
 import gradesystem.handin.file.AlwaysAcceptingFileFilter;
 import gradesystem.handin.file.FilterProvider;
+import gradesystem.services.ServicesException;
 import gradesystem.views.shared.TextViewerView;
 import java.io.File;
 import java.io.FileFilter;
@@ -15,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveException;
-import utils.system.NativeException;
 
 /**
  * Part of a group's handin.
@@ -519,7 +519,7 @@ public class DistributablePart extends Part
                     throw new ActionException("No handin for group " + group.getName() + " was found.");
                 }
             }
-            catch(NativeException e)
+            catch(ServicesException e)
             {
                 throw new ActionException("Unable to create directory to unarchive " +
                         "the handin for group: " + group.getName(), e);

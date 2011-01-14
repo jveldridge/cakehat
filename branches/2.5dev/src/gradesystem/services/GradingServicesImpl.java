@@ -74,7 +74,7 @@ public class GradingServicesImpl implements GradingServices
         {
             Allocator.getFileSystemServices().makeDirectory(gradingDir);
         }
-        catch(NativeException e)
+        catch(ServicesException e)
         {
             throw new ServicesException("Unable to create grading directory: " + gradingDir.getAbsolutePath() + ".", e);
         }
@@ -588,7 +588,7 @@ public class GradingServicesImpl implements GradingServices
             {
                 Allocator.getFileSystemServices().sanitize(scoreFile);
             }
-            catch(NativeException e)
+            catch(ServicesException e)
             {
                 new ErrorView(e, "Unable to change permissions and group for new lab grade.");
             }

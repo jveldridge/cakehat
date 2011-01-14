@@ -224,9 +224,26 @@ public class BackendView extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 Allocator.getGradingServices().removeUserGradingDirectory();
-                if (!GradeSystemApp.inTestMode()) {
-                    String bk_name = Allocator.getCourseInfo().getCourse() + "db_bk_" + Allocator.getCalendarUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
-                    Allocator.getFileSystemUtilities().copyFile(Allocator.getCourseInfo().getDatabaseFilePath(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
+
+                //If in not testing, backup the database on close
+                if(!GradeSystemApp.inTestMode())
+                {
+                    String backupFileName = Allocator.getCourseInfo().getCourse() +
+                            "db_bk_" +
+                            Allocator.getCalendarUtilities()
+                            .getCalendarAsString(Calendar.getInstance())
+                            .replaceAll("(\\s|:)", "_");
+                    File backupFile = new File(Allocator.getCourseInfo().getDatabaseBackupDir(),
+                            backupFileName);
+                    try
+                    {
+                        Allocator.getFileSystemServices()
+                            .copy(new File(Allocator.getCourseInfo().getDatabaseFilePath()), backupFile);
+                    }
+                    catch(ServicesException ex)
+                    {
+                        new ErrorView(ex, "Unable to backup database.");
+                    }
                 }
             }
         });
@@ -1763,7 +1780,7 @@ public class BackendView extends JFrame
             {
                 Allocator.getFileSystemServices().makeDirectory(assigmentDir);
             }
-            catch(NativeException e)
+            catch(ServicesException e)
             {
                 new ErrorView(e, "Unable to create directory for assignment: " + _assignmentList.getSelectedValue().getName());
             }

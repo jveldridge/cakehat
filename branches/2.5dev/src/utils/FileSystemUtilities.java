@@ -55,28 +55,47 @@ public interface FileSystemUtilities
     public Calendar getModifiedDate(File file);
 
     /**
-     * Copies the source file to the destination file. If the destination file
-     * does not exist it will be created. If it already exists, it will be
-     * overwritten. If permissions do not allow this copy then it will fail
-     * and false will be returned.
+     * Copies a file or a directory.
+     * <br/><br/>
+     * If <code>src</code> is a directory then it recursively copies all of its
+     * contents into <code>dst</code>. Directories will be merged such that if
+     * the destination directory or a directory in the destination directory
+     * needs to be created and already exists, it will not be deleted. If
+     * <code>overWrite</code> is <code>true</code> then files maybe overwritten
+     * in the copying process.
      *
-     * @param sourceFile
-     * @param destFile
-     * @return success of copying file
+     * @param src
+     * @param dst
+     * @param overwrite
+     * @param preserveDate
+     * @return all files and directories created during the copy
+     * @throws IOException
+     *
+     * @see #copy(java.io.File, java.io.File)
      */
-    public boolean copyFile(File sourceFile, File destFile);
+    public List<File> copy(File src, File dst, boolean overwrite,
+            boolean preserveDate) throws FileCopyingException;
 
     /**
-     * Copies the source file to the destination file. If the destination file
-     * does not exist it will be created. If it already exists, it will be
-     * overwritten. If permissions do not allow this copy then it will fail
-     * and false will be returned.
+     * Equivalent to <code>copy(src, dst, false, false)</code>.
      *
-     * @param sourcePath
-     * @param destPath
-     * @return success of copying file
+     * @param src
+     * @param dst
+     * @return all files and directories created during the copy
+     * @throws IOException
+     *
+     * @see #copy(java.io.File, java.io.File, boolean, boolean)
      */
-    public boolean copyFile(String sourcePath, String destPath);
+    public List<File> copy(File src, File dst) throws FileCopyingException;
+
+    /**
+     * Deletes all files, throwing an informative exception if any of the files
+     * cannot be deleted.
+     *
+     * @param files
+     * @throws IOException
+     */
+    public void deleteFiles(List<File> files) throws IOException;
 
     /**
      * Reads a text file into a String.
@@ -104,20 +123,27 @@ public interface FileSystemUtilities
     public void chmod(File file, boolean recursive, Permission... mode) throws NativeException;
 
     /**
+     * Equivalent to <code>chmodDefault(file, true)</code>.
+     *
+     * @param file
+     */
+    public void chmodDefault(File file) throws NativeException;
+
+    /**
      * Changes permissions of a file to be readable and writable by the owner
      * and group. Changes the permissions of a directory to be readable,
-     * writable, and accessible by the owner and group. All subdirectories are
-     * given the same permissions. All files are made readable and writable by
-     * the owner and group.
+     * writable, and accessible by the owner and group. All files are made
+     * readable and writable by the owner and group. If <code>recursive</code>
+     * is <code>true</coe>, then all subdirectories and files are given the same
+     * permissions.
+     * <br/><br/>
      * <b>NOTE: symlinks are not detected, therefore circular references are not
      * detected and as such this method is not guaranteed to terminate if the
      * directory provided or any of its subdirectories contain a symlink.</b>
      *
      * @param file
-     *
-     * @see #chmod(java.io.File, boolean, utils.FileSystemUtilities.Permission[])
      */
-    public void chmodDefault(File file) throws NativeException;
+    public void chmodDefault(File file, boolean recursive) throws NativeException;
 
     /**
      * Changes the specified file or directory's group. The user calling this

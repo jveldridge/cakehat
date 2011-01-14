@@ -189,24 +189,6 @@ public interface CourseInfo
     public String getDatabaseFilePath();
 
     /**
-     * The path to the test database file.
-     *
-     * /course/<course>/.cakehat/<current year>/database/test_database.db
-     *
-     * @return
-     */
-    public String getTestDatabaseFilePath();
-
-    /**
-     * The path to the test database format file.
-     *
-     * /course/<course>/.cakehat/<current year>/database/test_data.sql
-     *
-     * @return
-     */
-    public String getTestDataFilePath();
-
-    /**
      * The directory that backups of the database are put in.
      *
      * /course/<course>/.cakehat/<current year>/database/backups/

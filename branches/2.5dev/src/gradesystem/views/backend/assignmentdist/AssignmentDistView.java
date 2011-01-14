@@ -418,7 +418,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         {
             Allocator.getFileSystemServices().makeDirectory(directory);
         }
-        catch(NativeException e)
+        catch(ServicesException e)
         {
             new ErrorView(e, "Unable to create rubric directory: " + directory.getAbsolutePath());
         }
