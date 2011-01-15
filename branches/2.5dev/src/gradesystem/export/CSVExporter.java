@@ -187,9 +187,15 @@ public class CSVExporter implements Exporter
                             try {
                                 //If no exemption
                                 if (Allocator.getDatabaseIO().getExemptionNote(login, part) == null) {
-                                    double score = Allocator.getDatabaseIO().getStudentScore(login, part);
-                                    total += score;
-                                    printer.append(score + ",");
+                                    Double score = Allocator.getDatabaseIO().getStudentScore(login, part);
+                                    
+                                    if (score != null) {
+                                        total += score;
+                                        printer.append(score + ",");
+                                    }
+                                    else {
+                                        printer.append("0 (No grade recorded),");
+                                    }
                                 } else {
                                     printer.append("EXEMPT" + ",");
                                 }

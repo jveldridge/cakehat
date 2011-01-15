@@ -107,14 +107,14 @@ public class GradeReportView extends javax.swing.JFrame {
         Map<Assignment, Integer> choicesWithGrade = new HashMap<Assignment, Integer>();
 
         for (Assignment a : _sortedAssignments) {
-            double score = 0;
+            Double score = null;
             try {
                 score = Allocator.getDatabaseIO().getStudentAsgnScore(student, a);
             } catch (SQLException ex) {
                 new ErrorView(ex, String.format("Could not get student %s's score for " +
                                                 "assignment %s", student, a));
             }
-            if (asgnsWithChoices.contains(a.getNumber()) && score != 0.0) {
+            if (asgnsWithChoices.contains(a.getNumber()) && score != null) {
                 choicesWithGrade.put(a,a.getNumber());
             }
         }
@@ -165,8 +165,14 @@ public class GradeReportView extends javax.swing.JFrame {
                     else {
                         String scoreString;
                         try {
-                            double studentScore = Allocator.getDatabaseIO().getStudentScore(student, p);
-                            scoreString = Double.toString(studentScore);
+                            Double studentScore = Allocator.getDatabaseIO().getStudentScore(student, p);
+
+                            if (studentScore != null) {
+                                scoreString = Double.toString(studentScore);
+                            }
+                            else {
+                                scoreString = "0 (No grade recorded)";
+                            }
                         } catch (SQLException e) {
                             new ErrorView(e, "Could not retrieve the socre for student student " + student +
                                              "on part " + p + ".  The student's score will be displayed " +
