@@ -487,7 +487,8 @@ class Rubric
             {
                 String studentLogin = Rubric.this.getStudentAccount();
                 try {
-                    _score = Allocator.getDatabaseIO().getStudentScore(studentLogin, sourcePart);
+                    Double score = Allocator.getDatabaseIO().getStudentScore(studentLogin, sourcePart);
+                    _score = (score == null ? 0 : score);
                 } catch (SQLException ex) {
                     throw new RubricException("The grade for part " + sourcePart + " could not be " +
                                               "loaded from the database.", ex);

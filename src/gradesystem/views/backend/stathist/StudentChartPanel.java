@@ -52,7 +52,8 @@ public class StudentChartPanel extends javax.swing.JPanel {
 
                 double partScore = 0;
                 try {
-                    partScore = Allocator.getDatabaseIO().getStudentScore(studName, p);
+                    Double rawScore = Allocator.getDatabaseIO().getStudentScore(studName, p);
+                    partScore = (rawScore == null ? 0 : rawScore);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not read the score for student " + studName + " " +
                                       "on part " + p + ".  FOR THESE CHARTS AND STATISTICS, THE " +

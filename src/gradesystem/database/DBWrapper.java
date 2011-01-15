@@ -18,7 +18,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -595,8 +594,8 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public double getStudentScore(String studentLogin, Part part) throws SQLException {
-        double grade = 0;
+    public Double getStudentScore(String studentLogin, Part part) throws SQLException {
+        Double grade = null;
         Connection conn = this.openConnection();
 
         try {
@@ -619,8 +618,8 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException {
-        double grade = 0.0;
+    public Double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException {
+        Double grade = null;
         Connection conn = this.openConnection();
 
         try {

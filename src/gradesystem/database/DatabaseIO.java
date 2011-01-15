@@ -284,7 +284,7 @@ public interface DatabaseIO {
      * @param part - part getting score for
      * @return
      */
-    public double getStudentScore(String studentLogin, Part part) throws SQLException;
+    public Double getStudentScore(String studentLogin, Part part) throws SQLException;
 
     /**
      * Returns the score of student with login studentLogin on an Assignment asgn.
@@ -293,7 +293,7 @@ public interface DatabaseIO {
      * @param asgn - assignment getting score for
      * @return
      */
-    public double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException;
+    public Double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException;
 
     /**
      * Returns a map of all scores for the specified students for the

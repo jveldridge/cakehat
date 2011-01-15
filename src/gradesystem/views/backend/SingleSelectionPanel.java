@@ -181,18 +181,23 @@ class SingleSelectionPanel extends JPanel
                 Part part = _nonHandinBox.getSelectedItem();
                 if(part != null)
                 {
-                    double earned = 0;
+                    Double earned = null;
                     try {
                         earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
-                                          "lab part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's lab part grade.");
+                                          "lab part " + part + " from the database.");
+                        _nonHandinEarnedField.setUnknownScoreValue();
                     }
 
                     double outOf = part.getPoints();
 
-                    _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
+                    if (earned != null) {
+                        _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
+                    }
+                    else {
+                        _nonHandinEarnedField.setNoScoreValue();
+                    }
                     _nonHandinOutOfField.setNumberValue(outOf);
                 }
             }
@@ -296,17 +301,22 @@ class SingleSelectionPanel extends JPanel
                 Part part = _labBox.getSelectedItem();
                 if(part != null)
                 {
-                    double earned = 0;
+                    Double earned = null;
                     try {
                         earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
-                                          "lab part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's lab part grade.");
+                                          "lab part " + part + " from the database.");
+                        _nonHandinEarnedField.setUnknownScoreValue();
                     }
                     double outOf = part.getPoints();
 
-                    _labEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
+                    if (earned != null) {
+                        _labEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
+                    }
+                    else {
+                        _labEarnedField.setNoScoreValue();
+                    }
                     _labOutOfField.setNumberValue(outOf);
                 }
             }
@@ -584,17 +594,23 @@ class SingleSelectionPanel extends JPanel
         {
             HandinPart handinPart = asgn.getHandinPart();
 
-            double handinEarned = 0;
+            Double handinEarned = null;
             try {
                 handinEarned = Allocator.getDatabaseIO().getStudentScore(studentLogin, handinPart);
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not read score for student " + studentLogin + " on " +
-                                  "part " + handinPart + " from the database.  A SCORE OF 0 WILL BE " +
-                                  "ASSUMED for displaying the student's handin part grade.");
+                                  "part " + handinPart + " from the database.");
+                _nonHandinEarnedField.setUnknownScoreValue();
             }
-            double handinOutOf = handinPart.getPoints();
 
-            _handinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(handinEarned, 2));
+            if (handinEarned != null) {
+                _handinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(handinEarned, 2));
+            }
+            else {
+                _handinEarnedField.setNoScoreValue();
+            }
+
+            double handinOutOf = handinPart.getPoints();
             _handinOutOfField.setNumberValue(handinOutOf);
         }
 
@@ -640,6 +656,24 @@ class SingleSelectionPanel extends JPanel
             this.setText(value + "");
         }
 
+        /**
+         * Has the ScoreField show a value that indicates the student does
+         * not have a score for the corresponding assignment.  Note that after
+         * this method is called, getNumberValue() will return 0.
+         */
+        public void setNoScoreValue() {
+            this.setText("XX");
+        }
+
+        /**
+         * Has the ScoreField show a value that indicates the student's score
+         * for the corresponding assignment is unknown.  Note that after this
+         * method is called, getNumberValue() will return 0.
+         */
+        public void setUnknownScoreValue() {
+            this.setText("??");
+        }
+
         public double getNumberValue()
         {
             double value = 0;
@@ -647,7 +681,7 @@ class SingleSelectionPanel extends JPanel
             {
                 value = Double.parseDouble(this.getText());
             }
-            catch(Exception e) { }
+            catch(NumberFormatException e) { }
 
             return value;
         }
@@ -703,16 +737,16 @@ class SingleSelectionPanel extends JPanel
             {
                 if(part != selectedPart)
                 {
-                    double partScore = 0;
+                    Double partScore = null;
                     try {
                         partScore = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
                                           "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's overall grade.");
+                                          "ASSUMED for displaying the student's overall assignment score.");
                     }
-                    
-                    totalEarned += partScore;
+
+                    totalEarned += (partScore == null ? 0 : partScore);
                     totalOutOf += part.getPoints();
                 }
             }
@@ -728,16 +762,16 @@ class SingleSelectionPanel extends JPanel
             {
                 if(part != selectedPart)
                 {
-                    double partScore = 0;
+                    Double partScore = null;
                     try {
                         partScore = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
                                           "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's overall grade.");
+                                          "ASSUMED for displaying the student's overall assignment score.");
                     }
                     
-                    totalEarned += partScore;
+                    totalEarned += (partScore == null ? 0 : partScore);
                     totalOutOf += part.getPoints();
                 }
             }
