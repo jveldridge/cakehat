@@ -28,70 +28,11 @@ class ExternalActions implements ActionProvider
         ArrayList<DistributableActionDescription> descriptions =
                 new ArrayList<DistributableActionDescription>();
 
-        descriptions.add(new Terminal());
         descriptions.add(new HandinCommand());
         descriptions.add(new DemoCommand());
         descriptions.add(new PrintCommand());
 
         return descriptions;
-    }
-
-    private class Terminal implements DistributableActionDescription
-    {
-        public ActionProvider getProvider()
-        {
-            return ExternalActions.this;
-        }
-
-        public String getName()
-        {
-            return "terminal";
-        }
-
-        public String getDescription()
-        {
-            return "Opens a terminal that is in the root directory of the " +
-                    "unarchived handin";
-        }
-
-        public List<DistributableActionProperty> getProperties()
-        {
-            return new ArrayList<DistributableActionProperty>();
-        }
-
-        public List<ActionMode> getSuggestedModes()
-        {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.OPEN });
-        }
-
-        public List<ActionMode> getCompatibleModes()
-        {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST });
-        }
-
-        public DistributableAction getAction(Map<DistributableActionProperty, String> properties)
-        {
-            DistributableAction action = new StandardDistributableAction()
-            {
-                public void performAction(DistributablePart part, Group group) throws ActionException
-                {
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
-
-                    String terminalName = group.getName() + "'s " + part.getAssignment().getName();
-                    try
-                    {
-                        Allocator.getExternalProcessesUtilities()
-                                .executeInVisibleTerminal(terminalName, "cd " + unarchiveDir.getAbsolutePath());
-                    }
-                    catch(IOException e)
-                    {
-                        new ErrorView(e, "Unable to open terminal for " + group.getName());
-                    }
-                }
-            };
-
-            return action;
-        }
     }
 
     //Replacement sequences

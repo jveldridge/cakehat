@@ -13,22 +13,6 @@ import java.util.List;
 
 public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilities
 {
-    public void kpdf(File file) throws IOException
-    {
-        this.executeAsynchronously("kpdf " + file.getAbsolutePath());
-    }
-
-    public void kate(Iterable<File> files) throws IOException
-    {
-        String cmd = "kate ";
-        for(File file : files)
-        {
-            cmd += file.getAbsolutePath() + " ";
-        }
-
-        this.executeAsynchronously(cmd);
-    }
-
     public void executeInVisibleTerminal(String title, String cmd) throws IOException
     {
         String terminalCmd = "/usr/bin/xterm -fg black -bg gray" +
