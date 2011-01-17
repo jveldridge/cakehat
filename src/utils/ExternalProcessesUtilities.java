@@ -1,6 +1,5 @@
 package utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -80,20 +79,4 @@ public interface ExternalProcessesUtilities
      * @throws IOException
      */
     public ProcessResponse executeSynchronously(Iterable<String> cmds) throws IOException;
-
-    /**
-     * Opens the specified file in kpdf.
-     *
-     * @param file
-     * @throws IOException
-     */
-    public void kpdf(File file) throws IOException;
-
-    /**
-     * Opens the specified files in kate.
-     *
-     * @param files
-     * @throws IOException
-     */
-    public void kate(Iterable<File> files) throws IOException;
 }

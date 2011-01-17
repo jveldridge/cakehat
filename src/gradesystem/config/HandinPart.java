@@ -137,7 +137,8 @@ public abstract class HandinPart extends Part
             {
                 try
                 {
-                    Allocator.getExternalProcessesUtilities().kpdf(readme);
+                    Allocator.getExternalProcessesUtilities()
+                            .executeAsynchronously("kpdf " + readme.getAbsolutePath());
                 }
                 catch(IOException e)
                 {
