@@ -34,7 +34,7 @@ class ConfigurationParserHelper
                         SEND_FROM = "SEND-FROM", LOGIN = "LOGIN", PASSWORD = "PASSWORD",
                         CERT_PATH = "CERT-PATH", CERT_PASSWORD = "CERT-PASSWORD",
 
-                        ASSIGNMENT = "ASSIGNMENT", NAME = "NAME", NUMBER = "NUMBER",
+                        ASSIGNMENT = "ASSIGNMENT", NAME = "NAME", NUMBER = "NUMBER", HAS_GROUPS = "HAS-GROUPS",
                         RUBRIC = "RUBRIC", DEDUCTIONS = "DEDUCTIONS", LOCATION = "LOCATION",
 
                         LAB = "LAB", NON_HANDIN = "NON-HANDIN", HANDIN = "HANDIN", PART = "PART",

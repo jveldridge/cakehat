@@ -40,9 +40,10 @@ public class LabConfigurationParser
                 if(labAttrs.getInt(LAB_NUMBER) == labNumber)
                 {
                     //Get information the assignment needs
-                    AttributeMap asgnAttrs = getAttributes(asgnNode,
-                            new String[] { NAME, NUMBER }, new String[] { NAME, NUMBER });
-                    Assignment asgn = new Assignment(asgnAttrs.getString(NAME), asgnAttrs.getInt(NUMBER));
+                    AttributeMap asgnAttrs = getAttributes(asgnNode, new String[] { NAME, NUMBER },
+                            new String[] { NAME, NUMBER, HAS_GROUPS });
+                    Assignment asgn = new Assignment(asgnAttrs.getString(NAME),
+                            asgnAttrs.getInt(NUMBER), asgnAttrs.getBoolean(HAS_GROUPS, false));
 
                     //Build the lab
                     LabPart part = new LabPart(asgn,

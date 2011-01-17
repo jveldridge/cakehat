@@ -21,6 +21,7 @@ public class Assignment implements Comparable<Assignment>
     private final Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
     private final Vector<LabPart> _labParts = new Vector<LabPart>();
     private final Vector<DistributablePart> _distributableParts = new Vector<DistributablePart>();
+    private final boolean _hasGroups;
     private Vector<Part> _allParts = null;
     private Handin _handin = null;
 
@@ -30,10 +31,11 @@ public class Assignment implements Comparable<Assignment>
      */
     private HandinPart _handinPart;
 
-    Assignment(String name, int number)
+    Assignment(String name, int number, boolean hasGroups)
     {
         _name = name;
         _number = number;
+        _hasGroups = hasGroups;
     }
 
     public String getName()
@@ -46,15 +48,27 @@ public class Assignment implements Comparable<Assignment>
     }
 
     /**
-     * The number of this assignment. It does not need to be unique; assignments
-     * with the same number are considered to be alternatives, e.g. multiple
-     * options for a final project.
+     * The number of this assignment. It must be unique.
      *
      * @return
      */
     public int getNumber()
     {
         return _number;
+    }
+
+    /**
+     * Whether this assignment has groups or not.
+     * <br/><br/>
+     * From a code point of view many times there are implicit groups of one,
+     * this is not what this method describes. Instead it is whether the course
+     * will be specifying groups for this assignment.
+     *
+     * @return
+     */
+    public boolean hasGroups()
+    {
+        return _hasGroups;
     }
 
     // Parts

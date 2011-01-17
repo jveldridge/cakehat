@@ -240,8 +240,9 @@ public class ConfigurationParser
     private static Assignment getAssignment(Node asgnNode) throws ConfigurationException
     {
         AttributeMap asgnAttrs = getAttributes(asgnNode,
-                new String[] { NAME, NUMBER }, new String[] { NAME, NUMBER });
-        Assignment asgn = new Assignment(asgnAttrs.getString(NAME), asgnAttrs.getInt(NUMBER));
+                new String[] { NAME, NUMBER }, new String[] { NAME, NUMBER, HAS_GROUPS });
+        Assignment asgn = new Assignment(asgnAttrs.getString(NAME),
+                asgnAttrs.getInt(NUMBER), asgnAttrs.getBoolean(HAS_GROUPS, false));
 
         Map<String, List<Node>> children =
                 getChildren(asgnNode, new String[] { LAB, NON_HANDIN, HANDIN });
