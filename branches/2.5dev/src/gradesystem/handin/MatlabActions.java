@@ -14,6 +14,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -27,6 +28,8 @@ import matlabcontrol.MatlabConnectionListener;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.RemoteMatlabProxy;
 import matlabcontrol.RemoteMatlabProxyFactory;
+import utils.FileCopyingException;
+import utils.FileExistsException;
 import utils.FileExtensionFilter;
 
 /**
@@ -49,6 +52,7 @@ class MatlabActions implements ActionProvider
         ArrayList<DistributableActionDescription> descriptions =
                 new ArrayList<DistributableActionDescription>();
 
+        descriptions.add(new CopyTest());
         descriptions.add(new DemoFile());
         descriptions.add(new OpenFiles());
         descriptions.add(new RunFile());
@@ -56,8 +60,178 @@ class MatlabActions implements ActionProvider
         return descriptions;
     }
 
-    //TODO: Action that copies in content of config-specified directory into
-    //handin and then runs a config-specified file in MATLAB
+    private class CopyTest implements DistributableActionDescription
+    {
+        private final DistributableActionProperty COPY_PATH_PROPERTY =
+            new DistributableActionProperty("copy-path",
+            "The fully qualified path to the directory whose entire contents " +
+            "will be copied into the root of the unarchived handin directory.",
+            true);
+
+        private final DistributableActionProperty TEST_FILE_PROPERTY =
+            new DistributableActionProperty("test-file",
+            "Specifies the path relative to the " + COPY_PATH_PROPERTY.getName() +
+            " property of the m-file that will be run. The file will be run " +
+            "without any arguments provided.", true);
+
+        public ActionProvider getProvider()
+        {
+            return MatlabActions.this;
+        }
+
+        public String getName()
+        {
+            return "copy-test";
+        }
+
+        public String getDescription()
+        {
+            return "Copies the contents of the specified directory into the " +
+                    "root of the unarchived handin. Then runs the specified " +
+                    "m-file in MATLAB. Once the copy occurs, it remains, and " +
+                    "therefore any other actions may interact with the copied " +
+                    "files.";
+        }
+
+        public List<DistributableActionProperty> getProperties()
+        {
+            return Arrays.asList(new DistributableActionProperty[] { COPY_PATH_PROPERTY, TEST_FILE_PROPERTY });
+        }
+
+        public List<ActionMode> getSuggestedModes()
+        {
+            return Arrays.asList(new ActionMode[] { ActionMode.TEST });
+        }
+
+        public List<ActionMode> getCompatibleModes()
+        {
+            return Arrays.asList(new ActionMode[] { ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN });
+        }
+
+        public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
+        {
+            DistributableAction action = new StandardDistributableAction()
+            {
+                //Keeps track of the groups that have already had the files copied
+                private HashSet<Group> _testedGroups = new HashSet<Group>();
+
+                public void performAction(DistributablePart part, Group group) throws ActionException
+                {
+                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+
+                    //Copy if necessary
+                    if(!_testedGroups.contains(group))
+                    {
+                        File sourceDir = new File(properties.get(COPY_PATH_PROPERTY));
+
+                        //Validate
+                        if(!sourceDir.exists())
+                        {
+                            JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because the directory \n" +
+                                    "to copy test files from does not exist. \n" +
+                                    "Directory: " + sourceDir.getAbsoluteFile(),
+                                    "Directory does not exist", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        if(!sourceDir.isDirectory())
+                        {
+                            JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because the directory \n" +
+                                    "to copy test files from does not exist. \n" +
+                                    "Directory: " + sourceDir.getAbsoluteFile(),
+                                    "Not a directory", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+
+                        File sourceTestFile = new File(sourceDir, properties.get(TEST_FILE_PROPERTY));
+                        if(!sourceTestFile.exists())
+                        {
+                            JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because the test file \n" +
+                                    "does not exist. \n" +
+                                    "File: " + sourceTestFile.getAbsoluteFile(),
+                                    "Test file does not exist", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        if(!sourceTestFile.isFile() || !sourceTestFile.getName().endsWith(".m"))
+                        {
+                            JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because the test file \n" +
+                                    "is not an m-file. \n" +
+                                    "File: " + sourceTestFile.getAbsoluteFile(),
+                                    "Test file not m-file", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        
+                        try
+                        {
+                            Allocator.getFileSystemUtilities().copy(sourceDir, unarchiveDir);
+                        }
+                        catch(FileCopyingException e)
+                        {
+                            //If a file that already exists would be overwritten
+                            if(e.getCause() instanceof FileExistsException)
+                            {
+                                FileExistsException cause = (FileExistsException) e.getCause();
+                                JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because a file to be\n" +
+                                    "copied for the test already exists in the\n" +
+                                    "unarchived handin.\n\n" +
+                                    "Test File: " + cause.getSourceFile().getAbsolutePath() + "\n" +
+                                    "Handin File: " + cause.getDestinationFile().getAbsolutePath() + "\n",
+                                    "Cannot copy test file", JOptionPane.WARNING_MESSAGE);
+                                return;
+                            }
+
+                            throw new ActionException("Unable to perform copy " +
+                                    "necessary for testing.", e);
+                        }
+                    }
+
+                    try
+                    {
+                        RemoteMatlabProxy proxy = getMatlabProxy();
+
+                        File testFile = new File(unarchiveDir, properties.get(TEST_FILE_PROPERTY));
+
+                        //Move to test file's directory
+                        String testDir = testFile.getParent();
+                        try
+                        {
+                            proxy.eval("cd " + testDir);
+                        }
+                        catch(MatlabInvocationException e)
+                        {
+                            throw new ActionException("Unable to make MATLAB change directory: " + testDir, e);
+                        }
+
+                        //Run test file
+                        String testFunction = testFile.getName().split("\\.")[0];
+                        try
+                        {
+                            proxy.eval(testFunction);
+                        }
+                        //This exception might be because the of an issue communicating with MATLAB
+                        //but it also could arise from calling the function wrong
+                        //(for instance, the function is expected to take no arguments, but
+                        //if it requires them that would cause an exception)
+                        catch(MatlabInvocationException e)
+                        {
+                            throw new ActionException("Unable to run test function: " +
+                                    testFunction, e);
+                        }
+                    }
+                    catch(MatlabConnectionException e)
+                    {
+                        throw new ActionException(e);
+                    }
+                }
+            };
+
+            return action;
+        }
+    }
 
     private class DemoFile implements DistributableActionDescription
     {
@@ -322,7 +496,7 @@ class MatlabActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return new ArrayList<DistributableActionProperty>();
+            return Arrays.asList(new DistributableActionProperty[] { EXTENSIONS_PROPERTY });
         }
 
         public List<ActionMode> getSuggestedModes()
