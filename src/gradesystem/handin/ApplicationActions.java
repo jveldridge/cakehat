@@ -243,7 +243,7 @@ class ApplicationActions implements ActionProvider
         public List<DistributableActionProperty> getProperties()
         {
             return Arrays.asList(new DistributableActionProperty[] { APPLICATION_PROPERTY,
-                EXTENSIONS_PROPERTY});
+                ENV_PROPERTY, EXTENSIONS_PROPERTY});
         }
 
         public List<ActionMode> getSuggestedModes()
