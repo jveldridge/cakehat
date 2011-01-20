@@ -70,9 +70,10 @@ class MatlabActions implements ActionProvider
 
         private final DistributableActionProperty TEST_FILE_PROPERTY =
             new DistributableActionProperty("test-file",
-            "Specifies the path relative to the " + COPY_PATH_PROPERTY.getName() +
-            " property of the m-file that will be run. The file will be run " +
-            "without any arguments provided.", true);
+            "This property must be specified if a directory is provided for the " +
+            COPY_PATH_PROPERTY.getName() + " property. The m-file that will be " +
+            "run. The path must be relative to directory specified by the " +
+            COPY_PATH_PROPERTY.getName() + " property.", false);
 
         public ActionProvider getProvider()
         {
@@ -86,8 +87,8 @@ class MatlabActions implements ActionProvider
 
         public String getDescription()
         {
-            return "Copies the contents of the specified directory into the " +
-                    "root of the unarchived handin. Then runs the specified " +
+            return "Copies the specified file or contents of the directory into " +
+                    "the root of the unarchived handin. Then runs the specified " +
                     "m-file in MATLAB. Once the copy occurs, it remains, and " +
                     "therefore any other actions may interact with the copied " +
                     "files.";
@@ -122,64 +123,85 @@ class MatlabActions implements ActionProvider
                     //Copy if necessary
                     if(!_testedGroups.contains(group))
                     {
-                        File sourceDir = new File(properties.get(COPY_PATH_PROPERTY));
+                        File source = new File(properties.get(COPY_PATH_PROPERTY));
 
                         //Validate
-                        if(!sourceDir.exists())
+                        if(!source.exists())
                         {
                             JOptionPane.showMessageDialog(null,
                                     "Cannot perform test because the directory \n" +
-                                    "to copy test files from does not exist. \n" +
-                                    "Directory: " + sourceDir.getAbsoluteFile(),
-                                    "Directory does not exist", JOptionPane.WARNING_MESSAGE);
-                            return;
-                        }
-                        if(!sourceDir.isDirectory())
-                        {
-                            JOptionPane.showMessageDialog(null,
-                                    "Cannot perform test because the directory \n" +
-                                    "to copy test files from does not exist. \n" +
-                                    "Directory: " + sourceDir.getAbsoluteFile(),
-                                    "Not a directory", JOptionPane.WARNING_MESSAGE);
+                                    "or file to copy does not exist. \n" +
+                                    "Source: " + source.getAbsoluteFile(),
+                                    "Does not exist", JOptionPane.WARNING_MESSAGE);
                             return;
                         }
 
-                        File sourceTestFile = new File(sourceDir, properties.get(TEST_FILE_PROPERTY));
-                        if(!sourceTestFile.exists())
+                        if(source.isFile())
                         {
-                            JOptionPane.showMessageDialog(null,
-                                    "Cannot perform test because the test file \n" +
-                                    "does not exist. \n" +
-                                    "File: " + sourceTestFile.getAbsoluteFile(),
-                                    "Test file does not exist", JOptionPane.WARNING_MESSAGE);
-                            return;
+                            if(!source.getName().endsWith(".m"))
+                            {
+                                JOptionPane.showMessageDialog(null,
+                                        "Cannot perform test because the test file \n" +
+                                        "is not an m-file. \n" +
+                                        "File: " + source.getAbsoluteFile(),
+                                        "Test file not m-file", JOptionPane.WARNING_MESSAGE);
+                                return;
+                            }
                         }
-                        if(!sourceTestFile.isFile() || !sourceTestFile.getName().endsWith(".m"))
+                        else if(source.isDirectory())
                         {
-                            JOptionPane.showMessageDialog(null,
-                                    "Cannot perform test because the test file \n" +
-                                    "is not an m-file. \n" +
-                                    "File: " + sourceTestFile.getAbsoluteFile(),
-                                    "Test file not m-file", JOptionPane.WARNING_MESSAGE);
-                            return;
+                            String relativePath = properties.get(TEST_FILE_PROPERTY);
+
+                            if(relativePath == null)
+                            {
+                                JOptionPane.showMessageDialog(null,
+                                        "Cannot perform test because the " +
+                                        TEST_FILE_PROPERTY.getName() +
+                                        "property was not set. It must be set when\n" +
+                                        "copying test files from a directory.",
+                                        "Property not set", JOptionPane.WARNING_MESSAGE);
+                                return;
+                            }
+
+                            File testFile = new File(source, relativePath);
+                            if(!testFile.exists())
+                            {
+                                JOptionPane.showMessageDialog(null,
+                                        "Cannot perform test because the test file \n" +
+                                        "does not exist. \n" +
+                                        "File: " + testFile.getAbsoluteFile(),
+                                        "Test file does not exist", JOptionPane.WARNING_MESSAGE);
+                                return;
+                            }
+                            if(!testFile.isFile() || !testFile.getName().endsWith(".m"))
+                            {
+                                JOptionPane.showMessageDialog(null,
+                                        "Cannot perform test because the test file \n" +
+                                        "is not an m-file. \n" +
+                                        "File: " + testFile.getAbsoluteFile(),
+                                        "Test file not m-file", JOptionPane.WARNING_MESSAGE);
+                                return;
+                            }
                         }
-                        
+
+
                         try
                         {
-                            Allocator.getFileSystemUtilities().copy(sourceDir, unarchiveDir);
+                            Allocator.getFileSystemUtilities().copy(source, unarchiveDir);
                         }
                         catch(FileCopyingException e)
                         {
                             //If a file that already exists would be overwritten
-                            if(e.getCause() instanceof FileExistsException)
+                            FileExistsException existsException =
+                                    Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
+                            if(existsException != null)
                             {
-                                FileExistsException cause = (FileExistsException) e.getCause();
                                 JOptionPane.showMessageDialog(null,
                                     "Cannot perform test because a file to be\n" +
                                     "copied for the test already exists in the\n" +
                                     "unarchived handin.\n\n" +
-                                    "Test File: " + cause.getSourceFile().getAbsolutePath() + "\n" +
-                                    "Handin File: " + cause.getDestinationFile().getAbsolutePath() + "\n",
+                                    "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
+                                    "Handin File: " + existsException.getDestinationFile().getAbsolutePath() + "\n",
                                     "Cannot copy test file", JOptionPane.WARNING_MESSAGE);
                                 return;
                             }
@@ -193,7 +215,17 @@ class MatlabActions implements ActionProvider
                     {
                         RemoteMatlabProxy proxy = getMatlabProxy();
 
-                        File testFile = new File(unarchiveDir, properties.get(TEST_FILE_PROPERTY));
+                        //Determine the location of the test file once it has been copied
+                        File testFile;
+                        File source = new File(properties.get(COPY_PATH_PROPERTY));
+                        if(source.isFile())
+                        {
+                            testFile = new File(unarchiveDir, source.getName());
+                        }
+                        else
+                        {
+                            testFile = new File(unarchiveDir, properties.get(TEST_FILE_PROPERTY));
+                        }
 
                         //Move to test file's directory
                         String testDir = testFile.getParent();
