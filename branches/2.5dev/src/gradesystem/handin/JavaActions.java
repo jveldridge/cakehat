@@ -3,6 +3,8 @@ package gradesystem.handin;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import gradesystem.handin.file.AndFileFilter;
+import gradesystem.handin.file.OrFileFilter;
+import gradesystem.handin.file.SpecificFileFilter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -10,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -24,13 +27,15 @@ import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import utils.FileCopyingException;
+import utils.FileExistsException;
 import utils.FileExtensionFilter;
 
 /**
  * Actions for the Java programming language. Compilation of Java is done via
  * the {@link javax.tools.JavaCompiler} provided by
- * {@link javax.tools.ToolProvider}. Analysis of Java class files is done by
- * with BCEL (Byte Code Engineering Library) to determine main classes and a
+ * {@link javax.tools.ToolProvider}. Analysis of Java class files is done using
+ * BCEL (Byte Code Engineering Library) to determine main classes and a
  * class's package.
  *
  * @author jak2
@@ -45,6 +50,7 @@ class JavaActions implements ActionProvider
         descriptions.add(new RunMain());
         descriptions.add(new JarDemo());
         descriptions.add(new ClassDemo());
+        descriptions.add(new CopyTest());
 
         return descriptions;
     }
@@ -54,9 +60,173 @@ class JavaActions implements ActionProvider
         return "java";
     }
 
-    //TODO: Test action that copies content of a config-specified directory into
-    //handin, compiles code, and then runs a config-specified main (presumably a
-    //class that was copied in, but that's not going to be enforced.)
+    private class CopyTest implements DistributableActionDescription
+    {
+        private final DistributableActionProperty COPY_PATH_PROPERTY =
+            new DistributableActionProperty("copy-path",
+            "The fully qualified path to the file or directory that will be" +
+            "copied into the root of the unarchived handin directory. If it is" +
+            "a directory the entire contents of the directory will be copied," +
+            "but not the directory itself.", true);
+        private final DistributableActionProperty MAIN_PROPERTY =
+            new DistributableActionProperty("test-main",
+            "The full path to the main class including package: ex. cakehat.gui.Main \n" +
+            "It is expected that this class will be a class copied into the " +
+            "handin, but that is not required.", true);
+        private final DistributableActionProperty CLASS_PATH_PROPERTY =
+            new DistributableActionProperty("classpath",
+            "The classpath; use colons to separate each entry.", false);
+        private final DistributableActionProperty LIBRARY_PATH_PROPERTY =
+            new DistributableActionProperty("librarypath",
+            "The java.library.path property. This values replaces, not appends, " +
+            "the property.", false);
+
+        public ActionProvider getProvider()
+        {
+            return JavaActions.this;
+        }
+
+        public String getName()
+        {
+            return "copy-compile-run";
+        }
+
+        public String getDescription()
+        {
+            return "Copies the specified file or contents of the directory into " +
+                    "the root of the unarchived handin. Recompiles the code and " +
+                    "then runs the specified main in a visible terminal. Once " +
+                    "the copy occurs, the copied files and directories remain, " +
+                    "and therefore any other actions may interact with them.";
+        }
+
+        public List<DistributableActionProperty> getProperties()
+        {
+            return Arrays.asList(new DistributableActionProperty[] { COPY_PATH_PROPERTY,
+                MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY});
+        }
+
+        public List<ActionMode> getSuggestedModes()
+        {
+            return Arrays.asList(new ActionMode[] { ActionMode.TEST });
+        }
+
+        public List<ActionMode> getCompatibleModes()
+        {
+            return Arrays.asList(new ActionMode[] { ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN });
+        }
+
+        public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
+        {
+            DistributableAction action = new StandardDistributableAction()
+            {
+                //Keeps track of the groups that have already had the files copied
+                //Stores the filters that accept all files that belong to the part
+                //and the copied files
+                private HashMap<Group, FileFilter> _testedGroups = new HashMap<Group, FileFilter>();
+                
+                public void performAction(DistributablePart part, Group group) throws ActionException
+                {
+                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+
+                    //Copy if necessary
+                    if(!_testedGroups.containsKey(group))
+                    {
+                        File source = new File(properties.get(COPY_PATH_PROPERTY));
+
+                        //Validate
+                        if(!source.exists())
+                        {
+                            JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because the directory \n" +
+                                    "or file to copy does not exist. \n" +
+                                    "Source: " + source.getAbsoluteFile(),
+                                    "Does not exist", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        try
+                        {
+                            List<File> copiedFiles = Allocator.getFileSystemUtilities().copy(source, unarchiveDir);
+
+                            //Build a filter that accepts either the files belonging
+                            //to the distributable part or the copied files
+                            FileFilter inclusionFilter = part.getInclusionFilter(group);
+                            FileFilter copiedFilter = new SpecificFileFilter(copiedFiles);
+                            FileFilter combinedFilter = new OrFileFilter(inclusionFilter, copiedFilter);
+
+                            _testedGroups.put(group, combinedFilter);
+                        }
+                        catch(FileCopyingException e)
+                        {
+                            //If a file that already exists would be overwritten
+                            FileExistsException existsException =
+                                    Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
+                            if(existsException != null)
+                            {
+                                JOptionPane.showMessageDialog(null,
+                                    "Cannot perform test because a file to be\n" +
+                                    "copied for the test already exists in the\n" +
+                                    "unarchived handin.\n\n" +
+                                    "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
+                                    "Handin File: " + existsException.getDestinationFile().getAbsolutePath() + "\n",
+                                    "Cannot copy test file", JOptionPane.WARNING_MESSAGE);
+                                return;
+                            }
+
+                            throw new ActionException("Unable to perform copy " +
+                                    "necessary for testing.", e);
+                        }
+                    }
+
+                    //Deleted any already compiled files
+                    deleteCompiledFiles(unarchiveDir);
+
+                    //Compile, compilation will fail if the code has compilation errors
+                    if(compileJava(unarchiveDir, _testedGroups.get(group),
+                            properties.get(CLASS_PATH_PROPERTY)))
+                    {
+                        //Get all of the main classes
+                        List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
+
+                        //Check if the main specified actually exists
+                        String mainName = properties.get(MAIN_PROPERTY);
+                        ClassInfo mainToRun = null;
+                        for(ClassInfo info : mainClasses)
+                        {
+                            if(info.getClassName().equals(mainName))
+                            {
+                                mainToRun = info;
+                                break;
+                            }
+                        }
+
+                        //If none was found, inform the grader
+                        if(mainToRun == null)
+                        {
+                            JOptionPane.showMessageDialog(null,
+                                    "The specified main class is not present.\n" +
+                                    "Specified main: " + mainName,
+                                    "Main not present",
+                                    JOptionPane.WARNING_MESSAGE);
+                        }
+                        //Run main class
+                        else
+                        {
+                            String terminalName = "Testing " + group.getName() + "'s " +
+                                    part.getAssignment().getName() + " - " +
+                                    part.getName();
+                            executeJavaInVisibleTerminal(mainToRun,
+                                     properties.get(CLASS_PATH_PROPERTY),
+                                     properties.get(LIBRARY_PATH_PROPERTY),
+                                     terminalName);
+                        }
+                    }
+                }
+            };
+
+            return action;
+        }
+    }
 
     private abstract class Demo implements DistributableActionDescription
     {
@@ -322,13 +492,16 @@ class JavaActions implements ActionProvider
                             }
 
                             //If none was found, inform the grader
-                            JOptionPane.showMessageDialog(null,
-                                    "The specified main class is not present in the handin. \n" +
-                                    "Specified main: " + specifiedMain + "\n\n" +
-                                    "If more than one main class is present you will \n" +
-                                    "be prompted to select from all main classes, \n" +
-                                    "otherwise the main class present will be run.",
-                                    "Specified main class not present", JOptionPane.ERROR_MESSAGE);
+                            if(mainToRun == null)
+                            {
+                                JOptionPane.showMessageDialog(null,
+                                        "The specified main class is not present in the handin. \n" +
+                                        "Specified main: " + specifiedMain + "\n\n" +
+                                        "If more than one main class is present you will \n" +
+                                        "be prompted to select from all main classes, \n" +
+                                        "otherwise the main class present will be run.",
+                                        "Specified main class not present", JOptionPane.WARNING_MESSAGE);
+                            }
                         }
 
                         if(mainToRun == null)
@@ -359,7 +532,9 @@ class JavaActions implements ActionProvider
                         //Run compiled code
                         else
                         {
-                            String terminalName = group.getName() + "'s " + part.getAssignment().getName();
+                            String terminalName = group.getName() + "'s " +
+                                    part.getAssignment().getName() + " - " +
+                                    part.getName();
                             executeJavaInVisibleTerminal(mainToRun,
                                      properties.get(CLASS_PATH_PROPERTY),
                                      properties.get(LIBRARY_PATH_PROPERTY),

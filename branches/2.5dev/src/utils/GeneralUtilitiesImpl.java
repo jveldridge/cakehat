@@ -34,4 +34,20 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
 
         return false;
     }
+
+    public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass)
+    {
+        if(throwable == null)
+        {
+            return null;
+        }
+        else if(throwableClass.isInstance(throwable))
+        {
+            return (E) throwable;
+        }
+        else
+        {
+            return findInStack(throwable.getCause(), throwableClass);
+        }
+    }
 }
