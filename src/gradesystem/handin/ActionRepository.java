@@ -24,7 +24,6 @@ public class ActionRepository
 
         this.addActionDescriptions(new JavaActions());
         this.addActionDescriptions(new MatlabActions());
-        this.addActionDescriptions(new CActions());
         this.addActionDescriptions(new PrintActions());
         this.addActionDescriptions(new ApplicationActions());
         this.addActionDescriptions(new ExternalActions());
