@@ -3,7 +3,6 @@ package gradesystem.handin;
 import utils.AlphabeticFileComparator;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
-import gradesystem.handin.file.AndFileFilter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -124,11 +123,10 @@ class ApplicationActions implements ActionProvider
                     }
 
                     File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
-                    FileFilter inclusionFilter = part.getInclusionFilter(group);
-                    FileFilter includedPDFFilter = new AndFileFilter(inclusionFilter, new FileExtensionFilter("pdf"));
+                    FileFilter pdfFilter = new FileExtensionFilter("pdf");
 
                     List<File> pdfFiles = Allocator.getFileSystemUtilities()
-                            .getFiles(unarchiveDir, includedPDFFilter, new AlphabeticFileComparator());
+                            .getFiles(unarchiveDir, pdfFilter, new AlphabeticFileComparator());
 
                     if(pdfFiles.isEmpty())
                     {
@@ -301,13 +299,11 @@ class ApplicationActions implements ActionProvider
                     }
 
                     //Get files to open
-                    FileFilter inclusionFilter = part.getInclusionFilter(group);
                     File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
 
                     FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
-                    FileFilter combinedFilter = new AndFileFilter(inclusionFilter, extensionsFilter);
                     List<File> textFiles = Allocator.getFileSystemUtilities()
-                            .getFiles(unarchiveDir, combinedFilter, new AlphabeticFileComparator());
+                            .getFiles(unarchiveDir, extensionsFilter, new AlphabeticFileComparator());
 
                     if(textFiles.isEmpty())
                     {

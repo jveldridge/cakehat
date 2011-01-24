@@ -7,8 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -89,9 +89,9 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         return new ArchiveStreamFactory().createArchiveInputStream(format, is);
     }
 
-    public Collection<String> getArchiveContents(File archive) throws ArchiveException
+    public Collection<ArchiveEntry> getArchiveContents(File archive) throws ArchiveException
     {
-        Vector<String> contents = new Vector<String>();
+        ArrayList<ArchiveEntry> contents = new ArrayList<ArchiveEntry>();
 
         ArchiveInputStream in = getArchiveInputStream(archive);
         while(true)
@@ -112,7 +112,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
                 break;
             }
 
-            contents.add(entry.getName());
+            contents.add(entry);
         }
         try
         {
@@ -127,7 +127,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         return contents;
     }
 
-    public void extractArchive(File archive, File dstDir) throws ArchiveException
+    public void extractArchive(File archive, File dstDir, FileFilter filter) throws ArchiveException
     {
         ArchiveInputStream in = getArchiveInputStream(archive);
         while(true)
@@ -149,23 +149,41 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
             }
 
             File file = new File(dstDir, entry.getName());
-            if(entry.isDirectory())
+            if(filter.accept(file))
             {
-                file.mkdirs();
-            }
-            else
-            {
-                try
+                if(entry.isDirectory())
                 {
-                    OutputStream out = new FileOutputStream(file);
-                    IOUtils.copy(in, out);
-                    out.close();
+                    if(!file.mkdirs())
+                    {
+                        throw new ArchiveException("Unable to make directory: " +
+                                file.getAbsolutePath());
+                    }
                 }
-                catch(IOException e)
+                else
                 {
-                    throw new ArchiveException("Unable to unarchive file to: \n" +
-                            file.getAbsolutePath() + "\n" +
-                            "For archive: \n" + archive.getAbsolutePath(), e);
+                    try
+                    {
+                        File parentDir = file.getParentFile();
+                        if(!parentDir.exists())
+                        {
+                            if(!parentDir.mkdirs())
+                            {
+                                throw new ArchiveException("Unable to make directory: " +
+                                        parentDir.getAbsolutePath() + "\n" +
+                                        "For file: " + file.getAbsolutePath());
+                            }
+                        }
+
+                        OutputStream out = new FileOutputStream(file);
+                        IOUtils.copy(in, out);
+                        out.close();
+                    }
+                    catch(IOException e)
+                    {
+                        throw new ArchiveException("Unable to unarchive file to: \n" +
+                                file.getAbsolutePath() + "\n" +
+                                "For archive: \n" + archive.getAbsolutePath(), e);
+                    }
                 }
             }
         }

@@ -3,8 +3,8 @@ package gradesystem.handin;
 import gradesystem.Allocator;
 import gradesystem.config.Part;
 import gradesystem.database.Group;
-import gradesystem.handin.file.AlwaysAcceptingFileFilter;
 import gradesystem.handin.file.FilterProvider;
+import gradesystem.handin.file.OrFileFilter;
 import gradesystem.services.ServicesException;
 import gradesystem.views.shared.TextViewerView;
 import java.io.File;
@@ -13,9 +13,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import javax.swing.JOptionPane;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
+import gradesystem.handin.file.AlwaysAcceptingFileFilter;
 
 /**
  * Part of a group's handin.
@@ -35,11 +36,14 @@ public class DistributablePart extends Part
     private final DistributableAction _testAction;
     private final DistributableAction _openAction;
     private final DistributableAction _printAction;
-
+    
     /**
-     * Keeps track of which groups have had their handins unarchived.
+     * Only groups that have had their handins unarchived are included.
+     * Key: Group
+     * Value: StringBuffer containing a description of the files and directories
+     * that are supposed to exist for this distributable part, but do not
      */
-    private final HashSet<Group> _unarchivedGroups = new HashSet<Group>();
+    private final HashMap<Group, StringBuffer> _unarchivedGroups = new HashMap<Group, StringBuffer>();
 
     /**
      * Keeps track of which groups have readmes so this only needs to be
@@ -356,19 +360,23 @@ public class DistributablePart extends Part
             else
             {
                 //Get contents of archive
-                Collection<String> contents;
+                Collection<ArchiveEntry> contents;
                 try
                 {
                     contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
 
                     //For each entry (file and directory) in the handin
-                    for(String entry : contents)
+                    for(ArchiveEntry entry : contents)
                     {
+                        String path = entry.getName();
+
                         //Extract the file name
-                        String filename = entry.substring(entry.lastIndexOf("/")+1);
+                        String filename = path.substring(path.lastIndexOf("/")+1);
 
                         //See if the file name begins with README, regardless of case and doesn't end with ~
-                        if(filename.toUpperCase().startsWith("README") && !filename.endsWith("~"))
+                        if(!entry.isDirectory() &&
+                           filename.toUpperCase().startsWith("README") &&
+                           !filename.endsWith("~"))
                         {
                             hasReadme = true;
                             break;
@@ -446,51 +454,13 @@ public class DistributablePart extends Part
     }
 
     /**
-     * Returns a file filter which specifies which files are part of this
-     * distributable part.
-     *
-     * @param group
-     * @return
-     */
-    FileFilter getInclusionFilter(Group group) throws ActionException
-    {
-        //Check if everything the filter provider is supposed to include is
-        //present, if not then notify the grader and provide a filter which
-        //does not filter anything out
-        this.unarchive(group);
-        File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(this, group);
-        StringBuffer failureReasons = new StringBuffer();
-        FileFilter inclusionFilter;
-
-        if(!_filterProvider.areFilteredFilesPresent(unarchiveDir, failureReasons))
-        {
-            inclusionFilter = new AlwaysAcceptingFileFilter();
-            String msg = 
-                    "Not all files and/or directories this distributable part\n" +
-                    "expected were found in the handin. All files and directories \n" +
-                    "will now be included in this distributable part so that you \n" +
-                    "can find files that may be misnamed or placed in the wrong \n" +
-                    "directory. \n\n" +
-                    "The missing files and directories are: \n" +
-                    failureReasons.toString();
-            JOptionPane.showMessageDialog(null, msg);
-        }
-        else
-        {
-            inclusionFilter = _filterProvider.getFileFilter(unarchiveDir);
-        }
-
-        return inclusionFilter;
-    }
-
-    /**
      * Unarchives a group's most recent handin.
      *
      * @param group
      */
     private void unarchive(Group group) throws ActionException
     {
-        if(!_unarchivedGroups.contains(group))
+        if(!_unarchivedGroups.containsKey(group))
         {
             //Create an empty folder for grading compiled student code
             try
@@ -498,26 +468,56 @@ public class DistributablePart extends Part
                 File groupDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(this, group);
                 Allocator.getFileSystemServices().makeDirectory(groupDir);
 
-                //unarchive the student's handin
+                //Determine if all of the files and directories that are
+                //expected are present
                 File handin = _handin.getHandin(group);
-                if(handin != null)
+                if(handin == null)
                 {
-                    try
-                    {
-                        Allocator.getArchiveUtilities().extractArchive(handin, groupDir);
-
-                        //record that group's handin has been unarchived
-                        _unarchivedGroups.add(group);
-                    }
-                    catch (ArchiveException e)
-                    {
-                        throw new ActionException("Unable to extract handin for group: " +
-                                group.getName(), e);
-                    }
+                    throw new ActionException("The handin for the group: " + group.getName() +
+                            " could not be found. This could be because the file " +
+                            "was moved or you do not have access to that file.");
                 }
-                else
+                
+                try
                 {
-                    throw new ActionException("No handin for group " + group.getName() + " was found.");
+                    //Determine if all of files and directories that belong to
+                    //this distributable part are present in the archive
+                    Collection<ArchiveEntry> contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
+                    StringBuffer buffer = new StringBuffer();
+
+                    //Build a filter that only accepts files belonging to this
+                    //distributable part and readmes
+                    //If not all required files are present, then accept all
+                    FileFilter filter;
+                    if(_filterProvider.areFilteredFilesPresent(contents, buffer))
+                    {
+                        FileFilter inclusionFilter = _filterProvider.getFileFilter(groupDir);
+                        FileFilter readmeFilter = new FileFilter()
+                        {
+                            public boolean accept(File file)
+                            {
+                                return file.isFile() &&
+                                       file.getName().toUpperCase().startsWith("README") &&
+                                       !file.getName().endsWith("~");
+                            }
+                        };
+
+                        filter = new OrFileFilter(inclusionFilter, readmeFilter);
+                    }
+                    else
+                    {
+                        filter = new AlwaysAcceptingFileFilter();
+                    }
+
+                    //Extract
+                    Allocator.getArchiveUtilities().extractArchive(handin, groupDir, filter);
+
+                    _unarchivedGroups.put(group, buffer);
+                }
+                catch (ArchiveException e)
+                {
+                    throw new ActionException("Unable to extract handin for group: " +
+                            group.getName(), e);
                 }
             }
             catch(ServicesException e)
@@ -525,6 +525,21 @@ public class DistributablePart extends Part
                 throw new ActionException("Unable to create directory to unarchive " +
                         "the handin for group: " + group.getName(), e);
             }
+        }
+
+        StringBuffer failureBuffer = _unarchivedGroups.get(group);
+        String failureReasons = failureBuffer.toString();
+        if(!failureReasons.isEmpty())
+        {
+            String msg =
+                    "Not all files and/or directories this distributable part\n" +
+                    "expected were found in the handin. All files and directories \n" +
+                    "will now be included in this distributable part so that you \n" +
+                    "can find files that may be misnamed or placed in the wrong \n" +
+                    "directory. \n\n" +
+                    "The missing files and/or directories are: \n" +
+                    failureReasons;
+            JOptionPane.showMessageDialog(null, msg, "Not Found", JOptionPane.WARNING_MESSAGE);
         }
     }
 }

@@ -2,6 +2,8 @@ package gradesystem.handin.file;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Collection;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 /**
  * Generates FileFilters which accepts files that exactly match the path as
@@ -38,16 +40,35 @@ public class FileFilterProvider implements FilterProvider
         return filter;
     }
 
-    public boolean areFilteredFilesPresent(File unarchivedDir, StringBuffer buffer)
+    public boolean areFilteredFilesPresent(Collection<ArchiveEntry> archiveContents, StringBuffer buffer)
     {
-        File absolutePath = new File(unarchivedDir, _relativePath);
-        
-        boolean exists = absolutePath.exists();
-        if(!exists)
+        boolean matches = false;
+
+        for(ArchiveEntry entry : archiveContents)
         {
-            buffer.append("File: " + absolutePath.getAbsolutePath() + "\n");
+            if(!entry.isDirectory())
+            {
+                //Entry's path does not start with a /
+                //However, the specified relative path may, if it does, trim it
+                String filePath = _relativePath;
+                if(filePath.startsWith("/"))
+                {
+                    filePath = filePath.substring(1);
+                }
+
+                if(entry.getName().equals(filePath))
+                {
+                    matches = true;
+                    break;
+                }
+            }
         }
 
-        return exists;
+        if(!matches)
+        {
+            buffer.append("File: " + _relativePath + "\n");
+        }
+
+        return matches;
     }
 }

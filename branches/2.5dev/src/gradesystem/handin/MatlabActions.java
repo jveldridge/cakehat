@@ -448,7 +448,7 @@ class MatlabActions implements ActionProvider
                 {
                     //Retrieve the m-files belonging to this distributable part
                     File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
-                    FileFilter inclusionFilter = part.getInclusionFilter(group);
+                    FileFilter mFilter = new FileExtensionFilter("m");
                     List<File> mFiles;
 
                     //If a specific file to run was specified, attempt to run
@@ -469,7 +469,7 @@ class MatlabActions implements ActionProvider
                                     "Specified File Unavailable",
                                     JOptionPane.WARNING_MESSAGE);
                             mFiles = Allocator.getFileSystemUtilities()
-                                    .getFiles(unarchiveDir, inclusionFilter, new AlphabeticFileComparator());
+                                    .getFiles(unarchiveDir, mFilter, new AlphabeticFileComparator());
                         }
                         else
                         {
@@ -480,7 +480,7 @@ class MatlabActions implements ActionProvider
                     else
                     {
                         mFiles = Allocator.getFileSystemUtilities()
-                                .getFiles(unarchiveDir, inclusionFilter, new AlphabeticFileComparator());
+                                .getFiles(unarchiveDir, mFilter, new AlphabeticFileComparator());
                     }
 
                     if(mFiles.isEmpty())
@@ -562,7 +562,6 @@ class MatlabActions implements ActionProvider
                         proxy.eval("cd " + unarchiveDir.getAbsolutePath());
 
                         //Determine which files to open in MATLAB
-                        FileFilter inclusionFilter = part.getInclusionFilter(group);
                         FileFilter fileExtensionFilter;
                         if(properties.containsKey(EXTENSIONS_PROPERTY))
                         {
@@ -572,9 +571,8 @@ class MatlabActions implements ActionProvider
                         {
                             fileExtensionFilter = new FileExtensionFilter("m");
                         }
-                        FileFilter toOpenFilter = new AndFileFilter(inclusionFilter, fileExtensionFilter);
                         List<File> filesToOpen = Allocator.getFileSystemUtilities()
-                                .getFiles(unarchiveDir, toOpenFilter, new AlphabeticFileComparator());
+                                .getFiles(unarchiveDir, fileExtensionFilter, new AlphabeticFileComparator());
 
                         //Open files in MATLAB
                         String openCmd = "edit ";

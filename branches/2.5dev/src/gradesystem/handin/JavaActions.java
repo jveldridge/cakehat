@@ -2,9 +2,6 @@ package gradesystem.handin;
 
 import gradesystem.Allocator;
 import gradesystem.database.Group;
-import gradesystem.handin.file.AndFileFilter;
-import gradesystem.handin.file.OrFileFilter;
-import gradesystem.handin.file.SpecificFileFilter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -12,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -121,16 +118,14 @@ class JavaActions implements ActionProvider
             DistributableAction action = new StandardDistributableAction()
             {
                 //Keeps track of the groups that have already had the files copied
-                //Stores the filters that accept all files that belong to the part
-                //and the copied files
-                private HashMap<Group, FileFilter> _testedGroups = new HashMap<Group, FileFilter>();
+                private HashSet<Group> _testedGroups = new HashSet<Group>();
                 
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
                     File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
 
                     //Copy if necessary
-                    if(!_testedGroups.containsKey(group))
+                    if(!_testedGroups.contains(group))
                     {
                         File source = new File(properties.get(COPY_PATH_PROPERTY));
 
@@ -146,15 +141,9 @@ class JavaActions implements ActionProvider
                         }
                         try
                         {
-                            List<File> copiedFiles = Allocator.getFileSystemUtilities().copy(source, unarchiveDir);
+                            Allocator.getFileSystemUtilities().copy(source, unarchiveDir);
 
-                            //Build a filter that accepts either the files belonging
-                            //to the distributable part or the copied files
-                            FileFilter inclusionFilter = part.getInclusionFilter(group);
-                            FileFilter copiedFilter = new SpecificFileFilter(copiedFiles);
-                            FileFilter combinedFilter = new OrFileFilter(inclusionFilter, copiedFilter);
-
-                            _testedGroups.put(group, combinedFilter);
+                            _testedGroups.add(group);
                         }
                         catch(FileCopyingException e)
                         {
@@ -182,8 +171,7 @@ class JavaActions implements ActionProvider
                     deleteCompiledFiles(unarchiveDir);
 
                     //Compile, compilation will fail if the code has compilation errors
-                    if(compileJava(unarchiveDir, _testedGroups.get(group),
-                            properties.get(CLASS_PATH_PROPERTY)))
+                    if(compileJava(unarchiveDir, properties.get(CLASS_PATH_PROPERTY)))
                     {
                         //Get all of the main classes
                         List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
@@ -464,7 +452,6 @@ class JavaActions implements ActionProvider
             {
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
-                    FileFilter inclusionFilter = part.getInclusionFilter(group);
                     File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
 
                     //Deleted any already compiled files
@@ -472,7 +459,7 @@ class JavaActions implements ActionProvider
 
                     //Compile, compilation will fail if the code has compilation
                     //errors
-                    if(compileJava(unarchiveDir, inclusionFilter, properties.get(CLASS_PATH_PROPERTY)))
+                    if(compileJava(unarchiveDir, properties.get(CLASS_PATH_PROPERTY)))
                     {
                         //Get all of the main classes
                         List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
@@ -674,13 +661,11 @@ class JavaActions implements ActionProvider
      *
      * @param unarchiveDir Java files in this directory and subdirectories will
      * be compiled
-     * @param inclusionFilter describes what files are allowed to be included
      * @param classpath the classpath to compile this code with, may be null
      *
      * @return success of compilation
      */
-    private static boolean compileJava(File unarchiveDir,
-            FileFilter inclusionFilter, String classpath) throws ActionException
+    private static boolean compileJava(File unarchiveDir, String classpath) throws ActionException
     {
         //Get java compiler and file manager
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -698,8 +683,8 @@ class JavaActions implements ActionProvider
         DiagnosticCollector collector = new DiagnosticCollector();
 
         //Get all of the Java files that are allowed by the inclusion filter
-        FileFilter combinedFilter = new AndFileFilter(inclusionFilter, new FileExtensionFilter("java"));
-        List<File> files = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, combinedFilter);
+        FileFilter javaFilter = new FileExtensionFilter("java");
+        List<File> files = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, javaFilter);
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
         //Compile

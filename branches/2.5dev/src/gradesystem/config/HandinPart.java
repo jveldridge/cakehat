@@ -1,17 +1,12 @@
 package gradesystem.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
-import javax.swing.JOptionPane;
 import gradesystem.Allocator;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
-import gradesystem.services.ServicesException;
-import org.apache.commons.compress.archivers.ArchiveException;
-import gradesystem.views.shared.ErrorView;
 import gradesystem.views.shared.TextViewerView;
 
 /**
@@ -66,39 +61,6 @@ public abstract class HandinPart extends Part
 
     public boolean hasReadme(String studentLogin)
     {
-        //Get path to the student's handin
-        File handin = this.getHandin(studentLogin);
-
-        if (handin == null) {
-            new ErrorView(new Exception(), "The handin for the student: " + studentLogin + " could not be found. This could be because the file was moved or you don't have access to that file.");
-            return false;
-        }
-
-        //Get contents of tar
-        Collection<String> contents;
-        try
-        {
-            contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
-        }
-        catch (ArchiveException ex)
-        {
-            new ErrorView(ex, "Cannot determine if a readme exists - unable to get archive contents.");
-            return false;
-        }
-
-        //For each entry (file and directory) in the tar
-        for(String entry : contents)
-        {
-            //Extract the file name
-            String filename = entry.substring(entry.lastIndexOf("/")+1);
-
-            //See if the file name begins with README, regardless of case and doesn't end with ~
-            if(filename.toUpperCase().startsWith("README") && !filename.endsWith("~"))
-            {
-                return true;
-            }
-        }
-
         return false;
     }
 
@@ -113,74 +75,7 @@ public abstract class HandinPart extends Part
      */
     public void viewReadme(String studentLogin)
     {
-        //Get all of the readmes
-        Collection<File> readmes = this.getReadme(studentLogin);
-
-        //For each readme
-        for(File readme : readmes)
-        {
-            String name = readme.getName().toLowerCase();
-
-            //Ignore ~ files if there are multiple READMEs
-            if(name.endsWith("~") && readmes.size() > 1)
-            {
-                continue;
-            }
-
-            //If a text file
-            if(!name.contains(".") || name.endsWith(".txt"))
-            {
-                new TextViewerView(readme, studentLogin +"'s Readme");
-            }
-            //If a PDF
-            else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
-            {
-                try
-                {
-                    Allocator.getExternalProcessesUtilities()
-                            .executeAsynchronously("kpdf " + readme.getAbsolutePath());
-                }
-                catch(IOException e)
-                {
-                    new ErrorView(e, "Unable to open " + studentLogin + "'s readme: " + readme.getAbsolutePath());
-                }
-            }
-            //Otherwise, we don't know what it is, tell the user
-            else
-            {
-                JOptionPane.showConfirmDialog(null, "Encountered README that cannot be opened by cakehat. \n"
-                                                    + readme.getAbsolutePath());
-            }
-        }
-    }
-
-    private Collection<File> getReadme(String studentLogin)
-    {
-        this.untar(studentLogin);
-
-        return getFiles(this.getStudentHandinDirectory(studentLogin), "readme");
-    }
-
-    public Collection<File> getFiles(String dirPath, String filename) {
-        Vector<File> files = new Vector<File>();
-
-        File dir = new File(dirPath);
-        if (dir == null || !dir.exists()) {
-            return files;
-        }
-        for (String name : dir.list()) {
-            File entry = new File(dir.getAbsolutePath() + "/" + name);
-            //If it is a directory, recursively explore and add files
-            if (entry.isDirectory()) {
-                files.addAll(getFiles(entry.getAbsolutePath(), filename));
-            }
-            //Add if this entry is a file starts with readme (case insensitive)
-            if (entry.isFile() && name.toUpperCase().startsWith(filename.toUpperCase())) {
-                files.add(entry);
-            }
-        }
-
-        return files;
+        throw new RuntimeException("Deprecated - see DistributablePart");
     }
 
     //Rubric
@@ -286,56 +181,6 @@ public abstract class HandinPart extends Part
         return logins;
     }
 
-    /**
-     * Code directory is:
-     *
-     * /course/<course>/.cakehat/.<ta login>/<assignment name>/<student login>/
-     *
-     */
-    protected String getStudentHandinDirectory(String studentLogin)
-    {
-        return Allocator.getGradingServices().getUserGradingDirectory() +
-               this.getAssignment().getName() + "/" + studentLogin + "/";
-    }
-
-    /**
-     * Untars a student's handin.
-     *
-     * @param studentLogin
-     */
-    protected void untar(String studentLogin)
-    {
-        if(!_untarredStudents.contains(studentLogin))
-        {
-            //Create an empty folder for grading compiled student code
-            try
-            {
-                File compileDir = new File(this.getStudentHandinDirectory(studentLogin));
-                Allocator.getFileSystemServices().makeDirectory(compileDir);
-
-                //untar student handin
-                File handin = this.getHandin(studentLogin);
-                if(handin != null)
-                {
-                    try
-                    {
-                        Allocator.getArchiveUtilities().extractArchive(handin, compileDir);
-
-                        //record that student's code has been untarred
-                        _untarredStudents.add(studentLogin);
-                    }
-                    catch (ArchiveException ex)
-                    {
-                        new ErrorView(ex, "Unable to extract " + studentLogin + "'s handin.");
-                    }
-                }
-            }
-            catch(ServicesException e)
-            {
-                new ErrorView(e, "Unable to create directory to untar " + studentLogin + "'s handin into.");
-            }
-        }
-    }
 
     public abstract boolean hasOpen();
 
