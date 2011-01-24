@@ -2,7 +2,6 @@ package gradesystem.handin;
 
 import gradesystem.Allocator;
 import gradesystem.database.Group;
-import gradesystem.handin.file.AndFileFilter;
 import gradesystem.printing.PrintRequest;
 import java.io.File;
 import java.io.FileFilter;
@@ -100,12 +99,10 @@ class PrintActions implements ActionProvider
 
                         for(Group group : groups)
                         {
-                            FileFilter inclusionFilter = part.getInclusionFilter(group);
                             File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
 
                             FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
-                            FileFilter combinedFilter = new AndFileFilter(inclusionFilter, extensionsFilter);
-                            Collection<File> filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, combinedFilter);
+                            Collection<File> filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, extensionsFilter);
 
                             try
                             {

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 /**
  * Supplies a FileFilter that logically ORs together all of the FileFilters
@@ -54,13 +56,13 @@ public class OrFilterProvider implements FilterProvider
         return orFileFilter;
     }
 
-    public boolean areFilteredFilesPresent(File unarchivedDir, StringBuffer buffer)
+    public boolean areFilteredFilesPresent(Collection<ArchiveEntry> archiveContents, StringBuffer buffer)
     {
         boolean present = true;
 
         for(FilterProvider provider : _providers)
         {
-            present &= provider.areFilteredFilesPresent(unarchivedDir, buffer);
+            present &= provider.areFilteredFilesPresent(archiveContents, buffer);
         }
 
         return present;

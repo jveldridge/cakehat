@@ -43,4 +43,17 @@ public class FileExtensionFilter implements FileFilter
 
         return false;
     }
+
+    @Override
+    public String toString()
+    {
+        String description = "FileExtensionFilter";
+
+        for(String extension : _extensions)
+        {
+            description += " " + extension;
+        }
+
+        return description;
+    }
 }

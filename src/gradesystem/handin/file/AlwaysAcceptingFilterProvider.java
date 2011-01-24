@@ -2,6 +2,8 @@ package gradesystem.handin.file;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Collection;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 /**
  * A FilterProvider that generates a FileFilter which always accepts.
@@ -17,7 +19,7 @@ public class AlwaysAcceptingFilterProvider implements FilterProvider
         return new AlwaysAcceptingFileFilter();
     }
 
-    public boolean areFilteredFilesPresent(File unarchivedDir, StringBuffer buffer)
+    public boolean areFilteredFilesPresent(Collection<ArchiveEntry> archiveContents, StringBuffer buffer)
     {
         return true;
     }

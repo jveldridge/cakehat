@@ -1,6 +1,6 @@
 package gradesystem.handin;
 
-import gradesystem.handin.file.AndFileFilter;
+import gradesystem.handin.file.OrFileFilter;
 import java.io.FileFilter;
 import java.util.HashSet;
 import utils.FileExtensionFilter;
@@ -47,7 +47,7 @@ class ActionUtilities
         if(extensionSet.contains("_"))
         {
             extensionSet.remove("_");
-            filter = new AndFileFilter(new NoFileExtensionFilter(),
+            filter = new OrFileFilter(new NoFileExtensionFilter(),
                     new FileExtensionFilter(extensionSet));
         }
         else
