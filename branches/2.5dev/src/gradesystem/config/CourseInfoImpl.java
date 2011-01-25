@@ -4,10 +4,11 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
+import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,7 +91,7 @@ public class CourseInfoImpl implements CourseInfo
     {
         if(_defaultGraders == null)
         {
-            _defaultGraders = new Vector<TA>();
+            _defaultGraders = new ArrayList<TA>();
 
             for(TA ta : getTAs())
             {
@@ -109,7 +110,7 @@ public class CourseInfoImpl implements CourseInfo
     {
         if (_nonDefaultGraders == null)
         {
-            _nonDefaultGraders = new Vector<TA>();
+            _nonDefaultGraders = new ArrayList<TA>();
 
             for (TA ta : getTAs())
             {
@@ -128,7 +129,7 @@ public class CourseInfoImpl implements CourseInfo
     {
         if(_admins == null)
         {
-            _admins = new Vector<TA>();
+            _admins = new ArrayList<TA>();
 
             for(TA ta : getTAs())
             {
@@ -154,17 +155,31 @@ public class CourseInfoImpl implements CourseInfo
 
         return _taMap.get(taLogin);
     }
+    
+    private Map<String, DistributablePart> _distributablePartMap = null;
+    @Override
+    public DistributablePart getDistributablePart(String partID) {
+        if (_distributablePartMap == null) {
+            for (Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()) {
+                for (DistributablePart part : asgn.getDistributableParts()) {
+                    _distributablePartMap.put(part.getDBID(), part);
+                }
+            }
+        }
+
+        return _distributablePartMap.get(partID);
+    }
 
     private Collection<Assignment> _handinAssignments = null;
     public Collection<Assignment> getHandinAssignments()
     {
         if(_handinAssignments == null)
         {
-            _handinAssignments = new Vector<Assignment>();
+            _handinAssignments = new ArrayList<Assignment>();
 
             for(Assignment asgn : getAssignments())
             {
-                if(asgn.hasHandinPart())
+                if(asgn.hasHandin())
                 {
                     _handinAssignments.add(asgn);
                 }
@@ -179,7 +194,7 @@ public class CourseInfoImpl implements CourseInfo
     {
         if(_nonHandinAssignments == null)
         {
-            _nonHandinAssignments = new Vector<Assignment>();
+            _nonHandinAssignments = new ArrayList<Assignment>();
 
             for(Assignment asgn : getAssignments())
             {
@@ -198,7 +213,7 @@ public class CourseInfoImpl implements CourseInfo
     {
         if(_labAssignments == null)
         {
-            _labAssignments = new Vector<Assignment>();
+            _labAssignments = new ArrayList<Assignment>();
 
             for(Assignment asgn : getAssignments())
             {

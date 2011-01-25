@@ -1,5 +1,6 @@
 package gradesystem.config;
 
+import gradesystem.handin.DistributablePart;
 import java.util.Collection;
 import java.util.Set;
 
@@ -86,10 +87,18 @@ public interface CourseInfo
     public TA getTA(String taLogin);
 
     /**
-     * Returns a collection of all assignments that have a handin part.
+     * Returns the DistributablePart object representing the DP with the given ID.
+     * Returns null if no such DP exists.
+     * 
+     * @param partID
+     * @return
+     */
+    public DistributablePart getDistributablePart(String partID);
+
+    /**
+     * Returns a collection of all assignments that have a handin.
      * 
      * @return
-     * @deprecated 
      */
     public Collection<Assignment> getHandinAssignments();
 
