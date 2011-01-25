@@ -1047,7 +1047,7 @@ public class DBWrapper implements DatabaseIO {
         try {
             conn.setAutoCommit(false);
 
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO group"
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO asgngroup"
                     + " ('name', 'aid') VALUES (?, ?)");
             ps.setString(1, group.getName());
             ps.setString(2, asgn.getDBID());
