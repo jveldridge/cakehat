@@ -2,6 +2,8 @@ package gradesystem.database;
 
 import gradesystem.Allocator;
 import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import gradesystem.rubric.TimeStatus;
 import gradesystem.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -146,29 +148,16 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
+    public void addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(s.login) AS rowcount"
-                    + " FROM student AS s"
-                    + " WHERE s.login == ?");
-            ps.setString(1, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            int rows = rs.getInt("rowcount");
-            if (rows != 0) {
-                return false;
-            }
-
-            ps = conn.prepareStatement("INSERT INTO student"
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO student"
                     + " ('login', 'firstname', 'lastname')"
                     + " VALUES (?, ?, ?)");
             ps.setString(1, studentLogin);
             ps.setString(2, studentFirstName);
             ps.setString(3, studentLastName);
             ps.executeUpdate();
-
-            return true;
         } finally {
             this.closeConnection(conn);
         }
@@ -972,6 +961,7 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'extension';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'grade';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'groupmember';");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'handin';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'student';");
 
             //CREATE all DB tables
@@ -1004,6 +994,10 @@ public class DBWrapper implements DatabaseIO {
                     + "'sid' VARCHAR NOT NULL, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid), "
                     + "FOREIGN KEY(sid) REFERENCES student(login));");
+            conn.createStatement().executeUpdate("CREATE TABLE 'handin' ('gpid' INTEGER NOT NULL, "
+                    + "'status' VARCHAR NOT NULL, "
+                    + "'late' INTEGER NOT NULL, "
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
             conn.createStatement().executeUpdate("CREATE TABLE 'student' ('login' VARCHAR NOT NULL, "
                     + "'firstname' VARCHAR NOT NULL, "
                     + "'lastname' VARCHAR NOT NULL, "
@@ -1021,6 +1015,7 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("CREATE INDEX exten_gpid ON extension (gpid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_pid ON grade (pid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_gpid ON grade (gpid);");
+            conn.createStatement().executeUpdate("CREATE INDEX handin_gpid ON handin (gpid);");
             conn.createStatement().executeUpdate("CREATE INDEX student_login ON student (login);");
             conn.commit();
         } catch (SQLException e) {
@@ -1143,6 +1138,9 @@ public class DBWrapper implements DatabaseIO {
                     loginsForGroup.add(studentLogin);
                 }
             }
+            if (!nameForGroup.equals("")) {
+                groups.add(new Group(nameForGroup, loginsForGroup));
+            }
 
             return groups;
         } finally {
@@ -1213,7 +1211,7 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.sid) AS rowcount"
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.gpid) AS rowcount"
                     + " FROM distribution AS d"
                     + " WHERE d.pid IN (" + this.asgn2PartIDs(asgn) + ")");
 
@@ -1244,6 +1242,7 @@ public class DBWrapper implements DatabaseIO {
 
             Collection<String> loginsForGroup = new ArrayList<String>(5);
             String nameForGroup = "";
+            String taLogin = "";
             while (rs.next()) {
                 String groupName = rs.getString("groupName");
                 String studentLogin = rs.getString("studLogin");
@@ -1251,7 +1250,8 @@ public class DBWrapper implements DatabaseIO {
                     loginsForGroup.add(studentLogin);
                 } else {
                     if (!nameForGroup.equals("")) {
-                        TA ta = Allocator.getCourseInfo().getTA(rs.getString("taLogin"));
+                        taLogin = rs.getString("taLogin");
+                        TA ta = Allocator.getCourseInfo().getTA(taLogin);
                         if (ta == null) {
                             throw new CakeHatDBIOException("The TA: " + rs.getString("taLogin") + ", exists in the DB but not in the config file.");
                         }
@@ -1262,6 +1262,9 @@ public class DBWrapper implements DatabaseIO {
                     nameForGroup = groupName;
                     loginsForGroup.add(studentLogin);
                 }
+            }
+            if (!nameForGroup.equals("")) {
+                groups.put(Allocator.getCourseInfo().getTA(taLogin), new Group(nameForGroup, loginsForGroup));
             }
 
             return groups.asMap();
@@ -1968,5 +1971,59 @@ public class DBWrapper implements DatabaseIO {
             parts = parts.substring(1);
         }
         return parts;
+    }
+
+    public void setTimeStatus(Handin handin, Group group, TimeStatus status, int daysLate) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            conn.setAutoCommit(false);
+
+            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
+
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM handin"
+                    + " WHERE gpid == ?;");
+            ps.setInt(1, groupID);
+            ps.executeUpdate();
+
+            ps = conn.prepareStatement("INSERT INTO handin ('gpid', 'status', 'late'"
+                    + " (?, ?, ?);");
+            ps.setInt(1, groupID);
+            ps.setString(2, status.name());
+            ps.setInt(3, daysLate);
+            ps.executeUpdate();
+
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    public HandinStatusPair getTimeStatus(Handin handin, Group group) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
+            PreparedStatement ps = conn.prepareStatement("SELECT h.status AS status, h.late AS late"
+                    + " FROM handin AS h"
+                    + " WHERE h.gpid == ?;");
+            ps.setInt(1, groupID);
+            ResultSet rs = ps.executeQuery();
+
+            TimeStatus status = null;
+            Integer daysLate = null;
+            if (rs.next()) {
+                status = TimeStatus.valueOf(rs.getString("status"));
+                daysLate = rs.getInt("late");
+            }
+
+            return new HandinStatusPair(status, daysLate);
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 }
