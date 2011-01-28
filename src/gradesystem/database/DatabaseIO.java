@@ -5,6 +5,8 @@ import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
 import gradesystem.config.TA;
 import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import gradesystem.rubric.TimeStatus;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Collection;
@@ -26,10 +28,8 @@ public interface DatabaseIO {
      * @param studentLogin
      * @param studentFirstName
      * @param studentLastName
-     * @return status true if the student was added; false if the student was
-     *         already in the database and thus not added
      */
-    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
+    public void addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
 
     /**
      * Marks the student as disabled; use instead of removing if a student has dropped
@@ -620,6 +620,27 @@ public interface DatabaseIO {
      * @return map of asgn to ta
      */
     public Map<DistributablePart, TA> getGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException;
+
+    /**
+     * For the given Handin and Group the TimeStatus and daysLate are stored in the DB.
+     * In there is an existing record for that Handin and Group the currently stored value is removed.
+     *
+     * @param handin
+     * @param group
+     * @param status
+     * @param daysLate
+     */
+    public void setTimeStatus(Handin handin, Group group, TimeStatus status, int daysLate) throws SQLException;
+
+    /**
+     * The HandinStatus for the Handin and Group is returned. If no record in the DB exists both fields of the
+     * HandinStatusPair will be null.
+     *
+     * @param handin
+     * @param group
+     * @return
+     */
+    public HandinStatusPair getTimeStatus(Handin handin, Group group) throws SQLException;
 
     /**
      * Removes all data from database tables and rebuilds the tables. If no DB
