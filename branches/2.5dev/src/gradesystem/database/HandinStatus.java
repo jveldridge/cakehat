@@ -2,11 +2,11 @@ package gradesystem.database;
 
 import gradesystem.rubric.TimeStatus;
 
-public class HandinStatusPair {
+public class HandinStatus {
     private TimeStatus _status;
     private Integer _daysLate;
 
-    public HandinStatusPair(TimeStatus status, Integer daysLate) {
+    public HandinStatus(TimeStatus status, Integer daysLate) {
         _status = status;
         _daysLate = daysLate;
     }
