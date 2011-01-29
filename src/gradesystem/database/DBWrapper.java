@@ -56,6 +56,9 @@ public class DBWrapper implements DatabaseIO {
 
             public void closeConnection(Connection c) throws SQLException {
                 if (c != null) {
+                    if (!c.getAutoCommit()) {
+                        c.commit();
+                    }
                     c.close();
                 }
             }
@@ -158,6 +161,8 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(2, studentFirstName);
             ps.setString(3, studentLastName);
             ps.executeUpdate();
+
+            ps.close();
         } finally {
             this.closeConnection(conn);
         }
@@ -982,7 +987,7 @@ public class DBWrapper implements DatabaseIO {
                     + "'note' TEXT, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
             conn.createStatement().executeUpdate("CREATE TABLE 'extension' ('gpid' INTEGER NOT NULL, "
-                    + "'pid' VARCHAR NOT NULL, "
+                    + "'aid' VARCHAR NOT NULL, "
                     + "'ontime' INTEGER NOT NULL, "
                     + "'note' TEXT, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
@@ -1011,7 +1016,7 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("CREATE INDEX dist_tid ON distribution (tid);");
             conn.createStatement().executeUpdate("CREATE INDEX exemp_pid ON exemption (pid);");
             conn.createStatement().executeUpdate("CREATE INDEX exemp_gpid ON exemption (gpid);");
-            conn.createStatement().executeUpdate("CREATE INDEX exten_pid ON extension (pid);");
+            conn.createStatement().executeUpdate("CREATE INDEX exten_aid ON extension (aid);");
             conn.createStatement().executeUpdate("CREATE INDEX exten_gpid ON extension (gpid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_pid ON grade (pid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_gpid ON grade (gpid);");
@@ -1082,6 +1087,7 @@ public class DBWrapper implements DatabaseIO {
                     + " WHERE gp.gpid IN (SELECT gp.gpid"
                     + " FROM asgngroup AS gp"
                     + " INNER JOIN groupmember as gm"
+                    + " ON gp.gpid == gm.gpid"
                     + " WHERE gp.aid == ?"
                     + " AND gm.sid == ?)");
             ps.setString(1, asgn.getDBID());
@@ -1217,6 +1223,8 @@ public class DBWrapper implements DatabaseIO {
 
             ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
+            ps.close();
+            
             return rows == 0;
         } finally {
             this.closeConnection(conn);
@@ -1241,30 +1249,35 @@ public class DBWrapper implements DatabaseIO {
             ResultSet rs = ps.executeQuery();
 
             Collection<String> loginsForGroup = new ArrayList<String>(5);
-            String nameForGroup = "";
+            String currentNameForGroup = "";
             String taLogin = "";
-            while (rs.next()) {
+            TA ta = null;
+            while (rs.next()) { //while there are more records
                 String groupName = rs.getString("groupName");
                 String studentLogin = rs.getString("studLogin");
-                if (nameForGroup.equals(groupName)) {
-                    loginsForGroup.add(studentLogin);
-                } else {
-                    if (!nameForGroup.equals("")) {
-                        taLogin = rs.getString("taLogin");
-                        TA ta = Allocator.getCourseInfo().getTA(taLogin);
-                        if (ta == null) {
-                            throw new CakeHatDBIOException("The TA: " + rs.getString("taLogin") + ", exists in the DB but not in the config file.");
-                        }
-                        Group group = new Group(nameForGroup, loginsForGroup);
-                        groups.put(ta, group);
-                    }
-                    loginsForGroup = new ArrayList<String>(5);
-                    nameForGroup = groupName;
+                if (currentNameForGroup.equals(groupName)) { //if we are still populating the same group
                     loginsForGroup.add(studentLogin);
                 }
+                else { //if it is a new group
+                    if (!currentNameForGroup.equals("")) { //if the old group was not the blank group with no name
+                        if (ta == null) {
+                            throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
+                        }
+                        Group group = new Group(currentNameForGroup, loginsForGroup); //make a group from the logins and name we have
+                        groups.put(ta, group); //add the group to the dist
+                    }
+                    taLogin = rs.getString("taLogin");
+                    ta = Allocator.getCourseInfo().getTA(taLogin);
+                    loginsForGroup = new ArrayList<String>(5); //make a new list of logins
+                    currentNameForGroup = groupName; //update the current name
+                    loginsForGroup.add(studentLogin); //add the student to the list
+                }
             }
-            if (!nameForGroup.equals("")) {
-                groups.put(Allocator.getCourseInfo().getTA(taLogin), new Group(nameForGroup, loginsForGroup));
+            if (!currentNameForGroup.equals("")) { //we are done with all the records and there were some records
+                if (ta == null) {
+                    throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
+                }
+                groups.put(Allocator.getCourseInfo().getTA(taLogin), new Group(currentNameForGroup, loginsForGroup)); //make and add a group
             }
 
             return groups.asMap();
@@ -1345,26 +1358,26 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public void grantExtension(Group group, DistributablePart part, Calendar newDate, String note) throws SQLException {
+    public void grantExtension(Group group, Handin handin, Calendar newDate, String note) throws SQLException {
         Connection conn = this.openConnection();
         try {
             conn.setAutoCommit(false);
 
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
+            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
 
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
-                    + " WHERE pid == ?"
+                    + " WHERE aid == ?"
                     + " AND gpid == ?");
-            ps.setString(1, part.getDBID());
+            ps.setString(1, handin.getAssignment().getDBID());
             ps.setInt(2, groupID);
             ps.executeUpdate();
 
             int ontime = (int) (newDate.getTimeInMillis() / 1000);
 
-            ps = conn.prepareStatement("INSERT INTO extension ('gpid', 'pid', 'ontime', 'note')"
+            ps = conn.prepareStatement("INSERT INTO extension ('gpid', 'aid', 'ontime', 'note')"
                     + " VALUES (?, ?, ?, ?)");
             ps.setInt(1, groupID);
-            ps.setString(2, part.getDBID());
+            ps.setString(2, handin.getAssignment().getDBID());
             ps.setInt(3, ontime);
             ps.setString(4, note);
             ps.executeUpdate();
@@ -1383,15 +1396,15 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public void removeExtension(Group group, DistributablePart part) throws SQLException {
+    public void removeExtension(Group group, Handin handin) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
+            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
 
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
-                    + " WHERE pid == ?"
+                    + " WHERE aid == ?"
                     + " AND gpid == ?");
-            ps.setString(1, part.getDBID());
+            ps.setString(1, handin.getAssignment().getDBID());
             ps.setInt(2, groupID);
             ps.executeUpdate();
         } finally {
@@ -1452,21 +1465,21 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public Calendar getExtension(Group group, DistributablePart part) throws SQLException {
+    public Calendar getExtension(Group group, Handin handin) throws SQLException {
         Calendar result = null;
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT e.ontime AS date"
+            PreparedStatement ps = conn.prepareStatement("SELECT x.ontime AS date"
                     + " FROM extension AS x"
                     + " INNER JOIN asgngroup AS g"
                     + " ON g.gpid == x.gpid"
-                    + " WHERE x.pid == ?"
+                    + " WHERE x.aid == ?"
                     + " AND g.name == ?"
                     + " AND g.aid == ?");
-            ps.setString(1, part.getDBID());
+            ps.setString(1, handin.getAssignment().getDBID());
             ps.setString(2, group.getName());
-            ps.setString(3, part.getAssignment().getDBID());
+            ps.setString(3, handin.getAssignment().getDBID());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -1481,15 +1494,15 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public Map<Group, Calendar> getAllExtensions(DistributablePart part) throws SQLException {
+    public Map<Group, Calendar> getAllExtensions(Handin handin) throws SQLException {
         HashMap<Group, Calendar> result = new HashMap<Group, Calendar>();
         Connection conn = this.openConnection();
 
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT e.gpid AS groupID, e.ontime AS date"
                     + " FROM extension AS e"
-                    + " WHERE e.pid == ?");
-            ps.setString(1, part.getDBID());
+                    + " WHERE e.aid == ?");
+            ps.setString(1, handin.getAssignment().getDBID());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1521,7 +1534,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public String getExtensionNote(Group group, DistributablePart part) throws SQLException {
+    public String getExtensionNote(Group group, Handin handin) throws SQLException {
         String result = null;
         Connection conn = this.openConnection();
 
@@ -1530,12 +1543,12 @@ public class DBWrapper implements DatabaseIO {
                     + " FROM extension AS x"
                     + " INNER JOIN asgngroup AS g"
                     + " ON g.gpid == x.gpid"
-                    + " WHERE x.pid == ?"
+                    + " WHERE x.aid == ?"
                     + " AND g.name == ?"
                     + " AND g.aid == ?");
-            ps.setString(1, part.getDBID());
+            ps.setString(1, handin.getAssignment().getDBID());
             ps.setString(2, group.getName());
-            ps.setString(3, part.getAssignment().getDBID());
+            ps.setString(3, handin.getAssignment().getDBID());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -1654,6 +1667,7 @@ public class DBWrapper implements DatabaseIO {
                 while (rs.next()) {
                     names2IDs.put(rs.getString("groupName"), rs.getInt("groupID"));
                 }
+                ps.close();
             } else {
                 // if the dist is empty then no reason to do anything
                 return;
@@ -1661,32 +1675,38 @@ public class DBWrapper implements DatabaseIO {
 
             // stop committing so that all inserts happen in one FileIO
             conn.setAutoCommit(false);
+
+            PreparedStatement psD = conn.prepareStatement("DELETE FROM distribution WHERE pid == ?");
             for (DistributablePart part : distribution.keySet()) {
+                psD.setString(1, part.getDBID());
+                psD.addBatch();
+            }
+            psD.executeBatch();
+            psD.close();
 
-                PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution WHERE pid == ?");
-                ps.setString(1, part.getDBID());
-                ps.executeUpdate();
-
+            PreparedStatement psI = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid') VALUES (?, ?, ?)");
+            for (DistributablePart part : distribution.keySet()) {
                 //add the distribution to the DB
-                ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid')"
-                        + " VALUES (?, ?, ?)");
                 for (TA ta : distribution.get(part).keySet()) {
                     Collection<Group> distributedGroups = distribution.get(part).get(ta);
 
                     for (Group group : distributedGroups) {
-                        ps.setString(1, part.getDBID());
+                        psI.setString(1, part.getDBID());
                         //make sure that if a group's gpid can't be looked up that an exception is thrown
                         if (!names2IDs.containsKey(group.getName())) {
+                            psD.close();
+                            psI.close();
                             conn.rollback();
                             throw new CakeHatDBIOException("could not find the groupID in the database for the group: " + group);
                         }
-                        ps.setInt(2, names2IDs.get(group.getName()));
-                        ps.setString(3, ta.getLogin());
-                        ps.addBatch();
+                        psI.setInt(2, names2IDs.get(group.getName()));
+                        psI.setString(3, ta.getLogin());
+                        psI.addBatch();
                     }
                 }
-                ps.executeBatch();
             }
+            psI.executeBatch();
+            psI.close();
 
             // commit all the inserts to the DB file
             conn.commit();
@@ -1702,7 +1722,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     private int group2groupID(Connection conn, Assignment asgn, Group group) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid AS group"
+        PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid AS groupID"
                 + " FROM asgngroup AS gp"
                 + " WHERE gp.name == ?"
                 + " AND gp.aid == ?");
@@ -1710,6 +1730,7 @@ public class DBWrapper implements DatabaseIO {
         ps.setString(2, asgn.getDBID());
         ResultSet rs = ps.executeQuery();
         int groupID = rs.getInt("group");
+        ps.close();
         return groupID;
     }
 
@@ -2003,7 +2024,7 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    public HandinStatusPair getTimeStatus(Handin handin, Group group) throws SQLException {
+    public HandinStatus getTimeStatus(Handin handin, Group group) throws SQLException {
         Connection conn = this.openConnection();
 
         try {
@@ -2021,7 +2042,7 @@ public class DBWrapper implements DatabaseIO {
                 daysLate = rs.getInt("late");
             }
 
-            return new HandinStatusPair(status, daysLate);
+            return new HandinStatus(status, daysLate);
         } finally {
             this.closeConnection(conn);
         }

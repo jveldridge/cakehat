@@ -160,6 +160,9 @@ public class CourseInfoImpl implements CourseInfo
     @Override
     public DistributablePart getDistributablePart(String partID) {
         if (_distributablePartMap == null) {
+            
+            _distributablePartMap = new HashMap<String, DistributablePart>();
+
             for (Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()) {
                 for (DistributablePart part : asgn.getDistributableParts()) {
                     _distributablePartMap.put(part.getDBID(), part);

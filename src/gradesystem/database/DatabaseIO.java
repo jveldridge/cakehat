@@ -358,26 +358,26 @@ public interface DatabaseIO {
     public String getExemptionNote(String studentLogin, Part part) throws SQLException;
 
     /**
-     * Grants an extension for the Group group for the DistributablePart
-     * part.  The group's handin will now be due at the date/time represented by
+     * Grants an extension for the Group group for the Handin
+     * handin.  The group's handin will now be due at the date/time represented by
      * the calendar newDate.  String note can be used to store a message explaining why
      * the extension was granted.
      *
      * @param group
-     * @param part
+     * @param handin
      * @param newDate
      * @param note
      */
-    public void grantExtension(Group group, DistributablePart part, Calendar newDate, String note) throws SQLException;
+    public void grantExtension(Group group, Handin handin, Calendar newDate, String note) throws SQLException;
 
     /**
-     * Removes a previously granted extension for the given group for the given Part.
+     * Removes a previously granted extension for the given group for the given Handin.
      * If the group did not previously have an extension, this method has no effect.
      *
      * @param group
-     * @param part
+     * @param handin
      */
-    public void removeExtension(Group group, DistributablePart part) throws SQLException;
+    public void removeExtension(Group group, Handin handin) throws SQLException;
 
     /**
      * Grants an exemption for the Group group for the Part
@@ -402,34 +402,34 @@ public interface DatabaseIO {
     public void removeExemption(Group group, Part part) throws SQLException;
 
     /**
-     * Returns the Calendar representing the date when the Part is due
+     * Returns the Calendar representing the date when the Handin is due
      * for Group group if that group has an extension.  Returns
      * null if the group does not have an extension.
      *
      * @param group
-     * @param assignmentName
+     * @param handin
      * @return
      */
-    public Calendar getExtension(Group group, DistributablePart part) throws SQLException;
+    public Calendar getExtension(Group group, Handin handin) throws SQLException;
 
     /**
-     * Returns the Map of Groups to extensions for a specific Part.
+     * Returns the Map of Groups to extensions for a specific Handin.
      *
-     * @param part
+     * @param handin
      * @return
      */
-    public Map<Group, Calendar> getAllExtensions(DistributablePart part) throws SQLException;
+    public Map<Group, Calendar> getAllExtensions(Handin handin) throws SQLException;
 
     /**
      * Returns a string containing a message to indicate why the Group group
-     * has been granted an extension on Part part.  Returns null
+     * has been granted an extension on Handin handin.  Returns null
      * if the group does not have an extension.
      *
      * @param group
-     * @param part
+     * @param handin
      * @return
      */
-    public String getExtensionNote(Group group, DistributablePart part) throws SQLException;
+    public String getExtensionNote(Group group, Handin handin) throws SQLException;
 
     /**
      * Returns a string containing a message to indicate why the Group group
@@ -640,7 +640,7 @@ public interface DatabaseIO {
      * @param group
      * @return
      */
-    public HandinStatusPair getTimeStatus(Handin handin, Group group) throws SQLException;
+    public HandinStatus getTimeStatus(Handin handin, Group group) throws SQLException;
 
     /**
      * Removes all data from database tables and rebuilds the tables. If no DB
