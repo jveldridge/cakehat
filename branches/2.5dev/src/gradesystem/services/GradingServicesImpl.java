@@ -41,32 +41,9 @@ import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import java.sql.SQLException;
 import java.util.Calendar;
-import utils.system.NativeException;
 
 public class GradingServicesImpl implements GradingServices
 {
-    public void importLabGrades(LabPart part) throws ServicesException {
-        try {
-            //Get logins
-            Collection<String> logins = Allocator.getDatabaseIO().getAllStudents().keySet();
-            //Get scores
-            Map<String, Double> scores = part.getLabScores();
-
-            //We don't want to just input all the keys in scores, because if people
-            //were checked off with the wrong login we would submit that to the database
-
-            //Input scores for those logins
-            for (String login : logins) {
-                if (scores.containsKey(login)) {
-                    Allocator.getDatabaseIO().enterGrade(login, part, scores.get(login));
-                }
-            }
-        } catch (SQLException e) {
-            //TODO: list logins that weren't imported
-            throw new ServicesException("Lab grades could not be imported for lab part " + part + ".", e);
-        }
-    }
-
     public void makeUserGradingDirectory() throws ServicesException
     {
         File gradingDir = new File(this.getUserGradingDirectory());
@@ -540,64 +517,6 @@ public class GradingServicesImpl implements GradingServices
         public String getStudentLogin()
         {
             return _studentLogin;
-        }
-    }
-
-    public void updateLabGradeFile(LabPart labPart, double score, String student)
-    {
-        //Deletes existing lab grade(s) for this lab and student. There should
-        //only be 1, but to be safe, allow for deleting all
-        File labDir = new File(Allocator.getCourseInfo().getLabsDir() + labPart.getLabNumber());
-        for(File labFile : labDir.listFiles())
-        {
-            if(labFile.getName().startsWith(student))
-            {
-                if(!labFile.delete())
-                {
-                    new ErrorView("Unable to remove previous lab grade: " +
-                            labFile.getAbsolutePath() + ". \n" +
-                            "The lab grade cannot be updated.");
-                    return;
-                }
-            }
-        }
-
-        //Convert score to string and trim (to avoid something like 1.5000000000)
-        String scoreText = new Double(score).toString();
-        char[] scoreChars = scoreText.toCharArray();
-        int endIndex = scoreText.length() - 1;
-        for (; endIndex >= 0 ; endIndex--)
-        {
-            if (scoreChars[endIndex] != '0')
-            {
-                break;
-            }
-        }
-        scoreText = scoreText.substring(0, endIndex+1);
-
-        //File that will represent the new lab grade
-        File scoreFile = new File(labDir, student + "," + scoreText);
-
-        //Create the file
-        try
-        {
-            scoreFile.createNewFile();
-
-            //Change permissions and group ownership
-            try
-            {
-                Allocator.getFileSystemServices().sanitize(scoreFile);
-            }
-            catch(ServicesException e)
-            {
-                new ErrorView(e, "Unable to change permissions and group for new lab grade.");
-            }
-        }
-        catch (IOException ex)
-        {
-            new ErrorView(ex, "Previous lab grade was removed, " +
-                    "but it was not possible to add the new lab grade: " +
-                    scoreFile.getAbsolutePath());
         }
     }
 

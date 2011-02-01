@@ -127,8 +127,8 @@ class SingleSelectionPanel extends JPanel
                     Part labPart = _labBox.getSelectedItem();
 
                     try {
+                        //TODO: Update to use groups
                         Allocator.getDatabaseIO().enterGrade(_studentLogin, labPart, labEarned);
-                        Allocator.getGradingServices().updateLabGradeFile((LabPart) labPart, labEarned, _studentLogin);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Saving the lab grade for student " + _studentLogin + " " +
                                           "on part " + labPart + " of assignment " +

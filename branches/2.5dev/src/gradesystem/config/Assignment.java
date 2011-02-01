@@ -186,27 +186,6 @@ public class Assignment implements Comparable<Assignment>
         return points;
     }
 
-    /**
-     * Returns if this assignment has a unique assignment number.
-     *
-     * @return
-     */
-    public boolean isUnique()
-    {
-        for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
-        {
-            if(asgn != this)
-            {
-                if(asgn.getNumber() == this.getNumber())
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     @Override
     public String toString()
     {

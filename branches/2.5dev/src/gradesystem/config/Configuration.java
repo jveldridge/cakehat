@@ -10,7 +10,7 @@ import utils.system.NativeException;
 
 /**
  * Object representation of the XML config file. Only meant to be used by
- * {@link ConfigurationParser} and {@link CourseInfoImpl}.
+ * {@link ConfigurationParser} and {@link ConfigurationInfoImpl}.
  *
  * @author jak2
  */
@@ -20,7 +20,6 @@ class Configuration
     private Vector<String> _notifyAddresses = new Vector<String>();
     private Vector<TA> _tas = new Vector<TA>();
     private EmailAccount _emailAccount;
-    private String _course;
     private int _leniency;
     private SubmitOptions _submitOptions;
 
@@ -63,7 +62,7 @@ class Configuration
             }
             catch(NativeException e)
             {
-                writer.append("Members of TA group (for course " + this.getCourse() + ") could not be retrieved. (NativeException)\n");
+                writer.append("Members of TA group could not be retrieved. (NativeException)\n");
             }
 
             if(!isLoginValid)
@@ -97,7 +96,7 @@ class Configuration
         HashSet<Integer> asgnNumbers = new HashSet<Integer>();
         HashSet<Integer> labNumbers = new HashSet<Integer>();
 
-        for(Assignment asgn : this.getAssigments())
+        for(Assignment asgn : this.getAssignments())
         {
             //Check if the Handin's information has reasonable dates
             if(asgn.hasHandin())
@@ -185,16 +184,6 @@ class Configuration
         return _tas;
     }
 
-    void setCourse(String course)
-    {
-        _course = course;
-    }
-
-    String getCourse()
-    {
-        return _course;
-    }
-
     void setLeniency(int minutes)
     {
         _leniency = minutes;
@@ -210,7 +199,7 @@ class Configuration
         _assignments.add(asgn);
     }
 
-    Collection<Assignment> getAssigments()
+    Collection<Assignment> getAssignments()
     {
         return _assignments;
     }

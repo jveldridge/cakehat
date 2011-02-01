@@ -577,7 +577,9 @@ public interface DatabaseIO {
     public void setGroup(Assignment asgn, Group group) throws SQLException;
 
     /**
-     * get the group for a student for an Assignment
+     * Gets the group for a student for an Assignment. If no group exists then
+     * <code>null</code> is returned.
+     *
      * @param asgn
      * @param student
      * @return

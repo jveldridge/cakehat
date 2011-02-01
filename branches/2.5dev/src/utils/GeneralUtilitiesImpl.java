@@ -1,5 +1,8 @@
 package utils;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Collection;
 
@@ -48,6 +51,35 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         else
         {
             return findInStack(throwable.getCause(), throwableClass);
+        }
+    }
+
+    /**
+     * The code inside of the runnable is run with the error stream redirected
+     * such that all calls on {@link System#err} are silenced. The error stream
+     * is restored after <code>toRun</code> is run.
+     *
+     * @param toRun
+     */
+    public void runWithSilencedError(Runnable toRun)
+    {
+        PrintStream originalErr = System.err;
+
+        //In case a runtime exception is thrown, restore the error stream in finally
+        try
+        {
+            PrintStream silentErr = new PrintStream(new OutputStream()
+            {
+                @Override
+                public void write(int i) throws IOException { }
+            });
+            System.setErr(silentErr);
+
+            toRun.run();
+        }
+        finally
+        {
+            System.setErr(originalErr);
         }
     }
 }

@@ -51,4 +51,13 @@ public interface GeneralUtilities
      * match is found
      */
     public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass);
+
+    /**
+     * The code inside of the runnable is run with the error stream redirected
+     * such that all calls on {@link System#err} are silenced. The error stream
+     * is restored after <code>toRun</code> is run.
+     *
+     * @param toRun
+     */
+    public void runWithSilencedError(Runnable toRun);
 }

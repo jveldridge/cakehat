@@ -1095,13 +1095,18 @@ public class DBWrapper implements DatabaseIO {
             ResultSet rs = ps.executeQuery();
 
             Collection<String> loginsForGroup = new ArrayList(5);
-            String nameForGroup = "";
+            String nameForGroup = null;
             while (rs.next()) {
                 loginsForGroup.add(rs.getString("studLogin"));
                 nameForGroup = rs.getString("groupName");
             }
 
-            return new Group(nameForGroup, loginsForGroup);
+            Group group = null;
+            if (nameForGroup != null) {
+                group = new Group(nameForGroup, loginsForGroup);
+            }
+
+            return group;
         } finally {
             this.closeConnection(conn);
         }
@@ -1596,7 +1601,6 @@ public class DBWrapper implements DatabaseIO {
             conn.setAutoCommit(false);
 
             int groupID = this.group2groupID(conn, part.getAssignment(), group);
-
             PreparedStatement ps = conn.prepareStatement("DELETE FROM grade"
                     + " WHERE pid == ?"
                     + " AND gpid == ?");
@@ -1729,7 +1733,7 @@ public class DBWrapper implements DatabaseIO {
         ps.setString(1, group.getName());
         ps.setString(2, asgn.getDBID());
         ResultSet rs = ps.executeQuery();
-        int groupID = rs.getInt("group");
+        int groupID = rs.getInt("groupID");
         ps.close();
         return groupID;
     }
@@ -1786,7 +1790,7 @@ public class DBWrapper implements DatabaseIO {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                scores.put(gpid2Group.get(rs.getString("groupID")), rs.getDouble("partscore"));
+                scores.put(gpid2Group.get(rs.getInt("groupID")), rs.getDouble("partscore"));
             }
 
             return scores;

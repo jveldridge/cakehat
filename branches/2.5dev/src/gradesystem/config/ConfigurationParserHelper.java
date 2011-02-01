@@ -14,11 +14,6 @@ import static gradesystem.config.XMLParsingUtilities.*;
  */
 class ConfigurationParserHelper
 {
-    private final static String CONFIG_FILE_NAME = "config.xml";
-    
-    //For testing purposes, specifies which course's configuration file to read
-    private final static String TESTING_COURSE = "cs000";
-
     //String constants that represent the tags used in the XML markup
     final static String CONFIG = "CONFIG",
 
@@ -56,7 +51,7 @@ class ConfigurationParserHelper
      */
     static Node getConfigurationRoot() throws ConfigurationException
     {
-        File configFile = getConfigurationFile();
+        File configFile = Allocator.getCourseInfo().getConfigurationFile();
 
         //Check the config file exists
         if(!configFile.exists())
@@ -69,59 +64,5 @@ class ConfigurationParserHelper
         Node configNode = getRootNode(getDocument(configFile), CONFIG);
 
         return configNode;
-    }
-
-    /**
-     * Builds the path to the configuration file.
-     *
-     * <pre>
-     * {@code
-     * /course/<course code>/.cakehat/<current year>/config/config.xml
-     * }
-     * </pre>
-     *
-     * @return
-     */
-    private static File getConfigurationFile()
-    {
-        File configFile = new File(new File(new File(new File(new File(new File
-                ("/course"),
-                getCourse()),
-                "/.cakehat"),
-                Integer.toString(Allocator.getCalendarUtilities().getCurrentYear())),
-                "/config"),
-                CONFIG_FILE_NAME);
-
-        return configFile;
-    }
-
-    /**
-     * Retrieves the course code, e.g. cs000. This is done by examining the
-     * location of the running code. If it is determined that the code is
-     * running for the cakehat jar as would be during normal operation, the
-     * course code is extracted from the path. If the code is instead believed
-     * to be running in development mode, a hard coded test value is used.
-     *
-     * @return
-     */
-    static String getCourse()
-    {
-        //Get the location of where this code is running
-        String loc = ConfigurationParserHelper.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-
-        //If this is actually the jar we are running from
-        if(loc.endsWith("jar") && loc.startsWith("/course/cs"))
-        {
-            String course = loc.replace("/course/", "");
-            course = course.substring(0, course.indexOf("/"));
-
-            return course;
-        }
-        else
-        {
-            System.out.println("Using hard-coded test value for course: " + TESTING_COURSE);
-
-            return TESTING_COURSE;
-        }
     }
 }
