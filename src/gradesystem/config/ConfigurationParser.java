@@ -40,7 +40,6 @@ public class ConfigurationParser
     {
         Configuration config = new Configuration();
         assignChildrenAttributes(getConfigurationRoot(), config);
-        config.setCourse(getCourse());
 
         return config;
     }

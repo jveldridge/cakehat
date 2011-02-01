@@ -1,7 +1,11 @@
 package gradesystem;
 
+import gradesystem.labcheckoff.CheckoffCLI;
 import gradesystem.views.backend.BackendView;
 import gradesystem.views.frontend.FrontendView;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -91,15 +95,24 @@ public class NewGradeSystemApp
         {
             GradeSystemView.launch();
         }
-        else if(args[1].equalsIgnoreCase("frontend"))
+        else if(args[0].equalsIgnoreCase("frontend"))
         {
             _isFrontend = true;
             FrontendView.launch();
         }
-        else if(args[1].equalsIgnoreCase("backend"))
+        else if(args[0].equalsIgnoreCase("backend"))
         {
             _isBackend = true;
             BackendView.launch();
+        }
+        else if(args[0].equalsIgnoreCase("lab"))
+        {
+            //Creating the ArrayList is necessary because the list created
+            //by Arrays.asList(...) is immutable
+            List<String> argList = new ArrayList(Arrays.asList(args));
+            argList.remove(0);
+
+            CheckoffCLI.performCheckoff(argList);
         }
         else
         {

@@ -2,7 +2,6 @@ package gradesystem.services;
 
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
-import gradesystem.config.LabPart;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
@@ -20,13 +19,6 @@ import java.util.Vector;
  */
 public interface GradingServices
 {
-    /**
-     * Import grades for a lab part into the database.
-     *
-     * @param part
-     */
-    public void importLabGrades(LabPart part) throws ServicesException;
-
     /**
      * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
      */
@@ -159,17 +151,6 @@ public interface GradingServices
      * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
     public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException;
-
-    /**
-     * Updates the student's lab grade by deleting the file that previously
-     * represented the lab grade and creating a new one.
-     *
-     * @param labPart
-     * @param score
-     * @param student the student's login
-     * @author aunger, jak2
-     */
-    public void updateLabGradeFile(LabPart labPart, double score, String student);
 
     /**
      * Gets the extensions for each student in studentLogins. Takes into account

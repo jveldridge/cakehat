@@ -963,18 +963,6 @@ public class BackendView extends JFrame
         });
         buttonPanel.add(_reassignGradingButton);
 
-        //Import grades
-        _importLabsButton = createButton("Import Lab Grades", "/gradesystem/resources/icons/16x16/mail-send-receive.png");
-        _importLabsButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                importGradesButtonActionPerformed();
-            }
-
-        });
-        buttonPanel.add(_importLabsButton);
-
         //Preview rubric
         _previewRubricButton = createButton("Preview Rubric", "/gradesystem/resources/icons/16x16/system-search.png");
         _previewRubricButton.addActionListener(new ActionListener()
@@ -1435,21 +1423,6 @@ public class BackendView extends JFrame
     private void reassignGradingButtonActionPerformed()
     {
         new ReassignView(_assignmentList.getSelectedValue());
-    }
-
-    private void importGradesButtonActionPerformed()
-    {
-        for(Assignment asgn : _assignmentList.getGenericSelectedValues())
-        {
-            for(LabPart part : asgn.getLabParts())
-            {
-                try {
-                    Allocator.getGradingServices().importLabGrades(part);
-                } catch (ServicesException ex) {
-                    new ErrorView(ex, "Importing lab grades failed.");
-                }
-            }
-        }
     }
 
     private void previewRubricButtonActionPerformed()

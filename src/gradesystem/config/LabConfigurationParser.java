@@ -13,7 +13,7 @@ import static gradesystem.config.ConfigurationParserHelper.*;
  */
 public class LabConfigurationParser
 {
-    public static LabPart getLabPart(final int labNumber) throws ConfigurationException
+    public LabPart getLabPart(final int labNumber) throws ConfigurationException
     {
         Node root = getConfigurationRoot();
 
@@ -49,6 +49,8 @@ public class LabConfigurationParser
                     LabPart part = new LabPart(asgn,
                             labAttrs.getString(NAME), labAttrs.getInt(NUMBER),
                             labAttrs.getInt(POINTS), labAttrs.getInt(LAB_NUMBER));
+
+                    asgn.addLabPart(part);
 
                     return part;
                 }

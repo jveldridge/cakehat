@@ -1,5 +1,7 @@
 package gradesystem;
 
+import gradesystem.config.ConfigurationInfo;
+import gradesystem.config.ConfigurationInfoImpl;
 import gradesystem.config.CourseInfo;
 import gradesystem.config.CourseInfoImpl;
 import gradesystem.services.GradingServices;
@@ -103,7 +105,8 @@ public class Allocator
          */
         protected abstract T allocate();
     }
-    
+
+    private final SingletonAllocation<ConfigurationInfo> _configInfo;
     private final SingletonAllocation<CourseInfo> _courseInfo;
     private final SingletonAllocation<RubricManager> _rubricManager;
     private final SingletonAllocation<GradingServices> _gradingServices;
@@ -125,6 +128,7 @@ public class Allocator
      * may be <code>null</code>. If the parameter is <code>null</code> then the
      * standard implementation will be used.
      *
+     * @param configInfo
      * @param courseInfo
      * @param rubricManager
      * @param gradingServices
@@ -140,7 +144,8 @@ public class Allocator
      * @param fileSystemUtils
      * @param userUtils
      */
-    private Allocator(SingletonAllocation<CourseInfo> courseInfo,
+    private Allocator(SingletonAllocation<ConfigurationInfo> configInfo,
+                      SingletonAllocation<CourseInfo> courseInfo,
                       SingletonAllocation<RubricManager> rubricManager,
                       SingletonAllocation<GradingServices> gradingServices,
                       SingletonAllocation<UserServices> userServices,
@@ -156,6 +161,16 @@ public class Allocator
                       SingletonAllocation<FileSystemUtilities> fileSystemUtils,
                       SingletonAllocation<UserUtilities> userUtils)
     {
+        if(configInfo == null)
+        {
+            _configInfo = new SingletonAllocation<ConfigurationInfo>()
+                          { public ConfigurationInfo allocate() { return new ConfigurationInfoImpl(); } };
+        }
+        else
+        {
+            _configInfo = configInfo;
+        }
+
         if(courseInfo == null)
         {
             _courseInfo = new SingletonAllocation<CourseInfo>()
@@ -307,6 +322,11 @@ public class Allocator
         }
     }
 
+    public static ConfigurationInfo getConfigurationInfo()
+    {
+        return getInstance()._configInfo.getInstance();
+    }
+
     public static CourseInfo getCourseInfo()
     {
         return getInstance()._courseInfo.getInstance();
@@ -391,6 +411,7 @@ public class Allocator
      */
     public static class Customizer
     {
+        private SingletonAllocation<ConfigurationInfo> _configInfo;
         private SingletonAllocation<CourseInfo> _courseInfo;
         private SingletonAllocation<RubricManager> _rubricManager;
         private SingletonAllocation<GradingServices> _gradingServices;
@@ -406,6 +427,13 @@ public class Allocator
         private SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
+
+        public Customizer setConfigurationInfo(SingletonAllocation<ConfigurationInfo> configInfo)
+        {
+            _configInfo = configInfo;
+
+            return this;
+        }
 
         public Customizer setCourseInfo(SingletonAllocation<CourseInfo> courseInfo)
         {
@@ -530,7 +558,8 @@ public class Allocator
          */
         private void createSingletonInstance()
         {
-            Allocator.INSTANCE = new Allocator(_courseInfo,
+            Allocator.INSTANCE = new Allocator(_configInfo,
+                    _courseInfo,
                     _rubricManager,
                     _gradingServices,
                     _userServices,

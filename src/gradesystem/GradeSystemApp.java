@@ -1,9 +1,13 @@
 package gradesystem;
 
+import gradesystem.labcheckoff.CheckoffCLI;
 import gradesystem.views.backend.BackendView;
 import gradesystem.views.frontend.FrontendView;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -18,6 +22,7 @@ public class GradeSystemApp extends SingleFrameApplication
     private static String[] _args;
     private static final String BACKEND_ARG = "backend";
     private static final String FRONTEND_ARG = "frontend";
+    private static final String LAB_CHECKOFF_ARG = "lab";
 
     //package-protected so can be set by GradeSystemView when in test mode.
     static boolean _isFrontend;
@@ -64,6 +69,21 @@ public class GradeSystemApp extends SingleFrameApplication
                 }
             };
         }
+        else if (_args[0].equalsIgnoreCase(LAB_CHECKOFF_ARG))
+        {
+            initialWindowCommand = new Runnable()
+            {
+                public void run()
+                {
+                    //Creating the ArrayList is necessary because the list created
+                    //by Arrays.asList(...) is immutable
+                    List<String> argList = new ArrayList(Arrays.asList(_args));
+                    argList.remove(0);
+
+                    CheckoffCLI.performCheckoff(argList);
+                }
+            };
+        }
         else
         {
             initialWindowCommand = new Runnable()
@@ -100,6 +120,7 @@ public class GradeSystemApp extends SingleFrameApplication
 
         loadingFrame.addWindowListener(new WindowAdapter()
         {
+            @Override
             public void windowOpened(WindowEvent e)
             {
                 action.run();
