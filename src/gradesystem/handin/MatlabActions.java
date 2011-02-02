@@ -5,7 +5,6 @@ import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.components.ShadowJTextField;
 import gradesystem.database.Group;
-import gradesystem.handin.file.AndFileFilter;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -184,10 +184,19 @@ class MatlabActions implements ActionProvider
                             }
                         }
 
-
                         try
                         {
-                            Allocator.getFileSystemUtilities().copy(source, unarchiveDir);
+                            File destination;
+                            if(source.isFile())
+                            {
+                                destination = new File(unarchiveDir, source.getName());
+                            }
+                            else
+                            {
+                                destination = unarchiveDir;
+                            }
+
+                            Allocator.getFileSystemUtilities().copy(source, destination);
                         }
                         catch(FileCopyingException e)
                         {
@@ -673,8 +682,10 @@ class MatlabActions implements ActionProvider
         });
         updateEval.run();
 
+        ImageIcon icon = new ImageIcon(getClass().getResource("/gradesystem/resources/icons/32x32/go-next.png"));
         int result = JOptionPane.showConfirmDialog(null, panel,
-                "Run m-file", JOptionPane.OK_CANCEL_OPTION);
+                "Run m-file", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, icon);
         if(result == JOptionPane.OK_OPTION)
         {
             try
