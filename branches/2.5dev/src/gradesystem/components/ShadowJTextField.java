@@ -31,9 +31,12 @@ public class ShadowJTextField extends JTextField
         {
             public void focusGained(FocusEvent fe)
             {
-                _inShadow = false;
-                setForeground(_prevForeground);
-                setText("");
+                if(_inShadow)
+                {
+                    _inShadow = false;
+                    setForeground(_prevForeground);
+                    setText("");
+                }
             }
 
             public void focusLost(FocusEvent fe)

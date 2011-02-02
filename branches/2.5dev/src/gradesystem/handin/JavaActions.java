@@ -141,7 +141,17 @@ class JavaActions implements ActionProvider
                         }
                         try
                         {
-                            Allocator.getFileSystemUtilities().copy(source, unarchiveDir);
+                            File destination;
+                            if(source.isFile())
+                            {
+                                destination = new File(unarchiveDir, source.getName());
+                            }
+                            else
+                            {
+                                destination = unarchiveDir;
+                            }
+
+                            Allocator.getFileSystemUtilities().copy(source, destination);
 
                             _testedGroups.add(group);
                         }
