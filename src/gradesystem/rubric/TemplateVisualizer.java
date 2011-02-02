@@ -1,5 +1,6 @@
 package gradesystem.rubric;
 
+import gradesystem.handin.DistributablePart;
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -18,9 +19,10 @@ import javax.swing.JScrollPane;
  */
 class TemplateVisualizer extends JFrame
 {
-    TemplateVisualizer(String name, Rubric rubric)
+    TemplateVisualizer(Rubric rubric)
     {
-        super("Rubric Preview for " + name);
+        super("Rubric Preview for " + rubric.getDistributablePart().getAssignment().getName() +
+              ": " + rubric.getDistributablePart().getName());
 
         //Layout
         this.setLayout(new BorderLayout());
@@ -40,6 +42,7 @@ class TemplateVisualizer extends JFrame
         //Open up a dialog on window close to save rubric data
         this.addWindowListener(new WindowAdapter()
         {
+            @Override
             public void windowClosing(WindowEvent e)
             {
                 TemplateVisualizer.this.dispose();
@@ -52,6 +55,7 @@ class TemplateVisualizer extends JFrame
         //On window open, scroll to top
         this.addWindowListener(new WindowAdapter()
         {
+            @Override
             public void windowOpened(WindowEvent e)
             {
                 scrollPane.getViewport().setViewPosition(new Point(0,0));

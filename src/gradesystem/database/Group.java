@@ -1,5 +1,6 @@
 package gradesystem.database;
 
+import gradesystem.Allocator;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -8,7 +9,7 @@ import java.util.Collection;
  *
  * @author jak2
  */
-public class Group
+public class Group implements Comparable<Group>
 {
     private final String _name;
     private final Collection<String> _members;
@@ -39,4 +40,26 @@ public class Group
     {
         return _name;
     }
+
+    @Override
+    public int compareTo(Group t) {
+        return this.getName().compareTo(t.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return _name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Group) {
+            Group group = (Group) o;
+            return this.getName().equals(group.getName()) &&
+                    Allocator.getGeneralUtilities().containSameElements(this.getMembers(), group.getMembers());
+        }
+
+        return false;
+    }
+
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class GeneralUtilitiesImpl implements GeneralUtilities
@@ -54,6 +55,13 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         }
     }
 
+    public <E> boolean containSameElements(Collection<E> c1, Collection<E> c2) {
+        Collection<E> diff = new ArrayList<E>(c1);
+        diff.removeAll(c2);
+
+        return diff.isEmpty();
+    }
+
     /**
      * The code inside of the runnable is run with the error stream redirected
      * such that all calls on {@link System#err} are silenced. The error stream
@@ -82,4 +90,5 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
             System.setErr(originalErr);
         }
     }
+
 }

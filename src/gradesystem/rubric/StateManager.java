@@ -1,5 +1,6 @@
 package gradesystem.rubric;
 
+import gradesystem.database.HandinStatus;
 import javax.swing.JButton;
 
 /**
@@ -8,31 +9,52 @@ import javax.swing.JButton;
  *
  * @author spoletto
  */
-class StateManager
-{	
-    private boolean _saved;
+class StateManager {
+    
+    private boolean _rubricSaved = true;
+    private boolean _statusSaved = true;
+    private HandinStatus _handinStatus;
     private JButton _saveButton;
 	
-    public StateManager(JButton saveButton, boolean saved)
-    {
-        _saved = saved;
+    public StateManager(JButton saveButton) {
         _saveButton = saveButton;
     }
-	
-    public void rubricSaved()
-    {
-        _saved = true;
-        _saveButton.setEnabled(false);
-    }
-	
-    public void rubricChanged()
-    {
-        _saved = false;
+
+    public void rubricChanged() {
+        _rubricSaved = false;
         _saveButton.setEnabled(true);
     }
-	
-    public boolean beenSaved()
-    {
-        return _saved;
+
+    public void rubricSaved() {
+        _rubricSaved = true;
+        _saveButton.setEnabled(!_statusSaved);
     }
+
+    public boolean isRubricSaved() {
+        return _rubricSaved;
+    }
+
+    public boolean isStatusSaved() {
+        return _statusSaved;
+    }
+
+    public void setHandinStatus(HandinStatus status) {
+        _handinStatus = status;
+        _statusSaved = false;
+        _saveButton.setEnabled(true);
+    }
+
+    public void statusSaved() {
+        _statusSaved = true;
+        _saveButton.setEnabled(!_rubricSaved);
+    }
+
+    public HandinStatus getHandinStatus() {
+        return _handinStatus;
+    }
+
+    public boolean beenSaved() {
+        return _rubricSaved && _statusSaved;
+    }
+    
 }

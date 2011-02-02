@@ -1,17 +1,23 @@
 package gradesystem.rubric;
 
+import gradesystem.Allocator;
+import gradesystem.config.Assignment;
 import gradesystem.config.GradeUnits;
 import gradesystem.config.LatePolicy;
+import gradesystem.config.TA;
 import gradesystem.database.CakeHatDBIOException;
+import gradesystem.database.Group;
+import gradesystem.database.HandinStatus;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import gradesystem.rubric.Rubric.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import gradesystem.rubric.Rubric.*;
-import gradesystem.Allocator;
-import gradesystem.config.Assignment;
-import gradesystem.config.TA;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Responsible for writing a Rubric instance to a GRD text file.
@@ -19,13 +25,12 @@ import java.sql.SQLException;
  * @author spoletto
  * @author jak2
  */
-class RubricGRDWriter
-{
-    private final static String STUDENT_LBL = "STUDENT: ";
+class RubricGRDWriter {
     private final static String GRADER_LBL = "GRADER: ";
     private final static String HANDIN_STATUS_LBL = "HANDIN STATUS: ";
     private final static String ASSIGNMENT_LBL = "Assignment ";
     private final static String GRADER_SHEET_LBL = " Grader Sheet: ";
+    private final static String DP_LABEL = "PART: ";
 
     private final static int SECTION_TEXT_WIDTH = 58;
     private final static int SCORE_TEXT_WIDTH = 7;
@@ -36,59 +41,112 @@ class RubricGRDWriter
     private final static int TOTAL_INDENT_WIDTH = 49;
     private final static int STATIC_TEXT_WIDTH = 28;
 
-    static void write(Rubric rubric, String GRDFilePath) throws RubricGMLException
-    {
-        // get the TA who graded this assignment
-        TA grader = null;
-        try {
-            Assignment asgn = rubric._handinPart.getAssignment();
-            String studentLogin = rubric.getStudentAccount();
-            grader = Allocator.getDatabaseIO().getAllGradersForStudent(studentLogin).get(asgn);
-        } catch (SQLException ex) {
-            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
-        } catch (CakeHatDBIOException ex) {
-            new RubricGMLException("The TA who graded this student could not be read from the database.", ex);
-        }
+    static void write(Handin handin, Group group, HandinStatus status,
+                      String GRDFilePath) throws RubricException {
 
         //Get the writer to write to file
         BufferedWriter output = openGRDFile(GRDFilePath);
 
-        writeAssignmentDetails(grader, rubric, output);
+        writeAssignmentDetails(handin, group, output);
 
-        for (Section section : rubric.getSections())
-        {
+        Score totalScore = new Score(0, 0);
+
+        for (DistributablePart dp : handin.getAssignment().getDistributableParts()) {
+            Score dpScore = writeDistributablePart(handin, status, group, dp, output);
+            totalScore._score += dpScore._score;
+            totalScore._outOf += dpScore._outOf;
+        }
+
+        writeFinalScore(handin, group, totalScore, output);
+
+        closeFile(output);
+    }
+
+    private static void writeAssignmentDetails(Handin handin, Group group,
+                                               BufferedWriter output) throws RubricException {
+        Assignment asgn = handin.getAssignment();
+
+        //For centering the first line
+        int emptySpace = TOTAL_TEXT_WIDTH - STATIC_TEXT_WIDTH - asgn.getName().length();
+        printSpaces(emptySpace / 2, output);
+
+        writeLine(ASSIGNMENT_LBL + asgn.getNumber() + GRADER_SHEET_LBL + asgn.getName() + '\n', output);
+
+        Map<String, String> students;
+        try {
+            students = Allocator.getDatabaseIO().getAllStudents();
+        } catch (SQLException ex) {
+            throw new RubricException("Could not read student names from database. " +
+                                      "Rubrics cannot be generated.", ex);
+        }
+
+        Iterator<String> members = group.getMembers().iterator();
+        if (group.getMembers().size() == 1) {
+            String studentLogin = members.next();
+            writeLine("STUDENT: " + students.get(studentLogin) + " (" + studentLogin + ")", output);
+        }
+        else {
+            writeLine("GROUP: " + group.getName(), output);
+            String member = members.next();
+            writeLine("MEMBERS: " + students.get(member) + " (" + member + ")", output);
+            members.remove();
+            while (members.hasNext()) {
+                member = members.next();
+                printSpaces(9, output);
+                writeLine(students.get(member) + " (" + member + ")", output);
+            }
+        }
+
+        writeLine("", output);
+    }
+
+    private static Score writeDistributablePart(Handin handin, HandinStatus status,
+                                               Group group, DistributablePart dp,
+                                               BufferedWriter output) throws RubricException {
+        String xmlPath = Allocator.getRubricManager().getGroupRubricPath(dp, group);
+        Rubric rubric = RubricGMLParser.parse(xmlPath, dp, group);
+
+        printStrongDivider(output);
+
+        String line1 = DP_LABEL + dp.getName();
+        write(line1, output);
+        printSpaces(SECTION_TEXT_WIDTH - line1.length(), output);
+        write("| ", output);
+        write("YOUR", output);
+        printSpaces(SCORE_TEXT_WIDTH - 5, output);
+        write("| ", output);
+        write("OUT", output);
+        printSpaces(SCORE_TEXT_WIDTH - 4, output);
+        writeLine("|", output);
+
+        TA grader;
+        try {
+            grader = Allocator.getDatabaseIO().getGraderForGroup(dp, group);
+        } catch (SQLException ex) {
+            throw new RubricException("Could not read grader for group " + group + " on " +
+                                      "part " + dp + " of assignment " + handin.getAssignment() + ". ", ex);
+        } catch (CakeHatDBIOException ex) {
+            throw new RubricException("Could not read grader for group " + group + " on " +
+                                      "part " + dp + " of assignment " + handin.getAssignment() + ".", ex);
+        }
+        String line2 = GRADER_LBL + grader.getName() + " (" + grader.getLogin() + ")";
+        write(line2, output);
+        printSpaces(SECTION_TEXT_WIDTH - line2.length(), output);
+        write("| ", output);
+        write("SCORE", output);
+        printSpaces(SCORE_TEXT_WIDTH - 6, output);
+        write("| ", output);
+        write("OF", output);
+        printSpaces(SCORE_TEXT_WIDTH - 3, output);
+        writeLine("|", output);
+
+        printStrongDivider(output);
+
+        for (Section section : rubric.getSections()) {
             writeSection(section, output, false);
         }
 
-        writeScores(rubric, output);
-    }
-
-    private static void writeAssignmentDetails(TA grader, Rubric rubric, BufferedWriter output) throws RubricGMLException
-    {
-        //For centering the first line
-        int emptySpace = TOTAL_TEXT_WIDTH - STATIC_TEXT_WIDTH - rubric.getName().length();
-        printSpaces(emptySpace / 2, output);
-
-        writeLine(ASSIGNMENT_LBL + rubric.getNumber() + GRADER_SHEET_LBL + rubric.getName() + '\n', output);
-        
-        String status = rubric.getStatus().getPrettyPrintName();
-        //If daily deduction and late, print the number of days late
-        if(rubric.getStatus() == TimeStatus.LATE &&
-           rubric.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
-        {
-            String day = rubric.getDaysLate() == 1 ? "day" : "days";
-            status += " (" + rubric.getDaysLate() + " " + day + " late)";
-        }
-        
-        writeLine(HANDIN_STATUS_LBL + status + '\n', output);
-
-        writeLine(STUDENT_LBL + rubric.getStudentName() + " (" + rubric.getStudentAccount() + ")", output);
-
-        String graderLogin = Allocator.getUserServices().getSanitizedTALogin(grader);
-        String graderName = Allocator.getUserServices().getSanitizedTAName(grader);
-        writeLine(GRADER_LBL + graderName + " (" + graderLogin + ")", output);
-
-        printHeader(output);
+        return writeScores(handin, group, status, rubric, output);
     }
 
     private static void writeSection(Section section, BufferedWriter output, boolean isEC) throws RubricGMLException
@@ -160,7 +218,7 @@ class RubricGRDWriter
         {
             printEnd(subsection.getScore(), subsection.getOutOf(), output);
         }
-        
+
         for (Detail detail : subsection.getDetails())
         {
             writeDetail(detail, output);
@@ -189,43 +247,39 @@ class RubricGRDWriter
         writeLine("", output);
     }
 
-    private static void writeScores(Rubric rubric, BufferedWriter output) throws RubricGMLException
+    private static Score writeScores(Handin handin, Group group, HandinStatus status, Rubric rubric, BufferedWriter output) throws RubricGMLException
     {
         // Total score & outof
-        printWithinBounds(0, SECTION_TEXT_WIDTH, "Total Points", output);
         double totalScore = 0.0;
         double totalOutOf = 0.0;
-        for (Section section : rubric.getSections())
-        {
+        for (Section section : rubric.getSections()) {
             totalScore += section.getSectionScore();
             totalOutOf += section.getSectionOutOf();
         }
-        printEnd(totalScore, totalOutOf, output);
-        printDivider(output);
-
-        // Status
-        writeStatusPoints(rubric, output);
-        totalScore += rubric.getDeduction();
 
         // Extra Credit
         if(rubric.hasExtraCredit())
         {
+            printWithinBounds(0, SECTION_TEXT_WIDTH, "Part Points", output);
+            printEnd(totalScore, totalOutOf, output);
+            printDivider(output);
+        
             writeSection(rubric.getExtraCredit(), output, true);
             totalScore += rubric.getExtraCredit().getSectionScore();
         }
 
-        // Print score after extra credit and status
-        printTotal(totalScore, totalOutOf, output);
+        // Print score after extra credit
+        printPartTotal(totalScore, totalOutOf, output);
 
-        // Close file
-        closeFile(output);
+        return new Score(totalScore, totalOutOf);
     }
 
-    private static void printTotal(double studentScore, double availScore, BufferedWriter output) throws RubricGMLException
+    private static void printPartTotal(double studentScore, double availScore, BufferedWriter output) throws RubricGMLException
     {
-        printWithinBounds(0, SECTION_TEXT_WIDTH, "Final Grade", output);
+        printWithinBounds(0, SECTION_TEXT_WIDTH, "Part Total:", output);
         printEnd(Allocator.getGeneralUtilities().doubleToString(studentScore), Allocator.getGeneralUtilities().doubleToString(availScore), output);
         printDivider(output);
+        writeLine("", output);
     }
 
     private static void closeFile(BufferedWriter output) throws RubricGMLException
@@ -240,48 +294,80 @@ class RubricGRDWriter
         }
     }
 
-    private static void writeStatusPoints(Rubric rubric, BufferedWriter output) throws RubricGMLException
-    {
-        if(rubric.getStatus() == TimeStatus.ON_TIME)
-        {
-            return;
+    private static void writeFinalScore(Handin handin, Group group, Score totalScore, BufferedWriter output) throws RubricException {
+        HandinStatus status;
+        try {
+            status = Allocator.getDatabaseIO().getHandinStatus(handin, group);
+        } catch (SQLException ex) {
+            throw new RubricException("Could not get handin status for " +
+                                      "group " + group + " on assignment " + handin.getAssignment() + ".", ex);
         }
 
-        String msg = rubric.getStatus().getPrettyPrintName();
+        double handinPenalty;
+        try {
+            handinPenalty = Allocator.getRubricManager().getHandinPenaltyOrBonus(handin, group);
+        } catch (RubricException ex) {
+            throw new RubricGMLException("Could not get early bonus / late penalty for " +
+                                         "group " + group + " on assignment " + handin.getAssignment() + ".", ex);
+        }
+
+        printStrongDivider(output);
+        write("FINAL GRADE", output);
+        printSpaces(TOTAL_TEXT_WIDTH - 12, output);
+        writeLine("|", output);
+        printStrongDivider(output);
+
+        printWithinBounds(0, SECTION_TEXT_WIDTH, "Parts Total: ", output);
+        printEnd(totalScore._score, totalScore._outOf, output);
+        printDivider(output);
+
+        //Status
+        writeStatusPoints(handin, status, handinPenalty, output);
+
+        totalScore._score += handinPenalty;
+        printWithinBounds(0, SECTION_TEXT_WIDTH, "FINAL SCORE: ", output);
+        printEnd(totalScore._score, totalScore._outOf, output);
+        printDivider(output);
+    }
+
+    private static void writeStatusPoints(Handin handin, HandinStatus status,
+                                          double handinPenalty, BufferedWriter output) throws RubricGMLException
+    {
+        String msg = status.getTimeStatus().getPrettyPrintName();
 
         //If early or late, add more information
-        if(rubric.getStatus() == TimeStatus.EARLY || rubric.getStatus() == TimeStatus.LATE)
+        if(status.getTimeStatus() == TimeStatus.EARLY || status.getTimeStatus() == TimeStatus.LATE)
         {
             //Build message along with value
-            if(rubric.getStatus() == TimeStatus.EARLY)
+            if(status.getTimeStatus() == TimeStatus.EARLY)
             {
-                msg += " Bonus (+" + rubric.getTimeInformation().getEarlyValue();
+                msg += " Bonus (+" + handin.getTimeInformation().getEarlyValue();
             }
-            else if(rubric.getStatus() == TimeStatus.LATE)
+            else if(status.getTimeStatus() == TimeStatus.LATE)
             {
                 msg += " Penalty (";
-                if(rubric.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
+                if(handin.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
                 {
-                    msg += rubric.getTimeInformation().getOntimeValue();
+                    msg += handin.getTimeInformation().getOntimeValue();
                 }
-                else if(rubric.getTimeInformation().getLatePolicy() == LatePolicy.MULTIPLE_DEADLINES)
+                else if(handin.getTimeInformation().getLatePolicy() == LatePolicy.MULTIPLE_DEADLINES)
                 {
-                    msg += rubric.getTimeInformation().getLateValue();
+                    msg += handin.getTimeInformation().getLateValue();
                 }
             }
 
             //percent or points
-            if(rubric.getTimeInformation().getGradeUnits() == GradeUnits.PERCENTAGE)
+            if(handin.getTimeInformation().getGradeUnits() == GradeUnits.PERCENTAGE)
             {
                 msg += "%";
             }
-            else if(rubric.getTimeInformation().getGradeUnits() == GradeUnits.POINTS)
+            else if(handin.getTimeInformation().getGradeUnits() == GradeUnits.POINTS)
             {
                 msg += " points";
             }
 
             //if daily deduction
-            if(rubric.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
+            if(handin.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
             {
                 msg += " per day";
             }
@@ -290,9 +376,8 @@ class RubricGRDWriter
             msg += ")";
         }
 
-        printWithinBounds(0, SECTION_TEXT_WIDTH, msg, output);
-        double deduction = rubric.getDeduction();
-        printEndPlusMinus(deduction, deduction, output);
+        printWithinBounds(0, SECTION_TEXT_WIDTH, "Handin Status: " + msg, output);
+        printEndPlusMinus(handinPenalty, handinPenalty, output);
         printDivider(output);
     }
 
@@ -391,6 +476,12 @@ class RubricGRDWriter
         writeLine("", output);
     }
 
+    private static void printStrongDivider(BufferedWriter output) throws RubricGMLException
+    {
+        printEquals(TOTAL_TEXT_WIDTH, output);
+        writeLine("", output);
+    }
+
     private static void printSpaces(int numSpaces, BufferedWriter output) throws RubricGMLException
     {
         for (int i = 0; i < numSpaces; i++)
@@ -407,18 +498,12 @@ class RubricGRDWriter
         }
     }
 
-    private static void printHeader(BufferedWriter output) throws RubricGMLException
+    private static void printEquals(int numEquals, BufferedWriter output) throws RubricGMLException
     {
-        printSpaces(SECTION_TEXT_WIDTH + 1, output);
-        write("YOUR", output);
-        printSpaces(SCORE_TEXT_WIDTH - 3, output);
-        writeLine("OUT", output);
-        write("SECTION", output);
-        printSpaces(SECTION_TEXT_WIDTH - 6, output);
-        write("SCORE", output);
-        printSpaces(SCORE_TEXT_WIDTH - 4, output);
-        writeLine("OF", output);
-        printDivider(output);
+        for (int i = 0; i < numEquals; i++)
+        {
+            write("=", output);
+        }
     }
 
     private static String formatScore(String score)
@@ -501,4 +586,16 @@ class RubricGRDWriter
         }
         printDivider(output);
     }
+
+    private static class Score {
+        private double _score;
+        private double _outOf;
+
+        public Score(double score, double outOf) {
+            _score = score;
+            _outOf = outOf;
+        }
+        
+    }
+
 }

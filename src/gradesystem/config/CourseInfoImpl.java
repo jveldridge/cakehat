@@ -107,7 +107,7 @@ public class CourseInfoImpl implements CourseInfo
     {
         return "cs.brown.edu";
     }
-
+    
     public String getCakehatEmailAddress()
     {
         return "cakehat@cs.brown.edu";

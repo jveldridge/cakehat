@@ -2,7 +2,6 @@ package gradesystem.handin;
 
 import gradesystem.Allocator;
 import gradesystem.database.Group;
-import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

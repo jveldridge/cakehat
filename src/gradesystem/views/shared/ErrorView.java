@@ -17,6 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import gradesystem.Allocator;
+import java.awt.Color;
 
 /**
  * Displays an error that occurs during runtime. Allows for sending reporting
@@ -103,6 +104,8 @@ public class ErrorView extends JFrame
         errorTextArea.setEditable(false);
         errorTextArea.setEnabled(false);
         errorTextArea.setFocusable(false);
+        errorTextArea.setBackground(Color.LIGHT_GRAY);
+        errorTextArea.setDisabledTextColor(Color.BLACK);
 
         JScrollPane errorScrollPane = new JScrollPane(errorTextArea);
         errorScrollPane.setPreferredSize(ERROR_AREA_SIZE);

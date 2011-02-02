@@ -101,6 +101,15 @@ public class DistributablePart extends Part
     }
 
     /**
+     * Returns the Handin for this DistributablePart.
+     *
+     * @return
+     */
+    public Handin getHandin() {
+        return _handin;
+    }
+
+    /**
      * If there is a specified run mode for this DistributablePart.
      *
      * @return

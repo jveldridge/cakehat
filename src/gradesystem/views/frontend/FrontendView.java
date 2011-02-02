@@ -1,10 +1,10 @@
 package gradesystem.views.frontend;
 
 import gradesystem.components.GenericJList;
+import gradesystem.handin.ActionException;
+import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
 import gradesystem.views.shared.ModifyBlacklistView;
-import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
 import gradesystem.GradeSystemAboutBox;
 import java.awt.BorderLayout;
@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -42,10 +41,16 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJList.StringConverter;
+import gradesystem.database.CakeHatDBIOException;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
-import java.util.LinkedList;
-import utils.system.NativeException;
+import java.io.FileNotFoundException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -74,16 +79,28 @@ public class FrontendView extends JFrame
             super(_begin + _default + _end);
         }
 
-        public void update(String studentLogin)
+        public void update(Group group)
         {
-            if(studentLogin == null || studentLogin.isEmpty())
+            if(group == null)
             {
                 this.setText(_begin + _default + _end);
             }
             else
             {
-                this.setText(_begin + studentLogin + _end);
+                this.setText(_begin + getGroupText(group) + _end);
             }
+        }
+
+        private String getGroupText(Group group) {
+            if (group.getMembers().size() == 1) {
+                return group.getMembers().iterator().next();
+            }
+            
+            String text = group.getName();
+
+            text += " " + group.getMembers();
+
+            return text;
         }
     }
 
@@ -102,15 +119,16 @@ public class FrontendView extends JFrame
         }
     }
 
-    private GenericJList<Assignment> _assignmentList;
-    private GenericJList<String> _studentList;
+    private final TA USER = Allocator.getUserServices().getUser();
+
+    private GenericJList<DistributablePart> _dpList;
+    private GenericJList<Group> _groupList;
     private CurrentlyGradingLabel _currentlyGradingLabel;
     private JButton _runDemoButton, _viewDeductionsButton, _printAllButton,
                     _submitGradingButton, _viewReadmeButton, _openCodeButton,
                     _runTesterButton, _printStudentButton, _gradeAssignmentButton,
                     _runCodeButton;
     private JButton[] _allButtons, _studentButtons;
-    private Map<String, Collection<String>> _studentGroups;
 
     private FrontendView()
     {
@@ -135,7 +153,7 @@ public class FrontendView extends JFrame
         this.createButtonGroups();
 
         //Select first assignment
-        _assignmentList.selectFirst();
+        _dpList.selectFirst();
 
         //Setup close property
         this.initializeWindowCloseProperty();
@@ -172,39 +190,37 @@ public class FrontendView extends JFrame
 
 
     /**
-     * Called when a different assignment is selected from the assignmentList
+     * Called when a differentDistributablePart is selected from the dpList
      * to update other GUI components
      */
-    private void updateAssignmentList()
+    private void updateDPList()
     {
         //Create directory for the assignment so GRD files can be created,
         //even if no assignments have been untarred
-        File assignmentDir = new File(Allocator.getGradingServices().getUserGradingDirectory() +
-                                      _assignmentList.getSelectedValue().getName());
+        String partDir = Allocator.getGradingServices().getUserPartDirectory(_dpList.getSelectedValue());
+        
         try
         {
-            Allocator.getFileSystemServices().makeDirectory(assignmentDir);
+            Allocator.getFileSystemServices().makeDirectory(new File(partDir));
         }
         catch(ServicesException e)
         {
-            new ErrorView(e, "Unable to create directory assignment: " + assignmentDir.getAbsolutePath());
+            new ErrorView(e, "Unable to create user part directory: " + partDir);
         }
 
-        //Get the students assigned for this assignment
-        this.populateStudentList();
+        //Get the groups assigned for this distributable part
+        this.populateGroupsList();
 
         //Update buttons accordingly
         this.updateButtonStates();
     }
 
     /**
-     * Enable or disable buttons based on the assignment selected. If there is
-     * no students available to select for the assignment then all student
-     * specific buttons are disabled.
+     * Enable or disable buttons based on the distributable part selected.
      */
     private void updateButtonStates()
     {
-        HandinPart part = this.getHandinPart();
+        DistributablePart part = _dpList.getSelectedValue();
  
         //If there is no handin part selected, disable all of the buttons
         if(part == null)
@@ -219,18 +235,14 @@ public class FrontendView extends JFrame
         //General commands
         _runDemoButton.setEnabled(part.hasDemo());
         _viewDeductionsButton.setEnabled(part.hasDeductionList());
-        _submitGradingButton.setEnabled(part.hasRubric());
+        _submitGradingButton.setEnabled(part.hasRubricTemplate());
         _printAllButton.setEnabled(part.hasPrint());
 
         //Get selected student
-        String stud = _studentList.getSelectedValue();
-        if(stud != null && stud.isEmpty())
-        {
-            stud = null;
-        }
+        Group group = _groupList.getSelectedValue();
 
         //If no student is selected, disable all student buttons
-        if(stud == null)
+        if(group == null)
         {
             for(JButton button : _studentButtons)
             {
@@ -244,17 +256,24 @@ public class FrontendView extends JFrame
         else
         {
             //Student buttons
-            _gradeAssignmentButton.setEnabled(part.hasRubric());
+            _gradeAssignmentButton.setEnabled(part.hasRubricTemplate());
             _runTesterButton.setEnabled(part.hasTester());
             _runCodeButton.setEnabled(part.hasRun());
             _openCodeButton.setEnabled(part.hasOpen());
             _printStudentButton.setEnabled(part.hasPrint());
-            _viewReadmeButton.setEnabled(part.hasReadme(stud));
+
+            boolean hasReadme = true;
+            try {
+                hasReadme = part.hasReadme(group);
+            } catch (ActionException ex) {
+                new ErrorView(ex, "Could not determine if group " + group + " has a README");
+            }
+            _viewReadmeButton.setEnabled(hasReadme);
         }
     }
 
     /**
-     * Create sall of the GUI components aside from the menu bar
+     * Creates all of the GUI components aside from the menu bar
      */
     private void initializeComponents()
     {
@@ -262,7 +281,7 @@ public class FrontendView extends JFrame
         outerPanel.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
         this.add(outerPanel);
         
-        Dimension mainPanelSize = new Dimension(900,400);
+        Dimension mainPanelSize = new Dimension(950,400);
         JPanel mainPanel = new JPanel();
         mainPanel.setSize(mainPanelSize);
         mainPanel.setPreferredSize(mainPanelSize);
@@ -272,70 +291,88 @@ public class FrontendView extends JFrame
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
-        //Sizes
-        Dimension listPanelSize = new Dimension((int) (mainPanelSize.width * 0.15), mainPanelSize.height);
-        Dimension listSize = new Dimension(listPanelSize.width, (int) (mainPanelSize.height * 0.95));
-        Dimension labelSize = new Dimension(listPanelSize.width, mainPanelSize.height - listSize.height - 5);
-
         //Assignment
+        Dimension assignmentListPanelSize = new Dimension((int) (mainPanelSize.width * 0.2), mainPanelSize.height);
+        Dimension assignmentListSize = new Dimension(assignmentListPanelSize.width, (int) (mainPanelSize.height * 0.95));
+        Dimension assignmentLabelSize = new Dimension(assignmentListPanelSize.width,
+                mainPanelSize.height - assignmentListSize.height - 5);
+
         FlowLayout layout = new FlowLayout();
         layout.setVgap(0);
         JPanel assignmentPanel = new JPanel(layout);
-        assignmentPanel.setSize(listPanelSize);
-        assignmentPanel.setPreferredSize(listPanelSize);
+        assignmentPanel.setSize(assignmentListPanelSize);
+        assignmentPanel.setPreferredSize(assignmentListPanelSize);
         JLabel assignmentLabel = new JLabel("<html><b>Assignment</b></html>");
-        assignmentLabel.setPreferredSize(labelSize);
-        _assignmentList = new GenericJList<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
-        _assignmentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        _assignmentList.addListSelectionListener(new ListSelectionListener()
+        assignmentLabel.setPreferredSize(assignmentLabelSize);
+
+        Set<DistributablePart> partsToShow;
+        try {
+            partsToShow = Allocator.getDatabaseIO().getDPsWithAssignedStudents(USER);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not get the list of DistributableParts for which you " +
+                              "have been assigned students.  Please send an error report if " +
+                              "this problem persists.  Cakehat will now close.");
+            this.dispose();
+            return;
+        }
+
+        List<DistributablePart> sortedParts = new ArrayList<DistributablePart>(partsToShow);
+        Collections.sort(sortedParts);
+        _dpList = new GenericJList<DistributablePart>(sortedParts, new DPFullNameConverter());
+        _dpList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        _dpList.addListSelectionListener(new ListSelectionListener()
         {
             public void valueChanged(ListSelectionEvent lse)
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    updateAssignmentList();
+                    updateDPList();
                 }
             }
         });
         assignmentPanel.add(assignmentLabel);
-        JScrollPane assignmentPane = new JScrollPane(_assignmentList);
-        assignmentPane.setSize(listSize);
-        assignmentPane.setPreferredSize(listSize);
+        JScrollPane assignmentPane = new JScrollPane(_dpList);
+        assignmentPane.setSize(assignmentListSize);
+        assignmentPane.setPreferredSize(assignmentListSize);
         assignmentPanel.add(assignmentPane);
         mainPanel.add(assignmentPanel);
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
-        //Student list
+        //Group list
+        Dimension groupListPanelSize = new Dimension((int) (mainPanelSize.width * 0.15), mainPanelSize.height);
+        Dimension groupListSize = new Dimension(groupListPanelSize.width, (int) (mainPanelSize.height * 0.95));
+        Dimension groupLabelSize = new Dimension(groupListPanelSize.width, mainPanelSize.height - groupListSize.height - 5);
+
         layout = new FlowLayout();
         layout.setVgap(0);
-        JPanel studentPanel = new JPanel(layout);
-        studentPanel.setSize(listPanelSize);
-        studentPanel.setPreferredSize(listPanelSize);
-        JLabel studentLabel = new JLabel("<html><b>Student</b></html>");
-        studentLabel.setPreferredSize(labelSize);
-        _studentList = new GenericJList<String>();
-        _studentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        _studentList.addListSelectionListener(new ListSelectionListener()
+        JPanel groupPanel = new JPanel(layout);
+        groupPanel.setSize(groupListPanelSize);
+        groupPanel.setPreferredSize(groupListPanelSize);
+        JLabel groupLabel = new JLabel("<html><b>Student</b></html>");
+        groupLabel.setPreferredSize(groupLabelSize);
+        _groupList = new GenericJList<Group>();
+        _groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        _groupList.addListSelectionListener(new ListSelectionListener()
         {
             public void valueChanged(ListSelectionEvent lse)
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    updateSelectedStudent();
+                    _currentlyGradingLabel.update(_groupList.getSelectedValue());
                     updateButtonStates(); //To check for README
                 }
             }
         });
-        studentPanel.add(studentLabel);
-        JScrollPane studentPane = new JScrollPane(_studentList);
-        studentPane.setSize(listSize);
-        studentPane.setPreferredSize(listSize);
-        studentPanel.add(studentPane);
-        mainPanel.add(studentPanel);
+        groupPanel.add(groupLabel);
+        JScrollPane groupPane = new JScrollPane(_groupList);
+        groupPane.setSize(groupListSize);
+        groupPane.setPreferredSize(groupListSize);
+        groupPanel.add(groupPane);
+        mainPanel.add(groupPanel);
 
         //When the left key is pressed, switch focus to the assignment list
-        _studentList.addKeyListener(new KeyListener()
+        _groupList.addKeyListener(new KeyListener()
         {
             public void keyTyped(KeyEvent ke) {}
             public void keyReleased(KeyEvent ke) {}
@@ -344,12 +381,12 @@ public class FrontendView extends JFrame
             {
                 if(KeyEvent.VK_LEFT == ke.getKeyCode())
                 {
-                    _assignmentList.grabFocus();
+                    _dpList.grabFocus();
                 }
             }
         });
         //When the right key is pressed, switch focus to the student list
-        _assignmentList.addKeyListener(new KeyListener()
+        _dpList.addKeyListener(new KeyListener()
         {
             public void keyTyped(KeyEvent ke) {}
             public void keyReleased(KeyEvent ke) {}
@@ -358,7 +395,7 @@ public class FrontendView extends JFrame
             {
                 if(KeyEvent.VK_RIGHT == ke.getKeyCode())
                 {
-                    _studentList.grabFocus();
+                    _groupList.grabFocus();
                 }
             }
         });
@@ -366,7 +403,9 @@ public class FrontendView extends JFrame
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
         //Control Panel
-        Dimension controlPanelSize = new Dimension(mainPanelSize.width - 2 * listPanelSize.width - 3 * gapSpace - 35, mainPanelSize.height);
+        Dimension controlPanelSize = new Dimension(mainPanelSize.width -
+                assignmentListPanelSize.width - groupListPanelSize.width -
+                3 * gapSpace - 35, mainPanelSize.height);
         layout = new FlowLayout();
         JPanel controlPanel = new JPanel(layout);
         layout.setVgap(0);
@@ -415,32 +454,6 @@ public class FrontendView extends JFrame
         controlPanel.add(studentCommandsPanel);
     }
 
-    private void updateSelectedStudent()
-    {
-        String students = null;
-        if(_studentList.getSelectedValue() != null)
-        {
-            if(_studentGroups != null)
-            {
-                Collection<String> group = _studentGroups.get(_studentList.getSelectedValue());
-                students = "";
-                for(String student : group)
-                {
-                    if(group.size() != 1 && student != group.iterator().next())
-                    {
-                        students += ", ";
-                    }
-                    students += student;
-                }
-            }
-            else
-            {
-                students = _studentList.getSelectedValue();
-            }
-        }
-        _currentlyGradingLabel.update(students);
-    }
-
     /**
      * Create the menu bar
      */
@@ -460,9 +473,8 @@ public class FrontendView extends JFrame
         menuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae) {
-                TA user = Allocator.getUserServices().getUser();
                 Collection<TA> taList = new ArrayList();
-                taList.add(user);
+                taList.add(USER);
                 new ModifyBlacklistView(taList);
             }
         });
@@ -678,7 +690,13 @@ public class FrontendView extends JFrame
      */
     private void runCodeButtonActionPerformed()
     {
-        this.getHandinPart().run(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.run(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("run code", group, dp, ex);
+        }
     }
 
     /**
@@ -686,8 +704,9 @@ public class FrontendView extends JFrame
      */
     private void gradeAssignmentButtonActionPerformed()
     {
-        Allocator.getRubricManager().view(this.getHandinPart(), _studentList.getSelectedValue());
-
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        Allocator.getRubricManager().view(dp, group, false);
     }
 
     /**
@@ -695,12 +714,13 @@ public class FrontendView extends JFrame
      */
     private void printStudentButtonActionPerformed()
     {
-        String printer = Allocator.getGradingServices().getPrinter();
-        if (printer == null) {
-            return;
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.print(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("print code", group, dp, ex);
         }
-        
-        this.getHandinPart().printCode(_studentList.getSelectedValue(), printer);
     }
 
     /**
@@ -708,7 +728,13 @@ public class FrontendView extends JFrame
      */
     private void runTesterButtonActionPerformed()
     {
-        this.getHandinPart().runTester(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.runTester(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("run tester", group, dp, ex);
+        }
     }
 
     /**
@@ -716,7 +742,13 @@ public class FrontendView extends JFrame
      */
     private void openCodeButtonActionPerformed()
     {
-        this.getHandinPart().openCode(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.open(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("open code", group, dp, ex);
+        }
     }
 
     /**
@@ -724,7 +756,13 @@ public class FrontendView extends JFrame
      */
     private void viewReadmeButtonActionPerformed()
     {
-        this.getHandinPart().viewReadme(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.viewReadme(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("view README", group, dp, ex);
+        }
     }
 
     /**
@@ -732,7 +770,12 @@ public class FrontendView extends JFrame
      */
     private void runDemoButtonActionPerformed()
     {
-        this.getHandinPart().runDemo();
+        DistributablePart dp = _dpList.getSelectedValue();
+        try {
+            dp.runDemo();
+        } catch (ActionException ex) {
+            this.generateErrorView("run code", null, dp, ex);
+        }
     }
 
     /**
@@ -740,12 +783,13 @@ public class FrontendView extends JFrame
      */
     private void printAllButtonActionPerformed()
     {
-        String printer = Allocator.getGradingServices().getPrinter();
-        if (printer == null) {
-            return;
+        DistributablePart dp = _dpList.getSelectedValue();
+        Collection<Group> groups = _groupList.getItems();
+        try {
+            dp.print(groups);
+        } catch (ActionException ex) {
+            this.generateErrorViewMultiple("print code", groups, dp, ex);
         }
-
-        this.getHandinPart().printCode(_studentList.getItems(), printer);
     }
 
     /**
@@ -753,84 +797,114 @@ public class FrontendView extends JFrame
      */
     private void viewDeductionsButtonActionPerformed()
     {
-        this.getHandinPart().viewDeductionList();
+        DistributablePart dp = _dpList.getSelectedValue();
+        try {
+            dp.viewDeductionList();
+        } catch (FileNotFoundException ex) {
+            this.generateErrorView("view deductions list", null, dp, ex);
+        }
     }
 
     /**
      * Called when the submit grading button is clicked.
      */
-    private void submitGradingButtonActionPerformed()
-    {
-        Assignment asgn = _assignmentList.getSelectedValue();
+    private void submitGradingButtonActionPerformed() {
+        DistributablePart dp = _dpList.getSelectedValue();
 
-        if(_assignmentList.getSelectedValue() != null)
-        {
-            
-            Vector<String> students = new Vector<String>();
-            Map<String,Collection<String>> groups;
-            try {
-                groups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get groups from the database; grades cannot be submitted.");
-                return;
-            }
+        if (dp != null) {
+            SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getItems(), Allocator.getCourseInfo().getSubmitOptions());
+            if (sd.showDialog() == JOptionPane.OK_OPTION) {
 
-            for (String s1 : _studentList.getItems()) {
-                for (String s2 : groups.get(s1)) {
-                    students.add(s2);
+                Collection<Group> selected = sd.getSelectedGroups();
+
+                if (sd.submitChecked() || sd.printChecked()) {
+                    try {
+                        Allocator.getRubricManager().convertToGRD(dp.getHandin(), selected);
+                    } catch (RubricException ex) {
+                        this.generateErrorViewMultiple("enter grade", selected, dp, ex);
+                    }
                 }
-            }
-            SubmitDialog sd = new SubmitDialog(students, Allocator.getCourseInfo().getSubmitOptions());
-            if (sd.showDialog() == JOptionPane.OK_OPTION)
-            {
 
-                Vector<String> selectedStudents = sd.getSelectedStudents();
-
-                Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), selectedStudents);
-                
-                if (sd.submitChecked())
-                {
-                    Map<String, Double> handinTotals = Allocator.getRubricManager().getHandinTotals(asgn.getHandinPart(), selectedStudents);
-                    for (String login : handinTotals.keySet())
-                    {
+                if (sd.submitChecked()) {
+                    Map<Group, Double> handinTotals = Allocator.getRubricManager().getPartScores(dp, selected);
+                    for (Group group : handinTotals.keySet()) {
                         try {
-                            Allocator.getDatabaseIO().enterGrade(login, asgn.getHandinPart(), handinTotals.get(login));
+                            Allocator.getDatabaseIO().enterGrade(group, dp, handinTotals.get(group));
                         } catch (SQLException ex) {
-                            new ErrorView(ex, "Could not enter grade for student " + login + " " +
-                                              "for assignment " + asgn + ".");
+                            this.generateErrorView("enter grade", group, dp, ex);
                         }
                     }
                 }
 
-                if (sd.printChecked())
-                {
-                    Allocator.getGradingServices().printGRDFiles(asgn.getHandinPart(), selectedStudents);
+                if (sd.printChecked()) {
+                    try {
+                        Allocator.getGradingServices().printGRDFiles(dp.getHandin(), selected);
+                    } catch (ServicesException ex) {
+                        new ErrorView(ex, "Could not print GRD files.");
+                    }
                 }
 
-                if (sd.notifyChecked())
-                {
-                    Allocator.getGradingServices().notifyStudents(asgn.getHandinPart(), selectedStudents, sd.emailChecked());
+                if (sd.notifyChecked()) {
+                    Allocator.getGradingServices().notifyStudents(dp.getHandin(), selected, sd.emailChecked());
                 }
             }
         }
     }
 
     /**
-     * Returns the selected assignment's handin part.
+     * Creates an ErrorView with the message "Could not <msgInsert> for group <group> on
+     * part <dp> of assignment <dp.getAssignment()> and the given Exception.
      *
-     * @return
+     * Use generateErrorViewMultiple when the failing operation was to be run on multiple groups.
+     *
+     * @param msgInsert
+     * @param group
+     * @param dp
+     * @param cause
      */
-    private HandinPart getHandinPart()
-    {
-        if(_assignmentList.getSelectedValue() == null)
-        {
-            return null;
+    private void generateErrorView(String msgInsert, Group group, DistributablePart dp, Exception cause) {
+        String message = "Could not " + msgInsert;
+        
+        if (group != null) {
+            message += " for group " + group;
         }
-        else
-        {
-            return _assignmentList.getSelectedValue().getHandinPart();
+
+        if (dp != null) {
+            message += " on part " + dp + " of assignment " + dp.getAssignment();
         }
+
+        message += ".";
+
+        new ErrorView(cause, message);
     }
+
+    /**
+     * Creates an ErrorView with the message "Could not <msgInsert> for groups <groups> on
+     * part <dp> of assignment <dp.getAssignment()> and the given Exception.
+     *
+     * Use generateErrorView when the failing operation was to be run on a single group.
+     *
+     * @param msgInsert
+     * @param group
+     * @param dp
+     * @param cause
+     */
+    private void generateErrorViewMultiple(String msgInsert, Collection<Group> groups, DistributablePart dp, Exception cause) {
+        String message = "Could not " + msgInsert;
+
+        if (!groups.isEmpty()) {
+            message += " for groups " + groups;
+        }
+
+        if (dp != null) {
+            message += " on part " + dp + " of assignment " + dp.getAssignment();
+        }
+
+        message += ".";
+
+        new ErrorView(cause, message);
+    }
+
 
     /**
      * Ensures when the window closes the program terminates and that the
@@ -888,36 +962,39 @@ public class FrontendView extends JFrame
     }
 
     /**
-     * Populates the student list with the logins of the students that the TA
-     * has been assigned to grade (as recorded in the database) for the selected
-     * assignment.
+     * Populates the group list with the Groups that the TA has been assigned to
+     * grade (as recorded in the database) for the selected DistributablePart.
      */
-    private void populateStudentList()
+    private void populateGroupsList()
     {
-        if(this.getHandinPart() != null)
+        DistributablePart selected = _dpList.getSelectedValue();
+
+        if(selected != null)
         {
-            Collection<String> students;
+            Collection<Group> assigned = Collections.emptyList();
             try {
-                students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserServices().getUser());
+                assigned = Allocator.getDatabaseIO().getGroupsAssigned(selected, USER);
+            } catch (CakeHatDBIOException ex) {
+                new ErrorView(ex, "Could not retrieve students/groups assigned to you " +
+                                  "for distributable part " + selected + ".");
             } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get assigned students for assignment " +
-                                  _assignmentList.getSelectedValue() + ".");
-                students = new LinkedList<String>();
-            }
-        
-            _studentList.setListData(students);
-            _studentList.selectFirst();
-            
-            //Get groups
-            try {
-                _studentGroups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get groups for assignment " +
-                                  _assignmentList.getSelectedValue() + ".");
+                new ErrorView(ex, "Could not retrieve students/groups assigned to you " +
+                                  "for distributable part " + selected + ".");
             }
 
-            updateSelectedStudent();
+            _groupList.setListData(assigned);
+            _groupList.selectFirst();
+
+            _currentlyGradingLabel.update(_groupList.getSelectedValue());
         }
+    }
+
+    private static class DPFullNameConverter implements StringConverter<DistributablePart> {
+
+        public String convertToString(DistributablePart item) {
+            return item.getAssignment().getName() + ": "  + item.getName();
+        }
+        
     }
     
 }

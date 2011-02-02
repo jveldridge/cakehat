@@ -11,10 +11,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -31,6 +29,8 @@ import javax.swing.ScrollPaneConstants;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJList;
 import gradesystem.components.Student;
+import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.ButtonModel;
 
 /**
@@ -41,7 +41,7 @@ import javax.swing.ButtonModel;
 public class ModifyBlacklistView extends JFrame{
 
     private JTextField _filterBox;
-    private Student[] _studentLogins;
+    private List<Student> _studentLogins;
     private GenericJList<Student> _studentList;
     private ButtonGroup _taButtons;
     private Map<TA, GenericJList<String>> _taToList;
@@ -99,7 +99,7 @@ public class ModifyBlacklistView extends JFrame{
             list.setFixedCellWidth(75);
 
             try {
-                list.setListData(Allocator.getDatabaseIO().getTABlacklist(ta).toArray(new String[0]));
+                list.setListData(Allocator.getDatabaseIO().getTABlacklist(ta));
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not read blacklist for TA " + ta + " from " +
                                   "the database.");
@@ -188,7 +188,7 @@ public class ModifyBlacklistView extends JFrame{
                 List<Student> matchingLogins;
                 //if no filter term, include all logins
                 if(filterTerm.isEmpty()) {
-                    matchingLogins = Arrays.asList(_studentLogins);
+                    matchingLogins = _studentLogins;
                 }
                 //otherwise compared against beginning of each login
                 else {
@@ -207,7 +207,7 @@ public class ModifyBlacklistView extends JFrame{
                 }
 
                 //display matching logins
-                _studentList.setListData(matchingLogins.toArray());
+                _studentList.setListData(matchingLogins);
                 _studentList.setSelectedIndex(0);
 
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -231,15 +231,19 @@ public class ModifyBlacklistView extends JFrame{
             studentMap = new HashMap<String, String>();
         }
         
-        List<Student> students = new LinkedList<Student>();
+        if (_studentLogins != null) {
+            _studentLogins.clear();
+        }
+        else {
+            _studentLogins = new ArrayList<Student>();
+        }
 
         for (String studentLogin : studentMap.keySet()) {
             String[] studentName = studentMap.get(studentLogin).split(" ");
-            students.add(new Student(studentLogin, studentName[0], studentName[1]));
+            _studentLogins.add(new Student(studentLogin, studentName[0], studentName[1]));
         }
 
-        _studentLogins = students.toArray(new Student[0]);
-        Arrays.sort(_studentLogins);
+        Collections.sort(_studentLogins);
         _studentList.setListData(_studentLogins);
         JScrollPane listPane = new JScrollPane(_studentList);
         listPane.setPreferredSize(listPanel.getPreferredSize());
@@ -259,8 +263,7 @@ public class ModifyBlacklistView extends JFrame{
         TA ta = _rbToTA.get(_taButtons.getSelection());
 
         try {
-            String[] blacklist = Allocator.getDatabaseIO().getTABlacklist(ta).toArray(new String[0]);
-            _taToList.get(ta).setListData(blacklist);
+            _taToList.get(ta).setListData(Allocator.getDatabaseIO().getTABlacklist(ta));
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get blacklist for TA " + ta + ".");
         }

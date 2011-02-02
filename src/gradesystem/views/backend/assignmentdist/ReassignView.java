@@ -2,7 +2,6 @@ package gradesystem.views.backend.assignmentdist;
 
 import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
 import gradesystem.database.CakeHatDBIOException;
 import gradesystem.rubric.RubricException;
@@ -21,15 +20,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -42,6 +38,9 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJComboBox;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
 
 /**
@@ -61,10 +60,10 @@ public class ReassignView extends JFrame {
     private GenericJList<String> _fromUnassigned;
     private GenericJList<TA> _fromTAList;
     private GenericJList<String> _fromRandom;
-    private GenericJList<String> _fromStudentList;
+    private GenericJList<Group> _fromGroupList;
     private GenericJList<String> _toUnassigned;
     private GenericJList<TA> _toTAList;
-    private GenericJList<String> _toStudentList;
+    private GenericJList<Group> _toGroupList;
 
     private JButton _assignButton;
     private JTextField _studentFilterBox;
@@ -72,25 +71,20 @@ public class ReassignView extends JFrame {
     private JLabel _numUnassignedLabel;
     private JLabel _assignTypeLabel;
 
-    private Collection<String> _unassignedStudents;
-
-    private Collection<String> _unresolvedStudents;
+    private Collection<Group> _unassignedGroups;
+    private Collection<String> _unresolvedHandins;
 
     private Assignment _asgn;
+    private DistributablePart _dp;
 
-    public ReassignView(Assignment asgn) {
+    public ReassignView(Assignment asgn, DistributablePart dp) {
         _asgn = asgn;
+        _dp = dp;
 
         _tas = new LinkedList<TA>(Allocator.getCourseInfo().getTAs());
-        Collections.sort(_tas, new Comparator<TA>(){
-            @Override
-            public int compare(TA o1, TA o2) {
-                return o1.getLogin().compareTo(o2.getLogin());
-            }
+        Collections.sort(_tas);
 
-        });
-
-        _unassignedStudents = new Vector<String>();
+        _unassignedGroups = new ArrayList<Group>();
 
         this.setLayout(new BorderLayout());
         this.add(this.getTopPanel(), BorderLayout.NORTH);
@@ -98,21 +92,26 @@ public class ReassignView extends JFrame {
         this.add(this.getCenterPanel(), BorderLayout.CENTER);
         this.add(this.getRightPanel(), BorderLayout.EAST);
 
-        //initialize starting selection state
-        _fromUnassigned.setSelectedIndex(0);
-        _toTAList.setSelectedIndex(0);
-        try {
-            this.updateAssignment();
-        } catch (ServicesException ex) {
-            new ErrorView(ex, "An error occurred while initializing the interface. " +
-                              "The ReassignView will now close.  If this problem " +
-                              "persists, please send an error report.");
-            ReassignView.this.dispose();
-        } catch (SQLException ex) {
-            new ErrorView(ex, "An error occurred while initializing the interface. " +
-                              "The ReassignView will now close.  If this problem " +
-                              "persists, please send an error report.");
-            ReassignView.this.dispose();
+        if (_dp == null) {
+            this.disableAll();
+        }
+        else {
+            //initialize starting selection state
+            _fromUnassigned.setSelectedIndex(0);
+            _toTAList.setSelectedIndex(0);
+            try {
+                this.updateAssignmentAndPart();
+            } catch (ServicesException ex) {
+                new ErrorView(ex, "An error occurred while initializing the interface. " +
+                                  "The ReassignView will now close.  If this problem " +
+                                  "persists, please send an error report.");
+                ReassignView.this.dispose();
+            } catch (SQLException ex) {
+                new ErrorView(ex, "An error occurred while initializing the interface. " +
+                                  "The ReassignView will now close.  If this problem " +
+                                  "persists, please send an error report.");
+                ReassignView.this.dispose();
+            }
         }
 
         this.pack();
@@ -133,17 +132,43 @@ public class ReassignView extends JFrame {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 10));
 
-        final JComboBox asgnComboBox = new javax.swing.JComboBox();
-        for (Assignment s : Allocator.getCourseInfo().getHandinAssignments()) {
-            asgnComboBox.insertItemAt(s, asgnComboBox.getItemCount());
-        }
+        final GenericJComboBox<DistributablePart> dpComboBox = new GenericJComboBox<DistributablePart>(_asgn.getDistributableParts());
+        dpComboBox.setSelectedItem(_dp);
+
+        dpComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                _dp = dpComboBox.getSelectedItem();
+                try {
+                    updateAssignmentAndPart();
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                }
+            }
+        });
+
+        final GenericJComboBox<Assignment> asgnComboBox = new GenericJComboBox<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
         asgnComboBox.setSelectedItem(_asgn);
 
         asgnComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                _asgn = (Assignment) asgnComboBox.getSelectedItem();
+                _asgn = asgnComboBox.getSelectedItem();
+                dpComboBox.removeAllItems();
+                for (DistributablePart dp : _asgn.getDistributableParts()) {
+                    dpComboBox.addItem(dp);
+                }
+                _dp = null;
+                dpComboBox.setSelectedItem(null);
+                
                 try {
-                    updateAssignment();
+                    updateAssignmentAndPart();
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
@@ -160,6 +185,7 @@ public class ReassignView extends JFrame {
 
         topPanel.add(new JLabel("Modify Distribution for Assignment: "));
         topPanel.add(asgnComboBox);
+        topPanel.add(dpComboBox);
 
         return topPanel;
     }
@@ -199,6 +225,16 @@ public class ReassignView extends JFrame {
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
                     ReassignView.this.dispose();
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. " +
+                                      "The ReassignView will now close.  If this problem " +
+                                      "persists, please send an error report.");
+                    ReassignView.this.dispose();
                 }
             }
         });
@@ -223,6 +259,8 @@ public class ReassignView extends JFrame {
                     filterStudentLogins(e);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "There was an error filtering student logins.");
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "There was an error filtering student logins.");
                 }
             }
         });
@@ -237,8 +275,8 @@ public class ReassignView extends JFrame {
             }
         });
 
-        _fromStudentList = new GenericJList<String>();
-        _fromStudentList.addFocusListener(new FocusAdapter() {
+        _fromGroupList = new GenericJList<Group>();
+        _fromGroupList.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 enableUseSelectedAssignment();
@@ -246,7 +284,7 @@ public class ReassignView extends JFrame {
         });
 
         JScrollPane fromStudentSP = new JScrollPane();
-        fromStudentSP.setViewportView(_fromStudentList);
+        fromStudentSP.setViewportView(_fromGroupList);
 
         //height of fromStudentList needs to be shrunk by the height of the RANDOM list
         //plus the buffer space to align with the bottoms of the fromTAList and the screen
@@ -311,6 +349,9 @@ public class ReassignView extends JFrame {
                 } catch (RubricException ex) {
                     new ErrorView(ex, "An error occurred during assignment. " +
                                       "No changes have been made.");
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "An error occurred during assignment. " +
+                                      "No changes have been made.");
                 }
             }
         });
@@ -329,6 +370,9 @@ public class ReassignView extends JFrame {
                         new ErrorView(ex, "An error occurred during assignment. " +
                                           "No changes have been made.");
                     } catch (RubricException ex) {
+                        new ErrorView(ex, "An error occurred during assignment. " +
+                                          "No changes have been made.");
+                    } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "An error occurred during assignment. " +
                                           "No changes have been made.");
                     }
@@ -386,9 +430,19 @@ public class ReassignView extends JFrame {
                 try {
                     updateToList();
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "The ReassignView will now close.  If this problem "
+                            + "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "The ReassignView will now close.  If this problem "
+                            + "persists, please send an error report.");
+                    ReassignView.this.dispose();
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "The ReassignView will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ReassignView.this.dispose();
                 }
             }
@@ -408,10 +462,10 @@ public class ReassignView extends JFrame {
         int toTAPaneHeight = LIST_HEIGHT - (TEXT_HEIGHT + 5);
         toTASP.setPreferredSize(new Dimension(LIST_WIDTH, toTAPaneHeight));
 
-        _toStudentList = new GenericJList<String>();
-        _toStudentList.setEnabled(false);
+        _toGroupList = new GenericJList<Group>();
+        _toGroupList.setEnabled(false);
         JScrollPane toStudentSP = new JScrollPane();
-        toStudentSP.setViewportView(_toStudentList);
+        toStudentSP.setViewportView(_toGroupList);
         toStudentSP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
 
         JPanel rightPanel_upper = new JPanel();
@@ -438,12 +492,12 @@ public class ReassignView extends JFrame {
     }
 
     private void enableUseRandomAssignment() {
-        _fromStudentList.clearSelection();
+        _fromGroupList.clearSelection();
 
         _numStudentsSpinner.setVisible(true);
         _assignTypeLabel.setText("Random Student(s):");
 
-        _assignButton.setEnabled(_fromStudentList.getModel().getSize() > 0);
+        _assignButton.setEnabled(_fromGroupList.getModel().getSize() > 0);
     }
 
     private void enableUseSelectedAssignment() {
@@ -452,45 +506,59 @@ public class ReassignView extends JFrame {
         _numStudentsSpinner.setVisible(false);
         _assignTypeLabel.setText("Selected Student(s):");
 
-        _assignButton.setEnabled(_fromStudentList.getSelectedValue() != null);
+        _assignButton.setEnabled(_fromGroupList.getSelectedValue() != null);
     }
 
-    private void updateAssignment() throws ServicesException, SQLException {
+    private void updateAssignmentAndPart() throws ServicesException, SQLException {
         this.setTitle(_asgn + " - [" + Allocator.getCourseInfo().getCourse() +"] Assignment Distributor");
 
-        _unresolvedStudents = Allocator.getGradingServices().resolveMissingStudents(_asgn);
-
-        if (_unresolvedStudents == null) {
+        _unresolvedHandins = Allocator.getGradingServices().resolveMissingStudents(_asgn);
+        if (_unresolvedHandins == null) {
             this.dispose();
             return;
         }
 
-        this.updateFromList();
-        this.updateToList();
+        if (_dp == null) {
+            this.disableAll();
+            return;
+        }
+        else {
+            this.enableAll();
+        }
+
+        //default selections
+        _fromTAList.clearSelection();
+        _fromUnassigned.setSelectedIndex(0);
+        _toTAList.clearSelection();
+        _toUnassigned.setSelectedIndex(0);
+
+        try {
+            this.updateFromList();
+            this.updateToList();
+        } catch (CakeHatDBIOException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    private void updateFromList() throws SQLException {
-        HandinPart handinPart = _asgn.getHandinPart();
-
-        List<String> loginsToDisplay;
+    private void updateFromList() throws SQLException, ServicesException, CakeHatDBIOException {
+        List<Group> groupsToDisplay;
 
         //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
-            _unassignedStudents = handinPart.getHandinLogins();
-            _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
-            _unassignedStudents.removeAll(_unresolvedStudents);
-            loginsToDisplay = new LinkedList<String>(_unassignedStudents);
+            _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgn, _unresolvedHandins).values();
+            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dp));
+            groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
 
-            _assignButton.setEnabled(_unassignedStudents.size() > 0);
-            _numUnassignedLabel.setText(String.format("%d unassigned students to choose from", _unassignedStudents.size()));
+            _assignButton.setEnabled(_unassignedGroups.size() > 0);
+            _numUnassignedLabel.setText(String.format("%d unassigned students to choose from", _unassignedGroups.size()));
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(_unassignedStudents.size());
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(_unassignedStudents.size() == 0 ? 0 : 1);
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(_unassignedGroups.size());
+            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(_unassignedGroups.size() == 0 ? 0 : 1);
         }
         else {
             TA fromTA = _fromTAList.getSelectedValue();
-            Collection<String> studentsAssigned = Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA);
-            loginsToDisplay = new LinkedList<String>(studentsAssigned);
+            Collection<Group> studentsAssigned = Allocator.getDatabaseIO().getGroupsAssigned(_dp, fromTA);
+            groupsToDisplay = new LinkedList<Group>(studentsAssigned);
 
             _assignButton.setEnabled(studentsAssigned.size() > 0);
             _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
@@ -500,36 +568,35 @@ public class ReassignView extends JFrame {
             ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(studentsAssigned.size() == 0 ? 0 : 1);
         }
 
-        Collections.sort(loginsToDisplay);
-        _fromStudentList.setListData(loginsToDisplay);
+        Collections.sort(groupsToDisplay);
+        _fromGroupList.setListData(groupsToDisplay);
 
         if (_fromRandom.isSelectionEmpty()) {
-            _fromStudentList.setSelectedIndex(0);
+            _fromGroupList.setSelectedIndex(0);
         }
     }
 
-    private void updateToList() throws SQLException {
-        HandinPart handinPart = _asgn.getHandinPart();
-        List<String> loginsToDisplay;
+    private void updateToList() throws SQLException, ServicesException, CakeHatDBIOException {
+        List<Group> groupsToDisplay;
 
         if (!_toUnassigned.isSelectionEmpty()) {
-            _unassignedStudents = handinPart.getHandinLogins();
-            _unassignedStudents.removeAll(Allocator.getDatabaseIO().getAllAssignedStudents(handinPart));
-            loginsToDisplay = new LinkedList<String>(_unassignedStudents);
+            _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgn, _unresolvedHandins).values();
+            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dp));
+            groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
         }
         else if (!_toTAList.isSelectionEmpty()) {
             TA toTA = _toTAList.getSelectedValue();
-            loginsToDisplay = new LinkedList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, toTA));
+            groupsToDisplay = new LinkedList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dp, toTA));
         }
         else {
-            loginsToDisplay = new LinkedList<String>();
+            groupsToDisplay = new LinkedList<Group>();
         }
 
-        Collections.sort(loginsToDisplay);
-        _toStudentList.setListData(loginsToDisplay);
+        Collections.sort(groupsToDisplay);
+        _toGroupList.setListData(groupsToDisplay);
     }
 
-    private void handleAssignButtonClick() throws SQLException, ServicesException, RubricException {
+    private void handleAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
         if (!_fromRandom.isSelectionEmpty()) {
             this.handleRandomAssignButtonClick();
         }
@@ -538,9 +605,8 @@ public class ReassignView extends JFrame {
         }
     }
 
-    private void handleSelectedAssignButtonClick() throws SQLException, ServicesException, RubricException {
-        Collection<String> students = _fromStudentList.getGenericSelectedValues();
-        HandinPart handinPart = _asgn.getHandinPart();
+    private void handleSelectedAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
+        Collection<Group> groups = _fromGroupList.getGenericSelectedValues();
 
         //assigning a student who was previously assigned to UNASSIGNED
         if (!_fromUnassigned.isSelectionEmpty()) {
@@ -549,16 +615,16 @@ public class ReassignView extends JFrame {
             if (_toUnassigned.isSelectionEmpty()) {
                 TA ta = _toTAList.getSelectedValue();
 
-                Iterator<String> iterator = students.iterator();
+                Iterator<Group> iterator = groups.iterator();
                 while (iterator.hasNext()) {
-                    String student = iterator.next();
-                    if (!Allocator.getGradingServices().isOkToDistribute(_asgn, student, ta)) {
+                    Group group = iterator.next();
+                    if (!Allocator.getGradingServices().isOkToDistribute(group, ta)) {
                         iterator.remove();
                         continue;
                     }
 
                     try {
-                        Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, ta);
+                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dp, ta);
                     } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution even-though"
@@ -566,18 +632,14 @@ public class ReassignView extends JFrame {
                     }
 
                     //don't need to make rubrics for students who already have them
-                    if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
+                    if (Allocator.getRubricManager().hasRubric(_dp, group)) {
                         iterator.remove();
                     }
 
                 }
 
-                //create and assign rubrics for students who previously did not have them
-                Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
-                distribution.put(ta, students);
-                Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
-                                                               Allocator.getCourseInfo().getMinutesOfLeniency(),
-                                                               DistributionRequester.DO_NOTHING_REQUESTER);
+                //create rubrics for students who previously did not have them
+                Allocator.getRubricManager().distributeRubrics(_dp, groups, Allocator.getCourseInfo().getMinutesOfLeniency());
             }
         }
 
@@ -587,9 +649,9 @@ public class ReassignView extends JFrame {
             if (!_toUnassigned.isSelectionEmpty()) {
                 TA oldTA = _fromTAList.getSelectedValue();
 
-                for (String student : students) {
+                for (Group group : groups) {
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA);
+                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, oldTA);
                 }
             }
 
@@ -598,16 +660,16 @@ public class ReassignView extends JFrame {
                 TA oldTA = _fromTAList.getSelectedValue();
                 TA newTA = _toTAList.getSelectedValue();
 
-                for (String student : students) {
-                    if (!Allocator.getGradingServices().isOkToDistribute(_asgn, student, newTA)) {
+                for (Group group : groups) {
+                    if (!Allocator.getGradingServices().isOkToDistribute(group, newTA)) {
                         continue;
                     }
 
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, oldTA);
+                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, oldTA);
 
                     try {
-                        Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, newTA);
+                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dp, newTA);
                     } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution. There"
@@ -623,55 +685,57 @@ public class ReassignView extends JFrame {
         _studentFilterBox.requestFocus();
     }
 
-    private void handleRandomAssignButtonClick() throws SQLException, ServicesException, RubricException {
-        HandinPart handinPart = _asgn.getHandinPart();
+    private void handleRandomAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
         TA toTA = _toTAList.getSelectedValue();
         TA fromTA = _fromTAList.getSelectedValue();
 
-        List<String> studentsToChoseFrom;
+        List<Group> groupsToChoseFrom;
 
         //assigning students who were previously assigned to UNASSIGNED
         if (!_fromUnassigned.isSelectionEmpty()) {
-            studentsToChoseFrom = new ArrayList<String>(_unassignedStudents);
+            groupsToChoseFrom = new ArrayList<Group>(_unassignedGroups);
         }
         else {
-            studentsToChoseFrom = new ArrayList<String>(Allocator.getDatabaseIO().getStudentsAssigned(handinPart, fromTA));
+            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dp, fromTA));
         }
-        Collections.shuffle(studentsToChoseFrom);
+        Collections.shuffle(groupsToChoseFrom);
 
-        Collection<String> studentsToAssign = new LinkedList<String>();
+        Collection<Group> groupsToAssign = new LinkedList<Group>();
 
         int numStudentsToAssign = (Integer) _numStudentsSpinner.getValue();
-        int numStudsAssignedSoFar = 0;
+        int numGroupsAssignedSoFar = 0;
 
         //assigning to UNASSIGNED; no need to check blacklist
         if (toTA == null) {
-            for (String student : studentsToChoseFrom) {
-                if (numStudsAssignedSoFar == numStudentsToAssign) {
+            for (Group group : groupsToChoseFrom) {
+                if (numGroupsAssignedSoFar == numStudentsToAssign) {
                     break;
                 }
 
-                studentsToAssign.add(student);
-                numStudsAssignedSoFar++;
+                groupsToAssign.add(group);
+                numGroupsAssignedSoFar++;
             }
         }
 
         //attempting to assing to a new TA; need to check blacklist
         else {
-            for (String student : studentsToChoseFrom) {
-                if (numStudsAssignedSoFar == numStudentsToAssign) {
+            for (Group group : groupsToChoseFrom) {
+                if (numGroupsAssignedSoFar == numStudentsToAssign) {
                     break;
                 }
 
-                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(student, handinPart, toTA)) {
-                    studentsToAssign.add(student);
-                    numStudsAssignedSoFar++;
+                Map<TA, Collection<String>> blacklistMap = new HashMap<TA, Collection<String>>();
+                blacklistMap.put(toTA, Allocator.getDatabaseIO().getTABlacklist(toTA));
+
+                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(group, blacklistMap)) {
+                    groupsToAssign.add(group);
+                    numGroupsAssignedSoFar++;
                 }
             }
         }
 
         //we weren't able to assign as many students as requested; show error and return
-        if (numStudsAssignedSoFar < numStudentsToAssign) {
+        if (numGroupsAssignedSoFar < numStudentsToAssign) {
             String errMsg = "Cannot assign this many students " +
                                   "without violating the blacklist.\nIf you would like to " +
                                   "override the blacklist, please manually select students " +
@@ -684,34 +748,30 @@ public class ReassignView extends JFrame {
 
         //assigning to a new TA
         if (toTA != null) {
-            Iterator<String> iterator = studentsToAssign.iterator();
+            Iterator<Group> iterator = groupsToAssign.iterator();
             while (iterator.hasNext()) {
-                String student = iterator.next();
+                Group group = iterator.next();
 
                 try {
                     //update distribution
-                    Allocator.getDatabaseIO().assignStudentToGrader(student, handinPart, toTA);
+                    Allocator.getDatabaseIO().assignGroupToGrader(group, _dp, toTA);
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution.");
                 }
 
                 if (fromTA != null) {
-                    Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA);
+                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, fromTA);
                 }
             }
 
-            Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
-            distribution.put(toTA, studentsToAssign);
-            Allocator.getRubricManager().distributeRubrics(handinPart, distribution,
-                                                           Allocator.getCourseInfo().getMinutesOfLeniency(),
-                                                           DistributionRequester.DO_NOTHING_REQUESTER);
+            Allocator.getRubricManager().distributeRubrics(_dp, groupsToAssign, Allocator.getCourseInfo().getMinutesOfLeniency());
         }
 
         //assigning to UNASSIGNED from a TA
         else if (fromTA != null) {
-            for (String student : studentsToAssign) {
-                Allocator.getDatabaseIO().unassignStudentFromGrader(student, handinPart, fromTA);
+            for (Group group : groupsToAssign) {
+                Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, fromTA);
             }
         }
 
@@ -719,17 +779,17 @@ public class ReassignView extends JFrame {
         this.updateToList();
     }
 
-    private void filterStudentLogins(KeyEvent evt) throws SQLException {
+    private void filterStudentLogins(KeyEvent evt) throws SQLException, CakeHatDBIOException {
         //term to filter against
         String filterTerm = _studentFilterBox.getText();
 
-        List<String> matchingLogins = new LinkedList<String>();
+        List<Group> matchingLogins = new LinkedList<Group>();
 
         //if "UNASSIGNED" is selected, filter from unassigned students
         if (!_fromUnassigned.isSelectionEmpty()) {
-            for (String login : _unassignedStudents) {
-                if (login.startsWith(filterTerm)) {
-                    matchingLogins.add(login);
+            for (Group group : _unassignedGroups) {
+                if (group.getName().startsWith(filterTerm)) {
+                    matchingLogins.add(group);
                 }
             }
         }
@@ -737,25 +797,57 @@ public class ReassignView extends JFrame {
         //otherwise, filter from the selected TA's assigned students
         else {
             TA selectedTA = _fromTAList.getSelectedValue();
-            for (String login : Allocator.getDatabaseIO().getStudentsAssigned(_asgn.getHandinPart(), selectedTA)) {
-                if (login.startsWith(filterTerm)) {
-                    matchingLogins.add(login);
+            for (Group group : Allocator.getDatabaseIO().getGroupsAssigned(_dp, selectedTA)) {
+                if (group.getName().startsWith(filterTerm)) {
+                    matchingLogins.add(group);
                 }
             }
         }
 
-        _fromStudentList.setListData(matchingLogins);
+        _fromGroupList.setListData(matchingLogins);
 
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             if (matchingLogins.size() > 0) {
-                _studentFilterBox.setText(matchingLogins.get(0));
-                _fromStudentList.setSelectedIndex(0);
+                _studentFilterBox.setText(matchingLogins.get(0).getName());
+                _fromGroupList.setSelectedIndex(0);
                 _assignButton.requestFocus();
             }
         }
     }
 
+    private void enableAll() {
+        _fromUnassigned.setEnabled(true);
+        _fromTAList.setEnabled(true);
+        _fromRandom.setEnabled(true);
+        _fromGroupList.setEnabled(true);
+        
+        _toUnassigned.setEnabled(true);
+        _toTAList.setEnabled(true);
+        _assignButton.setEnabled(true);
+    }
+
+    private void disableAll() {
+        _fromUnassigned.clearSelection();
+        _fromUnassigned.setEnabled(false);
+        _fromTAList.setEnabled(false);
+        _fromRandom.clearSelection();
+        _fromRandom.setEnabled(false);
+        _fromGroupList.deleteAllItems();
+        _fromGroupList.setEnabled(false);
+
+        _toUnassigned.clearSelection();
+        _toUnassigned.setEnabled(false);
+        _toTAList.setEnabled(false);
+        _toGroupList.deleteAllItems();
+        _assignButton.setEnabled(false);
+
+        _numStudentsSpinner.setVisible(false);
+        _assignTypeLabel.setText("");
+        _numUnassignedLabel.setText("");
+    }
+
     public static void main(String[] argv) {
-        new ReassignView(Allocator.getCourseInfo().getHandinAssignments().toArray(new Assignment[0])[0]);
+        Assignment asgn = Allocator.getCourseInfo().getHandinAssignments().iterator().next();
+        new ReassignView(asgn, null);
     }
 }
