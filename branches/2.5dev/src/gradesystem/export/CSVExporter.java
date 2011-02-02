@@ -199,10 +199,12 @@ public class CSVExporter implements Exporter
                                 } else {
                                     printer.append("EXEMPT" + ",");
                                 }
-                                if (part instanceof HandinPart) {
-                                    String status = Allocator.getRubricManager().getTimeStatusDescriptor((HandinPart) part, login);
-                                    printer.append(status + ",");
-                                }
+
+                                //TODO //FIXME
+//                                if (part instanceof DistributablePart) {
+//                                    String status = Allocator.getRubricManager().getTimeStatusDescriptor((HandinPart) part, login);
+//                                    printer.append(status + ",");
+//                                }
                                 pView.updateProgress(login, asgn, part, ++currStep);
                             } catch (SQLException ex) {
                                 _exportFile.delete();

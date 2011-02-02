@@ -1,8 +1,9 @@
 package gradesystem.rubric;
 
 import gradesystem.views.backend.assignmentdist.DistributionRequester;
-import gradesystem.config.HandinPart;
-import gradesystem.config.TA;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
 import java.util.Collection;
 import java.util.Map;
 
@@ -15,145 +16,116 @@ import java.util.Map;
  */
 public interface RubricManager
 {
-    /**
-     * View the rubric for a student for a given handin part. If it is already
-     * open it will be brought to front and centered on screen.
-     *
-     *
-     * @param part
-     * @param studentLogin
-     */
-    public void view(HandinPart part, String studentLogin);
+
+    public void viewTemplate(DistributablePart dp) throws RubricException;
 
     /**
-     * View the rubric for a student for a given handin part. If it is already
+     * View the rubric for a group for a given distributable part. If it is already
      * open it will be brought to front and centered on screen.
+     * 
+     * @param part
+     * @param group
+     */
+    public void view(DistributablePart part, Group group);
+
+    /**
+     * View the rubric for a group for the given distributable part.
+     * If it is already open it will be brought to front and centered on screen.
      *
      * @param part
-     * @param studentLogin
+     * @param group
      * @param isAdmin if true then on save the rubric's handin score will be written
      *                to the database
      */
-    public void view(HandinPart part, String studentLogin, boolean isAdmin);
+    public void view(DistributablePart part, Group group, boolean isAdmin);
 
     /**
-     * @date 01/08/2010
      * @return path to student's rubric for a particular project
      *          Note: this is independent of the TA who graded the student
-     *         currently, /course/<course>/.cakehat/<year>/rubrics/<assignmentName>/<studentLogin>.gml
+     *         currently, /course/<course>/.cakehat/<year>/rubrics/<asgn-name>/<part-name>/<groupName>.gml
      */
-    public String getStudentRubricPath(HandinPart part, String studentLogin);
+    public String getGroupRubricPath(DistributablePart part, Group group);
 
     /**
-     * Views an assignment's template rubric.
+     * Returns whether or not a rubric exists for the given Group for the given
+     * DistributablePart.
      *
-     * @param rubric
+     * @param part
+     * @param group
+     * @return true if the Group has a rubric for the DistributablePart; false otherwise
      */
-    public void viewTemplate(HandinPart part);
-
-    public boolean hasRubric(HandinPart part, String studentLogin);
+    public boolean hasRubric(DistributablePart part, Group group);
 
     /**
-     * Get the scores for the handin part. Includes any late penalties that
-     * were applied.
-     *
-     * @param studentLogin
-     * @return map from student logins to score
-     */
-    public Map<String, Double> getHandinTotals(HandinPart part, Iterable<String> studentLogins);
-
-    /**
-     * Get the score for the handin part. Includes any late penalties that
-     * were applied.
-     *
-     * @param studentLogin
+     * Returns a list of all DistributableParts of the given handin for which the
+     * given Group does not have a rubric.  The list will be empty if the Group has
+     * a rubric for all DistributableParts of the Handin.
+     * 
+     * @param handin
+     * @param group
      * @return
      */
-    public double getHandinTotal(HandinPart part, String studentLogin);
+    public Collection<DistributablePart> getMissingRubrics(Handin handin, Group group);
 
     /**
-     * Get the score for the entire rubric. Includes any late penalties that
-     * were applied.
+     * Get the score for the given Group for the given DistributablePart.
      *
-     * @param studentLogin
+     * @param part
+     * @param group
      * @return
      */
-    public double getRubricTotal(HandinPart part, String studentLogin);
+    public double getPartScore(DistributablePart part, Group group);
 
     /**
-     * Get the scores for the entire rubric. Includes any late penalties that
-     * were applied.
+     * Read the total score from the rubric for each Group on the given DistributablePart.
      *
-     * @param studentLogin
-     * @return map from student logins to score
+     * @param group
+     * @return map from group to score
      */
-    public Map<String, Double> getRubricTotals(HandinPart part, Iterable<String> studentLogins);
+    public Map<Group, Double> getPartScores(DistributablePart part, Iterable<Group> groups);
 
     /**
-     * Distributes the rubric for the HandinPart part, mapping TAs to
-     * Collections of Strings of studentLogins that TA is assigned
-     * to grade. When determining handin time status, takes into account the
-     * specified minutes of leniency to apply to deadlines. Also takes into
-     * account extensions that have been recorded in the database. If an
-     * extension is granted and the policy is MULTIPLE_DEADLINES it is treated
-     * as if the policy is NO_LATE using the extension date.
+     * Calculates the appropriate deduction or bonus based on the TimeStatus of,
+     * the group's Handin, what the LatePolicy governing this assignment is, and whether the
+     * LatePolicy applies to the entire rubric (AFFECT-ALL="TRUE") or just the
+     * handin parts of the rubric (AFFECT-ALL="FALSE").
      *
-     * @param assignmentName
-     * @param distribution
-     * @param minutesOfLeniency
+     * If NC_LATE, then all points will be deducted. (Whether that will be all
+     * of the points in the assignment or all the points in the handin depends
+     * on the AFFECT-ALL value.)
+     *
+     * @param handin
+     * @param group
      * @return
+     * @throws RubricException
      */
-    public void distributeRubrics(HandinPart part,
-                                  Map<TA, Collection<String>> distribution,
-                                  int minutesOfLeniency,
-                                  DistributionRequester requester) throws RubricException;
+    public double getHandinPenaltyOrBonus(Handin handin, Group group) throws RubricException;
 
     /**
-     * Reads out the time status information from a student's rubric.
-     * If the student's rubric cannot be parsed for any reason null will be
-     * returned.
+     * Converts all rubrics for the DistributableParts of the given Handin to
+     * a single GRD file for the given group.
      *
-     * @param part
-     * @param studentLogin
+     * @param handin
+     * @param group
      */
-     public TimeStatus getTimeStatus(HandinPart part, String studentLogin);
+    public void convertToGRD(Handin handin, Group group) throws RubricException;
 
     /**
-     * Reads out the time status information from a student's rubric. If the
-     * late policy is DAILY_DEDUCTION and the assignment is LATE, then the
-     * number of days late will be included in the returned descriptor.
+     * Converts all rubrics for the DistributableParts of the given Handin to
+     * a single GRD file for the given groups.
      *
-     * @param part
-     * @param studentLogin
+     * @param handin
+     * @param groups
      */
-     public String getTimeStatusDescriptor(HandinPart part, String studentLogin);
+    public void convertToGRD(Handin handin, Iterable<Group> groups) throws RubricException;
 
-     /**
-      * Sets the student's rubric to the given time status and days late. If days late is not
-      * applicable pass in 0.
-      *
-      * @param part
-      * @param studentLogin
-      * @param status
-      * @param daysLate
-      */
-     public void setTimeStatus(HandinPart part, String studentLogin, TimeStatus status, int daysLate);
+    public void convertToGRD(Map<Handin, Iterable<Group>> toConvert) throws RubricException;
 
-    /**
-     * Converts a rubric to a GRD file.
-     *
-     * @param part
-     * @param studentLogin
-     */
-    public void convertToGRD(HandinPart part, String studentLogin);
+    public void distributeRubrics(DistributablePart part, Collection<Group> groups,
+                                  int minsLeniency) throws RubricException;
 
-    /**
-     * Converts rubrics to GRD files.
-     *
-     * @param part
-     * @param studentLogins
-     */
-    public void convertToGRD(HandinPart part, Iterable<String> studentLogins);
+    public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
+                                  int minsLeniency, DistributionRequester requester) throws RubricException;
 
-    public void convertToGRD(Map<HandinPart, Iterable<String>> toConvert);
+    
 }

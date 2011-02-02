@@ -1,15 +1,15 @@
 package gradesystem.services;
 
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
+import gradesystem.database.HandinStatus;
 import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * This class provides grading specific utility functions.
@@ -44,6 +44,17 @@ public interface GradingServices
     public String getUserGradingDirectory();
 
     /**
+     * Returns the path to the temporary directory within the user's grading directory
+     * in which students' untarred handins and converted GRD files are stored for the
+     * given DistributablePart
+     * <br><br>
+     * Path is: /course/<course>/.cakehat/.<talogin>/<asgn-name>/<dp-name>/
+     *
+     * @return
+     */
+    public String getUserPartDirectory(DistributablePart part);
+
+    /**
      * The directory the handin is unarchived into.
      *
      * /course/<course>/.cakehat/.<ta login>/<assignment name>/<distributable part name>/<group name>/
@@ -63,13 +74,15 @@ public interface GradingServices
     public File getHandinDirectory(Assignment assignment);
 
     /**
-     * The absolute path to a student's GRD file for a given handin part.
+     * The absolute path to a group's GRD file for a given Handin.
      *
-     * @param part
-     * @param studentLogin
+     * @param handin
+     * @param group
      * @return
      */
-    public String getStudentGRDPath(HandinPart part, String studentLogin);
+    public String getGroupGRDPath(Handin handin, Group group);
+
+    public void printGRDFiles(Handin part, Iterable<Group> groups) throws ServicesException;
 
     /**
      * Opens a new EmailView so that user TA can inform students that their assignment
@@ -84,23 +97,7 @@ public interface GradingServices
      * @param project
      * @param students
      */
-    public void notifyStudents(HandinPart part, Vector<String> students, boolean emailRubrics);
-
-    /**
-     * Prints .GRD files for each student the user TA has graded
-     * Calls getPrinter(...) and then prints using lpr
-     *
-     * @param assignment assignment for which .GRD files should be printed
-     */
-    public void printGRDFiles(HandinPart part, Iterable<String> studentLogins);
-
-    /**
-     * Prints GRD files for the handin parts and student logins specified. The
-     * GRD files must already exist in order for this to work.
-     * 
-     * @param toPrint
-     */
-    public void printGRDFiles(Map<HandinPart, Iterable<String>> toPrint);
+    public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics);
 
     /**
      * Prompts the user to a select a printer.
@@ -118,49 +115,83 @@ public interface GradingServices
     public String getPrinter(String message);
 
     /**
-     * Returns whether or not it is OK to distribute the student with the given
-     * login to the given TA for the given assignment.  It is always OK to distribute
-     * the student if no member of the student's group is on the TA's blacklist.
+     * Returns whether or not it is OK to distribute the given group to the given
+     * TA.  It is always OK to distribute the group if no member is on the TA's blacklist.
+     * 
      * If a group member is on the TA's blacklist, a dialog will be shown asking
      * the user whether or not to continue.  If the user selects the continue option,
      * this method returns true; otherwise, it will return false.
      * 
-     * @param asgn
-     * @param student
+     * @param group
      * @param ta
-     * @return true if it is OK to distribute the student's handin to the TA
+     * @return true if it is OK to distribute the group's handin to the TA
      */
-    public boolean isOkToDistribute(Assignment asgn, String student, TA ta) throws ServicesException;
+    public boolean isOkToDistribute(Group group, TA ta) throws ServicesException;
 
     /**
-     * Returns whether or not some member of the given student's group for the given
-     * project is on the given TA's blacklist.
+     * Returns whether or not some member of the given student's group
+     * is on any of the given TAs' blacklists.
      *
      * @param studentLogin
-     * @param ta
+     * @param tas
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
-    public boolean groupMemberOnTAsBlacklist(String studentLogin, HandinPart part, TA ta) throws ServicesException;
+    public boolean groupMemberOnTAsBlacklist(Group group, Map<TA, Collection<String>> blacklists) throws ServicesException;
+
 
     /**
-     * present the user with a dialog warning them that some of the handins are for students
-     * who are not in the database or who are not enabled. allow the user to choose a method
-     * for resolution. either add/enable them or ignore the handin.
+     * Return value maps a handin name to the Group corresponding to that handin
+     * for the given assignment.  Will not try to determine a group for handins in
+     * handinsToIgnore.
+     * 
+     * @param asgn
+     * @param handinsToIgnore
+     * @return
+     * @throws ServicesException
+     */
+    public Map<String, Group> getGroupsForHandins(Assignment asgn,
+                                                  Collection<String> handinsToIgnore) throws ServicesException;
+
+    /**
+     * Return value maps a student's login to the Group object for that student on
+     * the given Assignment for each enabled student.  If the assignment is not a
+     * group assignment, this method guarantees that a group of one will have been
+     * created in the database for each enabled student and that the corresponding
+     * Group object will be in the returned map.
+     *
+     * Returns null if the configuration file indicates that the given Assignment
+     * has groups but no groups have been entered into the database.
      *
      * @param asgn
-     * @return what are the remaining bad logins (null if the user clicked Cancel)
+     * @return
+     * @throws ServicesException
+     */
+    public Map<String, Group> getGroupsForStudents(Assignment asgn) throws ServicesException;
+
+    /**
+     * Checks that all handins for the given Assignment belong to a valid student or Group.
+     *
+     * If the Assignment is a group assignment, this method checks that the name of each handin
+     * is either the name of some group or the login of a member of some group.  If this is
+     * not the case for any handin, a message listing the problematic handins will be shown
+     * to the user, and null will be returned to indicate that distribution may not continue.
+     *
+     * If the Assignment is not a group assignment, this method checks that the name of each
+     * handin is the login of a student who is in the database and enabled.  If this is not the
+     * case for any handin, presents the user with an appopriate warning dialog through which students
+     * corresponding to these handins can either be either added/enabled them or ignored.
+     *
+     * @param asgn
+     * @return what are the remaining bad logins (null if the user clicked Cancel or Group resolution failed)
      */
     public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException;
 
-    /**
-     * Gets the extensions for each student in studentLogins. Takes into account
-     * the group the student is in; using the latest date of all group members.
-     * If there is no extension for any member of the group, null is assigned.
-     *
-     *
-     * @param part
-     * @param studentLogins
-     * @return
-     */
-    public Map<String, Calendar> getExtensions(HandinPart part, Iterable<String> studentLogins) throws ServicesException;
+    public HandinStatus getHandinStatus(Handin handin, Group group,
+                                    Calendar extension, int minsLeniency) throws ServicesException;
+
+    public Map<Group, HandinStatus> getHandinStatuses(Handin handin, Collection<Group> groups,
+                                                  Map<Group, Calendar> extensions, int minsLeniency) throws ServicesException;
+
+
+    
 }

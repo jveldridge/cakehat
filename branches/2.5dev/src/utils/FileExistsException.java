@@ -24,7 +24,7 @@ public class FileExistsException extends FileCopyingException
                 "location because destination file exists and overwrite " +
                 "permission was not granted.\n" +
                 "Source File: " + src.getAbsolutePath() + "\n" +
-                "Destination File: " + src.getAbsolutePath() + "\n");
+                "Destination File: " + dst.getAbsolutePath() + "\n");
 
         _src = src;
         _dst = dst;

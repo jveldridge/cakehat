@@ -39,20 +39,6 @@ class RubricGMLWriter implements RubricConstants
         //Create the root node of the XML document
         Element rubricNode = document.createElement(RUBRIC);
 
-        //Set name, number and status attributes
-        rubricNode.setAttribute(NAME, rubric.getName());
-        rubricNode.setAttribute(NUMBER, Integer.toString(rubric.getNumber()));
-        rubricNode.setAttribute(STATUS, rubric.getStatus().toString());
-        rubricNode.setAttribute(DAYS_LATE, Integer.toString(rubric.getDaysLate()));
-
-        //Create the student node of the XML document
-        Element student = document.createElement(STUDENT);
-        student.setAttribute(NAME, rubric.getStudentName());
-        student.setAttribute(ACCT, rubric.getStudentAccount());
-
-        //Add the student node to the root node
-        rubricNode.appendChild(student);
-
         for (Section section : rubric.getSections())
         {
             Element sectionNode = document.createElement(SECTION);

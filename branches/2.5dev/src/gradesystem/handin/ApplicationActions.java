@@ -307,7 +307,7 @@ class ApplicationActions implements ActionProvider
 
                     if(textFiles.isEmpty())
                     {
-                        JOptionPane.showConfirmDialog(null,
+                        JOptionPane.showMessageDialog(null,
                                 "There are no text files to open.\n" +
                                 "Extensions to open are: " + properties.get(EXTENSIONS_PROPERTY),
                                 "No text files",

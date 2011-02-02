@@ -2,8 +2,8 @@ package gradesystem.views.backend.assignmentdist;
 
 import gradesystem.components.IntegerField;
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
+import gradesystem.database.CakeHatDBIOException;
 import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
 import java.awt.BorderLayout;
@@ -12,19 +12,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -34,10 +29,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJComboBox;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.util.LinkedList;
-import utils.system.NativeException;
+import java.util.List;
+import javax.swing.ImageIcon;
 
 /**
  * Provides an interface for creating a distribution for an assignment.
@@ -46,7 +45,7 @@ import utils.system.NativeException;
  */
 public class AssignmentDistView extends JFrame implements DistributionRequester {
 
-    private static int GRADER_PANEL_WIDTH = 200;
+    private static int GRADER_PANEL_WIDTH = 600;
     private static int GRADER_PANEL_HEIGHT = 30;
 
     private Assignment _asgn;
@@ -141,7 +140,18 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         createDistributionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                generateDistribution();
+                try {
+                    generateDistribution();
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "Generating the distribution for assignment " +
+                                       _asgn + " failed." );
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Generating the distribution for assignment " +
+                                       _asgn + " failed." );
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Generating the distribution for assignment " +
+                                       _asgn + " failed." );
+                }
             }
         });
         buttonPanel.add(createDistributionButton);
@@ -189,17 +199,36 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         this.pack();
     }
 
-    private void generateDistribution() {
-        /** setup variables **/
+    private void generateDistribution() throws ServicesException, SQLException, CakeHatDBIOException {
+        //figure out which DistributableParts are being graded by which TAs
+        Map<DistributablePart, Collection<TA>> graderMap = new HashMap<DistributablePart, Collection<TA>>();
+        for (TA grader : _gradingTAs) {
+            DistributablePart part = _graderPanels.get(grader).getPartToGrade();
 
-        //check to make sure that there are graders to distribute to
-        if (_gradingTAs.size() == 0) {
-            JOptionPane.showMessageDialog(this, "There are no grading TAs.  Students cannot be distributed.",
-                                          "Distribution Error", JOptionPane.ERROR_MESSAGE);
+            if (!graderMap.containsKey(part)) {
+                graderMap.put(part, new ArrayList<TA>());
+            }
+            graderMap.get(part).add(grader);
+        }
+
+        //check to make sure that there are graders to distribute to for each distributable part
+        Collection<DistributablePart> partsWithoutGraders = new LinkedList<DistributablePart>();
+        for (DistributablePart dp : _asgn.getDistributableParts()) {
+            if (!graderMap.containsKey(dp)) {
+                partsWithoutGraders.add(dp);
+            }
+        }
+
+        if (!partsWithoutGraders.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "The following distributable parts do not have " +
+                                                "TAs assigned to grade them: " + partsWithoutGraders + ".  " +
+                                                "Students cannot be distributed.",
+                                                "Distribution Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
         try {
-            if (!Allocator.getDatabaseIO().isDistEmpty(_asgn.getHandinPart())) {
+            if (!Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
                 int n = JOptionPane.showConfirmDialog(this, "A distribution already exists for " + _asgn.getName() +
                                                              ".\nAre you sure you want to overwrite the existing distribution?",
                                                              "Confirm Overwrite",
@@ -219,208 +248,218 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                 }
         }
 
-        //get handin logins, shuffle logins, add to deque
-        ArrayList<String> handinLoginsRaw = new ArrayList<String>(_asgn.getHandinPart().getHandinLogins());
-        Collections.shuffle(handinLoginsRaw);
-        ArrayDeque<String> handinLogins = new ArrayDeque<String>(handinLoginsRaw);
+        List<String> handinNames = _asgn.getHandin().getHandinNames();
+        handinNames.removeAll(_remainingBadLogins);
+        Map<String, Group> groups = Allocator.getGradingServices().getGroupsForHandins(_asgn, _remainingBadLogins);
 
-        //remove disabled students and students that are not in the DB
-        handinLogins.removeAll(_remainingBadLogins);
+        //construct a Map that will be used to store the result of distribution
+        //for each DistributablePart
+        Map<DistributablePart, DistributionResponse> distribution = new HashMap<DistributablePart, DistributionResponse>();
 
-        //get all grader logins
-        ArrayList<TA> tas = new ArrayList<TA>();
-        for (TA ta : _gradingTAs) {
-            tas.add(ta);
+        String message = "Not all students were successfully distributed for all distributable parts.\n " +
+                         "For each distributable part, the result of distribution is shown below.  Please\n" +
+                         "choose whether to use the incomplete distribution (in which case the undistributed\n" +
+                         "students must be distributed manually via the ReassignView) or to discard the distribution.\n\n";
+        boolean someStudentsUndistributed = false;
+        for (DistributablePart dp : _asgn.getDistributableParts()) {
+            DistributionResponse resp = generateDistForPart(graderMap.get(dp), handinNames, groups);
+
+            message += "Distributable Part " + dp + ": ";
+            if (resp.getProblemStudents().isEmpty()) {
+                message += "all students were distributed successfully\n";
+            }
+            else {
+                message += "the following students could not be distributed without\n" +
+                           "violating a TA's blacklist: " + resp.getProblemStudents() + "\n";
+                someStudentsUndistributed = true;
+            }
+
+            distribution.put(dp, resp);
         }
 
-        //build distribution hashmap
-        Map<TA, Collection<String>> distribution = new HashMap<TA, Collection<String>>();
-        for (TA grader : tas) {
-            distribution.put(grader, new ArrayList<String>());
+        if (someStudentsUndistributed) {
+            Object[] options = {"Use Distribution", "Discard Distribution"};
+            int proceed = JOptionPane.showOptionDialog(this, message,
+                                                      "Use distribution?",
+                                                      JOptionPane.YES_NO_OPTION,
+                                                      JOptionPane.QUESTION_MESSAGE,
+                                                      null, options, options[0]);
+            if (proceed == JOptionPane.NO_OPTION) {
+                return;
+            }
         }
 
-        /** make distribution **/
-
-        //determine how many students to give to each TA
-        Map<TA, Integer> numStudsNeeded = this.calculateNumberOfHandinsPerTA(handinLogins, tas.size());
-
-        //distribute all the blacklisted handins to TAs first
-        boolean distBlackListSuccessful = this.assignBlackListedHandinsToTAs(distribution, numStudsNeeded, handinLogins, _asgn.getHandinPart(), tas);
-        if (!distBlackListSuccessful) {
-            JOptionPane.showMessageDialog(this, "There was an error "
-                        + "distributing blacklisted "
-                        + "students. Please try running "
-                        + "the distribution again.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+        Map<DistributablePart, Map<TA, Collection<Group>>> distForDB = new HashMap<DistributablePart, Map<TA, Collection<Group>>>();
+        for (DistributablePart dp : _asgn.getDistributableParts()) {
+            distForDB.put(dp, distribution.get(dp).getDistribution());
         }
 
-        //distribute the rest if the handins to TAs
-        this.assignRemainingHandinsToTAs(distribution, numStudsNeeded, handinLogins, tas);
+        Allocator.getDatabaseIO().setDistributablePartDist(distForDB);
 
-        try {
-            //put the distribution into the DB
-            Allocator.getDatabaseIO().setAsgnDist(_asgn.getHandinPart(), distribution);
-            JOptionPane.showMessageDialog(this, "Assignments have been successfully distributed to the grading TAs.",
-                "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Saving the distribution to the database failed.");
+        JOptionPane.showMessageDialog(this, "Success!");
+
+        
+    }
+
+    private DistributionResponse generateDistForPart(Collection<TA> graders,
+                                                     Collection<String> handinNames,
+                                                     Map<String, Group> groups) throws ServicesException, SQLException {
+        //get TA blacklists
+        Map<TA, Collection<String>> taBlacklists = new HashMap<TA, Collection<String>>();
+        for (TA grader : graders) {
+            Collection<String> taBlacklist = Allocator.getDatabaseIO().getTABlacklist(grader);
+            taBlacklists.put(grader, taBlacklist);
         }
 
+        //figure out how many students each TA should grade
+        Map<TA, Integer> numStudsNeeded = this.calculateNumberOfHandinsPerTA(graders, handinNames.size());
+
+        //find groups for whom some member is one one of the grading TAs' blacklist
+        Collection<Group> blacklistedGroups = new LinkedList<Group>();
+        for (String handinName : handinNames) {
+            Group group = groups.get(handinName);
+
+            if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(group, taBlacklists)) {
+                blacklistedGroups.add(group);
+            }
+        }
+
+        //assign blacklisted students first
+        DistributionResponse blacklistedResponse = this.assignBlacklistedGroups(blacklistedGroups,
+                                                                                numStudsNeeded,
+                                                                                taBlacklists);
+
+        List<Group> remainingGroups = new LinkedList<Group>(groups.values());
+        remainingGroups.removeAll(blacklistedGroups);
+
+        //then assign all other students
+        Map<TA, Collection<Group>> remainingDist = this.assignRemainingGroups(remainingGroups, numStudsNeeded);
+
+        //overallDist represents distribution of both Groups that have members blacklisted by
+        //some TA and Groups in which no member is blacklisted
+        Map<TA, Collection<Group>> overallDist = new HashMap<TA, Collection<Group>>(blacklistedResponse.getDistribution());
+        overallDist.putAll(remainingDist);
+
+        //students who could not be distributed without violating some TA's blacklisted
+        Collection<Group> overallUndistributed = new ArrayList<Group>(blacklistedResponse.getProblemStudents());
+
+        return new DistributionResponse(overallDist, overallUndistributed);
     }
 
     /**
      * calculate how many handins each TA should get based on the modifiers entered
      *
-     * @param handinLogins
-     * @param numberOfTAs
+     * @param graders
+     * @param numGroups
      * @return - map between TA and number to grade
      */
-    private Map<TA, Integer> calculateNumberOfHandinsPerTA(Collection<String> handinLogins, int numberOfTAs) {
-
-        //total number of handins used in calculating the average
-        int calculatedTotalStudents = handinLogins.size();
+    private Map<TA, Integer> calculateNumberOfHandinsPerTA(Collection<TA> graders, int numGroups) {
 
         //update total number of students based modifiers from table (only used for calc of avg)
-        for (TA grader : _gradingTAs) {
+        for (TA grader : graders) {
             int diffFromAvg = _graderPanels.get(grader).getNumDiff();
 
-            //the extra (if TA gets less than average) students need to be go to the other TAs therefore the average and thus the total must be higher
-            calculatedTotalStudents -= diffFromAvg;
+            //the extra (if TA gets less than average) students need to be go to the other TAs
+            //therefore the average and thus the total must be higher
+            numGroups -= diffFromAvg;
         }
 
         //average number of students for each ta
-        int avg = (int) Math.floor((double) calculatedTotalStudents / (double) numberOfTAs);
+        int avg = (int) Math.floor((double) numGroups / (double) graders.size());
 
         //build hashmap of how many students each TA must grade
         HashMap<TA, Integer> numStudsNeeded = new HashMap<TA, Integer>();
-        for (TA grader : _gradingTAs) {
+        for (TA grader : graders) {
             numStudsNeeded.put(grader, _graderPanels.get(grader).getNumDiff() + avg);
         }
 
         return numStudsNeeded;
     }
 
-    /**
-     * assign all the blacklisted handins to TAs first so there the most possible TAs to give them to
-     *
-     * @param distribution
-     * @param numStudsNeeded
-     * @param handinLogins
-     * @return - did this step work?
-     */
-    private boolean assignBlackListedHandinsToTAs(Map<TA, Collection<String>> distribution,
-                        Map<TA, Integer> numStudsNeeded, Collection<String> handinLogins,
-                        HandinPart handinPart, ArrayList<TA> tas) {
+    private DistributionResponse assignBlacklistedGroups(Collection<Group> groups,
+                                         Map<TA, Integer> numStudsNeeded,
+                                         Map<TA, Collection<String>> graderBlacklists) {
+        List<TA> graders = new ArrayList<TA>(numStudsNeeded.keySet());
 
-        //get all the groups for this project (maps student login to students in their group)
-        Map<String, Collection<String>> groups;
-        try {
-            groups = Allocator.getDatabaseIO().getGroups(handinPart);
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Groups for the project could not be read from the database.  " +
-                              "Distribution cannot continue.");
-            return false;
+        Map<TA, Collection<Group>> distribution = new HashMap<TA, Collection<Group>>();
+        for (TA grader : graders) {
+            distribution.put(grader, new LinkedList<Group>());
         }
 
-        //make a list of all blacklisted students and hashmap of all ta blacklists
-        Set<String> blacklistedStudents = new HashSet<String>();
-        Map<TA, Collection<String>> taBlacklists = new HashMap<TA, Collection<String>>();
+        Collection<Group> unDistributed = new LinkedList<Group>();
 
-        for (TA ta : tas) {
-            Collection<String> tasBlackList;
-            try {
-                tasBlackList = Allocator.getDatabaseIO().getTABlacklist(ta);
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Blacklist could not be read from the database for " +
-                                  "TA " + ta + ".  THE RESULTING DISTRIBUTION MAY NOT " +
-                                  "RESPECT THIS TA'S BLACKLIST.");
-                tasBlackList = new LinkedList<String>();
-            }
-
-            blacklistedStudents.addAll(tasBlackList);
-            taBlacklists.put(ta, tasBlackList);
-        }
-
-        //get all handins to pick which are the blacklisted handins
-        Collection<String> blacklistedHandins = new ArrayList();
-        blacklistedHandins.addAll(handinLogins);
-
-        //remove handins which aren't blacklisted
-        Iterator<String> iterator = blacklistedHandins.iterator();
-        while (iterator.hasNext()) {
-            if (!Allocator.getGeneralUtilities().containsAny(blacklistedStudents, groups.get(iterator.next()))) {
-                iterator.remove();
-            }
-        }
-
-        //add all blacklisted handins to a TA first
-        for (String blStudent : blacklistedHandins) {
-            Collections.shuffle(tas);
+        Collections.shuffle(graders);
+        for (Group blGroup : groups) {
             boolean distributed = false;
-            for (TA ta : tas) {
-                //if ta's blacklist does not contain students from the handin group (individuals will have a group of size 1) and ta's dist is not full
-                if (!Allocator.getGeneralUtilities().containsAny(taBlacklists.get(ta), groups.get(blStudent))
+            
+            for (TA ta : graders) {
+                //if ta's blacklist does not contain students from the handin group and ta's dist is not full
+                if (!Allocator.getGeneralUtilities().containsAny(graderBlacklists.get(ta), blGroup.getMembers())
                         && numStudsNeeded.get(ta) > 0) {
 
-                    distribution.get(ta).add(blStudent); //add student to ta's dist
+                    distribution.get(ta).add(blGroup); //add student to ta's dist
                     numStudsNeeded.put(ta, numStudsNeeded.get(ta) - 1); //reduce num ta needs
                     distributed = true;
                     break;
                 }
             }
+
             if (!distributed) {
-                return false;
+                unDistributed.add(blGroup);
             }
         }
 
-        //remove all blacklisted students from student list since they are all distributed already
-        handinLogins.removeAll(blacklistedHandins);
-        return true;
+        return new DistributionResponse(distribution, unDistributed);
+
     }
 
-    /**
-     * take the handins which are not on any blacklist and distributes them to TAs at random until the TA is at their limit
-     *
-     * @param distribution - current distribution
-     * @param numStudsNeeded
-     * @param handinLogins
-     * @return - did this step work?
-     */
-    private boolean assignRemainingHandinsToTAs(Map<TA, Collection<String>> distribution,
-                        Map<TA, Integer> numStudsNeeded, ArrayDeque<String> handinLogins,
-                        ArrayList<TA> tas) {
+    private Map<TA, Collection<Group>> assignRemainingGroups(List<Group> groups,
+                                                       Map<TA, Integer> numStudsNeeded) {
+        List<TA> graders = new ArrayList<TA>(numStudsNeeded.keySet());
 
-        Collections.shuffle(tas);
+        Map<TA, Collection<Group>> distribution = new HashMap<TA, Collection<Group>>();
+        for (TA grader : graders) {
+            distribution.put(grader, new LinkedList<Group>());
+        }
+        
+        Collections.shuffle(graders);
         //fill TAs to limit
-        for (TA ta : tas) {
+        for (TA ta : graders) {
             for (int i = 0; i < numStudsNeeded.get(ta); i++) {
-                distribution.get(ta).add(handinLogins.removeFirst());
+                if (!groups.isEmpty()) {
+                    distribution.get(ta).add(groups.remove(0));
+                }
             }
         }
 
         //distribute remaining students (< # TAs of them) to random TAs
         //There will be < # TAs of them because we floored when we took the average so only at most n-1 could be left.
-        Collections.shuffle(tas);
-        for (TA ta : tas) {
-            if (!handinLogins.isEmpty()) {
-                distribution.get(ta).add(handinLogins.removeFirst());
+        Collections.shuffle(graders);
+        for (TA ta : graders) {
+            if (!groups.isEmpty()) {
+                distribution.get(ta).add(groups.remove(0));
             } else {
                 break;
             }
         }
-        return true;
+
+        return distribution;
     }
 
     private void setUpGrading() {
-        //create rubric directory if it does not exist
-        File directory = new File(Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/");
-        try
-        {
-            Allocator.getFileSystemServices().makeDirectory(directory);
-        }
-        catch(ServicesException e)
-        {
-            new ErrorView(e, "Unable to create rubric directory: " + directory.getAbsolutePath());
+
+        //create any necessary rubric directories that do not alreayd exist
+        for (DistributablePart dp : _asgn.getDistributableParts()) {
+            File directory = new File(Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/" + dp.getName() + "/");
+            if (!directory.exists()) {
+                try {
+                    Allocator.getFileSystemServices().makeDirectory(directory);
+                } catch (ServicesException e) {
+                    new ErrorView(e, "Unable to create rubric directory: " + directory.getAbsolutePath() + "\n"
+                            + "Rubrics cannot be distributed.");
+                    return;
+                }
+            }
         }
 
         ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
@@ -431,7 +470,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         if (input == null) {
             return;
         }
-        
+
         int minsLeniency = Allocator.getCourseInfo().getMinutesOfLeniency();
         if (!input.isEmpty()) {
             try {
@@ -444,31 +483,36 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                 int shouldContinue = JOptionPane.showConfirmDialog(this, "Invalid minutes of leniency." +
                         "  The course default will be used.",
                         "Invalid Entry", JOptionPane.WARNING_MESSAGE);
-                
+
                 if (shouldContinue != JOptionPane.OK_OPTION) {
                     return;
                 }
             }
         }
-
-        final int finalMinsLeniency = minsLeniency;
+        final int minutesOfLeniency = minsLeniency;
 
         Thread distributionThread = new Thread() {
 
             @Override
             public void run() {
                 try {
-                    //get dist from DB
-                    Map<TA, Collection<String>> distribution = Allocator.getDatabaseIO().getDistribution(_asgn.getHandinPart());
-                    //actually distribute rubrics
-                    Allocator.getRubricManager().distributeRubrics(_asgn.getHandinPart(), distribution, finalMinsLeniency, AssignmentDistView.this);
-                    //get rid of progress dialog
+                    Collection<Group> groups = Allocator.getDatabaseIO().getGroupsForAssignment(_asgn);
+                    Allocator.getRubricManager().distributeRubrics(_asgn.getHandin(),
+                                                                   groups,
+                                                                   minutesOfLeniency,
+                                                                   AssignmentDistView.this);
+                    
                     _progressDialog.dispose();
+                    JOptionPane.showMessageDialog(AssignmentDistView.this, "Grading setup complete.",
+                                                  "Success", JOptionPane.INFORMATION_MESSAGE);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "The distribution for assignment " + _asgn + " " +
                                       "could not be read from the database.");
                 } catch (RubricException ex) {
                     new ErrorView(ex, "Disributing rubrics for asignment " + _asgn + " failed.");
+                } finally {
+                    //get rid of progress dialog
+                    _progressDialog.dispose();
                 }
             }
         };
@@ -479,8 +523,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         _progressDialog.setLocationRelativeTo(this);
         _progressDialog.setVisible(true);
 
-        JOptionPane.showMessageDialog(this, "Grading setup complete.",
-                "Success", JOptionPane.INFORMATION_MESSAGE);
+        
     }
 
     public void updatePercentDone(int newPercentDone) {
@@ -491,6 +534,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         private TA _grader;
         private IntegerField _numDiffField;
+        private GenericJComboBox<DistributablePart> _partBox;
 
         public GraderPanel(TA grader) {
             _grader = grader;
@@ -503,7 +547,10 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             loginPanel.add(loginLabel);
 
             _numDiffField = new IntegerField(0);
-            _numDiffField.setPreferredSize(new Dimension(200, 25));
+            _numDiffField.setPreferredSize(new Dimension(100, 25));
+
+            Collection<DistributablePart> parts = AssignmentDistView.this._asgn.getDistributableParts();
+            _partBox = new GenericJComboBox<DistributablePart>(parts);
 
             JButton removeGraderButton = new JButton("Remove Grader");
             removeGraderButton.addActionListener(new ActionListener() {
@@ -520,6 +567,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
             this.add(loginPanel);
             this.add(_numDiffField);
+            this.add(_partBox);
             this.add(removePanel);
         }
 
@@ -527,10 +575,35 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             return _numDiffField.getIntValue();
         }
 
+        public DistributablePart getPartToGrade() {
+            return _partBox.getSelectedItem();
+        }
+
+    }
+
+    private class DistributionResponse {
+
+        private Map<TA, Collection<Group>> _distribution;
+        private Collection<Group> _problemGroups;
+
+        public DistributionResponse(Map<TA, Collection<Group>> distribution,
+                                    Collection<Group> problemGroup) {
+            _distribution = distribution;
+            _problemGroups = problemGroup;
+        }
+
+        public Map<TA, Collection<Group>> getDistribution() {
+            return _distribution;
+        }
+
+        public Collection<Group> getProblemStudents() {
+            return _problemGroups;
+        }
+
     }
 
     public static void main(String[] argv) {
-        new AssignmentDistView(Allocator.getCourseInfo().getHandinAssignments().toArray(new Assignment[0])[0]);
+        new AssignmentDistView(Allocator.getCourseInfo().getAssignments().iterator().next());
     }
 
 }

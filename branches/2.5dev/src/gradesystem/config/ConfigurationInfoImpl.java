@@ -155,6 +155,7 @@ public class ConfigurationInfoImpl implements ConfigurationInfo
     {
         if(_distributablePartMap == null)
         {
+            _distributablePartMap = new HashMap<String, DistributablePart>();
             for(Assignment asgn : getHandinAssignments())
             {
                 for(DistributablePart part : asgn.getDistributableParts())

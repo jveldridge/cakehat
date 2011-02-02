@@ -4,6 +4,7 @@ import java.util.Vector;
 import gradesystem.Allocator;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
+import java.util.Collection;
 
 /**
  * A representation of an Assigment, composed of any number of non-handin parts,
@@ -124,12 +125,12 @@ public class Assignment implements Comparable<Assignment>
         _distributableParts.add(part);
     }
 
-    public Iterable<DistributablePart> getDistributableParts()
+    public Collection<DistributablePart> getDistributableParts()
     {
         return _distributableParts;
     }
 
-    public boolean hasDistributablePart()
+    public boolean hasDistributableParts()
     {
         return !_distributableParts.isEmpty();
     }

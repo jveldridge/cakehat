@@ -3,7 +3,6 @@ package gradesystem.views.backend;
 import gradesystem.components.calendar.CalendarListener;
 import gradesystem.components.calendar.CalendarView;
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -30,7 +29,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import javax.swing.JOptionPane;
 
 /**
  * Allows for viewing, submitting, and removing extensions.
@@ -45,25 +46,22 @@ public class ExtensionView extends JFrame
         {
             public void run()
             {
-                //Hack to get Cartoon's handin part
-                HandinPart part = null;
-                for(Assignment asgn : Allocator.getCourseInfo().getHandinAssignments())
-                {
-                    if(asgn.getName().equals("Week1"))
-                    {
-                        part = asgn.getHandinPart();
-                    }
+                Assignment asgn = Allocator.getCourseInfo().getHandinAssignments().iterator().next();
+                Group group;
+                try {
+                    group = Allocator.getDatabaseIO().getGroupsForAssignment(asgn).iterator().next();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    return;
                 }
 
-                String studentLogin = "cs004000";
-
-                new ExtensionView(part, studentLogin).setVisible(true);
+                new ExtensionView(asgn, group);
             }
         });
     }
 
-    private HandinPart _part;
-    private String _studentLogin;
+    private Assignment _asgn;
+    private Group _group;
     private Calendar _extensionDate;
     private boolean _hasExtension;
     private CalendarView _calendarView;
@@ -117,28 +115,27 @@ public class ExtensionView extends JFrame
         }
     }
 
-    public ExtensionView(HandinPart part, String studentLogin)
+    public ExtensionView(Assignment asgn, Group group)
     {
-        _part = part;
-        _studentLogin = studentLogin;
+        _asgn = asgn;
+        _group = group;
 
-        this.setTitle(part.getAssignment().getName() + " extension for " + studentLogin);
+        this.setTitle(asgn.getName() + " extension for " + group);
         try {
             //Get extension, if none available default to on time date
-            _extensionDate = Allocator.getDatabaseIO().getExtension(studentLogin, part);
+            _extensionDate = Allocator.getDatabaseIO().getExtension(group, asgn.getHandin());
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not retrieve extension information for student " +
-                               studentLogin + " for part " + part + ".  Assuming that the " +
+                               group + " for assignment " + asgn + ".  Assuming that the " +
                                "student does not have an extension.");
         }
 
         _hasExtension = (_extensionDate != null);
-        if(_extensionDate == null)
-        {
-            _extensionDate = part.getTimeInformation().getOntimeDate();
+        if(_extensionDate == null) {
+            _extensionDate = asgn.getHandin().getTimeInformation().getOntimeDate();
         }
         int extYear = _extensionDate.get(Calendar.YEAR);
-        int ontimeYear = part.getTimeInformation().getOntimeDate().get(Calendar.YEAR);
+        int ontimeYear = asgn.getHandin().getTimeInformation().getOntimeDate().get(Calendar.YEAR);
         _minYear = Math.min(extYear, ontimeYear);
         _maxYear = Math.max(extYear, ontimeYear) + 1;
         _startYear = extYear;
@@ -158,7 +155,7 @@ public class ExtensionView extends JFrame
         JPanel mainPanel = new JPanel();
         this.add(mainPanel);
 
-        _calendarView = new CalendarView(_part);
+        _calendarView = new CalendarView(_asgn.getHandin());
         mainPanel.add(Box.createRigidArea(new Dimension(_calendarView.getPreferredSize().width, 10)));
         mainPanel.add(_calendarView);
         mainPanel.setPreferredSize(new Dimension(_calendarView.getPreferredSize().width + 30, 600));
@@ -190,25 +187,25 @@ public class ExtensionView extends JFrame
         mainPanel.add(datePanel);
 
         datePanel.setPreferredSize(new Dimension(_calendarView.getPreferredSize().width, 80));
-        JLabel earlyLabel = new DateLabel("Early",_part.getTimeInformation().getEarlyDate(), true);
+        JLabel earlyLabel = new DateLabel("Early",_asgn.getHandin().getTimeInformation().getEarlyDate(), true);
         earlyLabel.setPreferredSize(new Dimension(datePanel.getPreferredSize().width, 20));
         datePanel.add(earlyLabel);
 
-        JLabel ontimeLabel = new DateLabel("Ontime",_part.getTimeInformation().getOntimeDate(), true);
+        JLabel ontimeLabel = new DateLabel("Ontime",_asgn.getHandin().getTimeInformation().getOntimeDate(), true);
         ontimeLabel.setPreferredSize(new Dimension(datePanel.getPreferredSize().width, 20));
         datePanel.add(ontimeLabel);
 
-        JLabel lateLabel = new DateLabel("Late",_part.getTimeInformation().getLateDate(), true);
+        JLabel lateLabel = new DateLabel("Late",_asgn.getHandin().getTimeInformation().getLateDate(), true);
         lateLabel.setPreferredSize(new Dimension(datePanel.getPreferredSize().width, 20));
         datePanel.add(lateLabel);
 
         //Comment area
         String comment = null;
         try {
-            comment = Allocator.getDatabaseIO().getExtensionNote(_studentLogin, _part);
+            comment = Allocator.getDatabaseIO().getExtensionNote(_group, _asgn.getHandin());
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not retrieve the extension note for student " +
-                              _studentLogin + " " + "on part " + _part + ".");
+                              _group + " " + "on assignment " + _asgn + ".");
         }
         boolean noComment = (comment == null);
         if(noComment)
@@ -249,10 +246,11 @@ public class ExtensionView extends JFrame
             {
                 //Call to remove extension
                 try {
-                    Allocator.getDatabaseIO().removeExtension(_studentLogin, _part);
+                    Allocator.getDatabaseIO().removeExtension(_group, _asgn.getHandin());
+                    JOptionPane.showMessageDialog(ExtensionView.this, "Extension removed successfully.");
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Removing the extension for student " + _studentLogin + " " +
-                                      "on part " + _part + " failed.");
+                    new ErrorView(ex, "Removing the extension for group " + _group + " " +
+                                      "on assignment " + _asgn + " failed.");
                 }
 
                 //Close window
@@ -270,10 +268,11 @@ public class ExtensionView extends JFrame
                 String text = commentArea.getText();
                 Calendar cal = getCalendar();
                 try {
-                    Allocator.getDatabaseIO().grantExtension(_studentLogin, _part, cal, text);
+                    Allocator.getDatabaseIO().grantExtension(_group, _asgn.getHandin(), cal, text);
+                    JOptionPane.showMessageDialog(ExtensionView.this, "Extension added successfully.");
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Granting the extension for student " + _studentLogin + " " +
-                                      "on part " + _part + " failed.");
+                    new ErrorView(ex, "Granting the extension for group " + _group + " " +
+                                      "on assignment " + _asgn + " failed.");
                 }
 
                 //Close window

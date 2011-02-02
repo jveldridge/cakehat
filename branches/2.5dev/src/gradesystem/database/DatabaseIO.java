@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface to be implemented by classes providing database interaction; mandates
@@ -97,16 +98,6 @@ public interface DatabaseIO {
     public void unBlacklistStudent(String studentLogin, TA ta) throws SQLException;
 
     /**
-     * Indicates whether the HandinPart has a distribution.  Returns true if
-     * the HandinPart currently has no distribution, and false if it does.
-     *
-     * @param asgn
-     * @return
-     */
-    @Deprecated
-    public boolean isDistEmpty(HandinPart asgn) throws SQLException;
-
-    /**
      * Indicates whether the Assignment has a distribution.  Returns true if
      * the Assignment currently has no distribution, and false if it does.
      *
@@ -157,42 +148,6 @@ public interface DatabaseIO {
      */
     @Deprecated
     public void unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta) throws SQLException;
-
-    /**
-     * Creates a distribution for the HandinPart part, mapping TAs
-     * to Collections of Strings of studentLogins that TA is assigned to grade.
-     * Any existing distribution will be overwritten.
-     *
-     * @param assignmentName
-     * @param distribution
-     */
-    @Deprecated
-    public void setAsgnDist(HandinPart part, Map<TA, Collection<String>> distribution) throws SQLException;
-
-    /**
-     * Returns a Collection of Strings of student logins that the given TA
-     * is assigned to grade for the HandinPart part.  Returns an empty Collection
-     * if no students are assigned to the TA for the given Part or if there is no
-     * distributionfor the Part in the database.
-     *
-     * @param assignmentName
-     * @param taLogin
-     * @return
-     */
-    @Deprecated
-    public Collection<String> getStudentsAssigned(HandinPart part, TA ta) throws SQLException;
-
-    /**
-     * Returns a Collection of Strings containing the logisn of all students who
-     * have been assinged to a TA to grade for the given HandinPart.  This can be
-     * used to find students who have not been assigned to any TA to grade.  If no
-     * distribution exists yet, an empty Collection will be returned.
-     *
-     * @param part
-     * @return
-     */
-    @Deprecated
-    public Collection<String> getAllAssignedStudents(HandinPart part) throws SQLException;
 
     /**
      * Assigns a Group group to the given TA to grade for
@@ -257,36 +212,12 @@ public interface DatabaseIO {
      * @param ta
      * @return
      */
-    public Collection<DistributablePart> getDPsWithAssignedStudents(TA ta) throws SQLException;
+    public Set<DistributablePart> getDPsWithAssignedStudents(TA ta) throws SQLException;
 
     //may add: public Map<TA, Collection<String>> getDistribution(String assignmentName);
 
     /**
-     * Grants an extension for the student with login studentLogin for the HandinPart
-     * part.  The student's handin will now be due at the date/time represented by
-     * the calendar newDate.  String note can be used to store a message explaining why
-     * the extension was granted.
-     *
-     * @param studentLogin
-     * @param part
-     * @param newDate
-     * @param note
-     */
-    @Deprecated
-    public void grantExtension(String studentLogin, Part part, Calendar newDate, String note) throws SQLException;
-
-    /**
-     * Removes a previously granted extension for the given student for the given Part.
-     * If the student did not previously have an extension, this method has no effect.
-     *
-     * @param studentLogin
-     * @param part
-     */
-    @Deprecated
-    public void removeExtension(String studentLogin, Part part) throws SQLException;
-
-    /**
-     * Grants an extension for the student with login studentLogin for the HandinPart
+     * Grants an exemption for the student with login studentLogin for the HandinPart
      * part.  The student's emailed grade report will indicate that the student
      * has been exempted for theis assignment instead of showing a 0.  Additionally,
      * this assignment will not be taken into account in the calculation of final grades
@@ -331,18 +262,6 @@ public interface DatabaseIO {
      */
     @Deprecated
     public Map<String, Calendar> getExtensions(Part part) throws SQLException;
-
-    /**
-     * Returns a string containing a message to indicate why the student with login
-     * studentLogin has been granted an extension on Part part.  Returns null
-     * if the student does not have an extension.
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @return
-     */
-    @Deprecated
-    public String getExtensionNote(String studentLogin, Part part) throws SQLException;
 
     /**
      * Returns a string containing a message to indicate why the student with login
@@ -443,16 +362,6 @@ public interface DatabaseIO {
     public String getExemptionNote(Group group, Part part) throws SQLException;
 
     /**
-     * Assigns a grade of score to student with login studentLogin on Part part.
-     *
-     * @param studentLogin
-     * @param part
-     * @param score
-     */
-    @Deprecated
-    public void enterGrade(String studentLogin, Part part, double score) throws SQLException;
-
-    /**
      * Returns the score of student with login studentLogin on Part part.
      *
      * @param studentLogin
@@ -540,27 +449,11 @@ public interface DatabaseIO {
     public Map<Group,Double> getAssignmentScoresForGroups(Assignment asgn, Iterable<Group> groups) throws SQLException;
 
     /**
-     * pulls the distribution for a handin part from the DB
-     * @param handin
-     * @return
-     */
-    @Deprecated
-    public Map<TA, Collection<String>> getDistribution(HandinPart handin) throws SQLException;
-
-    /**
      * pulls the distribution for a DistributablePart from the DB
      * @param handin
      * @return
      */
     public Map<TA, Collection<Group>> getDistribution(DistributablePart handin) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * gets the whole map of students to their group members
-     * @param handin
-     * @return
-     */
-    @Deprecated
-    public Map<String, Collection<String>> getGroups(HandinPart handin) throws SQLException;
 
     /**
      * adds a set of groups for an Assignment
@@ -616,12 +509,18 @@ public interface DatabaseIO {
     @Deprecated
     public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException;
 
+    public TA getGraderForGroup(DistributablePart part, Group group) throws SQLException, CakeHatDBIOException;
+
     /**
      * returns all the graders for a specific student
      * @param studentlogin
      * @return map of asgn to ta
      */
     public Map<DistributablePart, TA> getGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException;
+
+    public void setHandinStatus(Handin handin, Group group, HandinStatus status) throws SQLException;
+
+    public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException;
 
     /**
      * For the given Handin and Group the TimeStatus and daysLate are stored in the DB.
@@ -632,17 +531,19 @@ public interface DatabaseIO {
      * @param status
      * @param daysLate
      */
+    @Deprecated
+    //TODO move implementaiton SQL into getHandinStatus and/or getHandinStatuses methods
     public void setTimeStatus(Handin handin, Group group, TimeStatus status, int daysLate) throws SQLException;
 
     /**
      * The HandinStatus for the Handin and Group is returned. If no record in the DB exists both fields of the
-     * HandinStatusPair will be null.
+     * HandinStatus will be null.
      *
      * @param handin
      * @param group
      * @return
      */
-    public HandinStatus getTimeStatus(Handin handin, Group group) throws SQLException;
+    public HandinStatus getHandinStatus(Handin handin, Group group) throws SQLException;
 
     /**
      * Removes all data from database tables and rebuilds the tables. If no DB
@@ -650,12 +551,4 @@ public interface DatabaseIO {
      */
     public void resetDatabase() throws SQLException;
 
-    @Deprecated
-    public Collection<String> getGroup(HandinPart part, String student) throws SQLException;
-
-    @Deprecated
-    public boolean setGroups(HandinPart part, Map<String, Collection<String>> groupings) throws SQLException;
-
-    @Deprecated
-    public void removeGroups(HandinPart part) throws SQLException;
 }

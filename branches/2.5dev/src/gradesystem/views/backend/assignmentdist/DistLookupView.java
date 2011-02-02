@@ -3,8 +3,6 @@ package gradesystem.views.backend.assignmentdist;
 import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.database.CakeHatDBIOException;
-import gradesystem.rubric.RubricException;
-import gradesystem.services.ServicesException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -48,7 +46,7 @@ public class DistLookupView extends JFrame {
     private static final int DIST_LIST_HEIGHT_NO_BUTTON = 330;
     private static final int DIST_LIST_WIDTH = 325;
     private static final int TEXT_HEIGHT = 25;
-    
+
     private List<String> _students;
     private GenericJList<String> _studentList;
     private Collection<Assignment> _assignments;
@@ -275,16 +273,16 @@ public class DistLookupView extends JFrame {
 
         for (AsgnRow asgnRow : _asgnRows) {
             if (asgnRow.hasNewTA()) {
-                boolean isOkToDistribute;
-                try {
-                    isOkToDistribute = Allocator.getGradingServices().isOkToDistribute(asgnRow.getAsgn(), student, asgnRow.getNewTA());
-                } catch (ServicesException ex) {
-                    new ErrorView(ex, "Could not determine if it is OK to distribute " +
-                                      "student " + student + " to TA " + asgnRow.getNewTA() + " " +
-                                      "for assignment " + asgnRow.getAsgn() + "." +
-                                      "This reassignment will not be made.");
-                    continue;
-                }
+                boolean isOkToDistribute = true;
+//                try {
+//                    isOkToDistribute = Allocator.getGradingServices().isOkToDistribute(asgnRow.getAsgn(), student, asgnRow.getNewTA());
+//                } catch (ServicesException ex) {
+//                    new ErrorView(ex, "Could not determine if it is OK to distribute " +
+//                                      "student " + student + " to TA " + asgnRow.getNewTA() + " " +
+//                                      "for assignment " + asgnRow.getAsgn() + "." +
+//                                      "This reassignment will not be made.");
+//                    continue;
+//                }
 
                 if (!isOkToDistribute) {
                     continue;
@@ -323,12 +321,14 @@ public class DistLookupView extends JFrame {
                     ArrayList<String> students = new ArrayList<String>();
                     students.add(student);
                     distribution.put(asgnRow.getNewTA(), students);
-                    try {
-                        Allocator.getRubricManager().distributeRubrics(asgnRow.getAsgn().getHandinPart(), distribution, Allocator.getCourseInfo().getMinutesOfLeniency(), DistributionRequester.DO_NOTHING_REQUESTER);
-                    } catch (RubricException ex) {
-                        new ErrorView(ex, "Creating the rubric for student " + student + " " +
-                                          "on assignment " + asgnRow.getAsgn() + " failed.");
-                    }
+
+                    //TODO //FIXME!
+//                    try {
+//                        Allocator.getRubricManager().distributeRubrics(asgnRow.getAsgn().getHandinPart(), distribution, Allocator.getCourseInfo().getMinutesOfLeniency(), DistributionRequester.DO_NOTHING_REQUESTER);
+//                    } catch (RubricException ex) {
+//                        new ErrorView(ex, "Creating the rubric for student " + student + " " +
+//                                          "on assignment " + asgnRow.getAsgn() + " failed.");
+//                    }
 
                 }
             }

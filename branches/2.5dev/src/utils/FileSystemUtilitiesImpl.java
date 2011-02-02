@@ -1,6 +1,5 @@
 package utils;
 
-import gradesystem.Allocator;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -369,10 +368,10 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             //there is no need to do anything about it
             try
             {
-                output.close();
-                fos.close();
-                input.close();
-                fis.close();
+                if (output != null) {output.close();}
+                if (fos != null) {fos.close();}
+                if (input != null) {input.close();}
+                if (input != null) {fis.close();}
             }
             catch(IOException e) { }
         }

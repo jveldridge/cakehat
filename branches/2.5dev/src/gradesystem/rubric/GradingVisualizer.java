@@ -1,41 +1,38 @@
 package gradesystem.rubric;
 
+import gradesystem.Allocator;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
+import gradesystem.views.shared.ErrorView;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.Dimension;
-
-import java.awt.Point;
-import java.awt.event.InputEvent;
-import java.sql.SQLException;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.ImageIcon;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import javax.imageio.ImageIO;
-
+import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Map;
+import javax.swing.JFrame;
+
+
 import java.util.Set;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import gradesystem.Allocator;
-import gradesystem.config.HandinPart;
-import gradesystem.views.shared.ErrorView;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 
 /**
  * Allows for viewing and editing a rubric. Intended to be used to fill out a
@@ -43,20 +40,24 @@ import gradesystem.views.shared.ErrorView;
  * view(...) method.
  *
  * @author jak2
- * @auther spoletto
+ * @author spoletto
  */
 class GradingVisualizer extends JFrame
 {
     private Rubric _rubric;
-    private Map<String, String> _group;
+    private DistributablePart _distPart;
+    private Group _group;
     private boolean _isAdmin;
     private StateManager _stateManager;
 
     GradingVisualizer(final Rubric rubric, final boolean isAdmin)
     {
-        super("Grading " + rubric.getStudentAccount() + "'s " + rubric.getName());
+        super("Grading " + rubric.getGroup().getName() + "'s " +
+              rubric.getDistributablePart().getAssignment().getName() + ": " + rubric.getDistributablePart().getName());
 
         _rubric = rubric;
+        _group = rubric.getGroup();
+        _distPart = rubric.getDistributablePart();
         _isAdmin = isAdmin;
 
         //Load window icon
@@ -74,7 +75,7 @@ class GradingVisualizer extends JFrame
             saveButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/16x16/media-floppy.png"))));
         }
         catch (Exception e) {}
-        _stateManager = new StateManager(saveButton, true);
+        _stateManager = new StateManager(saveButton);
         saveButton.setEnabled(false);
 
         //Panels
@@ -87,25 +88,6 @@ class GradingVisualizer extends JFrame
         scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
-
-        //Get all members of the group and their names
-        Collection<String> groupLogins = null;
-        Map<String, String> allStudents = null;
-        try {
-            groupLogins = Allocator.getDatabaseIO().getGroup(rubric._handinPart, rubric.getStudentAccount());
-            allStudents = Allocator.getDatabaseIO().getAllStudents();
-        } catch (SQLException ex) {
-            new ErrorView(ex, "The rubric cannot be displayed because group data could not " +
-                              "be retrieved from the database.");
-            this.dispose();
-            return;
-        }
-        
-        _group = new HashMap<String, String>();
-        for(String login : groupLogins)
-        {
-            _group.put(login, allStudents.get(login));
-        }
 
         //Save action
         saveButton.addActionListener(new ActionListener()
@@ -179,7 +161,7 @@ class GradingVisualizer extends JFrame
                 scrollPane.getViewport().setViewPosition(new Point(0, 0));
             }
         });
-            
+
         //Show
         this.setLocationRelativeTo(null);
         this.setVisible(true);
@@ -211,46 +193,44 @@ class GradingVisualizer extends JFrame
     }
 
     /**
-     * Saves the changes made to all of the affected GML files (can be multiple if part of a group).
+     * Saves the changes made to the GML file
      */
-    private void save()
-    {
-        for(String login : _group.keySet())
-        {
-            _rubric.setStudent(_group.get(login), login);
-            String gmlPath = Allocator.getRubricManager().getStudentRubricPath(_rubric._handinPart, login);
+    private void save() {
+        String gmlPath = Allocator.getRubricManager().getGroupRubricPath(_distPart, _group);
 
-            try
-            {
-                RubricGMLWriter.write(_rubric, gmlPath);
-            }
-            catch(RubricException e)
-            {
-                new ErrorView(e, "Unable to save rubric.");
-            }
+        try {
+            RubricGMLWriter.write(_rubric, gmlPath);
+        } catch (RubricException e) {
+            new ErrorView(e, "Unable to save rubric.");
+            return;
         }
 
-        boolean saveSuccessful = true;
         //If an admin is saving this rubric, write to that database
-        if(_isAdmin)
-        {
-            double score = _rubric.getTotalHandinScore();
-            HandinPart part = _rubric._handinPart;
+        if (_isAdmin) {
+            double score = _rubric.getTotalDistPartScore();
 
-            for(String login : _group.keySet())
-            {
+            if (!_stateManager.isRubricSaved()) {
                 try {
-                    Allocator.getDatabaseIO().enterGrade(login, part, score);
+                    Allocator.getDatabaseIO().enterGrade(_group, _distPart, score);
+                    _stateManager.rubricSaved();
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "The new grade could for student " + login + " on part " +
-                                      part + " of assignment " + part.getAssignment() + " could not be " +
-                                      "stored in the database.");
-                    saveSuccessful = false;
+                    new ErrorView(ex, "The new grade for group " + _group + " on part "
+                            + _distPart + " of assignment " + _distPart.getAssignment() + " could not be "
+                            + "stored in the database.");
+                }
+            }
+
+            if (!_stateManager.isStatusSaved()) {
+                try {
+                    Allocator.getDatabaseIO().setHandinStatus(_distPart.getHandin(), _group, _stateManager.getHandinStatus());
+                    _stateManager.statusSaved();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "The new handin status for group " + _group + " on "
+                            + "assignment " + _distPart.getAssignment() + " could not be stored in the database.");
                 }
             }
         }
-
-        if (saveSuccessful) {
+        else {
             _stateManager.rubricSaved();
         }
     }
