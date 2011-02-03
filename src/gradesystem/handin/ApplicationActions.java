@@ -8,6 +8,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ class ApplicationActions implements ActionProvider
 {
     public String getNamespace()
     {
-        return "editors";
+        return "applications";
     }
 
     public List<DistributableActionDescription> getActionDescriptions()
@@ -146,7 +147,7 @@ class ApplicationActions implements ActionProvider
 
                         for(File pdfFile : pdfFiles)
                         {
-                            command += " " + pdfFile.getAbsolutePath();
+                            command += " " + "'" + pdfFile.getAbsolutePath() + "'";
                         }
 
                         commands.add(command);
@@ -155,7 +156,7 @@ class ApplicationActions implements ActionProvider
                     {
                         for(File pdfFile : pdfFiles)
                         {
-                            String command = application + " " + pdfFile.getAbsolutePath();
+                            String command = application + " " + "'" + pdfFile.getAbsolutePath() + "'";
                             commands.add(command);
                         }
                     }
@@ -320,7 +321,7 @@ class ApplicationActions implements ActionProvider
                     String command = application;
                     for(File file : textFiles)
                     {
-                        command += " " + file.getAbsolutePath();
+                        command += " " + "'" + file.getAbsolutePath() + "'";
                     }
 
                     if(GUI.contains(application))
@@ -404,7 +405,8 @@ class ApplicationActions implements ActionProvider
                     try
                     {
                         Allocator.getExternalProcessesUtilities()
-                                .executeInVisibleTerminal(terminalName, "cd " + unarchiveDir.getAbsolutePath());
+                                .executeInVisibleTerminal(terminalName, "cd '" +
+                                unarchiveDir.getAbsolutePath() + "'");
                     }
                     catch(IOException e)
                     {

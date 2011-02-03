@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package gradesystem.printing;
 
 import gradesystem.Allocator;
@@ -20,13 +15,13 @@ public class LprPrinter extends Printer
     public void print(Iterable<PrintRequest> requests, String printer) throws IOException
     {
         //Build command
-        String cmd = "lpr -P" + printer + " ";
+        String cmd = "lpr -P" + printer;
 
 	for(PrintRequest request : requests)
 	{
             for(File file : request.getFiles())
             {
-                cmd += file.getAbsolutePath() + " ";
+                cmd += " " + "'" + file.getAbsolutePath() + "'";
             }
 	}
 
