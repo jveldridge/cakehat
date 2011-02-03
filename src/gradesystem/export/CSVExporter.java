@@ -1,7 +1,6 @@
 package gradesystem.export;
 
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
 import java.io.File;
 import java.io.PrintWriter;
@@ -9,11 +8,14 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.Executors;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
+import gradesystem.rubric.TimeStatus;
+import java.util.ArrayList;
 import gradesystem.views.shared.ErrorView;
 
 /**
@@ -71,7 +73,7 @@ public class CSVExporter implements Exporter
     {
         int numParts = 0;
 
-        for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
+        for(Assignment asgn : Allocator.getConfigurationInfo().getAssignments())
         {
             for(Part part : asgn.getParts())
             {
@@ -134,7 +136,7 @@ public class CSVExporter implements Exporter
             String line1 = ",,,", line2 = ",,,", line3 = ",,,";
 
             //Write out the assignments
-            for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
+            for(Assignment asgn : Allocator.getConfigurationInfo().getAssignments())
             {
                 line1 += asgn.getName() + ",";
 
@@ -145,7 +147,7 @@ public class CSVExporter implements Exporter
                     line2 += part.getName() + ",";
                     line3 += part.getPoints() + ",";
 
-                    if(part instanceof HandinPart)
+                    if(part instanceof DistributablePart)
                     {
                         line1 += ",";
                         line2 += ",";
@@ -176,7 +178,7 @@ public class CSVExporter implements Exporter
                 printer.append(student);
                 printer.append(",");
 
-                for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
+                for(Assignment asgn : Allocator.getConfigurationInfo().getAssignments())
                 {
                     //If there is no attempt to cancel
                     if(!_attemptCancel)
@@ -186,8 +188,9 @@ public class CSVExporter implements Exporter
                         {
                             try {
                                 //If no exemption
-                                if (Allocator.getDatabaseIO().getExemptionNote(login, part) == null) {
-                                    Double score = Allocator.getDatabaseIO().getStudentScore(login, part);
+                                Group studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, login);
+                                if (Allocator.getDatabaseIO().getExemptionNote(studentsGroup, part) == null) {
+                                    Double score = Allocator.getDatabaseIO().getGroupScore(studentsGroup, part);
                                     
                                     if (score != null) {
                                         total += score;
@@ -199,12 +202,16 @@ public class CSVExporter implements Exporter
                                 } else {
                                     printer.append("EXEMPT" + ",");
                                 }
-
-                                //TODO //FIXME
-//                                if (part instanceof DistributablePart) {
-//                                    String status = Allocator.getRubricManager().getTimeStatusDescriptor((HandinPart) part, login);
-//                                    printer.append(status + ",");
-//                                }
+                                
+                                if (part instanceof DistributablePart) {
+                                    TimeStatus status = Allocator.getDatabaseIO().getHandinStatus(part.getAssignment().getHandin(), studentsGroup).getTimeStatus();
+                                    if (status != null) {
+                                        printer.append(status + ",");
+                                    }
+                                    else {
+                                        printer.append("(unknown handin status),");
+                                    }
+                                }
                                 pView.updateProgress(login, asgn, part, ++currStep);
                             } catch (SQLException ex) {
                                 _exportFile.delete();
@@ -246,7 +253,7 @@ public class CSVExporter implements Exporter
                                           "retrieved from the database.", ex);
             }
 
-            List<String> descriptors = new Vector<String>();
+            List<String> descriptors = new ArrayList<String>();
 
             for(String studentLogin : students.keySet())
             {
