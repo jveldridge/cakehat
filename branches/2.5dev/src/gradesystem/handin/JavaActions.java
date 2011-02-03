@@ -280,7 +280,7 @@ class JavaActions implements ActionProvider
             //Add classpath if it has it
             if(classpath != null)
             {
-                cmd += " -classpath " + classpath;
+                cmd += " -classpath " + "'" + classpath + "'";
             }
 
             cmd += cmdEnd;
@@ -755,18 +755,18 @@ class JavaActions implements ActionProvider
             classpath = mainClass.getRootPackageDirectory() + ":" +  classpath;
         }
 
-        //Location of java
-        String javaLoc = "/usr/bin/java";
         //Add java.library.path component if an argument was passed in
         String javaLibrary = "";
         if(libraryPath != null)
         {
             javaLibrary = " -Djava.library.path=" + libraryPath;
         }
+
         //Add classpath
-        String javaClassPath = " -classpath " + classpath;
+        String javaClassPath = " -classpath " + "'" + classpath + "'";
+        
         //Put together entire java comand
-        String javaCmd = javaLoc + javaLibrary + javaClassPath + " " + mainClass.getClassName();
+        String javaCmd = "java " + javaLibrary + javaClassPath + " " + mainClass.getClassName();
 
         try
         {
