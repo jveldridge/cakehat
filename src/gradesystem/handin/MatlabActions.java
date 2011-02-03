@@ -240,7 +240,7 @@ class MatlabActions implements ActionProvider
                         String testDir = testFile.getParent();
                         try
                         {
-                            proxy.eval("cd " + testDir);
+                            proxy.feval("cd", new String[] { testDir });
                         }
                         catch(MatlabInvocationException e)
                         {
@@ -568,7 +568,7 @@ class MatlabActions implements ActionProvider
 
                         //Change to root directory of handin
                         File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
-                        proxy.eval("cd " + unarchiveDir.getAbsolutePath());
+                        proxy.feval("cd", new String[] { unarchiveDir.getAbsolutePath() });
 
                         //Determine which files to open in MATLAB
                         FileFilter fileExtensionFilter;
@@ -584,12 +584,12 @@ class MatlabActions implements ActionProvider
                                 .getFiles(unarchiveDir, fileExtensionFilter, new AlphabeticFileComparator());
 
                         //Open files in MATLAB
-                        String openCmd = "edit ";
-                        for(File file : filesToOpen)
+                        String[] openPaths = new String[filesToOpen.size()];
+                        for(int i = 0; i < filesToOpen.size(); i++)
                         {
-                            openCmd += file.getAbsolutePath() + " ";
+                            openPaths[i] = filesToOpen.get(i).getAbsolutePath();
                         }
-                        proxy.eval(openCmd);
+                        proxy.feval("edit", openPaths);
                     }
                     catch(MatlabConnectionException e)
                     {
@@ -696,7 +696,7 @@ class MatlabActions implements ActionProvider
                 String parentDir = relativeToAbsolute.get(functionsComboBox.getSelectedItem()).getParent();
                 try
                 {
-                    proxy.eval("cd " + parentDir);
+                    proxy.feval("cd", new String[] { parentDir });
                 }
                 catch(MatlabInvocationException e)
                 {
