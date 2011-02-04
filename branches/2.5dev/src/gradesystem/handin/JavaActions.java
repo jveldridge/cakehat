@@ -216,7 +216,8 @@ class JavaActions implements ActionProvider
                             executeJavaInVisibleTerminal(mainToRun,
                                      properties.get(CLASS_PATH_PROPERTY),
                                      properties.get(LIBRARY_PATH_PROPERTY),
-                                     terminalName);
+                                     terminalName,
+                                     unarchiveDir);
                         }
                     }
                 }
@@ -296,7 +297,8 @@ class JavaActions implements ActionProvider
                 }
                 try
                 {
-                    Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, cmd);
+                    File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
+                    Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, cmd, gradingDir);
                 }
                 catch (IOException e)
                 {
@@ -309,7 +311,8 @@ class JavaActions implements ActionProvider
             {
                 try
                 {
-                    Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+                    File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
+                    Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, gradingDir);
                 }
                 catch(IOException e)
                 {
@@ -535,7 +538,8 @@ class JavaActions implements ActionProvider
                             executeJavaInVisibleTerminal(mainToRun,
                                      properties.get(CLASS_PATH_PROPERTY),
                                      properties.get(LIBRARY_PATH_PROPERTY),
-                                     terminalName);
+                                     terminalName,
+                                     unarchiveDir);
                         }
                     }
                 }
@@ -740,10 +744,12 @@ class JavaActions implements ActionProvider
      * @param mainClass information about the main class
      * @param classpath the classpath to run this code with respect to, may be null
      * @param libraryPath the library path to run this code with respect to, may be null
-     * @param termName what the title bar of the terminal will display
+     * @param termName the title bar displayed by the terminal
+     * @param directory the directory the terminal will be in
      */
     private static void executeJavaInVisibleTerminal(ClassInfo mainClass,
-            String classpath, String libraryPath, String termName) throws ActionException
+            String classpath, String libraryPath, String termName,
+            File directory) throws ActionException
     {
         //Adds the packageDir to the classpath
         if(classpath == null)
@@ -770,7 +776,8 @@ class JavaActions implements ActionProvider
 
         try
         {
-            Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, javaCmd);
+            Allocator.getExternalProcessesUtilities()
+                    .executeInVisibleTerminal(termName, javaCmd, directory);
         }
         catch(IOException e)
         {

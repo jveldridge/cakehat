@@ -13,24 +13,44 @@ import java.util.List;
 
 public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilities
 {
-    public void executeInVisibleTerminal(String title, String cmd) throws IOException
+    public void executeInVisibleTerminal(String title, String cmd, File dir) throws IOException
     {
-        String terminalCmd = "/usr/bin/xterm -fg black -bg gray" +
-                " -title " + "\"" + title + "\"" +
-                " -e " + "\"" + cmd + "; bash" + "\"";
+        ArrayList<String> arguments = new ArrayList<String>();
+        arguments.add("xterm");
+        arguments.add("-fg");
+        arguments.add("black");
+        arguments.add("-bg");
+        arguments.add("gray");
+        arguments.add("-title");
+        arguments.add(title);
 
-        this.executeAsynchronously(terminalCmd);
+        //If there is a command, execute it, and then afterwards return to a
+        //bash shell
+        if(cmd != null)
+        {
+            arguments.add("-e");
+            arguments.add(cmd + "; bash");
+        }
+
+        ProcessBuilder builder = new ProcessBuilder(arguments);
+        builder.directory(dir);
+
+        builder.start();
     }
 
-    public void executeAsynchronously (String cmd) throws IOException
+    public void executeAsynchronously(String cmd) throws IOException
     {
-        this.executeAsynchronously(Arrays.asList(new String[] { cmd }));
+        this.executeAsynchronously(cmd, new File("/bin"));
     }
 
-    public void executeAsynchronously(Iterable<String> cmds) throws IOException
+    public void executeAsynchronously(String cmd, File dir) throws IOException
     {
-        File wd = new File("/bin");
-	Process proc = Runtime.getRuntime().exec("/bin/bash", null, wd);
+        this.executeAsynchronously(Arrays.asList(new String[] { cmd }), dir);
+    }
+
+    public void executeAsynchronously(Iterable<String> cmds, File dir) throws IOException
+    {
+	Process proc = Runtime.getRuntime().exec("/bin/bash", null, dir);
         if (proc == null)
         {
             throw new IOException("Unable to find bash at /bin/bash");
@@ -46,19 +66,18 @@ public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilitie
             out.close();
 	}
     }
-
-    public ProcessResponse executeSynchronously(String cmd) throws IOException
+    
+    public ProcessResponse executeSynchronously(String cmd, File dir) throws IOException
     {
-        return this.executeSynchronously(Arrays.asList(new String[] { cmd }));
+        return this.executeSynchronously(Arrays.asList(new String[] { cmd }), dir);
     }
 
-    public ProcessResponse executeSynchronously(Iterable<String> cmds) throws IOException
+    public ProcessResponse executeSynchronously(Iterable<String> cmds, File dir) throws IOException
     {
         List<String> normalOutput = new ArrayList<String>();
         List<String> errorOutput = new ArrayList<String>();
 
-	File wd = new File("/bin");
-	Process proc = Runtime.getRuntime().exec("/bin/bash", null, wd);
+	Process proc = Runtime.getRuntime().exec("/bin/bash", null, dir);
         if (proc == null)
         {
             throw new IOException("Unable to find bash at /bin/bash");

@@ -46,7 +46,8 @@ public class EnscriptPrinter extends Printer {
             dontPrintCoverSheet = "--no-job-header ";  //prevent future jobs in the batch from having a cover sheet
         }
 
-        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand);
+        File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand, gradingDir);
     }
 
     /**

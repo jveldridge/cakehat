@@ -33,6 +33,7 @@ public class LprPrinter extends Printer
         }
 
 	//Execute command
-        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
+        File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, gradingDir);
     }
 }
