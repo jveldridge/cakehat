@@ -163,7 +163,7 @@ class ApplicationActions implements ActionProvider
                     //Run commands
                     try
                     {
-                        Allocator.getExternalProcessesUtilities().executeAsynchronously(commands);
+                        Allocator.getExternalProcessesUtilities().executeAsynchronously(commands, unarchiveDir);
                     }
                     catch (IOException e)
                     {
@@ -327,7 +327,7 @@ class ApplicationActions implements ActionProvider
                     {
                         try
                         {
-                            Allocator.getExternalProcessesUtilities().executeAsynchronously(command);
+                            Allocator.getExternalProcessesUtilities().executeAsynchronously(command, unarchiveDir);
                         }
                         catch(IOException e)
                         {
@@ -343,7 +343,8 @@ class ApplicationActions implements ActionProvider
 
                         try
                         {
-                            Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, command);
+                            Allocator.getExternalProcessesUtilities()
+                                    .executeInVisibleTerminal(title, command, unarchiveDir);
                         }
                         catch(IOException e)
                         {
@@ -404,8 +405,7 @@ class ApplicationActions implements ActionProvider
                     try
                     {
                         Allocator.getExternalProcessesUtilities()
-                                .executeInVisibleTerminal(terminalName, "cd '" +
-                                unarchiveDir.getAbsolutePath() + "'");
+                                .executeInVisibleTerminal(terminalName, null, unarchiveDir);
                     }
                     catch(IOException e)
                     {

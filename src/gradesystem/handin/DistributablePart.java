@@ -292,8 +292,11 @@ public class DistributablePart extends Part
             {
                 try
                 {
+                    File unarchiveDir = Allocator.getGradingServices()
+                            .getUnarchiveHandinDirectory(this, group);
                     Allocator.getExternalProcessesUtilities()
-                            .executeAsynchronously("kpdf " + readme.getAbsolutePath());
+                            .executeAsynchronously("kpdf " + 
+                            readme.getAbsolutePath(), unarchiveDir);
                 }
                 catch(IOException e)
                 {

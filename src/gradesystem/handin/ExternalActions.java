@@ -1,12 +1,14 @@
 package gradesystem.handin;
 
 import gradesystem.Allocator;
+import gradesystem.config.Assignment;
 import gradesystem.database.Group;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +82,9 @@ class ExternalActions implements ActionProvider
             return "Runs a specified command with cakehat supplied information. " +
                    "This is intended to be used for customizing the print command. " +
                    "Information pertains to the assignment, part, groups, " +
-                   "students, and the directory the handins have been unarchived into. ";
+                   "students, and the directory the handins have been unarchived into. " +
+                   "The command will be executed in the grader's temporary " +
+                   "grading directory.";
         }
 
         public List<DistributableActionProperty> getProperties()
@@ -115,7 +119,10 @@ class ExternalActions implements ActionProvider
                     command = replaceAssignmentSequences(command, part);
                     command = replaceGroupInfoSequences(command, part,
                             new ArrayList<Group>(groups));
-                    runCommand(command, part, properties);
+
+
+                    File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
+                    runCommand(command, gradingDir, part, properties);
                 }
             };
 
@@ -154,7 +161,9 @@ class ExternalActions implements ActionProvider
         {
             return "Runs a specified command with cakehat supplied information. " +
                    "Information pertains to the assignment, part, group, " +
-                   "students, and the directory the handin have been unarchived into. ";
+                   "students, and the directory the handin have been unarchived into. " +
+                   "The command will be executed in the directory containing the unarchived " +
+                   "contents of the handin that belong to this part.";
         }
         
         public List<DistributableActionProperty> getProperties()
@@ -185,7 +194,8 @@ class ExternalActions implements ActionProvider
                     command = replaceAssignmentSequences(command, part);
                     command = replaceHandinSequences(command, part, group);
 
-                    runCommand(command, part, properties);
+                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    runCommand(command, unarchiveDir, part, properties);
                 }
             };
 
@@ -220,7 +230,8 @@ class ExternalActions implements ActionProvider
             return "Runs a specified command with cakehat supplied information. " +
                    "Information is limited to that of the assignment and part, " +
                    "no information will be provided about students, groups, or " +
-                   "handins.";
+                   "handins. The command will be executed in the grader's " +
+                   "temporary grading directory.";
         }
 
         public List<DistributableActionProperty> getProperties()
@@ -249,7 +260,8 @@ class ExternalActions implements ActionProvider
                     String command = properties.get(COMMAND_PROPERTY);
                     command = replaceAssignmentSequences(command, part);
 
-                    runCommand(command, part, properties);
+                    File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
+                    runCommand(command, gradingDir, part, properties);
                 }
             };
 
@@ -278,9 +290,12 @@ class ExternalActions implements ActionProvider
             return ExternalActions.this;
         }
 
-        protected void runCommand(String command, DistributablePart part,
+        protected void runCommand(String command, File directory,
+                DistributablePart part,
                 Map<DistributableActionProperty, String> properties) throws ActionException
         {
+            command = consoleEscape(command);
+
             if(properties.containsKey(SHOW_TERMINAL_PROPERTY) &&
                     properties.get(SHOW_TERMINAL_PROPERTY).equalsIgnoreCase("TRUE"))
             {
@@ -298,7 +313,7 @@ class ExternalActions implements ActionProvider
                 try
                 {
                     Allocator.getExternalProcessesUtilities()
-                            .executeInVisibleTerminal(title, command);
+                            .executeInVisibleTerminal(title, command, directory);
                 }
                 catch (IOException e)
                 {
@@ -311,7 +326,7 @@ class ExternalActions implements ActionProvider
                 try
                 {
                     Allocator.getExternalProcessesUtilities()
-                            .executeAsynchronously(command);
+                            .executeAsynchronously(command, directory);
                 }
                 catch(IOException e)
                 {
@@ -322,9 +337,10 @@ class ExternalActions implements ActionProvider
         }
     }
 
-    /**
-     * Helper methods
-     */
+
+    /**************************************************************************\
+    |*                           Helper methods                               *|
+    \**************************************************************************/
 
 
     /**
@@ -350,8 +366,7 @@ class ExternalActions implements ActionProvider
             }
             String groupsInfo = buildJSONArray(jsonGroups, false);
 
-            command = performReplacement(command, GROUPS_INFO, groupsInfo);
-            //command = replace(command, GROUPS_INFO, groupsInfo);
+            command = command.replace(GROUPS_INFO, groupsInfo);
         }
 
         return command;
@@ -367,13 +382,13 @@ class ExternalActions implements ActionProvider
      */
     private static String buildJSONGroupMap(DistributablePart part, Group group)
     {
-        String jsonInfo = "{\"name\":\"" + group.getName() + "\",";
+        String jsonInfo = "{" + quote("name") + ":" + quote(jsonEscape(group.getName())) + ",";
 
-        jsonInfo += "\"members\":" +
+        jsonInfo += quote("members") + ":" +
                 buildJSONArray(new ArrayList<String>(group.getMembers()), true) + ",";
 
         File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
-        jsonInfo += "\"unarchive_dir\":\"" + unarchiveDir.getAbsolutePath() + "\"}";
+        jsonInfo += quote("unarchive_dir") + ":" + quote(jsonEscape(unarchiveDir.getAbsolutePath())) + "}";
 
         return jsonInfo;
     }
@@ -459,9 +474,9 @@ class ExternalActions implements ActionProvider
     private static final String replace(String command,
             String replacementSequence, String data)
     {
-        String replacement = "\"" + data + "\"";
+        String replacement = quote(jsonEscape(data));
 
-        return performReplacement(command, replacementSequence, replacement);
+        return command.replace(replacementSequence, replacement);
     }
 
     /**
@@ -479,7 +494,7 @@ class ExternalActions implements ActionProvider
     {
         String replacement = Integer.toString(data);
 
-        return performReplacement(command, replacementSequence, replacement);
+        return command.replace(replacementSequence, replacement);
     }
 
     /**
@@ -498,24 +513,34 @@ class ExternalActions implements ActionProvider
         //Build replacement string
         String replacement = buildJSONArray(dataList, true);
 
-        return performReplacement(command, replacementSequence, replacement);
+        return command.replace(replacementSequence, replacement);
     }
 
-    private static String buildJSONArray(List<String> dataList, boolean quoteString)
+    /**
+     * Builds a JSON array out of the elements in <code>dataList</code>. If
+     * <code>escapeAndQuote</code> is <code>true</code> then the elements will
+     * be made to comply the JSON standard such that they will work properly in
+     * the console. If <code>false</code> then the array will be built with the
+     * unescaped, unquoted contents of <code>dataList</code> - this may be
+     * wanted when building a JSON array out of other JSON objects.
+     *
+     * @param dataList
+     * @param escapeAndQuote
+     * @return
+     */
+    private static String buildJSONArray(List<String> dataList, boolean escapeAndQuote)
     {
         String array = "[";
         for(int i = 0; i < dataList.size(); i++)
         {
             String str = dataList.get(i);
 
-            if(quoteString)
+            if(escapeAndQuote)
             {
-                array += "\"" + str + "\"";
+                str = quote(jsonEscape(str));
             }
-            else
-            {
-                array += str;
-            }
+
+            array += str;
 
             if(i != dataList.size() - 1)
             {
@@ -528,24 +553,49 @@ class ExternalActions implements ActionProvider
     }
 
     /**
-     * Helper method for the replace(...) functions. Returns the contents of
-     * <code>command</code>, replacing each instance of
-     * <code>replacementSequence</code> with <code>replaceWith</code>.
+     * Escapes characters that have a special meaning in the console.
      *
-     * @param command
-     * @param replacementSequence
-     * @param replaceWith
+     * @param str
      * @return
      */
-    private static String performReplacement(String command,
-            String replacementSequence, String replaceWith)
+    private static String consoleEscape(String str)
     {
-        //Replacement requires escaping the ^ because that character has special
-        //meaning in regex
-        replacementSequence = replacementSequence.replaceAll("\\^", "\\\\^");
+        //Escape the \ character
+        str = str.replace("\\", "\\\\");
 
-        command = command.replaceAll(replacementSequence, replaceWith);
+        //Escape the " character
+        str = str.replace("\"", "\\\"");
 
-        return command;
+        //Escape the ' character
+        str = str.replace("'", "\\\'");
+
+        return str;
+    }
+
+    /**
+     * Escapes <code>"</code> from inside of strings such that they become
+     * valid JSON.
+     * 
+     * @param str
+     * @return
+     */
+    private static String jsonEscape(String str)
+    {
+        str = str.replace("\"", "\\\"");
+        
+        return str;
+    }
+
+    /**
+     * Places the string inside of quotation marks: <code>"</code>
+     *
+     * @param str
+     * @return
+     */
+    private static String quote(String str)
+    {
+        str = "\"" + str + "\"";
+
+        return str;
     }
 }
