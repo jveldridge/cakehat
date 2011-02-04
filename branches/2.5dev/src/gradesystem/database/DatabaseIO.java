@@ -1,5 +1,6 @@
 package gradesystem.database;
 
+import gradesystem.components.Student;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
@@ -74,28 +75,25 @@ public interface DatabaseIO {
     public Map<String,String> getEnabledStudents() throws SQLException;
 
     /**
-     * Adds student with login studentLogin to the blacklist of the given TA, if
+     * Adds all the students in students to the blacklist of the given TA, if
      * not already blacklisted.  This ensures that this TA will not be distributed
-     * this student to grade.  The return value indicates whether or not the student
-     * was in fact added to the TA's blacklist.
+     * this student to grade. If the student was already blacklisted it is not added
+     * again. If there was an error a SQLException will be thrown.
      *
-     * @param studentLogin
+     * @param students
      * @param taLogin
-     * @return true if the student was added to the TA's blacklist; false if the
-     *         student was already on the TA's blacklist and was thus not added
-     *         again
      */
-    public boolean blacklistStudent(String studentLogin, TA ta) throws SQLException;
+    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException;
 
     /**
-     * Removes student with login studentLogin from the blacklist of the given TA,
+     * Removes students in studentLogins from the blacklist of the given TA,
      * if the student was on that TA's blacklist.  If the student was not on the
      * TA's blacklist, this method has no effect.
      *
-     * @param studentLogin
+     * @param studentLogins
      * @param ta
      */
-    public void unBlacklistStudent(String studentLogin, TA ta) throws SQLException;
+    public void unBlacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException;
 
     /**
      * Indicates whether the Assignment has a distribution.  Returns true if

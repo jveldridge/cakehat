@@ -673,7 +673,6 @@ public class DBWrapper implements DatabaseIO {
 
             //DROP all tables in DB
             conn.setAutoCommit(false);
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'asgngroup';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'blacklist';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'distribution';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'exemption';");
@@ -682,6 +681,7 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'groupmember';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'handin';");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'student';");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS 'asgngroup';");
 
             //CREATE all DB tables
             conn.createStatement().executeUpdate("CREATE TABLE 'asgngroup' ('gpid' INTEGER PRIMARY KEY AUTOINCREMENT, "
