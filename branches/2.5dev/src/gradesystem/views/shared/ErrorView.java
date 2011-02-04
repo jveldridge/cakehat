@@ -119,6 +119,8 @@ public class ErrorView extends JFrame
 
         // Make the comments box properly handle receiving new lines
         commentsTextArea.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "newline");
+        commentsTextArea.setLineWrap(true);
+        commentsTextArea.setWrapStyleWord(true);
         commentsTextArea.getActionMap().put("newline", new AbstractAction()
         {
             public void actionPerformed(ActionEvent e)
@@ -152,7 +154,7 @@ public class ErrorView extends JFrame
                               "\n\n" + errorTextArea.getText();
                 body = body.replace(System.getProperty("line.separator"), "<br/>");
 
-                Allocator.getCourseInfo().getEmailAccount().sendMail(from, to, null, null, subject, body, null);
+                Allocator.getConfigurationInfo().getEmailAccount().sendMail(from, to, null, null, subject, body, null);
 
                 ErrorView.this.dispose();
             }
