@@ -34,8 +34,10 @@ import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ImageIcon;
 
 /**
@@ -447,6 +449,15 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
     }
 
     private void setUpGrading() {
+        int proceed = JOptionPane.showConfirmDialog(this, "<html>All handin statuses will be recalculated<br/>" +
+                                                          "and any existing rubrics will be overwritten.<br/>" +
+                                                          "Are you sure you wish to continue?</html>",
+                                                    "Continue?",
+                                                    JOptionPane.YES_NO_OPTION);
+        if (proceed != JOptionPane.YES_OPTION) {
+            return;
+        }
+
 
         //create any necessary rubric directories that do not alreayd exist
         for (DistributablePart dp : _asgn.getDistributableParts()) {
@@ -496,16 +507,26 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             @Override
             public void run() {
                 try {
-                    Collection<Group> groups = Allocator.getDatabaseIO().getGroupsForAssignment(_asgn);
+                    //figure out which Groups have been distributed for any DistributablePart
+                    //and make rubrics for them for all DistributableParts
+                    Set<Group> groups = new HashSet<Group>();
+                    for (DistributablePart dp : _asgn.getDistributableParts()) {
+                        groups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+                    }
+                    
                     Allocator.getRubricManager().distributeRubrics(_asgn.getHandin(),
                                                                    groups,
                                                                    minutesOfLeniency,
-                                                                   AssignmentDistView.this);
+                                                                   AssignmentDistView.this,
+                                                                   true);
                     
                     _progressDialog.dispose();
                     JOptionPane.showMessageDialog(AssignmentDistView.this, "Grading setup complete.",
                                                   "Success", JOptionPane.INFORMATION_MESSAGE);
                 } catch (SQLException ex) {
+                    new ErrorView(ex, "The distribution for assignment " + _asgn + " " +
+                                      "could not be read from the database.");
+                } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "The distribution for assignment " + _asgn + " " +
                                       "could not be read from the database.");
                 } catch (RubricException ex) {

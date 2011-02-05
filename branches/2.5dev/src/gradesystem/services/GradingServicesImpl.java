@@ -572,7 +572,12 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public HandinStatus getHandinStatus(Handin handin, Group group, Calendar extension, int minutesOfLeniency) throws ServicesException {
-        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(handin.getHandin(group));
+        File groupHandin = handin.getHandin(group);
+        if (groupHandin == null) {
+            throw new ServicesException("Cannot get handin status for group " + group + ". " +
+                                        "Handin file does not exist.");
+        }
+        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(groupHandin);
 
         TimeStatus timeStatus = null;
 

@@ -638,8 +638,12 @@ public class ReassignView extends JFrame {
 
                 }
 
-                //create rubrics for students who previously did not have them
-                Allocator.getRubricManager().distributeRubrics(_dp, groups, Allocator.getCourseInfo().getMinutesOfLeniency());
+                //create rubrics for any DPs for which the Group does not already
+                //have a rubric; do not overwrite existing rubrics
+                Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groups,
+                                                               Allocator.getConfigurationInfo().getMinutesOfLeniency(),
+                                                               DistributionRequester.DO_NOTHING_REQUESTER,
+                                                               false);
             }
         }
 
@@ -764,8 +768,13 @@ public class ReassignView extends JFrame {
                     Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, fromTA);
                 }
             }
-
-            Allocator.getRubricManager().distributeRubrics(_dp, groupsToAssign, Allocator.getCourseInfo().getMinutesOfLeniency());
+            
+            //create rubrics for any DPs for which the Group does not already
+            //have a rubric; do not overwrite existing rubrics
+            Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groupsToAssign,
+                                                           Allocator.getConfigurationInfo().getMinutesOfLeniency(),
+                                                           DistributionRequester.DO_NOTHING_REQUESTER,
+                                                           false);
         }
 
         //assigning to UNASSIGNED from a TA

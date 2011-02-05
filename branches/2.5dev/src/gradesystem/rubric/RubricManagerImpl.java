@@ -279,38 +279,9 @@ public class RubricManagerImpl implements RubricManager {
     }
 
     @Override
-    public void distributeRubrics(DistributablePart part, Collection<Group> groups, int minsLeniency) throws RubricException {
-        this.storeHandinStatuses(part.getAssignment(), groups, minsLeniency);
-
-        File template = part.getRubricTemplate();
-
-        //ensure that appropriate rubric directory exists
-        File partRubricDir = new File(Allocator.getCourseInfo().getRubricDir() + part.getAssignment() + "/" + part.getName() + "/");
-        if (!partRubricDir.exists()) {
-            try {
-                Allocator.getFileSystemServices().makeDirectory(partRubricDir);
-            } catch (ServicesException ex) {
-                throw new RubricException("Could not make rubric directory.\n" +
-                                          "Path specified: " + partRubricDir.getAbsolutePath(), ex);
-            }
-        }
-
-        try {
-            for (Group group : groups) {
-                List<File> copiedFiles = Allocator.getFileSystemServices().copy(template, new File(this.getGroupRubricPath(part, group)), true, false);
-                for (File file : copiedFiles) {
-                    Allocator.getFileSystemServices().sanitize(file);
-                }
-            }
-        } catch (ServicesException ex) {
-            throw new RubricException("Could not create rubric for groups " + groups + " for " +
-                                      "part " + part + ".", ex);
-        }
-    }
-
-    @Override
     public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
-                                  int minsLeniency, DistributionRequester requester) throws RubricException {
+                                  int minsLeniency, DistributionRequester requester,
+                                  boolean overwrite) throws RubricException {
         this.storeHandinStatuses(handin.getAssignment(), toDistribute, minsLeniency);
 
         Collection<DistributablePart> distParts = handin.getAssignment().getDistributableParts();
@@ -328,6 +299,12 @@ public class RubricManagerImpl implements RubricManager {
                 }
 
                 for (Group group : toDistribute) {
+                    //if rubric already exists and not in overwrite mode, go on
+                    //to next Group
+                    if (!overwrite && this.hasRubric(part, group)) {
+                        continue;
+                    }
+
                     List<File> copiedFiles = Allocator.getFileSystemServices().copy(template, new File(this.getGroupRubricPath(part, group)), true, false);
                     for (File file : copiedFiles) {
                         Allocator.getFileSystemServices().sanitize(file);
