@@ -544,7 +544,6 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         _progressDialog.setLocationRelativeTo(this);
         _progressDialog.setVisible(true);
 
-        
     }
 
     public void updatePercentDone(int newPercentDone) {
