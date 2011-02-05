@@ -121,11 +121,24 @@ public interface RubricManager
 
     public void convertToGRD(Map<Handin, Iterable<Group>> toConvert) throws RubricException;
 
-    public void distributeRubrics(DistributablePart part, Collection<Group> groups,
-                                  int minsLeniency) throws RubricException;
-
+    /**
+     * Creates a rubric for each DistributablePart of the given Handin for each
+     * Group in the given Collection.  First calculates handin statuses and stores
+     * them in the database, then creates an appropriately placed copy of the each
+     * DistributablePart's rubric template for each student.  If the given overwrite
+     * parameter is true, any existing rubrics will be overwritten; if false, they
+     * will be preserved.
+     *
+     * @param handin
+     * @param toDistribute
+     * @param minsLeniency
+     * @param requester
+     * @param overwrite
+     * @throws RubricException
+     */
     public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
-                                  int minsLeniency, DistributionRequester requester) throws RubricException;
+                                  int minsLeniency, DistributionRequester requester,
+                                  boolean overwrite) throws RubricException;
 
     
 }
