@@ -6,6 +6,7 @@ import gradesystem.handin.Handin;
 import gradesystem.rubric.TimeStatus;
 import gradesystem.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
+import gradesystem.components.Student;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
@@ -208,30 +209,21 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public boolean blacklistStudent(String studentLogin, TA ta) throws SQLException {
+    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(b.sid) AS timesOnBlacklist"
-                    + " FROM blacklist AS b"
-                    + " WHERE b.sid == ?"
-                    + " AND  b.tid == ?");
-            ps.setString(1, studentLogin);
-            ps.setString(2, ta.getLogin());
-
-            ResultSet rs = ps.executeQuery();
-            boolean isBlacklisted = (rs.getInt("timesOnBlacklist") != 0);
-
-            if (!isBlacklisted) {
-                ps = conn.prepareStatement("INSERT INTO blacklist "
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO blacklist "
                         + "('sid', 'tid') VALUES (?, ?)");
-                ps.setString(1, studentLogin);
-                ps.setString(2, ta.getLogin());
-                ps.executeUpdate();
 
-                return true;
+            for (Student student : students) {
+                ps.setString(1, student.getLogin());
+                ps.setString(2, ta.getLogin());
+                ps.addBatch();
             }
 
-            return false;
+            ps.executeBatch();
+            ps.close();
+
         } finally {
             this.closeConnection(conn);
         }
@@ -455,16 +447,21 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public void unBlacklistStudent(String studentLogin, TA ta) throws SQLException {
+    public void unBlacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
                     + "WHERE tid == ? "
                     + "AND sid == ?");
-            ps.setString(1, ta.getLogin());
-            ps.setString(2, studentLogin);
 
-            ps.executeUpdate();
+            for (String studentLogin : studentLogins) {
+                ps.setString(1, ta.getLogin());
+                ps.setString(2, studentLogin);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
         } finally {
             this.closeConnection(conn);
         }
@@ -601,7 +598,7 @@ public class DBWrapper implements DatabaseIO {
                     + " ('name') VALUES (?)");
             ps.setString(1, groupName);
             ps.executeUpdate();
-            
+
             ResultSet rs = ps.getGeneratedKeys();
             int groupID = rs.getInt("groupid");
 
@@ -778,7 +775,7 @@ public class DBWrapper implements DatabaseIO {
                 ps.setString(2, student);
                 ps.executeUpdate();
             }
-            
+
             conn.commit();
         } catch (SQLException ex) {
             conn.rollback();
@@ -942,7 +939,7 @@ public class DBWrapper implements DatabaseIO {
             ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
             ps.close();
-            
+
             return rows == 0;
         } finally {
             this.closeConnection(conn);
@@ -1065,7 +1062,7 @@ public class DBWrapper implements DatabaseIO {
         if (fromDist != null) {
             return fromDist;
         }
-        
+
         return Collections.emptyList();
     }
 
@@ -1697,5 +1694,5 @@ public class DBWrapper implements DatabaseIO {
             this.setTimeStatus(handin, group, statuses.get(group).getTimeStatus(), statuses.get(group).getDaysLate());
         }
     }
-        
+
 }
