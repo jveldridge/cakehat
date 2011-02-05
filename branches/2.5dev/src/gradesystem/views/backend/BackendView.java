@@ -1172,7 +1172,7 @@ public class BackendView extends JFrame
         }
 
         //Multiple students selected
-        else
+        else if (!selectedStudents.isEmpty())
         {
             if(selection.size() >= 1)
             {
@@ -1250,7 +1250,7 @@ public class BackendView extends JFrame
         {
             button.setEnabled(false);
         }
-
+        
         //If one assignment is selected, enable assignment buttons as appropriate
         if(selection.size() == 1)
         {
@@ -1485,65 +1485,41 @@ public class BackendView extends JFrame
 
     private void emailReportsButtonActionPerformed()
     {
-        //TODO email reports
-        JOptionPane.showMessageDialog(this, "This feature is not yet available.");
-//        JPanel messagePanel = new JPanel();
-//        messagePanel.setLayout(new GridLayout(0,1));
-//        HashMap<Part,JCheckBox> boxMap = new HashMap<Part,JCheckBox>();
-//        for (Assignment a : _assignmentList.getGenericSelectedValues())
-//        {
-//            for (Part p : a.getParts())
-//            {
-//                JCheckBox partBox = new JCheckBox(a.getName() + ": " + p.getName());
-//                partBox.setSelected(true);
-//                boxMap.put(p, partBox);
-//                messagePanel.add(partBox);
-//            }
-//        }
-//
-//        if (JOptionPane.showConfirmDialog(null, messagePanel,
-//                                          "Select Assignment Parts",
-//                                          JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION )
-//        {
-//            Map<Assignment,Collection<Part>> map = new HashMap<Assignment,Collection<Part>>();
-//            for (Assignment a : _assignmentList.getGenericSelectedValues())
-//            {
-//                Vector<Part> parts = new Vector<Part>();
-//                for (Part p : a.getParts())
-//                {
-//                    if (boxMap.get(p).isSelected())
-//                    {
-//                        parts.add(p);
-//                    }
-//                }
-//                if (!parts.isEmpty())
-//                {
-//                    map.put(a, parts);
-//                }
-//            }
-//
-//            Vector<String> students = new Vector<String>();
-//            Collection<String> undeterminedStudents = new LinkedList<String>();
-//            for (String student : _studentList.getGenericSelectedValues()) {
-//                try {
-//                    if (Allocator.getDatabaseIO().isStudentEnabled(student)) {
-//                        students.add(student);
-//                    }
-//                } catch (SQLException ex) {
-//                    undeterminedStudents.add(student);
-//                }
-//            }
-//
-//            if (!undeterminedStudents.isEmpty()) {
-//                new ErrorView("It could not be determined if the following students "
-//                        + "are enabled: " + undeterminedStudents + ".\n\n"
-//                        + "Their grades will not be included in the grade reports.");
-//            }
-//
-//            GradeReportView grv = new GradeReportView(map, students);
-//            grv.setLocationRelativeTo(null);
-//            grv.setVisible(true);
-//        }
+        Set<String> enabledStudents;
+        try {
+            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not read enabled students from the database. " +
+                              "Grade reports cannot be sent.");
+            return;
+        }
+
+        Collection<String> selectedStudents = _studentList.getGenericSelectedValues();
+        Collection<String> selectedButDisabled = new ArrayList<String>();
+        for (String student : selectedStudents) {
+            if (!enabledStudents.contains(student)) {
+                selectedButDisabled.add(student);
+            }
+        }
+
+        if (!selectedButDisabled.isEmpty()) {
+            int proceed = JOptionPane.showConfirmDialog(this, "The following students were selected " +
+                                                              "but are disabled: \n" + selectedButDisabled + "\n" +
+                                                              "They will not be emailed reports.",
+                                                        "Disabled Students Selected",
+                                                        JOptionPane.OK_CANCEL_OPTION);
+            if (proceed != JOptionPane.OK_OPTION) {
+                return;
+            }
+            selectedStudents.removeAll(selectedButDisabled);
+        }
+
+        if (selectedStudents.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No enabled students selected.");
+        }
+        else {
+            new GradeReportView(_assignmentTree.getSelection(), selectedStudents);
+        }
     }
 
     private void extensionsButtonActionPerformed() {
