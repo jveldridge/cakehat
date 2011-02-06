@@ -313,6 +313,11 @@ class RubricPanel extends JPanel
 
     private boolean isECEditable()
     {
+        //if no status, template rubric
+        if (_status == null) {
+            return true;
+        }
+
         TimeStatus timeStatus = _status.getTimeStatus();
 
         // Determine if extra credit is editable
