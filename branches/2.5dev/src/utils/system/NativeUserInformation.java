@@ -5,28 +5,26 @@ import java.io.File;
 import com.sun.jna.Structure;
 
 /**
- * This class is for <strong>INTERNAL</strong> user only, it should never be
+ * This class is for <strong>INTERNAL</strong> use only, it should never be
  * accessed from outside of this package. Due to limitations with JNA (Java
  * Native Access) this class must be public and all of its fields must be
- * public.
+ * public. Do not access the public fields of this class from outside of this
+ * class.
  * <br/><br/>
  * The fields of this class match the following native struct:
- * <br/><br/>
- * struct passwd {                             <br/>
- *     char   *pw_name;       // username      <br/>
- *     char   *pw_passwd;     // user password <br/>
- *     uid_t   pw_uid;        // user ID       <br/>
- *     gid_t   pw_gid;        // group ID      <br/>
- *     char   *pw_gecos;      // real name     <br/>
- *     char   *pw_dir;        // home directory<br/>
- *     char   *pw_shell;      // shell program <br/>
+ * <pre>
+ * struct passwd {
+ *     char   *pw_name;       // username
+ *     char   *pw_passwd;     // user password
+ *     uid_t   pw_uid;        // user ID
+ *     gid_t   pw_gid;        // group ID
+ *     char   *pw_gecos;      // real name
+ *     char   *pw_dir;        // home directory
+ *     char   *pw_shell;      // shell program
  * };
- * <br/><br/>
+ * </pre>
  * This class stores information related to a user, despite its native name
  * which would imply that it primarily dealt with password information.
- * <br/><br/>
- * Do not access the public fields of this class from outside of this class;
- * the fields must be public due to limitations of JNA (Java Native Access).
  *
  * @author jak2 (Joshua Kaplan)
  */

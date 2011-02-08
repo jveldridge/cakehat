@@ -292,8 +292,8 @@ public class DistributablePart extends Part
             {
                 try
                 {
-                    File unarchiveDir = Allocator.getGradingServices()
-                            .getUnarchiveHandinDirectory(this, group);
+                    File unarchiveDir = Allocator.getPathServices()
+                            .getUnarchiveHandinDir(this, group);
                     Allocator.getExternalProcessesUtilities()
                             .executeAsynchronously("kpdf " + 
                             readme.getAbsolutePath(), unarchiveDir);
@@ -339,7 +339,7 @@ public class DistributablePart extends Part
                 }
             };
             Collection<File> readmes = Allocator.getFileSystemUtilities()
-                    .getFiles(Allocator.getGradingServices().getUnarchiveHandinDirectory(this, group), filter);
+                    .getFiles(Allocator.getPathServices().getUnarchiveHandinDir(this, group), filter);
 
             _readmes.put(group, readmes);
         }
@@ -477,7 +477,7 @@ public class DistributablePart extends Part
             //Create an empty folder for grading compiled student code
             try
             {
-                File groupDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(this, group);
+                File groupDir = Allocator.getPathServices().getUnarchiveHandinDir(this, group);
                 Allocator.getFileSystemServices().makeDirectory(groupDir);
 
                 //Determine if all of the files and directories that are

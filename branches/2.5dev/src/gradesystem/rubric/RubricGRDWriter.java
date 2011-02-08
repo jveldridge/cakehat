@@ -42,10 +42,10 @@ class RubricGRDWriter {
     private final static int STATIC_TEXT_WIDTH = 28;
 
     static void write(Handin handin, Group group, HandinStatus status,
-                      String GRDFilePath) throws RubricException {
+                      File grdFile) throws RubricException {
 
         //Get the writer to write to file
-        BufferedWriter output = openGRDFile(GRDFilePath);
+        BufferedWriter output = openGRDFile(grdFile);
 
         writeAssignmentDetails(handin, group, output);
 
@@ -103,8 +103,8 @@ class RubricGRDWriter {
     private static Score writeDistributablePart(Handin handin, HandinStatus status,
                                                Group group, DistributablePart dp,
                                                BufferedWriter output) throws RubricException {
-        String xmlPath = Allocator.getRubricManager().getGroupRubricPath(dp, group);
-        Rubric rubric = RubricGMLParser.parse(xmlPath, dp, group);
+        File gmlFile = Allocator.getPathServices().getGroupGMLFile(dp, group);
+        Rubric rubric = RubricGMLParser.parse(gmlFile, dp, group);
 
         printStrongDivider(output);
 
@@ -381,9 +381,8 @@ class RubricGRDWriter {
         printDivider(output);
     }
 
-    private static BufferedWriter openGRDFile(String GRDFilePath) throws RubricGMLException
+    private static BufferedWriter openGRDFile(File grdFile) throws RubricGMLException
     {
-        File grdFile = new File(GRDFilePath);
         BufferedWriter output = null;
         try
         {

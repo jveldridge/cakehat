@@ -29,7 +29,7 @@ public class AssignmentTree extends JScrollPane {
         
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
 
-        for (Assignment asgn : Allocator.getCourseInfo().getAssignments()) {
+        for (Assignment asgn : Allocator.getConfigurationInfo().getAssignments()) {
             GenericTreeNode<Assignment> asgnNode = new GenericTreeNode<Assignment>(asgn);
 
             for (Part part : asgn.getParts()) {

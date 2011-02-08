@@ -40,13 +40,6 @@ public interface RubricManager
     public void view(DistributablePart part, Group group, boolean isAdmin);
 
     /**
-     * @return path to student's rubric for a particular project
-     *          Note: this is independent of the TA who graded the student
-     *         currently, /course/<course>/.cakehat/<year>/rubrics/<asgn-name>/<part-name>/<groupName>.gml
-     */
-    public String getGroupRubricPath(DistributablePart part, Group group);
-
-    /**
      * Returns whether or not a rubric exists for the given Group for the given
      * DistributablePart.
      *

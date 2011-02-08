@@ -10,7 +10,7 @@ import utils.system.NativeException;
 
 public class UserServicesImpl implements UserServices
 {
-    private final TA USER = Allocator.getCourseInfo().getTA(Allocator.getUserUtilities().getUserLogin());
+    private final TA USER = Allocator.getConfigurationInfo().getTA(Allocator.getUserUtilities().getUserLogin());
 
     public void addStudent(String studentLogin, String firstName, String lastName,
             ValidityCheck checkValidity) throws ServicesException
@@ -93,7 +93,7 @@ public class UserServicesImpl implements UserServices
     {
         String userLogin = Allocator.getUserUtilities().getUserLogin();
 
-        for(TA ta : Allocator.getCourseInfo().getTAs())
+        for(TA ta : Allocator.getConfigurationInfo().getTAs())
         {
             if(ta.getLogin().equals(userLogin))
             {
@@ -108,7 +108,7 @@ public class UserServicesImpl implements UserServices
     {
         String userLogin = Allocator.getUserUtilities().getUserLogin();
 
-        for(TA ta : Allocator.getCourseInfo().getTAs())
+        for(TA ta : Allocator.getConfigurationInfo().getTAs())
         {
             if(ta.getLogin().equals(userLogin) && ta.isAdmin())
             {

@@ -96,6 +96,28 @@ public interface FileSystemUtilities
      * @throws IOException
      */
     public void deleteFiles(List<File> files) throws IOException;
+    
+    /**
+     * Deletes the <code>file</code>. If a directory, all of the files and
+     * subdirectories of that directory will also be deleted.
+     *
+     * @param file
+     */
+    public void deleteFile(File file) throws IOException;
+
+    /**
+     * Creates a directory, recursively creating parent directories as
+     * necessary. This is similar to {@link java.io.File#mkdirs()} but differs
+     * in two important ways. Instead of returning a boolean to indicate
+     * success, an exception is thrown if a directory cannot be created. All
+     * directories that are created are returned.
+     *
+     * @param dir the directory to create
+     * @return directories created
+     * @throws IOException thrown if unable to create any of the necessary
+     * directories in order for <code>dir</code> to exist
+     */
+    public List<File> makeDirectory(File dir) throws IOException;
 
     /**
      * Reads a text file into a String.
@@ -158,30 +180,6 @@ public interface FileSystemUtilities
     public void changeGroup(File file, String group, boolean recursive) throws NativeException;
 
     /**
-     *
-     * Removes a directory and all of its files and subdirectories.
-     *
-     * @author jak2
-     * @date 1/8/2010
-     *
-     * @param dirPath
-     * @return success of deletion
-     */
-    public boolean removeDirectory(String dirPath);
-
-    /**
-     *
-     * Removes a directory and all of its files and subdirectories.
-     *
-     * @author jak2
-     * @date 1/8/2010
-     *
-     * @param dirPath
-     * @return success of deletion
-     */
-    public boolean removeDirectory(File dirPath);
-
-    /**
      * Returns all files in a directory, recursing into subdirectories, that
      * contain files with the specified extension.
      *
@@ -190,7 +188,6 @@ public interface FileSystemUtilities
      * @return the files found with the specified extension
      */
     public Collection<File> getFiles(String dirPath, String extension);
-
 
     /**
      * Returns all files that satisfy the filter. If the file is a directory

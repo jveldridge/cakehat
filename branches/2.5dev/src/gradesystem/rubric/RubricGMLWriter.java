@@ -30,9 +30,9 @@ class RubricGMLWriter implements RubricConstants
      * Writes a Rubric to GML.
      *
      * @param rubric
-     * @param filepath location to write file to
+     * @param gmlFile the file that the XML will be written to
      */
-    static void write(Rubric rubric, String filepath) throws RubricException
+    static void write(Rubric rubric, File gmlFile) throws RubricException
     {
         Document document = createXMLDocument();
 
@@ -156,7 +156,7 @@ class RubricGMLWriter implements RubricConstants
         //Append rubric to document
         document.appendChild(rubricNode);
 
-        saveXMLFile(document, filepath);
+        saveXMLFile(document, gmlFile);
     }
 
     private static Document createXMLDocument()
@@ -175,7 +175,7 @@ class RubricGMLWriter implements RubricConstants
         return document;
     }
 
-    private static void saveXMLFile(Document document, String XMLFilePath) throws RubricException
+    private static void saveXMLFile(Document document, File gmlFile) throws RubricException
     {
         // dom source and transformer
         DOMSource source = new DOMSource(document);
@@ -187,7 +187,7 @@ class RubricGMLWriter implements RubricConstants
         catch (TransformerConfigurationException e)
         {
             throw new RubricException("Unable to save rubric (gml file).\n" +
-                    "Rubric location: " + XMLFilePath, e);
+                    "Rubric location: " + gmlFile.getAbsolutePath(), e);
         }
 
         // properties
@@ -196,19 +196,18 @@ class RubricGMLWriter implements RubricConstants
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
         // ensure directory where the file is going to be saved exists
-        File xmlFile = new File(XMLFilePath);
         try
         {
-            Allocator.getFileSystemServices().makeDirectory(xmlFile.getParentFile());
+            Allocator.getFileSystemServices().makeDirectory(gmlFile.getParentFile());
         }
         catch(ServicesException e)
         {
             throw new RubricException("Unable to make directory to save rubric (gml file) in. \n" +
-                    "Rubric location is: " + xmlFile.getAbsolutePath(), e);
+                    "Rubric location is: " + gmlFile.getAbsolutePath(), e);
         }
 
         // write file
-        StreamResult result = new StreamResult(xmlFile);
+        StreamResult result = new StreamResult(gmlFile);
         try
         {
             transformer.transform(source, result);
@@ -216,13 +215,13 @@ class RubricGMLWriter implements RubricConstants
         catch(TransformerException e)
         {
             throw new RubricException("Unable to save rubric (gml file).\n" +
-                    "Rubric location: " + XMLFilePath, e);
+                    "Rubric location: " + gmlFile.getAbsolutePath(), e);
         }
 
         // ensure the file written has the correct permissions and group
         try
         {
-            Allocator.getFileSystemServices().sanitize(xmlFile);
+            Allocator.getFileSystemServices().sanitize(gmlFile);
         }
         catch(ServicesException e)
         {

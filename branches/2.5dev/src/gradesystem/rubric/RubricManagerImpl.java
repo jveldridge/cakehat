@@ -27,7 +27,14 @@ import java.util.List;
 
 public class RubricManagerImpl implements RubricManager {
 
-    private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
+    /**
+     * Keeps track of the currently opened rubrics so that if a user attempts
+     * to open the same rubric twice the already open one will be brought
+     * to the front and centered.
+     * Key: a String that is unique for a given DistributablePart and Group
+     * Value: the open rubric visualization
+     */
+    private HashMap<String, GradingVisualizer> _openRubrics = new HashMap<String, GradingVisualizer>();
 
     @Override
     public void view(DistributablePart part, Group group) {
@@ -35,28 +42,28 @@ public class RubricManagerImpl implements RubricManager {
     }
 
     @Override
-    public void view(DistributablePart part, Group group, boolean isAdmin) {
-        String GMLFilePath = getGroupRubricPath(part, group);
-
+    public void view(DistributablePart part, Group group, boolean isAdmin)
+    {
         //Determine if it has been opened
-        final String graderViewName = part.getAssignment().getName() + "::" + part.getName() + "::"+ group.getName();
+        final String uniqueID = part.getDBID() + "::" + group.getName();
         //If it hasn't been opened
-        if(!_graders.containsKey(graderViewName))
+        if(!_openRubrics.containsKey(uniqueID))
         {
             try
             {
-                Rubric rubric = RubricGMLParser.parse(GMLFilePath, part, group);
+                File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
+                Rubric rubric = RubricGMLParser.parse(gmlFile, part, group);
                 GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
                 visualizer.addWindowListener(new WindowAdapter()
                 {
                     @Override
                     public void windowClosed(WindowEvent e)
                     {
-                        _graders.remove(graderViewName);
+                        _openRubrics.remove(uniqueID);
                     }
                 });
 
-                _graders.put(graderViewName, visualizer);
+                _openRubrics.put(uniqueID, visualizer);
             }
             catch (RubricException ex)
             {
@@ -66,27 +73,21 @@ public class RubricManagerImpl implements RubricManager {
         //If it has, bring it to front and center it on screen
         else
         {
-            GradingVisualizer visualizer = _graders.get(graderViewName);
+            GradingVisualizer visualizer = _openRubrics.get(uniqueID);
             visualizer.toFront();
             visualizer.setLocationRelativeTo(null);
         }
-
     }
 
     @Override
     public void viewTemplate(DistributablePart dp) throws RubricException {
-        new TemplateVisualizer(RubricGMLParser.parse(dp.getRubricTemplate().getAbsolutePath(), dp, null));
+        new TemplateVisualizer(RubricGMLParser.parse(dp.getRubricTemplate(), dp, null));
     }
 
     @Override
-    public String getGroupRubricPath(DistributablePart part, Group group) {
-        return Allocator.getCourseInfo().getRubricDir() + part.getAssignment().getName() + "/" +
-                part.getName() + "/" + group.getName() + ".gml";
-    }
-
-    @Override
-    public boolean hasRubric(DistributablePart part, Group group) {
-        return new File(getGroupRubricPath(part, group)).exists();
+    public boolean hasRubric(DistributablePart part, Group group)
+    {
+        return Allocator.getPathServices().getGroupGMLFile(part, group).exists();
     }
 
     @Override
@@ -118,7 +119,7 @@ public class RubricManagerImpl implements RubricManager {
     {
         try
         {
-            Rubric rubric = RubricGMLParser.parse(getGroupRubricPath(part, group), part, group);
+            Rubric rubric = RubricGMLParser.parse(Allocator.getPathServices().getGroupGMLFile(part, group), part, group);
             return rubric.getTotalDistPartScore();
         }
         catch(RubricException e)
@@ -148,7 +149,8 @@ public class RubricManagerImpl implements RubricManager {
 
         Map<String, Subsection> sources = new HashMap<String, Subsection>();
         for (DistributablePart dp : asgn.getDistributableParts()) {
-            Rubric rubric = RubricGMLParser.parse(getGroupRubricPath(dp, group), dp, group);
+            File gmlFile = Allocator.getPathServices().getGroupGMLFile(dp, group);
+            Rubric rubric = RubricGMLParser.parse(gmlFile, dp, group);
 
             outOf += rubric.getTotalDistPartOutOf();
             score += rubric.getTotalDistPartScore();
@@ -246,12 +248,11 @@ public class RubricManagerImpl implements RubricManager {
         }
 
         //Write to grd
-        String grdPath = Allocator.getGradingServices().getGroupGRDPath(handin, group);
+        File grdFile = Allocator.getPathServices().getGroupGRDFile(handin, group);
         try {
-            RubricGRDWriter.write(handin, group, status, grdPath);
+            RubricGRDWriter.write(handin, group, status, grdFile);
         } catch (RubricException e) {
             //delete the incomplete GRD file, if it was written
-            File grdFile = new File(grdPath);
             if (grdFile.exists()) {
                 grdFile.delete();
             }
@@ -293,7 +294,7 @@ public class RubricManagerImpl implements RubricManager {
                 File template = part.getRubricTemplate();
 
                 //ensure that appropriate rubric directory exists
-                File partRubricDir = new File(Allocator.getCourseInfo().getRubricDir() + part.getAssignment() + "/" + part.getName() + "/");
+                File partRubricDir = Allocator.getPathServices().getGMLDir(part);
                 if (!partRubricDir.exists()) {
                     Allocator.getFileSystemServices().makeDirectory(partRubricDir);
                 }
@@ -305,7 +306,8 @@ public class RubricManagerImpl implements RubricManager {
                         continue;
                     }
 
-                    List<File> copiedFiles = Allocator.getFileSystemServices().copy(template, new File(this.getGroupRubricPath(part, group)), true, false);
+                    File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
+                    List<File> copiedFiles = Allocator.getFileSystemServices().copy(template, gmlFile, true, false);
                     for (File file : copiedFiles) {
                         Allocator.getFileSystemServices().sanitize(file);
                     }

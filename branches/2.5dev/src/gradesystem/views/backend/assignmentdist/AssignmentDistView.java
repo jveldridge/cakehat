@@ -80,8 +80,8 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             return;
         }
 
-        _gradingTAs = new Vector<TA>(Allocator.getCourseInfo().getDefaultGraders());
-        _nonGradingTAs = new Vector<TA>(Allocator.getCourseInfo().getNonDefaultGraders());
+        _gradingTAs = new Vector<TA>(Allocator.getConfigurationInfo().getDefaultGraders());
+        _nonGradingTAs = new Vector<TA>(Allocator.getConfigurationInfo().getNonDefaultGraders());
 
         this.setTitle(String.format("Create Distribution for Assignment: %s", _asgn.getName()));
 
@@ -461,7 +461,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         //create any necessary rubric directories that do not alreayd exist
         for (DistributablePart dp : _asgn.getDistributableParts()) {
-            File directory = new File(Allocator.getCourseInfo().getRubricDir() + _asgn.getName() + "/" + dp.getName() + "/");
+            File directory = Allocator.getPathServices().getGMLDir(dp);
             if (!directory.exists()) {
                 try {
                     Allocator.getFileSystemServices().makeDirectory(directory);
@@ -482,7 +482,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             return;
         }
 
-        int minsLeniency = Allocator.getCourseInfo().getMinutesOfLeniency();
+        int minsLeniency = Allocator.getConfigurationInfo().getMinutesOfLeniency();
         if (!input.isEmpty()) {
             try {
                 minsLeniency = Integer.parseInt(input);
@@ -623,7 +623,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
     }
 
     public static void main(String[] argv) {
-        new AssignmentDistView(Allocator.getCourseInfo().getAssignments().iterator().next());
+        new AssignmentDistView(Allocator.getConfigurationInfo().getHandinAssignments().get(0));
     }
 
 }

@@ -436,7 +436,7 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
             public void run() {
                 try {
-                    new StatHistView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
+                    new StatHistView(Allocator.getConfigurationInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not read enabled students from the database.");
                 }

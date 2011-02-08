@@ -33,7 +33,6 @@ import gradesystem.config.LatePolicy;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
 import gradesystem.database.HandinStatus;
-import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
 import gradesystem.printing.PrintRequest;
 import gradesystem.rubric.TimeStatus;
@@ -49,82 +48,34 @@ import java.util.Vector;
 
 public class GradingServicesImpl implements GradingServices
 {
-
     @Override
-    public void makeUserGradingDirectory() throws ServicesException
+    public void makeUserWorkspace() throws ServicesException
     {
-        File gradingDir = new File(this.getUserGradingDirectory());
+        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
         try
         {
-            Allocator.getFileSystemServices().makeDirectory(gradingDir);
+            Allocator.getFileSystemServices().makeDirectory(workspace);
         }
         catch(ServicesException e)
         {
-            throw new ServicesException("Unable to create grading directory: " + gradingDir.getAbsolutePath() + ".", e);
+            throw new ServicesException("Unable to create user's workspace: " +
+                    workspace.getAbsolutePath(), e);
         }
     }
 
     @Override
-    public boolean removeUserGradingDirectory()
+    public void removeUserWorkspace() throws ServicesException
     {
-        return Allocator.getFileSystemUtilities().removeDirectory(this.getUserGradingDirectory());
-    }
-
-    @Override
-    public String getUserGradingDirectory()
-    {
-        String dirPath = Allocator.getCourseInfo().getGradingDir()
-                          +"."
-                          + Allocator.getUserUtilities().getUserLogin();
-
-        if (GradeSystemApp.isBackend())
+        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
+        try
         {
-            dirPath += "-admin";
+            Allocator.getFileSystemUtilities().deleteFile(workspace);
         }
-        else if (!GradeSystemApp.isFrontend())
+        catch(IOException e)
         {
-            //should always be in frontend or backend; if not, show an error
-            //message (but don't throw error, as that seems that it would cause
-            //problems without being helpful)
-            new ErrorView(String.format("UNEXPECTED STATE:\n" +
-                    "User directory requested before launch of Frontend or Backend.  " +
-                    "The directory \"%s\" will be used for the current session.", dirPath));
-            new Exception().printStackTrace();
+            throw new ServicesException("Unable to remove user's workspace: " +
+                    workspace.getAbsolutePath(), e);
         }
-
-        return dirPath + "/";
-    }
-
-    @Override
-    public String getUserPartDirectory(DistributablePart part) {
-        return this.getUserGradingDirectory() + part.getAssignment().getName() + "/" + part.getName() + "/";
-    }
-
-    @Override
-    public File getUnarchiveHandinDirectory(DistributablePart part, Group group)
-    {
-        File path = new File(new File(new File
-                (Allocator.getGradingServices().getUserGradingDirectory(),
-                part.getAssignment().getName()),
-                part.getName()),
-                group.getName());
-
-        return path;
-    }
-
-    @Override
-    public File getHandinDirectory(Assignment assignment)
-    {
-        File path = new File(new File(Allocator.getCourseInfo().getHandinDir(),
-                assignment.getName()),
-                Integer.toString(Allocator.getCalendarUtilities().getCurrentYear()));
-
-        return path;
-    }
-
-    @Override
-    public String getGroupGRDPath(Handin handin, Group group) {
-        return this.getUserGradingDirectory() + handin.getAssignment().getName() + "/" + group.getName() + ".txt";
     }
 
     @Override
@@ -133,26 +84,29 @@ public class GradingServicesImpl implements GradingServices
         return this.getPrinter("Please select a printer.");
     }
 
+    private static final String[] TESTING_PRINTERS = new String[] { "bw1", "bw2", "bw3", "bw4", "bw5" };
+    private static final String[] DEFAULT_PRINTERS = new String[] { "bw3", "bw4", "bw5" };
+    private static final String DEFAULT_PRINTER = "bw3";
     @Override
     public String getPrinter(String message)
     {
-        Object[] printerChoices = null;
-        Object[] printerChoices_testing = {"bw1", "bw2", "bw3", "bw4", "bw5"};
-        Object[] printerChoices_main = {"bw3", "bw4", "bw5"};
+        String[] printerChoices = null;
 
         // select printer choices based on testing mode
         if (GradeSystemApp.inTestMode())
         {
-            printerChoices = printerChoices_testing;
+            printerChoices = TESTING_PRINTERS;
         }
         else
         {
-            printerChoices = printerChoices_main;
+            printerChoices = DEFAULT_PRINTERS;
         }
 
-        ImageIcon icon = new javax.swing.ImageIcon("/GradingCommander/icons/print.png");
+        ImageIcon icon = new ImageIcon(getClass().getResource("/gradesystem/resources/icons/32x32/printer.png"));
 
-        return (String) JOptionPane.showInputDialog(new JFrame(), message, "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, "bw3");
+        return (String) JOptionPane.showInputDialog(new JFrame(), message,
+                "Select Printer", JOptionPane.PLAIN_MESSAGE, icon,
+                printerChoices, DEFAULT_PRINTER);
     }
 
     @Override
@@ -409,7 +363,7 @@ public class GradingServicesImpl implements GradingServices
                     Map<Group, HandinStatus> statuses = Allocator.getGradingServices().getHandinStatuses(asgn.getHandin(),
                             groupsToAdd,
                             Allocator.getDatabaseIO().getAllExtensions(asgn.getHandin()),
-                            Allocator.getCourseInfo().getMinutesOfLeniency());
+                            Allocator.getConfigurationInfo().getMinutesOfLeniency());
 
                     Allocator.getDatabaseIO().setHandinStatuses(asgn.getHandin(), statuses);
                 } catch (SQLException ex) {
@@ -520,10 +474,10 @@ public class GradingServicesImpl implements GradingServices
         List<String> students = new ArrayList<String>(groups.size());
         for (Group group : groups) {
             for (String student : group.getMembers()) {
-                students.add(student+"@"+Allocator.getCourseInfo().getEmailDomain());
+                students.add(student + "@" + Allocator.getConstants().getEmailDomain());
 
                 if (emailRubrics) {
-                    attachments.put(student, Allocator.getGradingServices().getGroupGRDPath(handin, group));
+                    attachments.put(student,Allocator.getPathServices().getGroupGRDFile(handin, group).getAbsolutePath());
                 }
             }
         }
@@ -532,7 +486,7 @@ public class GradingServicesImpl implements GradingServices
             attachments = null;
         }
 
-        new EmailView(students, Allocator.getCourseInfo().getNotifyAddresses(),
+        new EmailView(students, Allocator.getConfigurationInfo().getNotifyAddresses(),
                       "[" + Allocator.getCourseInfo().getCourse() + "] " + handin.getAssignment().getName() + " Graded",
                       handin.getAssignment().getName() + " has been graded.", attachments);
     }
@@ -549,8 +503,7 @@ public class GradingServicesImpl implements GradingServices
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
         for (Group group : groups) {
-            String filePath = this.getGroupGRDPath(handin, group);
-            File file = new File(filePath);
+            File file = Allocator.getPathServices().getGroupGRDFile(handin, group);
             for (String student : group.getMembers()) {
                 try {
                     requests.add(new PrintRequest(file, taLogin, student));

@@ -1,5 +1,6 @@
 package gradesystem.handin;
 
+import com.google.common.collect.ImmutableList;
 import utils.AlphabeticFileComparator;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
@@ -49,15 +50,7 @@ class MatlabActions implements ActionProvider
 
     public List<DistributableActionDescription> getActionDescriptions()
     {
-        ArrayList<DistributableActionDescription> descriptions =
-                new ArrayList<DistributableActionDescription>();
-
-        descriptions.add(new CopyTest());
-        descriptions.add(new DemoFile());
-        descriptions.add(new OpenFiles());
-        descriptions.add(new RunFile());
-
-        return descriptions;
+        return ImmutableList.of(new CopyTest(), new DemoFile(), new OpenFiles(), new RunFile());
     }
 
     private class CopyTest implements DistributableActionDescription
@@ -96,17 +89,17 @@ class MatlabActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { COPY_PATH_PROPERTY, TEST_FILE_PROPERTY });
+            return ImmutableList.of(COPY_PATH_PROPERTY, TEST_FILE_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.TEST });
+            return ImmutableList.of(ActionMode.TEST);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN });
+            return ImmutableList.of(ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -118,7 +111,7 @@ class MatlabActions implements ActionProvider
 
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                     //Copy if necessary
                     if(!_testedGroups.contains(group))
@@ -308,19 +301,17 @@ class MatlabActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { DIRECTORY_PATH_PROPERTY,
-                FILE_PATH_PROPERTY });
+            return ImmutableList.of(DIRECTORY_PATH_PROPERTY, FILE_PATH_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.DEMO });
+            return ImmutableList.of(ActionMode.DEMO);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.DEMO,
-                ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.DEMO, ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -436,17 +427,17 @@ class MatlabActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { FILE_PATH_PROPERTY });
+            return ImmutableList.of(FILE_PATH_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN });
+            return ImmutableList.of(ActionMode.RUN);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -456,7 +447,7 @@ class MatlabActions implements ActionProvider
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
                     //Retrieve the m-files belonging to this distributable part
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
                     FileFilter mFilter = new FileExtensionFilter("m");
                     List<File> mFiles;
 
@@ -567,7 +558,7 @@ class MatlabActions implements ActionProvider
                         proxy.eval("com.mathworks.mlservices.MLEditorServices.getEditorApplication.closeNoPrompt");
 
                         //Change to root directory of handin
-                        File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
                         proxy.feval("cd", new String[] { unarchiveDir.getAbsolutePath() });
 
                         //Determine which files to open in MATLAB

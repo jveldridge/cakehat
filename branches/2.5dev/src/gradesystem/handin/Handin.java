@@ -1,5 +1,6 @@
 package gradesystem.handin;
 
+import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
 import gradesystem.config.Assignment;
 import gradesystem.config.TimeInformation;
@@ -7,7 +8,6 @@ import gradesystem.database.Group;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -25,7 +25,7 @@ public class Handin
      * Populated with the files representin the handins. It will not exist until
      * it is first requested with a call to {@link #getHandins() }.
      */
-    private Collection<File> _handins = null;
+    private List<File> _handins = null;
 
     public Handin(Assignment asgn, TimeInformation timeInfo)
     {
@@ -44,20 +44,22 @@ public class Handin
     }
 
     /**
-     * Returns the Files for each handin for this assignment. If this method has
-     * not been called before it will load all of the handins.
+     * Returns an immutable list of the Files for each handin for this
+     * assignment. If this method has not been called before it will load all of
+     * the handins. Subsequent calls of this method will return the same list,
+     * so changes to the underlying file system will not be taken into account.
      *
      * @return handins
      */
-    private Collection<File> getHandins()
+    private List<File> getHandins()
     {
         //If handins have not been requested yet, load them
         if(_handins == null)
         {
-            File handinPath = Allocator.getGradingServices().getHandinDirectory(_assignment);
+            File handinPath = Allocator.getPathServices().getHandinDir(this);
             FileFilter handinFilter = Allocator.getArchiveUtilities().getSupportedFormatsFilter();
 
-            _handins = Allocator.getFileSystemUtilities().getFiles(handinPath, handinFilter);
+            _handins = ImmutableList.copyOf(Allocator.getFileSystemUtilities().getFiles(handinPath, handinFilter));
         }
 
         return _handins;
@@ -69,8 +71,7 @@ public class Handin
      * If no handin exists <code>null</code> will be returned.
      *
      * @param group
-     *
-     * @return the most recent handin for the group. Multiple potential room
+     * @return
      */
     public File getHandin(Group group)
     {

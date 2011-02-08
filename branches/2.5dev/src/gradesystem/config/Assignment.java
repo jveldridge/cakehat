@@ -1,17 +1,16 @@
 package gradesystem.config;
 
-import java.util.Vector;
-import gradesystem.Allocator;
+import com.google.common.collect.ImmutableList;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
-import java.util.Collection;
+import java.util.List;
 
 /**
- * A representation of an Assigment, composed of any number of non-handin parts,
+ * A representation of an assigment, composed of any number of non-handin parts,
  * any number of lab parts, any number of distributable parts and zero or one
  * handins. If there are any distributable parts then there will be a handin,
- * and if there is a handin there will be at least one distributle part. This
- * assignment has a name and number, that must both be unique.
+ * and if there is a handin there will be at least one distributable part. This
+ * assignment has a name and number, both of which are unique.
  *
  * @author jak2
  */
@@ -19,18 +18,13 @@ public class Assignment implements Comparable<Assignment>
 {
     private final String _name;
     private final int _number;
-    private final Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
-    private final Vector<LabPart> _labParts = new Vector<LabPart>();
-    private final Vector<DistributablePart> _distributableParts = new Vector<DistributablePart>();
     private final boolean _hasGroups;
-    private Vector<Part> _allParts = null;
-    private Handin _handin = null;
 
-    /**
-     * To be replaced by {@link #_handin} and {@link #_distributableParts}.
-     * @deprecated
-     */
-    private HandinPart _handinPart;
+    private final ImmutableList.Builder<NonHandinPart> _nonHandinBuilder = ImmutableList.builder();
+    private final ImmutableList.Builder<LabPart> _labBuilder = ImmutableList.builder();
+    private final ImmutableList.Builder<DistributablePart> _distributableBuilder = ImmutableList.builder();
+    
+    private Handin _handin = null;
 
     Assignment(String name, int number, boolean hasGroups)
     {
@@ -39,23 +33,33 @@ public class Assignment implements Comparable<Assignment>
         _hasGroups = hasGroups;
     }
 
+    /**
+     * The name of the this assignment. It is unique.
+     *
+     * @return
+     */
     public String getName()
     {
         return _name;
     }
 
-    public String getDBID() {
-        return _name;
-    }
-
     /**
-     * The number of this assignment. It must be unique.
+     * The number of this assignment. It is unique.
      *
      * @return
      */
     public int getNumber()
     {
         return _number;
+    }
+
+    /**
+     * The String used by the database that identifies this assignment.
+     * @return
+     */
+    public String getDBID()
+    {
+        return _name;
     }
 
     /**
@@ -76,63 +80,65 @@ public class Assignment implements Comparable<Assignment>
 
     void addNonHandinPart(NonHandinPart part)
     {
-        _nonHandinParts.add(part);
+        _nonHandinBuilder.add(part);
     }
 
-    public Iterable<NonHandinPart> getNonHandinParts()
+    private List<NonHandinPart> _nonHandinParts;
+    public List<NonHandinPart> getNonHandinParts()
     {
+        if(_nonHandinParts == null)
+        {
+            _nonHandinParts = _nonHandinBuilder.build();
+        }
+
         return _nonHandinParts;
     }
 
     public boolean hasNonHandinParts()
     {
-        return !_nonHandinParts.isEmpty();
+        return !getNonHandinParts().isEmpty();
     }
 
     void addLabPart(LabPart part)
     {
-        _labParts.add(part);
+        _labBuilder.add(part);
     }
 
-    public Iterable<LabPart> getLabParts()
+    private List<LabPart> _labParts;
+    public List<LabPart> getLabParts()
     {
+        if(_labParts == null)
+        {
+            _labParts = _labBuilder.build();
+        }
+
         return _labParts;
     }
 
     public boolean hasLabParts()
     {
-        return !_labParts.isEmpty();
-    }
-
-    /**
-     * @deprecated
-     */
-    public HandinPart getHandinPart()
-    {
-        return _handinPart;
-    }
-
-    /**
-     * @deprecated
-     */
-    public boolean hasHandinPart()
-    {
-        return (_handinPart != null);
+        return !getLabParts().isEmpty();
     }
 
     void addDistributablePart(DistributablePart part)
     {
-        _distributableParts.add(part);
+        _distributableBuilder.add(part);
     }
 
-    public Collection<DistributablePart> getDistributableParts()
+    private List<DistributablePart> _distributableParts;
+    public List<DistributablePart> getDistributableParts()
     {
+        if(_distributableParts == null)
+        {
+            _distributableParts = _distributableBuilder.build();
+        }
+
         return _distributableParts;
     }
 
     public boolean hasDistributableParts()
     {
-        return !_distributableParts.isEmpty();
+        return !getDistributableParts().isEmpty();
     }
 
     void setHandin(Handin handin)
@@ -150,41 +156,27 @@ public class Assignment implements Comparable<Assignment>
         return _handin != null;
     }
 
+    private List<Part> _allParts;
     /**
      * Returns all Parts of this Assignment.
      * 
      * @return
      */
-    public Iterable<Part> getParts()
+    public List<Part> getParts()
     {
         //If this has not been created yet, build it
         if(_allParts == null)
         {
-            _allParts = new Vector<Part>();
+            ImmutableList.Builder<Part> builder = ImmutableList.builder();
 
-            _allParts.addAll(_labParts);
-            _allParts.addAll(_nonHandinParts);
-            _allParts.addAll(_distributableParts);
+            builder.addAll(getLabParts());
+            builder.addAll(getNonHandinParts());
+            builder.addAll(getDistributableParts());
+
+            _allParts = builder.build();
         }
 
         return _allParts;
-    }
-
-    /**
-     * Sums all of the point values for this Assignment's parts.
-     *
-     * @return
-     */
-    public int getTotalPoints()
-    {
-        int points = 0;
-
-        for(Part part : this.getParts())
-        {
-            points += part.getPoints();
-        }
-
-        return points;
     }
 
     @Override
@@ -202,5 +194,35 @@ public class Assignment implements Comparable<Assignment>
     public int compareTo(Assignment a)
     {
         return ((Integer)this.getNumber()).compareTo(a.getNumber());
+    }
+
+    /**
+     * Sums all of the point values for this Assignment's parts.
+     *
+     * @deprecated This method is no longer accurate because parts of an
+     * assignment with the same number are considered equivalent and are not
+     * required to have the same point value. Currently this method totals up
+     * the points for <b>all parts</b> - which is absolutely an incorrect
+     * behavior - but there is no possible correct behavior without specifying
+     * which parts to use when there are multiple with the same part number.
+     * @return
+     */
+    @Deprecated
+    public int getTotalPoints()
+    {
+        int points = 0;
+
+        for(Part part : this.getParts())
+        {
+            points += part.getPoints();
+        }
+
+        return points;
+    }
+
+    @Deprecated
+    public HandinPart getHandinPart()
+    {
+        throw new UnsupportedOperationException("This method is deprecated");
     }
 }

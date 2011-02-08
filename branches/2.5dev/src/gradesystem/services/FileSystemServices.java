@@ -15,7 +15,7 @@ public interface FileSystemServices
 {
     /**
      * Sets the correct permissions and group owner of <code>file</code>.
-     *
+     * <br/><br/>
      * If <code>file</code> is a directory this will be applied recursively
      * for all files and directories inside of the directory.
      *
@@ -31,9 +31,10 @@ public interface FileSystemServices
      * to be created that do not exist are also created in the same manner.
      *
      * @param dir
+     * @return directories created
      * @throws ServicesException
      */
-    public void makeDirectory(File dir) throws ServicesException;
+    public List<File> makeDirectory(File dir) throws ServicesException;
 
     /**
      * Copies a file or a directory and then sets the correct group owner for

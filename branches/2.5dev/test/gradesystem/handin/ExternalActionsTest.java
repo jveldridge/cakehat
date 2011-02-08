@@ -4,7 +4,7 @@ import gradesystem.Allocator;
 import gradesystem.Allocator.SingletonAllocation;
 import gradesystem.config.Assignment;
 import gradesystem.database.Group;
-import gradesystem.services.GradingServices;
+import gradesystem.services.PathServices;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -70,17 +70,17 @@ public class ExternalActionsTest
         Group group = new Group("the group", "member_1", "member_2");
         File unarchiveDir = new File("/root/other/the group");
 
-        //Mock up a grading services that will return dummy unarchive directories
-        final GradingServices gradingServices = createMock(GradingServices.class);
-        expect(gradingServices.getUnarchiveHandinDirectory(null, group)).andReturn(unarchiveDir).times(2);
-        replay(gradingServices);
+        //Mock up a path services that will return dummy unarchive directories
+        final PathServices pathServices = createMock(PathServices.class);
+        expect(pathServices.getUnarchiveHandinDir(null, group)).andReturn(unarchiveDir).times(2);
+        replay(pathServices);
 
-        SingletonAllocation<GradingServices> gradingServicesAlloc =
-            new SingletonAllocation<GradingServices>()
+        SingletonAllocation<PathServices> pathServicesAlloc =
+            new SingletonAllocation<PathServices>()
             {
-                public GradingServices allocate() { return gradingServices; };
+                public PathServices allocate() { return pathServices; };
             };
-        new Allocator.Customizer().setGradingServices(gradingServicesAlloc).customize();
+        new Allocator.Customizer().setPathServices(pathServicesAlloc).customize();
 
         //Assertions
         String command, modifiedCmd;
@@ -182,18 +182,18 @@ public class ExternalActionsTest
         File dirA = new File("/root/other/group A");
         File dirB = new File("/root/other/group B");
 
-        //Mock up a grading services that will return dummy unarchive directories
-        final GradingServices gradingServices = createMock(GradingServices.class);
-        expect(gradingServices.getUnarchiveHandinDirectory(null, groupA)).andReturn(dirA).times(2);
-        expect(gradingServices.getUnarchiveHandinDirectory(null, groupB)).andReturn(dirB).times(2);
-        replay(gradingServices);
+        //Mock up a path services that will return dummy unarchive directories
+        final PathServices pathServices = createMock(PathServices.class);
+        expect(pathServices.getUnarchiveHandinDir(null, groupA)).andReturn(dirA).times(2);
+        expect(pathServices.getUnarchiveHandinDir(null, groupB)).andReturn(dirB).times(2);
+        replay(pathServices);
 
-        SingletonAllocation<GradingServices> gradingServicesAlloc =
-            new SingletonAllocation<GradingServices>()
+        SingletonAllocation<PathServices> pathServicesAlloc =
+            new SingletonAllocation<PathServices>()
             {
-                public GradingServices allocate() { return gradingServices; };
+                public PathServices allocate() { return pathServices; };
             };
-        new Allocator.Customizer().setGradingServices(gradingServicesAlloc).customize();
+        new Allocator.Customizer().setPathServices(pathServicesAlloc).customize();
 
 
         //Assertions

@@ -23,12 +23,13 @@ class XMLParsingUtilities
 {
     /**
      * Indicates whether a node should be skipped or not. A node should not be
-     * processed if it is a text node or a comment node.
+     * processed if it is a text node or a comment node. Text nodes must be
+     * skipped to allow for new lines.
      *
      * @param node
      * @return whether a node should be skipped
      */
-    static boolean skipNode(Node node)
+    private static boolean skipNode(Node node)
     {
         return (node.getNodeName().equals("#text") || node.getNodeName().equals("#comment"));
     }

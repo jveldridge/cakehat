@@ -7,7 +7,7 @@ import gradesystem.Allocator;
 import gradesystem.handin.Handin;
 
 /**
- * Represents the time information a CodePart has.
+ * Represents the time information a {@link gradesystem.handin.Handin} has.
  *
  * @author jak2
  */

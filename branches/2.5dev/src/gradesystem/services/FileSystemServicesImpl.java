@@ -31,21 +31,23 @@ public class FileSystemServicesImpl implements FileSystemServices
         }
     }
 
-    public void makeDirectory(File dir) throws ServicesException
+    public List<File> makeDirectory(File dir) throws ServicesException
     {
-        //Do nothing if it already exists
-        if(!dir.exists())
+        try
         {
-            //Attempt to directly make the directory
-            //If it cannot be done, recursively make all parent directories and
-            //then make the directory
-            if(!dir.mkdir())
+            List<File> directoriesMade = Allocator.getFileSystemUtilities().makeDirectory(dir);
+
+            for(File dirMade : directoriesMade)
             {
-                this.makeDirectory(dir.getParentFile());
-                dir.mkdir();
+                this.sanitize(dirMade);
             }
 
-            this.sanitize(dir);
+            return directoriesMade;
+        }
+        catch(IOException e)
+        {
+            throw new ServicesException("Unable to create directory: " +
+                    dir.getAbsolutePath(), e);
         }
     }
 

@@ -1,20 +1,22 @@
 package gradesystem.config;
 
 import gradesystem.handin.DistributablePart;
-import java.util.Collection;
+import java.util.List;
 
 /**
+ * Information that either comes from the configuration file or is built
+ * directly from it.
  *
  * @author jak2
  */
 public interface ConfigurationInfo
 {
     /**
-     * Returns a collection of all assignments.
+     * Returns an immutable list of all assignments.
      *
      * @return
      */
-    public Collection<Assignment> getAssignments();
+    public List<Assignment> getAssignments();
 
     /**
      * Returns the email account that emails can be sent from.
@@ -32,7 +34,7 @@ public interface ConfigurationInfo
      */
     public DistributablePart getDistributablePart(String partID);
 
-        /**
+    /**
      * Minutes of leniency when determing if an assignment meets a deadline.
      *
      * @return
@@ -47,67 +49,68 @@ public interface ConfigurationInfo
     public SubmitOptions getSubmitOptions();
 
     /**
-     * Returns a collection of all of the TAs.
+     * Returns an immutable list of all of the TAs.
      *
      * @return
      */
-    public Collection<TA> getTAs();
+    public List<TA> getTAs();
 
     /**
-     * Returns a collection of TAs that are default graders.
+     * Returns an immutable list of TAs that are default graders.
      *
      * @return
      */
-    public Collection<TA> getDefaultGraders();
+    public List<TA> getDefaultGraders();
 
     /**
-     * Returns a collection of TAs who are not default graders.
+     * Returns an immutable list of TAs who are not default graders.
      *
      * @return
      */
-    public Collection<TA> getNonDefaultGraders();
+    public List<TA> getNonDefaultGraders();
 
     /**
-     * Returns a collection of TAs that are default graders.
+     * Returns an immutable list of TAs that are default graders.
      *
      * @return
      */
-    public Collection<TA> getAdmins();
+    public List<TA> getAdmins();
 
     /**
      * Returns the TA object representing the TA with the given login.
      * Returns null if no such TA exists.
      *
-     * @return the TA object representing the TA with the given login.
+     * @param the login of the TA
+     * @return
      */
     public TA getTA(String taLogin);
 
     /**
-     * Returns a collection of all assignments that have a handin.
+     * Returns an immutable list of all assignments that have a handin.
      *
      * @return
      */
-    public Collection<Assignment> getHandinAssignments();
+    public List<Assignment> getHandinAssignments();
 
     /**
-     * Returns a collection of all assignment that have a nonhandin part.
+     * Returns an immutable list of all assignment that have a nonhandin part.
      *
      * @return
      */
-    public Collection<Assignment> getNonHandinAssignments();
+    public List<Assignment> getNonHandinAssignments();
 
     /**
-     * Returns a collection of all assignments that have a lab part.
+     * Returns an immutable list of all assignments that have a lab part.
      *
      * @return
      */
-    public Collection<Assignment> getLabAssignments();
+    public List<Assignment> getLabAssignments();
 
     /**
-     * Returns the addresses that should be notified of actions such as grade
-     * submission.
+     * Returns an immutable list of the addresses that should be notified of
+     * actions such as grade submission.
      *
      * @return
      */
-    public Collection<String> getNotifyAddresses();
+    public List<String> getNotifyAddresses();
 }

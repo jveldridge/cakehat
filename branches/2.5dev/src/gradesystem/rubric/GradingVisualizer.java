@@ -15,6 +15,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -196,10 +197,10 @@ class GradingVisualizer extends JFrame
      * Saves the changes made to the GML file
      */
     private void save() {
-        String gmlPath = Allocator.getRubricManager().getGroupRubricPath(_distPart, _group);
+        File gmlFile = Allocator.getPathServices().getGroupGMLFile(_distPart, _group);
 
         try {
-            RubricGMLWriter.write(_rubric, gmlPath);
+            RubricGMLWriter.write(_rubric, gmlFile);
         } catch (RubricException e) {
             new ErrorView(e, "Unable to save rubric.");
             return;
