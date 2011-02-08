@@ -1,5 +1,6 @@
 package gradesystem.handin;
 
+import com.google.common.collect.ImmutableList;
 import utils.AlphabeticFileComparator;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
@@ -8,6 +9,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,14 +30,7 @@ class ApplicationActions implements ActionProvider
 
     public List<DistributableActionDescription> getActionDescriptions()
     {
-        ArrayList<DistributableActionDescription> descriptions = new
-                ArrayList<DistributableActionDescription>();
-
-        descriptions.add(new PDFViewer());
-        descriptions.add(new TextEditor());
-        descriptions.add(new Terminal());
-
-        return descriptions;
+        return ImmutableList.of(new PDFViewer(), new TextEditor(), new Terminal());
     }
 
     private class PDFViewer implements DistributableActionDescription
@@ -84,17 +79,17 @@ class ApplicationActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { APPLICATION_PROPERTY });
+            return ImmutableList.of(APPLICATION_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.OPEN);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.OPEN, ActionMode.RUN, ActionMode.TEST });
+            return ImmutableList.of(ActionMode.OPEN, ActionMode.RUN, ActionMode.TEST);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -122,7 +117,7 @@ class ApplicationActions implements ActionProvider
                         }
                     }
 
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
                     FileFilter pdfFilter = new FileExtensionFilter("pdf");
 
                     List<File> pdfFiles = Allocator.getFileSystemUtilities()
@@ -240,18 +235,17 @@ class ApplicationActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { APPLICATION_PROPERTY,
-                ENV_PROPERTY, EXTENSIONS_PROPERTY});
+            return ImmutableList.of(APPLICATION_PROPERTY, ENV_PROPERTY, EXTENSIONS_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.OPEN);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.OPEN, ActionMode.RUN, ActionMode.TEST });
+            return ImmutableList.of(ActionMode.OPEN, ActionMode.RUN, ActionMode.TEST);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -299,7 +293,7 @@ class ApplicationActions implements ActionProvider
                     }
 
                     //Get files to open
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                     FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
                     List<File> textFiles = Allocator.getFileSystemUtilities()
@@ -380,17 +374,17 @@ class ApplicationActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return new ArrayList<DistributableActionProperty>();
+            return Collections.emptyList();
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.RUN, ActionMode.OPEN);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST });
+            return ImmutableList.of(ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST);
         }
 
         public DistributableAction getAction(Map<DistributableActionProperty, String> properties)
@@ -399,7 +393,7 @@ class ApplicationActions implements ActionProvider
             {
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                     String terminalName = group.getName() + "'s " + part.getAssignment().getName();
                     try

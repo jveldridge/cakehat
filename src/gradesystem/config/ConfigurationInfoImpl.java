@@ -1,15 +1,17 @@
 package gradesystem.config;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 
 /**
+ * Information that comes from the configuration file or is built directly on
+ * top of it. All of the data it return is immutable.
  *
  * @author jak2
  */
@@ -34,7 +36,8 @@ public class ConfigurationInfoImpl implements ConfigurationInfo
                 //If invalid display message
                 if(!_config.checkValidity(writer))
                 {
-                    JOptionPane.showMessageDialog(null, writer.toString(), "Configuration Issues", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, writer.toString(),
+                            "Configuration Issues", JOptionPane.ERROR_MESSAGE);
                 }
             }
             catch (ConfigurationException ex)
@@ -42,22 +45,6 @@ public class ConfigurationInfoImpl implements ConfigurationInfo
                 new ErrorView(ex);
             }
         }
-    }
-
-
-    public Collection<Assignment> getAssignments()
-    {
-        return _config.getAssignments();
-    }
-
-    public EmailAccount getEmailAccount()
-    {
-        return _config.getEmailAccount();
-    }
-
-    public Collection<String> getNotifyAddresses()
-    {
-        return _config.getNotifyAddresses();
     }
 
     public int getMinutesOfLeniency()
@@ -70,156 +57,189 @@ public class ConfigurationInfoImpl implements ConfigurationInfo
         return _config.getSubmitOptions();
     }
 
-    public Collection<TA> getTAs()
+    public EmailAccount getEmailAccount()
+    {
+        return _config.getEmailAccount();
+    }
+
+    public List<Assignment> getAssignments()
+    {
+        return _config.getAssignments();
+    }
+
+    public List<TA> getTAs()
     {
         return _config.getTAs();
     }
 
-        //             Built from configuration data
+    public List<String> getNotifyAddresses()
+    {
+        return _config.getNotifyAddresses();
+    }
 
-    private Collection<TA> _defaultGraders = null;
-    public Collection<TA> getDefaultGraders()
+    /**************************************************************************\
+    |*                     Built from configuration data                      *|
+    \**************************************************************************/
+
+    private List<TA> _defaultGraders;
+    public List<TA> getDefaultGraders()
     {
         if(_defaultGraders == null)
         {
-            _defaultGraders = new ArrayList<TA>();
+            ImmutableList.Builder<TA> builder = ImmutableList.builder();
 
             for(TA ta : getTAs())
             {
                 if(ta.isDefaultGrader())
                 {
-                    _defaultGraders.add(ta);
+                    builder.add(ta);
                 }
             }
+
+            _defaultGraders = builder.build();
         }
 
         return _defaultGraders;
     }
 
-    private Collection<TA> _nonDefaultGraders = null;
-    public Collection<TA> getNonDefaultGraders()
+    private List<TA> _nonDefaultGraders;
+    public List<TA> getNonDefaultGraders()
     {
         if (_nonDefaultGraders == null)
         {
-            _nonDefaultGraders = new ArrayList<TA>();
+            ImmutableList.Builder<TA> builder = ImmutableList.builder();
 
             for (TA ta : getTAs())
             {
                 if (!ta.isDefaultGrader())
                 {
-                    _nonDefaultGraders.add(ta);
+                    builder.add(ta);
                 }
             }
+
+            _nonDefaultGraders = builder.build();
         }
 
         return _nonDefaultGraders;
     }
 
-    private Collection<TA> _admins = null;
-    public Collection<TA> getAdmins()
+    private List<TA> _admins;
+    public List<TA> getAdmins()
     {
         if(_admins == null)
         {
-            _admins = new ArrayList<TA>();
+            ImmutableList.Builder<TA> builder = ImmutableList.builder();
 
             for(TA ta : getTAs())
             {
                 if(ta.isAdmin())
                 {
-                    _admins.add(ta);
+                    builder.add(ta);
                 }
             }
+
+            _admins = builder.build();
         }
 
         return _admins;
     }
 
-    private Map<String, TA> _taMap = null;
+    private Map<String, TA> _taMap;
     public TA getTA(String taLogin)
     {
         if(_taMap == null)
         {
-            _taMap = new HashMap<String, TA>();
+            ImmutableMap.Builder<String, TA> builder = ImmutableMap.builder();
 
             for(TA ta : getTAs())
             {
-                _taMap.put(ta.getLogin(), ta);
+                builder.put(ta.getLogin(), ta);
             }
+
+            _taMap = builder.build();
         }
 
         return _taMap.get(taLogin);
     }
 
-    private Map<String, DistributablePart> _distributablePartMap = null;
+    private Map<String, DistributablePart> _distributablePartMap;
     public DistributablePart getDistributablePart(String partID)
     {
         if(_distributablePartMap == null)
         {
-            _distributablePartMap = new HashMap<String, DistributablePart>();
+            ImmutableMap.Builder<String, DistributablePart> builder = ImmutableMap.builder();
             for(Assignment asgn : getHandinAssignments())
             {
                 for(DistributablePart part : asgn.getDistributableParts())
                 {
-                    _distributablePartMap.put(part.getDBID(), part);
+                    builder.put(part.getDBID(), part);
                 }
             }
+
+            _distributablePartMap = builder.build();
         }
 
         return _distributablePartMap.get(partID);
     }
 
-    private Collection<Assignment> _handinAssignments = null;
-    public Collection<Assignment> getHandinAssignments()
+    private List<Assignment> _handinAssignments;
+    public List<Assignment> getHandinAssignments()
     {
         if(_handinAssignments == null)
         {
-            _handinAssignments = new ArrayList<Assignment>();
+            ImmutableList.Builder<Assignment> builder = ImmutableList.builder();
 
             for(Assignment asgn : getAssignments())
             {
                 if(asgn.hasHandin())
                 {
-                    _handinAssignments.add(asgn);
+                    builder.add(asgn);
                 }
             }
+
+            _handinAssignments = builder.build();
         }
 
         return _handinAssignments;
     }
 
-    private Collection<Assignment> _nonHandinAssignments = null;
-    public Collection<Assignment> getNonHandinAssignments()
+    private List<Assignment> _nonHandinAssignments;
+    public List<Assignment> getNonHandinAssignments()
     {
         if(_nonHandinAssignments == null)
         {
-            _nonHandinAssignments = new ArrayList<Assignment>();
+            ImmutableList.Builder<Assignment> builder = ImmutableList.builder();
 
             for(Assignment asgn : getAssignments())
             {
                 if(asgn.hasNonHandinParts())
                 {
-                    _nonHandinAssignments.add(asgn);
+                    builder.add(asgn);
                 }
             }
+
+            _nonHandinAssignments = builder.build();
         }
 
         return _nonHandinAssignments;
     }
 
-    private Collection<Assignment> _labAssignments = null;
-    public Collection<Assignment> getLabAssignments()
+    private List<Assignment> _labAssignments;
+    public List<Assignment> getLabAssignments()
     {
         if(_labAssignments == null)
         {
-            _labAssignments = new ArrayList<Assignment>();
+            ImmutableList.Builder<Assignment> builder = ImmutableList.builder();
 
             for(Assignment asgn : getAssignments())
             {
                 if(asgn.hasLabParts())
                 {
-                    _labAssignments.add(asgn);
+                    builder.add(asgn);
                 }
             }
+
+            _labAssignments = builder.build();
         }
 
         return _labAssignments;

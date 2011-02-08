@@ -48,7 +48,9 @@ public class DBWrapper implements DatabaseIO {
                     Class.forName("org.sqlite.JDBC");
                     SQLiteConfig config = new SQLiteConfig();
                     config.enforceForeignKeys(true);
-                    c = DriverManager.getConnection("jdbc:sqlite:" + Allocator.getCourseInfo().getDatabaseFilePath(), config.toProperties());
+                    c = DriverManager.getConnection("jdbc:sqlite:" +
+                            Allocator.getPathServices().getDatabaseFile().getAbsolutePath(),
+                            config.toProperties());
                 } catch (ClassNotFoundException e) {
                     new ErrorView(e, "Could not open a connection to the DB.");
                 }
@@ -640,19 +642,19 @@ public class DBWrapper implements DatabaseIO {
 
             while (rs.next()) {
                 String partID = rs.getString("partID");
-                if (Allocator.getCourseInfo().getDistributablePart(partID) != null) {
+                if (Allocator.getConfigurationInfo().getDistributablePart(partID) != null) {
                     String taLogin = rs.getString("login");
-                    TA ta = Allocator.getCourseInfo().getTA(taLogin);
+                    TA ta = Allocator.getConfigurationInfo().getTA(taLogin);
                     if (ta == null) {
                         throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, "
                                 + "but is assigned to grade student " + studentLogin + " for "
-                                + "assignment " + Allocator.getCourseInfo().getDistributablePart(partID).getName() + ".");
+                                + "assignment " + Allocator.getConfigurationInfo().getDistributablePart(partID).getName() + ".");
                     }
-                    graders.put(Allocator.getCourseInfo().getDistributablePart(partID), ta);
+                    graders.put(Allocator.getConfigurationInfo().getDistributablePart(partID), ta);
                 } else {
                     throw new CakeHatDBIOException("The DistributablePart: "
-                            + Allocator.getCourseInfo().getDistributablePart(partID).getName()
-                            + " with ID: " + Allocator.getCourseInfo().getDistributablePart(partID).getDBID()
+                            + Allocator.getConfigurationInfo().getDistributablePart(partID).getName()
+                            + " with ID: " + Allocator.getConfigurationInfo().getDistributablePart(partID).getDBID()
                             + " exists in the Database but not in the config file.");
                 }
             }
@@ -982,7 +984,7 @@ public class DBWrapper implements DatabaseIO {
                         groups.put(ta, group); //add the group to the dist
                     }
                     taLogin = rs.getString("taLogin");
-                    ta = Allocator.getCourseInfo().getTA(taLogin);
+                    ta = Allocator.getConfigurationInfo().getTA(taLogin);
                     loginsForGroup = new ArrayList<String>(5); //make a new list of logins
                     currentNameForGroup = groupName; //update the current name
                     loginsForGroup.add(studentLogin); //add the student to the list
@@ -992,7 +994,7 @@ public class DBWrapper implements DatabaseIO {
                 if (ta == null) {
                     throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
                 }
-                groups.put(Allocator.getCourseInfo().getTA(taLogin), new Group(currentNameForGroup, loginsForGroup)); //make and add a group
+                groups.put(Allocator.getConfigurationInfo().getTA(taLogin), new Group(currentNameForGroup, loginsForGroup)); //make and add a group
             }
 
             return groups.asMap();
@@ -1569,7 +1571,7 @@ public class DBWrapper implements DatabaseIO {
 
             while (rs.next()) {
                 String partID = rs.getString("partID");
-                parts.add(Allocator.getCourseInfo().getDistributablePart(partID));
+                parts.add(Allocator.getConfigurationInfo().getDistributablePart(partID));
             }
 
             return parts;
@@ -1591,10 +1593,10 @@ public class DBWrapper implements DatabaseIO {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                for (Assignment asgn : Allocator.getCourseInfo().getHandinAssignments()) {
+                for (Assignment asgn : Allocator.getConfigurationInfo().getHandinAssignments()) {
                     if (asgn.getHandinPart().getDBID().equals(rs.getString("partID"))) {
                         String taLogin = rs.getString("login");
-                        TA ta = Allocator.getCourseInfo().getTA(taLogin);
+                        TA ta = Allocator.getConfigurationInfo().getTA(taLogin);
                         if (ta == null) {
                             throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, "
                                     + "but is assigned to grade student " + studentLogin + " for "

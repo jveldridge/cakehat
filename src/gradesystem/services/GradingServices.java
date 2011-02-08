@@ -4,9 +4,7 @@ import gradesystem.config.Assignment;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
 import gradesystem.database.HandinStatus;
-import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
-import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
@@ -20,67 +18,19 @@ import java.util.Map;
 public interface GradingServices
 {
     /**
-     * Makes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
+     * Makes the user's workspace as specified by {@link PathServices#getUserWorkspace()}.
+     *
+     * @throws ServicesException if unable to create directory
      */
-    public void makeUserGradingDirectory() throws ServicesException;
+    public void makeUserWorkspace() throws ServicesException;
 
     /**
-     * Removes the user's grading directory as specified by {@link #getUserGradingDirectory()}.
+     * Removes the user's workspace as specified by {@link PathServices#getUserWorkspace()}.
      *
-     * @return success of removing directory
+     * @throws ServicesException if unable to remove directory
      */
-    public boolean removeUserGradingDirectory();
+    public void removeUserWorkspace() throws ServicesException;
 
-    /**
-     * Gets the path to the temporary directory that the user uses while running
-     * cakehat.
-     * <br><br>
-     * Path is: /course/<course>/.cakehat/.<talogin>/
-     * <br><br>
-     * This directory <b>should</b> be deleted when cakehat is closed.
-     *
-     * @return path to a TA's temporary grading directory
-     */
-    public String getUserGradingDirectory();
-
-    /**
-     * Returns the path to the temporary directory within the user's grading directory
-     * in which students' untarred handins and converted GRD files are stored for the
-     * given DistributablePart
-     * <br><br>
-     * Path is: /course/<course>/.cakehat/.<talogin>/<asgn-name>/<dp-name>/
-     *
-     * @return
-     */
-    public String getUserPartDirectory(DistributablePart part);
-
-    /**
-     * The directory the handin is unarchived into.
-     *
-     * /course/<course>/.cakehat/.<ta login>/<assignment name>/<distributable part name>/<group name>/
-     *
-     * @return
-     */
-    public File getUnarchiveHandinDirectory(DistributablePart part, Group group);
-
-    /**
-     * The directory containing all of the handins for an assignment.
-     *
-     * /course/<course>/handin/<assignment name>/<current year>/
-     *
-     * @param assignment
-     * @return
-     */
-    public File getHandinDirectory(Assignment assignment);
-
-    /**
-     * The absolute path to a group's GRD file for a given Handin.
-     *
-     * @param handin
-     * @param group
-     * @return
-     */
-    public String getGroupGRDPath(Handin handin, Group group);
 
     public void printGRDFiles(Handin part, Iterable<Group> groups) throws ServicesException;
 

@@ -1,11 +1,11 @@
 package gradesystem.config;
 
+import com.google.common.collect.ImmutableList;
 import java.io.StringWriter;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Vector;
 import gradesystem.Allocator;
 import gradesystem.handin.Handin;
+import java.util.List;
 import utils.system.NativeException;
 
 /**
@@ -16,9 +16,9 @@ import utils.system.NativeException;
  */
 class Configuration
 {
-    private Vector<Assignment> _assignments = new Vector<Assignment>();
-    private Vector<String> _notifyAddresses = new Vector<String>();
-    private Vector<TA> _tas = new Vector<TA>();
+    private final ImmutableList.Builder<Assignment> _assignmentsBuilder = ImmutableList.builder();
+    private final ImmutableList.Builder<String> _notifyAddressesBuilder = ImmutableList.builder();
+    private final ImmutableList.Builder<TA> _tasBuilder = ImmutableList.builder();
     private EmailAccount _emailAccount;
     private int _leniency;
     private SubmitOptions _submitOptions;
@@ -166,21 +166,33 @@ class Configuration
 
     void addNotifyAddress(String address)
     {
-        _notifyAddresses.add(address);
+        _notifyAddressesBuilder.add(address);
     }
 
-    Collection<String> getNotifyAddresses()
+    private List<String> _notifyAddresses;
+    List<String> getNotifyAddresses()
     {
-       return _notifyAddresses;
+        if(_notifyAddresses == null)
+        {
+            _notifyAddresses = _notifyAddressesBuilder.build();
+        }
+        
+        return _notifyAddresses;
     }
 
     void addTA(TA ta)
     {
-        _tas.add(ta);
+        _tasBuilder.add(ta);
     }
 
-    Collection<TA> getTAs()
+    private List<TA> _tas;
+    List<TA> getTAs()
     {
+        if(_tas == null)
+        {
+            _tas = _tasBuilder.build();
+        }
+
         return _tas;
     }
 
@@ -196,11 +208,17 @@ class Configuration
 
     void addAssignment(Assignment asgn)
     {
-        _assignments.add(asgn);
+        _assignmentsBuilder.add(asgn);
     }
 
-    Collection<Assignment> getAssignments()
+    private List<Assignment> _assignments;
+    List<Assignment> getAssignments()
     {
+        if(_assignments == null)
+        {
+            _assignments = _assignmentsBuilder.build();
+        }
+
         return _assignments;
     }
 

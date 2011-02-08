@@ -2,7 +2,6 @@ package gradesystem.views.backend;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import gradesystem.config.HandinPart;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -155,7 +154,7 @@ public class GroupsView extends javax.swing.JFrame {
         JFileChooser fc = new JFileChooser();
         fc.setApproveButtonText("Import Groups File");
         fc.setFileFilter(_groupFilter);
-        fc.setCurrentDirectory(new File(Allocator.getCourseInfo().getCourseDir()));
+        fc.setCurrentDirectory(Allocator.getPathServices().getCourseDir());
         fc.setMultiSelectionEnabled(false);
         int selection = fc.showOpenDialog(this);
 

@@ -264,7 +264,7 @@ private void grantButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    new ExemptionView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
+                    new ExemptionView(Allocator.getConfigurationInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
                 } catch (SQLException ex) {
                     new ErrorView(ex);
                 }

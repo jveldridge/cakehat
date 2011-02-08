@@ -33,15 +33,14 @@ public class CSVExporter implements Exporter
     @Override
     public void export() throws ExportException
     {
-        JFileChooser chooser = new JFileChooser(Allocator.getCourseInfo().getCourseDir());
+        JFileChooser chooser = new JFileChooser(Allocator.getPathServices().getCourseDir());
 
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Comma Seperated Values", "csv");
         chooser.setFileFilter(filter);
 
-        File defaultFile = new File(Allocator.getCourseInfo().getCourseDir() + "/" +
-                                    Allocator.getCourseInfo().getCourse() + "_grades_" +
-                                    Allocator.getCalendarUtilities().getCurrentYear() +
-                                    ".csv");
+        File defaultFile = new File(Allocator.getPathServices().getCourseDir(),
+                Allocator.getCourseInfo().getCourse() + "_grades_" +
+                Allocator.getCalendarUtilities().getCurrentYear() + ".csv");
         chooser.setSelectedFile(defaultFile);
 
 

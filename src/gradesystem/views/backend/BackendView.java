@@ -192,8 +192,7 @@ public class BackendView extends JFrame
     private List<String> _studentLogins;
     private final static String WELCOME_PANEL_TAG = "Welcome panel",
                                 MULTI_SELECT_PANEL_TAG = "Multiple selected students panel",
-                                SINGLE_SELECT_PANEL_TAG = "Single selected students panel",
-                                SINGLE_SELECT_PARTS_TAG = "Single selected students but parts selected panel";
+                                SINGLE_SELECT_PANEL_TAG = "Single selected students panel";
     private CardLayout _cardLayout;
     private SingleSelectionPanel _singleSelectionPanel;
     private Map<Assignment, Map<String, Group>> _groupsCache = new HashMap<Assignment, Map<String, Group>>();
@@ -217,7 +216,7 @@ public class BackendView extends JFrame
 
         try {
             //make the user's temporary grading directory
-            Allocator.getGradingServices().makeUserGradingDirectory();
+            Allocator.getGradingServices().makeUserWorkspace();
         } catch (ServicesException e) {
             new ErrorView(e, "Could not make user grading directory; " +
                              "functionality will be significantly impaired.  " +
@@ -231,7 +230,14 @@ public class BackendView extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                Allocator.getGradingServices().removeUserGradingDirectory();
+                try
+                {
+                    Allocator.getGradingServices().removeUserWorkspace();
+                }
+                catch(ServicesException ex)
+                {
+                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
+                }
 
                 //If in not testing, backup the database on close
                 if(!GradeSystemApp.inTestMode())
@@ -241,12 +247,12 @@ public class BackendView extends JFrame
                             Allocator.getCalendarUtilities()
                             .getCalendarAsString(Calendar.getInstance())
                             .replaceAll("(\\s|:)", "_");
-                    File backupFile = new File(Allocator.getCourseInfo().getDatabaseBackupDir(),
+                    File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(),
                             backupFileName);
                     try
                     {
                         Allocator.getFileSystemServices()
-                            .copy(new File(Allocator.getCourseInfo().getDatabaseFilePath()), backupFile);
+                            .copy(Allocator.getPathServices().getDatabaseFile(), backupFile);
                     }
                     catch(ServicesException ex)
                     {
@@ -698,10 +704,10 @@ public class BackendView extends JFrame
 
         //Assignment box
         AssignmentOption[] options = {
-                                        new AssignmentOption("All Assignments", Allocator.getCourseInfo().getAssignments()),
-                                        new AssignmentOption("With Handin Part", Allocator.getCourseInfo().getHandinAssignments()),
-                                        new AssignmentOption("With NonHandin Parts", Allocator.getCourseInfo().getNonHandinAssignments()),
-                                        new AssignmentOption("With Lab Parts", Allocator.getCourseInfo().getLabAssignments())
+                                        new AssignmentOption("All Assignments", Allocator.getConfigurationInfo().getAssignments()),
+                                        new AssignmentOption("With Handin Part", Allocator.getConfigurationInfo().getHandinAssignments()),
+                                        new AssignmentOption("With NonHandin Parts", Allocator.getConfigurationInfo().getNonHandinAssignments()),
+                                        new AssignmentOption("With Lab Parts", Allocator.getConfigurationInfo().getLabAssignments())
                                      };
         final JComboBox assignmentsBox = new JComboBox(options);
         assignmentsBox.setPreferredSize(LIST_SELECTOR_SIZE);
@@ -1353,7 +1359,7 @@ public class BackendView extends JFrame
 
     private void modifyBlacklistButtonActionPerformed()
     {
-        new ModifyBlacklistView(Allocator.getCourseInfo().getTAs());
+        new ModifyBlacklistView(Allocator.getConfigurationInfo().getTAs());
     }
 
     private void editConfigurationButtionActionPerformed()
@@ -1892,7 +1898,7 @@ public class BackendView extends JFrame
             //Create directory for the assignment so GRD files can be created,
             //even if no assignments have been untarred
 
-            File partDir = new File(Allocator.getGradingServices().getUserPartDirectory(dp));
+            File partDir = Allocator.getPathServices().getUserPartDir(dp);
             try {
                 Allocator.getFileSystemServices().makeDirectory(partDir);
             } catch (ServicesException e) {

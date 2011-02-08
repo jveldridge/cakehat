@@ -245,19 +245,40 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
-    /**
-     * Creates a directory, recursively creating parent directories as
-     * necessary. This is similar to {@link java.io.File#mkdirs()} but differs
-     * in two important ways. Instead of returning a boolean to indicate
-     * success, an exception is thrown if a directory cannot be created. All
-     * directories that are created are returned.
-     *
-     * @param dir the directory to create
-     * @return directories created
-     * @throws IOException thrown if unable to create any of the necessary
-     * directories in order for <code>dir</code> to exist
-     */
-    private List<File> makeDirectory(File dir) throws IOException
+    public void deleteFile(File file) throws IOException
+    {
+        if(!file.exists())
+        {
+            throw new IOException("File does not exist: " + file.getAbsolutePath());
+        }
+        else if(file.isFile())
+        {
+            if(!file.delete())
+            {
+                throw new IOException("Cannot delete file: " + file.getAbsolutePath());
+            }
+        }
+        else if(file.isDirectory())
+        {
+            //To delete a directory its entire contents must first be deleted
+            for(File entry : file.listFiles())
+            {
+                deleteFile(entry);
+            }
+
+            if(!file.delete())
+            {
+                throw new IOException("Cannot delete directory: " + file.getAbsolutePath());
+            }
+        }
+        else
+        {
+            throw new IOException("Unable to handle non-file and non-directory: " +
+                    file.getAbsolutePath());
+        }
+    }
+
+    public List<File> makeDirectory(File dir) throws IOException
     {
         ArrayList<File> dirsCreated = new ArrayList<File>();
 
@@ -503,39 +524,6 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 this.changeGroup(entry, group, recursive);
             }
         }
-    }
-
-    public boolean removeDirectory(String dirPath)
-    {
-        return removeDirectory(new File(dirPath));
-    }
-
-    public boolean removeDirectory(File dirPath)
-    {
-        //only proceed if directory exists
-        if(dirPath.exists() && dirPath.isDirectory())
-        {
-            //for each directory and file in directory
-            for(File file : dirPath.listFiles())
-            {
-                //if directory, recursively delete files and directories inside
-                if(file.isDirectory())
-                {
-                    removeDirectory(file);
-                }
-                //if file, just delete the file
-                else
-                {
-                    file.delete();
-                }
-            }
-
-            //return success of deleting directory
-            return dirPath.delete();
-        }
-
-        //if the directory didn't exist, report failure
-        return false;
     }
 
     public Collection<File> getFiles(String dirPath, String extension)

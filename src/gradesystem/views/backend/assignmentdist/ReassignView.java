@@ -81,7 +81,7 @@ public class ReassignView extends JFrame {
         _asgn = asgn;
         _dp = dp;
 
-        _tas = new LinkedList<TA>(Allocator.getCourseInfo().getTAs());
+        _tas = new LinkedList<TA>(Allocator.getConfigurationInfo().getTAs());
         Collections.sort(_tas);
 
         _unassignedGroups = new ArrayList<Group>();
@@ -154,7 +154,8 @@ public class ReassignView extends JFrame {
             }
         });
 
-        final GenericJComboBox<Assignment> asgnComboBox = new GenericJComboBox<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
+        final GenericJComboBox<Assignment> asgnComboBox =
+                new GenericJComboBox<Assignment>(Allocator.getConfigurationInfo().getHandinAssignments());
         asgnComboBox.setSelectedItem(_asgn);
 
         asgnComboBox.addActionListener(new ActionListener() {
@@ -856,7 +857,7 @@ public class ReassignView extends JFrame {
     }
 
     public static void main(String[] argv) {
-        Assignment asgn = Allocator.getCourseInfo().getHandinAssignments().iterator().next();
+        Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().iterator().next();
         new ReassignView(asgn, null);
     }
 }

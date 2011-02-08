@@ -1,5 +1,6 @@
 package gradesystem.handin;
 
+import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import gradesystem.printing.PrintRequest;
@@ -29,11 +30,11 @@ class PrintActions implements ActionProvider
 
     public List<DistributableActionDescription> getActionDescriptions()
     {
-        ArrayList<DistributableActionDescription> descriptions =
-                new ArrayList<DistributableActionDescription>();
-        descriptions.add(new Landscape());
+        ImmutableList.Builder<DistributableActionDescription> builder = ImmutableList.builder();
 
-        return descriptions;
+        builder.add(new Landscape());
+
+        return builder.build();
     }
 
     private class Landscape implements DistributableActionDescription
@@ -65,18 +66,17 @@ class PrintActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { EXTENSIONS_PROPERTY });
+            return ImmutableList.of(EXTENSIONS_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.PRINT });
+            return ImmutableList.of(ActionMode.PRINT);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.PRINT,
-                ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.PRINT, ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -99,7 +99,7 @@ class PrintActions implements ActionProvider
 
                         for(Group group : groups)
                         {
-                            File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                             FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
                             Collection<File> filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, extensionsFilter);

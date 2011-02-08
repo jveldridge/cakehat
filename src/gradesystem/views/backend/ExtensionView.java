@@ -46,7 +46,7 @@ public class ExtensionView extends JFrame
         {
             public void run()
             {
-                Assignment asgn = Allocator.getCourseInfo().getHandinAssignments().iterator().next();
+                Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().iterator().next();
                 Group group;
                 try {
                     group = Allocator.getDatabaseIO().getGroupsForAssignment(asgn).iterator().next();

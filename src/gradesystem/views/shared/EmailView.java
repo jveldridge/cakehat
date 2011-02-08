@@ -55,7 +55,7 @@ public class EmailView extends javax.swing.JFrame {
         studentsBox.setText(Arrays.toString(students.toArray()).replace("[", "").replace("]", ""));
         notifyBox.setText(Arrays.toString(toNotify.toArray()).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getCourseInfo().getEmailDomain());
+        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain());
         bodyText.setText(body);
         
         if (attachments == null) {
@@ -280,13 +280,13 @@ public class EmailView extends javax.swing.JFrame {
                 attachmentPath = _attachments.get(student.split("@")[0]);
             }
             
-            Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                     //from
+            Allocator.getConfigurationInfo().getEmailAccount().sendMail(fromBox.getText(),              //from
                                                                   new String[] {student},               //to
                                                                   null,                                 //cc
                                                                   null,                                 //bcc
                                                                   subjectBox.getText(),
                                                                   body, 
-                                                                      new String[] {attachmentPath});   //attachment paths
+                                                                  new String[] {attachmentPath});   //attachment paths
         }
         
         //send notification of message sent to sender and to the course's notification addresses
@@ -304,7 +304,7 @@ public class EmailView extends javax.swing.JFrame {
         }
         notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + body
                 + "</blockquote>";
-        Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                         //from
+        Allocator.getConfigurationInfo().getEmailAccount().sendMail(fromBox.getText(),                  //from
                                                                   new String[] {fromBox.getText()},     //to
                                                                   toNotify,                             //cc
                                                                   null,                                 //bcc

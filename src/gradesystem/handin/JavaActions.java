@@ -1,5 +1,6 @@
 package gradesystem.handin;
 
+import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import java.io.File;
@@ -41,15 +42,7 @@ class JavaActions implements ActionProvider
 {
     public List<DistributableActionDescription> getActionDescriptions()
     {
-        ArrayList<DistributableActionDescription> descriptions =
-                new ArrayList<DistributableActionDescription>();
-
-        descriptions.add(new RunMain());
-        descriptions.add(new JarDemo());
-        descriptions.add(new ClassDemo());
-        descriptions.add(new CopyTest());
-
-        return descriptions;
+        return ImmutableList.of(new RunMain(), new JarDemo(), new ClassDemo(), new CopyTest());
     }
 
     public String getNamespace()
@@ -99,18 +92,17 @@ class JavaActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { COPY_PATH_PROPERTY,
-                MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY});
+            return ImmutableList.of(COPY_PATH_PROPERTY, MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.TEST });
+            return ImmutableList.of(ActionMode.TEST);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN });
+            return ImmutableList.of(ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -122,7 +114,7 @@ class JavaActions implements ActionProvider
                 
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                     //Copy if necessary
                     if(!_testedGroups.contains(group))
@@ -255,13 +247,12 @@ class JavaActions implements ActionProvider
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.DEMO });
+            return ImmutableList.of(ActionMode.DEMO);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.DEMO,
-                ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.DEMO, ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
         }
 
         //cmdEnd must not be null
@@ -287,6 +278,7 @@ class JavaActions implements ActionProvider
             cmd += cmdEnd;
 
             //Determine if this should be run in a visible terminal or not
+            File workspace = Allocator.getPathServices().getUserWorkspaceDir();
             if(properties.containsKey(SHOW_TERMINAL_PROPERTY) &&
                     properties.get(SHOW_TERMINAL_PROPERTY).equalsIgnoreCase("true"))
             {
@@ -297,8 +289,7 @@ class JavaActions implements ActionProvider
                 }
                 try
                 {
-                    File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
-                    Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, cmd, gradingDir);
+                    Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, cmd, workspace);
                 }
                 catch (IOException e)
                 {
@@ -311,8 +302,7 @@ class JavaActions implements ActionProvider
             {
                 try
                 {
-                    File gradingDir = new File(Allocator.getGradingServices().getUserGradingDirectory());
-                    Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, gradingDir);
+                    Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, workspace);
                 }
                 catch(IOException e)
                 {
@@ -341,9 +331,8 @@ class JavaActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[]
-            { LOCATION_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY,
-              CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY });
+            return ImmutableList.of(LOCATION_PROPERTY, SHOW_TERMINAL_PROPERTY,
+                    TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -383,9 +372,8 @@ class JavaActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[]
-            { LOCATION_PROPERTY, MAIN_PROPERTY, SHOW_TERMINAL_PROPERTY,
-              TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY });
+            return ImmutableList.of(LOCATION_PROPERTY, MAIN_PROPERTY, SHOW_TERMINAL_PROPERTY,
+              TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -445,18 +433,17 @@ class JavaActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return Arrays.asList(new DistributableActionProperty[] { MAIN_PROPERTY,
-                CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY});
+            return ImmutableList.of(MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN });
+            return ImmutableList.of(ActionMode.RUN);
         }
 
         public List<ActionMode> getCompatibleModes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN });
+            return ImmutableList.of(ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -465,7 +452,7 @@ class JavaActions implements ActionProvider
             {
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getGradingServices().getUnarchiveHandinDirectory(part, group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                     //Deleted any already compiled files
                     deleteCompiledFiles(unarchiveDir);

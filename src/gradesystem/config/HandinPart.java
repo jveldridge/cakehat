@@ -147,9 +147,7 @@ public abstract class HandinPart extends Part
      */
     private String getHandinPath()
     {
-        String path = Allocator.getCourseInfo().getHandinDir()
-                      + this.getAssignment().getName() + "/" + Allocator.getCalendarUtilities().getCurrentYear() + "/";
-        return path;
+        throw new UnsupportedOperationException("Deprecated method");
     }
 
     /**

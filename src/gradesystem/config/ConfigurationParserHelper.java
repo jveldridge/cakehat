@@ -51,7 +51,7 @@ class ConfigurationParserHelper
      */
     static Node getConfigurationRoot() throws ConfigurationException
     {
-        File configFile = Allocator.getCourseInfo().getConfigurationFile();
+        File configFile = Allocator.getPathServices().getConfigurationFile();
 
         //Check the config file exists
         if(!configFile.exists())

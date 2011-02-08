@@ -1,8 +1,8 @@
 package gradesystem.config;
 
 /**
- * Represents a lab part of an assignment. Can retrieve check off scores for a
- * lab.
+ * Represents a lab part of an assignment. Lab parts can have scores given to
+ * them by using cakehat's lab check off script.
  *
  * @author jak2
  */

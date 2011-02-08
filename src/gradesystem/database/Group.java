@@ -1,8 +1,10 @@
 package gradesystem.database;
 
+import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A group of students.
@@ -12,12 +14,12 @@ import java.util.Collection;
 public class Group implements Comparable<Group>
 {
     private final String _name;
-    private final Collection<String> _members;
+    private final List<String> _members;
 
     public Group(String name, Collection<String> members)
     {
         _name = name;
-        _members = members;
+        _members = ImmutableList.copyOf(members);
     }
 
     public Group(String name, String... members)
@@ -30,7 +32,7 @@ public class Group implements Comparable<Group>
         return _name;
     }
 
-    public Collection<String> getMembers()
+    public List<String> getMembers()
     {
         return _members;
     }

@@ -31,17 +31,17 @@ class RubricGMLParser implements RubricConstants
     /**
      * Converts GML to a Rubric.
      *
-     * @param filepath path to the GML file
+     * @param gmlFile the GML file
      * @param part the DistributablePart associated with this GML file
      * @param the Group associated with this GML file; null if the file is a template
      * @return
      */
-    static Rubric parse(String filepath, DistributablePart part, Group group) throws RubricException
+    static Rubric parse(File gmlFile, DistributablePart part, Group group) throws RubricException
     {
         Rubric rubric = new Rubric(part, group);
 
         //Get XML as a document
-        Document document = getDocument(filepath);
+        Document document = getDocument(gmlFile);
 
         //Get root node
         Node rubricNode = getRootNode(document);
@@ -52,13 +52,12 @@ class RubricGMLParser implements RubricConstants
         return rubric;
     }
 
-    private static Document getDocument(String filepath) throws RubricException
+    private static Document getDocument(File gmlFile) throws RubricException
     {
         //Check if file exists
-        File file = new File(filepath);
-        if(!file.exists())
+        if(!gmlFile.exists())
         {
-            throw new RubricException("Rubric could not be read, location specified: " + filepath);
+            throw new RubricException("Rubric could not be read, location specified: " + gmlFile.getAbsolutePath());
         }
 
         Document document = null;
@@ -66,11 +65,12 @@ class RubricGMLParser implements RubricConstants
         {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.parse(file);
+            document = builder.parse(gmlFile);
         }
         catch (Exception e)
         {
-            throw new RubricGMLException("Exception thrown during parsing, " + filepath + " is illegally formatted. \n" + e.getMessage());
+            throw new RubricGMLException("Exception thrown during parsing, " +
+                    gmlFile.getAbsolutePath() + " is illegally formatted.", e);
         }
 
         return document;

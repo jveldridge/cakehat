@@ -74,9 +74,9 @@ public class DistLookupView extends JFrame {
 
         Collections.sort(_students);
 
-        _assignments = Allocator.getCourseInfo().getHandinAssignments();
+        _assignments = Allocator.getConfigurationInfo().getHandinAssignments();
 
-        _tas = Allocator.getCourseInfo().getTAs();
+        _tas = Allocator.getConfigurationInfo().getTAs();
 
         this.setLayout(new BorderLayout());
         this.add(this.getStudentPanel(), BorderLayout.WEST);

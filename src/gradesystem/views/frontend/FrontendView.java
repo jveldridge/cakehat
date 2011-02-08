@@ -137,9 +137,9 @@ public class FrontendView extends JFrame
         
         //Create the directory to work in
         try {
-            Allocator.getGradingServices().makeUserGradingDirectory();
+            Allocator.getGradingServices().makeUserWorkspace();
         } catch (ServicesException ex) {
-            new ErrorView(ex, "Could not make user grading directory; " +
+            new ErrorView(ex, "Could not make user cakehat workspace directory; " +
                              "functionality will be significantly impaired.  " +
                              "You are advised to restart cakehat and to send an " +
                              "error report if the problem persists.");
@@ -196,16 +196,16 @@ public class FrontendView extends JFrame
     private void updateDPList()
     {
         //Create directory for the assignment so GRD files can be created,
-        //even if no assignments have been untarred
-        String partDir = Allocator.getGradingServices().getUserPartDirectory(_dpList.getSelectedValue());
+        //even if no assignments have been unarchived
+        File partDir = Allocator.getPathServices().getUserPartDir(_dpList.getSelectedValue());
         
         try
         {
-            Allocator.getFileSystemServices().makeDirectory(new File(partDir));
+            Allocator.getFileSystemServices().makeDirectory(partDir);
         }
         catch(ServicesException e)
         {
-            new ErrorView(e, "Unable to create user part directory: " + partDir);
+            new ErrorView(e, "Unable to create user part directory: " + partDir.getAbsolutePath());
         }
 
         //Get the groups assigned for this distributable part
@@ -487,7 +487,15 @@ public class FrontendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Allocator.getGradingServices().removeUserGradingDirectory();
+                try
+                {
+                    Allocator.getGradingServices().removeUserWorkspace();
+                }
+                catch(ServicesException ex)
+                {
+                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
+                }
+
                 System.exit(0);
             }
         });
@@ -812,7 +820,7 @@ public class FrontendView extends JFrame
         DistributablePart dp = _dpList.getSelectedValue();
 
         if (dp != null) {
-            SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getItems(), Allocator.getCourseInfo().getSubmitOptions());
+            SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getItems(), Allocator.getConfigurationInfo().getSubmitOptions());
             if (sd.showDialog() == JOptionPane.OK_OPTION) {
 
                 Collection<Group> selected = sd.getSelectedGroups();
@@ -920,7 +928,14 @@ public class FrontendView extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 //remove user grading directory when frontend is closed
-                Allocator.getGradingServices().removeUserGradingDirectory();
+                try
+                {
+                    Allocator.getGradingServices().removeUserWorkspace();
+                }
+                catch(ServicesException ex)
+                {
+                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
+                }
             }
         });
     }
