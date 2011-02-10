@@ -1,8 +1,12 @@
 package gradesystem.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -74,6 +78,28 @@ public class Assignment implements Comparable<Assignment>
     public boolean hasGroups()
     {
         return _hasGroups;
+    }
+    
+    /**
+     * The total value of this assignment. This is done by summing the values
+     * for each part number. All parts with the same number must have the same
+     * point value.
+     *
+     * @return
+     */
+    public int getTotalPoints()
+    {
+        int points = 0;
+
+        Multimap<Integer, Part> multimap = this.getPartsMultimap();
+        for(int partNum : multimap.keySet())
+        {
+            Collection<Part> parts = multimap.get(partNum);
+            
+            points += Iterables.get(parts, 0).getPoints();
+        }
+
+        return points;
     }
 
     // Parts
@@ -179,6 +205,35 @@ public class Assignment implements Comparable<Assignment>
         return _allParts;
     }
 
+    public Multimap<Integer, Part> _allPartsMultimap;
+    /**
+     * Returns all Parts of this Assignments as a multimap from
+     * {@link Part#getNumber()} to the Parts that have that number. Parts that
+     * have the same number are considered mututally exclusive.
+     *
+     * @return
+     */
+    public Multimap<Integer, Part> getPartsMultimap()
+    {
+        if(_allPartsMultimap == null)
+        {
+            ImmutableMultimap.Builder<Integer, Part> builder = ImmutableMultimap.builder();
+            for(Part part : getParts())
+            {
+                builder.put(part.getNumber(), part);
+            }
+
+            _allPartsMultimap = builder.build();
+        }
+
+        return _allPartsMultimap;
+    }
+    
+    /**
+     * Returns the name of the Assignment.
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -194,30 +249,6 @@ public class Assignment implements Comparable<Assignment>
     public int compareTo(Assignment a)
     {
         return ((Integer)this.getNumber()).compareTo(a.getNumber());
-    }
-
-    /**
-     * Sums all of the point values for this Assignment's parts.
-     *
-     * @deprecated This method is no longer accurate because parts of an
-     * assignment with the same number are considered equivalent and are not
-     * required to have the same point value. Currently this method totals up
-     * the points for <b>all parts</b> - which is absolutely an incorrect
-     * behavior - but there is no possible correct behavior without specifying
-     * which parts to use when there are multiple with the same part number.
-     * @return
-     */
-    @Deprecated
-    public int getTotalPoints()
-    {
-        int points = 0;
-
-        for(Part part : this.getParts())
-        {
-            points += part.getPoints();
-        }
-
-        return points;
     }
 
     @Deprecated

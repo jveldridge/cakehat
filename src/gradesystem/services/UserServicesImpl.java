@@ -85,38 +85,19 @@ public class UserServicesImpl implements UserServices
         }
     }
     
-    public TA getUser() {
+    public TA getUser()
+    {
         return USER;
     }
 
     public boolean isUserTA()
     {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getConfigurationInfo().getTAs())
-        {
-            if(ta.getLogin().equals(userLogin))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (USER != null);
     }
 
     public boolean isUserAdmin()
     {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getConfigurationInfo().getTAs())
-        {
-            if(ta.getLogin().equals(userLogin) && ta.isAdmin())
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (USER != null) && USER.isAdmin();
     }
 
     public boolean isInStudentGroup(String studentLogin) throws NativeException

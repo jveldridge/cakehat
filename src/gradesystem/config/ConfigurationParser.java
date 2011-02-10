@@ -91,17 +91,24 @@ public class ConfigurationParser
 
         config.setLeniency(Integer.parseInt(children.get(LENIENCY).getFirstChild().getNodeValue()));
 
-        SubmitOptions submitOptions = new SubmitOptions();
+        SubmitOptions submitOptions;
         if(children.containsKey(SUBMIT_OPTIONS))
         {
             AttributeMap submitAttr = getAttributes(children.get(SUBMIT_OPTIONS),
                     new String[] { }, new String[] { SUBMIT, NOTIFY, EMAIL_GRD, PRINT_GRD });
 
             submitOptions = new SubmitOptions(
-                    submitAttr.getBoolean(SUBMIT, true),
-                    submitAttr.getBoolean(NOTIFY, true),
-                    submitAttr.getBoolean(EMAIL_GRD, true),
-                    submitAttr.getBoolean(PRINT_GRD, false));
+                    submitAttr.getBoolean(SUBMIT, SubmitOptions.SUBMIT_DEFAULT),
+                    submitAttr.getBoolean(NOTIFY, SubmitOptions.NOTIFY_DEFAULT),
+                    submitAttr.getBoolean(EMAIL_GRD, SubmitOptions.EMAIL_GRD_DEFAULT),
+                    submitAttr.getBoolean(PRINT_GRD, SubmitOptions.PRINT_GRD_DEFAULT));
+        }
+        else
+        {
+           submitOptions = new SubmitOptions(SubmitOptions.SUBMIT_DEFAULT,
+                   SubmitOptions.NOTIFY_DEFAULT,
+                   SubmitOptions.EMAIL_GRD_DEFAULT,
+                   SubmitOptions.PRINT_GRD_DEFAULT);
         }
         
         config.setSubmitOptions(submitOptions);
