@@ -11,41 +11,64 @@ import javax.swing.JOptionPane;
 
 /**
  * Information that comes from the configuration file or is built directly on
- * top of it. All of the data it return is immutable.
+ * top of it. All of the data it returns is immutable.
  *
  * @author jak2
  */
 public class ConfigurationInfoImpl implements ConfigurationInfo
 {
-    //Just in case this class is created multiple times, only parse once
-    private static Configuration _config = null;
+    private Configuration _config;
 
-    /**
-     * Don't directly create this class, access it via Allocator
-     */
     public ConfigurationInfoImpl()
     {
-        if(_config == null)
+        try
         {
-            try
-            {
-                _config = ConfigurationParser.parse();
+            _config = ConfigurationParser.parse();
+        }
+        catch (ConfigurationException ex)
+        {
+            System.err.println("cakehat was unable to parse the configuration file.");
+            System.err.println("Please fix the issue specified by the exception and " +
+                    "then relaunch cakehat.\n");
+            ex.printStackTrace();
 
-                //Check validity
-                StringWriter writer = new StringWriter();
-                //If invalid display message
-                if(!_config.checkValidity(writer))
-                {
-                    JOptionPane.showMessageDialog(null, writer.toString(),
-                            "Configuration Issues", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            catch (ConfigurationException ex)
-            {
-                new ErrorView(ex);
-            }
+            System.exit(-1);
+        }
+        
+        //Check validity
+        ConfigurationValidator validator = new ConfigurationValidator(_config);
+
+        //Check for errors
+        StringWriter errorWriter = new StringWriter();
+        if(!validator.checkForErrors(errorWriter))
+        {
+            String msg = "The following are configuration errors.\n" +
+                    "cakehat cannot run until these issues are resolved.\n\n" +
+                    "Errors:\n" +
+                    errorWriter.toString();
+
+            JOptionPane.showMessageDialog(null, msg,
+                    "Configuration Errors", JOptionPane.ERROR_MESSAGE);
+            System.exit(-1);
+        }
+
+        //Check for warnings
+        StringWriter warningWriter = new StringWriter();
+        if(!validator.checkForWarnings(warningWriter))
+        {
+            String msg = "The following are configuration warnings.\n" +
+                    "cakehat will run, but problems may arise.\n\n" +
+                    "Warnings:\n" +
+                    warningWriter.toString();
+
+            JOptionPane.showMessageDialog(null, msg,
+                    "Configuration Warnings", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    /**************************************************************************\
+    |*                    Directly from configuration data                    *|
+    \**************************************************************************/
 
     public int getMinutesOfLeniency()
     {
