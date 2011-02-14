@@ -10,7 +10,6 @@ import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.config.LabPart;
 import gradesystem.config.Part;
-import gradesystem.GradeSystemApp;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -57,9 +56,9 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.application.SingleFrameApplication;
 import gradesystem.Allocator;
 import gradesystem.CakehatException;
+import gradesystem.CakehatMain;
 import gradesystem.components.AssignmentTree;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
@@ -239,8 +238,8 @@ public class BackendView extends JFrame
                     new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
                 }
 
-                //If in not testing, backup the database on close
-                if(!GradeSystemApp.inTestMode())
+                //If in not developing cakehat, backup the database on close
+                if(!CakehatMain.isDeveloperMode())
                 {
                     String backupFileName = Allocator.getCourseInfo().getCourse() +
                             "db_bk_" +
@@ -1441,7 +1440,7 @@ public class BackendView extends JFrame
         JOptionPane.showMessageDialog(this, "Changes successful.  " +
                 "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
         this.dispose();
-        SingleFrameApplication.launch(GradeSystemApp.class, new String[]{"backend"});
+        BackendView.launch();
     }
 
     private void generateDistributionButtonActionPerformed()
