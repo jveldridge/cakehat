@@ -8,7 +8,7 @@
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
 <project name="cakehat" default="default" basedir=".">
-    <description>Builds, tests, and runs the project GradeSystem.</description>
+    <description>Builds, tests, and runs the project cakehat.</description>
     <import file="nbproject/build-impl.xml"/>
 
     <import file="nbproject/profiler-build-impl.xml"/>    <!--
