@@ -17,16 +17,16 @@ import javax.swing.JPanel;
  *
  * @author jak2 (Joshua Kaplan)
  */
-public class GradeSystemAboutBox extends JFrame
+public class CakehatAboutBox extends JFrame
 {
     private static final int PANEL_HEIGHT = 200;
     private static final Dimension IMAGE_PANEL_SIZE = new Dimension(160, PANEL_HEIGHT);
     private static final Dimension INFO_PANEL_SIZE = new Dimension(270, PANEL_HEIGHT);
     private static final Dimension PANEL_SIZE = new Dimension(IMAGE_PANEL_SIZE.width + INFO_PANEL_SIZE.width, PANEL_HEIGHT);
 
-    private static GradeSystemAboutBox _currentlyDisplayedBox;
+    private static CakehatAboutBox _currentlyDisplayedBox;
 
-    private GradeSystemAboutBox()
+    private CakehatAboutBox()
     {
         super("[cakehat] about");
 
@@ -66,7 +66,7 @@ public class GradeSystemAboutBox extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 _currentlyDisplayedBox = null;
-                GradeSystemAboutBox.this.dispose();
+                CakehatAboutBox.this.dispose();
             }
         });
     }
@@ -87,7 +87,7 @@ public class GradeSystemAboutBox extends JFrame
         }
         else
         {
-            _currentlyDisplayedBox = new GradeSystemAboutBox();
+            _currentlyDisplayedBox = new CakehatAboutBox();
         }
         _currentlyDisplayedBox.setLocationRelativeTo(relativeTo);
         _currentlyDisplayedBox.setVisible(true);

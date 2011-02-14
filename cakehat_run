@@ -4,6 +4,7 @@
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 20, 2010
+# last updated: February 12, 2011
 #==============================================================================
 
 #message displayed when run incorrectly
@@ -16,7 +17,7 @@ abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
 course=${abspath:8:5}
 
 #location of jar to run
-grade_sys="/course/"$course"/.cakehat/bin/GradeSystem.jar"
+cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
 
 #if the number of arguments passed in is invalid
 if [[ !( $# == 1 || $# == 2 ) ]]
@@ -41,13 +42,13 @@ then
     fi
 fi
 
-#check appropriate arguements: frontend, backend
+#check appropriate arguments: frontend, backend
 if [[ $1 == "frontend" ]]
 then
-    java -jar $grade_sys frontend $option2
+    java -jar $cakehat frontend $option2
 elif [[ $1 == "backend" ]]
 then
-    java -jar $grade_sys backend $option2
+    java -jar $cakehat backend $option2
 else
     echo $usage
     echo "First argument must be frontend or backend; you used "$1

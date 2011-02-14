@@ -138,14 +138,18 @@ public interface PathServices
      * }
      * </pre>
      * 
-     * If cakehat is being run from neither the backend nor frontend, which
-     * should only occur during a test:
+     * If cakehat's normal main class was not run and cakehat is in an unknown
+     * mode, which should only occur during a test:
      * <pre>
      * {@code
      * /course/<course>/.cakehat/workspaces/<ta login>-test/
      * }
      * </pre>
      *
+     * Any other state (such as during lab checkoff) will result in a runtime
+     * exception being thrown. If cakehat is not using the frontend, backend,
+     * or testing then the user workspace directory should not need be needed.
+     * <br/><br/>
      * All other path methods that reference {@code <ta login>} in their path
      * build from this path and so follow the same pattern.
      *

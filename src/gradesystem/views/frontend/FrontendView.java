@@ -6,7 +6,7 @@ import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
 import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.config.TA;
-import gradesystem.GradeSystemAboutBox;
+import gradesystem.CakehatAboutBox;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -522,7 +522,7 @@ public class FrontendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                GradeSystemAboutBox.displayRelativeTo(FrontendView.this);
+                CakehatAboutBox.displayRelativeTo(FrontendView.this);
             }
         });
         menu.add(menuItem);
