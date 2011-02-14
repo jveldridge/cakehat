@@ -6,6 +6,7 @@
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 27, 2011
+# last updated: February 12, 2011
 #==============================================================================
 
 #retrieve the location of this script
@@ -15,6 +16,6 @@ abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
 course=${abspath:8:5}
 
 #location of jar to run
-grade_sys="/course/"$course"/.cakehat/bin/GradeSystem.jar"
+cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
 
-java -jar $grade_sys LAB "$@"
+java -jar $cakehat LAB "$@"

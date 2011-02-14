@@ -17,16 +17,16 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /**
- * Window shown when running in testing mode that allows for selecting either
+ * Window shown when running in developer mode that allows for selecting either
  * the frontend or backend view.
  *
  * @author jak2
  */
-class GradeSystemView extends JFrame
+class DeveloperModeView extends JFrame
 {
-    public GradeSystemView()
+    private DeveloperModeView()
     {
-        super("[cakehat] test mode - " + Allocator.getUserUtilities().getUserLogin());
+        super("[cakehat] developer mode - " + Allocator.getUserUtilities().getUserLogin());
 
          //Menu bar
         JMenuBar menuBar = new JMenuBar();
@@ -58,7 +58,7 @@ class GradeSystemView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                JOptionPane.showMessageDialog(GradeSystemView.this, "This feature is not yet available");
+                JOptionPane.showMessageDialog(DeveloperModeView.this, "This feature is not yet available");
             }
         });
         menu.add(menuItem);
@@ -69,7 +69,7 @@ class GradeSystemView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                GradeSystemAboutBox.displayRelativeTo(GradeSystemView.this);
+                CakehatAboutBox.displayRelativeTo(DeveloperModeView.this);
             }
         });
         menu.add(menuItem);
@@ -85,9 +85,9 @@ class GradeSystemView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
-               GradeSystemApp._isFrontend = true;
+               CakehatMain.setRunMode(CakehatRunMode.FRONTEND);
                FrontendView.launch();
-               GradeSystemView.this.dispose();
+               DeveloperModeView.this.dispose();
            }
         });
         panel.add(frontendButton);
@@ -98,9 +98,9 @@ class GradeSystemView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
-               GradeSystemApp._isBackend = true;
+               CakehatMain.setRunMode(CakehatRunMode.BACKEND);
                BackendView.launch();
-               GradeSystemView.this.dispose();
+               DeveloperModeView.this.dispose();
            }
         });
         panel.add(backendButton);
@@ -114,6 +114,6 @@ class GradeSystemView extends JFrame
 
     public static void launch()
     {
-        new GradeSystemView().setVisible(true);
+        new DeveloperModeView().setVisible(true);
     }
 }

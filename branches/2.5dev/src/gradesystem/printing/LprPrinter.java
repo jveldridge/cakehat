@@ -1,7 +1,6 @@
 package gradesystem.printing;
 
 import gradesystem.Allocator;
-import gradesystem.GradeSystemApp;
 import java.io.File;
 import java.io.IOException;
 
@@ -24,13 +23,6 @@ public class LprPrinter extends Printer
                 cmd += " " + "'" + file.getAbsolutePath() + "'";
             }
 	}
-
-        if (GradeSystemApp.inTestMode())
-        {
-            //Testing
-            System.out.println("lpr Command:");
-            System.out.println(cmd);
-        }
 
 	//Execute command
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();

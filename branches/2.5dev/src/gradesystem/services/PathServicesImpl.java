@@ -1,7 +1,8 @@
 package gradesystem.services;
 
 import gradesystem.Allocator;
-import gradesystem.GradeSystemApp;
+import gradesystem.CakehatRunMode;
+import gradesystem.CakehatMain;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
@@ -88,24 +89,28 @@ public class PathServicesImpl implements PathServices
 
         File workspace;
 
-        if(GradeSystemApp.isFrontend())
+        CakehatRunMode mode = CakehatMain.getRunMode();
+        if(mode == CakehatRunMode.FRONTEND)
         {
             workspace = new File(parent,
                     Allocator.getUserUtilities().getUserLogin());
         }
-        else if(GradeSystemApp.isBackend())
+        else if(mode == CakehatRunMode.BACKEND)
         {
             workspace = new File(parent,
                     Allocator.getUserUtilities().getUserLogin() + "-admin");
         }
-        else
+        else if(mode == CakehatRunMode.UNKNOWN && !CakehatMain.didStartNormally())
         {
             workspace = new File(parent,
                     Allocator.getUserUtilities().getUserLogin() + "-test");
-
-            System.out.println("cakehat is neither in the frontend or backend, " +
-                    "assuming cakehat is in test mode");
-            System.out.println("Will use directory: " + workspace.getAbsolutePath());
+        }
+        else
+        {
+            throw new IllegalStateException("Cannot provide path to user's " +
+                    "workspace directory due to unexpected run state.\n" +
+                    "Run mode: "+ mode + "\n" +
+                    "Did start normally? " + CakehatMain.didStartNormally());
         }
 
         return workspace;

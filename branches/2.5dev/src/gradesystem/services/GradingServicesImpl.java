@@ -2,7 +2,6 @@ package gradesystem.services;
 
 import gradesystem.views.shared.ErrorView;
 import gradesystem.config.Assignment;
-import gradesystem.GradeSystemApp;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -29,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import gradesystem.Allocator;
+import gradesystem.CakehatMain;
 import gradesystem.config.LatePolicy;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
@@ -84,7 +84,7 @@ public class GradingServicesImpl implements GradingServices
         return this.getPrinter("Please select a printer.");
     }
 
-    private static final String[] TESTING_PRINTERS = new String[] { "bw1", "bw2", "bw3", "bw4", "bw5" };
+    private static final String[] DEVELOPER_PRINTERS = new String[] { "bw1", "bw2", "bw3", "bw4", "bw5" };
     private static final String[] DEFAULT_PRINTERS = new String[] { "bw3", "bw4", "bw5" };
     private static final String DEFAULT_PRINTER = "bw3";
     @Override
@@ -92,10 +92,10 @@ public class GradingServicesImpl implements GradingServices
     {
         String[] printerChoices = null;
 
-        // select printer choices based on testing mode
-        if (GradeSystemApp.inTestMode())
+        // select printer choices based on if under developer mode
+        if (CakehatMain.isDeveloperMode())
         {
-            printerChoices = TESTING_PRINTERS;
+            printerChoices = DEVELOPER_PRINTERS;
         }
         else
         {

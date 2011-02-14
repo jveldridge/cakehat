@@ -1,6 +1,5 @@
 package gradesystem.printing;
 
-import gradesystem.GradeSystemApp;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -31,11 +30,6 @@ public class EnscriptPrinter extends Printer {
             //Build command
             String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
                     dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer, tmpFile.getAbsolutePath());
-
-            if (GradeSystemApp.inTestMode()) {
-                System.out.println("enscript Command:");
-                System.out.println(cmd);
-            }
 
             //Execute command
             fullCommand = fullCommand + cmd;
