@@ -10,7 +10,7 @@ import utils.system.NativeException;
 
 public class UserServicesImpl implements UserServices
 {
-    private final TA USER = Allocator.getConfigurationInfo().getTA(Allocator.getUserUtilities().getUserLogin());
+    private TA _user;
 
     public void addStudent(String studentLogin, String firstName, String lastName,
             ValidityCheck checkValidity) throws ServicesException
@@ -87,17 +87,22 @@ public class UserServicesImpl implements UserServices
     
     public TA getUser()
     {
-        return USER;
+        if(_user == null)
+        {
+            _user = Allocator.getConfigurationInfo().getTA(Allocator.getUserUtilities().getUserLogin());
+        }
+
+        return _user;
     }
 
     public boolean isUserTA()
     {
-        return (USER != null);
+        return (getUser() != null);
     }
 
     public boolean isUserAdmin()
     {
-        return (USER != null) && USER.isAdmin();
+        return (getUser() != null) && getUser().isAdmin();
     }
 
     public boolean isInStudentGroup(String studentLogin) throws NativeException
