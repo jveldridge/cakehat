@@ -37,11 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -62,6 +60,9 @@ import gradesystem.CakehatMain;
 import gradesystem.components.AssignmentTree;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.services.ServicesException;
 import gradesystem.services.UserServices.ValidityCheck;
 import gradesystem.views.shared.ErrorView;
@@ -283,22 +284,22 @@ public class BackendView extends JFrame
             switch ((int) (Math.random() * 5))
             {
                 case 0:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_DEVILISH);
                     break;
                 case 1:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_ANGEL);
                     break;
                 case 2:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_SURPRISE);
                     break;
                 case 3:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_CRYING);
                     break;
                 case 4:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_MONKEY);
                     break;
                 case 5:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_GLASSES);
                     break;
             }
             this.setIconImage(icon);
@@ -762,7 +763,7 @@ public class BackendView extends JFrame
         panel.add(buttonPanel);
 
         //Charts & histograms
-        _chartsButton = createButton("View Charts", "/gradesystem/resources/icons/16x16/x-office-spreadsheet.png");
+        _chartsButton = createButton("View Charts", IconImage.X_OFFICE_SPREADSHEET);
         _chartsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -774,7 +775,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_chartsButton);
 
         //Email grade reports
-        _emailReportsButton = createButton("Email Reports", "/gradesystem/resources/icons/16x16/mail-message-new.png");
+        _emailReportsButton = createButton("Email Reports", IconImage.MAIL_MESSAGE_NEW);
         _emailReportsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -787,7 +788,7 @@ public class BackendView extends JFrame
 
         buttonPanel.add(Box.createVerticalBox());//space
 
-        _exemptionsButton = createButton("Exemptions", "/gradesystem/resources/icons/16x16/dialog-error.png");
+        _exemptionsButton = createButton("Exemptions", IconImage.DIALOG_ERROR);
         _exemptionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -801,7 +802,7 @@ public class BackendView extends JFrame
 
         //Extensions & Exemptions
 
-        _extensionsButton = createButton("Extensions", "/gradesystem/resources/icons/16x16/office-calendar.png");
+        _extensionsButton = createButton("Extensions", IconImage.OFFICE_CALENDAR);
         _extensionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -815,7 +816,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //Open Student Code
-        _openCodeButton = createButton("Open Student Code", "/gradesystem/resources/icons/16x16/document-open.png");
+        _openCodeButton = createButton("Open Student Code", IconImage.DOCUMENT_OPEN);
         _openCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -827,7 +828,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_openCodeButton);
 
         //Run Student Code
-        _runCodeButton = createButton("Run Student Code", "/gradesystem/resources/icons/16x16/go-next.png");
+        _runCodeButton = createButton("Run Student Code", IconImage.GO_NEXT);
         _runCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -839,7 +840,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_runCodeButton);
 
         //Test Student Code
-        _testCodeButton = createButton("Test Student Code", "/gradesystem/resources/icons/16x16/utilities-system-monitor.png");
+        _testCodeButton = createButton("Test Student Code", IconImage.UTILITIES_SYSTEM_MONITOR);
         _testCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -851,7 +852,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_testCodeButton);
 
         //Print Student Code
-        _printCodeButton = createButton("Print Student Code", "/gradesystem/resources/icons/16x16/printer.png");
+        _printCodeButton = createButton("Print Student Code", IconImage.PRINTER);
         _printCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -865,7 +866,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //View readme
-        _viewReadmeButton =createButton("View Readme", "/gradesystem/resources/icons/16x16/text-x-generic.png");
+        _viewReadmeButton =createButton("View Readme", IconImage.TEXT_X_GENERIC);
         _viewReadmeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -879,7 +880,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //View student rubric
-        _viewRubricButton = createButton("View Student Rubric", "/gradesystem/resources/icons/16x16/font-x-generic.png");
+        _viewRubricButton = createButton("View Student Rubric", IconImage.FONT_X_GENERIC);
         _viewRubricButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -891,7 +892,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_viewRubricButton);
 
         //Email student rubric
-        _emailStudentRubric = createButton("Email Student Rubric", "/gradesystem/resources/icons/16x16/mail-forward.png");
+        _emailStudentRubric = createButton("Email Student Rubric", IconImage.MAIL_FORWARD);
         _emailStudentRubric.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -904,7 +905,7 @@ public class BackendView extends JFrame
 
 
         //Print student rubric
-        _printRubricButton = createButton("Print Student Rubric", "/gradesystem/resources/icons/16x16/document-print.png");
+        _printRubricButton = createButton("Print Student Rubric", IconImage.DOCUMENT_PRINT);
         _printRubricButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -918,7 +919,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //Disable student
-        _disableStudentButton = createButton("Disable Student", "/gradesystem/resources/icons/16x16/list-remove.png");
+        _disableStudentButton = createButton("Disable Student", IconImage.LIST_REMOVE);
         _disableStudentButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -949,7 +950,7 @@ public class BackendView extends JFrame
         panel.add(buttonPanel);
 
         //Manage groups
-        _manageGroupsButton = createButton("Manage Groups", "/gradesystem/resources/icons/16x16/system-users.png");
+        _manageGroupsButton = createButton("Manage Groups", IconImage.SYSTEM_USERS);
         _manageGroupsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -961,7 +962,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_manageGroupsButton);
 
         //Generate Distribution
-        _createDistributionButton = createButton("Create Distribution", "/gradesystem/resources/icons/16x16/document-save-as.png");
+        _createDistributionButton = createButton("Create Distribution", IconImage.DOCUMENT_SAVE_AS);
         _createDistributionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -973,7 +974,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_createDistributionButton);
 
         //Reassign grading
-        _reassignGradingButton = createButton("Reassign Grading", "/gradesystem/resources/icons/16x16/document-properties.png");
+        _reassignGradingButton = createButton("Reassign Grading", IconImage.DOCUMENT_PROPERTIES);
         _reassignGradingButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -985,7 +986,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_reassignGradingButton);
 
         //Preview rubric
-        _previewRubricButton = createButton("Preview Rubric", "/gradesystem/resources/icons/16x16/system-search.png");
+        _previewRubricButton = createButton("Preview Rubric", IconImage.SYSTEM_SEARCH);
         _previewRubricButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -997,7 +998,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_previewRubricButton);
 
         //Deductions List
-        _viewDeductionsButton = createButton("Deductions List", "/gradesystem/resources/icons/16x16/text-x-generic.png");
+        _viewDeductionsButton = createButton("Deductions List", IconImage.TEXT_X_GENERIC);
         _viewDeductionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1009,7 +1010,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_viewDeductionsButton);
 
         //Run Demo
-        _runDemoButton = createButton("Run Demo", "/gradesystem/resources/icons/16x16/applications-system.png");
+        _runDemoButton = createButton("Run Demo", IconImage.APPLICATIONS_SYSTEM);
         _runDemoButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1046,7 +1047,7 @@ public class BackendView extends JFrame
         panel.add(buttonPanel);
 
         //Modify blacklist
-        _modifyBlacklistButton = this.createButton("Modify Blacklist", "/gradesystem/resources/icons/16x16/format-text-strikethrough.png");
+        _modifyBlacklistButton = this.createButton("Modify Blacklist", IconImage.FORMAT_TEXT_STRIKETHROUGH);
         _modifyBlacklistButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1058,7 +1059,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_modifyBlacklistButton);
 
         //Edit configuration
-        _editConfigurationButton = this.createButton("Edit Configuration", "/gradesystem/resources/icons/16x16/preferences-system.png");
+        _editConfigurationButton = this.createButton("Edit Configuration", IconImage.PREFERENCES_SYSTEM);
         _editConfigurationButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1070,7 +1071,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_editConfigurationButton);
 
         //Export grades
-        _exportGradesButton = this.createButton("Export Grades", "/gradesystem/resources/icons/16x16/edit-redo.png");
+        _exportGradesButton = this.createButton("Export Grades", IconImage.EDIT_REDO);
         _exportGradesButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1082,7 +1083,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_exportGradesButton);
 
         //Reset database
-        _resetDatabaseButton = this.createButton("Reset Database", "/gradesystem/resources/icons/16x16/view-refresh.png");
+        _resetDatabaseButton = this.createButton("Reset Database", IconImage.VIEW_REFRESH);
         _resetDatabaseButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1336,12 +1337,12 @@ public class BackendView extends JFrame
      * Creates a button with bold text and an image.
      *
      * @param text
-     * @param imagePath
+     * @param image
      * @return
      */
-    private JButton createButton(String text, String imagePath)
+    private JButton createButton(String text, IconImage image)
     {
-        Icon icon = new ImageIcon(getClass().getResource(imagePath));
+        Icon icon = IconLoader.loadIcon(IconSize.s16x16, image);
         JButton button = new JButton("<html><b>" + text + "</b></html>", icon);
         button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         button.setIconTextGap(10);
@@ -1811,12 +1812,12 @@ public class BackendView extends JFrame
     private void updateDisableEnableButton(boolean enabled) {
         if(enabled)
         {
-            _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-remove.png")));
+            _disableStudentButton.setIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.LIST_REMOVE));
             _disableStudentButton.setText("Disable Student");
         }
         else
         {
-            _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-add.png")));
+            _disableStudentButton.setIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.LIST_ADD));
             _disableStudentButton.setText("Enable Student");
         }
     }

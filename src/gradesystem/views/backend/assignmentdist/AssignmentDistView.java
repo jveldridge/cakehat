@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -32,13 +31,16 @@ import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 
 /**
  * Provides an interface for creating a distribution for an assignment.
@@ -172,7 +174,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         this.add(buttonPanel, BorderLayout.SOUTH);
 
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/accessories-text-editor.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.ACCESSORIES_TEXT_EDITOR));
         } catch (Exception e) {}
 
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -473,7 +475,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             }
         }
 
-        ImageIcon icon = new javax.swing.ImageIcon("/gradesystem/resources/icons/32x32/accessories-text-editor.png"); // NOI18N
+        Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.ACCESSORIES_TEXT_EDITOR);
         String input = (String) JOptionPane.showInputDialog(this, "Enter minutes of leniency:",
                 "Set Grace Period", JOptionPane.PLAIN_MESSAGE, icon, null, "");
         
