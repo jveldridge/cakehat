@@ -23,10 +23,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -45,6 +43,9 @@ import gradesystem.components.GenericJList.StringConverter;
 import gradesystem.database.CakeHatDBIOException;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -536,7 +537,7 @@ public class FrontendView extends JFrame
     private void initializeGeneralCommandButtons(JPanel generalButtonsPanel)
     {
         //Run Demo
-        _runDemoButton = createButton("/gradesystem/resources/icons/32x32/applications-system.png",
+        _runDemoButton = createButton(IconImage.APPLICATIONS_SYSTEM,
                                       "Run Demo", "Run the assignment demo");
         _runDemoButton.addActionListener(new ActionListener()
         {
@@ -549,7 +550,7 @@ public class FrontendView extends JFrame
         generalButtonsPanel.add(_runDemoButton);
 
         //Print All
-        _printAllButton = createButton("/gradesystem/resources/icons/32x32/printer.png",
+        _printAllButton = createButton(IconImage.PRINTER,
                                        "Print All", "Print code for all students");
         _printAllButton.addActionListener(new ActionListener()
         {
@@ -562,7 +563,7 @@ public class FrontendView extends JFrame
         generalButtonsPanel.add(_printAllButton);
 
         //View Deductions
-        _viewDeductionsButton = createButton("/gradesystem/resources/icons/32x32/text-x-generic.png",
+        _viewDeductionsButton = createButton(IconImage.TEXT_X_GENERIC,
                                        "View Deductions", "Display the deductions list");
         _viewDeductionsButton.addActionListener(new ActionListener()
         {
@@ -575,7 +576,7 @@ public class FrontendView extends JFrame
         generalButtonsPanel.add(_viewDeductionsButton);
 
         //Submit Grading
-        _submitGradingButton = createButton("/gradesystem/resources/icons/32x32/mail-send-receive.png",
+        _submitGradingButton = createButton(IconImage.MAIL_SEND_RECEIVE,
                                             "Submit Grading", "Submit all graded assignments");
         _submitGradingButton.addActionListener(new ActionListener()
         {
@@ -596,7 +597,7 @@ public class FrontendView extends JFrame
     private void initializeStudentCommandButtons(JPanel studentButtonsPanel)
     {
         //View Readme
-        _viewReadmeButton = createButton("/gradesystem/resources/icons/32x32/document-properties.png",
+        _viewReadmeButton = createButton(IconImage.DOCUMENT_PROPERTIES,
                                          "View Readme", "Display the student's readme");
         _viewReadmeButton.addActionListener(new ActionListener()
         {
@@ -609,7 +610,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_viewReadmeButton);
 
         //Open Code
-        _openCodeButton = createButton("/gradesystem/resources/icons/32x32/document-open.png",
+        _openCodeButton = createButton(IconImage.DOCUMENT_OPEN,
                                        "Open Code", "Open the student's code");
         _openCodeButton.addActionListener(new ActionListener()
         {
@@ -622,7 +623,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_openCodeButton);
 
         //Run Tester
-        _runTesterButton = createButton("/gradesystem/resources/icons/32x32/utilities-system-monitor.png",
+        _runTesterButton = createButton(IconImage.UTILITIES_SYSTEM_MONITOR,
                                         "Run Tester", "Run tester on the student's code");
         _runTesterButton.addActionListener(new ActionListener()
         {
@@ -635,7 +636,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_runTesterButton);
 
         //Print Code
-        _printStudentButton = createButton("/gradesystem/resources/icons/32x32/printer.png",
+        _printStudentButton = createButton(IconImage.PRINTER,
                                            "Print Code", "Print the student's code");
         _printStudentButton.addActionListener(new ActionListener()
         {
@@ -648,7 +649,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_printStudentButton);
 
         //Grade Assignment
-        _gradeAssignmentButton = createButton("/gradesystem/resources/icons/32x32/font-x-generic.png",
+        _gradeAssignmentButton = createButton(IconImage.FONT_X_GENERIC,
                                               "Grade Assignment", "Grade the student's assignment");
         _gradeAssignmentButton.addActionListener(new ActionListener()
         {
@@ -661,7 +662,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_gradeAssignmentButton);
 
         //Run Code
-        _runCodeButton = createButton("/gradesystem/resources/icons/32x32/go-next.png",
+        _runCodeButton = createButton(IconImage.GO_NEXT,
                                       "Run Code", "Run the student's code");
         _runCodeButton.addActionListener(new ActionListener()
         {
@@ -678,14 +679,14 @@ public class FrontendView extends JFrame
      * Creates a button with an image on the left hand side and then two lines
      * of text to the right of the image. The top line of text is bolded.
      *
-     * @param imagePath
+     * @param image
      * @param topLine
      * @param bottomLine
      * @return the button created
      */
-    private JButton createButton(String imagePath, String topLine, String bottomLine)
+    private JButton createButton(IconImage image, String topLine, String bottomLine)
     {
-        Icon icon = new ImageIcon(getClass().getResource(imagePath));
+        Icon icon = IconLoader.loadIcon(IconSize.s32x32, image);
         JButton button = new JButton("<html><b>" + topLine + "</b><br/>" + bottomLine + "</html>", icon);
         button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         button.setIconTextGap(10);
@@ -953,22 +954,22 @@ public class FrontendView extends JFrame
             switch ((int) (Math.random() * 5))
             {
                 case 0:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_DEVILISH);
                     break;
                 case 1:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_ANGEL);
                     break;
                 case 2:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_SURPRISE);
                     break;
                 case 3:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_CRYING);
                     break;
                 case 4:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_MONKEY);
                     break;
                 case 5:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_GLASSES);
                     break;
             }
             this.setIconImage(icon);

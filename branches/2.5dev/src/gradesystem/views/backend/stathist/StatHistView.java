@@ -10,10 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import gradesystem.Allocator;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
 
 /**
@@ -39,7 +41,7 @@ public class StatHistView extends javax.swing.JFrame {
         _partChartMap = new HashMap<Part,AssignmentChartPanel>();
         _studChartMap = new HashMap<String,StudentChartPanel>();
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/x-office-drawing.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.X_OFFICE_DRAWING));
         } catch (Exception e) {}
         
         initComponents();

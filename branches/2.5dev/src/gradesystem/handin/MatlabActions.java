@@ -6,6 +6,9 @@ import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.components.ShadowJTextField;
 import gradesystem.database.Group;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,7 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -673,7 +676,7 @@ class MatlabActions implements ActionProvider
         });
         updateEval.run();
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("/gradesystem/resources/icons/32x32/go-next.png"));
+        Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.GO_NEXT);
         int result = JOptionPane.showConfirmDialog(null, panel,
                 "Run m-file", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, icon);

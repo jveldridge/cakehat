@@ -7,10 +7,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import gradesystem.Allocator;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 
 /**
  *
@@ -28,7 +30,7 @@ public class EmailView extends javax.swing.JFrame {
         initComponents();
         this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
         } catch (Exception e) {
         }
         
@@ -49,7 +51,7 @@ public class EmailView extends javax.swing.JFrame {
         initComponents();
         this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
         } catch (Exception e) {
         }
         studentsBox.setText(Arrays.toString(students.toArray()).replace("[", "").replace("]", ""));

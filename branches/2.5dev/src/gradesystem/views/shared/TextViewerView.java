@@ -1,6 +1,5 @@
 package gradesystem.views.shared;
 
-import gradesystem.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -20,7 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -39,6 +37,9 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import gradesystem.Allocator;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 
 /**
  * A simpler viewer for plain text files. Allows for searching within the
@@ -125,7 +126,7 @@ public class TextViewerView extends JFrame
     {
         try
         {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/text-x-generic.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.TEXT_X_GENERIC));
         }
         catch (Exception e) {}
     }

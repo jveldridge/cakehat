@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -35,6 +34,9 @@ import gradesystem.database.Group;
 import gradesystem.database.HandinStatus;
 import gradesystem.handin.Handin;
 import gradesystem.printing.PrintRequest;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.rubric.TimeStatus;
 import gradesystem.views.shared.EmailView;
 import java.io.FileNotFoundException;
@@ -45,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.Icon;
 
 public class GradingServicesImpl implements GradingServices
 {
@@ -102,7 +105,7 @@ public class GradingServicesImpl implements GradingServices
             printerChoices = DEFAULT_PRINTERS;
         }
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("/gradesystem/resources/icons/32x32/printer.png"));
+        Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.PRINTER);
 
         return (String) JOptionPane.showInputDialog(new JFrame(), message,
                 "Select Printer", JOptionPane.PLAIN_MESSAGE, icon,

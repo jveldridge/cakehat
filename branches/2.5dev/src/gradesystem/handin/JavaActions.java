@@ -3,6 +3,9 @@ package gradesystem.handin;
 import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -14,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -506,7 +508,7 @@ class JavaActions implements ActionProvider
                                                     "Choose mainline class:",
                                                     "Main class",
                                                     JOptionPane.OK_OPTION,
-                                                    new ImageIcon(JavaActions.class.getResource("/gradesystem/resources/icons/32x32/go-next.png")),
+                                                    IconLoader.loadIcon(IconSize.s32x32, IconImage.GO_NEXT),
                                                     possibilities,
                                                     possibilities[0]);
                             }

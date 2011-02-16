@@ -3,6 +3,9 @@ package gradesystem.rubric;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -20,11 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import javax.swing.JFrame;
-
-
 import java.util.Set;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -64,7 +63,7 @@ class GradingVisualizer extends JFrame
         //Load window icon
         try
         {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/format-justify-fill.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FORMAT_JUSTIFY_FILL));
         }
         catch (IOException e) {}
 
@@ -73,7 +72,7 @@ class GradingVisualizer extends JFrame
         saveButton.setIconTextGap(20);
         try
         {
-            saveButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/16x16/media-floppy.png"))));
+            saveButton.setIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.MEDIA_FLOPPY));
         }
         catch (Exception e) {}
         _stateManager = new StateManager(saveButton);
