@@ -280,7 +280,7 @@ public class IconLoader
     }
 
     private static final String ROOT_ICON_DIR =
-            "/" + IconLoader.class.getPackage().getName().replace(".", "/") + "/";
+            "/" + IconLoader.class.getPackage().getName().replace(".", "/");
 
     public static BufferedImage loadBufferedImage(IconSize size, IconImage image) throws IOException
     {
