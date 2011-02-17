@@ -11,12 +11,10 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Vector;
 import utils.system.NativeFunctions;
 import utils.FileSystemUtilities.Permission;
 import utils.system.NativeException;
@@ -524,33 +522,6 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 this.changeGroup(entry, group, recursive);
             }
         }
-    }
-
-    public Collection<File> getFiles(String dirPath, String extension)
-    {
-        Vector<File> files = new Vector<File>();
-
-        File dir = new File(dirPath);
-        if (dir == null || !dir.exists())
-        {
-            return files;
-        }
-        for (String name : dir.list())
-        {
-            File entry = new File(dir.getAbsolutePath() + "/" + name);
-            //If it is a directory, recursively explore and add files ending with the extension
-            if (entry.isDirectory())
-            {
-                files.addAll(getFiles(entry.getAbsolutePath(), extension));
-            }
-            //Add if this entry is a file ending with the extension and not a hidden file
-            if (entry.isFile() && name.endsWith("." + extension) && !name.startsWith("."))
-            {
-                files.add(entry);
-            }
-        }
-
-        return files;
     }
 
     public List<File> getFiles(File file, FileFilter filter)

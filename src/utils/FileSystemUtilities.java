@@ -5,7 +5,6 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import utils.system.NativeException;
@@ -178,16 +177,6 @@ public interface FileSystemUtilities
      * @throws NativeException
      */
     public void changeGroup(File file, String group, boolean recursive) throws NativeException;
-
-    /**
-     * Returns all files in a directory, recursing into subdirectories, that
-     * contain files with the specified extension.
-     *
-     * @param dirPath starting directory
-     * @param extension the file extension, e.g. java or class
-     * @return the files found with the specified extension
-     */
-    public Collection<File> getFiles(String dirPath, String extension);
 
     /**
      * Returns all files that satisfy the filter. If the file is a directory
