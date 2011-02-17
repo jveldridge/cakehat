@@ -28,6 +28,8 @@ public class EmailView extends javax.swing.JFrame {
     /** Creates new form EmailGUI */
     public EmailView() {
         initComponents();
+        bodyText.setLineWrap(true);
+        bodyText.setWrapStyleWord(true);
         this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
             this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
