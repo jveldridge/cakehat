@@ -71,7 +71,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import utils.system.NativeException;
@@ -192,8 +191,10 @@ public class BackendView extends JFrame
     private List<String> _studentLogins;
     private final static String WELCOME_PANEL_TAG = "Welcome panel",
                                 MULTI_SELECT_PANEL_TAG = "Multiple selected students panel",
+                                SINGLE_PART_PANEL_TAG = "Single part selected panel",
                                 SINGLE_SELECT_PANEL_TAG = "Single selected students panel";
     private CardLayout _cardLayout;
+    private SinglePartPanel _singlePartPanel;
     private SingleSelectionPanel _singleSelectionPanel;
     private Map<Assignment, Map<String, Group>> _groupsCache = new HashMap<Assignment, Map<String, Group>>();
 
@@ -512,6 +513,10 @@ public class BackendView extends JFrame
         //Singleselect card
         _singleSelectionPanel = new SingleSelectionPanel();
         _cardPanel.add(_singleSelectionPanel, SINGLE_SELECT_PANEL_TAG);
+
+        //single part selected card
+        _singlePartPanel = new SinglePartPanel();
+        _cardPanel.add(_singlePartPanel, SINGLE_PART_PANEL_TAG);
 
     }
 
@@ -1099,7 +1104,7 @@ public class BackendView extends JFrame
      * Updates the buttons, the student assignment labels, and which panel is
      * shown in the center.
      */
-    private void updateGUI(Map<Assignment, Collection<Part>> selection)
+    private void updateGUI(Map<Assignment, List<Part>> selection)
     {
         Collection<String> selectedStudents = _studentList.getGenericSelectedValues();
 
@@ -1296,7 +1301,7 @@ public class BackendView extends JFrame
         //Update which panel is showing
 
         //If no students or assignments selected, show welcome panel
-        if(selection.isEmpty() || selectedStudents.isEmpty())
+        if(selection.isEmpty() && selectedStudents.isEmpty())
         {
             _cardLayout.show(_cardPanel, WELCOME_PANEL_TAG);
         }
@@ -1320,6 +1325,11 @@ public class BackendView extends JFrame
             }
 
             _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
+        }
+        //if one part and no students selected
+        else if (getSingleSelectedPart(selection) != null && selectedStudents.isEmpty()) {
+            _singlePartPanel.updatePart(getSingleSelectedPart(selection));
+            _cardLayout.show(_cardPanel, SINGLE_PART_PANEL_TAG);
         }
         //If multiple assignments and one or more students, OR
         //multiple students and one or more assignments
@@ -1451,7 +1461,7 @@ public class BackendView extends JFrame
 
     private void reassignGradingButtonActionPerformed()
     {
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         new ReassignView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
     }
 
@@ -1475,8 +1485,7 @@ public class BackendView extends JFrame
 
     private void runDemoButtonActionPerformed()
     {
-        Entry<Assignment, Collection<Part>> selection = _assignmentTree.getSelection().entrySet().iterator().next();
-        DistributablePart dp = (DistributablePart) selection.getValue().iterator().next();
+        DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
         try {
             dp.runDemo();
         } catch (ActionException ex) {
@@ -1531,7 +1540,7 @@ public class BackendView extends JFrame
     private void extensionsButtonActionPerformed() {
         String student = _studentList.getSelectedValue();
 
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
 
         Group group;
@@ -1552,7 +1561,7 @@ public class BackendView extends JFrame
     private void openCodeButtonActionPerformed() {
         String student = _studentList.getSelectedValue();
 
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
 
         Group group;
@@ -1574,7 +1583,7 @@ public class BackendView extends JFrame
     private void runCodeButtonActionPerformed() {
         String student = _studentList.getSelectedValue();
 
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
 
         Group group;
@@ -1596,7 +1605,7 @@ public class BackendView extends JFrame
     private void testCodeButtonActionPerformed() {
         String student = _studentList.getSelectedValue();
 
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
 
         Group group;
@@ -1617,7 +1626,7 @@ public class BackendView extends JFrame
 
     private void printCodeButtonActionPerformed() {
 
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
         DistributablePart dp = this.getSingleSelectedDP(selection);
 
@@ -1666,17 +1675,15 @@ public class BackendView extends JFrame
     private void viewReadmeButtonActionPerformed() {
         String student = _studentList.getSelectedValue();
 
-        Entry<Assignment, Collection<Part>> selection = _assignmentTree.getSelection().entrySet().iterator().next();
-        Assignment asgn = selection.getKey();
+        DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
         Group group;
         try {
-            group = this.getGroup(asgn, student);
+            group = this.getGroup(dp.getAssignment(), student);
         } catch (CakehatException ex) {
-            this.dieNoGroup(ex, student, asgn);
+            this.dieNoGroup(ex, student, dp.getAssignment());
             return;
         }
 
-        DistributablePart dp = (DistributablePart) selection.getValue().iterator().next();
         try {
             dp.viewReadme(group);
         } catch (ActionException ex) {
@@ -1687,7 +1694,7 @@ public class BackendView extends JFrame
     private void viewRubricButtonActionPerformed() {
         String student = _studentList.getSelectedValue();
 
-        Map<Assignment, Collection<Part>> selection = _assignmentTree.getSelection();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
 
         Group group;
@@ -1826,58 +1833,46 @@ public class BackendView extends JFrame
         JOptionPane.showMessageDialog(rootPane, "This feature is not yet available.");
     }
 
-    private Assignment getSingleSelectedAssignment(Map<Assignment, Collection<Part>> selection) {
+    private Assignment getSingleSelectedAssignment(Map<Assignment, List<Part>> selection) {
         if (selection.size() != 1) {
             return null;
         }
         return selection.keySet().iterator().next();
     }
 
-    public DistributablePart getSingleSelectedDP(Map<Assignment, Collection<Part>> selection) {
-        //not regarding has having a single DP selected if multiple assignments selected,
-        //even if no DPs are selected for the other selected assignments
-        if (selection.size() != 1) {
-            return null;
-        }
-
-        Assignment singleAsgn = selection.keySet().iterator().next();
-        Collection<Part> parts = selection.get(singleAsgn);
-
-        if (parts.size() != 1) {
-            return null;
-        }
-
-        Part part = parts.iterator().next();
-        if (part instanceof DistributablePart) {
-            return (DistributablePart) part;
-        } else {
-            return null;
-        }
+    private Part getSingleSelectedPart(Map<Assignment, List<Part>> selection) {
+        return this.getSingleSelectedPart(selection, Part.class);
     }
 
-    public LabPart getSingleSelectedLabPart(Map<Assignment, Collection<Part>> selection) {
-        //not regarding has having a single DP selected if multiple assignments selected,
-        //even if no DPs are selected for the other selected assignments
+    private DistributablePart getSingleSelectedDP(Map<Assignment, List<Part>> selection) {
+        return this.getSingleSelectedPart(selection, DistributablePart.class);
+    }
+
+    private LabPart getSingleSelectedLabPart(Map<Assignment, List<Part>> selection) {
+        return this.getSingleSelectedPart(selection, LabPart.class);
+    }
+
+    private <T extends Part> T getSingleSelectedPart(Map<Assignment, List<Part>> selection, Class<T> partType) {
         if (selection.size() != 1) {
             return null;
         }
 
         Assignment singleAsgn = selection.keySet().iterator().next();
-        Collection<Part> parts = selection.get(singleAsgn);
+        List<Part> parts = selection.get(singleAsgn);
 
         if (parts.size() != 1) {
             return null;
         }
 
-        Part part = parts.iterator().next();
-        if (part instanceof LabPart) {
-            return (LabPart) part;
-        } else {
-            return null;
+        Part singlePart = parts.get(0);
+        if (partType.isAssignableFrom(singlePart.getClass())) {
+            return (T) singlePart;
         }
+
+        return null;
     }
     
-    private void assignmentTreeValueChanged(Map<Assignment, Collection<Part>> selection) {
+    private void assignmentTreeValueChanged(Map<Assignment, List<Part>> selection) {
 
         //get Group objects
         for (Assignment asgn : selection.keySet()) {

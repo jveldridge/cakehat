@@ -129,7 +129,13 @@ class RubricGRDWriter {
             throw new RubricException("Could not read grader for group " + group + " on " +
                                       "part " + dp + " of assignment " + handin.getAssignment() + ".", ex);
         }
-        String line2 = GRADER_LBL + grader.getName() + " (" + grader.getLogin() + ")";
+        String line2 = GRADER_LBL;
+        if (grader != null) {
+            line2 += grader.getName() + " (" + grader.getLogin() + ")";
+        }
+        else {
+            line2 += "Grader Unknown";
+        }
         write(line2, output);
         printSpaces(SECTION_TEXT_WIDTH - line2.length(), output);
         write("| ", output);

@@ -22,6 +22,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import java.util.List;
 
 /**
  * Interface for sending grade reports to students.  Grade reports will be sent
@@ -36,10 +37,10 @@ public class GradeReportView extends javax.swing.JFrame {
 
     /** Creates new form GradeReportView */
     private Collection<String> _students;
-    private Map<Assignment, Collection<Part>> _asgnParts;
+    private Map<Assignment, List<Part>> _asgnParts;
     private Vector<Assignment> _sortedAssignments;
 
-    public GradeReportView(Map<Assignment, Collection<Part>> asgnParts, Collection<String> students) {
+    public GradeReportView(Map<Assignment, List<Part>> asgnParts, Collection<String> students) {
         initComponents();
 
         //graph generation has not yet been converted to use Groups and DistributableParts

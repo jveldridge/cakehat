@@ -428,8 +428,10 @@ public interface DatabaseIO {
 
     /**
      * Returns a map of all scores for the specified Groups for the
-     * specified Part with Groups as the keys and their
-     * scores as the values.
+     * specified Part with Groups as the keys and their scores as the values.
+     * Any Groups with no score stored in the database will not have an entry
+     * in the returned Map.
+     * 
      * @param part
      * @param groups
      * @return

@@ -373,9 +373,7 @@ public class CheckoffCLI
 
         try
         {
-            Map<Group, Double> scores = Allocator.getDatabaseIO()
-                    .getPartScoresForGroups(lab, Arrays.asList(new Group[] { group }));
-            Double score = scores.get(group);
+            Double score = Allocator.getDatabaseIO().getGroupScore(group, lab);
 
             //If there is an existing group
             if(score != null)
