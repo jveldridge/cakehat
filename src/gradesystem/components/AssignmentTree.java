@@ -4,9 +4,9 @@ import gradesystem.Allocator;
 import gradesystem.config.Assignment;
 import gradesystem.config.Part;
 import java.awt.Color;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -51,14 +51,14 @@ public class AssignmentTree extends JScrollPane {
      * An Assignment will be in the returned Map's key set if and only if the
      * Assignment is selected or one if its consitutent Parts is selected.  If
      * an Assignment is selected but none of its Parts are, the value for that
-     * entry in the Map will be an empty Collection.
+     * entry in the Map will be an empty List.
      *
      * If nothing is selected, an empty map will be returned.
      *
      * @return
      */
-    public Map<Assignment, Collection<Part>> getSelection() {
-        Map<Assignment, Collection<Part>> selection = new HashMap<Assignment, Collection<Part>>();
+    public Map<Assignment, List<Part>> getSelection() {
+        Map<Assignment, List<Part>> selection = new HashMap<Assignment, List<Part>>();
 
         TreePath[] selectedPaths = _tree.getSelectionModel().getSelectionPaths();
         if (selectedPaths == null || selectedPaths.length == 0) {
