@@ -65,6 +65,7 @@ import gradesystem.resources.icons.IconLoader.IconImage;
 import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.services.ServicesException;
 import gradesystem.services.UserServices.ValidityCheck;
+import gradesystem.views.backend.stathist.StatHistView;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.sql.SQLException;
@@ -1134,7 +1135,6 @@ public class BackendView extends JFrame
             //If one or more assignments
             if(selection.size() >= 1)
             {
-                _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
             }
             
@@ -1187,9 +1187,13 @@ public class BackendView extends JFrame
         {
             if(selection.size() >= 1)
             {
-                _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
             }
+        }
+
+        //no students selected
+        else {
+            _chartsButton.setEnabled(true);
         }
 
         //if one assignment selected
@@ -1495,7 +1499,7 @@ public class BackendView extends JFrame
 
     private void chartsButtonActionPerformed()
     {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available.");
+        new StatHistView(_assignmentTree.getSelection().keySet());
     }
 
     private void emailReportsButtonActionPerformed()

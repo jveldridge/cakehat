@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.jfree.data.statistics.Statistics;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,42 +26,42 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void updateChartData(Assignment asgn, Collection<String> students) {
-        Map<String, Double> scoreMap;
+    public void updateChartData(Assignment asgn, Collection<Group> groups) {
+        Map<Group, Double> scoreMap;
         try {
-            scoreMap = Allocator.getDatabaseIO().getAssignmentScores(asgn, students);
+            scoreMap = Allocator.getDatabaseIO().getAssignmentScoresForGroups(asgn, groups);
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not retrieve scores on assignment " + asgn + " " +
-                              "for students " + students + ".");
-            scoreMap = new HashMap<String, Double>();
+                              "for groups " + groups + ".");
+            scoreMap = new HashMap<Group, Double>();
         }
 
         double outOf = asgn.getTotalPoints();
         
         List<Double> scores = new ArrayList<Double>();
-        for (String student : scoreMap.keySet()) {
-            double earned = scoreMap.get(student);
+        for (Group group : scoreMap.keySet()) {
+            double earned = scoreMap.get(group);
             scores.add(earned / outOf * 100);
         }
 
         this.updateChartData(asgn.getName(), scores);
     }
     
-    public void updateChartData(Part part, Iterable<String> students) {
-        Map<String, Double> scoreMap;
+    public void updateChartData(Part part, Iterable<Group> groups) {
+        Map<Group, Double> scoreMap;
         try {
-            scoreMap = Allocator.getDatabaseIO().getPartScores(part, students);
+            scoreMap = Allocator.getDatabaseIO().getPartScoresForGroups(part, groups);
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get scores on part " + part + " " +
-                              "for students " + students + ".");
-            scoreMap = new HashMap<String, Double>();
+                              "for groups " + groups + ".");
+            scoreMap = new HashMap<Group, Double>();
         }
 
         double outOf = part.getPoints();
 
         List<Double> scores = new ArrayList<Double>();
-        for (String student : scoreMap.keySet()) {
-            double earned = scoreMap.get(student);
+        for (Group group : scoreMap.keySet()) {
+            double earned = scoreMap.get(group);
             scores.add(earned / outOf * 100);
         }
 
