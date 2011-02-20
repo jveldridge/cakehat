@@ -391,21 +391,20 @@ public class GradeReportView extends javax.swing.JFrame {
 
         //generate Assignment histograms
         if (attachHistButton.isSelected()) {
-            Collection<String> enabledStudents;
-            try {
-                enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
-            } catch (SQLException ex) {
-                new ErrorView(ex, "The list of enabled students could not be retrieved from "
-                        + "the database to generate histograms.  Grade reports will not "
-                        + "be sent.");
-                return;
-            }
-
             for (Assignment a : _sortedAssignments) {
+                Collection<Group> groups;
+                try {
+                    groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not get read groups from database for assignment " + a + "." +
+                                      "Charts for this assignment will not be included.");
+                    continue;
+                }
+
                 for (Part p : a.getParts()) {
                     try {
                         AssignmentChartPanel acp = new AssignmentChartPanel();
-                        acp.updateChartData(p, enabledStudents);
+                        acp.updateChartData(p, groups);
                         fullFileList.add(new File(".tmpdata/" + a.getName() + "_" + p.getName() + ".png"));
                         ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
                     } catch (IOException ex) {

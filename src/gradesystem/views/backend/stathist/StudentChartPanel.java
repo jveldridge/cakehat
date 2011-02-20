@@ -23,6 +23,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.statistics.Statistics;
 import org.jfree.data.xy.DefaultXYDataset;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
 import java.util.HashMap;
 
@@ -48,11 +49,20 @@ public class StudentChartPanel extends javax.swing.JPanel {
         for (int i = 0; i < assignments.length; i++) {
             data[0][i] = i;
             double studentScore = 0;
-            for (Part p : assignments[i].getParts()) {
+            Assignment asgn = assignments[i];
+            Group studentsGroup;
+            try {
+                studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, studName);
+            } catch (SQLException ex) {
+                new ErrorView("Could read group for student " + studName + " for assignment " +
+                              asgn + " from the database.");
+                continue;
+            }
+            for (Part p : asgn.getParts()) {
 
                 double partScore = 0;
                 try {
-                    Double rawScore = Allocator.getDatabaseIO().getStudentScore(studName, p);
+                    Double rawScore = Allocator.getDatabaseIO().getGroupScore(studentsGroup, p);
                     partScore = (rawScore == null ? 0 : rawScore);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not read the score for student " + studName + " " +
@@ -66,16 +76,16 @@ public class StudentChartPanel extends javax.swing.JPanel {
             data[1][i] = studentScore / assignments[i].getTotalPoints() * 100;
             
             Vector<Double> scores = new Vector<Double>();
-            Map<String, Double> scoreMap;
+            Map<Group, Double> scoreMap;
             try {
-                scoreMap = Allocator.getDatabaseIO().getAssignmentScores(assignments[i], Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                scoreMap = Allocator.getDatabaseIO().getAssignmentScoresForGroups(asgn, Allocator.getDatabaseIO().getGroupsForAssignment(asgn));
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not get scores for assignment " + assignments[i] + ".");
-                scoreMap = new HashMap<String, Double>();
+                scoreMap = new HashMap<Group, Double>();
             }
 
-            for (String student : scoreMap.keySet()) {
-                scores.add(scoreMap.get(student));
+            for (Group group : scoreMap.keySet()) {
+                scores.add(scoreMap.get(group));
             }
             
             avgData[0][i] = i;
