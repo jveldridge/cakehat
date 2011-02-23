@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import javax.swing.JFrame;
 import java.util.Set;
+import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -232,6 +233,29 @@ class GradingVisualizer extends JFrame
         }
         else {
             _stateManager.rubricSaved();
+        }
+
+        //Notify listeners
+        notifySaveListeners();
+    }
+
+    private final Vector<RubricSaveListener> _saveListeners = new Vector<RubricSaveListener>();
+
+    public void addSaveListener(RubricSaveListener listener)
+    {
+        _saveListeners.add(listener);
+    }
+
+    public void removeSaveListener(RubricSaveListener listener)
+    {
+        _saveListeners.remove(listener);
+    }
+
+    private void notifySaveListeners()
+    {
+        for(RubricSaveListener listener : _saveListeners)
+        {
+            listener.rubricSaved(_distPart, _group);
         }
     }
 }

@@ -205,7 +205,7 @@ public class ReassignView extends JFrame {
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout(5, 5));
 
-        _fromUnassigned = new GenericJList<String>(new String[] {"UNASSIGNED"});
+        _fromUnassigned = new GenericJList<String>("UNASSIGNED");
         _fromUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _fromUnassigned.addFocusListener(new FocusAdapter() {
             @Override
@@ -267,7 +267,7 @@ public class ReassignView extends JFrame {
         });
         _studentFilterBox.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
 
-        _fromRandom = new GenericJList<String>(new String[] {"RANDOM"});
+        _fromRandom = new GenericJList<String>("RANDOM");
         _fromRandom.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _fromRandom.addFocusListener(new FocusAdapter() {
             @Override
@@ -413,7 +413,7 @@ public class ReassignView extends JFrame {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout(5, 5));
 
-        _toUnassigned = new GenericJList<String>(new String[] {"UNASSIGNED"});
+        _toUnassigned = new GenericJList<String>("UNASSIGNED");
         _toUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _toUnassigned.addFocusListener(new FocusAdapter() {
             @Override
@@ -842,13 +842,13 @@ public class ReassignView extends JFrame {
         _fromTAList.setEnabled(false);
         _fromRandom.clearSelection();
         _fromRandom.setEnabled(false);
-        _fromGroupList.deleteAllItems();
+        _fromGroupList.clearList();
         _fromGroupList.setEnabled(false);
 
         _toUnassigned.clearSelection();
         _toUnassigned.setEnabled(false);
         _toTAList.setEnabled(false);
-        _toGroupList.deleteAllItems();
+        _toGroupList.clearList();
         _assignButton.setEnabled(false);
 
         _numStudentsSpinner.setVisible(false);

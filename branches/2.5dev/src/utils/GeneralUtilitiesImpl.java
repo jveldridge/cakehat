@@ -5,7 +5,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 public class GeneralUtilitiesImpl implements GeneralUtilities
 {
@@ -56,10 +58,13 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
     }
 
     public <E> boolean containSameElements(Collection<E> c1, Collection<E> c2) {
-        Collection<E> diff = new ArrayList<E>(c1);
-        diff.removeAll(c2);
+        Collection<E> diff1 = new ArrayList<E>(c1);
+        diff1.removeAll(c2);
 
-        return diff.isEmpty();
+        Collection<E> diff2 = new ArrayList<E>(c2);
+        diff2.removeAll(c1);
+
+        return diff1.isEmpty() && diff2.isEmpty();
     }
 
     /**
