@@ -1,13 +1,19 @@
 package gradesystem.components;
 
+import com.google.common.collect.ImmutableList;
+import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
+import javax.swing.AbstractListModel;
 import javax.swing.JList;
+import javax.swing.ListModel;
 
 /**
- * A parameterized JList.
+ * A parameterized {@link JList}. By using a {@link StringConverter} the
+ * value that is displayed in the list may be something other than the value
+ * returned by <code>toString()</code>.
  *
  * @author jak2
  *
@@ -15,145 +21,454 @@ import javax.swing.JList;
  */
 public class GenericJList<E> extends JList
 {
-
-    public interface StringConverter<E> {
+    /**
+     * Implement this interface to allow for displaying a String other than
+     * a value's <code>toString()</code> return.
+     * 
+     * @param <E>
+     */
+    public static interface StringConverter<E>
+    {
         public String convertToString(E item);
     }
 
-    private static class DefaultStringConverter<E> implements StringConverter<E> {
+    private GenericListModel<E> _model;
 
-        @Override
-        public String convertToString(E item) {
-            return item + "";
-        }
-
+    public GenericJList()
+    {
+        this.clearList();
     }
 
-    private class ItemAndDisplayString<E> {
-
-        private E _item;
-        private String _displayString;
-
-        public ItemAndDisplayString(E item, String displayString) {
-            _item = item;
-            _displayString = displayString;
-        }
-
-        public E getItem() {
-            return _item;
-        }
-
-        @Override
-        public String toString() {
-            return _displayString;
-        }
-
+    public GenericJList(E... values)
+    {
+        this.setListData(ImmutableList.of(values));
     }
 
-    public GenericJList() { }
-
-    public GenericJList(E[] items) {
-        this(Arrays.asList(items), new DefaultStringConverter<E>());
+    public GenericJList(Iterable<E> values)
+    {
+        this.setListData(values);
     }
 
-    public GenericJList(Collection<E> items) {
-        this(items, new DefaultStringConverter<E>());
-    }
-
-    public GenericJList(Collection<E> items, StringConverter<E> converter) {
-        Collection<ItemAndDisplayString> toStore = new ArrayList<ItemAndDisplayString>(items.size());
-        for (E item : items) {
-            toStore.add(new ItemAndDisplayString(item, converter.convertToString(item)));
-        }
-
-        super.setListData(toStore.toArray());
-    }
-
-    public void setListData(Collection<E> items) {
-        this.setListData(items, new DefaultStringConverter<E>());
-    }
-
-    public void setListData(Collection<E> items, StringConverter<E> converter) {
-        Collection<ItemAndDisplayString> toStore = new ArrayList<ItemAndDisplayString>(items.size());
-        for (E item : items) {
-            toStore.add(new ItemAndDisplayString(item, converter.convertToString(item)));
-        }
-
-        super.setListData(toStore.toArray());
-    }
-
-    public void deleteAllItems() {
-        super.setListData(new Object[0]);
-    }
-
-    @Override
-    public E getSelectedValue() {
-        ItemAndDisplayString<E> selected = (ItemAndDisplayString<E>) super.getSelectedValue();
-        return (selected == null ? null : selected.getItem());
+    public GenericJList(Iterable<E> values, StringConverter<E> converter)
+    {
+        this.setListData(values, converter);
     }
 
     /**
-     * This method cannot be made type-safe, since, due to Java's implementation of
-     * generics, setListData(Object[]) and setListData(E[]) result in a name clash without
-     * one overriding the other. Thus, it is not supported.  Use setListData(Collection<E>)
-     * instead.
+     * This method cannot be made type-safe due to Java's implementation of
+     * generics: setListData(Object[]) and setListData(E[]) would result in a
+     * signature clash due to type erasure.
+     * <br/><br/>
+     * Thus, this method cannot be supported.
      *
-     * @param items
+     * @see #setListData(java.lang.Iterable)
+     * @see #setListData(java.lang.Iterable, gradesystem.components.GenericJList.StringConverter)
+     *
+     * @param values
+     *
+     * @deprecated deprecated due to lack of type-safety
      */
     @Override
-    public void setListData(Object[] items) {
-        throw new UnsupportedOperationException("Not valid for GenericJList.  Please use setListData(Collection<E>)");
-    }
-
-    public Collection<E> getGenericSelectedValues() {
-        Collection<E> values = new Vector<E>();
-        for(Object obj : super.getSelectedValues())
-        {
-            values.add(((ItemAndDisplayString<E>) obj).getItem());
-        }
-
-        return values;
-    }
-
-    public Collection<E> getItems()
+    public void setListData(Object[] values)
     {
-        Vector<E> items = new Vector<E>();
-        for (int i = 0; i < this.getModel().getSize(); i++)
-        {
-            items.add(((ItemAndDisplayString<E>) this.getModel().getElementAt(i)).getItem());
-        }
-
-        return items;
-    }
-
-    public int getItemCount()
-    {
-        return (super.getModel().getSize());
-    }
-
-    public boolean hasItems()
-    {
-        return (this.getItemCount() != 0);
+        throw new UnsupportedOperationException("Not valid for GenericJList. " +
+                "Please use setListData(...)");
     }
 
     /**
-     * Selects the first entry if it exists.
+     * Sets the values displayed in the list. Replaces all existing values.
+     * This will result in no values being selected.
+     *
+     * @param values
+     */
+    public void setListData(Iterable<E> values)
+    {
+        this.setListData(values, false);
+    }
+
+    /**
+     * Sets the values displayed in the list. Replaces all existing values.
+     * <br/><br/>
+     * If <code>maintainSelected</code> is <code>true</code> then all currently
+     * selected values will be selected for the <code>values</code> passed in.
+     * This may result in no selections being made. If
+     * <code>maintainSelected</code> is <code>false</code> then no selections
+     * will be made.
+     *
+     * @param values
+     * @param maintainSelected
+     */
+    public void setListData(Iterable<E> values, boolean maintainSelected)
+    {
+        List<E> selected = null;
+        if(maintainSelected)
+        {
+            selected = this.getGenericSelectedValues();
+        }
+        
+        this.setModel(new GenericListModel<E>(values));
+
+        if(maintainSelected)
+        {
+            this.setSelectedValues(selected);
+        }
+    }
+
+    /**
+     * Sets the values displayed in the list. They will be displayed as defined
+     * by the <code>converter</code>. Replaces all existing values. This will
+     * result no values being selected.
+     *
+     * @param values
+     * @param converter
+     */
+    public void setListData(Iterable<E> values, StringConverter<E> converter)
+    {
+        this.setListData(values, converter, false);
+    }
+
+    /**
+     * Sets the values displayed in the list. They will be displayed as defined
+     * by the <code>converter</code>. Replaces all existing values.
+     * <br/><br/>
+     * If <code>maintainSelected</code> is <code>true</code> then all currently
+     * selected values will be selected for the <code>values</code> passed in.
+     * This may result in no selections being made. If
+     * <code>maintainSelected</code> is <code>false</code> then no selections
+     * will be made.
+     *
+     * @param values
+     * @param converter
+     * @param maintainSelected
+     */
+    public void setListData(Iterable<E> values, StringConverter<E> converter, boolean maintainSelected)
+    {
+        List<E> selected = null;
+        if(maintainSelected)
+        {
+            selected = this.getGenericSelectedValues();
+        }
+
+        this.setModel(new GenericListModel<E>(values, converter));
+
+        if(maintainSelected)
+        {
+            this.setSelectedValues(selected);
+        }
+    }
+
+    /**
+     * Removes all items from the list.
+     */
+    public void clearList()
+    {
+        this.setModel(new GenericListModel<E>());
+    }
+
+    /**
+     * This method should never be called as doing so interferes with the
+     * type-safety this class provides.
+     *
+     * @param model
+     * @deprecated deprecated due to lack of type-safety
+     */
+    @Override
+    public void setModel(ListModel model)
+    {
+        throw new UnsupportedOperationException("Not valid for GenericJList. " +
+                "Please use setListData(...)");
+    }
+
+    /**
+     * Stores the model and passes it to the superclass.
+     * 
+     * @param model
+     */
+    private void setModel(GenericListModel<E> model)
+    {
+        _model = model;
+        super.setModel(model);
+    }
+
+    /**
+     * Returns the first selected values in the list or <code>null</code> if no
+     * items are selected.
+     *
+     * @return
+     */
+    @Override
+    public E getSelectedValue()
+    {
+        E value = null;
+
+        int index = super.getSelectedIndex();
+        if(index != -1)
+        {
+            value = _model.getDataAt(index);
+        }
+
+        return value;
+    }
+
+    /**
+     * Returns an immutable list of all the selected values in this JList.
+     *
+     * @return
+     */
+    public List<E> getGenericSelectedValues()
+    {
+        int[] indices = super.getSelectedIndices();
+
+        ImmutableList.Builder<E> builder = ImmutableList.builder();
+        for(int index : indices)
+        {
+            builder.add(_model.getDataAt(index));
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * Returns an immutable list of all values in this JList.
+     * 
+     * @return
+     */
+    public List<E> getValues()
+    {
+        return _model.getData();
+    }
+
+    /**
+     * The number of values in the list.
+     *
+     * @return
+     */
+    public int getValuesCount()
+    {
+        return _model.getSize();
+    }
+
+    /**
+     * If there are any items in the list.
+     *
+     * @return
+     */
+    public boolean hasValues()
+    {
+        return _model.hasData();
+    }
+
+    /**
+     * Visually updates the list. If a {@link StringConverter} is used it will
+     * recalculate the Strings to display.
+     */
+    public void refreshList()
+    {
+        List<E> selectedValues = this.getGenericSelectedValues();
+
+        //Resets the model
+        //This causes the converter to recalculate the displayed strings and
+        //for the list to recalculate the visualization
+        GenericListModel<E> model =
+                new GenericListModel<E>(_model.getData(), _model.getConverter());
+        this.setModel(model);
+
+        this.setSelectedValues(selectedValues);
+    }
+
+    /**
+     * Selects the first value if the list is not empty.
      */
     public void selectFirst()
     {
-        if(this.hasItems())
+        if(this.hasValues())
         {
             this.setSelectedIndex(0);
         }
     }
 
+    /**
+     * Selects all values if the list is not empty.
+     */
     public void selectAll()
     {
-        int itemCount = this.getItemCount();
-        if(itemCount != 0)
+        int count = this.getValuesCount();
+        if(count != 0)
         {
-            this.setSelectionInterval(0, itemCount - 1);
+            this.setSelectionInterval(0, count - 1);
         }
     }
 
+    /**
+     * Selects the specified value in the list if the value is in the list.
+     *
+     * @param value
+     */
+    public void setSelectedValue(E value)
+    {
+        int index = _model.getData().indexOf(value);
+
+        if(index != -1)
+        {
+            this.setSelectedIndex(index);
+        }
+    }
+
+    /**
+     * Selects all specified values. If a value does not exist in the list then
+     * it will not be selected, but no problems will arise.
+     *
+     * @param values
+     */
+    public void setSelectedValues(List<E> values)
+    {
+        List<Integer> indices = new ArrayList<Integer>();
+        for(E value : values)
+        {
+            int index = this.getValues().indexOf(value);
+            if(index != -1)
+            {
+                indices.add(index);
+            }
+        }
+        int[] convertedIndices = new int[indices.size()];
+        for(int i = 0; i < indices.size(); i++)
+        {
+            convertedIndices[i] = indices.get(i);
+        }
+
+        if(convertedIndices.length != 0)
+        {
+            this.setSelectedIndices(convertedIndices);
+        }
+    }
+
+    /**
+     * Causes the font used by the this list to be plain. By default the font
+     * is bold.
+     *
+     */
+    public void usePlainFont()
+    {
+        this.setFont(this.getFont().deriveFont(Font.PLAIN));
+    }
+
+    /**
+     * Causes the font used by this list to be bold. This is the default.
+     */
+    public void useBoldFont()
+    {
+        this.setFont(this.getFont().deriveFont(Font.BOLD));
+    }
+    
+    /**
+     * This is the underlying data storage use by the JList. By having this
+     * class be generic, it allows for accessing the data with type safety and
+     * no need to cast.
+     */
+    private static class GenericListModel<T> extends AbstractListModel
+    {
+        private final List<T> _data;
+        private final StringConverter<T> _converter;
+        private final List<ItemRepresentation<T>> _convertedData;
+
+        public GenericListModel(Iterable<T> data, StringConverter<T> converter)
+        {
+            _data = ImmutableList.copyOf(data);
+            _converter = converter;
+
+            ImmutableList.Builder<ItemRepresentation<T>> builder = ImmutableList.builder();
+            for(T item : data)
+            {
+                builder.add(new ItemRepresentation(item, converter));
+            }
+            _convertedData = builder.build();
+        }
+
+        public GenericListModel(Iterable<T> data)
+        {
+            this(data, new DefaultStringConverter<T>());
+        }
+
+        public GenericListModel(T[] data, StringConverter<T> converter)
+        {
+            this(ImmutableList.of(data), converter);
+        }
+
+        public GenericListModel(T[] data)
+        {
+            this(data, new DefaultStringConverter<T>());
+        }
+
+        public GenericListModel()
+        {
+            _data = Collections.emptyList();
+            _converter = new DefaultStringConverter<T>();
+            _convertedData = new Vector<ItemRepresentation<T>>();
+        }
+
+        @Override
+        public int getSize()
+        {
+            return _convertedData.size();
+        }
+
+        @Override
+        public ItemRepresentation<T> getElementAt(int i)
+        {
+            return _convertedData.get(i);
+        }
+
+        public StringConverter<T> getConverter()
+        {
+            return _converter;
+        }
+
+        public T getDataAt(int i)
+        {
+            return _data.get(i);
+        }
+
+        public List<T> getData()
+        {
+            return _data;
+        }
+
+        public boolean hasData()
+        {
+            return !_data.isEmpty();
+        }
+
+        private static class ItemRepresentation<E>
+        {
+            private final E _item;
+            private final String _representation;
+
+            public ItemRepresentation(E item, StringConverter<E> converter)
+            {
+                _item = item;
+                _representation = converter.convertToString(_item);
+            }
+
+            public E getItem()
+            {
+                return _item;
+            }
+
+            @Override
+            public String toString()
+            {
+                return _representation;
+            }
+        }
+        
+        private static class DefaultStringConverter<E> implements StringConverter<E>
+        {
+            @Override
+            public String convertToString(E item)
+            {
+                return item + "";
+            }
+        }
+    }
 }

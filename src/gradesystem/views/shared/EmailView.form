@@ -128,7 +128,7 @@
                           <Component id="notifyBox" alignment="0" pref="875" max="32767" attributes="0"/>
                           <Component id="studentsBox" alignment="0" pref="875" max="32767" attributes="0"/>
                           <Component id="fromBox" alignment="0" pref="875" max="32767" attributes="0"/>
-                          <Component id="attachmentMessage" alignment="0" min="-2" pref="367" max="-2" attributes="0"/>
+                          <Component id="attachmentMessage" alignment="0" min="-2" pref="629" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

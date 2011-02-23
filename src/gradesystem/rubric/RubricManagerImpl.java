@@ -37,12 +37,13 @@ public class RubricManagerImpl implements RubricManager {
     private HashMap<String, GradingVisualizer> _openRubrics = new HashMap<String, GradingVisualizer>();
 
     @Override
-    public void view(DistributablePart part, Group group) {
-        view(part, group, false);
+    public void view(DistributablePart part, Group group, boolean isAdmin)
+    {
+        this.view(part, group, isAdmin, null);
     }
 
     @Override
-    public void view(DistributablePart part, Group group, boolean isAdmin)
+    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener)
     {
         //Determine if it has been opened
         final String uniqueID = part.getDBID() + "::" + group.getName();
@@ -54,6 +55,12 @@ public class RubricManagerImpl implements RubricManager {
                 File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
                 Rubric rubric = RubricGMLParser.parse(gmlFile, part, group);
                 GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
+
+                if(listener != null)
+                {
+                    visualizer.addSaveListener(listener);
+                }
+
                 visualizer.addWindowListener(new WindowAdapter()
                 {
                     @Override

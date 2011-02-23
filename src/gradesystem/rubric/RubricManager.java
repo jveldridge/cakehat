@@ -16,17 +16,9 @@ import java.util.Map;
  */
 public interface RubricManager
 {
-
     public void viewTemplate(DistributablePart dp) throws RubricException;
 
-    /**
-     * View the rubric for a group for a given distributable part. If it is already
-     * open it will be brought to front and centered on screen.
-     * 
-     * @param part
-     * @param group
-     */
-    public void view(DistributablePart part, Group group);
+    public void view(DistributablePart part, Group group, boolean isAdmin);
 
     /**
      * View the rubric for a group for the given distributable part.
@@ -34,10 +26,10 @@ public interface RubricManager
      *
      * @param part
      * @param group
-     * @param isAdmin if true then on save the rubric's handin score will be written
-     *                to the database
+     * @param isAdmin
+     * @param listener
      */
-    public void view(DistributablePart part, Group group, boolean isAdmin);
+    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener);
 
     /**
      * Returns whether or not a rubric exists for the given Group for the given

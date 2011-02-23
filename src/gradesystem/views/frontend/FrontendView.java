@@ -46,26 +46,32 @@ import gradesystem.handin.DistributablePart;
 import gradesystem.resources.icons.IconLoader;
 import gradesystem.resources.icons.IconLoader.IconImage;
 import gradesystem.resources.icons.IconLoader.IconSize;
+import gradesystem.rubric.RubricSaveListener;
 import gradesystem.views.shared.ErrorView;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A frontend view to be used by TAs that are grading.
+ * <br/><br/>
+ * In order to have a very responsive user interface, this class uses a non-UI
+ * thread to load information. Whenver these changes lead to UI changes, the
+ * code that will do this is placed on the AWT Event Queue. In particular,
+ * {@link #_assignedGroups} can be loaded using a non-UI thread. This is done
+ * via the {@link #loadAssignedGrading(boolean)} method.
  *
  * @author jak2
  */
-public class FrontendView extends JFrame
+public class FrontendView extends JFrame implements RubricSaveListener
 {
-    //Test main
-    public static void main(String[] args)
-    {
-        new FrontendView();
-    }
-
     /**
      * Label that displays the currently selected student.
      */
@@ -94,7 +100,7 @@ public class FrontendView extends JFrame
 
         private String getGroupText(Group group) {
             if (group.getMembers().size() == 1) {
-                return group.getMembers().iterator().next();
+                return group.getMembers().get(0);
             }
             
             String text = group.getName();
@@ -129,13 +135,14 @@ public class FrontendView extends JFrame
                     _submitGradingButton, _viewReadmeButton, _openCodeButton,
                     _runTesterButton, _printStudentButton, _gradeAssignmentButton,
                     _runCodeButton;
-    private JButton[] _allButtons, _studentButtons;
+    private JButton[] _allButtons, _groupButtons;
+    private Map<DistributablePart, List<GroupGradedStatus>> _assignedGroups;
 
     private FrontendView()
     {
         //Frame title
         super("[cakehat] frontend - " + Allocator.getUserUtilities().getUserLogin());
-        
+
         //Create the directory to work in
         try {
             Allocator.getGradingServices().makeUserWorkspace();
@@ -146,16 +153,18 @@ public class FrontendView extends JFrame
                              "error report if the problem persists.");
         }
 
-        //Initialize GUI components
-        this.initializeFrameIcon();
-        this.initializeMenuBar();
+        //Initialize GUI components necessary to show database information
         this.initializeComponents();
 
+        //Retrieve the database information in a separate thread
+        this.loadAssignedGrading(true);
+
+        //Initialize more GUI components
+        this.initializeFrameIcon();
+        this.initializeMenuBar();
+
         this.createButtonGroups();
-
-        //Select first assignment
-        _dpList.selectFirst();
-
+        
         //Setup close property
         this.initializeWindowCloseProperty();
 
@@ -165,8 +174,8 @@ public class FrontendView extends JFrame
         //Display
         this.pack();
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
         this.setResizable(false);
+        this.setVisible(true);
     }
 
     /**
@@ -182,38 +191,69 @@ public class FrontendView extends JFrame
                                       _runTesterButton, _printStudentButton,
                                       _gradeAssignmentButton, _runCodeButton
                                     };
-        _studentButtons = new JButton[]{
+        _groupButtons = new JButton[]{
                                          _viewReadmeButton, _openCodeButton,
                                          _printStudentButton, _runTesterButton,
                                          _runCodeButton, _gradeAssignmentButton
                                        };
     }
 
-
     /**
-     * Called when a differentDistributablePart is selected from the dpList
+     * Called when a different DistributablePart is selected from the dpList
      * to update other GUI components
      */
     private void updateDPList()
     {
-        //Create directory for the assignment so GRD files can be created,
-        //even if no assignments have been unarchived
-        File partDir = Allocator.getPathServices().getUserPartDir(_dpList.getSelectedValue());
-        
-        try
-        {
-            Allocator.getFileSystemServices().makeDirectory(partDir);
-        }
-        catch(ServicesException e)
-        {
-            new ErrorView(e, "Unable to create user part directory: " + partDir.getAbsolutePath());
-        }
+        DistributablePart part = _dpList.getSelectedValue();
 
-        //Get the groups assigned for this distributable part
-        this.populateGroupsList();
+        if(part == null)
+        {
+            _groupList.clearList();
+        }
+        else
+        {
+            //Create directory for the part so GRD files can be created, even if
+            //no handins have been unarchived
+            File partDir = Allocator.getPathServices().getUserPartDir(part);
+
+            try
+            {
+                Allocator.getFileSystemServices().makeDirectory(partDir);
+            }
+            catch(ServicesException e)
+            {
+                new ErrorView(e, "Unable to create user part directory: " + partDir.getAbsolutePath());
+            }
+
+            //Get the groups assigned for this distributable part
+            this.populateGroupsList();
+        }
 
         //Update buttons accordingly
         this.updateButtonStates();
+    }
+
+    /**
+     * Populates the group list with the Groups that the TA has been assigned to
+     * grade (as recorded in the database) for the selected DistributablePart.
+     */
+    private void populateGroupsList()
+    {
+        DistributablePart selected = _dpList.getSelectedValue();
+        List<GroupGradedStatus> statuses = new ArrayList(_assignedGroups.get(selected));
+        Collections.sort(statuses);
+        List<Group> groups = new ArrayList<Group>();
+        for(GroupGradedStatus status : statuses)
+        {
+            groups.add(status.getGroup());
+        }
+        _groupList.setListData(groups, new GroupConverter(selected), true);
+        if(_groupList.isSelectionEmpty())
+        {
+            _groupList.selectFirst();
+        }
+
+        _currentlyGradingLabel.update(_groupList.getSelectedValue());
     }
 
     /**
@@ -223,7 +263,7 @@ public class FrontendView extends JFrame
     {
         DistributablePart part = _dpList.getSelectedValue();
  
-        //If there is no handin part selected, disable all of the buttons
+        //If there is no distributable part selected, disable all of the buttons
         if(part == null)
         {
             for(JButton button : _allButtons)
@@ -242,10 +282,10 @@ public class FrontendView extends JFrame
         //Get selected student
         Group group = _groupList.getSelectedValue();
 
-        //If no student is selected, disable all student buttons
+        //If no group is selected, disable all group buttons
         if(group == null)
         {
-            for(JButton button : _studentButtons)
+            for(JButton button : _groupButtons)
             {
                 button.setEnabled(false);
             }
@@ -292,35 +332,23 @@ public class FrontendView extends JFrame
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
-        //Assignment
-        Dimension assignmentListPanelSize = new Dimension((int) (mainPanelSize.width * 0.2), mainPanelSize.height);
-        Dimension assignmentListSize = new Dimension(assignmentListPanelSize.width, (int) (mainPanelSize.height * 0.95));
-        Dimension assignmentLabelSize = new Dimension(assignmentListPanelSize.width,
-                mainPanelSize.height - assignmentListSize.height - 5);
+        //Distributable Part list
+        Dimension dpListPanelSize = new Dimension((int) (mainPanelSize.width * 0.2), mainPanelSize.height);
+        Dimension dpListSize = new Dimension(dpListPanelSize.width, (int) (mainPanelSize.height * 0.95));
+        Dimension dpLabelSize = new Dimension(dpListPanelSize.width,
+                mainPanelSize.height - dpListSize.height - 5);
 
         FlowLayout layout = new FlowLayout();
         layout.setVgap(0);
-        JPanel assignmentPanel = new JPanel(layout);
-        assignmentPanel.setSize(assignmentListPanelSize);
-        assignmentPanel.setPreferredSize(assignmentListPanelSize);
-        JLabel assignmentLabel = new JLabel("<html><b>Assignment</b></html>");
-        assignmentLabel.setPreferredSize(assignmentLabelSize);
+        JPanel dpPanel = new JPanel(layout);
+        dpPanel.setSize(dpListPanelSize);
+        dpPanel.setPreferredSize(dpListPanelSize);
+        JLabel dpLabel = new JLabel("<html><b>Assignment</b></html>");
+        dpLabel.setPreferredSize(dpLabelSize);
 
-        Set<DistributablePart> partsToShow;
-        try {
-            partsToShow = Allocator.getDatabaseIO().getDPsWithAssignedStudents(USER);
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Could not get the list of DistributableParts for which you " +
-                              "have been assigned students.  Please send an error report if " +
-                              "this problem persists.  Cakehat will now close.");
-            this.dispose();
-            return;
-        }
-
-        List<DistributablePart> sortedParts = new ArrayList<DistributablePart>(partsToShow);
-        Collections.sort(sortedParts);
-        _dpList = new GenericJList<DistributablePart>(sortedParts, new DPFullNameConverter());
+        _dpList = new GenericJList<DistributablePart>();
         _dpList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        _dpList.usePlainFont();
         _dpList.addListSelectionListener(new ListSelectionListener()
         {
             public void valueChanged(ListSelectionEvent lse)
@@ -331,12 +359,12 @@ public class FrontendView extends JFrame
                 }
             }
         });
-        assignmentPanel.add(assignmentLabel);
-        JScrollPane assignmentPane = new JScrollPane(_dpList);
-        assignmentPane.setSize(assignmentListSize);
-        assignmentPane.setPreferredSize(assignmentListSize);
-        assignmentPanel.add(assignmentPane);
-        mainPanel.add(assignmentPanel);
+        dpPanel.add(dpLabel);
+        JScrollPane dpPane = new JScrollPane(_dpList);
+        dpPane.setSize(dpListSize);
+        dpPane.setPreferredSize(dpListSize);
+        dpPanel.add(dpPane);
+        mainPanel.add(dpPanel);
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
@@ -354,6 +382,7 @@ public class FrontendView extends JFrame
         groupLabel.setPreferredSize(groupLabelSize);
         _groupList = new GenericJList<Group>();
         _groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        _groupList.usePlainFont();
         _groupList.addListSelectionListener(new ListSelectionListener()
         {
             public void valueChanged(ListSelectionEvent lse)
@@ -372,7 +401,7 @@ public class FrontendView extends JFrame
         groupPanel.add(groupPane);
         mainPanel.add(groupPanel);
 
-        //When the left key is pressed, switch focus to the assignment list
+        //When the left key is pressed, switch focus to the distributable part list
         _groupList.addKeyListener(new KeyListener()
         {
             public void keyTyped(KeyEvent ke) {}
@@ -386,7 +415,7 @@ public class FrontendView extends JFrame
                 }
             }
         });
-        //When the right key is pressed, switch focus to the student list
+        //When the right key is pressed, switch focus to the group list
         _dpList.addKeyListener(new KeyListener()
         {
             public void keyTyped(KeyEvent ke) {}
@@ -405,7 +434,7 @@ public class FrontendView extends JFrame
 
         //Control Panel
         Dimension controlPanelSize = new Dimension(mainPanelSize.width -
-                assignmentListPanelSize.width - groupListPanelSize.width -
+                dpListPanelSize.width - groupListPanelSize.width -
                 3 * gapSpace - 35, mainPanelSize.height);
         layout = new FlowLayout();
         JPanel controlPanel = new JPanel(layout);
@@ -435,7 +464,6 @@ public class FrontendView extends JFrame
         generalButtonsPanel.setSize(generalButtonsSize);
         generalButtonsPanel.setPreferredSize(generalButtonsSize);
         this.initializeGeneralCommandButtons(generalButtonsPanel);
-
         generalCommandsPanel.add(generalButtonsPanel, BorderLayout.SOUTH);
         controlPanel.add(generalCommandsPanel);
 
@@ -468,23 +496,36 @@ public class FrontendView extends JFrame
         JMenu menu = new JMenu("File");
         menuBar.add(menu);
 
-        //Quit item
-        JMenuItem menuItem = new JMenuItem("Modify Blacklist");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener()
+        //Refresh item
+        JMenuItem refreshItem = new JMenuItem("Refresh");
+        refreshItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+        refreshItem.addActionListener(new ActionListener()
         {
-            public void actionPerformed(ActionEvent ae) {
+            public void actionPerformed(ActionEvent ae)
+            {
+                loadAssignedGrading(true);
+            }
+        });
+        menu.add(refreshItem);
+
+        //Blacklist item
+        JMenuItem blacklistItem = new JMenuItem("Modify Blacklist");
+        blacklistItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
+        blacklistItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
                 Collection<TA> taList = new ArrayList();
                 taList.add(USER);
                 new ModifyBlacklistView(taList);
             }
         });
-        menu.add(menuItem);
+        menu.add(blacklistItem);
 
         //Quit item
-        menuItem = new JMenuItem("Quit");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener()
+        JMenuItem quitItem = new JMenuItem("Quit");
+        quitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        quitItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
@@ -500,33 +541,33 @@ public class FrontendView extends JFrame
                 System.exit(0);
             }
         });
-        menu.add(menuItem);
+        menu.add(quitItem);
 
         //Help menu
         menu = new JMenu("Help");
         menuBar.add(menu);
 
         //Help contents item
-        menuItem = new JMenuItem("Help Contents");
-        menuItem.addActionListener(new ActionListener()
+        JMenuItem helpItem = new JMenuItem("Help Contents");
+        helpItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
                 JOptionPane.showMessageDialog(FrontendView.this, "This feature is not yet available");
             }
         });
-        menu.add(menuItem);
+        menu.add(helpItem);
 
         //About
-        menuItem = new JMenuItem("About");
-        menuItem.addActionListener(new ActionListener()
+        JMenuItem aboutItem = new JMenuItem("About");
+        aboutItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
                 CakehatAboutBox.displayRelativeTo(FrontendView.this);
             }
         });
-        menu.add(menuItem);
+        menu.add(aboutItem);
     }
 
     /**
@@ -693,7 +734,7 @@ public class FrontendView extends JFrame
 
         return button;
     }
-
+    
     /**
      * Called when the run code button is clicked.
      */
@@ -715,7 +756,7 @@ public class FrontendView extends JFrame
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        Allocator.getRubricManager().view(dp, group, false);
+        Allocator.getRubricManager().view(dp, group, false, this);
     }
 
     /**
@@ -793,7 +834,7 @@ public class FrontendView extends JFrame
     private void printAllButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
-        Collection<Group> groups = _groupList.getItems();
+        Collection<Group> groups = _groupList.getValues();
         try {
             dp.print(groups);
         } catch (ActionException ex) {
@@ -814,47 +855,113 @@ public class FrontendView extends JFrame
         }
     }
 
+    private final ExecutorService _submitExecutor = Executors.newSingleThreadExecutor();
     /**
      * Called when the submit grading button is clicked.
      */
-    private void submitGradingButtonActionPerformed() {
-        DistributablePart dp = _dpList.getSelectedValue();
+    private void submitGradingButtonActionPerformed()
+    {
+        final DistributablePart dp = _dpList.getSelectedValue();
 
-        if (dp != null) {
-            SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getItems(), Allocator.getConfigurationInfo().getSubmitOptions());
-            if (sd.showDialog() == JOptionPane.OK_OPTION) {
+        if(dp != null)
+        {
+            final SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getValues(),
+                    Allocator.getConfigurationInfo().getSubmitOptions());
 
-                Collection<Group> selected = sd.getSelectedGroups();
+            if(sd.showDialog() == JOptionPane.OK_OPTION)
+            {
+                final Collection<Group> selected = sd.getSelectedGroups();
 
-                if (sd.submitChecked() || sd.printChecked()) {
-                    try {
-                        Allocator.getRubricManager().convertToGRD(dp.getHandin(), selected);
-                    } catch (RubricException ex) {
-                        this.generateErrorViewMultiple("enter grade", selected, dp, ex);
-                    }
-                }
+                //Enter grades into database
+                if(sd.submitChecked())
+                {
+                    Runnable submitRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                            Map<Group, Double> handinTotals = Allocator
+                                    .getRubricManager().getPartScores(dp, selected);
+                            for(Group group : handinTotals.keySet())
+                            {
+                                try
+                                {
+                                    Allocator.getDatabaseIO()
+                                            .enterGrade(group, dp, handinTotals.get(group));
+                                }
+                                catch (SQLException ex)
+                                {
+                                    generateErrorView("enter grade", group, dp, ex);
+                                }
+                            }
 
-                if (sd.submitChecked()) {
-                    Map<Group, Double> handinTotals = Allocator.getRubricManager().getPartScores(dp, selected);
-                    for (Group group : handinTotals.keySet()) {
-                        try {
-                            Allocator.getDatabaseIO().enterGrade(group, dp, handinTotals.get(group));
-                        } catch (SQLException ex) {
-                            this.generateErrorView("enter grade", group, dp, ex);
+                            //Retrieve updated database information to reflect submitted grades
+                            loadAssignedGrading(false);
                         }
-                    }
+                    };
+
+                    _submitExecutor.submit(submitRunnable);
                 }
 
-                if (sd.printChecked()) {
-                    try {
-                        Allocator.getGradingServices().printGRDFiles(dp.getHandin(), selected);
-                    } catch (ServicesException ex) {
-                        new ErrorView(ex, "Could not print GRD files.");
-                    }
+                //Generate GRD files if they will be emailed or printer
+                if(sd.emailChecked() || sd.printChecked())
+                {
+                    Runnable convertRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                            try
+                            {
+                                Allocator.getRubricManager()
+                                        .convertToGRD(dp.getHandin(), selected);
+                            }
+                            catch (RubricException ex)
+                            {
+                                generateErrorViewMultiple("enter grade", selected, dp, ex);
+                            }
+                        }
+                    };
+                    _submitExecutor.submit(convertRunnable);
                 }
 
-                if (sd.notifyChecked()) {
-                    Allocator.getGradingServices().notifyStudents(dp.getHandin(), selected, sd.emailChecked());
+                //Print GRD files
+                if(sd.printChecked())
+                {
+                    //This needs to be placed on the submission executor so that
+                    //it is guaranteed run after the rubrics have been converted
+                    //to GRD files
+                    Runnable printRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                            try
+                            {
+                                Allocator.getGradingServices()
+                                        .printGRDFiles(dp.getHandin(), selected);
+                            }
+                            catch (ServicesException ex)
+                            {
+                                new ErrorView(ex, "Could not print GRD files.");
+                            }
+                        }
+                    };
+                    _submitExecutor.submit(printRunnable);
+                }
+
+                //If groups/students are to be notified
+                if(sd.notifyChecked())
+                {
+                    //This needs to be placed on the submission executor so that
+                    //it is guaranteed run after the rubrics have been converted
+                    //to GRD files
+                    Runnable notifyRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                           Allocator.getGradingServices().notifyStudents(
+                                   dp.getHandin(), selected, sd.emailChecked());
+                        }
+                    };
+                    _submitExecutor.submit(notifyRunnable);
                 }
             }
         }
@@ -978,39 +1085,415 @@ public class FrontendView extends JFrame
     }
 
     /**
-     * Populates the group list with the Groups that the TA has been assigned to
-     * grade (as recorded in the database) for the selected DistributablePart.
+     * Called when a rubric is saved. This method should not be called except
+     * as a listener to rubric save events.
+     * <br/><br/>
+     * Updates the user interface to reflect this.
+     *
+     * @param part
+     * @param group
      */
-    private void populateGroupsList()
+    @Override
+    public void rubricSaved(DistributablePart savedPart, Group savedGroup)
     {
-        DistributablePart selected = _dpList.getSelectedValue();
+        Double score = Allocator.getRubricManager().getPartScore(savedPart, savedGroup);
+        boolean hasRubricScore = (score != 0);
 
-        if(selected != null)
+        //Build a new map that is identical to the map currently referenced by
+        //_assignedGroups except that it will reflect whether or not the saved
+        //rubric has a score
+        //This map is built by copying from _assignedGroups, NOT by reading
+        //from the database
+        //This map is built instead of directly mutating _assignedGroups so
+        //that the showAssignedGradingChanges(...) method can be called which
+        //will update the UI, if necessary, by comparing against _assignedGroups
+        Map<DistributablePart, List<GroupGradedStatus>> updatedMap =
+                new HashMap<DistributablePart, List<GroupGradedStatus>>();
+
+        for(DistributablePart part : _assignedGroups.keySet())
         {
-            Collection<Group> assigned = Collections.emptyList();
-            try {
-                assigned = Allocator.getDatabaseIO().getGroupsAssigned(selected, USER);
-            } catch (CakeHatDBIOException ex) {
-                new ErrorView(ex, "Could not retrieve students/groups assigned to you " +
-                                  "for distributable part " + selected + ".");
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not retrieve students/groups assigned to you " +
-                                  "for distributable part " + selected + ".");
+            List<GroupGradedStatus> statuses = _assignedGroups.get(part);
+
+            //If this is the part, find and update the status
+            if(part.equals(savedPart))
+            {
+                GroupGradedStatus currStatus = null;
+                for(GroupGradedStatus status : statuses)
+                {
+                    if(status.getGroup().equals(savedGroup))
+                    {
+                        currStatus = status;
+                        break;
+                    }
+                }
+
+                //For this to have occurred, the rubric must have been open for
+                //a group that is no longer assigned to the TA
+                if(currStatus == null)
+                {
+                    return;
+                }
+
+                GroupGradedStatus newStatus = new GroupGradedStatus(savedGroup,
+                        currStatus.isSubmitted(), hasRubricScore);
+
+                int currStatusIndex = statuses.indexOf(currStatus);
+                ArrayList<GroupGradedStatus> newStatuses = new ArrayList<GroupGradedStatus>(statuses);
+                newStatuses.set(currStatusIndex, newStatus);
+                statuses = newStatuses;
             }
 
-            _groupList.setListData(assigned);
-            _groupList.selectFirst();
+            updatedMap.put(part, statuses);
+        }
 
-            _currentlyGradingLabel.update(_groupList.getSelectedValue());
+        this.showAssignedGradingChanges(updatedMap);
+    }
+
+    private final ExecutorService _loadAssignedGradingExecutor = Executors.newSingleThreadExecutor();
+    /**
+     * Retrieves from the database all of the groups that have been assigned.
+     * Then determines if the grade has been submitted and if the rubric has
+     * been edited.
+     * <br/><br/>
+     * This method may run the retrieval using a separate thread. Typically this
+     * will be the desired behavior because of the time involved in retrieving
+     * this information. Once it is complete, if UI changes are to be made then
+     * those updates will be enqueued on the UI thread.
+     * <br/><br/>
+     * The likely reason this method would not be run with a separate thread is
+     * if the calling code is already running on a non-UI thread.
+     *
+     * @param useSeparateThread 
+     */
+    private void loadAssignedGrading(boolean useSeparateThread)
+    {
+        Runnable loadRunnable = new Runnable()
+        {
+            public void run()
+            {
+                long start = System.currentTimeMillis();
+
+                Map<DistributablePart, List<GroupGradedStatus>> newMap;
+                try
+                {
+                    newMap = new HashMap<DistributablePart, List<GroupGradedStatus>>();
+
+                    Set<DistributablePart> parts = Allocator.getDatabaseIO().getDPsWithAssignedStudents(USER);
+                    for(DistributablePart part : parts)
+                    {
+                        Collection<Group> groups = Allocator.getDatabaseIO().getGroupsAssigned(part, USER);
+                        Map<Group, Double> submittedScores = Allocator.getDatabaseIO()
+                                .getPartScoresForGroups(part, groups);
+                        Map<Group, Double> rubricScores = Allocator.getRubricManager()
+                                .getPartScores(part, groups);
+
+                        List<GroupGradedStatus> statuses = new Vector<GroupGradedStatus>();
+                        newMap.put(part, statuses);
+
+                        for(Group group : groups)
+                        {
+                            GroupGradedStatus status = new GroupGradedStatus(group,
+                                    submittedScores.containsKey(group),
+                                    rubricScores.containsKey(group) &&
+                                    rubricScores.get(group) != 0);
+                            statuses.add(status);
+                        }
+                    }
+                }
+                catch (CakeHatDBIOException ex)
+                {
+                    new ErrorView(ex, "Unable to retrieve information on who you have " +
+                            "been assigned to grade");
+                    return;
+                }
+                catch (SQLException ex)
+                {
+                    new ErrorView(ex, "Unable to retrieve information on who you have " +
+                            "been assigned to grade");
+                    return;
+                }
+
+                showAssignedGradingChanges(newMap);
+            }
+        };
+
+        if(useSeparateThread)
+        {
+            _loadAssignedGradingExecutor.submit(loadRunnable);
+        }
+        else
+        {
+            loadRunnable.run();
         }
     }
 
-    private static class DPFullNameConverter implements StringConverter<DistributablePart> {
+    /**
+     * Determines if there are any differences between
+     * <code>newAssignedGroups</code> and {@link #_assignedGroups}. If there
+     * are changes, then visually updates to reflect the changes. In either
+     * case, updates {@link #_assignedGroups} to reference the data referenced
+     * by <code>newAssignedGroups</code>.
+     *
+     * @param newAssignedGroups
+     */
+    private void showAssignedGradingChanges(final Map<DistributablePart, List<GroupGradedStatus>> newAssignedGroups)
+    {
+        //Determine if any data has changed
+        boolean dpChanged = false;
+        boolean groupsChangedForSelectedDP = false;
 
-        public String convertToString(DistributablePart item) {
-            return item.getAssignment().getName() + ": "  + item.getName();
+        //If currently no data has been loaded
+        if(_assignedGroups == null)
+        {
+            dpChanged = true;
+            groupsChangedForSelectedDP = true;
         }
-        
+        else
+        {
+            //If groups for a new part has been assigned (or all groups
+            //for an existing part were removed)
+            dpChanged = !Allocator.getGeneralUtilities().containSameElements(
+                    newAssignedGroups.keySet(), _assignedGroups.keySet());
+
+            //If the group or the status of a group has changed
+            DistributablePart selected = _dpList.getSelectedValue();
+            if(selected != null)
+            {
+                List<GroupGradedStatus> currGroups = _assignedGroups.get(selected);
+                List<GroupGradedStatus> newGroups = newAssignedGroups.get(selected);
+                groupsChangedForSelectedDP = !Allocator.getGeneralUtilities()
+                        .containSameElements(currGroups, newGroups);
+            }
+        }
+
+        //If anything has changed, refresh it on the UI thread
+        if(dpChanged || groupsChangedForSelectedDP)
+        {
+            //Store as final variables so that they may be referenced in the Runnable
+            final boolean updateDPList = dpChanged;
+            final boolean updateGrouplist = groupsChangedForSelectedDP;
+
+            Runnable uiRunnable = new Runnable()
+            {
+                public void run()
+                {
+                    _assignedGroups = newAssignedGroups;
+
+                    if(updateDPList)
+                    {
+                        List<DistributablePart> sortedParts =
+                                new ArrayList<DistributablePart>(_assignedGroups.keySet());
+                        Collections.sort(sortedParts);
+                        _dpList.setListData(sortedParts, new DPConverter(), true);
+
+                        if(_dpList.isSelectionEmpty())
+                        {
+                            _dpList.selectFirst();
+                        }
+                    }
+
+                    if(updateGrouplist)
+                    {
+                        DistributablePart currPart = _dpList.getSelectedValue();
+                        List<GroupGradedStatus> statuses = new ArrayList(_assignedGroups.get(currPart));
+                        Collections.sort(statuses);
+                        List<Group> groups = new ArrayList<Group>();
+                        for(GroupGradedStatus status : statuses)
+                        {
+                            groups.add(status.getGroup());
+                        }
+                        _groupList.setListData(groups, new GroupConverter(currPart), true);
+
+                        if(_groupList.isSelectionEmpty())
+                        {
+                            _groupList.selectFirst();
+                        }
+
+                        //If all groups are submitted, then the part list needs
+                        //to be updated to reflect this
+                        _dpList.refreshList();
+                    }
+                }
+            };
+
+            EventQueue.invokeLater(uiRunnable);
+        }
+        else
+        {
+            _assignedGroups = newAssignedGroups;
+        }
     }
-    
+
+    private static class GroupGradedStatus implements Comparable<GroupGradedStatus>
+    {
+        private final Group _group;
+        private final boolean _submitted;
+        private final boolean _hasRubricScore;
+
+        public GroupGradedStatus(Group group, boolean submitted, boolean hasRubricScore)
+        {
+            _group = group;
+            _submitted = submitted;
+            _hasRubricScore = hasRubricScore;
+        }
+
+        public Group getGroup()
+        {
+            return _group;
+        }
+
+        public boolean isSubmitted()
+        {
+            return _submitted;
+        }
+
+        public boolean hasRubricScore()
+        {
+            return _hasRubricScore;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            boolean equals = false;
+            if(obj instanceof GroupGradedStatus)
+            {
+                GroupGradedStatus other = (GroupGradedStatus) obj;
+
+                equals = other._group.equals(_group) &&
+                         other._submitted == _submitted &&
+                         other._hasRubricScore == _hasRubricScore;
+            }
+
+            return equals;
+        }
+
+        @Override
+        public int compareTo(GroupGradedStatus other)
+        {
+            //Comparison on group names breaks ties
+            int groupComp = this.getGroup().getName().compareTo(other.getGroup().getName());
+
+            //Heirarchy
+            // - submitted
+            // - rubric score
+            // - nothing
+            if(this.isSubmitted() && other.isSubmitted())
+            {
+                return groupComp;
+            }
+            else if(this.isSubmitted())
+            {
+                return -1;
+            }
+            else if(other.isSubmitted())
+            {
+                return 1;
+            }
+            else if(this.hasRubricScore() && other.hasRubricScore())
+            {
+                return groupComp;
+            }
+            else if(this.hasRubricScore())
+            {
+                return -1;
+            }
+            else if(other.hasRubricScore())
+            {
+                return 1;
+            }
+            else
+            {
+                return groupComp;
+            }
+        }
+    }
+
+    private class GroupConverter implements StringConverter<Group>
+    {
+        private final DistributablePart _part;
+
+        public GroupConverter(DistributablePart part)
+        {
+            _part = part;
+        }
+
+        public String convertToString(Group group)
+        {
+            //Determine status of this group
+            boolean hasRubricScore = false;
+            boolean submitted = false;
+            List<GroupGradedStatus> statuses = _assignedGroups.get(_part);
+            for(GroupGradedStatus status : statuses)
+            {
+                if(status.getGroup().equals(group))
+                {
+                    submitted = status.isSubmitted();
+                    hasRubricScore = status.hasRubricScore();
+                }
+            }
+
+            //Build representation
+            String pre = "";
+            String post = "";
+            if(submitted)
+            {
+                pre = "<font color=green>✓</font> <font color=#686868>";
+                post = "</font>";
+            }
+            else if(hasRubricScore)
+            {
+                pre = "<strong><font color=#686868>";
+                post = "</font><strong>";
+            }
+            else
+            {
+                pre = "<strong>";
+                post = "<strong>";
+            }
+
+            String representation = "<html>" + pre + group.getName() + post + "</html>";
+
+            return representation;
+        }
+    }
+
+    private class DPConverter implements StringConverter<DistributablePart>
+    {
+        public String convertToString(DistributablePart part)
+        {
+            //Because all parts shown have at least one group, this will never
+            //be vacuously true
+            boolean allGroupsSubmitted = true;
+            List<GroupGradedStatus> statuses = _assignedGroups.get(part);
+            for(GroupGradedStatus status : statuses)
+            {
+                if(!status.isSubmitted())
+                {
+                    allGroupsSubmitted = false;
+                    break;
+                }
+            }
+
+            //Build representation
+            String pre = "";
+            String post = "";
+
+            if(allGroupsSubmitted)
+            {
+                pre = "<font color=green>✓</font> <font color=#686868>";
+                post = "</font>";
+            }
+            else
+            {
+                pre = "<strong>";
+                post = "</strong>";
+            }
+
+            String name = part.getAssignment().getName() + ": "  + part.getName();
+            String representation = "<html>" + pre + name + post + "</html>";
+
+            return representation;
+        }
+    }
 }

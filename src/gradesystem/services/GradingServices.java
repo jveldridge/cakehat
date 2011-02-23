@@ -1,6 +1,7 @@
 package gradesystem.services;
 
 import gradesystem.config.Assignment;
+import gradesystem.config.ConfigurationInfo;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
 import gradesystem.database.HandinStatus;
@@ -39,13 +40,14 @@ public interface GradingServices
      * has been graded.  Default settings:
      *  FROM:    user TA
      *  TO:      user TA
-     *  CC:      grades TA & grades HTA
+     *  CC:      notify addresses as specified by {@link ConfigurationInfo#getNotifyAddresses()}
      *  BCC:     students the user TA is assigned to grade for this assignment, as selected
-     *  SUBJECT: "[<course code>] <project> Graded"
-     *  MESSAGE: "<project> has been graded and is available for pickup in the handback bin."
+     *  SUBJECT: "[<course code>] <Assignment> Graded"
+     *  MESSAGE: "<Assignment> has been graded."
      *
-     * @param project
-     * @param students
+     * @param handin
+     * @param groups
+     * @param emailRubrics
      */
     public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics);
 
