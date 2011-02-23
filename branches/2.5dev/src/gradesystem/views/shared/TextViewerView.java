@@ -37,9 +37,12 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import gradesystem.Allocator;
+import gradesystem.printing.PrintRequest;
 import gradesystem.resources.icons.IconLoader;
 import gradesystem.resources.icons.IconLoader.IconImage;
 import gradesystem.resources.icons.IconLoader.IconSize;
+import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
  * A simpler viewer for plain text files. Allows for searching within the
@@ -141,8 +144,20 @@ public class TextViewerView extends JFrame
         JMenu menu = new JMenu("File");
         menuBar.add(menu);
 
+        //Print item
+        JMenuItem menuItem = new JMenuItem("Print");
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        menuItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                printMenuItemActionPerformed(ae);
+            }
+        });
+        menu.add(menuItem);
+
         //Quit item
-        JMenuItem menuItem = new JMenuItem("Quit");
+        menuItem = new JMenuItem("Quit");
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(new ActionListener()
         {
@@ -491,6 +506,36 @@ public class TextViewerView extends JFrame
     private void nextButtonActionPerformed(ActionEvent evt)
     {
         highlightNext();
+    }
+
+    private void printMenuItemActionPerformed(ActionEvent ae)
+    {
+        PrintRequest request = null;
+        try
+        {
+            File tmpFile = File.createTempFile(".tvv", ".tmp",
+                    Allocator.getPathServices().getUserWorkspaceDir());
+            PrintWriter writer = new PrintWriter(tmpFile);
+            writer.print(_textArea.getText());
+            writer.close();
+            request = new PrintRequest(Arrays.asList(tmpFile));
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to create temporary file used for printing");
+            return;
+        }
+
+        String printer = Allocator.getGradingServices().getPrinter();
+
+        try
+        {
+            Allocator.getPortraitPrinter().print(request, printer);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to print");
+        }
     }
 
     private void findMenuItemActionPerformed(ActionEvent evt)
