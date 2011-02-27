@@ -1107,7 +1107,7 @@ public class BackendView extends JFrame
      */
     private void updateGUI(Map<Assignment, List<Part>> selection)
     {
-        Collection<String> selectedStudents = _studentList.getGenericSelectedValues();
+        Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
 
         //Update button states
 
@@ -1513,7 +1513,7 @@ public class BackendView extends JFrame
             return;
         }
 
-        Collection<String> selectedStudents = _studentList.getGenericSelectedValues();
+        Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
         Collection<String> selectedButDisabled = new ArrayList<String>();
         for (String student : selectedStudents) {
             if (!enabledStudents.contains(student)) {
