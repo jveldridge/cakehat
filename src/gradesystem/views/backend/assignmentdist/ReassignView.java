@@ -607,7 +607,7 @@ public class ReassignView extends JFrame {
     }
 
     private void handleSelectedAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
-        Collection<Group> groups = _fromGroupList.getGenericSelectedValues();
+        Collection<Group> groups = new ArrayList<Group>(_fromGroupList.getGenericSelectedValues());
 
         //assigning a student who was previously assigned to UNASSIGNED
         if (!_fromUnassigned.isSelectionEmpty()) {
