@@ -1,0 +1,21 @@
+#!/bin/bash
+#==============================================================================
+# A lab check of script for cakehat.
+# 
+# Calls into the cakehat jar which does the actual check off.
+#
+# author:  jak2 (Joshua Kaplan)
+# created: January 27, 2011
+# last updated: February 12, 2011
+#==============================================================================
+
+#retrieve the location of this script
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+#extract the course name
+course=${abspath:8:5}
+
+#location of jar to run
+cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
+
+java -jar $cakehat LAB "$@"
