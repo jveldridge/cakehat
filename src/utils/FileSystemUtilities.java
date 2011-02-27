@@ -1,10 +1,12 @@
 package utils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import utils.system.NativeException;
 
 /**
@@ -52,28 +54,69 @@ public interface FileSystemUtilities
     public Calendar getModifiedDate(File file);
 
     /**
-     * Copies the source file to the destination file. If the destination file
-     * does not exist it will be created. If it already exists, it will be
-     * overwritten. If permissions do not allow this copy then it will fail
-     * and false will be returned.
+     * Copies a file or a directory.
+     * <br/><br/>
+     * If <code>src</code> is a directory then it recursively copies all of its
+     * contents into <code>dst</code>. Directories will be merged such that if
+     * the destination directory or a directory in the destination directory
+     * needs to be created and already exists, it will not be deleted. If
+     * <code>overWrite</code> is <code>true</code> then files maybe overwritten
+     * in the copying process.
      *
-     * @param sourceFile
-     * @param destFile
-     * @return success of copying file
+     * @param src
+     * @param dst
+     * @param overwrite
+     * @param preserveDate
+     * @return all files and directories created during the copy
+     * @throws IOException
+     *
+     * @see #copy(java.io.File, java.io.File)
      */
-    public boolean copyFile(File sourceFile, File destFile);
+    public List<File> copy(File src, File dst, boolean overwrite,
+            boolean preserveDate) throws FileCopyingException;
 
     /**
-     * Copies the source file to the destination file. If the destination file
-     * does not exist it will be created. If it already exists, it will be
-     * overwritten. If permissions do not allow this copy then it will fail
-     * and false will be returned.
+     * Equivalent to <code>copy(src, dst, false, false)</code>.
      *
-     * @param sourcePath
-     * @param destPath
-     * @return success of copying file
+     * @param src
+     * @param dst
+     * @return all files and directories created during the copy
+     * @throws IOException
+     *
+     * @see #copy(java.io.File, java.io.File, boolean, boolean)
      */
-    public boolean copyFile(String sourcePath, String destPath);
+    public List<File> copy(File src, File dst) throws FileCopyingException;
+
+    /**
+     * Deletes all files, throwing an informative exception if any of the files
+     * cannot be deleted.
+     *
+     * @param files
+     * @throws IOException
+     */
+    public void deleteFiles(List<File> files) throws IOException;
+    
+    /**
+     * Deletes the <code>file</code>. If a directory, all of the files and
+     * subdirectories of that directory will also be deleted.
+     *
+     * @param file
+     */
+    public void deleteFile(File file) throws IOException;
+
+    /**
+     * Creates a directory, recursively creating parent directories as
+     * necessary. This is similar to {@link java.io.File#mkdirs()} but differs
+     * in two important ways. Instead of returning a boolean to indicate
+     * success, an exception is thrown if a directory cannot be created. All
+     * directories that are created are returned.
+     *
+     * @param dir the directory to create
+     * @return directories created
+     * @throws IOException thrown if unable to create any of the necessary
+     * directories in order for <code>dir</code> to exist
+     */
+    public List<File> makeDirectory(File dir) throws IOException;
 
     /**
      * Reads a text file into a String.
@@ -101,20 +144,27 @@ public interface FileSystemUtilities
     public void chmod(File file, boolean recursive, Permission... mode) throws NativeException;
 
     /**
+     * Equivalent to <code>chmodDefault(file, true)</code>.
+     *
+     * @param file
+     */
+    public void chmodDefault(File file) throws NativeException;
+
+    /**
      * Changes permissions of a file to be readable and writable by the owner
      * and group. Changes the permissions of a directory to be readable,
-     * writable, and accessible by the owner and group. All subdirectories are
-     * given the same permissions. All files are made readable and writable by
-     * the owner and group.
+     * writable, and accessible by the owner and group. All files are made
+     * readable and writable by the owner and group. If <code>recursive</code>
+     * is <code>true</coe>, then all subdirectories and files are given the same
+     * permissions.
+     * <br/><br/>
      * <b>NOTE: symlinks are not detected, therefore circular references are not
      * detected and as such this method is not guaranteed to terminate if the
      * directory provided or any of its subdirectories contain a symlink.</b>
      *
      * @param file
-     *
-     * @see #chmod(java.io.File, boolean, utils.FileSystemUtilities.Permission[])
      */
-    public void chmodDefault(File file) throws NativeException;
+    public void chmodDefault(File file, boolean recursive) throws NativeException;
 
     /**
      * Changes the specified file or directory's group. The user calling this
@@ -129,36 +179,24 @@ public interface FileSystemUtilities
     public void changeGroup(File file, String group, boolean recursive) throws NativeException;
 
     /**
+     * Returns all files that satisfy the filter. If the file is a directory
+     * the directory will be recursively searched to find all accepting files.
      *
-     * Removes a directory and all of its files and subdirectories.
-     *
-     * @author jak2
-     * @date 1/8/2010
-     *
-     * @param dirPath
-     * @return success of deletion
+     * @param file
+     * @param filter
+     * @return
      */
-    public boolean removeDirectory(String dirPath);
+    public List<File> getFiles(File file, FileFilter filter);
 
     /**
+     * Returns all files that satisfy the filter. If the file is a directory
+     * the directory will be recursively searched to find all accepting files.
+     * Sorts the files according to the comparator.
      *
-     * Removes a directory and all of its files and subdirectories.
-     *
-     * @author jak2
-     * @date 1/8/2010
-     *
-     * @param dirPath
-     * @return success of deletion
+     * @param file
+     * @param filter
+     * @param comparator
+     * @return
      */
-    public boolean removeDirectory(File dirPath);
-
-    /**
-     * Returns all files in a directory, recursing into subdirectories, that
-     * contain files with the specified extension.
-     *
-     * @param dirPath starting directory
-     * @param extension the file extension, e.g. java or class
-     * @return the files found with the specified extension
-     */
-    public Collection<File> getFiles(String dirPath, String extension);
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator);
 }

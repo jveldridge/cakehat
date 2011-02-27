@@ -11,13 +11,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -31,6 +28,8 @@ import javax.swing.ScrollPaneConstants;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJList;
 import gradesystem.components.Student;
+import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.ButtonModel;
 
 /**
@@ -41,7 +40,7 @@ import javax.swing.ButtonModel;
 public class ModifyBlacklistView extends JFrame{
 
     private JTextField _filterBox;
-    private Student[] _studentLogins;
+    private List<Student> _studentLogins;
     private GenericJList<Student> _studentList;
     private ButtonGroup _taButtons;
     private Map<TA, GenericJList<String>> _taToList;
@@ -66,27 +65,36 @@ public class ModifyBlacklistView extends JFrame{
         for (TA ta : tas) {
             JPanel panel = new JPanel();
             panel.setPreferredSize(new Dimension(665,50));
+
+            final GenericJList<String> list = new GenericJList<String>();
             
             final JRadioButton rb = new JRadioButton(ta.getLogin());
             rb.setPreferredSize(new Dimension(95,50));
             rb.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     _filterBox.requestFocus();
+                    //clear the other list selections
+                    for (GenericJList<String> list2Clear : _taToList.values()) {
+                        if (list2Clear == list) {
+                            continue;
+                        }
+                        list2Clear.clearSelection();
+                    }
                 }
             });
             _taButtons.add(rb);
             _rbToTA.put(rb.getModel(), ta);
-            
-            final GenericJList<String> list = new GenericJList<String>();
+
             list.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     //clear the selections in any other JLists
-                    int selectedIndex = list.getSelectedIndex();
-                    for (GenericJList<String> list : _taToList.values()) {
-                        list.clearSelection();
+                    for (GenericJList<String> list2Clear : _taToList.values()) {
+                        if (list2Clear == list) {
+                            continue;
+                        }
+                        list2Clear.clearSelection();
                     }
-                    list.setSelectedIndex(selectedIndex);
 
                     //select the radio button corresponding to the TA whose
                     //blacklist this JList represents
@@ -97,9 +105,10 @@ public class ModifyBlacklistView extends JFrame{
             list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
             list.setVisibleRowCount(0);
             list.setFixedCellWidth(75);
+            list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
             try {
-                list.setListData(Allocator.getDatabaseIO().getTABlacklist(ta).toArray(new String[0]));
+                list.setListData(Allocator.getDatabaseIO().getTABlacklist(ta));
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not read blacklist for TA " + ta + " from " +
                                   "the database.");
@@ -124,34 +133,14 @@ public class ModifyBlacklistView extends JFrame{
         final JButton blacklistButton = new JButton("<< Add to Blacklist");
         blacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String studentLogin = _studentList.getSelectedValue().getLogin();
-                TA ta = _rbToTA.get(_taButtons.getSelection());
-
-                try {
-                    Allocator.getDatabaseIO().blacklistStudent(studentLogin, ta);
-                    ModifyBlacklistView.this.updateGUI();
-                } catch (SQLException ex) {
-                    new ErrorView(ex, String.format("Could not add student %s to TA %s's blacklist.",
-                                                    studentLogin, ta));
-                }
+                add2BlacklistActionPerformed();
             }
         });
         blacklistButton.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String studentLogin = _studentList.getSelectedValue().getLogin();
-                    TA ta = _rbToTA.get(_taButtons.getSelection());
-
-                    try {
-                        Allocator.getDatabaseIO().blacklistStudent(studentLogin, ta);
-                        ModifyBlacklistView.this.updateGUI();
-                        _filterBox.requestFocus();
-                        _filterBox.setText("");
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, String.format("Could not add student %s to TA %s's blacklist.",
-                                                        studentLogin, ta));
-                    }
+                    add2BlacklistActionPerformed();
                 }
             }
         });
@@ -159,17 +148,7 @@ public class ModifyBlacklistView extends JFrame{
         JButton unBlacklistButton = new JButton("Remove From Blacklist >>");
         unBlacklistButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                TA ta = _rbToTA.get(_taButtons.getSelection());
-                String student = _taToList.get(ta).getSelectedValue();
-
-                try {
-                    Allocator.getDatabaseIO().unBlacklistStudent(student, ta);
-                    ModifyBlacklistView.this.updateGUI();
-                } catch (SQLException ex) {
-                    new ErrorView(ex, String.format("Could not remove student %s from TA %s's blacklist.",
-                                                        student, ta));
-                }
-                
+                removeFromBlacklistActionPerformed();
             }
         });
        
@@ -188,11 +167,11 @@ public class ModifyBlacklistView extends JFrame{
                 List<Student> matchingLogins;
                 //if no filter term, include all logins
                 if(filterTerm.isEmpty()) {
-                    matchingLogins = Arrays.asList(_studentLogins);
+                    matchingLogins = _studentLogins;
                 }
-                //otherwise compared against beginning of each login
+                //otherwise compared against beginning of each login, lastname, and firstname
                 else {
-                    matchingLogins = new Vector<Student>();
+                    matchingLogins = new ArrayList<Student>();
                     for(Student student : _studentLogins){
                         if(student.getLogin().startsWith(filterTerm)){
                             matchingLogins.add(student);
@@ -207,7 +186,7 @@ public class ModifyBlacklistView extends JFrame{
                 }
 
                 //display matching logins
-                _studentList.setListData(matchingLogins.toArray());
+                _studentList.setListData(matchingLogins);
                 _studentList.setSelectedIndex(0);
 
                 if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -231,15 +210,19 @@ public class ModifyBlacklistView extends JFrame{
             studentMap = new HashMap<String, String>();
         }
         
-        List<Student> students = new LinkedList<Student>();
+        if (_studentLogins != null) {
+            _studentLogins.clear();
+        }
+        else {
+            _studentLogins = new ArrayList<Student>();
+        }
 
         for (String studentLogin : studentMap.keySet()) {
             String[] studentName = studentMap.get(studentLogin).split(" ");
-            students.add(new Student(studentLogin, studentName[0], studentName[1]));
+            _studentLogins.add(new Student(studentLogin, studentName[0], studentName[1]));
         }
 
-        _studentLogins = students.toArray(new Student[0]);
-        Arrays.sort(_studentLogins);
+        Collections.sort(_studentLogins);
         _studentList.setListData(_studentLogins);
         JScrollPane listPane = new JScrollPane(_studentList);
         listPane.setPreferredSize(listPanel.getPreferredSize());
@@ -253,14 +236,36 @@ public class ModifyBlacklistView extends JFrame{
         this.pack();
         this.setVisible(true);
     }
-    
-    
+
+    private void add2BlacklistActionPerformed() {
+        Collection<Student> students2Blacklist = _studentList.getGenericSelectedValues();
+        TA ta = _rbToTA.get(_taButtons.getSelection());
+        try {
+            Allocator.getDatabaseIO().blacklistStudents(students2Blacklist, ta);
+            ModifyBlacklistView.this.updateGUI();
+            _filterBox.requestFocus();
+            _filterBox.setText("");
+        } catch (SQLException ex) {
+            new ErrorView(ex, String.format("Could not add students: %s to TA %s's blacklist.", students2Blacklist, ta));
+        }
+    }
+
+    private void removeFromBlacklistActionPerformed() {
+        TA ta = _rbToTA.get(_taButtons.getSelection());
+        Collection<String> students2Unblacklist = _taToList.get(ta).getGenericSelectedValues();
+        try {
+            Allocator.getDatabaseIO().unBlacklistStudents(students2Unblacklist, ta);
+            ModifyBlacklistView.this.updateGUI();
+        } catch (SQLException ex) {
+            new ErrorView(ex, String.format("Could not remove the selected students: %s from TA %s's blacklist.", students2Unblacklist, ta));
+        }
+    }
+
     private void updateGUI() {
         TA ta = _rbToTA.get(_taButtons.getSelection());
 
         try {
-            String[] blacklist = Allocator.getDatabaseIO().getTABlacklist(ta).toArray(new String[0]);
-            _taToList.get(ta).setListData(blacklist);
+            _taToList.get(ta).setListData(Allocator.getDatabaseIO().getTABlacklist(ta));
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get blacklist for TA " + ta + ".");
         }
@@ -269,7 +274,7 @@ public class ModifyBlacklistView extends JFrame{
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ModifyBlacklistView(Allocator.getCourseInfo().getTAs());
+                new ModifyBlacklistView(Allocator.getConfigurationInfo().getTAs());
             }
         });
     }

@@ -1,53 +1,76 @@
 package gradesystem.rubric;
 
-import gradesystem.services.ServicesException;
 import gradesystem.views.backend.assignmentdist.DistributionRequester;
-import gradesystem.config.HandinPart;
-import gradesystem.config.LatePolicy;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import gradesystem.rubric.Rubric.Person;
 import gradesystem.Allocator;
-import gradesystem.config.TA;
+import gradesystem.config.Assignment;
+import gradesystem.config.GradeUnits;
+import gradesystem.config.LatePolicy;
+import gradesystem.config.TimeInformation;
+import gradesystem.database.Group;
+import gradesystem.database.HandinStatus;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import gradesystem.rubric.Rubric.Section;
+import gradesystem.rubric.Rubric.Subsection;
+import gradesystem.services.ServicesException;
 import gradesystem.views.shared.ErrorView;
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
-public class RubricManagerImpl implements RubricManager
-{
-    public void view(HandinPart part, String studentLogin)
+public class RubricManagerImpl implements RubricManager {
+
+    /**
+     * Keeps track of the currently opened rubrics so that if a user attempts
+     * to open the same rubric twice the already open one will be brought
+     * to the front and centered.
+     * Key: a String that is unique for a given DistributablePart and Group
+     * Value: the open rubric visualization
+     */
+    private HashMap<String, GradingVisualizer> _openRubrics = new HashMap<String, GradingVisualizer>();
+
+    @Override
+    public void view(DistributablePart part, Group group, boolean isAdmin)
     {
-        view(part, studentLogin, false);
+        this.view(part, group, isAdmin, null);
     }
 
-    private HashMap<String, GradingVisualizer> _graders = new HashMap<String, GradingVisualizer>();
-    public void view(HandinPart part, String studentLogin, boolean isAdmin)
+    @Override
+    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener)
     {
-        String GMLFilePath = getStudentRubricPath(part, studentLogin);
-
         //Determine if it has been opened
-        final String graderViewName = part.getAssignment().getName() + "::" + studentLogin;
+        final String uniqueID = part.getDBID() + "::" + group.getName();
         //If it hasn't been opened
-        if(!_graders.containsKey(graderViewName))
+        if(!_openRubrics.containsKey(uniqueID))
         {
             try
             {
-                Rubric rubric = RubricGMLParser.parse(GMLFilePath, part);
+                File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
+                Rubric rubric = RubricGMLParser.parse(gmlFile, part, group);
                 GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
+
+                if(listener != null)
+                {
+                    visualizer.addSaveListener(listener);
+                }
+
                 visualizer.addWindowListener(new WindowAdapter()
                 {
                     @Override
                     public void windowClosed(WindowEvent e)
                     {
-                        _graders.remove(graderViewName);
+                        _openRubrics.remove(uniqueID);
                     }
                 });
 
-                _graders.put(graderViewName, visualizer);
+                _openRubrics.put(uniqueID, visualizer);
             }
             catch (RubricException ex)
             {
@@ -57,56 +80,54 @@ public class RubricManagerImpl implements RubricManager
         //If it has, bring it to front and center it on screen
         else
         {
-            GradingVisualizer visualizer = _graders.get(graderViewName);
+            GradingVisualizer visualizer = _openRubrics.get(uniqueID);
             visualizer.toFront();
             visualizer.setLocationRelativeTo(null);
         }
-
     }
 
-    public String getStudentRubricPath(HandinPart part, String studentLogin)
-    {
-        return Allocator.getCourseInfo().getRubricDir() + part.getAssignment().getName() + "/" + studentLogin + ".gml";
+    @Override
+    public void viewTemplate(DistributablePart dp) throws RubricException {
+        new TemplateVisualizer(RubricGMLParser.parse(dp.getRubricTemplate(), dp, null));
     }
 
-    public void viewTemplate(HandinPart part)
+    @Override
+    public boolean hasRubric(DistributablePart part, Group group)
     {
-        try
-        {
-            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
-            new TemplateVisualizer(part.getAssignment().getName(), rubric);
+        return Allocator.getPathServices().getGroupGMLFile(part, group).exists();
+    }
+
+    @Override
+    public Collection<DistributablePart> getMissingRubrics(Handin handin, Group group) {
+        List<DistributablePart> partsMissingRubrics = new LinkedList<DistributablePart>();
+
+        for (DistributablePart dp : handin.getAssignment().getDistributableParts()) {
+            if (!this.hasRubric(dp, group)) {
+                partsMissingRubrics.add(dp);
+            }
         }
-        catch (RubricException ex)
-        {
-            new ErrorView(ex);
-        }
+
+        return partsMissingRubrics;
     }
 
-    public boolean hasRubric(HandinPart part, String studentLogin)
-    {
-        return new File(getStudentRubricPath(part, studentLogin)).exists();
-    }
+    @Override
+    public Map<Group, Double> getPartScores(DistributablePart part, Iterable<Group> groups) {
+        HashMap<Group, Double> totals = new HashMap<Group, Double>();
 
-    public Map<String, Double> getHandinTotals(HandinPart part, Iterable<String> studentLogins)
-    {
-        HashMap<String, Double> totals = new HashMap<String, Double>();
-
-        for(String studentLogin : studentLogins)
-        {
-            totals.put(studentLogin, getHandinTotal(part, studentLogin));
+        for(Group group : groups) {
+            totals.put(group, getPartScore(part, group));
         }
 
         return totals;
     }
 
-    public double getHandinTotal(HandinPart part, String studentLogin)
+    @Override
+    public double getPartScore(DistributablePart part, Group group)
     {
         try
         {
-            // get template rubric
-            Rubric rubric = RubricGMLParser.parse(getStudentRubricPath(part, studentLogin), part);
-
-            return rubric.getTotalHandinScore();
+            Rubric rubric = RubricGMLParser.parse(Allocator.getPathServices().getGroupGMLFile(part, group), part, group);
+            return rubric.getTotalDistPartScore();
         }
         catch(RubricException e)
         {
@@ -116,302 +137,232 @@ public class RubricManagerImpl implements RubricManager
         return 0;
     }
 
-    public double getRubricTotal(HandinPart part, String studentLogin)
-    {
-        try
-        {
-            // get template rubric
-            Rubric rubric = RubricGMLParser.parse(getStudentRubricPath(part, studentLogin), part);
+    @Override
+    public double getHandinPenaltyOrBonus(Handin handin, Group group) throws RubricException {
+        Assignment asgn = handin.getAssignment();
+        TimeInformation timeInfo = handin.getTimeInformation();
 
-            return rubric.getTotalRubricScore();
-        }
-        catch(RubricException e)
-        {
-            new ErrorView(e);
-        }
-
-        return 0;
-    }
-
-    public Map<String, Double> getRubricTotals(HandinPart part, Iterable<String> studentLogins)
-    {
-        HashMap<String, Double> totals = new HashMap<String, Double>();
-
-        for(String studentLogin : studentLogins)
-        {
-            totals.put(studentLogin, getRubricTotal(part, studentLogin));
-        }
-
-        return totals;
-    }
-
-    public void distributeRubrics(HandinPart part,
-                                  Map<TA, Collection<String>> distribution,
-                                  int minutesOfLeniency,
-                                  DistributionRequester requester) throws RubricException
-    {
-        Map<String, String> students;
+        HandinStatus statusPair;
         try {
-            students = Allocator.getDatabaseIO().getAllStudents();
+            statusPair = Allocator.getDatabaseIO().getHandinStatus(handin, group);
         } catch (SQLException ex) {
-            throw new RubricException("Rubrics could not be distributed for part " + part + " " +
-                                      "because the student list could not be read from the database.", ex);
+            throw new RubricException("Could not get handin status for group " +
+                                        group + " on assignment " + asgn + ".", ex);
         }
+        TimeStatus status = statusPair.getTimeStatus();
 
-        Map<String, Calendar> extensions;
-        try {
-            extensions = Allocator.getGradingServices().getExtensions(part, students.keySet());
-        } catch (ServicesException ex) {
-            throw new RubricException("Rubrics could not be distributed for part " + part + " " +
-                                      "because extnsions data could not be read from the database.", ex);
-        }
+        double outOf = 0;
+        double score = 0;
 
-        int numToDistribute = 0;
-        for (TA ta : distribution.keySet()) {
-            numToDistribute += distribution.get(ta).size();
-        }
+        Map<String, Subsection> sources = new HashMap<String, Subsection>();
+        for (DistributablePart dp : asgn.getDistributableParts()) {
+            File gmlFile = Allocator.getPathServices().getGroupGMLFile(dp, group);
+            Rubric rubric = RubricGMLParser.parse(gmlFile, dp, group);
 
-        int numDistributedSoFar = 0;
-        double fractionDone = 0.0;
-
-        try
-        {
-            //get template rubric
-            Rubric rubric = RubricGMLParser.parse(part.getRubricFile().getAbsolutePath(), part);
-
-            //for each TA
-            for (TA ta : distribution.keySet())
-            {
-                //for each student
-                for (String studentLogin : distribution.get(ta))
-                {
-                    //student login and name
-                    Person student = new Person(students.get(studentLogin), studentLogin);
-                    rubric.setStudent(student);
-                    //time status
-                    rubric.setStatus(getTimeStatus(part, studentLogin, extensions, minutesOfLeniency));
-                    rubric.setDaysLate(0);
-                    if (rubric.getStatus() == TimeStatus.LATE && rubric.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
-                    {
-                        rubric.setDaysLate(getDaysLate(part, studentLogin, extensions, minutesOfLeniency));
+            outOf += rubric.getTotalDistPartOutOf();
+            score += rubric.getTotalDistPartScore();
+            
+            for (Section section : rubric.getSections()) {
+                for (Subsection subsection : section.getSubsections()) {
+                    if (subsection.hasSource() && !sources.containsKey(subsection.getSource())) {
+                        sources.put(subsection.getSource(), subsection);
                     }
-                    //write file
-                    String gmlPath = getStudentRubricPath(part, studentLogin);
-                    RubricGMLWriter.write(rubric, gmlPath);
+                }
+            }
+        }
+
+        //if bonus/deduction applies to entire assignment, add values of sections w/sources
+        //each subsection is only added once, even if it appeared on multiple rubrics
+        if(timeInfo.affectsAll())
+        {
+            double sourceOutOf = 0;
+            double sourceScore = 0;
+            for (Subsection s : sources.values()) {
+                sourceOutOf += s.getOutOf();
+                sourceScore += s.getScore();
+            }
+
+            outOf += sourceOutOf;
+            score += sourceScore;
+        }
+
+        // If NC Late, negate all points
+        if(status == TimeStatus.NC_LATE)
+        {
+            return -score;
+        }
+
+        LatePolicy policy = timeInfo.getLatePolicy();
+        GradeUnits units = timeInfo.getGradeUnits();
+
+        if(policy == LatePolicy.DAILY_DEDUCTION)
+        {
+            if(status == TimeStatus.LATE)
+            {
+                double dailyDeduction = 0;
+                if(units == GradeUnits.PERCENTAGE)
+                {
+                    double percent = timeInfo.getOntimeValue() / 100.0;
+                    dailyDeduction = outOf * percent;
+                }
+                else if(units == GradeUnits.POINTS)
+                {
+                    dailyDeduction = timeInfo.getOntimeValue();
+                }
+
+                return dailyDeduction * statusPair.getDaysLate();
+            }
+        }
+        else if(policy == LatePolicy.MULTIPLE_DEADLINES)
+        {
+            // get appropriate value
+            double value = 0;
+            if(status == TimeStatus.EARLY)
+            {
+                value = timeInfo.getEarlyValue();
+            }
+            else if(status == TimeStatus.ON_TIME)
+            {
+                value = timeInfo.getOntimeValue();
+            }
+            else if(status == TimeStatus.LATE)
+            {
+                value = timeInfo.getLateValue();
+            }
+
+            // deduction based on grade units
+            if(units == GradeUnits.PERCENTAGE)
+            {
+                return outOf * (value / 100.0);
+            }
+            else if(units == GradeUnits.POINTS)
+            {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    @Override
+    public void convertToGRD(Handin handin, Group group) throws RubricException {
+        HandinStatus status;
+        try {
+            status = Allocator.getDatabaseIO().getHandinStatus(handin, group);
+        } catch (SQLException ex) {
+            throw new RubricException("Could not read handin status for group " + group + " " +
+                                         "on assignment " + handin.getAssignment() + " from the database.", ex);
+        }
+
+        //Write to grd
+        File grdFile = Allocator.getPathServices().getGroupGRDFile(handin, group);
+        try {
+            RubricGRDWriter.write(handin, group, status, grdFile);
+        } catch (RubricException e) {
+            //delete the incomplete GRD file, if it was written
+            if (grdFile.exists()) {
+                grdFile.delete();
+            }
+
+            //display the error to the user
+            new ErrorView(e, "The rubric could not be written.  "
+                    + "No GRD file has been created.");
+        }
+    }
+
+    @Override
+    public void convertToGRD(Handin handin, Iterable<Group> groups) throws RubricException {
+        for (Group group : groups) {
+            this.convertToGRD(handin, group);
+        }
+    }
+
+    @Override
+    public void convertToGRD(Map<Handin, Iterable<Group>> toConvert) throws RubricException {
+        for (Handin handin : toConvert.keySet()) {
+            for (Group group : toConvert.get(handin)) {
+                convertToGRD(handin, group);
+            }
+        }
+    }
+
+    @Override
+    public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
+                                  int minsLeniency, DistributionRequester requester,
+                                  boolean overwrite) throws RubricException {
+        this.storeHandinStatuses(handin.getAssignment(), toDistribute, minsLeniency);
+
+        Collection<DistributablePart> distParts = handin.getAssignment().getDistributableParts();
+        int numToDistribute = toDistribute.size() * distParts.size();
+        int numDistributedSoFar = 0;
+
+        try {
+            for (DistributablePart part : distParts) {
+                File template = part.getRubricTemplate();
+
+                //ensure that appropriate rubric directory exists
+                File partRubricDir = Allocator.getPathServices().getGMLDir(part);
+                if (!partRubricDir.exists()) {
+                    Allocator.getFileSystemServices().makeDirectory(partRubricDir);
+                }
+
+                for (Group group : toDistribute) {
+                    //if rubric already exists and not in overwrite mode, go on
+                    //to next Group
+                    if (!overwrite && this.hasRubric(part, group)) {
+                        continue;
+                    }
+
+                    File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
+                    List<File> copiedFiles = Allocator.getFileSystemServices().copy(template, gmlFile, true, false);
+                    for (File file : copiedFiles) {
+                        Allocator.getFileSystemServices().sanitize(file);
+                    }
 
                     numDistributedSoFar++;
-                    fractionDone = (double) numDistributedSoFar / (double) numToDistribute;
+                    double fractionDone = (double) numDistributedSoFar / (double) numToDistribute;
                     requester.updatePercentDone((int) (fractionDone * 100));
                 }
             }
-        }
-        catch (RubricException ex)
-        {
-            new ErrorView(ex);
-        }
-    }
-
-    private int getDaysLate(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
-    {
-        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(part.getHandin(studentLogin));
-        Calendar onTime = part.getTimeInformation().getOntimeDate();
-        //if there is an extension, use that date
-        if(extensions.containsKey(studentLogin) && extensions.get(studentLogin) != null)
-        {
-            onTime = extensions.get(studentLogin);
-        }
-
-        return Allocator.getCalendarUtilities().daysAfterDeadline(handinTime, onTime, minutesOfLeniency);
-    }
-
-    private TimeStatus getTimeStatus(HandinPart part, String studentLogin, Map<String, Calendar> extensions, int minutesOfLeniency)
-    {
-        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(part.getHandin(studentLogin));
-
-        Calendar extensionTime = null;
-        if(extensions.containsKey(studentLogin))
-        {
-            extensionTime = extensions.get(studentLogin);
-        }
-
-        //If the policy is N0_LATE, or MULTIPLE_DEADLINES with an extension
-        if( (part.getTimeInformation().getLatePolicy() == LatePolicy.NO_LATE) ||
-            (extensionTime != null && part.getTimeInformation().getLatePolicy() == LatePolicy.MULTIPLE_DEADLINES)   )
-        {
-            Calendar onTime = part.getTimeInformation().getOntimeDate();
-            if(extensionTime != null)
-            {
-                onTime = extensionTime;
-            }
-
-            //If before deadline
-            if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
-            {
-                return TimeStatus.ON_TIME;
-            }
-            else
-            {
-                return TimeStatus.NC_LATE;
-            }
-        }
-        else if(part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION)
-        {
-            Calendar onTime = part.getTimeInformation().getOntimeDate();
-            if(extensionTime != null)
-            {
-                onTime = extensionTime;
-            }
-
-            //If before deadline
-            if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
-            {
-                return TimeStatus.ON_TIME;
-            }
-            else
-            {
-                return TimeStatus.LATE;
-            }
-        }
-        else if(part.getTimeInformation().getLatePolicy() == LatePolicy.MULTIPLE_DEADLINES)
-        {
-            Calendar earlyTime = part.getTimeInformation().getEarlyDate();
-            Calendar onTime = part.getTimeInformation().getOntimeDate();
-            Calendar lateTime = part.getTimeInformation().getLateDate();
-
-            // If before early deadline
-            if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, earlyTime, minutesOfLeniency))
-            {
-                return TimeStatus.EARLY;
-            }
-            // If before ontime deadline
-            else if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, onTime, minutesOfLeniency))
-            {
-                return TimeStatus.ON_TIME;
-            }
-            // If before late deadline
-            else if(Allocator.getCalendarUtilities().isBeforeDeadline(handinTime, lateTime, minutesOfLeniency))
-            {
-                return TimeStatus.LATE;
-            }
-            // If after late deadline
-            else
-            {
-                return TimeStatus.NC_LATE;
-            }
-        }
-
-        return null;
-    }
-
-     public TimeStatus getTimeStatus(HandinPart part, String studentLogin)
-     {
-         try
-         {
-            //Get rubric
-            String xmlPath = getStudentRubricPath(part, studentLogin);
-            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
-
-            return rubric.getStatus();
-
-         }
-         catch(RubricException e)
-         {
-             new ErrorView(e);
-         }
-
-         return null;
-     }
-
-     public String getTimeStatusDescriptor(HandinPart part, String studentLogin)
-     {
-         try
-         {
-            //Get rubric
-            String xmlPath = getStudentRubricPath(part, studentLogin);
-            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
-
-            TimeStatus status = rubric.getStatus();
-
-            String descriptor = status.getPrettyPrintName();
-
-            if(part.getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION &&
-               status == TimeStatus.LATE)
-            {
-                descriptor += " " + rubric.getDaysLate();
-
-                if(rubric.getDaysLate() == 1)
-                {
-                    descriptor += " day late";
-                }
-                else
-                {
-                    descriptor += " days late";
-                }
-            }
-
-            return descriptor;
-
-         }
-         catch(RubricException e) { }
-
-         return "not available";
-     }
-
-     public void setTimeStatus(HandinPart part, String studentLogin, TimeStatus status, int daysLate)
-     {
-         try
-         {
-            //Get rubric
-            String xmlPath = getStudentRubricPath(part, studentLogin);
-            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
-
-            //Change status and days late
-            rubric.setStatus(status);
-            rubric.setDaysLate(daysLate);
-
-            //Write changes
-            RubricGMLWriter.write(rubric, xmlPath);
-         }
-         catch(RubricException e)
-         {
-             new ErrorView(e);
-         }
-     }
-
-    public void convertToGRD(HandinPart part, String studentLogin)
-    {
-        try
-        {
-            //Get rubric
-            String xmlPath = getStudentRubricPath(part, studentLogin);
-            Rubric rubric = RubricGMLParser.parse(xmlPath, part);
-
-            //Write to grd
-            String grdPath = Allocator.getGradingServices().getStudentGRDPath(part, studentLogin);
-            RubricGRDWriter.write(rubric, grdPath);
-        }
-        catch(RubricException e)
-        {
-            new ErrorView(e);
+        } catch (ServicesException ex) {
+            throw new RubricException("Could not distribute rubrics for " +
+                                      "assignment " + handin.getAssignment() + ".", ex);
         }
     }
 
-    public void convertToGRD(HandinPart part, Iterable<String> studentLogins)
-    {
-        for(String studentLogin : studentLogins)
-        {
-            convertToGRD(part, studentLogin);
+    /**
+     * Calculates the HandinStatus (consisting of a TimeStatus and a number of days late)
+     * for each Group's handin for the given Assignment by calling the GradingServices
+     * getHandinStatuses(...) method and stores the result in the database.
+     *
+     * @param asgn
+     * @param groups
+     * @param minsLeniency
+     * @throws RubricException
+     */
+    private void storeHandinStatuses(Assignment asgn, Collection<Group> groups, int minsLeniency) throws RubricException {
+        Map<Group, Calendar> extensions;
+        try {
+            extensions = Allocator.getDatabaseIO().getAllExtensions(asgn.getHandin());
+        } catch (SQLException ex) {
+            throw new RubricException("Could not read extensions for assignment " + asgn + " " +
+                                      "from the database.  Rubrics cannot be distributed because handin " +
+                                      "status cannot be determined.", ex);
         }
-    }
 
-    public void convertToGRD(Map<HandinPart, Iterable<String>> toConvert)
-    {
-        for(HandinPart part : toConvert.keySet())
-        {
-            for(String studentLogin : toConvert.get(part))
-            {
-                convertToGRD(part, studentLogin);
-            }
+        Map<Group, HandinStatus> handinStatuses;
+        try {
+            handinStatuses = Allocator.getGradingServices().getHandinStatuses(asgn.getHandin(), groups, extensions, minsLeniency);
+        } catch (ServicesException ex) {
+            throw new RubricException("Could determine time statuses for handins. " +
+                                      "Rubrics cannot be distributed.", ex);
+        }
+        try {
+            Allocator.getDatabaseIO().setHandinStatuses(asgn.getHandin(), handinStatuses);
+        } catch (SQLException ex) {
+            throw new RubricException("Could not store handin statuses in the database for " +
+                                      "assignment " + asgn + ".  Rubrics cannot be distributed.", ex);
         }
     }
+    
 }

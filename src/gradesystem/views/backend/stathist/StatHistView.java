@@ -10,10 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import javax.imageio.ImageIO;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
 
 /**
@@ -23,24 +26,29 @@ import gradesystem.views.shared.ErrorView;
  */
 public class StatHistView extends javax.swing.JFrame {
 
-    private Map<Assignment,AssignmentChartPanel> _asgnChartMap;
-    private Map<Part,AssignmentChartPanel> _partChartMap;
-    private Map<String,StudentChartPanel> _studChartMap;
+    private Map<Assignment, AssignmentChartPanel> _asgnChartMap;
+    private Map<Part, AssignmentChartPanel> _partChartMap;
+    private Map<String, StudentChartPanel> _studChartMap;
+    private Collection<String> _enabledStudents;
     private List<Assignment> _assignments;
     private Collection<Part> _parts;
-    private Collection<String> _students;
 
     /** Creates new form HistogramView */
-    public StatHistView(Collection<Assignment> assignments, Collection<String> students) {
+    public StatHistView(Collection<Assignment> assignments) {
         _assignments  = new Vector<Assignment>(assignments) {};
         Collections.sort(_assignments);
-        _students = students;
         _asgnChartMap = new HashMap<Assignment,AssignmentChartPanel>();
         _partChartMap = new HashMap<Part,AssignmentChartPanel>();
         _studChartMap = new HashMap<String,StudentChartPanel>();
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/x-office-drawing.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.X_OFFICE_DRAWING));
         } catch (Exception e) {}
+        try {
+            _enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not retrieve enabled students from the database.");
+            _enabledStudents = Collections.emptyList();
+        }
         
         initComponents();
         domoreinit();
@@ -63,8 +71,8 @@ public class StatHistView extends javax.swing.JFrame {
         }
         
         //create StudentChartPanels for each student
-        for (String s : _students) {
-            _studChartMap.put(s, new StudentChartPanel());
+        for (String student : _enabledStudents) {
+            _studChartMap.put(student, new StudentChartPanel());
         }
         
         
@@ -108,7 +116,6 @@ public class StatHistView extends javax.swing.JFrame {
 
         selectViewBox.setSelectedIndex(0);
         assignmentsRb.setSelected(true);
-        allStudentsRb.setSelected(true);
         
         this.updateCharts();
     }
@@ -135,9 +142,6 @@ public class StatHistView extends javax.swing.JFrame {
         assignmentsRb = new javax.swing.JRadioButton();
         partsRb = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        allStudentsRb = new javax.swing.JRadioButton();
-        studentsSelectedRb = new javax.swing.JRadioButton();
         studentControlPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -202,48 +206,17 @@ public class StatHistView extends javax.swing.JFrame {
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
 
-        jSeparator1.setName("jSeparator1"); // NOI18N
-
-        studButtonGroup.add(allStudentsRb);
-        allStudentsRb.setText(resourceMap.getString("allStudentsRb.text")); // NOI18N
-        allStudentsRb.setName("allStudentsRb"); // NOI18N
-        allStudentsRb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                updateCharts();
-            }
-        });
-
-        studButtonGroup.add(studentsSelectedRb);
-        studentsSelectedRb.setText(resourceMap.getString("studentsSelectedRb.text")); // NOI18N
-        studentsSelectedRb.setName("studentsSelectedRb"); // NOI18N
-        studentsSelectedRb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                updateCharts();
-            }
-        });
-
         javax.swing.GroupLayout asgnControlPanelLayout = new javax.swing.GroupLayout(asgnControlPanel);
         asgnControlPanel.setLayout(asgnControlPanelLayout);
         asgnControlPanelLayout.setHorizontalGroup(
             asgnControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(asgnControlPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(asgnControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(asgnControlPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(asgnControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(assignmentsRb)
-                            .addComponent(partsRb)))
-                    .addGroup(asgnControlPanelLayout.createSequentialGroup()
-                        .addGap(60, 60, 60)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(asgnControlPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(allStudentsRb))
-                    .addGroup(asgnControlPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(studentsSelectedRb)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                    .addComponent(jLabel1)
+                    .addComponent(assignmentsRb)
+                    .addComponent(partsRb))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
         asgnControlPanelLayout.setVerticalGroup(
             asgnControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -254,13 +227,7 @@ public class StatHistView extends javax.swing.JFrame {
                 .addComponent(assignmentsRb)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(partsRb)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(allStudentsRb)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(studentsSelectedRb)
-                .addContainerGap(250, Short.MAX_VALUE))
+                .addContainerGap(326, Short.MAX_VALUE))
         );
 
         cardPanel.add(asgnControlPanel, "assignment");
@@ -275,7 +242,7 @@ public class StatHistView extends javax.swing.JFrame {
         );
         studentControlPanelLayout.setVerticalGroup(
             studentControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 404, Short.MAX_VALUE)
+            .addGap(0, 409, Short.MAX_VALUE)
         );
 
         cardPanel.add(studentControlPanel, "student");
@@ -317,7 +284,7 @@ public class StatHistView extends javax.swing.JFrame {
                 .addContainerGap())
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addGap(6, 6, 6)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE))
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -336,21 +303,21 @@ public class StatHistView extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 982, Short.MAX_VALUE)
+            .addGap(0, 1040, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap(46, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 471, Short.MAX_VALUE)
+            .addGap(0, 518, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(1, 1, 1)
                     .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap(20, Short.MAX_VALUE)))
         );
 
         pack();
@@ -364,33 +331,28 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private void updateCharts() {
         CardLayout cl = (CardLayout) cardPanel.getLayout();
 
-        Collection<String> enabledStudents;
-        try {
-            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Could not read enabled students from the database. " +
-                              "Charts cannot be updated.");
-            return;
-        }
-
         //see assignment histograms
         if (selectViewBox.getSelectedItem().equals("By Assignment")) {
             cl.show(cardPanel, "assignment");
-            for (String s : _students) {
-                _studChartMap.get(s).setVisible(false);
+            for (StudentChartPanel scp : _studChartMap.values()) {
+                scp.setVisible(false);
             }
+            
             if (assignmentsRb.isSelected()) {                           //show assignments
                 for (Part p : _parts) {
                     _partChartMap.get(p).setVisible(false);
                 }
                 for (Assignment a : _assignments) {
+                    Collection<Group> groups;
+                    try {
+                        groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not get groups for assignment " + a + ".");
+                        groups = Collections.emptyList();
+                    }
+
                     AssignmentChartPanel chart = _asgnChartMap.get(a);
-                    if (studentsSelectedRb.isSelected()) {
-                        chart.updateChartData(a, _students);
-                    }
-                    else {
-                        chart.updateChartData(a, enabledStudents);
-                    }
+                    chart.updateChartData(a, groups);
                     chart.setVisible(true);
                 }
             }
@@ -399,13 +361,16 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                     _asgnChartMap.get(a).setVisible(false);
                 }
                 for (Part p : _parts) {
+                    Collection<Group> groups;
+                    try {
+                        groups = Allocator.getDatabaseIO().getGroupsForAssignment(p.getAssignment());
+                    } catch (SQLException ex) {
+                        new ErrorView(ex, "Could not get groups for assignment " + p.getAssignment() + ".");
+                        groups = Collections.emptyList();
+                    }
+
                     AssignmentChartPanel chart = _partChartMap.get(p);
-                    if (studentsSelectedRb.isSelected()) {
-                        chart.updateChartData(p, _students);
-                    }
-                    else {
-                        chart.updateChartData(p, enabledStudents);
-                    }
+                    chart.updateChartData(p, groups);
                     chart.setVisible(true);
                 }
             }
@@ -420,7 +385,8 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             for (Part p : _parts) {
                 _partChartMap.get(p).setVisible(false);
             }
-            for (String student : _students) {
+            
+            for (String student : _enabledStudents) {
                 StudentChartPanel chart = _studChartMap.get(student);
                 chart.updateChart(student, _assignments.toArray(new Assignment[0]));
                 chart.setVisible(true);
@@ -435,17 +401,12 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                try {
-                    new StatHistView(Allocator.getCourseInfo().getHandinAssignments(), Allocator.getDatabaseIO().getEnabledStudents().keySet()).setVisible(true);
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not read enabled students from the database.");
-                }
+                new StatHistView(Allocator.getConfigurationInfo().getHandinAssignments()).setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton allStudentsRb;
     private javax.swing.ButtonGroup asgnButtonGroup;
     private javax.swing.JPanel asgnControlPanel;
     private javax.swing.JRadioButton assignmentsRb;
@@ -456,13 +417,11 @@ private void selectViewBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel optionsPanel;
     private javax.swing.JRadioButton partsRb;
     private javax.swing.JComboBox selectViewBox;
     private javax.swing.ButtonGroup studButtonGroup;
     private javax.swing.JPanel studentControlPanel;
-    private javax.swing.JRadioButton studentsSelectedRb;
     // End of variables declaration//GEN-END:variables
 }

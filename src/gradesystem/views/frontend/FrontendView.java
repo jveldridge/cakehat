@@ -1,12 +1,12 @@
 package gradesystem.views.frontend;
 
 import gradesystem.components.GenericJList;
+import gradesystem.handin.ActionException;
+import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
 import gradesystem.views.shared.ModifyBlacklistView;
-import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.TA;
-import gradesystem.GradeSystemAboutBox;
+import gradesystem.CakehatAboutBox;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -23,11 +23,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Vector;
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -42,24 +39,39 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJList.StringConverter;
+import gradesystem.database.CakeHatDBIOException;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
+import gradesystem.rubric.RubricSaveListener;
 import gradesystem.views.shared.ErrorView;
+import java.awt.EventQueue;
 import java.io.File;
-import java.util.LinkedList;
-import utils.system.NativeException;
+import java.io.FileNotFoundException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A frontend view to be used by TAs that are grading.
+ * <br/><br/>
+ * In order to have a very responsive user interface, this class uses a non-UI
+ * thread to load information. Whenver these changes lead to UI changes, the
+ * code that will do this is placed on the AWT Event Queue. In particular,
+ * {@link #_assignedGroups} can be loaded using a non-UI thread. This is done
+ * via the {@link #loadAssignedGrading(boolean)} method.
  *
  * @author jak2
  */
-public class FrontendView extends JFrame
+public class FrontendView extends JFrame implements RubricSaveListener
 {
-    //Test main
-    public static void main(String[] args)
-    {
-        new FrontendView();
-    }
-
     /**
      * Label that displays the currently selected student.
      */
@@ -74,16 +86,28 @@ public class FrontendView extends JFrame
             super(_begin + _default + _end);
         }
 
-        public void update(String studentLogin)
+        public void update(Group group)
         {
-            if(studentLogin == null || studentLogin.isEmpty())
+            if(group == null)
             {
                 this.setText(_begin + _default + _end);
             }
             else
             {
-                this.setText(_begin + studentLogin + _end);
+                this.setText(_begin + getGroupText(group) + _end);
             }
+        }
+
+        private String getGroupText(Group group) {
+            if (group.getMembers().size() == 1) {
+                return group.getMembers().get(0);
+            }
+            
+            String text = group.getName();
+
+            text += " " + group.getMembers();
+
+            return text;
         }
     }
 
@@ -102,41 +126,45 @@ public class FrontendView extends JFrame
         }
     }
 
-    private GenericJList<Assignment> _assignmentList;
-    private GenericJList<String> _studentList;
+    private final TA USER = Allocator.getUserServices().getUser();
+
+    private GenericJList<DistributablePart> _dpList;
+    private GenericJList<Group> _groupList;
     private CurrentlyGradingLabel _currentlyGradingLabel;
     private JButton _runDemoButton, _viewDeductionsButton, _printAllButton,
                     _submitGradingButton, _viewReadmeButton, _openCodeButton,
                     _runTesterButton, _printStudentButton, _gradeAssignmentButton,
                     _runCodeButton;
-    private JButton[] _allButtons, _studentButtons;
-    private Map<String, Collection<String>> _studentGroups;
+    private JButton[] _allButtons, _groupButtons;
+    private Map<DistributablePart, List<GroupGradedStatus>> _assignedGroups;
 
     private FrontendView()
     {
         //Frame title
         super("[cakehat] frontend - " + Allocator.getUserUtilities().getUserLogin());
-        
+
         //Create the directory to work in
         try {
-            Allocator.getGradingServices().makeUserGradingDirectory();
+            Allocator.getGradingServices().makeUserWorkspace();
         } catch (ServicesException ex) {
-            new ErrorView(ex, "Could not make user grading directory; " +
+            new ErrorView(ex, "Could not make user cakehat workspace directory; " +
                              "functionality will be significantly impaired.  " +
                              "You are advised to restart cakehat and to send an " +
                              "error report if the problem persists.");
         }
 
-        //Initialize GUI components
-        this.initializeFrameIcon();
-        this.initializeMenuBar();
+        //Initialize GUI components necessary to show database information
         this.initializeComponents();
 
+        //Retrieve the database information in a separate thread
+        this.loadAssignedGrading(true);
+
+        //Initialize more GUI components
+        this.initializeFrameIcon();
+        this.initializeMenuBar();
+
         this.createButtonGroups();
-
-        //Select first assignment
-        _assignmentList.selectFirst();
-
+        
         //Setup close property
         this.initializeWindowCloseProperty();
 
@@ -146,8 +174,8 @@ public class FrontendView extends JFrame
         //Display
         this.pack();
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
         this.setResizable(false);
+        this.setVisible(true);
     }
 
     /**
@@ -163,50 +191,79 @@ public class FrontendView extends JFrame
                                       _runTesterButton, _printStudentButton,
                                       _gradeAssignmentButton, _runCodeButton
                                     };
-        _studentButtons = new JButton[]{
+        _groupButtons = new JButton[]{
                                          _viewReadmeButton, _openCodeButton,
                                          _printStudentButton, _runTesterButton,
                                          _runCodeButton, _gradeAssignmentButton
                                        };
     }
 
-
     /**
-     * Called when a different assignment is selected from the assignmentList
+     * Called when a different DistributablePart is selected from the dpList
      * to update other GUI components
      */
-    private void updateAssignmentList()
+    private void updateDPList()
     {
-        //Create directory for the assignment so GRD files can be created,
-        //even if no assignments have been untarred
-        File assignmentDir = new File(Allocator.getGradingServices().getUserGradingDirectory() +
-                                      _assignmentList.getSelectedValue().getName());
-        try
-        {
-            Allocator.getFileSystemServices().makeDirectory(assignmentDir);
-        }
-        catch(NativeException e)
-        {
-            new ErrorView(e, "Unable to create directory assignment: " + assignmentDir.getAbsolutePath());
-        }
+        DistributablePart part = _dpList.getSelectedValue();
 
-        //Get the students assigned for this assignment
-        this.populateStudentList();
+        if(part == null)
+        {
+            _groupList.clearList();
+        }
+        else
+        {
+            //Create directory for the part so GRD files can be created, even if
+            //no handins have been unarchived
+            File partDir = Allocator.getPathServices().getUserPartDir(part);
+
+            try
+            {
+                Allocator.getFileSystemServices().makeDirectory(partDir);
+            }
+            catch(ServicesException e)
+            {
+                new ErrorView(e, "Unable to create user part directory: " + partDir.getAbsolutePath());
+            }
+
+            //Get the groups assigned for this distributable part
+            this.populateGroupsList();
+        }
 
         //Update buttons accordingly
         this.updateButtonStates();
     }
 
     /**
-     * Enable or disable buttons based on the assignment selected. If there is
-     * no students available to select for the assignment then all student
-     * specific buttons are disabled.
+     * Populates the group list with the Groups that the TA has been assigned to
+     * grade (as recorded in the database) for the selected DistributablePart.
+     */
+    private void populateGroupsList()
+    {
+        DistributablePart selected = _dpList.getSelectedValue();
+        List<GroupGradedStatus> statuses = new ArrayList(_assignedGroups.get(selected));
+        Collections.sort(statuses);
+        List<Group> groups = new ArrayList<Group>();
+        for(GroupGradedStatus status : statuses)
+        {
+            groups.add(status.getGroup());
+        }
+        _groupList.setListData(groups, new GroupConverter(selected), true);
+        if(_groupList.isSelectionEmpty())
+        {
+            _groupList.selectFirst();
+        }
+
+        _currentlyGradingLabel.update(_groupList.getSelectedValue());
+    }
+
+    /**
+     * Enable or disable buttons based on the distributable part selected.
      */
     private void updateButtonStates()
     {
-        HandinPart part = this.getHandinPart();
+        DistributablePart part = _dpList.getSelectedValue();
  
-        //If there is no handin part selected, disable all of the buttons
+        //If there is no distributable part selected, disable all of the buttons
         if(part == null)
         {
             for(JButton button : _allButtons)
@@ -219,20 +276,16 @@ public class FrontendView extends JFrame
         //General commands
         _runDemoButton.setEnabled(part.hasDemo());
         _viewDeductionsButton.setEnabled(part.hasDeductionList());
-        _submitGradingButton.setEnabled(part.hasRubric());
+        _submitGradingButton.setEnabled(part.hasRubricTemplate());
         _printAllButton.setEnabled(part.hasPrint());
 
         //Get selected student
-        String stud = _studentList.getSelectedValue();
-        if(stud != null && stud.isEmpty())
-        {
-            stud = null;
-        }
+        Group group = _groupList.getSelectedValue();
 
-        //If no student is selected, disable all student buttons
-        if(stud == null)
+        //If no group is selected, disable all group buttons
+        if(group == null)
         {
-            for(JButton button : _studentButtons)
+            for(JButton button : _groupButtons)
             {
                 button.setEnabled(false);
             }
@@ -244,17 +297,24 @@ public class FrontendView extends JFrame
         else
         {
             //Student buttons
-            _gradeAssignmentButton.setEnabled(part.hasRubric());
+            _gradeAssignmentButton.setEnabled(part.hasRubricTemplate());
             _runTesterButton.setEnabled(part.hasTester());
             _runCodeButton.setEnabled(part.hasRun());
             _openCodeButton.setEnabled(part.hasOpen());
             _printStudentButton.setEnabled(part.hasPrint());
-            _viewReadmeButton.setEnabled(part.hasReadme(stud));
+
+            boolean hasReadme = true;
+            try {
+                hasReadme = part.hasReadme(group);
+            } catch (ActionException ex) {
+                new ErrorView(ex, "Could not determine if group " + group + " has a README");
+            }
+            _viewReadmeButton.setEnabled(hasReadme);
         }
     }
 
     /**
-     * Create sall of the GUI components aside from the menu bar
+     * Creates all of the GUI components aside from the menu bar
      */
     private void initializeComponents()
     {
@@ -262,7 +322,7 @@ public class FrontendView extends JFrame
         outerPanel.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
         this.add(outerPanel);
         
-        Dimension mainPanelSize = new Dimension(900,400);
+        Dimension mainPanelSize = new Dimension(950,400);
         JPanel mainPanel = new JPanel();
         mainPanel.setSize(mainPanelSize);
         mainPanel.setPreferredSize(mainPanelSize);
@@ -272,70 +332,77 @@ public class FrontendView extends JFrame
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
-        //Sizes
-        Dimension listPanelSize = new Dimension((int) (mainPanelSize.width * 0.15), mainPanelSize.height);
-        Dimension listSize = new Dimension(listPanelSize.width, (int) (mainPanelSize.height * 0.95));
-        Dimension labelSize = new Dimension(listPanelSize.width, mainPanelSize.height - listSize.height - 5);
+        //Distributable Part list
+        Dimension dpListPanelSize = new Dimension((int) (mainPanelSize.width * 0.2), mainPanelSize.height);
+        Dimension dpListSize = new Dimension(dpListPanelSize.width, (int) (mainPanelSize.height * 0.95));
+        Dimension dpLabelSize = new Dimension(dpListPanelSize.width,
+                mainPanelSize.height - dpListSize.height - 5);
 
-        //Assignment
         FlowLayout layout = new FlowLayout();
         layout.setVgap(0);
-        JPanel assignmentPanel = new JPanel(layout);
-        assignmentPanel.setSize(listPanelSize);
-        assignmentPanel.setPreferredSize(listPanelSize);
-        JLabel assignmentLabel = new JLabel("<html><b>Assignment</b></html>");
-        assignmentLabel.setPreferredSize(labelSize);
-        _assignmentList = new GenericJList<Assignment>(Allocator.getCourseInfo().getHandinAssignments());
-        _assignmentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        _assignmentList.addListSelectionListener(new ListSelectionListener()
+        JPanel dpPanel = new JPanel(layout);
+        dpPanel.setSize(dpListPanelSize);
+        dpPanel.setPreferredSize(dpListPanelSize);
+        JLabel dpLabel = new JLabel("<html><b>Assignment</b></html>");
+        dpLabel.setPreferredSize(dpLabelSize);
+
+        _dpList = new GenericJList<DistributablePart>();
+        _dpList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        _dpList.usePlainFont();
+        _dpList.addListSelectionListener(new ListSelectionListener()
         {
             public void valueChanged(ListSelectionEvent lse)
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    updateAssignmentList();
+                    updateDPList();
                 }
             }
         });
-        assignmentPanel.add(assignmentLabel);
-        JScrollPane assignmentPane = new JScrollPane(_assignmentList);
-        assignmentPane.setSize(listSize);
-        assignmentPane.setPreferredSize(listSize);
-        assignmentPanel.add(assignmentPane);
-        mainPanel.add(assignmentPanel);
+        dpPanel.add(dpLabel);
+        JScrollPane dpPane = new JScrollPane(_dpList);
+        dpPane.setSize(dpListSize);
+        dpPane.setPreferredSize(dpListSize);
+        dpPanel.add(dpPane);
+        mainPanel.add(dpPanel);
 
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
-        //Student list
+        //Group list
+        Dimension groupListPanelSize = new Dimension((int) (mainPanelSize.width * 0.15), mainPanelSize.height);
+        Dimension groupListSize = new Dimension(groupListPanelSize.width, (int) (mainPanelSize.height * 0.95));
+        Dimension groupLabelSize = new Dimension(groupListPanelSize.width, mainPanelSize.height - groupListSize.height - 5);
+
         layout = new FlowLayout();
         layout.setVgap(0);
-        JPanel studentPanel = new JPanel(layout);
-        studentPanel.setSize(listPanelSize);
-        studentPanel.setPreferredSize(listPanelSize);
-        JLabel studentLabel = new JLabel("<html><b>Student</b></html>");
-        studentLabel.setPreferredSize(labelSize);
-        _studentList = new GenericJList<String>();
-        _studentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        _studentList.addListSelectionListener(new ListSelectionListener()
+        JPanel groupPanel = new JPanel(layout);
+        groupPanel.setSize(groupListPanelSize);
+        groupPanel.setPreferredSize(groupListPanelSize);
+        JLabel groupLabel = new JLabel("<html><b>Student</b></html>");
+        groupLabel.setPreferredSize(groupLabelSize);
+        _groupList = new GenericJList<Group>();
+        _groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        _groupList.usePlainFont();
+        _groupList.addListSelectionListener(new ListSelectionListener()
         {
             public void valueChanged(ListSelectionEvent lse)
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    updateSelectedStudent();
+                    _currentlyGradingLabel.update(_groupList.getSelectedValue());
                     updateButtonStates(); //To check for README
                 }
             }
         });
-        studentPanel.add(studentLabel);
-        JScrollPane studentPane = new JScrollPane(_studentList);
-        studentPane.setSize(listSize);
-        studentPane.setPreferredSize(listSize);
-        studentPanel.add(studentPane);
-        mainPanel.add(studentPanel);
+        groupPanel.add(groupLabel);
+        JScrollPane groupPane = new JScrollPane(_groupList);
+        groupPane.setSize(groupListSize);
+        groupPane.setPreferredSize(groupListSize);
+        groupPanel.add(groupPane);
+        mainPanel.add(groupPanel);
 
-        //When the left key is pressed, switch focus to the assignment list
-        _studentList.addKeyListener(new KeyListener()
+        //When the left key is pressed, switch focus to the distributable part list
+        _groupList.addKeyListener(new KeyListener()
         {
             public void keyTyped(KeyEvent ke) {}
             public void keyReleased(KeyEvent ke) {}
@@ -344,12 +411,12 @@ public class FrontendView extends JFrame
             {
                 if(KeyEvent.VK_LEFT == ke.getKeyCode())
                 {
-                    _assignmentList.grabFocus();
+                    _dpList.grabFocus();
                 }
             }
         });
-        //When the right key is pressed, switch focus to the student list
-        _assignmentList.addKeyListener(new KeyListener()
+        //When the right key is pressed, switch focus to the group list
+        _dpList.addKeyListener(new KeyListener()
         {
             public void keyTyped(KeyEvent ke) {}
             public void keyReleased(KeyEvent ke) {}
@@ -358,7 +425,7 @@ public class FrontendView extends JFrame
             {
                 if(KeyEvent.VK_RIGHT == ke.getKeyCode())
                 {
-                    _studentList.grabFocus();
+                    _groupList.grabFocus();
                 }
             }
         });
@@ -366,7 +433,9 @@ public class FrontendView extends JFrame
         mainPanel.add(Box.createHorizontalStrut(gapSpace));
 
         //Control Panel
-        Dimension controlPanelSize = new Dimension(mainPanelSize.width - 2 * listPanelSize.width - 3 * gapSpace - 35, mainPanelSize.height);
+        Dimension controlPanelSize = new Dimension(mainPanelSize.width -
+                dpListPanelSize.width - groupListPanelSize.width -
+                3 * gapSpace - 35, mainPanelSize.height);
         layout = new FlowLayout();
         JPanel controlPanel = new JPanel(layout);
         layout.setVgap(0);
@@ -395,7 +464,6 @@ public class FrontendView extends JFrame
         generalButtonsPanel.setSize(generalButtonsSize);
         generalButtonsPanel.setPreferredSize(generalButtonsSize);
         this.initializeGeneralCommandButtons(generalButtonsPanel);
-
         generalCommandsPanel.add(generalButtonsPanel, BorderLayout.SOUTH);
         controlPanel.add(generalCommandsPanel);
 
@@ -415,32 +483,6 @@ public class FrontendView extends JFrame
         controlPanel.add(studentCommandsPanel);
     }
 
-    private void updateSelectedStudent()
-    {
-        String students = null;
-        if(_studentList.getSelectedValue() != null)
-        {
-            if(_studentGroups != null)
-            {
-                Collection<String> group = _studentGroups.get(_studentList.getSelectedValue());
-                students = "";
-                for(String student : group)
-                {
-                    if(group.size() != 1 && student != group.iterator().next())
-                    {
-                        students += ", ";
-                    }
-                    students += student;
-                }
-            }
-            else
-            {
-                students = _studentList.getSelectedValue();
-            }
-        }
-        _currentlyGradingLabel.update(students);
-    }
-
     /**
      * Create the menu bar
      */
@@ -454,58 +496,78 @@ public class FrontendView extends JFrame
         JMenu menu = new JMenu("File");
         menuBar.add(menu);
 
-        //Quit item
-        JMenuItem menuItem = new JMenuItem("Modify Blacklist");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae) {
-                TA user = Allocator.getUserServices().getUser();
-                Collection<TA> taList = new ArrayList();
-                taList.add(user);
-                new ModifyBlacklistView(taList);
-            }
-        });
-        menu.add(menuItem);
-
-        //Quit item
-        menuItem = new JMenuItem("Quit");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener()
+        //Refresh item
+        JMenuItem refreshItem = new JMenuItem("Refresh");
+        refreshItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+        refreshItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Allocator.getGradingServices().removeUserGradingDirectory();
+                loadAssignedGrading(true);
+            }
+        });
+        menu.add(refreshItem);
+
+        //Blacklist item
+        JMenuItem blacklistItem = new JMenuItem("Modify Blacklist");
+        blacklistItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
+        blacklistItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                Collection<TA> taList = new ArrayList();
+                taList.add(USER);
+                new ModifyBlacklistView(taList);
+            }
+        });
+        menu.add(blacklistItem);
+
+        //Quit item
+        JMenuItem quitItem = new JMenuItem("Quit");
+        quitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        quitItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                try
+                {
+                    Allocator.getGradingServices().removeUserWorkspace();
+                }
+                catch(ServicesException ex)
+                {
+                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
+                }
+
                 System.exit(0);
             }
         });
-        menu.add(menuItem);
+        menu.add(quitItem);
 
         //Help menu
         menu = new JMenu("Help");
         menuBar.add(menu);
 
         //Help contents item
-        menuItem = new JMenuItem("Help Contents");
-        menuItem.addActionListener(new ActionListener()
+        JMenuItem helpItem = new JMenuItem("Help Contents");
+        helpItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
                 JOptionPane.showMessageDialog(FrontendView.this, "This feature is not yet available");
             }
         });
-        menu.add(menuItem);
+        menu.add(helpItem);
 
         //About
-        menuItem = new JMenuItem("About");
-        menuItem.addActionListener(new ActionListener()
+        JMenuItem aboutItem = new JMenuItem("About");
+        aboutItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                GradeSystemAboutBox.displayRelativeTo(FrontendView.this);
+                CakehatAboutBox.displayRelativeTo(FrontendView.this);
             }
         });
-        menu.add(menuItem);
+        menu.add(aboutItem);
     }
 
     /**
@@ -516,7 +578,7 @@ public class FrontendView extends JFrame
     private void initializeGeneralCommandButtons(JPanel generalButtonsPanel)
     {
         //Run Demo
-        _runDemoButton = createButton("/gradesystem/resources/icons/32x32/applications-system.png",
+        _runDemoButton = createButton(IconImage.APPLICATIONS_SYSTEM,
                                       "Run Demo", "Run the assignment demo");
         _runDemoButton.addActionListener(new ActionListener()
         {
@@ -529,7 +591,7 @@ public class FrontendView extends JFrame
         generalButtonsPanel.add(_runDemoButton);
 
         //Print All
-        _printAllButton = createButton("/gradesystem/resources/icons/32x32/printer.png",
+        _printAllButton = createButton(IconImage.PRINTER,
                                        "Print All", "Print code for all students");
         _printAllButton.addActionListener(new ActionListener()
         {
@@ -542,7 +604,7 @@ public class FrontendView extends JFrame
         generalButtonsPanel.add(_printAllButton);
 
         //View Deductions
-        _viewDeductionsButton = createButton("/gradesystem/resources/icons/32x32/text-x-generic.png",
+        _viewDeductionsButton = createButton(IconImage.TEXT_X_GENERIC,
                                        "View Deductions", "Display the deductions list");
         _viewDeductionsButton.addActionListener(new ActionListener()
         {
@@ -555,7 +617,7 @@ public class FrontendView extends JFrame
         generalButtonsPanel.add(_viewDeductionsButton);
 
         //Submit Grading
-        _submitGradingButton = createButton("/gradesystem/resources/icons/32x32/mail-send-receive.png",
+        _submitGradingButton = createButton(IconImage.MAIL_SEND_RECEIVE,
                                             "Submit Grading", "Submit all graded assignments");
         _submitGradingButton.addActionListener(new ActionListener()
         {
@@ -576,7 +638,7 @@ public class FrontendView extends JFrame
     private void initializeStudentCommandButtons(JPanel studentButtonsPanel)
     {
         //View Readme
-        _viewReadmeButton = createButton("/gradesystem/resources/icons/32x32/document-properties.png",
+        _viewReadmeButton = createButton(IconImage.DOCUMENT_PROPERTIES,
                                          "View Readme", "Display the student's readme");
         _viewReadmeButton.addActionListener(new ActionListener()
         {
@@ -589,7 +651,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_viewReadmeButton);
 
         //Open Code
-        _openCodeButton = createButton("/gradesystem/resources/icons/32x32/document-open.png",
+        _openCodeButton = createButton(IconImage.DOCUMENT_OPEN,
                                        "Open Code", "Open the student's code");
         _openCodeButton.addActionListener(new ActionListener()
         {
@@ -602,7 +664,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_openCodeButton);
 
         //Run Tester
-        _runTesterButton = createButton("/gradesystem/resources/icons/32x32/utilities-system-monitor.png",
+        _runTesterButton = createButton(IconImage.UTILITIES_SYSTEM_MONITOR,
                                         "Run Tester", "Run tester on the student's code");
         _runTesterButton.addActionListener(new ActionListener()
         {
@@ -615,7 +677,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_runTesterButton);
 
         //Print Code
-        _printStudentButton = createButton("/gradesystem/resources/icons/32x32/printer.png",
+        _printStudentButton = createButton(IconImage.PRINTER,
                                            "Print Code", "Print the student's code");
         _printStudentButton.addActionListener(new ActionListener()
         {
@@ -628,7 +690,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_printStudentButton);
 
         //Grade Assignment
-        _gradeAssignmentButton = createButton("/gradesystem/resources/icons/32x32/font-x-generic.png",
+        _gradeAssignmentButton = createButton(IconImage.FONT_X_GENERIC,
                                               "Grade Assignment", "Grade the student's assignment");
         _gradeAssignmentButton.addActionListener(new ActionListener()
         {
@@ -641,7 +703,7 @@ public class FrontendView extends JFrame
         studentButtonsPanel.add(_gradeAssignmentButton);
 
         //Run Code
-        _runCodeButton = createButton("/gradesystem/resources/icons/32x32/go-next.png",
+        _runCodeButton = createButton(IconImage.GO_NEXT,
                                       "Run Code", "Run the student's code");
         _runCodeButton.addActionListener(new ActionListener()
         {
@@ -658,27 +720,33 @@ public class FrontendView extends JFrame
      * Creates a button with an image on the left hand side and then two lines
      * of text to the right of the image. The top line of text is bolded.
      *
-     * @param imagePath
+     * @param image
      * @param topLine
      * @param bottomLine
      * @return the button created
      */
-    private JButton createButton(String imagePath, String topLine, String bottomLine)
+    private JButton createButton(IconImage image, String topLine, String bottomLine)
     {
-        Icon icon = new ImageIcon(getClass().getResource(imagePath));
+        Icon icon = IconLoader.loadIcon(IconSize.s32x32, image);
         JButton button = new JButton("<html><b>" + topLine + "</b><br/>" + bottomLine + "</html>", icon);
         button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         button.setIconTextGap(10);
 
         return button;
     }
-
+    
     /**
      * Called when the run code button is clicked.
      */
     private void runCodeButtonActionPerformed()
     {
-        this.getHandinPart().run(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.run(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("run code", group, dp, ex);
+        }
     }
 
     /**
@@ -686,8 +754,9 @@ public class FrontendView extends JFrame
      */
     private void gradeAssignmentButtonActionPerformed()
     {
-        Allocator.getRubricManager().view(this.getHandinPart(), _studentList.getSelectedValue());
-
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        Allocator.getRubricManager().view(dp, group, false, this);
     }
 
     /**
@@ -695,12 +764,13 @@ public class FrontendView extends JFrame
      */
     private void printStudentButtonActionPerformed()
     {
-        String printer = Allocator.getGradingServices().getPrinter();
-        if (printer == null) {
-            return;
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.print(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("print code", group, dp, ex);
         }
-        
-        this.getHandinPart().printCode(_studentList.getSelectedValue(), printer);
     }
 
     /**
@@ -708,7 +778,13 @@ public class FrontendView extends JFrame
      */
     private void runTesterButtonActionPerformed()
     {
-        this.getHandinPart().runTester(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.runTester(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("run tester", group, dp, ex);
+        }
     }
 
     /**
@@ -716,7 +792,13 @@ public class FrontendView extends JFrame
      */
     private void openCodeButtonActionPerformed()
     {
-        this.getHandinPart().openCode(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.open(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("open code", group, dp, ex);
+        }
     }
 
     /**
@@ -724,7 +806,13 @@ public class FrontendView extends JFrame
      */
     private void viewReadmeButtonActionPerformed()
     {
-        this.getHandinPart().viewReadme(_studentList.getSelectedValue());
+        DistributablePart dp = _dpList.getSelectedValue();
+        Group group = _groupList.getSelectedValue();
+        try {
+            dp.viewReadme(group);
+        } catch (ActionException ex) {
+            this.generateErrorView("view README", group, dp, ex);
+        }
     }
 
     /**
@@ -732,7 +820,12 @@ public class FrontendView extends JFrame
      */
     private void runDemoButtonActionPerformed()
     {
-        this.getHandinPart().runDemo();
+        DistributablePart dp = _dpList.getSelectedValue();
+        try {
+            dp.runDemo();
+        } catch (ActionException ex) {
+            this.generateErrorView("run code", null, dp, ex);
+        }
     }
 
     /**
@@ -740,12 +833,13 @@ public class FrontendView extends JFrame
      */
     private void printAllButtonActionPerformed()
     {
-        String printer = Allocator.getGradingServices().getPrinter();
-        if (printer == null) {
-            return;
+        DistributablePart dp = _dpList.getSelectedValue();
+        Collection<Group> groups = _groupList.getValues();
+        try {
+            dp.print(groups);
+        } catch (ActionException ex) {
+            this.generateErrorViewMultiple("print code", groups, dp, ex);
         }
-
-        this.getHandinPart().printCode(_studentList.getItems(), printer);
     }
 
     /**
@@ -753,84 +847,180 @@ public class FrontendView extends JFrame
      */
     private void viewDeductionsButtonActionPerformed()
     {
-        this.getHandinPart().viewDeductionList();
+        DistributablePart dp = _dpList.getSelectedValue();
+        try {
+            dp.viewDeductionList();
+        } catch (FileNotFoundException ex) {
+            this.generateErrorView("view deductions list", null, dp, ex);
+        }
     }
 
+    private final ExecutorService _submitExecutor = Executors.newSingleThreadExecutor();
     /**
      * Called when the submit grading button is clicked.
      */
     private void submitGradingButtonActionPerformed()
     {
-        Assignment asgn = _assignmentList.getSelectedValue();
+        final DistributablePart dp = _dpList.getSelectedValue();
 
-        if(_assignmentList.getSelectedValue() != null)
+        if(dp != null)
         {
-            
-            Vector<String> students = new Vector<String>();
-            Map<String,Collection<String>> groups;
-            try {
-                groups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get groups from the database; grades cannot be submitted.");
-                return;
-            }
+            final SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getValues(),
+                    Allocator.getConfigurationInfo().getSubmitOptions());
 
-            for (String s1 : _studentList.getItems()) {
-                for (String s2 : groups.get(s1)) {
-                    students.add(s2);
-                }
-            }
-            SubmitDialog sd = new SubmitDialog(students, Allocator.getCourseInfo().getSubmitOptions());
-            if (sd.showDialog() == JOptionPane.OK_OPTION)
+            if(sd.showDialog() == JOptionPane.OK_OPTION)
             {
+                final Collection<Group> selected = sd.getSelectedGroups();
 
-                Vector<String> selectedStudents = sd.getSelectedStudents();
-
-                Allocator.getRubricManager().convertToGRD(asgn.getHandinPart(), selectedStudents);
-                
-                if (sd.submitChecked())
+                //Enter grades into database
+                if(sd.submitChecked())
                 {
-                    Map<String, Double> handinTotals = Allocator.getRubricManager().getHandinTotals(asgn.getHandinPart(), selectedStudents);
-                    for (String login : handinTotals.keySet())
+                    Runnable submitRunnable = new Runnable()
                     {
-                        try {
-                            Allocator.getDatabaseIO().enterGrade(login, asgn.getHandinPart(), handinTotals.get(login));
-                        } catch (SQLException ex) {
-                            new ErrorView(ex, "Could not enter grade for student " + login + " " +
-                                              "for assignment " + asgn + ".");
+                        public void run()
+                        {
+                            Map<Group, Double> handinTotals = Allocator
+                                    .getRubricManager().getPartScores(dp, selected);
+                            for(Group group : handinTotals.keySet())
+                            {
+                                try
+                                {
+                                    Allocator.getDatabaseIO()
+                                            .enterGrade(group, dp, handinTotals.get(group));
+                                }
+                                catch (SQLException ex)
+                                {
+                                    generateErrorView("enter grade", group, dp, ex);
+                                }
+                            }
+
+                            //Retrieve updated database information to reflect submitted grades
+                            loadAssignedGrading(false);
                         }
-                    }
+                    };
+
+                    _submitExecutor.submit(submitRunnable);
                 }
 
-                if (sd.printChecked())
+                //Generate GRD files if they will be emailed or printer
+                if(sd.emailChecked() || sd.printChecked())
                 {
-                    Allocator.getGradingServices().printGRDFiles(asgn.getHandinPart(), selectedStudents);
+                    Runnable convertRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                            try
+                            {
+                                Allocator.getRubricManager()
+                                        .convertToGRD(dp.getHandin(), selected);
+                            }
+                            catch (RubricException ex)
+                            {
+                                generateErrorViewMultiple("enter grade", selected, dp, ex);
+                            }
+                        }
+                    };
+                    _submitExecutor.submit(convertRunnable);
                 }
 
-                if (sd.notifyChecked())
+                //Print GRD files
+                if(sd.printChecked())
                 {
-                    Allocator.getGradingServices().notifyStudents(asgn.getHandinPart(), selectedStudents, sd.emailChecked());
+                    //This needs to be placed on the submission executor so that
+                    //it is guaranteed run after the rubrics have been converted
+                    //to GRD files
+                    Runnable printRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                            try
+                            {
+                                Allocator.getGradingServices()
+                                        .printGRDFiles(dp.getHandin(), selected);
+                            }
+                            catch (ServicesException ex)
+                            {
+                                new ErrorView(ex, "Could not print GRD files.");
+                            }
+                        }
+                    };
+                    _submitExecutor.submit(printRunnable);
+                }
+
+                //If groups/students are to be notified
+                if(sd.notifyChecked())
+                {
+                    //This needs to be placed on the submission executor so that
+                    //it is guaranteed run after the rubrics have been converted
+                    //to GRD files
+                    Runnable notifyRunnable = new Runnable()
+                    {
+                        public void run()
+                        {
+                           Allocator.getGradingServices().notifyStudents(
+                                   dp.getHandin(), selected, sd.emailChecked());
+                        }
+                    };
+                    _submitExecutor.submit(notifyRunnable);
                 }
             }
         }
     }
 
     /**
-     * Returns the selected assignment's handin part.
+     * Creates an ErrorView with the message "Could not <msgInsert> for group <group> on
+     * part <dp> of assignment <dp.getAssignment()> and the given Exception.
      *
-     * @return
+     * Use generateErrorViewMultiple when the failing operation was to be run on multiple groups.
+     *
+     * @param msgInsert
+     * @param group
+     * @param dp
+     * @param cause
      */
-    private HandinPart getHandinPart()
-    {
-        if(_assignmentList.getSelectedValue() == null)
-        {
-            return null;
+    private void generateErrorView(String msgInsert, Group group, DistributablePart dp, Exception cause) {
+        String message = "Could not " + msgInsert;
+        
+        if (group != null) {
+            message += " for group " + group;
         }
-        else
-        {
-            return _assignmentList.getSelectedValue().getHandinPart();
+
+        if (dp != null) {
+            message += " on part " + dp + " of assignment " + dp.getAssignment();
         }
+
+        message += ".";
+
+        new ErrorView(cause, message);
     }
+
+    /**
+     * Creates an ErrorView with the message "Could not <msgInsert> for groups <groups> on
+     * part <dp> of assignment <dp.getAssignment()> and the given Exception.
+     *
+     * Use generateErrorView when the failing operation was to be run on a single group.
+     *
+     * @param msgInsert
+     * @param group
+     * @param dp
+     * @param cause
+     */
+    private void generateErrorViewMultiple(String msgInsert, Collection<Group> groups, DistributablePart dp, Exception cause) {
+        String message = "Could not " + msgInsert;
+
+        if (!groups.isEmpty()) {
+            message += " for groups " + groups;
+        }
+
+        if (dp != null) {
+            message += " on part " + dp + " of assignment " + dp.getAssignment();
+        }
+
+        message += ".";
+
+        new ErrorView(cause, message);
+    }
+
 
     /**
      * Ensures when the window closes the program terminates and that the
@@ -846,7 +1036,14 @@ public class FrontendView extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 //remove user grading directory when frontend is closed
-                Allocator.getGradingServices().removeUserGradingDirectory();
+                try
+                {
+                    Allocator.getGradingServices().removeUserWorkspace();
+                }
+                catch(ServicesException ex)
+                {
+                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
+                }
             }
         });
     }
@@ -864,22 +1061,22 @@ public class FrontendView extends JFrame
             switch ((int) (Math.random() * 5))
             {
                 case 0:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_DEVILISH);
                     break;
                 case 1:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_ANGEL);
                     break;
                 case 2:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_SURPRISE);
                     break;
                 case 3:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_CRYING);
                     break;
                 case 4:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_MONKEY);
                     break;
                 case 5:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_GLASSES);
                     break;
             }
             this.setIconImage(icon);
@@ -888,36 +1085,415 @@ public class FrontendView extends JFrame
     }
 
     /**
-     * Populates the student list with the logins of the students that the TA
-     * has been assigned to grade (as recorded in the database) for the selected
-     * assignment.
+     * Called when a rubric is saved. This method should not be called except
+     * as a listener to rubric save events.
+     * <br/><br/>
+     * Updates the user interface to reflect this.
+     *
+     * @param part
+     * @param group
      */
-    private void populateStudentList()
+    @Override
+    public void rubricSaved(DistributablePart savedPart, Group savedGroup)
     {
-        if(this.getHandinPart() != null)
+        Double score = Allocator.getRubricManager().getPartScore(savedPart, savedGroup);
+        boolean hasRubricScore = (score != 0);
+
+        //Build a new map that is identical to the map currently referenced by
+        //_assignedGroups except that it will reflect whether or not the saved
+        //rubric has a score
+        //This map is built by copying from _assignedGroups, NOT by reading
+        //from the database
+        //This map is built instead of directly mutating _assignedGroups so
+        //that the showAssignedGradingChanges(...) method can be called which
+        //will update the UI, if necessary, by comparing against _assignedGroups
+        Map<DistributablePart, List<GroupGradedStatus>> updatedMap =
+                new HashMap<DistributablePart, List<GroupGradedStatus>>();
+
+        for(DistributablePart part : _assignedGroups.keySet())
         {
-            Collection<String> students;
-            try {
-                students = Allocator.getDatabaseIO().getStudentsAssigned(this.getHandinPart(), Allocator.getUserServices().getUser());
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get assigned students for assignment " +
-                                  _assignmentList.getSelectedValue() + ".");
-                students = new LinkedList<String>();
-            }
-        
-            _studentList.setListData(students);
-            _studentList.selectFirst();
-            
-            //Get groups
-            try {
-                _studentGroups = Allocator.getDatabaseIO().getGroups(this.getHandinPart());
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get groups for assignment " +
-                                  _assignmentList.getSelectedValue() + ".");
+            List<GroupGradedStatus> statuses = _assignedGroups.get(part);
+
+            //If this is the part, find and update the status
+            if(part.equals(savedPart))
+            {
+                GroupGradedStatus currStatus = null;
+                for(GroupGradedStatus status : statuses)
+                {
+                    if(status.getGroup().equals(savedGroup))
+                    {
+                        currStatus = status;
+                        break;
+                    }
+                }
+
+                //For this to have occurred, the rubric must have been open for
+                //a group that is no longer assigned to the TA
+                if(currStatus == null)
+                {
+                    return;
+                }
+
+                GroupGradedStatus newStatus = new GroupGradedStatus(savedGroup,
+                        currStatus.isSubmitted(), hasRubricScore);
+
+                int currStatusIndex = statuses.indexOf(currStatus);
+                ArrayList<GroupGradedStatus> newStatuses = new ArrayList<GroupGradedStatus>(statuses);
+                newStatuses.set(currStatusIndex, newStatus);
+                statuses = newStatuses;
             }
 
-            updateSelectedStudent();
+            updatedMap.put(part, statuses);
+        }
+
+        this.showAssignedGradingChanges(updatedMap);
+    }
+
+    private final ExecutorService _loadAssignedGradingExecutor = Executors.newSingleThreadExecutor();
+    /**
+     * Retrieves from the database all of the groups that have been assigned.
+     * Then determines if the grade has been submitted and if the rubric has
+     * been edited.
+     * <br/><br/>
+     * This method may run the retrieval using a separate thread. Typically this
+     * will be the desired behavior because of the time involved in retrieving
+     * this information. Once it is complete, if UI changes are to be made then
+     * those updates will be enqueued on the UI thread.
+     * <br/><br/>
+     * The likely reason this method would not be run with a separate thread is
+     * if the calling code is already running on a non-UI thread.
+     *
+     * @param useSeparateThread 
+     */
+    private void loadAssignedGrading(boolean useSeparateThread)
+    {
+        Runnable loadRunnable = new Runnable()
+        {
+            public void run()
+            {
+                long start = System.currentTimeMillis();
+
+                Map<DistributablePart, List<GroupGradedStatus>> newMap;
+                try
+                {
+                    newMap = new HashMap<DistributablePart, List<GroupGradedStatus>>();
+
+                    Set<DistributablePart> parts = Allocator.getDatabaseIO().getDPsWithAssignedStudents(USER);
+                    for(DistributablePart part : parts)
+                    {
+                        Collection<Group> groups = Allocator.getDatabaseIO().getGroupsAssigned(part, USER);
+                        Map<Group, Double> submittedScores = Allocator.getDatabaseIO()
+                                .getPartScoresForGroups(part, groups);
+                        Map<Group, Double> rubricScores = Allocator.getRubricManager()
+                                .getPartScores(part, groups);
+
+                        List<GroupGradedStatus> statuses = new Vector<GroupGradedStatus>();
+                        newMap.put(part, statuses);
+
+                        for(Group group : groups)
+                        {
+                            GroupGradedStatus status = new GroupGradedStatus(group,
+                                    submittedScores.containsKey(group),
+                                    rubricScores.containsKey(group) &&
+                                    rubricScores.get(group) != 0);
+                            statuses.add(status);
+                        }
+                    }
+                }
+                catch (CakeHatDBIOException ex)
+                {
+                    new ErrorView(ex, "Unable to retrieve information on who you have " +
+                            "been assigned to grade");
+                    return;
+                }
+                catch (SQLException ex)
+                {
+                    new ErrorView(ex, "Unable to retrieve information on who you have " +
+                            "been assigned to grade");
+                    return;
+                }
+
+                showAssignedGradingChanges(newMap);
+            }
+        };
+
+        if(useSeparateThread)
+        {
+            _loadAssignedGradingExecutor.submit(loadRunnable);
+        }
+        else
+        {
+            loadRunnable.run();
         }
     }
-    
+
+    /**
+     * Determines if there are any differences between
+     * <code>newAssignedGroups</code> and {@link #_assignedGroups}. If there
+     * are changes, then visually updates to reflect the changes. In either
+     * case, updates {@link #_assignedGroups} to reference the data referenced
+     * by <code>newAssignedGroups</code>.
+     *
+     * @param newAssignedGroups
+     */
+    private void showAssignedGradingChanges(final Map<DistributablePart, List<GroupGradedStatus>> newAssignedGroups)
+    {
+        //Determine if any data has changed
+        boolean dpChanged = false;
+        boolean groupsChangedForSelectedDP = false;
+
+        //If currently no data has been loaded
+        if(_assignedGroups == null)
+        {
+            dpChanged = true;
+            groupsChangedForSelectedDP = true;
+        }
+        else
+        {
+            //If groups for a new part has been assigned (or all groups
+            //for an existing part were removed)
+            dpChanged = !Allocator.getGeneralUtilities().containSameElements(
+                    newAssignedGroups.keySet(), _assignedGroups.keySet());
+
+            //If the group or the status of a group has changed
+            DistributablePart selected = _dpList.getSelectedValue();
+            if(selected != null)
+            {
+                List<GroupGradedStatus> currGroups = _assignedGroups.get(selected);
+                List<GroupGradedStatus> newGroups = newAssignedGroups.get(selected);
+                groupsChangedForSelectedDP = !Allocator.getGeneralUtilities()
+                        .containSameElements(currGroups, newGroups);
+            }
+        }
+
+        //If anything has changed, refresh it on the UI thread
+        if(dpChanged || groupsChangedForSelectedDP)
+        {
+            //Store as final variables so that they may be referenced in the Runnable
+            final boolean updateDPList = dpChanged;
+            final boolean updateGrouplist = groupsChangedForSelectedDP;
+
+            Runnable uiRunnable = new Runnable()
+            {
+                public void run()
+                {
+                    _assignedGroups = newAssignedGroups;
+
+                    if(updateDPList)
+                    {
+                        List<DistributablePart> sortedParts =
+                                new ArrayList<DistributablePart>(_assignedGroups.keySet());
+                        Collections.sort(sortedParts);
+                        _dpList.setListData(sortedParts, new DPConverter(), true);
+
+                        if(_dpList.isSelectionEmpty())
+                        {
+                            _dpList.selectFirst();
+                        }
+                    }
+
+                    if(updateGrouplist)
+                    {
+                        DistributablePart currPart = _dpList.getSelectedValue();
+                        List<GroupGradedStatus> statuses = new ArrayList(_assignedGroups.get(currPart));
+                        Collections.sort(statuses);
+                        List<Group> groups = new ArrayList<Group>();
+                        for(GroupGradedStatus status : statuses)
+                        {
+                            groups.add(status.getGroup());
+                        }
+                        _groupList.setListData(groups, new GroupConverter(currPart), true);
+
+                        if(_groupList.isSelectionEmpty())
+                        {
+                            _groupList.selectFirst();
+                        }
+
+                        //If all groups are submitted, then the part list needs
+                        //to be updated to reflect this
+                        _dpList.refreshList();
+                    }
+                }
+            };
+
+            EventQueue.invokeLater(uiRunnable);
+        }
+        else
+        {
+            _assignedGroups = newAssignedGroups;
+        }
+    }
+
+    private static class GroupGradedStatus implements Comparable<GroupGradedStatus>
+    {
+        private final Group _group;
+        private final boolean _submitted;
+        private final boolean _hasRubricScore;
+
+        public GroupGradedStatus(Group group, boolean submitted, boolean hasRubricScore)
+        {
+            _group = group;
+            _submitted = submitted;
+            _hasRubricScore = hasRubricScore;
+        }
+
+        public Group getGroup()
+        {
+            return _group;
+        }
+
+        public boolean isSubmitted()
+        {
+            return _submitted;
+        }
+
+        public boolean hasRubricScore()
+        {
+            return _hasRubricScore;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            boolean equals = false;
+            if(obj instanceof GroupGradedStatus)
+            {
+                GroupGradedStatus other = (GroupGradedStatus) obj;
+
+                equals = other._group.equals(_group) &&
+                         other._submitted == _submitted &&
+                         other._hasRubricScore == _hasRubricScore;
+            }
+
+            return equals;
+        }
+
+        @Override
+        public int compareTo(GroupGradedStatus other)
+        {
+            //Comparison on group names breaks ties
+            int groupComp = this.getGroup().getName().compareTo(other.getGroup().getName());
+
+            //Heirarchy
+            // - submitted
+            // - rubric score
+            // - nothing
+            if(this.isSubmitted() && other.isSubmitted())
+            {
+                return groupComp;
+            }
+            else if(this.isSubmitted())
+            {
+                return -1;
+            }
+            else if(other.isSubmitted())
+            {
+                return 1;
+            }
+            else if(this.hasRubricScore() && other.hasRubricScore())
+            {
+                return groupComp;
+            }
+            else if(this.hasRubricScore())
+            {
+                return -1;
+            }
+            else if(other.hasRubricScore())
+            {
+                return 1;
+            }
+            else
+            {
+                return groupComp;
+            }
+        }
+    }
+
+    private class GroupConverter implements StringConverter<Group>
+    {
+        private final DistributablePart _part;
+
+        public GroupConverter(DistributablePart part)
+        {
+            _part = part;
+        }
+
+        public String convertToString(Group group)
+        {
+            //Determine status of this group
+            boolean hasRubricScore = false;
+            boolean submitted = false;
+            List<GroupGradedStatus> statuses = _assignedGroups.get(_part);
+            for(GroupGradedStatus status : statuses)
+            {
+                if(status.getGroup().equals(group))
+                {
+                    submitted = status.isSubmitted();
+                    hasRubricScore = status.hasRubricScore();
+                }
+            }
+
+            //Build representation
+            String pre = "";
+            String post = "";
+            if(submitted)
+            {
+                pre = "<font color=green>✓</font> <font color=#686868>";
+                post = "</font>";
+            }
+            else if(hasRubricScore)
+            {
+                pre = "<strong><font color=#686868>";
+                post = "</font><strong>";
+            }
+            else
+            {
+                pre = "<strong>";
+                post = "<strong>";
+            }
+
+            String representation = "<html>" + pre + group.getName() + post + "</html>";
+
+            return representation;
+        }
+    }
+
+    private class DPConverter implements StringConverter<DistributablePart>
+    {
+        public String convertToString(DistributablePart part)
+        {
+            //Because all parts shown have at least one group, this will never
+            //be vacuously true
+            boolean allGroupsSubmitted = true;
+            List<GroupGradedStatus> statuses = _assignedGroups.get(part);
+            for(GroupGradedStatus status : statuses)
+            {
+                if(!status.isSubmitted())
+                {
+                    allGroupsSubmitted = false;
+                    break;
+                }
+            }
+
+            //Build representation
+            String pre = "";
+            String post = "";
+
+            if(allGroupsSubmitted)
+            {
+                pre = "<font color=green>✓</font> <font color=#686868>";
+                post = "</font>";
+            }
+            else
+            {
+                pre = "<strong>";
+                post = "</strong>";
+            }
+
+            String name = part.getAssignment().getName() + ": "  + part.getName();
+            String representation = "<html>" + pre + name + post + "</html>";
+
+            return representation;
+        }
+    }
 }

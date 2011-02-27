@@ -1,6 +1,5 @@
 package gradesystem.views.shared;
 
-import gradesystem.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -20,7 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -39,6 +37,12 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import gradesystem.Allocator;
+import gradesystem.printing.PrintRequest;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
+import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
  * A simpler viewer for plain text files. Allows for searching within the
@@ -79,17 +83,34 @@ public class TextViewerView extends JFrame
 
     public TextViewerView(File file, String title)
     {
-        initIcon();
-        initMenu();
-        initComponents();
+        this(loadTextFromFile(file), title);
+    }
+
+    public TextViewerView(String text, String title)
+    {
+        this.initIcon();
+        this.initMenu();
+        this.initComponents();
         this.setTitle(title);
 
-        //If file was passed in, load contents
+        _textArea.setText(text);
+        _textArea.setCaretPosition(0);
+        _linehighlighter = new Object[_textArea.getLineCount()];
+
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.pack();
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+    }
+
+    private static String loadTextFromFile(File file)
+    {
+        String text = "";
         if(file != null)
         {
             try
             {
-                _textArea.setText(Allocator.getFileSystemUtilities().readFile(file));
+                text = Allocator.getFileSystemUtilities().readFile(file);
             }
             catch (FileNotFoundException ex)
             {
@@ -99,21 +120,16 @@ public class TextViewerView extends JFrame
             {
                 new ErrorView(ex, "TextViewerView cannot read file: " + file.getAbsolutePath());
             }
-            _textArea.setCaretPosition(0);
         }
-        _linehighlighter = new Object[_textArea.getLineCount()];
 
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        this.pack();
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
+        return text;
     }
 
     private void initIcon()
     {
         try
         {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/text-x-generic.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.TEXT_X_GENERIC));
         }
         catch (Exception e) {}
     }
@@ -128,8 +144,20 @@ public class TextViewerView extends JFrame
         JMenu menu = new JMenu("File");
         menuBar.add(menu);
 
+        //Print item
+        JMenuItem menuItem = new JMenuItem("Print");
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        menuItem.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                printMenuItemActionPerformed(ae);
+            }
+        });
+        menu.add(menuItem);
+
         //Quit item
-        JMenuItem menuItem = new JMenuItem("Quit");
+        menuItem = new JMenuItem("Quit");
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(new ActionListener()
         {
@@ -478,6 +506,36 @@ public class TextViewerView extends JFrame
     private void nextButtonActionPerformed(ActionEvent evt)
     {
         highlightNext();
+    }
+
+    private void printMenuItemActionPerformed(ActionEvent ae)
+    {
+        PrintRequest request = null;
+        try
+        {
+            File tmpFile = File.createTempFile(".tvv", ".tmp",
+                    Allocator.getPathServices().getUserWorkspaceDir());
+            PrintWriter writer = new PrintWriter(tmpFile);
+            writer.print(_textArea.getText());
+            writer.close();
+            request = new PrintRequest(Arrays.asList(tmpFile));
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to create temporary file used for printing");
+            return;
+        }
+
+        String printer = Allocator.getGradingServices().getPrinter();
+
+        try
+        {
+            Allocator.getPortraitPrinter().print(request, printer);
+        }
+        catch(IOException e)
+        {
+            new ErrorView(e, "Unable to print");
+        }
     }
 
     private void findMenuItemActionPerformed(ActionEvent evt)

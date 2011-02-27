@@ -13,16 +13,16 @@ import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.text.html.HTMLEditorKit;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import java.util.List;
 
 /**
  * Interface for sending grade reports to students.  Grade reports will be sent
@@ -37,52 +37,49 @@ public class GradeReportView extends javax.swing.JFrame {
 
     /** Creates new form GradeReportView */
     private Collection<String> _students;
-    private Map<Assignment,Collection<Part>> _asgnParts;
+    private Map<Assignment, List<Part>> _asgnParts;
     private Vector<Assignment> _sortedAssignments;
-    
-    public GradeReportView(Map<Assignment,Collection<Part>> asgnParts, Collection<String> students) {
+
+    public GradeReportView(Map<Assignment, List<Part>> asgnParts, Collection<String> students) {
         initComponents();
+
+        //graph generation has not yet been converted to use Groups and DistributableParts
+        attachScoreGraphButton.setVisible(false);
+        attachHistButton.setVisible(false);
+
         _asgnParts = asgnParts;
         _students = students;
-        
+
         //sort the assignments by assignment number
         _sortedAssignments = new Vector<Assignment>(_asgnParts.keySet());
         Collections.sort(_sortedAssignments);
-        
+
         HTMLEditorKit k = new HTMLEditorKit();
 
         _previewPane.setEditorKit(k);
         _previewPane.setDocument(k.createDefaultDocument());
         String course = Allocator.getCourseInfo().getCourse();
         _messageText.setText("<p>Here are your current grades for the course.<br />"
-                + "\n<i>Histograms for each of the projects are attached.</i></p>\n<p>-The "
-                + course + " TAs</p>\n");
+                + "</p>\n<p>-The "+ course + " TAs</p>\n");
         if (_students.size() <= 5) {
             _toText.setText(_students.toString());
-        }
-        else {
+        } else {
             _toText.setText(_students.size() + " students");
         }
 
         _fromText.setText(course + "headtas@cs.brown.edu");
         updatePreview();
-        
+
         new File(".tmpdata").mkdirs();
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.setVisible(true);
     }
 
     /** 
      * Displays the grade report as it would be sent to the course's test account
      */
     public void updatePreview() {
-        String student;
-        if (_students.size() == 1) {
-            student = Iterables.get(_students, 0);
-        }
-        else {
-            student = Allocator.getCourseInfo().getTestAccount();
-        }
-
+        String student = Iterables.get(_students, 0);
         _previewPane.setText(htmlBuilder(student));
     }
 
@@ -95,95 +92,79 @@ public class GradeReportView extends javax.swing.JFrame {
      * @return
      */
     public String htmlBuilder(String student) {
-        String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>" +
-                "<h1 style='font-weight: bold; font-size:11pt'>" +
-                "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>" +
-                "<hr />" + _messageText.getText();
-
-
-        // get number of asgns with choices
-        Set<Integer> asgnsWithChoices = Allocator.getCourseInfo().getAssignmentsWithChoices();
-        //which assignments, for which there is a choice, have a grade
-        Map<Assignment, Integer> choicesWithGrade = new HashMap<Assignment, Integer>();
-
-        for (Assignment a : _sortedAssignments) {
-            double score = 0;
-            try {
-                score = Allocator.getDatabaseIO().getStudentAsgnScore(student, a);
-            } catch (SQLException ex) {
-                new ErrorView(ex, String.format("Could not get student %s's score for " +
-                                                "assignment %s", student, a));
-            }
-            if (asgnsWithChoices.contains(a.getNumber()) && score != 0.0) {
-                choicesWithGrade.put(a,a.getNumber());
-            }
-        }
-
-        System.out.println(asgnsWithChoices);
-                System.out.println(choicesWithGrade);
+        String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>"
+                + "<h1 style='font-weight: bold; font-size:11pt'>"
+                + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>"
+                + "<hr />" + _messageText.getText();
 
         //constructing the message body
         for (Assignment a : _sortedAssignments) {
-            //if the assignment has no choices OR the assignment has choices and this one was choosen OR the assignment has choices and none were choosen
-            //assignments that have not been choosen are left out of the report but when there is no grade for any of the choices then zeros are displayed for all of them.
-            if (!asgnsWithChoices.contains(a.getNumber()) ||
-                    (asgnsWithChoices.contains(a.getNumber()) && choicesWithGrade.containsKey(a)) ||
-                    !choicesWithGrade.containsValue(a.getNumber())) {
+            Group group;
+            try {
+                group = Allocator.getDatabaseIO().getStudentsGroup(a, student);
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Could not get group for student " + student + " on "
+                        + "assignment " + a + ".");
+                return null;
+            }
 
-                htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'>" +
-                        "<tbody><tr style='font-weight: bold; background: #F0F0F0'><td>" +
-                        a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
+            htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'>"
+                    + "<tbody><tr style='font-weight: bold; background: #F0F0F0'><td>"
+                    + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
 
-                for (Part p : _asgnParts.get(a)) {
-                    Calendar extension = null;
-                    try {
-                        extension = Allocator.getDatabaseIO().getExtension(student, p);
-                    } catch (SQLException e) {
-                        new ErrorView(e, "Could not determine if student " + student + " has " +
-                                         "an extension for part " + p + ".  It will be assumed that " +
-                                         "the student does not have an extension.");
-                    }
-
-                    String exemptionNote = null;
-                    try {
-                        exemptionNote = Allocator.getDatabaseIO().getExemptionNote(student, p);
-                    } catch (SQLException e) {
-                        new ErrorView(e, "Could not determine if student " + student + " has " +
-                                         "an exemption for part " + p + ".  It will be assumed that " +
-                                         "the student does not have an extensexemptionion.");
-                    }
-
-                    if (exemptionNote != null) {
-                        htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
-                                p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
-                    }
-                    else if (extension != null && (extension.getTimeInMillis() < System.currentTimeMillis())) {
-                        htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
-                                p.getName() + "</td><td>Extension until: " +
-                                extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
-                    }
-                    else {
-                        String scoreString;
-                        try {
-                            double studentScore = Allocator.getDatabaseIO().getStudentScore(student, p);
-                            scoreString = Double.toString(studentScore);
-                        } catch (SQLException e) {
-                            new ErrorView(e, "Could not retrieve the socre for student student " + student +
-                                             "on part " + p + ".  The student's score will be displayed " +
-                                             "as \"UNKNOWN\".");
-                            scoreString = "UNKNOWN";
-                        }
-
-                        htmlString += "<tr style='background: #FFFFFF" + "'><td>" +
-                                p.getName() + "</td><td>" + scoreString + "</td><td>" +
-                                p.getPoints() + "</td></tr>";
-                    }
+            for (Part p : _asgnParts.get(a)) {
+                Calendar extension = null;
+                try {
+                    extension = Allocator.getDatabaseIO().getExtension(group, a.getHandin());
+                } catch (SQLException e) {
+                    new ErrorView(e, "Could not determine if student " + student + " has "
+                            + "an extension for assignment " + a + ".  It will be assumed that "
+                            + "the student does not have an extension.");
                 }
 
-                htmlString += "</tbody></table>";
+                String exemptionNote = null;
+                try {
+                    exemptionNote = Allocator.getDatabaseIO().getExemptionNote(group, p);
+                } catch (SQLException e) {
+                    new ErrorView(e, "Could not determine if student " + student + " has "
+                            + "an exemption for part " + p + ".  It will be assumed that "
+                            + "the student does not have an exemption.");
+                }
+
+                Double studentScore = null;
+                String scoreString;
+                try {
+                    studentScore = Allocator.getDatabaseIO().getGroupScore(group, p);
+                } catch (SQLException e) {
+                    new ErrorView(e, "Could not retrieve the socre for student " + student
+                            + "on part " + p + ".  The student's score will be displayed "
+                            + "as \"UNKNOWN\".");
+                    scoreString = "UNKNOWN";
+                }
+
+                if (exemptionNote != null) {
+                    htmlString += "<tr style='background: #FFFFFF" + "'><td>"
+                            + p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
+                } else if (extension != null && studentScore == null && (extension.getTimeInMillis() > System.currentTimeMillis())) {
+                    htmlString += "<tr style='background: #FFFFFF" + "'><td>"
+                            + p.getName() + "</td><td>Extension until: "
+                            + extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
+                } else {
+                    if (studentScore != null) {
+                        scoreString = Double.toString(studentScore);
+                    } else {
+                        scoreString = "0 (No grade recorded)";
+                    }
+
+                    htmlString += "<tr style='background: #FFFFFF" + "'><td>"
+                            + p.getName() + "</td><td>" + scoreString + "</td><td>"
+                            + p.getPoints() + "</td></tr>";
+                }
             }
+
+            htmlString += "</tbody></table>";
         }
-        
+
         return htmlString;
     }
 
@@ -231,7 +212,6 @@ public class GradeReportView extends javax.swing.JFrame {
         _messageText.setRows(5);
         _messageText.setName("_messageText"); // NOI18N
         _messageText.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 _messageTextKeyReleased(evt);
             }
@@ -268,11 +248,9 @@ public class GradeReportView extends javax.swing.JFrame {
             }
         });
 
-        attachScoreGraphButton.setSelected(true);
         attachScoreGraphButton.setText(resourceMap.getString("attachScoreGraphButton.text")); // NOI18N
         attachScoreGraphButton.setName("attachScoreGraphButton"); // NOI18N
 
-        attachHistButton.setSelected(true);
         attachHistButton.setText(resourceMap.getString("attachHistButton.text")); // NOI18N
         attachHistButton.setName("attachHistButton"); // NOI18N
 
@@ -337,7 +315,7 @@ public class GradeReportView extends javax.swing.JFrame {
                                                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                                                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                                                     .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE)
+                                                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
                                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                             .addComponent(_toText)
@@ -389,8 +367,8 @@ public class GradeReportView extends javax.swing.JFrame {
                         .addComponent(attachScoreGraphButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(attachHistButton))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(sendToOtherButton)
@@ -406,49 +384,48 @@ public class GradeReportView extends javax.swing.JFrame {
     }//GEN-LAST:event__messageTextKeyReleased
 
     private void sendToStudsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToStudsButtonActionPerformed
-        
+
         this.sendToStudsButton.setEnabled(false);
 
         ArrayDeque<File> fullFileList = new ArrayDeque<File>();
 
         //generate Assignment histograms
         if (attachHistButton.isSelected()) {
-            Collection<String> enabledStudents;
-            try {
-                enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
-            } catch (SQLException ex) {
-                new ErrorView(ex, "The list of enabled students could not be retrieved from " +
-                                  "the database to generate histograms.  Grade reports will not " +
-                                  "be sent.");
-                return;
-            }
-
             for (Assignment a : _sortedAssignments) {
-                for (Part p : a.getParts()) {
+                Collection<Group> groups;
                 try {
+                    groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not get read groups from database for assignment " + a + "." +
+                                      "Charts for this assignment will not be included.");
+                    continue;
+                }
+
+                for (Part p : a.getParts()) {
+                    try {
                         AssignmentChartPanel acp = new AssignmentChartPanel();
-                        acp.updateChartData(p, enabledStudents);
+                        acp.updateChartData(p, groups);
                         fullFileList.add(new File(".tmpdata/" + a.getName() + "_" + p.getName() + ".png"));
                         ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
                     } catch (IOException ex) {
                         new ErrorView(ex, "Could not generate histogram image for assignment "
-                                            + a.getName() + ": " + p.getName());
+                                + a.getName() + ": " + p.getName());
                     }
                 }
-            }  
+            }
         }
-        
-        String[] attachPaths = new String[fullFileList.size()+1];
+
+        String[] attachPaths = new String[fullFileList.size() + 1];
         int size = fullFileList.size();
         for (int i = 0; i < size; i++) {
             attachPaths[i] = fullFileList.removeFirst().getAbsolutePath();
         }
-        attachPaths[attachPaths.length-1] = null;                   //last will be for student chart
+        attachPaths[attachPaths.length - 1] = null;                   //last will be for student chart
 
         //send email to each student
         StudentChartPanel scp = new StudentChartPanel();
         for (String student : _students) {
-            
+
             //create student score chart
             if (attachScoreGraphButton.isSelected()) {
                 try {
@@ -457,19 +434,19 @@ public class GradeReportView extends javax.swing.JFrame {
                     scp.updateChart(student, asgns);
                     fullFileList.add(new File(".tmpdata/" + student + ".png"));
                     ImageIO.write(scp.getImage(600, 250), "png", fullFileList.peekLast());
-                    attachPaths[attachPaths.length-1] = (new File(".tmpdata/" + student + ".png")).getAbsolutePath();
+                    attachPaths[attachPaths.length - 1] = (new File(".tmpdata/" + student + ".png")).getAbsolutePath();
                 } catch (IOException ex) {
                     new ErrorView(ex, "Could not generate graph for student " + student);
                 }
-            }    
-            
-            Allocator.getCourseInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
-                                                                    + "headtas@cs.brown.edu",
-                                                                    new String[]{student + "@cs.brown.edu"},
-                                                                    null, null,
-                                                                    "[" + Allocator.getCourseInfo().getCourse()
-                                                                        + "] Grade Report", htmlBuilder(student),
-                                                                    attachPaths);
+            }
+
+            Allocator.getConfigurationInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
+                    + "headtas@cs.brown.edu",
+                    new String[]{student + "@cs.brown.edu"},
+                    null, null,
+                    "[" + Allocator.getCourseInfo().getCourse()
+                    + "] Grade Report", htmlBuilder(student),
+                    attachPaths);
             this.sendToStudsButton.setEnabled(false);
             this.setVisible(false);
             this.dispose();
@@ -481,13 +458,13 @@ public class GradeReportView extends javax.swing.JFrame {
         int res = JOptionPane.showConfirmDialog(this, addressBox, "Enter email address", JOptionPane.OK_CANCEL_OPTION);
         if (res == JOptionPane.OK_OPTION) {
             for (String student : _students) {
-                Allocator.getCourseInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
-                                                                        + "headtas@cs.brown.edu",
-                                                                        new String[]{addressBox.getText()},
-                                                                        null, null,
-                                                                        "[" + Allocator.getCourseInfo().getCourse()
-                                                                            + "] Grade Report", htmlBuilder(student),
-                                                                        null);
+                Allocator.getConfigurationInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
+                        + "headtas@cs.brown.edu",
+                        new String[]{addressBox.getText()},
+                        null, null,
+                        "[" + Allocator.getCourseInfo().getCourse()
+                        + "] Grade Report", htmlBuilder(student),
+                        null);
             }
         }
     }//GEN-LAST:event_sendToOtherButtonActionPerformed
@@ -495,7 +472,6 @@ public class GradeReportView extends javax.swing.JFrame {
     private void closeMenuItemMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeMenuItemMousePressed
         this.dispose();
     }//GEN-LAST:event_closeMenuItemMousePressed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField _fromText;
     private javax.swing.JTextArea _messageText;

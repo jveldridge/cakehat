@@ -10,7 +10,7 @@ import utils.system.NativeException;
 
 public class UserServicesImpl implements UserServices
 {
-    private final TA USER = Allocator.getCourseInfo().getTA(Allocator.getUserUtilities().getUserLogin());
+    private TA _user;
 
     public void addStudent(String studentLogin, String firstName, String lastName,
             ValidityCheck checkValidity) throws ServicesException
@@ -85,53 +85,24 @@ public class UserServicesImpl implements UserServices
         }
     }
     
-    public TA getUser() {
-        return USER;
+    public TA getUser()
+    {
+        if(_user == null)
+        {
+            _user = Allocator.getConfigurationInfo().getTA(Allocator.getUserUtilities().getUserLogin());
+        }
+
+        return _user;
     }
 
     public boolean isUserTA()
     {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getTAs())
-        {
-            if(ta.getLogin().equals(userLogin))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (getUser() != null);
     }
 
     public boolean isUserAdmin()
     {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getTAs())
-        {
-            if(ta.getLogin().equals(userLogin) && ta.isAdmin())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean isUserHTA()
-    {
-        String userLogin = Allocator.getUserUtilities().getUserLogin();
-
-        for(TA ta : Allocator.getCourseInfo().getHTAs())
-        {
-            if(ta.getLogin().equals(userLogin))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (getUser() != null) && getUser().isAdmin();
     }
 
     public boolean isInStudentGroup(String studentLogin) throws NativeException

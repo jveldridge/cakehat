@@ -35,4 +35,42 @@ public interface GeneralUtilities
      * @return true if there is overlap
      */
     public <T> boolean containsAny(Collection<T> col1, Collection<T> col2);
+
+    /**
+     * Returns the first instance of a class by the type of
+     * <code>throwableClass</code> that exists in the causal heirarchy. This
+     * heirarchy starts at <code>throwable</code> and continues until
+     * {@link Throwable#getCause() } returns <code>null</code>. If no
+     * {@link Throwable} is found of type <code>throwableClass</code> then
+     * <code>null</code> is returned.
+     *
+     * @param <E>
+     * @param throwable
+     * @param throwableClass
+     * @return the first matching {@link Throwable} or <code>null</code> if no
+     * match is found
+     */
+    public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass);
+
+    /**
+     * Returns whether or not the two given Collections contain the same elements.
+     * The Collections are considered to contain the same elements if removing all
+     * elements of one Collection from the other results in an empty Collection.
+     *
+     * @param <E>
+     * @param c1
+     * @param c2
+     * @return true if the Collections contain the same elements, false if not
+     */
+    public <E> boolean  containSameElements(Collection<E> c1, Collection<E> c2);
+
+    /**
+     * The code inside of the runnable is run with the error stream redirected
+     * such that all calls on {@link System#err} are silenced. The error stream
+     * is restored after <code>toRun</code> is run.
+     *
+     * @param toRun
+     */
+    public void runWithSilencedError(Runnable toRun);
+
 }

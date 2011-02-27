@@ -7,10 +7,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import gradesystem.Allocator;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 
 /**
  *
@@ -26,9 +28,11 @@ public class EmailView extends javax.swing.JFrame {
     /** Creates new form EmailGUI */
     public EmailView() {
         initComponents();
+        bodyText.setLineWrap(true);
+        bodyText.setWrapStyleWord(true);
         this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
         } catch (Exception e) {
         }
         
@@ -49,13 +53,13 @@ public class EmailView extends javax.swing.JFrame {
         initComponents();
         this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
-            this.setIconImage(ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/internet-mail.png")));
+            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
         } catch (Exception e) {
         }
         studentsBox.setText(Arrays.toString(students.toArray()).replace("[", "").replace("]", ""));
         notifyBox.setText(Arrays.toString(toNotify.toArray()).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getCourseInfo().getEmailDomain());
+        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain());
         bodyText.setText(body);
         
         if (attachments == null) {
@@ -222,7 +226,7 @@ public class EmailView extends javax.swing.JFrame {
                             .addComponent(notifyBox, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
                             .addComponent(studentsBox, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
                             .addComponent(fromBox, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
-                            .addComponent(attachmentMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(attachmentMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 629, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -280,13 +284,13 @@ public class EmailView extends javax.swing.JFrame {
                 attachmentPath = _attachments.get(student.split("@")[0]);
             }
             
-            Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                     //from
+            Allocator.getConfigurationInfo().getEmailAccount().sendMail(fromBox.getText(),              //from
                                                                   new String[] {student},               //to
                                                                   null,                                 //cc
                                                                   null,                                 //bcc
                                                                   subjectBox.getText(),
                                                                   body, 
-                                                                      new String[] {attachmentPath});   //attachment paths
+                                                                  new String[] {attachmentPath});   //attachment paths
         }
         
         //send notification of message sent to sender and to the course's notification addresses
@@ -304,7 +308,7 @@ public class EmailView extends javax.swing.JFrame {
         }
         notificationMessage += "</blockquote> The following message was sent to the students: <blockquote>" + body
                 + "</blockquote>";
-        Allocator.getCourseInfo().getEmailAccount().sendMail(fromBox.getText(),                         //from
+        Allocator.getConfigurationInfo().getEmailAccount().sendMail(fromBox.getText(),                  //from
                                                                   new String[] {fromBox.getText()},     //to
                                                                   toNotify,                             //cc
                                                                   null,                                 //bcc

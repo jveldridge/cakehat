@@ -1,6 +1,6 @@
 package gradesystem.components.calendar;
 
-import gradesystem.config.HandinPart;
+import gradesystem.handin.Handin;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -104,11 +104,11 @@ public class CalendarView extends JPanel
         this(new HashMap<Calendar, Color>());
     }
 
-    public CalendarView(HandinPart part)
+    public CalendarView(Handin handin)
     {
-        this(part.getTimeInformation().getEarlyDate(),
-             part.getTimeInformation().getOntimeDate(),
-             part.getTimeInformation().getLateDate());
+        this(handin.getTimeInformation().getEarlyDate(),
+             handin.getTimeInformation().getOntimeDate(),
+             handin.getTimeInformation().getLateDate());
     }
 
     /**

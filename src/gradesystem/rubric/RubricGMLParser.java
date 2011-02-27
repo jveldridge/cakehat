@@ -1,6 +1,7 @@
 package gradesystem.rubric;
 
-import gradesystem.config.HandinPart;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 import java.io.File;
 
 import java.util.Collection;
@@ -10,7 +11,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import gradesystem.rubric.Rubric.Detail;
-import gradesystem.rubric.Rubric.Person;
 import gradesystem.rubric.Rubric.Section;
 import gradesystem.rubric.Rubric.Subsection;
 
@@ -27,25 +27,24 @@ import org.w3c.dom.NodeList;
  */
 class RubricGMLParser implements RubricConstants
 {
+    
     /**
      * Converts GML to a Rubric.
      *
-     * @param filepath path to the GML file
-     * @param HandinPart the handin associated with this GML file
+     * @param gmlFile the GML file
+     * @param part the DistributablePart associated with this GML file
+     * @param the Group associated with this GML file; null if the file is a template
      * @return
      */
-    static Rubric parse(String filepath, HandinPart part) throws RubricException
+    static Rubric parse(File gmlFile, DistributablePart part, Group group) throws RubricException
     {
-        Rubric rubric = new Rubric(part);
+        Rubric rubric = new Rubric(part, group);
 
         //Get XML as a document
-        Document document = getDocument(filepath);
+        Document document = getDocument(gmlFile);
 
         //Get root node
         Node rubricNode = getRootNode(document);
-
-        //Root atrributes
-        assignRootAttributes(rubricNode, rubric);
 
         //Children
         assignChildrenAttributes(rubricNode, rubric);
@@ -53,13 +52,12 @@ class RubricGMLParser implements RubricConstants
         return rubric;
     }
 
-    private static Document getDocument(String filepath) throws RubricException
+    private static Document getDocument(File gmlFile) throws RubricException
     {
         //Check if file exists
-        File file = new File(filepath);
-        if(!file.exists())
+        if(!gmlFile.exists())
         {
-            throw new RubricException("Rubric could not be read, location specified: " + filepath);
+            throw new RubricException("Rubric could not be read, location specified: " + gmlFile.getAbsolutePath());
         }
 
         Document document = null;
@@ -67,11 +65,12 @@ class RubricGMLParser implements RubricConstants
         {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.parse(file);
+            document = builder.parse(gmlFile);
         }
         catch (Exception e)
         {
-            throw new RubricGMLException("Exception thrown during parsing, " + filepath + " is illegally formatted. \n" + e.getMessage());
+            throw new RubricGMLException("Exception thrown during parsing, " +
+                    gmlFile.getAbsolutePath() + " is illegally formatted.", e);
         }
 
         return document;
@@ -101,46 +100,6 @@ class RubricGMLParser implements RubricConstants
         return rubricNode;
     }
 
-    private static void assignRootAttributes(Node rubricNode, Rubric rubric) throws RubricGMLException
-    {
-        //Default a time status if not provided
-        rubric.setStatus(TimeStatus.ON_TIME);
-
-        //Attributes
-        NamedNodeMap rubricMap = rubricNode.getAttributes();
-        for(int i = 0; i < rubricMap.getLength(); i++)
-        {
-            Node attrNode = rubricMap.item(i);
-
-            if(skipNode(attrNode))
-            {
-                continue;
-            }
-            else if(attrNode.getNodeName().equals(NAME))
-            {
-                rubric.setName(attrNode.getNodeValue());
-            }
-            else if(attrNode.getNodeName().equals(NUMBER))
-            {
-                rubric.setNumber(Integer.valueOf(attrNode.getNodeValue()));
-            }
-            else if(attrNode.getNodeName().equals(STATUS))
-            {
-                rubric.setStatus(TimeStatus.getStatus(attrNode.getNodeValue()));
-            }
-            else if(attrNode.getNodeName().equals(DAYS_LATE))
-            {
-                rubric.setDaysLate(Integer.valueOf(attrNode.getNodeValue()));
-            }
-            else
-            {
-                throw new RubricGMLException("Unsupported attribute node: " + attrNode.getNodeName() + ", only " +
-                                          " [" + NAME + ", " + NUMBER + ", " + STATUS + ", " + DAYS_LATE + "]" +
-                                          " are supported.");
-            }
-        }
-    }
-
     private static void assignChildrenAttributes(Node rubricNode, Rubric rubric) throws RubricGMLException, RubricException
     {
         NodeList rubricList = rubricNode.getChildNodes();
@@ -151,11 +110,6 @@ class RubricGMLParser implements RubricConstants
             if(skipNode(currNode))
             {
                 continue;
-            }
-            //Student
-            else if (currNode.getNodeName().equals(STUDENT))
-            {
-                rubric.setStudent(parsePerson(currNode.getAttributes()));
             }
             //Section
             else if (currNode.getNodeName().equals(SECTION))
@@ -169,37 +123,9 @@ class RubricGMLParser implements RubricConstants
             }
             else
             {
-                throw new RubricGMLException(RUBRIC, currNode, STUDENT, SECTION, EXTRA_CREDIT);
+                throw new RubricGMLException(RUBRIC, currNode, SECTION, EXTRA_CREDIT);
             }
         }
-    }
-    
-    private static Person parsePerson(NamedNodeMap map)
-    {
-        Person person = new Person();
-
-        for (int i = 0; i < map.getLength(); i++)
-        {
-            Node node = map.item(i);
-            if (skipNode(node))
-            {
-                continue;
-            }
-            else if (node.getNodeName().equals(NAME))
-            {
-                person.setName(node.getNodeValue());
-            }
-            else if (node.getNodeName().equals(ACCT))
-            {
-                person.setAccount(node.getNodeValue());
-            }
-            else
-            {
-
-            }
-        }
-        
-        return person;
     }
 
     private static void parseSection(Node sectionNode, Rubric rubric, boolean isEC) throws RubricGMLException, RubricException

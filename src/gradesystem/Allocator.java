@@ -1,7 +1,9 @@
 package gradesystem;
 
-import gradesystem.config.CourseInfo;
-import gradesystem.config.CourseInfoImpl;
+import gradesystem.config.ConfigurationInfo;
+import gradesystem.config.ConfigurationInfoImpl;
+import gradesystem.services.CourseInfo;
+import gradesystem.services.CourseInfoImpl;
 import gradesystem.services.GradingServices;
 import gradesystem.database.DBWrapper;
 import gradesystem.database.DatabaseIO;
@@ -12,9 +14,13 @@ import gradesystem.printing.LprPrinter;
 import gradesystem.printing.Printer;
 import gradesystem.rubric.RubricManager;
 import gradesystem.rubric.RubricManagerImpl;
+import gradesystem.services.Constants;
+import gradesystem.services.ConstantsImpl;
 import gradesystem.services.FileSystemServices;
 import gradesystem.services.FileSystemServicesImpl;
 import gradesystem.services.GradingServicesImpl;
+import gradesystem.services.PathServices;
+import gradesystem.services.PathServicesImpl;
 import gradesystem.services.UserServices;
 import gradesystem.services.UserServicesImpl;
 import testutils.TestUtilities;
@@ -103,12 +109,15 @@ public class Allocator
          */
         protected abstract T allocate();
     }
-    
+
+    private final SingletonAllocation<ConfigurationInfo> _configInfo;
     private final SingletonAllocation<CourseInfo> _courseInfo;
     private final SingletonAllocation<RubricManager> _rubricManager;
     private final SingletonAllocation<GradingServices> _gradingServices;
     private final SingletonAllocation<UserServices> _userServices;
     private final SingletonAllocation<FileSystemServices> _fileSystemServices;
+    private final SingletonAllocation<PathServices> _pathServices;
+    private final SingletonAllocation<Constants> _constants;
     private final SingletonAllocation<DatabaseIO> _database;
     private final SingletonAllocation<Printer> _landscapePrinter;
     private final SingletonAllocation<Printer> _portraitPrinter;
@@ -125,10 +134,14 @@ public class Allocator
      * may be <code>null</code>. If the parameter is <code>null</code> then the
      * standard implementation will be used.
      *
+     * @param configInfo
      * @param courseInfo
      * @param rubricManager
      * @param gradingServices
      * @param userServices
+     * @param pathServices
+     * @param fileSystemServices
+     * @param constants
      * @param database
      * @param landscapePrinter
      * @param portraitPrinter
@@ -140,11 +153,14 @@ public class Allocator
      * @param fileSystemUtils
      * @param userUtils
      */
-    private Allocator(SingletonAllocation<CourseInfo> courseInfo,
+    private Allocator(SingletonAllocation<ConfigurationInfo> configInfo,
+                      SingletonAllocation<CourseInfo> courseInfo,
                       SingletonAllocation<RubricManager> rubricManager,
                       SingletonAllocation<GradingServices> gradingServices,
                       SingletonAllocation<UserServices> userServices,
                       SingletonAllocation<FileSystemServices> fileSystemServices,
+                      SingletonAllocation<PathServices> pathServices,
+                      SingletonAllocation<Constants> constants,
                       SingletonAllocation<DatabaseIO> database,
                       SingletonAllocation<Printer> landscapePrinter,
                       SingletonAllocation<Printer> portraitPrinter,
@@ -156,6 +172,16 @@ public class Allocator
                       SingletonAllocation<FileSystemUtilities> fileSystemUtils,
                       SingletonAllocation<UserUtilities> userUtils)
     {
+        if(configInfo == null)
+        {
+            _configInfo = new SingletonAllocation<ConfigurationInfo>()
+                          { public ConfigurationInfo allocate() { return new ConfigurationInfoImpl(); } };
+        }
+        else
+        {
+            _configInfo = configInfo;
+        }
+
         if(courseInfo == null)
         {
             _courseInfo = new SingletonAllocation<CourseInfo>()
@@ -204,6 +230,26 @@ public class Allocator
         else
         {
             _fileSystemServices = fileSystemServices;
+        }
+
+        if(pathServices == null)
+        {
+            _pathServices = new SingletonAllocation<PathServices>()
+                            { public PathServices allocate() { return new PathServicesImpl(); } };
+        }
+        else
+        {
+            _pathServices = pathServices;
+        }
+
+        if(constants == null)
+        {
+            _constants = new SingletonAllocation<Constants>()
+                        { public Constants allocate() { return new ConstantsImpl(); } };
+        }
+        else
+        {
+            _constants = constants;
         }
 
         if(database == null)
@@ -307,6 +353,11 @@ public class Allocator
         }
     }
 
+    public static ConfigurationInfo getConfigurationInfo()
+    {
+        return getInstance()._configInfo.getInstance();
+    }
+
     public static CourseInfo getCourseInfo()
     {
         return getInstance()._courseInfo.getInstance();
@@ -330,6 +381,16 @@ public class Allocator
     public static FileSystemServices getFileSystemServices()
     {
         return getInstance()._fileSystemServices.getInstance();
+    }
+
+    public static PathServices getPathServices()
+    {
+        return getInstance()._pathServices.getInstance();
+    }
+
+    public static Constants getConstants()
+    {
+        return getInstance()._constants.getInstance();
     }
 
     public static DatabaseIO getDatabaseIO()
@@ -391,11 +452,14 @@ public class Allocator
      */
     public static class Customizer
     {
+        private SingletonAllocation<ConfigurationInfo> _configInfo;
         private SingletonAllocation<CourseInfo> _courseInfo;
         private SingletonAllocation<RubricManager> _rubricManager;
         private SingletonAllocation<GradingServices> _gradingServices;
         private SingletonAllocation<UserServices> _userServices;
         private SingletonAllocation<FileSystemServices> _fileSystemServices;
+        private SingletonAllocation<PathServices> _pathServices;
+        private SingletonAllocation<Constants> _constants;
         private SingletonAllocation<DatabaseIO> _database;
         private SingletonAllocation<Printer> _landscapePrinter;
         private SingletonAllocation<Printer> _portraitPrinter;
@@ -406,6 +470,13 @@ public class Allocator
         private SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
+
+        public Customizer setConfigurationInfo(SingletonAllocation<ConfigurationInfo> configInfo)
+        {
+            _configInfo = configInfo;
+
+            return this;
+        }
 
         public Customizer setCourseInfo(SingletonAllocation<CourseInfo> courseInfo)
         {
@@ -438,6 +509,20 @@ public class Allocator
         public Customizer setFileSystemServices(SingletonAllocation<FileSystemServices> fileSystemServices)
         {
             _fileSystemServices = fileSystemServices;
+
+            return this;
+        }
+
+        public Customizer setPathServices(SingletonAllocation<PathServices> pathServices)
+        {
+            _pathServices = pathServices;
+
+            return this;
+        }
+
+        public Customizer setConstants(SingletonAllocation<Constants> constants)
+        {
+            _constants = constants;
 
             return this;
         }
@@ -530,11 +615,14 @@ public class Allocator
          */
         private void createSingletonInstance()
         {
-            Allocator.INSTANCE = new Allocator(_courseInfo,
+            Allocator.INSTANCE = new Allocator(_configInfo,
+                    _courseInfo,
                     _rubricManager,
                     _gradingServices,
                     _userServices,
                     _fileSystemServices,
+                    _pathServices,
+                    _constants,
                     _database,
                     _landscapePrinter,
                     _portraitPrinter,

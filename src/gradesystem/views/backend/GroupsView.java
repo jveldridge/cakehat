@@ -2,7 +2,6 @@ package gradesystem.views.backend;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import gradesystem.config.HandinPart;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,7 +13,12 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import org.jdesktop.application.Action;
 import gradesystem.Allocator;
+import gradesystem.config.Assignment;
+import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  *
@@ -23,11 +27,11 @@ import gradesystem.views.shared.ErrorView;
 public class GroupsView extends javax.swing.JFrame {
 
     private FileFilter _groupFilter;
-    private HandinPart _handin;
+    private Assignment _asgn;
 
     /** Creates new form GroupsView */
-    public GroupsView(HandinPart handin) {
-        _handin = handin;
+    public GroupsView(Assignment asgn) {
+        _asgn = asgn;
         _groupFilter = new GroupFilter();
         initComponents();
         this.setVisible(rootPaneCheckingEnabled);
@@ -139,7 +143,7 @@ public class GroupsView extends javax.swing.JFrame {
     @Action
     public void removeGroups() {
         try {
-            Allocator.getDatabaseIO().removeGroups(_handin);
+            Allocator.getDatabaseIO().removeGroupsForAssignment(_asgn);
         } catch (SQLException ex) {
             new ErrorView(ex, "Groups could not be removed from the database.");
         }
@@ -150,7 +154,7 @@ public class GroupsView extends javax.swing.JFrame {
         JFileChooser fc = new JFileChooser();
         fc.setApproveButtonText("Import Groups File");
         fc.setFileFilter(_groupFilter);
-        fc.setCurrentDirectory(new File(Allocator.getCourseInfo().getCourseDir()));
+        fc.setCurrentDirectory(Allocator.getPathServices().getCourseDir());
         fc.setMultiSelectionEnabled(false);
         int selection = fc.showOpenDialog(this);
 
@@ -190,7 +194,12 @@ public class GroupsView extends javax.swing.JFrame {
                 }
             }
             try {
-                Allocator.getDatabaseIO().setGroups(_handin, namesAndGroups.asMap());
+                Collection<Group> groups = new LinkedList<Group>();
+                Map<String, Collection<String>> groupsMap = namesAndGroups.asMap();
+                for (String groupName : groupsMap.keySet()) {
+                    groups.add(new Group(groupName,groupsMap.get(groupName)));
+                }
+                Allocator.getDatabaseIO().setGroups(_asgn, groups);
             } catch (SQLException ex) {
                 new ErrorView(ex, "Saving groups info. to the database failed.");
             }
