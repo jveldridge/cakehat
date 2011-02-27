@@ -48,7 +48,10 @@ public class CakehatAboutBox extends JFrame
 
         // Info
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        infoPanel.add(new JLabel("<html><h3>Version 3.0</h3></html>"));
+        infoPanel.add(new JLabel("<html><h3>Version " +
+                CakehatReleaseInfo.getVersion() + "</h3><font size=2>" +
+                CakehatReleaseInfo.getReleaseCommitNumber()
+                + " (" + CakehatReleaseInfo.getReleaseDate() + ")</font></html>"));
         infoPanel.add(new JLabel("<html><h4>A Brown CS grading system started by<br/>the CS015 TA Staff in 2009.</h4></html>"));
         infoPanel.add(new JLabel("<html><h3>Creators</h3>Jonathan Eldridge, Joshua Kaplan, Stephen<br/>Poletto, Paul Sastrasinh, & Alex Unger</html>"));
         infoPanel.add(new JLabel("<html><br/><a href=\"http://cakehat.googlecode.com/\">http://cakehat.googlecode.com</a></html>"));
