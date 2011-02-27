@@ -28,7 +28,6 @@ import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.config.Assignment;
 import gradesystem.config.TA;
-import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
 import gradesystem.views.shared.ErrorView;
@@ -317,7 +316,7 @@ class RubricPanel extends JPanel
         if (_status == null) {
             return true;
         }
-
+        
         TimeStatus timeStatus = _status.getTimeStatus();
 
         // Determine if extra credit is editable
