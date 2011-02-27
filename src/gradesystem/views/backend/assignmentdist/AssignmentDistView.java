@@ -342,7 +342,12 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         //overallDist represents distribution of both Groups that have members blacklisted by
         //some TA and Groups in which no member is blacklisted
         Map<TA, Collection<Group>> overallDist = new HashMap<TA, Collection<Group>>(blacklistedResponse.getDistribution());
-        overallDist.putAll(remainingDist);
+        for (TA ta : remainingDist.keySet()) {
+            if (!overallDist.containsKey(ta)) {
+                overallDist.put(ta, new ArrayList<Group>());
+            }
+            overallDist.get(ta).addAll(remainingDist.get(ta));
+        }
 
         //students who could not be distributed without violating some TA's blacklisted
         Collection<Group> overallUndistributed = new ArrayList<Group>(blacklistedResponse.getProblemStudents());
@@ -392,8 +397,8 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         Collection<Group> unDistributed = new LinkedList<Group>();
 
-        Collections.shuffle(graders);
         for (Group blGroup : groups) {
+            Collections.shuffle(graders);
             boolean distributed = false;
             
             for (TA ta : graders) {
@@ -414,7 +419,6 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         }
 
         return new DistributionResponse(distribution, unDistributed);
-
     }
 
     private Map<TA, Collection<Group>> assignRemainingGroups(List<Group> groups,
