@@ -177,6 +177,9 @@ class RubricGMLWriter implements RubricConstants
 
     private static void saveXMLFile(Document document, File gmlFile) throws RubricException
     {
+        // determine if we are creating the file or overwriting it
+        boolean willCreateFile = !gmlFile.exists();
+
         // dom source and transformer
         DOMSource source = new DOMSource(document);
         Transformer transformer;
@@ -218,15 +221,19 @@ class RubricGMLWriter implements RubricConstants
                     "Rubric location: " + gmlFile.getAbsolutePath(), e);
         }
 
-        // ensure the file written has the correct permissions and group
-        try
+        // if the file was just created by this user, then ensure it has the
+        // correct permissions and group
+        if(willCreateFile)
         {
-            Allocator.getFileSystemServices().sanitize(gmlFile);
-        }
-        catch(ServicesException e)
-        {
-            throw new RubricException("Unable to set correct permissions and " +
-                    "group for rubric (gml file).", e);
+            try
+            {
+                Allocator.getFileSystemServices().sanitize(gmlFile);
+            }
+            catch(ServicesException e)
+            {
+                throw new RubricException("Unable to set correct permissions and " +
+                        "group for rubric (gml file).", e);
+            }
         }
     }   
 }
