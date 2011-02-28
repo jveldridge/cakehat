@@ -48,6 +48,7 @@ import gradesystem.resources.icons.IconLoader.IconImage;
 import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.rubric.RubricSaveListener;
 import gradesystem.views.shared.ErrorView;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,6 +59,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.SwingConstants;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -98,14 +100,25 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
         }
 
-        private String getGroupText(Group group) {
-            if (group.getMembers().size() == 1) {
-                return group.getMembers().get(0);
-            }
-            
-            String text = group.getName();
+        private String getGroupText(Group group)
+        {
+            String text;
 
-            text += " " + group.getMembers();
+            //If group assignment, show group name and members
+            if(_dpList.getSelectedValue().getAssignment().hasGroups())
+            {
+                text = group.getName() + " " + group.getMembers();
+            }
+            //If not a group assignment, show name of student
+            else if(!group.getMembers().isEmpty())
+            {
+                text = group.getMembers().get(0);
+            }
+            //A non-group assignment with no student, this situation should not arise
+            else
+            {
+                text = "Unknown";
+            }
 
             return text;
         }
@@ -130,11 +143,13 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
     private GenericJList<DistributablePart> _dpList;
     private GenericJList<Group> _groupList;
+    private JLabel _groupListLabel;
     private CurrentlyGradingLabel _currentlyGradingLabel;
-    private JButton _runDemoButton, _viewDeductionsButton, _printAllButton,
-                    _submitGradingButton, _viewReadmeButton, _openCodeButton,
-                    _runTesterButton, _printStudentButton, _gradeAssignmentButton,
-                    _runCodeButton;
+    private JLabel _selectedGroupCommandsLabel;
+    private JButton _demoButton, _gradingGuideButton, _printAllButton,
+                    _submitGradingButton, _readmeButton, _openButton,
+                    _testButton, _printButton, _gradeButton,
+                    _runButton;
     private JButton[] _allButtons, _groupButtons;
     private Map<DistributablePart, List<GroupGradedStatus>> _assignedGroups;
 
@@ -183,19 +198,19 @@ public class FrontendView extends JFrame implements RubricSaveListener
      */
     private void createButtonGroups()
     {
-        //Group buttons so they can be enabled/disabled appropriately
+        //Build group of buttons so they can be enabled/disabled appropriately
         _allButtons = new JButton[] {
-                                      _runDemoButton, _viewDeductionsButton,
+                                      _demoButton, _gradingGuideButton,
                                       _printAllButton,_submitGradingButton,
-                                      _viewReadmeButton, _openCodeButton,
-                                      _runTesterButton, _printStudentButton,
-                                      _gradeAssignmentButton, _runCodeButton
+                                      _readmeButton, _openButton,
+                                      _testButton, _printButton,
+                                      _gradeButton, _runButton
                                     };
-        _groupButtons = new JButton[]{
-                                         _viewReadmeButton, _openCodeButton,
-                                         _printStudentButton, _runTesterButton,
-                                         _runCodeButton, _gradeAssignmentButton
-                                       };
+        _groupButtons = new JButton[] {
+                                        _readmeButton, _openButton,
+                                        _printButton, _testButton,
+                                        _runButton, _gradeButton
+                                      };
     }
 
     /**
@@ -223,6 +238,19 @@ public class FrontendView extends JFrame implements RubricSaveListener
             catch(ServicesException e)
             {
                 new ErrorView(e, "Unable to create user part directory: " + partDir.getAbsolutePath());
+            }
+
+            //Update visual references to student/group appropriately depending
+            //on if the assignment the part belongs to is a group assignment
+            if(part.getAssignment().hasGroups())
+            {
+                _groupListLabel.setText("<html><b>Group</b></html>");
+                _selectedGroupCommandsLabel.setText("<html><b>Selected Group Commands</b></html>");
+            }
+            else
+            {
+                _groupListLabel.setText("<html><b>Student</b></html>");
+                _selectedGroupCommandsLabel.setText("<html><b>Selected Student Commands</b></html>");
             }
 
             //Get the groups assigned for this distributable part
@@ -274,8 +302,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
         }
 
         //General commands
-        _runDemoButton.setEnabled(part.hasDemo());
-        _viewDeductionsButton.setEnabled(part.hasDeductionList());
+        _demoButton.setEnabled(part.hasDemo());
+        _gradingGuideButton.setEnabled(part.hasDeductionList());
         _submitGradingButton.setEnabled(part.hasRubricTemplate());
         _printAllButton.setEnabled(part.hasPrint());
 
@@ -297,11 +325,11 @@ public class FrontendView extends JFrame implements RubricSaveListener
         else
         {
             //Student buttons
-            _gradeAssignmentButton.setEnabled(part.hasRubricTemplate());
-            _runTesterButton.setEnabled(part.hasTester());
-            _runCodeButton.setEnabled(part.hasRun());
-            _openCodeButton.setEnabled(part.hasOpen());
-            _printStudentButton.setEnabled(part.hasPrint());
+            _gradeButton.setEnabled(part.hasRubricTemplate());
+            _testButton.setEnabled(part.hasTester());
+            _runButton.setEnabled(part.hasRun());
+            _openButton.setEnabled(part.hasOpen());
+            _printButton.setEnabled(part.hasPrint());
 
             boolean hasReadme = true;
             try {
@@ -309,7 +337,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
             } catch (ActionException ex) {
                 new ErrorView(ex, "Could not determine if group " + group + " has a README");
             }
-            _viewReadmeButton.setEnabled(hasReadme);
+            _readmeButton.setEnabled(hasReadme);
         }
     }
 
@@ -318,32 +346,29 @@ public class FrontendView extends JFrame implements RubricSaveListener
      */
     private void initializeComponents()
     {
-        JPanel outerPanel = new JPanel(new BorderLayout());
-        outerPanel.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
+        final int gapSpace = 10;
+
+        //Outer panel that centers the panel containing the content
+        JPanel outerPanel = new JPanel(new BorderLayout(0, 0));
+        outerPanel.add(Box.createVerticalStrut(gapSpace), BorderLayout.NORTH);
+        outerPanel.add(Box.createVerticalStrut(gapSpace), BorderLayout.SOUTH);
+        outerPanel.add(Box.createHorizontalStrut(gapSpace), BorderLayout.WEST);
+        outerPanel.add(Box.createHorizontalStrut(gapSpace), BorderLayout.EAST);
         this.add(outerPanel);
-        
-        Dimension mainPanelSize = new Dimension(950,400);
-        JPanel mainPanel = new JPanel();
-        mainPanel.setSize(mainPanelSize);
-        mainPanel.setPreferredSize(mainPanelSize);
-        outerPanel.add(mainPanel, BorderLayout.NORTH);
 
-        int gapSpace = 5;
-
-        mainPanel.add(Box.createHorizontalStrut(gapSpace));
+        final int contentHeight = 315;
+        JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        outerPanel.add(contentPanel, BorderLayout.CENTER);
 
         //Distributable Part list
-        Dimension dpListPanelSize = new Dimension((int) (mainPanelSize.width * 0.2), mainPanelSize.height);
-        Dimension dpListSize = new Dimension(dpListPanelSize.width, (int) (mainPanelSize.height * 0.95));
-        Dimension dpLabelSize = new Dimension(dpListPanelSize.width,
-                mainPanelSize.height - dpListSize.height - 5);
+        Dimension dpListPanelSize = new Dimension(190, contentHeight);
+        Dimension dpLabelSize = new Dimension(dpListPanelSize.width, 13);
+        Dimension dpListSize = new Dimension(dpListPanelSize.width,
+                contentHeight - dpLabelSize.height);
 
-        FlowLayout layout = new FlowLayout();
-        layout.setVgap(0);
-        JPanel dpPanel = new JPanel(layout);
-        dpPanel.setSize(dpListPanelSize);
+        JPanel dpPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         dpPanel.setPreferredSize(dpListPanelSize);
-        JLabel dpLabel = new JLabel("<html><b>Assignment</b></html>");
+        JLabel dpLabel = new JLabel("<html><b>Assignment Part</b></html>");
         dpLabel.setPreferredSize(dpLabelSize);
 
         _dpList = new GenericJList<DistributablePart>();
@@ -361,25 +386,22 @@ public class FrontendView extends JFrame implements RubricSaveListener
         });
         dpPanel.add(dpLabel);
         JScrollPane dpPane = new JScrollPane(_dpList);
-        dpPane.setSize(dpListSize);
         dpPane.setPreferredSize(dpListSize);
         dpPanel.add(dpPane);
-        mainPanel.add(dpPanel);
+        contentPanel.add(dpPanel);
 
-        mainPanel.add(Box.createHorizontalStrut(gapSpace));
+        contentPanel.add(Box.createHorizontalStrut(gapSpace));
 
         //Group list
-        Dimension groupListPanelSize = new Dimension((int) (mainPanelSize.width * 0.15), mainPanelSize.height);
-        Dimension groupListSize = new Dimension(groupListPanelSize.width, (int) (mainPanelSize.height * 0.95));
-        Dimension groupLabelSize = new Dimension(groupListPanelSize.width, mainPanelSize.height - groupListSize.height - 5);
-
-        layout = new FlowLayout();
-        layout.setVgap(0);
-        JPanel groupPanel = new JPanel(layout);
-        groupPanel.setSize(groupListPanelSize);
+        Dimension groupListPanelSize = new Dimension(140, contentHeight);
+        Dimension groupLabelSize = new Dimension(groupListPanelSize.width, 13);
+        Dimension groupListSize = new Dimension(groupListPanelSize.width,
+                groupListPanelSize.height - groupLabelSize.height);
+        
+        JPanel groupPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         groupPanel.setPreferredSize(groupListPanelSize);
-        JLabel groupLabel = new JLabel("<html><b>Student</b></html>");
-        groupLabel.setPreferredSize(groupLabelSize);
+        _groupListLabel = new JLabel("Student");
+        _groupListLabel.setPreferredSize(groupLabelSize);
         _groupList = new GenericJList<Group>();
         _groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _groupList.usePlainFont();
@@ -394,12 +416,11 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 }
             }
         });
-        groupPanel.add(groupLabel);
+        groupPanel.add(_groupListLabel);
         JScrollPane groupPane = new JScrollPane(_groupList);
-        groupPane.setSize(groupListSize);
         groupPane.setPreferredSize(groupListSize);
         groupPanel.add(groupPane);
-        mainPanel.add(groupPanel);
+        contentPanel.add(groupPanel);
 
         //When the left key is pressed, switch focus to the distributable part list
         _groupList.addKeyListener(new KeyListener()
@@ -430,57 +451,66 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
         });
 
-        mainPanel.add(Box.createHorizontalStrut(gapSpace));
+        contentPanel.add(Box.createHorizontalStrut(gapSpace));
 
         //Control Panel
-        Dimension controlPanelSize = new Dimension(mainPanelSize.width -
-                dpListPanelSize.width - groupListPanelSize.width -
-                3 * gapSpace - 35, mainPanelSize.height);
-        layout = new FlowLayout();
-        JPanel controlPanel = new JPanel(layout);
-        layout.setVgap(0);
-        controlPanel.setSize(controlPanelSize);
+        Dimension controlPanelSize = new Dimension(400, contentHeight);
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         controlPanel.setPreferredSize(controlPanelSize);
-        mainPanel.add(controlPanel);
+        contentPanel.add(controlPanel);
 
         //Currently grading panel
-        Dimension gradingPanelSize = new Dimension(controlPanelSize.width, 35);
-        JPanel gradingPanel = new JPanel(new BorderLayout());
-        gradingPanel.setSize(gradingPanelSize);
-        gradingPanel.setPreferredSize(gradingPanelSize);
+        Dimension currentlyGradingSize = new Dimension(controlPanelSize.width, 28);
         _currentlyGradingLabel = new CurrentlyGradingLabel();
-        gradingPanel.add(_currentlyGradingLabel, BorderLayout.WEST);
-        controlPanel.add(gradingPanel);
+        _currentlyGradingLabel.setPreferredSize(currentlyGradingSize);
+        controlPanel.add(_currentlyGradingLabel);
+
+        //Split up the remaining space such that the buttons all have the same height
+        final int labelHeight = 30;
+        final int buttonGap = 4;
+        int availableHeight = contentHeight - currentlyGradingSize.height -
+                2 * labelHeight - 3 * buttonGap;
+        int buttonHeight = availableHeight / 5;
 
         //General commands
-        Dimension generalCommandsSize = new Dimension(controlPanelSize.width, 150);
-        JPanel generalCommandsPanel = new JPanel(new BorderLayout());
-        generalCommandsPanel.setSize(generalCommandsSize);
+        Dimension generalCommandsSize = new Dimension(controlPanelSize.width,
+                labelHeight + buttonGap + 2 * buttonHeight);
+        JPanel generalCommandsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         generalCommandsPanel.setPreferredSize(generalCommandsSize);
-        generalCommandsPanel.add(new JLabel("<html><b>General Commands</b></html>"), BorderLayout.WEST);
+        JLabel generalCommandsLabel = new JLabel("<html><b>General Commands</b></html>");
+        generalCommandsLabel.setPreferredSize(new Dimension(controlPanelSize.width, labelHeight));
+        generalCommandsPanel.add(generalCommandsLabel);
         //General command buttons
-        Dimension generalButtonsSize = new Dimension(generalCommandsSize.width, generalCommandsSize.height - 30);
-        JPanel generalButtonsPanel = new JPanel(new GridLayout(2,2,4,4));
-        generalButtonsPanel.setSize(generalButtonsSize);
+        Dimension generalButtonsSize = new Dimension(generalCommandsSize.width,
+                generalCommandsSize.height - labelHeight);
+        JPanel generalButtonsPanel = new JPanel(new GridLayout(2, 2, buttonGap, buttonGap));
         generalButtonsPanel.setPreferredSize(generalButtonsSize);
         this.initializeGeneralCommandButtons(generalButtonsPanel);
-        generalCommandsPanel.add(generalButtonsPanel, BorderLayout.SOUTH);
+        generalCommandsPanel.add(generalButtonsPanel);
         controlPanel.add(generalCommandsPanel);
 
-        //Selected student commands
-        Dimension studentCommandsSize = new Dimension(controlPanelSize.width, 210);
-        JPanel studentCommandsPanel = new JPanel(new BorderLayout());
-        studentCommandsPanel.setSize(studentCommandsSize);
-        studentCommandsPanel.setPreferredSize(studentCommandsSize);
-        studentCommandsPanel.add(new JLabel("<html><b>Selected Student Commands</b></html>"), BorderLayout.WEST);
-        //Selected student command buttons
-        Dimension studentButtonsSize = new Dimension(studentCommandsSize.width, studentCommandsSize.height - 30);
-        JPanel studentButtonsPanel = new JPanel(new GridLayout(3,2,4,4));
-        studentButtonsPanel.setSize(studentButtonsSize);
-        studentButtonsPanel.setPreferredSize(studentButtonsSize);
-        this.initializeStudentCommandButtons(studentButtonsPanel);
-        studentCommandsPanel.add(studentButtonsPanel, BorderLayout.SOUTH);
-        controlPanel.add(studentCommandsPanel);
+        //Selected group commands
+        Dimension groupCommandsSize = new Dimension(controlPanelSize.width,
+                labelHeight + 2 * buttonGap + 3 * buttonHeight);
+        JPanel groupCommandsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        groupCommandsPanel.setPreferredSize(groupCommandsSize);
+        _selectedGroupCommandsLabel = new JLabel("<html><b>Selected Student Commands</b></html>");
+        _selectedGroupCommandsLabel.setPreferredSize(new Dimension(controlPanelSize.width, labelHeight));
+        groupCommandsPanel.add(_selectedGroupCommandsLabel);
+        //Selected group command buttons
+        Dimension studentButtonsSize = new Dimension(groupCommandsSize.width,
+                groupCommandsSize.height - labelHeight);
+        JPanel groupButtonsPanel = new JPanel(new GridLayout(3, 2, buttonGap, buttonGap));
+        groupButtonsPanel.setPreferredSize(studentButtonsSize);
+        this.initializeGroupCommandButtons(groupButtonsPanel);
+        groupCommandsPanel.add(groupButtonsPanel);
+        controlPanel.add(groupCommandsPanel);
+
+        //Set content panel size based on the content in it
+        int contentWidth = dpListPanelSize.width + groupListPanelSize.width +
+                controlPanelSize.width + 2 * gapSpace;
+        Dimension contentSize = new Dimension(contentWidth, contentHeight);
+        contentPanel.setPreferredSize(contentSize);
     }
 
     /**
@@ -571,16 +601,15 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Creates the assignment wide buttons
+     * Creates the buttons corresponding to the distributable part.
      *
      * @param generalButtonsPanel
      */
     private void initializeGeneralCommandButtons(JPanel generalButtonsPanel)
     {
-        //Run Demo
-        _runDemoButton = createButton(IconImage.APPLICATIONS_SYSTEM,
-                                      "Run Demo", "Run the assignment demo");
-        _runDemoButton.addActionListener(new ActionListener()
+        //Demo
+        _demoButton = createButton(IconImage.APPLICATIONS_SYSTEM, "Demo");
+        _demoButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
@@ -588,37 +617,10 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
 
         });
-        generalButtonsPanel.add(_runDemoButton);
-
-        //Print All
-        _printAllButton = createButton(IconImage.PRINTER,
-                                       "Print All", "Print code for all students");
-        _printAllButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                printAllButtonActionPerformed();
-            }
-
-        });
-        generalButtonsPanel.add(_printAllButton);
-
-        //View Deductions
-        _viewDeductionsButton = createButton(IconImage.TEXT_X_GENERIC,
-                                       "View Deductions", "Display the deductions list");
-        _viewDeductionsButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                viewDeductionsButtonActionPerformed();
-            }
-
-        });
-        generalButtonsPanel.add(_viewDeductionsButton);
-
+        generalButtonsPanel.add(_demoButton);
+        
         //Submit Grading
-        _submitGradingButton = createButton(IconImage.MAIL_SEND_RECEIVE,
-                                            "Submit Grading", "Submit all graded assignments");
+        _submitGradingButton = createButton(IconImage.MAIL_SEND_RECEIVE, "Submit Grading");
         _submitGradingButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -628,84 +630,42 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         });
         generalButtonsPanel.add(_submitGradingButton);
+
+        //Grading Guide
+        _gradingGuideButton = createButton(IconImage.TEXT_X_GENERIC, "Grading Guide");
+        _gradingGuideButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                viewDeductionsButtonActionPerformed();
+            }
+
+        });
+        generalButtonsPanel.add(_gradingGuideButton);
+
+        //Print All
+        _printAllButton = createButton(IconImage.PRINTER, "Print All");
+        _printAllButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                printAllButtonActionPerformed();
+            }
+
+        });
+        generalButtonsPanel.add(_printAllButton);
     }
 
     /**
-     * Creates the student specific buttons.
+     * Creates the student/group specific buttons.
      *
-     * @param studentButtonsPanel
+     * @param groupButtonsPanel
      */
-    private void initializeStudentCommandButtons(JPanel studentButtonsPanel)
+    private void initializeGroupCommandButtons(JPanel groupButtonsPanel)
     {
-        //View Readme
-        _viewReadmeButton = createButton(IconImage.DOCUMENT_PROPERTIES,
-                                         "View Readme", "Display the student's readme");
-        _viewReadmeButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                viewReadmeButtonActionPerformed();
-            }
-
-        });
-        studentButtonsPanel.add(_viewReadmeButton);
-
-        //Open Code
-        _openCodeButton = createButton(IconImage.DOCUMENT_OPEN,
-                                       "Open Code", "Open the student's code");
-        _openCodeButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                openCodeButtonActionPerformed();
-            }
-
-        });
-        studentButtonsPanel.add(_openCodeButton);
-
-        //Run Tester
-        _runTesterButton = createButton(IconImage.UTILITIES_SYSTEM_MONITOR,
-                                        "Run Tester", "Run tester on the student's code");
-        _runTesterButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                runTesterButtonActionPerformed();
-            }
-
-        });
-        studentButtonsPanel.add(_runTesterButton);
-
-        //Print Code
-        _printStudentButton = createButton(IconImage.PRINTER,
-                                           "Print Code", "Print the student's code");
-        _printStudentButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                printStudentButtonActionPerformed();
-            }
-
-        });
-        studentButtonsPanel.add(_printStudentButton);
-
-        //Grade Assignment
-        _gradeAssignmentButton = createButton(IconImage.FONT_X_GENERIC,
-                                              "Grade Assignment", "Grade the student's assignment");
-        _gradeAssignmentButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                gradeAssignmentButtonActionPerformed();
-            }
-
-        });
-        studentButtonsPanel.add(_gradeAssignmentButton);
-
-        //Run Code
-        _runCodeButton = createButton(IconImage.GO_NEXT,
-                                      "Run Code", "Run the student's code");
-        _runCodeButton.addActionListener(new ActionListener()
+        //Run
+        _runButton = createButton(IconImage.GO_NEXT, "Run");
+        _runButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
@@ -713,23 +673,82 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
 
         });
-        studentButtonsPanel.add(_runCodeButton);
+        groupButtonsPanel.add(_runButton);
+        
+        //Test
+        _testButton = createButton(IconImage.UTILITIES_SYSTEM_MONITOR, "Test");
+        _testButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                runTesterButtonActionPerformed();
+            }
+
+        });
+        groupButtonsPanel.add(_testButton);
+
+        //Open
+        _openButton = createButton(IconImage.DOCUMENT_OPEN, "Open");
+        _openButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                openCodeButtonActionPerformed();
+            }
+
+        });
+        groupButtonsPanel.add(_openButton);
+
+        //Readme
+        _readmeButton = createButton(IconImage.DOCUMENT_PROPERTIES, "Readme");
+        _readmeButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                viewReadmeButtonActionPerformed();
+            }
+
+        });
+        groupButtonsPanel.add(_readmeButton);
+
+        //Grade
+        _gradeButton = createButton(IconImage.FONT_X_GENERIC, "Grade");
+        _gradeButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                gradeAssignmentButtonActionPerformed();
+            }
+
+        });
+        groupButtonsPanel.add(_gradeButton);
+
+        //Print
+        _printButton = createButton(IconImage.PRINTER, "Print");
+        _printButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                printStudentButtonActionPerformed();
+            }
+
+        });
+        groupButtonsPanel.add(_printButton);
     }
 
     /**
-     * Creates a button with an image on the left hand side and then two lines
-     * of text to the right of the image. The top line of text is bolded.
+     * Creates a button with an image on the left side and bolded text on the
+     * right side.
      *
      * @param image
-     * @param topLine
-     * @param bottomLine
+     * @param text
      * @return the button created
      */
-    private JButton createButton(IconImage image, String topLine, String bottomLine)
+    private JButton createButton(IconImage image, String text)
     {
         Icon icon = IconLoader.loadIcon(IconSize.s32x32, image);
-        JButton button = new JButton("<html><b>" + topLine + "</b><br/>" + bottomLine + "</html>", icon);
-        button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        JButton button = new JButton("<html><b><font size=3>" + text +"</font></b></html>", icon);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
         button.setIconTextGap(10);
 
         return button;
