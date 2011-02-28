@@ -85,6 +85,8 @@ public class CakehatMain
     public static void main(String[] args)
     {
         _didStartNormally = true;
+        
+        CakehatUncaughtExceptionHandler.registerHandler();
 
         // Values from run arguments
         _isSSHMode = (args.length >= 2) && args[1].equalsIgnoreCase("ssh");

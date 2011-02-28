@@ -17,6 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import gradesystem.Allocator;
+import gradesystem.CakehatMain;
 import java.awt.Color;
 
 /**
@@ -54,19 +55,18 @@ public class ErrorView extends JFrame
         this.setVisible(true);
     }
 
-    public ErrorView()
-    {
-        this("");
-    }
-
     public ErrorView(Throwable t)
     {
         this(throwableAsString(t));
+
+        printThrowableForDeveloper(t);
     }
 
     public ErrorView(Throwable t, String customMessage)
     {
         this(customMessage + "\n\n" + throwableAsString(t));
+
+        printThrowableForDeveloper(t);
     }
 
     private static String throwableAsString(Throwable throwable)
@@ -83,6 +83,20 @@ public class ErrorView extends JFrame
         catch (IOException ex) { }
 
         return stringWriter.toString();
+    }
+
+    private static void printThrowableForDeveloper(Throwable throwable)
+    {
+        //If cakehat is running in developer mode or cakehat is not running
+        //normally, then print the stack trace to aid debugging (most IDEs
+        //allow for clicking inside the stack trace to navigate to the
+        //corresponding file and line)
+        if(CakehatMain.isDeveloperMode() || !CakehatMain.didStartNormally())
+        {
+            System.err.println("Throwable encountered. During normal operation " +
+                    "cakehat will not print the stack trace to the terminal.");
+            throwable.printStackTrace();
+        }
     }
 
     private void initComponentsWithErrorMessage(String errorMessage)
