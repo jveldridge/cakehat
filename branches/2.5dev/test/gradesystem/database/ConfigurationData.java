@@ -48,13 +48,17 @@ public class ConfigurationData
         return uid;
     }
 
+    public static void main(String[] args)
+    {
+        generateHandin();
+    }
+
     public static Handin generateHandin()
     {
         Assignment asgn = createMock(Assignment.class);
         final String name = "Difficult Assignment";
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
-        expect(asgn.toString()).andReturn(name).anyTimes();
 
         Handin handin = createMock(Handin.class);
         expect(handin.getAssignment()).andReturn(asgn).anyTimes();
@@ -72,7 +76,6 @@ public class ConfigurationData
         final String name = "Amazing Assignment";
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
-        expect(asgn.toString()).andReturn(name).anyTimes();
 
         DistributablePart dp1 = createMock(DistributablePart.class);
         expect(dp1.getAssignment()).andReturn(asgn).anyTimes();
@@ -108,7 +111,6 @@ public class ConfigurationData
         final String name = "Mediocre Assignment";
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
-        expect(asgn.toString()).andReturn(name).anyTimes();
 
         DistributablePart dp = createMock(DistributablePart.class);
         expect(dp.getAssignment()).andReturn(asgn).anyTimes();
@@ -153,7 +155,6 @@ public class ConfigurationData
         final String name = "Boring Assignment";
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
-        expect(asgn.toString()).andReturn(name).anyTimes();
 
         NonHandinPart nonHandin = createMock(NonHandinPart.class);
         expect(nonHandin.getAssignment()).andReturn(asgn).anyTimes();
