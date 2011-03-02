@@ -1416,7 +1416,7 @@ public class BackendView extends JFrame
         //get confirmation
         int response = JOptionPane.showConfirmDialog(this, confirmDialogPanel,
                 "Confirm Database Reset", JOptionPane.YES_NO_OPTION);
-        if (response == JOptionPane.NO_OPTION) {
+        if (response != JOptionPane.YES_OPTION) {
             return;
         }
 
