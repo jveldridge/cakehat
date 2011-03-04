@@ -19,6 +19,8 @@ import gradesystem.services.ConstantsImpl;
 import gradesystem.services.FileSystemServices;
 import gradesystem.services.FileSystemServicesImpl;
 import gradesystem.services.GradingServicesImpl;
+import gradesystem.services.StringManipulationServices;
+import gradesystem.services.StringManipulationServicesImpl;
 import gradesystem.services.PathServices;
 import gradesystem.services.PathServicesImpl;
 import gradesystem.services.UserServices;
@@ -117,6 +119,7 @@ public class Allocator
     private final SingletonAllocation<UserServices> _userServices;
     private final SingletonAllocation<FileSystemServices> _fileSystemServices;
     private final SingletonAllocation<PathServices> _pathServices;
+    private final SingletonAllocation<StringManipulationServices> _stringManipServices;
     private final SingletonAllocation<Constants> _constants;
     private final SingletonAllocation<DatabaseIO> _database;
     private final SingletonAllocation<Printer> _landscapePrinter;
@@ -160,6 +163,7 @@ public class Allocator
                       SingletonAllocation<UserServices> userServices,
                       SingletonAllocation<FileSystemServices> fileSystemServices,
                       SingletonAllocation<PathServices> pathServices,
+                      SingletonAllocation<StringManipulationServices> stringManipServices,
                       SingletonAllocation<Constants> constants,
                       SingletonAllocation<DatabaseIO> database,
                       SingletonAllocation<Printer> landscapePrinter,
@@ -240,6 +244,16 @@ public class Allocator
         else
         {
             _pathServices = pathServices;
+        }
+
+        if(stringManipServices == null)
+        {
+            _stringManipServices = new SingletonAllocation<StringManipulationServices>()
+                            { public StringManipulationServices allocate() { return new StringManipulationServicesImpl(); } };
+        }
+        else
+        {
+            _stringManipServices = stringManipServices;
         }
 
         if(constants == null)
@@ -388,6 +402,11 @@ public class Allocator
         return getInstance()._pathServices.getInstance();
     }
 
+    public static StringManipulationServices getStringManipulationServices()
+    {
+        return getInstance()._stringManipServices.getInstance();
+    }
+
     public static Constants getConstants()
     {
         return getInstance()._constants.getInstance();
@@ -459,6 +478,7 @@ public class Allocator
         private SingletonAllocation<UserServices> _userServices;
         private SingletonAllocation<FileSystemServices> _fileSystemServices;
         private SingletonAllocation<PathServices> _pathServices;
+        private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
         private SingletonAllocation<DatabaseIO> _database;
         private SingletonAllocation<Printer> _landscapePrinter;
@@ -516,6 +536,13 @@ public class Allocator
         public Customizer setPathServices(SingletonAllocation<PathServices> pathServices)
         {
             _pathServices = pathServices;
+
+            return this;
+        }
+
+        public Customizer setLocalizationServices(SingletonAllocation<StringManipulationServices> stringManipServices)
+        {
+            _stringManipServices = stringManipServices;
 
             return this;
         }
@@ -622,6 +649,7 @@ public class Allocator
                     _userServices,
                     _fileSystemServices,
                     _pathServices,
+                    _stringManipServices,
                     _constants,
                     _database,
                     _landscapePrinter,

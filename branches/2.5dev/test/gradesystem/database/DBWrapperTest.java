@@ -68,41 +68,41 @@ public class DBWrapperTest {
     /**
      * Test of addStudent method, of class DBWrapper.
      */
-    @Test
-    public void testAddStudent() {
-        String s1login = generateLogin();
-        String s1first = generateLogin();
-        String s1last = generateLogin();
-
-        //adding the student should not cause an error
-        //and the return value should be true to indicate that the student was added
-        boolean exception = false;
-        boolean result = false;
-        try {
-            result = _instance.addStudent(s1login, s1first, s1last);
-        } catch (SQLException e) {
-            exception = true;
-        }
-        assertFalse(exception);
-        assertTrue(result);
-
-        //adding the same student again should not cause an error
-        //but the return value should be false to indicate that the student was
-        //not added again
-        exception = false;
-        result = true;
-        try {
-            result = _instance.addStudent(s1login, s1first, s1last);
-        } catch (SQLException e) {
-            exception = true;
-        }
-        assertFalse(exception);
-        assertFalse(result);
-
-        //TODO add some more students
-        //TODO should this method also test getAllStudents()?
-        //     it seems like you can't really test one of these two w/out the other
-    }
+//    @Test
+//    public void testAddStudent() {
+//        String s1login = generateLogin();
+//        String s1first = generateLogin();
+//        String s1last = generateLogin();
+//
+//        //adding the student should not cause an error
+//        //and the return value should be true to indicate that the student was added
+//        boolean exception = false;
+//        boolean result = false;
+//        try {
+//            result = _instance.addStudent(s1login, s1first, s1last);
+//        } catch (SQLException e) {
+//            exception = true;
+//        }
+//        assertFalse(exception);
+//        assertTrue(result);
+//
+//        //adding the same student again should not cause an error
+//        //but the return value should be false to indicate that the student was
+//        //not added again
+//        exception = false;
+//        result = true;
+//        try {
+//            result = _instance.addStudent(s1login, s1first, s1last);
+//        } catch (SQLException e) {
+//            exception = true;
+//        }
+//        assertFalse(exception);
+//        assertFalse(result);
+//
+//        //TODO add some more students
+//        //TODO should this method also test getAllStudents()?
+//        //     it seems like you can't really test one of these two w/out the other
+//    }
 
 //    /**
 //     * Test of getTABlacklist method, of class DBWrapper.
