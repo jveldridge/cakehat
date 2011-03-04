@@ -35,6 +35,8 @@ public class StatHistView extends javax.swing.JFrame {
 
     /** Creates new form HistogramView */
     public StatHistView(Collection<Assignment> assignments) {
+        super("Charts and Histograms");
+        
         _assignments  = new Vector<Assignment>(assignments) {};
         Collections.sort(_assignments);
         _asgnChartMap = new HashMap<Assignment,AssignmentChartPanel>();
@@ -53,6 +55,7 @@ public class StatHistView extends javax.swing.JFrame {
         initComponents();
         domoreinit();
         this.setLocationRelativeTo(null);
+        this.setResizable(false);
         this.setVisible(true);
     }
 
