@@ -102,7 +102,17 @@ class PrintActions implements ActionProvider
                             File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                             FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
-                            Collection<File> filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, extensionsFilter);
+
+                            Collection<File> filesToPrint;
+                            try
+                            {
+                                filesToPrint = Allocator.getFileSystemUtilities()
+                                        .getFiles(unarchiveDir, extensionsFilter);
+                            }
+                            catch(IOException e)
+                            {
+                                throw new ActionException("Unable to access files to print", e);
+                            }
 
                             try
                             {

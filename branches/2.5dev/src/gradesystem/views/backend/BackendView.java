@@ -1160,7 +1160,12 @@ public class BackendView extends JFrame
                     }
 
                     if (group != null) {
-                        boolean hasHandin = (selectedAsgn.getHandin().getHandin(group) != null);
+                        boolean hasHandin = false;
+                        try {
+                            hasHandin = selectedAsgn.getHandin().getHandin(group) != null;
+                        } catch (IOException e) {
+                            new ErrorView(e);
+                        }
 
                         _testCodeButton.setEnabled(hasHandin && selectedDP.hasTester());
                         _runCodeButton.setEnabled(hasHandin && selectedDP.hasRun() );
@@ -1237,7 +1242,13 @@ public class BackendView extends JFrame
                             anyGroupRubric = true;
                         }
 
-                        if (selectedAsgn.getHandin().getHandin(group) != null) {
+                        File handin = null;
+                        try {
+                            handin = selectedAsgn.getHandin().getHandin(group);
+                        } catch(IOException e) {
+                            new ErrorView(e);
+                        }
+                        if (handin != null) {
                             anyGroupCode = true;
                         }
 
@@ -1640,7 +1651,13 @@ public class BackendView extends JFrame
         try {
             for (String student : _studentList.getGenericSelectedValues()) {
                 Group group = this.getGroup(asgn, student);
-                File handin = asgn.getHandin().getHandin(group);
+                
+                File handin = null;
+                try {
+                    handin = asgn.getHandin().getHandin(group);
+                } catch (IOException e) {
+                    new ErrorView(e);
+                }
 
                 if (handin != null) {
                     groupsToPrint.add(group);

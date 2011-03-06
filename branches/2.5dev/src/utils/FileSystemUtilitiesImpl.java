@@ -524,7 +524,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
-    public List<File> getFiles(File file, FileFilter filter)
+    public List<File> getFiles(File file, FileFilter filter) throws IOException
     {
         ArrayList<File> acceptedFiles = new ArrayList<File>();
 
@@ -535,7 +535,16 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
         if(file.isDirectory())
         {
-            for(File entry : file.listFiles())
+            File[] entries = file.listFiles();
+
+            if(entries == null)
+            {
+                throw new IOException("Unable to retrieve contents of " +
+                        "directory: " + file.getAbsoluteFile() + ".\nThis " +
+                        "is likely due to a permissions issue or an IO error.");
+            }
+
+            for(File entry : entries)
             {
                 acceptedFiles.addAll(this.getFiles(entry, filter));
             }
@@ -544,7 +553,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return acceptedFiles;
     }
 
-    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator)
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException
     {
         List<File> files = this.getFiles(file, filter);
         Collections.sort(files, comparator);

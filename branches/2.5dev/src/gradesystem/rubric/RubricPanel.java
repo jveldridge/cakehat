@@ -21,7 +21,6 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 import gradesystem.config.LatePolicy;
 import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
@@ -31,6 +30,8 @@ import gradesystem.config.TA;
 import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
 import gradesystem.views.shared.ErrorView;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -624,11 +625,16 @@ class RubricPanel extends JPanel
         JPanel panel = new JPanel(layout);
 
         //Handin status
-        java.util.Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(_rubric.getDistributablePart().getHandin().getHandin(_rubric.getGroup()));
         String handinInfo = "";
         if (_isAdmin) {
-            handinInfo = String.format(" ( Received at: <b>%s</b> )",
-                    Allocator.getCalendarUtilities().getCalendarAsHandinTime(handinTime));
+            try {
+                File handin = _rubric.getDistributablePart().getHandin() .getHandin(_rubric.getGroup());
+                Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(handin);
+                handinInfo = String.format(" ( Received at: <b>%s</b> )",
+                        Allocator.getCalendarUtilities().getCalendarAsHandinTime(handinTime));
+            } catch (IOException e) {
+                new ErrorView(e);
+            }
         }
         JLabel handinStatusLabel = new JLabel(String.format("<html><b>Handin Status</b>%s</html>", handinInfo));
 

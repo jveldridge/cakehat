@@ -147,8 +147,12 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException {
-
-        Collection<String> handinNames = asgn.getHandin().getHandinNames();
+        Collection<String> handinNames;
+        try {
+            handinNames = asgn.getHandin().getHandinNames();
+        } catch (IOException e) {
+            throw new ServicesException("Unable to retrieve handin names for " + asgn.getName(), e);
+        }
 
         //group project- check that that the name of each handin is either
         //the name of some group or the login of a member of some group
@@ -385,7 +389,13 @@ public class GradingServicesImpl implements GradingServices
     }
 
     public Map<String, Group> getGroupsForHandins(Assignment asgn, Collection<String> handinsToIgnore) throws ServicesException {
-        Collection<String> handinNames = asgn.getHandin().getHandinNames();
+        Collection<String> handinNames;
+        try {
+            handinNames = asgn.getHandin().getHandinNames();
+        } catch (IOException e) {
+            throw new ServicesException("Unable to retrieve handin names", e);
+        }
+
         handinNames.removeAll(handinsToIgnore);
 
         Collection<Group> groups;
@@ -528,7 +538,13 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public HandinStatus getHandinStatus(Handin handin, Group group, Calendar extension, int minutesOfLeniency) throws ServicesException {
-        File groupHandin = handin.getHandin(group);
+        File groupHandin;
+        try {
+            groupHandin = handin.getHandin(group);
+        } catch(IOException e) {
+            throw new ServicesException(e);
+        }
+
         if (groupHandin == null) {
             throw new ServicesException("Cannot get handin status for group " + group + ". " +
                                         "Handin file does not exist.");
@@ -603,8 +619,15 @@ public class GradingServicesImpl implements GradingServices
         return toReturn;
     }
 
-    private int getDaysLate(Handin handin, Group group, Calendar extension, int minutesOfLeniency) {
-        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(handin.getHandin(group));
+    private int getDaysLate(Handin handin, Group group, Calendar extension, int minutesOfLeniency) throws ServicesException {
+        File groupHandin;
+        try {
+            groupHandin = handin.getHandin(group);
+        } catch(IOException e) {
+            throw new ServicesException(e);
+        }
+
+        Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(groupHandin);
         Calendar onTime = handin.getTimeInformation().getOntimeDate();
 
         //if there is an extension, use that date

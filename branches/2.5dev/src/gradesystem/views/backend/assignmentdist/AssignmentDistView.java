@@ -36,6 +36,7 @@ import gradesystem.resources.icons.IconLoader.IconImage;
 import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -155,6 +156,9 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "Generating the distribution for assignment " +
                                        _asgn + " failed." );
+                } catch (IOException ex) {
+                    new ErrorView(ex, "Generating the distribution for assignment " +
+                                       _asgn + " failed." );
                 }
             }
         });
@@ -203,7 +207,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         this.pack();
     }
 
-    private void generateDistribution() throws ServicesException, SQLException, CakeHatDBIOException {
+    private void generateDistribution() throws ServicesException, SQLException, CakeHatDBIOException, IOException {
         //figure out which DistributableParts are being graded by which TAs
         Map<DistributablePart, Collection<TA>> graderMap = new HashMap<DistributablePart, Collection<TA>>();
         for (TA grader : _gradingTAs) {

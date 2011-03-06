@@ -2,6 +2,7 @@ package utils;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -14,7 +15,7 @@ import static org.easymock.EasyMock.*;
 public class FileSystemUtilitiesTest
 {
     @Test
-    public void testGetAllFiles_AcceptAll()
+    public void testGetAllFiles_AcceptAll() throws IOException
     {
         File subFile1 = createMock(File.class);
         expect(subFile1.isDirectory()).andReturn(false);
@@ -38,8 +39,8 @@ public class FileSystemUtilitiesTest
 
         //Check all of the files are returned and there are no duplicates
         assertEquals("Should contain exactly 3 Files", 3, response.size());
-        assertEquals(true, response.contains(rootFile));
-        assertEquals(true, response.contains(subFile1));
-        assertEquals(true, response.contains(subFile2));
+        assertTrue(response.contains(rootFile));
+        assertTrue(response.contains(subFile1));
+        assertTrue(response.contains(subFile2));
     }
 }

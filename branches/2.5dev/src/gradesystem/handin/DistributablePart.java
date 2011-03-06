@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import gradesystem.handin.file.AlwaysAcceptingFileFilter;
+import java.util.ArrayList;
 
 /**
  * Part of a group's handin.
@@ -338,10 +339,17 @@ public class DistributablePart extends Part
                     return accept;
                 }
             };
-            Collection<File> readmes = Allocator.getFileSystemUtilities()
-                    .getFiles(Allocator.getPathServices().getUnarchiveHandinDir(this, group), filter);
 
-            _readmes.put(group, readmes);
+            try
+            {
+                Collection<File> readmes = Allocator.getFileSystemUtilities()
+                    .getFiles(Allocator.getPathServices().getUnarchiveHandinDir(this, group), filter);
+                _readmes.put(group, readmes);
+            }
+            catch(IOException e)
+            {
+                throw new ActionException("Unable to access READMEs", e);
+            }
         }
 
         return _readmes.get(group);
@@ -361,7 +369,16 @@ public class DistributablePart extends Part
         if(!_groupsWithReadme.containsKey(group))
         {
             boolean hasReadme = false;
-            File handin = _handin.getHandin(group);
+
+            File handin;
+            try
+            {
+                handin = _handin.getHandin(group);
+            }
+            catch(IOException e)
+            {
+                throw new ActionException(e);
+            }
 
             if(handin == null)
             {
@@ -482,7 +499,16 @@ public class DistributablePart extends Part
 
                 //Determine if all of the files and directories that are
                 //expected are present
-                File handin = _handin.getHandin(group);
+                File handin;
+                try
+                {
+                    handin = _handin.getHandin(group);
+                }
+                catch(IOException e)
+                {
+                    throw new ActionException(e);
+                }
+                
                 if(handin == null)
                 {
                     throw new ActionException("The handin for the group: " + group.getName() +

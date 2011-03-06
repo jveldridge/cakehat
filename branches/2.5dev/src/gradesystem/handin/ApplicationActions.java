@@ -120,8 +120,16 @@ class ApplicationActions implements ActionProvider
                     File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
                     FileFilter pdfFilter = new FileExtensionFilter("pdf");
 
-                    List<File> pdfFiles = Allocator.getFileSystemUtilities()
+                    List<File> pdfFiles;
+                    try
+                    {
+                        pdfFiles = Allocator.getFileSystemUtilities()
                             .getFiles(unarchiveDir, pdfFilter, new AlphabeticFileComparator());
+                    }
+                    catch(IOException e)
+                    {
+                        throw new ActionException("Unable to access PDF files", e);
+                    }
 
                     if(pdfFiles.isEmpty())
                     {
@@ -296,8 +304,17 @@ class ApplicationActions implements ActionProvider
                     File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
 
                     FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
-                    List<File> textFiles = Allocator.getFileSystemUtilities()
+
+                    List<File> textFiles;
+                    try
+                    {
+                        textFiles = Allocator.getFileSystemUtilities()
                             .getFiles(unarchiveDir, extensionsFilter, new AlphabeticFileComparator());
+                    }
+                    catch(IOException e)
+                    {
+                        throw new ActionException("Unable to access text files", e);
+                    }
 
                     if(textFiles.isEmpty())
                     {

@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -378,9 +379,16 @@ class MatlabActions implements ActionProvider
                     }
                     else
                     {
-                        mFiles = Allocator.getFileSystemUtilities()
-                                .getFiles(demoDir, new FileExtensionFilter("m"),
-                                new AlphabeticFileComparator());
+                        try
+                        {
+                            mFiles = Allocator.getFileSystemUtilities()
+                                    .getFiles(demoDir, new FileExtensionFilter("m"),
+                                    new AlphabeticFileComparator());
+                        }
+                        catch(IOException e)
+                        {
+                            throw new ActionException("Unable to access m files", e);
+                        }
                     }
 
                     if(mFiles.isEmpty())
@@ -471,8 +479,16 @@ class MatlabActions implements ActionProvider
                                     "You will be asked to select from available m-files.",
                                     "Specified File Unavailable",
                                     JOptionPane.WARNING_MESSAGE);
-                            mFiles = Allocator.getFileSystemUtilities()
+
+                            try
+                            {
+                                mFiles = Allocator.getFileSystemUtilities()
                                     .getFiles(unarchiveDir, mFilter, new AlphabeticFileComparator());
+                            }
+                            catch(IOException e)
+                            {
+                                throw new ActionException("Unable to access m files", e);
+                            }
                         }
                         else
                         {
@@ -482,8 +498,15 @@ class MatlabActions implements ActionProvider
                     }
                     else
                     {
-                        mFiles = Allocator.getFileSystemUtilities()
-                                .getFiles(unarchiveDir, mFilter, new AlphabeticFileComparator());
+                        try
+                        {
+                            mFiles = Allocator.getFileSystemUtilities()
+                                    .getFiles(unarchiveDir, mFilter, new AlphabeticFileComparator());
+                        }
+                        catch(IOException e)
+                        {
+                            throw new ActionException("Unable to access m files", e);
+                        }
                     }
 
                     if(mFiles.isEmpty())
@@ -574,8 +597,17 @@ class MatlabActions implements ActionProvider
                         {
                             fileExtensionFilter = new FileExtensionFilter("m");
                         }
-                        List<File> filesToOpen = Allocator.getFileSystemUtilities()
+                        
+                        List<File> filesToOpen;
+                        try
+                        {
+                            filesToOpen = Allocator.getFileSystemUtilities()
                                 .getFiles(unarchiveDir, fileExtensionFilter, new AlphabeticFileComparator());
+                        }
+                        catch(IOException e)
+                        {
+                            throw new ActionException("Unable to access files", e);
+                        }
 
                         //Open files in MATLAB
                         String[] openPaths = new String[filesToOpen.size()];
