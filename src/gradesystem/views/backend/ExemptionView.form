@@ -13,7 +13,7 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
@@ -54,7 +54,7 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Grant">
-                <Property name="tabTitle" type="java.lang.String" resourceKey="grantViewPanel.TabConstraints.tabTitle"/>
+                <Property name="tabTitle" type="java.lang.String" value="Grant"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -102,7 +102,7 @@
               <SubComponents>
                 <Component class="javax.swing.JButton" name="grantButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" resourceKey="grantButton.text"/>
+                    <Property name="text" type="java.lang.String" value="Grant Exemptions"/>
                     <Property name="name" type="java.lang.String" value="grantButton" noResource="true"/>
                   </Properties>
                   <Events>
@@ -147,7 +147,7 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="View">
-                <Property name="tabTitle" type="java.lang.String" resourceKey="viewPanel.TabConstraints.tabTitle"/>
+                <Property name="tabTitle" type="java.lang.String" value="View"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -247,7 +247,7 @@
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="studentSelectionBG"/>
                 </Property>
-                <Property name="text" type="java.lang.String" resourceKey="studsSelectedButton.text"/>
+                <Property name="text" type="java.lang.String" value="Students Selected"/>
                 <Property name="name" type="java.lang.String" value="studsSelectedButton" noResource="true"/>
               </Properties>
             </Component>
@@ -256,7 +256,7 @@
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="studentSelectionBG"/>
                 </Property>
-                <Property name="text" type="java.lang.String" resourceKey="allStudsButton.text"/>
+                <Property name="text" type="java.lang.String" value="All Students"/>
                 <Property name="name" type="java.lang.String" value="allStudsButton" noResource="true"/>
               </Properties>
             </Component>

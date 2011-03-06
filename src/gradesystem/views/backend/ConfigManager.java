@@ -101,40 +101,36 @@ public class ConfigManager extends javax.swing.JFrame {
 
         databasePanel.setName("databasePanel"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(ConfigManager.class);
-        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        jLabel2.setText("<html><b>Add Students to Database:</b></html>");
         jLabel2.setName("jLabel2"); // NOI18N
 
         whichStudentsBG.add(allStudentsRB);
-        allStudentsRB.setText(resourceMap.getString("allStudentsRB.text")); // NOI18N
+        allStudentsRB.setText("All From Group");
         allStudentsRB.setName("allStudentsRB"); // NOI18N
 
         whichStudentsBG.add(oneStudentRB);
-        oneStudentRB.setText(resourceMap.getString("oneStudentRB.text")); // NOI18N
+        oneStudentRB.setText("Individual Student");
         oneStudentRB.setName("oneStudentRB"); // NOI18N
 
-        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setText("Login:");
         jLabel3.setName("jLabel3"); // NOI18N
 
-        loginText.setText(resourceMap.getString("loginText.text")); // NOI18N
         loginText.setName("loginText"); // NOI18N
 
-        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+        jLabel4.setText("<html>Name (optional; if none <br/>given, will snoop login)</html>");
         jLabel4.setName("jLabel4"); // NOI18N
 
-        jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
+        jLabel5.setText("First:");
         jLabel5.setName("jLabel5"); // NOI18N
 
-        firstNameText.setText(resourceMap.getString("firstNameText.text")); // NOI18N
         firstNameText.setName("firstNameText"); // NOI18N
 
-        jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
+        jLabel6.setText("Last:");
         jLabel6.setName("jLabel6"); // NOI18N
 
-        lastNameText.setText(resourceMap.getString("lastNameText.text")); // NOI18N
         lastNameText.setName("lastNameText"); // NOI18N
 
-        addStudentsButton.setText(resourceMap.getString("addStudentsButton.text")); // NOI18N
+        addStudentsButton.setText("Add To Database");
         addStudentsButton.setName("addStudentsButton"); // NOI18N
 
         javax.swing.GroupLayout databasePanelLayout = new javax.swing.GroupLayout(databasePanel);
@@ -202,11 +198,11 @@ public class ConfigManager extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab(resourceMap.getString("databasePanel.TabConstraints.tabTitle"), databasePanel); // NOI18N
+        jTabbedPane1.addTab("Database Manager", databasePanel);
 
         configPanel.setName("configPanel"); // NOI18N
 
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setText("TO-DO!");
         jLabel1.setName("jLabel1"); // NOI18N
 
         javax.swing.GroupLayout configPanelLayout = new javax.swing.GroupLayout(configPanel);
@@ -226,7 +222,7 @@ public class ConfigManager extends javax.swing.JFrame {
                 .addContainerGap(134, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab(resourceMap.getString("configPanel.TabConstraints.tabTitle"), configPanel); // NOI18N
+        jTabbedPane1.addTab("Config File Manager", configPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

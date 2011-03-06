@@ -157,8 +157,7 @@ public class StatHistView extends javax.swing.JFrame {
 
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(StatHistView.class);
-        chartPanel.setBackground(resourceMap.getColor("chartPanel.background")); // NOI18N
+        chartPanel.setBackground(new java.awt.Color(255, 255, 255));
         chartPanel.setName("chartPanel"); // NOI18N
 
         javax.swing.GroupLayout chartPanelLayout = new javax.swing.GroupLayout(chartPanel);
@@ -190,7 +189,7 @@ public class StatHistView extends javax.swing.JFrame {
         asgnControlPanel.setName("asgnControlPanel"); // NOI18N
 
         asgnButtonGroup.add(assignmentsRb);
-        assignmentsRb.setText(resourceMap.getString("assignmentsRb.text")); // NOI18N
+        assignmentsRb.setText("For Assignments");
         assignmentsRb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 updateCharts();
@@ -198,7 +197,7 @@ public class StatHistView extends javax.swing.JFrame {
         });
 
         asgnButtonGroup.add(partsRb);
-        partsRb.setText(resourceMap.getString("partsRb.text")); // NOI18N
+        partsRb.setText("For Assignment Parts");
         partsRb.setName("partsRb"); // NOI18N
         partsRb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -206,7 +205,7 @@ public class StatHistView extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setText("Show Histograms:");
         jLabel1.setName("jLabel1"); // NOI18N
 
         javax.swing.GroupLayout asgnControlPanelLayout = new javax.swing.GroupLayout(asgnControlPanel);
@@ -219,7 +218,7 @@ public class StatHistView extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(assignmentsRb)
                     .addComponent(partsRb))
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         asgnControlPanelLayout.setVerticalGroup(
             asgnControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -245,7 +244,7 @@ public class StatHistView extends javax.swing.JFrame {
         );
         studentControlPanelLayout.setVerticalGroup(
             studentControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 409, Short.MAX_VALUE)
+            .addGap(0, 412, Short.MAX_VALUE)
         );
 
         cardPanel.add(studentControlPanel, "student");
@@ -287,16 +286,16 @@ public class StatHistView extends javax.swing.JFrame {
                 .addContainerGap())
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addGap(6, 6, 6)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
-        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
+        jMenu1.setText("File");
         jMenu1.setName("jMenu1"); // NOI18N
         jMenuBar1.add(jMenu1);
 
-        jMenu2.setText(resourceMap.getString("jMenu2.text")); // NOI18N
+        jMenu2.setText("Edit");
         jMenu2.setName("jMenu2"); // NOI18N
         jMenuBar1.add(jMenu2);
 
@@ -306,7 +305,7 @@ public class StatHistView extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1040, Short.MAX_VALUE)
+            .addGap(0, 1066, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
@@ -315,7 +314,7 @@ public class StatHistView extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 518, Short.MAX_VALUE)
+            .addGap(0, 521, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(1, 1, 1)

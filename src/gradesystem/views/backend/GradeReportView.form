@@ -9,13 +9,13 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" resourceKey="jMenu1.text"/>
+            <Property name="text" type="java.lang.String" value="File"/>
             <Property name="name" type="java.lang.String" value="jMenu1" noResource="true"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="closeMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" resourceKey="closeMenuItem.text"/>
+                <Property name="text" type="java.lang.String" value="Close"/>
                 <Property name="name" type="java.lang.String" value="closeMenuItem" noResource="true"/>
               </Properties>
               <Events>
@@ -26,7 +26,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="editMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" resourceKey="jMenu2.text"/>
+            <Property name="text" type="java.lang.String" value="Edit"/>
             <Property name="name" type="java.lang.String" value="jMenu2" noResource="true"/>
           </Properties>
         </Menu>
@@ -35,7 +35,6 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
-    <Property name="title" type="java.lang.String" resourceKey="Form.title"/>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>
   <SyntheticProperties>
@@ -43,7 +42,7 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
@@ -170,7 +169,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="jLabel1.text"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Enter Message&lt;/b&gt;&lt;/html&gt;"/>
         <Property name="name" type="java.lang.String" value="jLabel1" noResource="true"/>
       </Properties>
     </Component>
@@ -198,20 +197,19 @@
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="jLabel2.text"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;From&lt;/b&gt;&lt;/html&gt;"/>
         <Property name="name" type="java.lang.String" value="jLabel2" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="_fromText">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" resourceKey="_fromText.text"/>
         <Property name="name" type="java.lang.String" value="_fromText" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="jLabel3.text"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Grade Report&lt;/b&gt;&lt;/html&gt;"/>
         <Property name="name" type="java.lang.String" value="jLabel3" noResource="true"/>
       </Properties>
     </Component>
@@ -235,7 +233,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="jLabel5.text"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Preview&lt;/b&gt;&lt;/html&gt;"/>
         <Property name="name" type="java.lang.String" value="jLabel5" noResource="true"/>
       </Properties>
     </Component>
@@ -247,7 +245,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="sendToStudsButton">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="sendToStudsButton.text"/>
+        <Property name="text" type="java.lang.String" value="Email to Students"/>
         <Property name="name" type="java.lang.String" value="sendToStudsButton" noResource="true"/>
       </Properties>
       <Events>
@@ -256,32 +254,31 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="attachScoreGraphButton">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="attachScoreGraphButton.text"/>
+        <Property name="text" type="java.lang.String" value="Attach Student Score Graph"/>
         <Property name="name" type="java.lang.String" value="attachScoreGraphButton" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="attachHistButton">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="attachHistButton.text"/>
+        <Property name="text" type="java.lang.String" value="Attach Assignment Historgrams"/>
         <Property name="name" type="java.lang.String" value="attachHistButton" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="jLabel4.text"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;To&lt;/b&gt;&lt;/html&gt;"/>
         <Property name="name" type="java.lang.String" value="jLabel4" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="_toText">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" resourceKey="_toText.text"/>
         <Property name="name" type="java.lang.String" value="_toText" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="sendToOtherButton">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="sendToOtherButton.text"/>
+        <Property name="text" type="java.lang.String" value="Email to Other Address"/>
         <Property name="name" type="java.lang.String" value="sendToOtherButton" noResource="true"/>
       </Properties>
       <Events>

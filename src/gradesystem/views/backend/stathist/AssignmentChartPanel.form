@@ -5,7 +5,7 @@
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
@@ -85,7 +85,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="jLabel1.foreground"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="&quot;&lt;html&gt;&lt;b&gt;Number of Students&lt;/b&gt;&lt;/html&gt;&quot;" type="code"/>
         </Property>
@@ -94,14 +96,18 @@
     </Component>
     <Component class="javax.swing.JLabel" name="medianLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="medianLabel.foreground"/>
-        <Property name="text" type="java.lang.String" resourceKey="medianLabel.text"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="0"/>
         <Property name="name" type="java.lang.String" value="medianLabel" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="jLabel5.foreground"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="&quot;&lt;html&gt;&lt;b&gt;Median&lt;/b&gt;&lt;/html&gt;&quot;" type="code"/>
         </Property>
@@ -110,21 +116,27 @@
     </Component>
     <Component class="javax.swing.JLabel" name="nLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="nLabel.foreground"/>
-        <Property name="text" type="java.lang.String" resourceKey="nLabel.text"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="0"/>
         <Property name="name" type="java.lang.String" value="nLabel" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="stdDevLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="stdDevLabel.foreground"/>
-        <Property name="text" type="java.lang.String" resourceKey="stdDevLabel.text"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="0"/>
         <Property name="name" type="java.lang.String" value="stdDevLabel" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel7">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="jLabel7.foreground"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="&quot;&lt;html&gt;&lt;b&gt;Standard Deviation&lt;/b&gt;&lt;/html&gt;&quot;" type="code"/>
         </Property>
@@ -133,14 +145,18 @@
     </Component>
     <Component class="javax.swing.JLabel" name="meanLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="meanLabel.foreground"/>
-        <Property name="text" type="java.lang.String" resourceKey="meanLabel.text"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="0"/>
         <Property name="name" type="java.lang.String" value="meanLabel" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" resourceKey="jLabel3.foreground"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="1e" green="1e" red="1e" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="&quot;&lt;html&gt;&lt;b&gt;Mean / Average&lt;/b&gt;&lt;/html&gt;&quot;" type="code"/>
         </Property>

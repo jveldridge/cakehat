@@ -11,7 +11,6 @@ import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
-import org.jdesktop.application.Action;
 import gradesystem.Allocator;
 import gradesystem.config.Assignment;
 import gradesystem.database.Group;
@@ -47,41 +46,31 @@ public class GroupsView extends javax.swing.JFrame {
     private void initComponents() {
 
         removeGroupsButton = new javax.swing.JButton();
-        Open = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        selectGroupsButton = new javax.swing.JButton();
+        directionsLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
+        setResizable(false);
 
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getActionMap(GroupsView.class, this);
-        removeGroupsButton.setAction(actionMap.get("removeGroups")); // NOI18N
+        removeGroupsButton.setText("Remove Groups");
         removeGroupsButton.setName("removeGroupsButton"); // NOI18N
+        removeGroupsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeGroupsActionPerformed(evt);
+            }
+        });
 
-        Open.setAction(actionMap.get("OpenAction")); // NOI18N
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(GroupsView.class);
-        Open.setText(resourceMap.getString("Open.text")); // NOI18N
-        Open.setName("Open"); // NOI18N
+        selectGroupsButton.setText("Select Groups File");
+        selectGroupsButton.setName("selectGroupsButton"); // NOI18N
+        selectGroupsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectGroupsFileActionPerformed(evt);
+            }
+        });
 
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
-        jLabel1.setName("jLabel1"); // NOI18N
-
-        jMenuBar1.setName("jMenuBar1"); // NOI18N
-
-        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
-        jMenu1.setName("jMenu1"); // NOI18N
-
-        jMenuItem1.setAction(actionMap.get("closeWindow")); // NOI18N
-        jMenuItem1.setIcon(resourceMap.getIcon("jMenuItem1.icon")); // NOI18N
-        jMenuItem1.setText(resourceMap.getString("jMenuItem1.text")); // NOI18N
-        jMenuItem1.setName("jMenuItem1"); // NOI18N
-        jMenu1.add(jMenuItem1);
-
-        jMenuBar1.add(jMenu1);
-
-        setJMenuBar(jMenuBar1);
+        directionsLabel.setText("<html><ul><li>Select the groups file you would like to import.</li><li>Click Open to start the import process.</li><li>If that file contains invalid groups none will be<br /> added and a warning will apear.</li></ul></html>");
+        directionsLabel.setName("directionsLabel"); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -91,10 +80,10 @@ public class GroupsView extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(directionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(51, 51, 51)
-                        .addComponent(Open)
+                        .addComponent(selectGroupsButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeGroupsButton)))
                 .addContainerGap(44, Short.MAX_VALUE))
@@ -103,54 +92,18 @@ public class GroupsView extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(directionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(removeGroupsButton)
-                    .addComponent(Open))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(selectGroupsButton))
+                .addContainerGap(39, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Open;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JButton removeGroupsButton;
-    // End of variables declaration//GEN-END:variables
-
-    private class GroupFilter extends FileFilter {
-
-        public boolean accept(File pathname) {
-            if (pathname.isDirectory() || (pathname.isFile() && (pathname.getName().endsWith(".txt") || pathname.getName().endsWith(".grp")))) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-
-        public String getDescription() {
-            return "only files that end in .txt or .grp";
-        }
-
-    }
-
-    @Action
-    public void removeGroups() {
-        try {
-            Allocator.getDatabaseIO().removeGroupsForAssignment(_asgn);
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Groups could not be removed from the database.");
-        }
-    }
-
-    @Action
-    public void OpenAction() {
+    private void selectGroupsFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectGroupsFileActionPerformed
         JFileChooser fc = new JFileChooser();
         fc.setApproveButtonText("Import Groups File");
         fc.setFileFilter(_groupFilter);
@@ -204,11 +157,35 @@ public class GroupsView extends javax.swing.JFrame {
                 new ErrorView(ex, "Saving groups info. to the database failed.");
             }
         }
-    }
+    }//GEN-LAST:event_selectGroupsFileActionPerformed
 
-    @Action
-    public void closeWindow() {
-        //this.dispose();
-    }
+    private void removeGroupsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGroupsActionPerformed
+        try {
+            Allocator.getDatabaseIO().removeGroupsForAssignment(_asgn);
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Groups could not be removed from the database.");
+        }
+    }//GEN-LAST:event_removeGroupsActionPerformed
 
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel directionsLabel;
+    private javax.swing.JButton removeGroupsButton;
+    private javax.swing.JButton selectGroupsButton;
+    // End of variables declaration//GEN-END:variables
+
+    private class GroupFilter extends FileFilter {
+
+        public boolean accept(File pathname) {
+            if (pathname.isDirectory() || (pathname.isFile() && (pathname.getName().endsWith(".txt") || pathname.getName().endsWith(".grp")))) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        public String getDescription() {
+            return "only files that end in .txt or .grp";
+        }
+    }
 }
