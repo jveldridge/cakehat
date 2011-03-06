@@ -6,9 +6,7 @@ import gradesystem.config.LabConfigurationParser;
 import gradesystem.config.LabPart;
 import gradesystem.database.Group;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 

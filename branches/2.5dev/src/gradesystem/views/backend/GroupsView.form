@@ -1,43 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
-  <NonVisualComponents>
-    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
-      <Properties>
-        <Property name="name" type="java.lang.String" value="jMenuBar1" noResource="true"/>
-      </Properties>
-      <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
-          <Properties>
-            <Property name="text" type="java.lang.String" resourceKey="jMenu1.text"/>
-            <Property name="name" type="java.lang.String" value="jMenu1" noResource="true"/>
-          </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
-              <Properties>
-                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="gradesystem.views.backend.GroupsView" id="closeWindow" methodName="closeWindow"/>
-                </Property>
-                <Property name="icon" type="javax.swing.Icon" resourceKey="jMenuItem1.icon"/>
-                <Property name="text" type="java.lang.String" resourceKey="jMenuItem1.text"/>
-                <Property name="name" type="java.lang.String" value="jMenuItem1" noResource="true"/>
-              </Properties>
-            </MenuItem>
-          </SubComponents>
-        </Menu>
-      </SubComponents>
-    </Menu>
-  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
+    <Property name="resizable" type="boolean" value="false"/>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
@@ -55,11 +28,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <Component id="directionsLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
-                      <Component id="Open" min="-2" max="-2" attributes="0"/>
+                      <Component id="selectGroupsButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeGroupsButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -72,13 +45,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+              <Component id="directionsLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="removeGroupsButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Open" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="selectGroupsButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="39" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -86,25 +59,26 @@
   <SubComponents>
     <Component class="javax.swing.JButton" name="removeGroupsButton">
       <Properties>
-        <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-          <action class="gradesystem.views.backend.GroupsView" id="removeGroups" methodName="removeGroups"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="Remove Groups"/>
         <Property name="name" type="java.lang.String" value="removeGroupsButton" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeGroupsActionPerformed"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="Open">
+    <Component class="javax.swing.JButton" name="selectGroupsButton">
       <Properties>
-        <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-          <action class="gradesystem.views.backend.GroupsView" id="OpenAction" methodName="OpenAction"/>
-        </Property>
-        <Property name="text" type="java.lang.String" resourceKey="Open.text"/>
-        <Property name="name" type="java.lang.String" value="Open" noResource="true"/>
+        <Property name="text" type="java.lang.String" value="Select Groups File"/>
+        <Property name="name" type="java.lang.String" value="selectGroupsButton" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectGroupsFileActionPerformed"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel1">
+    <Component class="javax.swing.JLabel" name="directionsLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" resourceKey="jLabel1.text"/>
-        <Property name="name" type="java.lang.String" value="jLabel1" noResource="true"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;ul&gt;&lt;li&gt;Select the groups file you would like to import.&lt;/li&gt;&lt;li&gt;Click Open to start the import process.&lt;/li&gt;&lt;li&gt;If that file contains invalid groups none will be&lt;br /&gt; added and a warning will apear.&lt;/li&gt;&lt;/ul&gt;&lt;/html&gt;"/>
+        <Property name="name" type="java.lang.String" value="directionsLabel" noResource="true"/>
       </Properties>
     </Component>
   </SubComponents>

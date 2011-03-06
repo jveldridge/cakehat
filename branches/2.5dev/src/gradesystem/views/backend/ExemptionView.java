@@ -96,8 +96,7 @@ public class ExemptionView extends javax.swing.JFrame {
 
         jPanel1.setName("grantViewPanel"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(ExemptionView.class);
-        grantButton.setText(resourceMap.getString("grantButton.text")); // NOI18N
+        grantButton.setText("Grant Exemptions");
         grantButton.setName("grantButton"); // NOI18N
         grantButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -129,13 +128,13 @@ public class ExemptionView extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(211, 211, 211)
                 .addComponent(grantButton)
-                .addContainerGap(257, Short.MAX_VALUE))
-            .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                .addContainerGap(215, Short.MAX_VALUE))
+            .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                .addComponent(grantSP, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grantButton)
                 .addContainerGap())
@@ -152,7 +151,7 @@ public class ExemptionView extends javax.swing.JFrame {
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        tabbedPane.addTab(resourceMap.getString("grantViewPanel.TabConstraints.tabTitle"), grantViewPanel); // NOI18N
+        tabbedPane.addTab("Grant", grantViewPanel);
 
         viewPanel.setName("viewPanel"); // NOI18N
 
@@ -182,11 +181,11 @@ public class ExemptionView extends javax.swing.JFrame {
         viewCardPanel.add(assignmentSP, "card2");
 
         studentSelectionBG.add(studsSelectedButton);
-        studsSelectedButton.setText(resourceMap.getString("studsSelectedButton.text")); // NOI18N
+        studsSelectedButton.setText("Students Selected");
         studsSelectedButton.setName("studsSelectedButton"); // NOI18N
 
         studentSelectionBG.add(allStudsButton);
-        allStudsButton.setText(resourceMap.getString("allStudsButton.text")); // NOI18N
+        allStudsButton.setText("All Students");
         allStudsButton.setName("allStudsButton"); // NOI18N
 
         javax.swing.GroupLayout viewPanelLayout = new javax.swing.GroupLayout(viewPanel);
@@ -197,13 +196,13 @@ public class ExemptionView extends javax.swing.JFrame {
                 .addGroup(viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(viewPanelLayout.createSequentialGroup()
                         .addComponent(viewByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 115, Short.MAX_VALUE)
                         .addComponent(allStudsButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(studsSelectedButton))
                     .addGroup(viewPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)))
+                        .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         viewPanelLayout.setVerticalGroup(
@@ -215,11 +214,11 @@ public class ExemptionView extends javax.swing.JFrame {
                     .addComponent(studsSelectedButton)
                     .addComponent(allStudsButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                .addComponent(viewCardPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        tabbedPane.addTab(resourceMap.getString("viewPanel.TabConstraints.tabTitle"), viewPanel); // NOI18N
+        tabbedPane.addTab("View", viewPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

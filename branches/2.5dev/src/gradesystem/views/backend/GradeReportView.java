@@ -199,11 +199,9 @@ public class GradeReportView extends javax.swing.JFrame {
         editMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(GradeReportView.class);
-        setTitle(resourceMap.getString("Form.title")); // NOI18N
         setName("Form"); // NOI18N
 
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setText("<html><b>Enter Message</b></html>");
         jLabel1.setName("jLabel1"); // NOI18N
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
@@ -218,14 +216,13 @@ public class GradeReportView extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(_messageText);
 
-        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        jLabel2.setText("<html><b>From</b></html>");
         jLabel2.setName("jLabel2"); // NOI18N
 
         _fromText.setEditable(false);
-        _fromText.setText(resourceMap.getString("_fromText.text")); // NOI18N
         _fromText.setName("_fromText"); // NOI18N
 
-        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setText("<html><b>Grade Report</b></html>");
         jLabel3.setName("jLabel3"); // NOI18N
 
         jScrollPane3.setName("jScrollPane3"); // NOI18N
@@ -234,13 +231,13 @@ public class GradeReportView extends javax.swing.JFrame {
         _previewPane.setName("_previewPane"); // NOI18N
         jScrollPane3.setViewportView(_previewPane);
 
-        jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
+        jLabel5.setText("<html><b>Preview</b></html>");
         jLabel5.setName("jLabel5"); // NOI18N
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator1.setName("jSeparator1"); // NOI18N
 
-        sendToStudsButton.setText(resourceMap.getString("sendToStudsButton.text")); // NOI18N
+        sendToStudsButton.setText("Email to Students");
         sendToStudsButton.setName("sendToStudsButton"); // NOI18N
         sendToStudsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -248,20 +245,19 @@ public class GradeReportView extends javax.swing.JFrame {
             }
         });
 
-        attachScoreGraphButton.setText(resourceMap.getString("attachScoreGraphButton.text")); // NOI18N
+        attachScoreGraphButton.setText("Attach Student Score Graph");
         attachScoreGraphButton.setName("attachScoreGraphButton"); // NOI18N
 
-        attachHistButton.setText(resourceMap.getString("attachHistButton.text")); // NOI18N
+        attachHistButton.setText("Attach Assignment Historgrams");
         attachHistButton.setName("attachHistButton"); // NOI18N
 
-        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+        jLabel4.setText("<html><b>To</b></html>");
         jLabel4.setName("jLabel4"); // NOI18N
 
         _toText.setEditable(false);
-        _toText.setText(resourceMap.getString("_toText.text")); // NOI18N
         _toText.setName("_toText"); // NOI18N
 
-        sendToOtherButton.setText(resourceMap.getString("sendToOtherButton.text")); // NOI18N
+        sendToOtherButton.setText("Email to Other Address");
         sendToOtherButton.setName("sendToOtherButton"); // NOI18N
         sendToOtherButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -271,10 +267,10 @@ public class GradeReportView extends javax.swing.JFrame {
 
         menuBar.setName("jMenuBar1"); // NOI18N
 
-        fileMenu.setText(resourceMap.getString("jMenu1.text")); // NOI18N
+        fileMenu.setText("File");
         fileMenu.setName("jMenu1"); // NOI18N
 
-        closeMenuItem.setText(resourceMap.getString("closeMenuItem.text")); // NOI18N
+        closeMenuItem.setText("Close");
         closeMenuItem.setName("closeMenuItem"); // NOI18N
         closeMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -285,7 +281,7 @@ public class GradeReportView extends javax.swing.JFrame {
 
         menuBar.add(fileMenu);
 
-        editMenu.setText(resourceMap.getString("jMenu2.text")); // NOI18N
+        editMenu.setText("Edit");
         editMenu.setName("jMenu2"); // NOI18N
         menuBar.add(editMenu);
 

@@ -115,36 +115,35 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
 
         setName("Form"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(gradesystem.GradeSystemApp.class).getContext().getResourceMap(AssignmentChartPanel.class);
-        jLabel1.setForeground(resourceMap.getColor("jLabel1.foreground")); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(30, 30, 30));
         jLabel1.setText("<html><b>Number of Students</b></html>");
         jLabel1.setName("jLabel1"); // NOI18N
 
-        medianLabel.setForeground(resourceMap.getColor("medianLabel.foreground")); // NOI18N
-        medianLabel.setText(resourceMap.getString("medianLabel.text")); // NOI18N
+        medianLabel.setForeground(new java.awt.Color(30, 30, 30));
+        medianLabel.setText("0");
         medianLabel.setName("medianLabel"); // NOI18N
 
-        jLabel5.setForeground(resourceMap.getColor("jLabel5.foreground")); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(30, 30, 30));
         jLabel5.setText("<html><b>Median</b></html>");
         jLabel5.setName("jLabel5"); // NOI18N
 
-        nLabel.setForeground(resourceMap.getColor("nLabel.foreground")); // NOI18N
-        nLabel.setText(resourceMap.getString("nLabel.text")); // NOI18N
+        nLabel.setForeground(new java.awt.Color(30, 30, 30));
+        nLabel.setText("0");
         nLabel.setName("nLabel"); // NOI18N
 
-        stdDevLabel.setForeground(resourceMap.getColor("stdDevLabel.foreground")); // NOI18N
-        stdDevLabel.setText(resourceMap.getString("stdDevLabel.text")); // NOI18N
+        stdDevLabel.setForeground(new java.awt.Color(30, 30, 30));
+        stdDevLabel.setText("0");
         stdDevLabel.setName("stdDevLabel"); // NOI18N
 
-        jLabel7.setForeground(resourceMap.getColor("jLabel7.foreground")); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(30, 30, 30));
         jLabel7.setText("<html><b>Standard Deviation</b></html>");
         jLabel7.setName("jLabel7"); // NOI18N
 
-        meanLabel.setForeground(resourceMap.getColor("meanLabel.foreground")); // NOI18N
-        meanLabel.setText(resourceMap.getString("meanLabel.text")); // NOI18N
+        meanLabel.setForeground(new java.awt.Color(30, 30, 30));
+        meanLabel.setText("0");
         meanLabel.setName("meanLabel"); // NOI18N
 
-        jLabel3.setForeground(resourceMap.getColor("jLabel3.foreground")); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(30, 30, 30));
         jLabel3.setText("<html><b>Mean / Average</b></html>");
         jLabel3.setName("jLabel3"); // NOI18N
 
