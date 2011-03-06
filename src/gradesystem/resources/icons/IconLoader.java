@@ -317,7 +317,7 @@ public class IconLoader
      * This method will only generate enum information for files present in all
      * sizes (as specified by {@link IconSize}).
      */
-    private static final void generateIconImageEnums()
+    private static final void generateIconImageEnums() throws IOException
     {
         FileExtensionFilter imgExtFilter = new FileExtensionFilter("png");
 

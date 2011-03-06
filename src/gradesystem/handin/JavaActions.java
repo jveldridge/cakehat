@@ -557,8 +557,17 @@ class JavaActions implements ActionProvider
     private static List<ClassInfo> getMainClasses(File unarchiveDir) throws ActionException
     {
         //Get files
-        List<File> classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
+        List<File> classFiles;
+        try
+        {
+            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
                 new FileExtensionFilter("class"));
+        }
+        catch(IOException e)
+        {
+            throw new ActionException("Unable to access class files", e);
+        }
+
         List<ClassInfo> entryPoints = new ArrayList<ClassInfo>();
 
         for(File classFile : classFiles)
@@ -626,9 +635,16 @@ class JavaActions implements ActionProvider
     private static void deleteCompiledFiles(File unarchiveDir) throws ActionException
     {
         //Get all compiled files
-        //Do NOT use the inclusion filter as these are generated files
-        Collection<File> compiledFiles = Allocator.getFileSystemUtilities().
+        Collection<File> compiledFiles;
+        try
+        {
+            compiledFiles = Allocator.getFileSystemUtilities().
                 getFiles(unarchiveDir, new FileExtensionFilter("class"));
+        }
+        catch(IOException e)
+        {
+            throw new ActionException("Unable to access class files", e);
+        }
 
         //Keep track of success of deleting all of the files
         ArrayList<File> undeleteableFiles = new ArrayList<File>();
@@ -687,7 +703,17 @@ class JavaActions implements ActionProvider
 
         //Get all of the Java files that are allowed by the inclusion filter
         FileFilter javaFilter = new FileExtensionFilter("java");
-        List<File> files = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, javaFilter);
+        
+        List<File> files;
+        try
+        {
+            files = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, javaFilter);
+        }
+        catch(IOException e)
+        {
+            throw new ActionException("Unable to access java files", e);
+        }
+
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 
         //Compile
@@ -829,5 +855,4 @@ class JavaActions implements ActionProvider
             return _className;
         }
     }
-
 }

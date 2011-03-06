@@ -12,6 +12,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -105,7 +106,13 @@ public class SinglePartPanel extends JPanel {
             
             DistributablePart dp = (DistributablePart) p;
 
-            _numHandinsLabel.updateValue(dp.getHandin().getHandinNames().size());
+            try {
+                _numHandinsLabel.updateValue(dp.getHandin().getHandinNames().size());
+            } catch (IOException e) {
+                _numHandinsLabel.setUnknownValue();
+                new ErrorView(e, "Could not determine the number of handins for " +
+                        "part " + p.getName() + " of assignment " + p.getAssignment().getName() + ".");
+            }
 
             try {
                 _numDistributedLabel.updateValue(Allocator.getDatabaseIO().getAllAssignedGroups(dp).size());

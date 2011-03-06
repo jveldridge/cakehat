@@ -11,7 +11,6 @@ import utils.system.NativeException;
 
 /**
  * Utility methods for interacting with the file system.
- *
  */
 public interface FileSystemUtilities
 {
@@ -185,8 +184,9 @@ public interface FileSystemUtilities
      * @param file
      * @param filter
      * @return
+     * @throws IOException
      */
-    public List<File> getFiles(File file, FileFilter filter);
+    public List<File> getFiles(File file, FileFilter filter) throws IOException;
 
     /**
      * Returns all files that satisfy the filter. If the file is a directory
@@ -197,6 +197,7 @@ public interface FileSystemUtilities
      * @param filter
      * @param comparator
      * @return
+     * @throws IOException
      */
-    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator);
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException;
 }

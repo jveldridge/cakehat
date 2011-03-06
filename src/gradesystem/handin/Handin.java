@@ -7,6 +7,7 @@ import gradesystem.config.TimeInformation;
 import gradesystem.database.Group;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class Handin
      *
      * @return handins
      */
-    private List<File> getHandins()
+    private List<File> getHandins() throws IOException
     {
         //If handins have not been requested yet, load them
         if(_handins == null)
@@ -59,7 +60,16 @@ public class Handin
             File handinPath = Allocator.getPathServices().getHandinDir(this);
             FileFilter handinFilter = Allocator.getArchiveUtilities().getSupportedFormatsFilter();
 
-            _handins = ImmutableList.copyOf(Allocator.getFileSystemUtilities().getFiles(handinPath, handinFilter));
+            try
+            {
+                _handins = ImmutableList.copyOf(
+                        Allocator.getFileSystemUtilities().getFiles(handinPath, handinFilter));
+            }
+            catch(IOException e)
+            {
+                throw new IOException("Unable to retrieve handins for " +
+                        "assignment [" + this.getAssignment().getName() + "]", e);
+            }
         }
 
         return _handins;
@@ -73,7 +83,7 @@ public class Handin
      * @param group
      * @return
      */
-    public File getHandin(Group group)
+    public File getHandin(Group group) throws IOException
     {
         //Valid names are the name of any group member or the login of any member
         ArrayList<String> validHandinNames = new ArrayList<String>(group.getMembers());
@@ -81,7 +91,19 @@ public class Handin
 
         //Get all handins for the group
         ArrayList<File> matchingHandins = new ArrayList<File>();
-        for(File handin : this.getHandins())
+        List<File> allHandins;
+        try
+        {
+            allHandins = this.getHandins();
+        }
+        catch(IOException e)
+        {
+            throw new IOException("Unable to retrieve handin for group [" +
+                    group.getName() + "] for assignment [" +
+                    this.getAssignment().getName() + "]", e);
+        }
+
+        for(File handin : allHandins)
         {
             for(String name : validHandinNames)
             {
@@ -112,14 +134,16 @@ public class Handin
 
     /**
      * Returns the names of the files, without extensions, for each handin. This
-     * will either be a student login or the name of a group.
+     * will likely be either be a student login or the name of a group, but this
+     * is not guaranteed - it is entirely dependent on the archive files in the
+     * handin directory.
      *
      * @return
      */
-    public List<String> getHandinNames()
+    public List<String> getHandinNames() throws IOException
     {
         ArrayList<String> logins = new ArrayList<String>();
-        for (File handin : this.getHandins())
+        for(File handin : this.getHandins())
         {
             //Split at the . in the filename
             //So if handin is "jak2.tar", will add the "jak2" part
