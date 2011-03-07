@@ -57,6 +57,7 @@ import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
 import gradesystem.CakehatException;
 import gradesystem.CakehatMain;
+import gradesystem.MissingUserActionException;
 import gradesystem.components.AssignmentTree;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
@@ -185,6 +186,7 @@ public class BackendView extends JFrame
                     _resetDatabaseButton;
     private JButton[] _assignmentButtons, _generalCommandsButtons, _studentButtons;
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
+    private JLabel _messageLabel;
     private AssignmentTree _assignmentTree;
     private GenericJList<String> _studentList;
     private JTextField _filterField;
@@ -488,6 +490,11 @@ public class BackendView extends JFrame
                                                            MULTI_PANEL_LABEL_SIZE.height - 15);
     private void initMultiPanel(JPanel panel)
     {
+        //general message label
+        _messageLabel = new JLabel();
+        _messageLabel.setPreferredSize(MULTI_PANEL_LABEL_SIZE);
+        panel.add(_messageLabel);
+
         //Student label
         _selectedStudentLabel = new SelectedLabel("Selected Student", "students selected");
         _selectedStudentLabel.setPreferredSize(MULTI_PANEL_LABEL_SIZE);
@@ -1330,16 +1337,19 @@ public class BackendView extends JFrame
             Group group = null;
             try {
                 group = this.getGroup(asgn, studentLogin);
+                _singleSelectionPanel.updateView(studentLogin, group, asgn);
+
+                if (selection.get(asgn).size() == 1 && getSingleSelectedDP(selection) == null) {
+                    _singleSelectionPanel.selectPart(selection.get(asgn).iterator().next());
+                }
+
+                _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
+            } catch (MissingUserActionException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
             } catch (CakehatException ex) {
                 new ErrorView(ex);
             }
-            _singleSelectionPanel.updateView(studentLogin, group, asgn);
 
-            if (selection.get(asgn).size() == 1 && getSingleSelectedDP(selection) == null) {
-                _singleSelectionPanel.selectPart(selection.get(asgn).iterator().next());
-            }
-
-            _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
         }
         //if one part and no students selected
         else if (getSingleSelectedPart(selection) != null && selectedStudents.isEmpty()) {
@@ -1894,6 +1904,8 @@ public class BackendView extends JFrame
     }
     
     private void assignmentTreeValueChanged(Map<Assignment, List<Part>> selection) {
+        _messageLabel.setText("");
+        _studentList.setEnabled(true);
 
         //get Group objects
         for (Assignment asgn : selection.keySet()) {
@@ -1923,6 +1935,19 @@ public class BackendView extends JFrame
             
         }
 
+        //if any selected assignment has groups and groups have not yet been created,
+        //disable the student list and clear its selection since no student-related
+        //backend functionality works without groups set
+        for (Assignment asgn : selection.keySet()) {
+            if (asgn.hasGroups()
+                    && _groupsCache.get(asgn).isEmpty()) {
+                _studentList.clearSelection();
+                _studentList.setEnabled(false);
+                _messageLabel.setText("NOTE: No groups have yet been created for this assignment.");
+                break;
+            }
+        }
+
         updateGUI(selection);
     }
 
@@ -1940,6 +1965,12 @@ public class BackendView extends JFrame
             }
         }
 
+        if (!_groupsCache.get(asgn).containsKey(studentLogin)) {
+            throw new CakehatException("Could not retrieve group for student " +
+                                       studentLogin + " on assignment " + asgn + ". " +
+                                       "Check to make sure that the student has been " +
+                                       "assigned to a group.");
+        }
         return _groupsCache.get(asgn).get(studentLogin);
     }
 

@@ -7,10 +7,6 @@ package gradesystem;
  */
 public class CakehatException extends Exception {
 
-    public CakehatException() {
-        super();
-    }
-
     public CakehatException(String msg) {
         super(msg);
     }
@@ -22,5 +18,5 @@ public class CakehatException extends Exception {
     public CakehatException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
+    
 }
