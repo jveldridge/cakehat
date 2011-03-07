@@ -43,10 +43,6 @@ public class GradeReportView extends javax.swing.JFrame {
     public GradeReportView(Map<Assignment, List<Part>> asgnParts, Collection<String> students) {
         initComponents();
 
-        //graph generation has not yet been converted to use Groups and DistributableParts
-        attachScoreGraphButton.setVisible(false);
-        attachHistButton.setVisible(false);
-
         _asgnParts = asgnParts;
         _students = students;
 
@@ -397,16 +393,15 @@ public class GradeReportView extends javax.swing.JFrame {
                     continue;
                 }
 
-                for (Part p : a.getParts()) {
-                    try {
-                        AssignmentChartPanel acp = new AssignmentChartPanel();
-                        acp.updateChartData(p, groups);
-                        fullFileList.add(new File(".tmpdata/" + a.getName() + "_" + p.getName() + ".png"));
-                        ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
-                    } catch (IOException ex) {
-                        new ErrorView(ex, "Could not generate histogram image for assignment "
-                                + a.getName() + ": " + p.getName());
-                    }
+                try {
+                    AssignmentChartPanel acp = new AssignmentChartPanel();
+                    acp.updateChartData(a, groups);
+                    File tmp = new File(Allocator.getPathServices().getUserWorkspaceDir(), a.getName() + ".png");
+                    fullFileList.add(tmp);
+                    ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
+                } catch (IOException ex) {
+                    new ErrorView(ex, "Could not generate histogram image for assignment " +
+                                       a.getName() + ".");
                 }
             }
         }
@@ -428,11 +423,12 @@ public class GradeReportView extends javax.swing.JFrame {
                     Assignment[] asgns = _asgnParts.keySet().toArray(new Assignment[0]);
                     Arrays.sort(asgns);
                     scp.updateChart(student, asgns);
-                    fullFileList.add(new File(".tmpdata/" + student + ".png"));
+                    File tmp = new File(Allocator.getPathServices().getUserWorkspaceDir(), student + ".png");
+                    fullFileList.add(tmp);
                     ImageIO.write(scp.getImage(600, 250), "png", fullFileList.peekLast());
-                    attachPaths[attachPaths.length - 1] = (new File(".tmpdata/" + student + ".png")).getAbsolutePath();
+                    attachPaths[attachPaths.length - 1] = tmp.getAbsolutePath();
                 } catch (IOException ex) {
-                    new ErrorView(ex, "Could not generate graph for student " + student);
+                    new ErrorView(ex, "Could not generate graph for student " + student + ".");
                 }
             }
 
