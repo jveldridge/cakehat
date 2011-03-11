@@ -36,6 +36,7 @@ import matlabcontrol.RemoteMatlabProxyFactory;
 import utils.FileCopyingException;
 import utils.FileExistsException;
 import utils.FileExtensionFilter;
+import utils.FileSystemUtilities.FileCopyPermissions;
 
 /**
  * Actions that interact with MATLAB. These actions make use of the
@@ -193,7 +194,8 @@ class MatlabActions implements ActionProvider
                                 destination = unarchiveDir;
                             }
 
-                            Allocator.getFileSystemUtilities().copy(source, destination);
+                            Allocator.getFileSystemServices().copy(source, destination,
+                                    false, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
                         }
                         catch(FileCopyingException e)
                         {

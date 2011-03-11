@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import utils.FileCopyingException;
+import utils.FileSystemUtilities.FileCopyPermissions;
 import utils.system.NativeException;
 
 /**
@@ -18,7 +19,7 @@ public class FileSystemServicesImpl implements FileSystemServices
         try
         {
             //Permissions
-            Allocator.getFileSystemUtilities().chmodDefault(file);
+            Allocator.getFileSystemUtilities().chmodDefault(file, true);
 
             //Group owner
             Allocator.getFileSystemUtilities().changeGroup(file,
@@ -35,12 +36,8 @@ public class FileSystemServicesImpl implements FileSystemServices
     {
         try
         {
-            List<File> directoriesMade = Allocator.getFileSystemUtilities().makeDirectory(dir);
-
-            for(File dirMade : directoriesMade)
-            {
-                this.sanitize(dirMade);
-            }
+            List<File> directoriesMade = Allocator.getFileSystemUtilities()
+                    .makeDirectory(dir, Allocator.getCourseInfo().getTAGroup());
 
             return directoriesMade;
         }
@@ -51,50 +48,11 @@ public class FileSystemServicesImpl implements FileSystemServices
         }
     }
 
-    public List<File> copy(File src, File dst) throws ServicesException
+    public List<File> copy(File src, File dst, boolean overwrite,
+        boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        return this.copy(src, dst, false, false);
-    }
-
-    public List<File> copy(File src, File dst, boolean overWrite,
-            boolean preserveDate) throws ServicesException
-    {
-        try
-        {
-            List<File> files = Allocator.getFileSystemUtilities().copy(src, dst, overWrite, preserveDate);
-
-            for(File file : files)
-            {
-                //Change the group owner of the copied file
-                try
-                {
-                    Allocator.getFileSystemUtilities().changeGroup(file,
-                        Allocator.getCourseInfo().getTAGroup(), false);
-                }
-                catch(NativeException e1)
-                {
-                    try
-                    {
-                        Allocator.getFileSystemUtilities().deleteFiles(files);
-                    }
-                    catch(IOException e2)
-                    {
-                        throw new ServicesException("Unable to change the group" +
-                                "for: " + file.getAbsolutePath() + "\n" +
-                                "Unable to delete all copied files and directories.", e1);
-                    }
-
-                    throw new ServicesException("Unable to change the group for: " +
-                            file.getAbsolutePath() + "\n" +
-                            "All copied files and directories have been deleted.", e1);
-                }
-            }
-
-            return files;
-        }
-        catch(FileCopyingException e)
-        {
-            throw new ServicesException(e);
-        }
+        return Allocator.getFileSystemUtilities()
+                .copy(src, dst, overwrite, preserveDate,
+                      Allocator.getCourseInfo().getTAGroup(), copyPermissions);
     }
 }

@@ -30,6 +30,7 @@ import org.apache.bcel.classfile.Method;
 import utils.FileCopyingException;
 import utils.FileExistsException;
 import utils.FileExtensionFilter;
+import utils.FileSystemUtilities.FileCopyPermissions;
 
 /**
  * Actions for the Java programming language. Compilation of Java is done via
@@ -145,7 +146,8 @@ class JavaActions implements ActionProvider
                                 destination = unarchiveDir;
                             }
 
-                            Allocator.getFileSystemUtilities().copy(source, destination);
+                            Allocator.getFileSystemServices().copy(source, destination,
+                                    false, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
 
                             _testedGroups.add(group);
                         }

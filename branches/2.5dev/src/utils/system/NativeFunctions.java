@@ -18,7 +18,8 @@ public class NativeFunctions
     }
 
     /**
-     * Changes the permissions on a file or directory.
+     * Changes the permissions on a file or directory. The user
+     * <strong>must</strong> be the owner of the file or directory.
      *
      * @param file the file or directory
      * @param mode the <b>octal</b> form permission, such as 0770 or 0666
