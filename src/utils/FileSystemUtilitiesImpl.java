@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,6 +24,18 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 {
     private static final NativeFunctions NATIVE_FUNCTIONS = new NativeFunctions();
 
+    private static final Permission[] READ_WRITE_PERMISSIONS = new Permission[]
+    {
+        Permission.OWNER_READ, Permission.OWNER_WRITE,
+        Permission.GROUP_READ, Permission.GROUP_WRITE
+    };
+
+    private static final Permission[] READ_WRITE_EXECUTE_PERMISSIONS = new Permission[]
+    {
+        Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
+        Permission.GROUP_READ, Permission.GROUP_WRITE, Permission.GROUP_EXECUTE
+    };
+
     public Calendar getModifiedDate(File file)
     {
         GregorianCalendar calendar = new GregorianCalendar();
@@ -30,26 +43,20 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
         return calendar;
     }
-
-    public List<File> copy(File src, File dst) throws FileCopyingException
-    {
-        return this.copy(src, dst, false, false);
-    }
-
+    
     public List<File> copy(File src, File dst, boolean overwrite,
-            boolean preserveDate) throws FileCopyingException
+            boolean preserveDate, String groupOwner,
+            FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         List<File> created;
 
         if(src.isFile())
         {
-            created = new ArrayList<File>();
-            this.copyFile(src, dst, overwrite, preserveDate);
-            created.add(dst);
+            created = this.copyFile(src, dst, overwrite, preserveDate, groupOwner, copyPermissions);
         }
         else if(src.isDirectory())
         {
-            created = this.copyDirectory(src, dst, overwrite, preserveDate);
+            created = this.copyDirectory(src, dst, overwrite, preserveDate, groupOwner, copyPermissions);
         }
         else
         {
@@ -73,11 +80,15 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      * @param dstDir
      * @param overwrite
      * @param preserveDate
+     * @param groupOwner
+     * @param copyPermissions
+     *
      * @return all files and directories created in performing the copy
      * @throws IOException
      */
     private List<File> copyDirectory(File srcDir, File dstDir,
-            boolean overwrite, boolean preserveDate) throws FileCopyingException
+            boolean overwrite, boolean preserveDate, String groupOwner,
+            FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         ArrayList<File> created = new ArrayList<File>();
 
@@ -107,29 +118,13 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             List<File> dirsCreated;
             try
             {
-                dirsCreated = this.makeDirectory(dstDir);
+                dirsCreated = this.makeDirectory(dstDir, groupOwner);
                 created.addAll(dirsCreated);
             }
-            catch(IOException e1)
+            catch(IOException e)
             {
-                try
-                {
-                    this.deleteFiles(created);
-                }
-                catch(IOException e2)
-                {
-                    throw new FileCopyingException(true, "Unable to create " +
-                        "directory or parent directory. Unable to delete all" +
-                        "files and directories copied so far.\n" +
-                        "Destination Directory: "+ dstDir.getAbsolutePath(),
-                        e1);
-                }
-
-                throw new FileCopyingException(false, "Unable to create " +
-                        "directory or parent directory. All files and " +
-                        "directories copied so far have been deleted.\n" +
-                        "Destination Directory: "+ dstDir.getAbsolutePath(),
-                        e1);
+                throw this.cleanupFailedCopy(created,
+                        "Unable to create directory or parent directory.", e, srcDir, dstDir);
             }
 
             if(preserveDate)
@@ -138,22 +133,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 {
                     if(!dirCreated.setLastModified(srcDir.lastModified()))
                     {
-                        try
-                        {
-                            this.deleteFiles(created);
-                        }
-                        catch(IOException e)
-                        {
-                            throw new FileCopyingException(true, "Unable to preserve " +
-                                    "modification date. All files copied so far " +
-                                    "could NOT be deleted.\n" +
-                                    "Unable to modify directory: " + dirCreated.getAbsolutePath(), e);
-                        }
-
-                        throw new FileCopyingException(false, "Unable to preserve " +
-                                    "modification date. All files copied so far " +
-                                    "have been deleted.\n" +
-                                    "Unable to modify directory: " + dirCreated.getAbsolutePath());
+                        throw this.cleanupFailedCopy(dirsCreated,
+                                "Unable to preserve modification date", null, srcDir, dstDir);
                     }
                 }
             }
@@ -170,53 +151,25 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             {
                 try
                 {
-                    this.copyFile(entry, entryDst, overwrite, preserveDate);
+                    this.copyFile(entry, entryDst, overwrite, preserveDate, groupOwner, copyPermissions);
                     created.add(entryDst);
                 }
-                catch(FileCopyingException e1)
+                catch(FileCopyingException e)
                 {
-                    try
-                    {
-                        this.deleteFiles(created);
-                    }
-                    catch(IOException e2)
-                    {
-                        throw new FileCopyingException(true, "Unable to copy file. " +
-                                "Unable to delete all files copied so far.", e1);
-                    }
-
-                    if(e1.isPartialCopy())
-                    {
-                        throw new FileCopyingException(true, "Unable to copy file. " +
-                            "Unable to delete all files copied so far.", e1);
-                    }
-                    else
-                    {
-                        throw new FileCopyingException(false, "Unable to copy file. " +
-                            "All files copied so far have been deleted.", e1);
-                    }
+                    throw this.cleanupFailedCopy(created,
+                            "Unable to copy file contained in directory", e, srcDir, dstDir);
                 }
             }
             else if(entry.isDirectory())
             {
                 try
                 {
-                    created.addAll(this.copyDirectory(entry, entryDst, overwrite, preserveDate));
+                    created.addAll(this.copyDirectory(entry, entryDst, overwrite, preserveDate, groupOwner, copyPermissions));
                 }
-                catch(IOException e1)
+                catch(IOException e)
                 {
-                    try
-                    {
-                        this.deleteFiles(created);
-                    }
-                    catch(IOException e2)
-                    {
-                        throw new FileCopyingException(true, "Unable to copy directory. " +
-                                "Unable to delete all files copied so far.", e1);
-                    }
-
-                    throw new FileCopyingException(false, "Unable to copy directory. " +
-                            "All files copied so far have been deleted.", e1);
+                    throw this.cleanupFailedCopy(created,
+                            "Unable to copy directory contained in directory", e, srcDir, dstDir);
                 }
             }
         }
@@ -224,7 +177,14 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return created;
     }
 
-    public void deleteFiles(List<File> files) throws IOException
+    /**
+     * Deletes all files, throwing an informative exception if any of the files
+     * cannot be deleted.
+     *
+     * @param files
+     * @throws IOException
+     */
+    private void deleteFiles(List<File> files) throws IOException
     {
         ArrayList<File> failedToDelete = new ArrayList<File>();
 
@@ -240,6 +200,45 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         {
             throw new IOException("Unable to delete the following" +
                     "files and/or directories: \n" + failedToDelete);
+        }
+    }
+
+    /**
+     * Helper method used by copy methods to delete files if an issue has been
+     * encountered in copying. This should be used when a copy has failed and
+     * an exception must be thrown, but before doing so all of the files created
+     * so far in the copy should be deleted. The exception to be thrown will be
+     * generated and its contents will differ depending on the success of
+     * deleting the files.
+     *
+     * @param toDelete files that need to be deleted
+     * @param message explanation of what went wrong
+     * @param cause the reason that the copy is being aborted, may be <code>null</code>
+     * @param srcFile
+     * @param dstFile
+     *
+     * @returns FileCopyingException an exception built from the parameters
+     * passed and whether deleting the files succeeded
+     */
+    private FileCopyingException cleanupFailedCopy(List<File> toDelete,
+            String message, Throwable cause, File srcFile, File dstFile)
+    {
+        try
+        {
+            this.deleteFiles(toDelete);
+
+            return new FileCopyingException(false, message + " "  +
+                "The files and/or directories created in the copy have been" +
+                "deleted.\n" +
+                "Source File: " + srcFile + "\n" +
+                "Destination File: " + dstFile, cause);
+        }
+        catch(IOException e)
+        {
+            return new FileCopyingException(true, message + " " +
+                "Unable to delete partially copied files and/or directories.\n" +
+                "Source File: " + srcFile + "\n" +
+                "Destination File: " + dstFile, cause);
         }
     }
 
@@ -276,17 +275,28 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
-    public List<File> makeDirectory(File dir) throws IOException
+    public List<File> makeDirectory(File dir, String groupOwner) throws IOException
     {
         ArrayList<File> dirsCreated = new ArrayList<File>();
 
         if(dir != null && !dir.exists())
         {
-            dirsCreated.addAll(this.makeDirectory(dir.getParentFile()));
+            dirsCreated.addAll(this.makeDirectory(dir.getParentFile(), groupOwner));
 
             if(!dir.mkdir())
             {
                 throw new IOException("Unable to create directory: " + dir.getAbsolutePath());
+            }
+
+            try
+            {
+                this.chmod(dir, false, READ_WRITE_EXECUTE_PERMISSIONS);
+                this.changeGroup(dir, groupOwner, false);
+            }
+            catch(NativeException e)
+            {
+                throw new IOException("Unable to set correct permissions and " +
+                        "ownership for directory: " + dir.getAbsolutePath(), e);
             }
 
             dirsCreated.add(dir);
@@ -304,13 +314,21 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      * @param dstFile
      * @param overrite
      * @param preserveDate
-     * @throws IOException
+     * @param groupOwner
+     * @param copyPermissions
+     *
+     * @throws FileCopyingException
+     *
+     * @return
      */
-    private void copyFile(File srcFile, File dstFile, boolean overwrite,
-            boolean preserveDate) throws FileCopyingException
+    private List<File> copyFile(File srcFile, File dstFile, boolean overwrite,
+            boolean preserveDate, String groupOwner,
+            FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        //Perform validation
+        ArrayList<File> created = new ArrayList<File>();
 
+        //Perform validation
+        
         if(!srcFile.exists())
         {
             throw new FileCopyingException(false, "Source file cannot be copied " +
@@ -342,6 +360,20 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
         }
 
+        //If the destination location needs directories to be created
+        if(!dstFile.getParentFile().exists())
+        {
+            try
+            {
+                created.addAll(makeDirectory(dstFile.getParentFile(), groupOwner));
+            }
+            catch(IOException e)
+            {
+                throw new FileCopyingException(false, "Unable to create the " +
+                        "necessary directories in order to perform the copy.", e);
+            }
+        }
+
         //Attempt to copy
         FileInputStream fis = null;
         FileOutputStream fos = null;
@@ -364,77 +396,109 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
         catch(IOException e)
         {
-            //Attempt to delete partially copied file
-            if(dstFile.exists() && !dstFile.delete())
+            if(dstFile.exists())
             {
-                throw new FileCopyingException(true, "Error occurred during " +
-                        "copying file. Unable to delete partially copied file.\n" +
-                        "Source File: " + srcFile.getAbsolutePath() + "\n" +
-                        "Destination File: " + dstFile.getAbsolutePath() + "\n",
-                        e);
+                created.add(dstFile);
             }
 
-            throw new FileCopyingException(false, "Error occurred during " +
-                    "copying file. Partially copied file was deleted.\n" +
-                    "Source File: " + srcFile.getAbsolutePath() + "\n" +
-                    "Destination File: " + dstFile.getAbsolutePath() + "\n",
-                    e);
+            this.cleanupFailedCopy(created,
+                    "Error occurred during copying the file.", e, srcFile, dstFile);
         }
         finally
         {
             //Attempt to close the streams and channels, but if it fails that
-            //does not actually mean anything went wrong with copyiny, so
-            //there is no need to do anything about it
+            //does not actually mean anything went wrong with copying, so there
+            //is no need to do anything about it
             try
             {
-                if (output != null) {output.close();}
-                if (fos != null) {fos.close();}
-                if (input != null) {input.close();}
-                if (input != null) {fis.close();}
+                if(output != null)
+                {
+                    output.close();
+                }
+                if(fos != null)
+                {
+                    fos.close();
+                }
+                if(input != null)
+                {
+                    input.close();
+                }
+                if(input != null)
+                {
+                    fis.close();
+                }
             }
             catch(IOException e) { }
         }
 
+        //File has now been created
+        created.add(dstFile);
+
         //If failed to copy the entire file
         if(srcFile.length() != dstFile.length())
         {
-            if(dstFile.delete())
-            {
-                throw new FileCopyingException(false, "Unable to copy the full " +
-                        "content of the file. The destination file has been deleted.\n" +
-                        "Source File: " + srcFile + "\n" +
-                        "Destination File: " + dstFile);
-            }
-            else
-            {
-                throw new FileCopyingException(true, "Unable to copy the full " +
-                        "content of the file. The destination file could NOT be deleted.\n" +
-                        "Source File: " + srcFile + "\n" +
-                        "Destination File: " + dstFile);
-            }
+            throw this.cleanupFailedCopy(created,
+                    "Unable to copy the full content of the file.", null, srcFile, dstFile);
         }
 
-        //If requestd, set the destination's modified date to that of the source
+        //If requested, set the destination's modified date to that of the source
         if(preserveDate)
         {
             if(!dstFile.setLastModified(srcFile.lastModified()))
             {
-                if(dstFile.delete())
-                {
-                    throw new FileCopyingException(false, "Unable to preserve the " +
-                        "modification date. The destination file has been deleted.\n" +
-                        "Source File: " + srcFile + "\n" +
-                        "Destination File: " + dstFile);
-                }
-                else
-                {
-                    throw new FileCopyingException(true, "Unable to preserve the " +
-                        "modification date. The destination file could NOT be deleted.\n" +
-                        "Source File: " + srcFile + "\n" +
-                        "Destination File: " + dstFile);
-                }
+                throw this.cleanupFailedCopy(created,
+                        "Unable to preserve the modification date.", null, srcFile, dstFile);
             }
         }
+
+        //Set the specified group owner
+        try
+        {
+            this.changeGroup(dstFile, groupOwner, false);
+        }
+        catch(NativeException e)
+        {
+            throw this.cleanupFailedCopy(created,
+                    "Unable to set the group owner.", e, srcFile, dstFile);
+        }
+
+        //Set the specified permissions
+        Permission[] permissions;
+        if(copyPermissions == FileCopyPermissions.READ_WRITE ||
+            (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE &&
+             !srcFile.canExecute()))
+        {
+            permissions = READ_WRITE_PERMISSIONS;
+        }
+        else if(copyPermissions == FileCopyPermissions.READ_WRITE_EXECUTE ||
+                 (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE &&
+                  srcFile.canExecute()))
+        {
+            permissions = READ_WRITE_EXECUTE_PERMISSIONS;
+        }
+        //This should never arise, but if another FileCopyPermission enum value
+        //was added and this code was not updated then this block could be reached
+        else
+        {
+            throw this.cleanupFailedCopy(created,
+                    "Invalid " + FileCopyPermissions.class.getCanonicalName() +
+                    ": " + copyPermissions + ".", null, srcFile, dstFile);
+        }
+
+        try
+        {
+            this.chmod(dstFile, false, permissions);
+        }
+        catch(NativeException e)
+        {
+            throw this.cleanupFailedCopy(created,
+                    "Unable to set permissions: " + Arrays.toString(permissions) + ".",
+                    e, srcFile, dstFile);
+        }
+
+        created.add(dstFile);
+
+        return created;
     }
 
     public String readFile(File file) throws FileNotFoundException, IOException
@@ -469,18 +533,11 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         this.chmod(file, recursive, modeValue);
     }
 
-    public void chmodDefault(File file) throws NativeException
-    {
-        this.chmodDefault(file, true);
-    }
-
     public void chmodDefault(File file, boolean recursive) throws NativeException
     {
         if(file.isDirectory())
         {
-            this.chmod(file, false,
-                    Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
-                    Permission.GROUP_READ, Permission.GROUP_WRITE, Permission.GROUP_EXECUTE);
+            this.chmod(file, false, READ_WRITE_EXECUTE_PERMISSIONS);
 
             if(recursive)
             {
@@ -492,12 +549,19 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
         else
         {
-            this.chmod(file, false,
-                    Permission.OWNER_READ, Permission.OWNER_WRITE,
-                    Permission.GROUP_READ, Permission.GROUP_WRITE);
+            this.chmod(file, false, READ_WRITE_PERMISSIONS);
         }
     }
 
+    /**
+     * Changes the permissions of a file. The user <strong>must</strong> be the
+     * owner of the file or else a {@link NativeException} will be thrown.
+     *
+     * @param file
+     * @param recursive
+     * @param mode the permission mode, an octal value
+     * @throws NativeException
+     */
     private void chmod(File file, boolean recursive, int mode) throws NativeException
     {
         NATIVE_FUNCTIONS.chmod(file, mode);

@@ -24,6 +24,8 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import utils.FileCopyingException;
+import utils.FileSystemUtilities.FileCopyPermissions;
 
 public class RubricManagerImpl implements RubricManager {
 
@@ -300,12 +302,6 @@ public class RubricManagerImpl implements RubricManager {
             for (DistributablePart part : distParts) {
                 File template = part.getRubricTemplate();
 
-                //ensure that appropriate rubric directory exists
-                File partRubricDir = Allocator.getPathServices().getGMLDir(part);
-                if (!partRubricDir.exists()) {
-                    Allocator.getFileSystemServices().makeDirectory(partRubricDir);
-                }
-
                 for (Group group : toDistribute) {
                     //if rubric already exists and not in overwrite mode, go on
                     //to next Group
@@ -314,17 +310,14 @@ public class RubricManagerImpl implements RubricManager {
                     }
 
                     File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
-                    List<File> copiedFiles = Allocator.getFileSystemServices().copy(template, gmlFile, true, false);
-                    for (File file : copiedFiles) {
-                        Allocator.getFileSystemServices().sanitize(file);
-                    }
+                    Allocator.getFileSystemServices().copy(template, gmlFile, true, false, FileCopyPermissions.READ_WRITE);
 
                     numDistributedSoFar++;
                     double fractionDone = (double) numDistributedSoFar / (double) numToDistribute;
                     requester.updatePercentDone((int) (fractionDone * 100));
                 }
             }
-        } catch (ServicesException ex) {
+        } catch (FileCopyingException ex) {
             throw new RubricException("Could not distribute rubrics for " +
                                       "assignment " + handin.getAssignment() + ".", ex);
         }

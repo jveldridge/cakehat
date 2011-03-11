@@ -1,8 +1,10 @@
 package gradesystem.services;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
+import utils.FileCopyingException;
+import utils.FileSystemUtilities;
+import utils.FileSystemUtilities.FileCopyPermissions;
 
 /**
  * A service that interacts with the file system. Implementations make use of
@@ -37,41 +39,20 @@ public interface FileSystemServices
     public List<File> makeDirectory(File dir) throws ServicesException;
 
     /**
-     * Copies a file or a directory and then sets the correct group owner for
-     * all copied files and directories.
-     * <br/><br/>
-     * If <code>src</code> is a directory then it recursively copies all of its
-     * contents into <code>dst</code>. Directories will be merged such that if
-     * the destination directory or a directory in the destination directory
-     * needs to be created and already exists, it will not be deleted. If
-     * <code>overWrite</code> is <code>true</code> then files maybe overwritten
-     * in the copying process.
+     * This method is identical to
+     * {@link FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.CopyFilePermissionMode)}
+     * with the TA group set as the <code>groupOwner</code>.
      *
      * @param src
      * @param dst
-     * @param overWrite
+     * @param overwrite
      * @param preserveDate
-     * @return all files and directories created during the copy
-     * @throws IOException
+     * @param copyPermissions
+     * @return
+     * @throws FileCopyingException
      *
-     * @return all files and directories created
-     *
-     * @see #copy(java.io.File, java.io.File)
+     * @see FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.FileCopyPermissions) 
      */
-    public List<File> copy(File src, File dst, boolean overWrite,
-            boolean preserveDate) throws ServicesException;
-
-    /**
-     * Equivalent to <code>copy(src, dst, false, false)</code>.
-     *
-     * @param src
-     * @param dst
-     * @return all files and directories created during the copy
-     * @throws IOException
-     *
-     * @return all files and directories created
-     *
-     * @see #copy(java.io.File, java.io.File, boolean, boolean)
-     */
-    public List<File> copy(File src, File dst) throws ServicesException;
+    public List<File> copy(File src, File dst, boolean overwrite,
+            boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException;
 }

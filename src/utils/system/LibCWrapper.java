@@ -54,7 +54,8 @@ class LibCWrapper
 
     /**
      * Changes the permissions for the file or directory specified by the
-     * <code>filepath</code>.
+     * <code>filepath</code>. The user <strong>must</strong> be the owner of
+     * the file or directory specified by <code>filepath</code>.
      *
      * @param filepath
      * @param mode
@@ -68,8 +69,9 @@ class LibCWrapper
         }
         catch(LastErrorException e)
         {
-            String errorMsg = "Failure to change permissions to: " + mode +
-                              " (in octal), for: " + filepath;
+            String errorMsg = "Failure to change permissions to: " +
+                               Integer.toOctalString(mode) + " " +
+                               "(printed as octal), for: " + filepath;
             throw new NativeException(e, errorMsg);
         }
     }
