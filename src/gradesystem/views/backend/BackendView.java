@@ -75,6 +75,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import utils.FileCopyingException;
+import utils.FileSystemUtilities.FileCopyPermissions;
 import utils.system.NativeException;
 
 /**
@@ -256,9 +258,10 @@ public class BackendView extends JFrame
                     try
                     {
                         Allocator.getFileSystemServices()
-                            .copy(Allocator.getPathServices().getDatabaseFile(), backupFile);
+                            .copy(Allocator.getPathServices().getDatabaseFile(),
+                            backupFile, false, false, FileCopyPermissions.READ_WRITE);
                     }
-                    catch(ServicesException ex)
+                    catch(FileCopyingException ex)
                     {
                         new ErrorView(ex, "Unable to backup database.");
                     }
