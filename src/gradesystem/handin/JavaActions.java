@@ -31,6 +31,7 @@ import utils.FileCopyingException;
 import utils.FileExistsException;
 import utils.FileExtensionFilter;
 import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Actions for the Java programming language. Compilation of Java is done via
@@ -147,7 +148,8 @@ class JavaActions implements ActionProvider
                             }
 
                             Allocator.getFileSystemServices().copy(source, destination,
-                                    false, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
+                                    OverwriteMode.FAIL_ON_EXISTING, false,
+                                    FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
 
                             _testedGroups.add(group);
                         }

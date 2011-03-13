@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import utils.FileCopyingException;
 import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 
 public class RubricManagerImpl implements RubricManager {
 
@@ -291,7 +292,7 @@ public class RubricManagerImpl implements RubricManager {
     @Override
     public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
                                   int minsLeniency, DistributionRequester requester,
-                                  boolean overwrite) throws RubricException {
+                                  OverwriteMode overwrite) throws RubricException {
         this.storeHandinStatuses(handin.getAssignment(), toDistribute, minsLeniency);
 
         Collection<DistributablePart> distParts = handin.getAssignment().getDistributableParts();
@@ -303,14 +304,9 @@ public class RubricManagerImpl implements RubricManager {
                 File template = part.getRubricTemplate();
 
                 for (Group group : toDistribute) {
-                    //if rubric already exists and not in overwrite mode, go on
-                    //to next Group
-                    if (!overwrite && this.hasRubric(part, group)) {
-                        continue;
-                    }
-
                     File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
-                    Allocator.getFileSystemServices().copy(template, gmlFile, true, false, FileCopyPermissions.READ_WRITE);
+                    Allocator.getFileSystemServices().copy(template, gmlFile,
+                            overwrite, false, FileCopyPermissions.READ_WRITE);
 
                     numDistributedSoFar++;
                     double fractionDone = (double) numDistributedSoFar / (double) numToDistribute;

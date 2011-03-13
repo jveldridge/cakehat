@@ -6,6 +6,7 @@ import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
 import java.util.Collection;
 import java.util.Map;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Don't directly create this class, access it via the Allocator.
@@ -123,7 +124,7 @@ public interface RubricManager
      */
     public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
                                   int minsLeniency, DistributionRequester requester,
-                                  boolean overwrite) throws RubricException;
+                                  OverwriteMode overwrite) throws RubricException;
 
     
 }

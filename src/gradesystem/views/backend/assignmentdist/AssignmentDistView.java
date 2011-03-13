@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Provides an interface for creating a distribution for an assignment.
@@ -528,7 +529,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                                                                    groups,
                                                                    minutesOfLeniency,
                                                                    AssignmentDistView.this,
-                                                                   true);
+                                                                   OverwriteMode.REPLACE_EXISTING);
                     
                     _progressDialog.dispose();
                     JOptionPane.showMessageDialog(AssignmentDistView.this, "Grading setup complete.",

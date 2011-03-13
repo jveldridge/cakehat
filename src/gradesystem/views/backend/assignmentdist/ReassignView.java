@@ -42,6 +42,7 @@ import gradesystem.components.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Provides an interface to allow administrators to manually distribute
@@ -631,12 +632,6 @@ public class ReassignView extends JFrame {
                                 + " was still in another TA's distribution even-though"
                                 + " they were listed as unassigned.");
                     }
-
-                    //don't need to make rubrics for students who already have them
-                    if (Allocator.getRubricManager().hasRubric(_dp, group)) {
-                        iterator.remove();
-                    }
-
                 }
 
                 //create rubrics for any DPs for which the Group does not already
@@ -644,7 +639,7 @@ public class ReassignView extends JFrame {
                 Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groups,
                                                                Allocator.getConfigurationInfo().getMinutesOfLeniency(),
                                                                DistributionRequester.DO_NOTHING_REQUESTER,
-                                                               false);
+                                                               OverwriteMode.KEEP_EXISTING);
             }
         }
 
@@ -775,7 +770,7 @@ public class ReassignView extends JFrame {
             Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groupsToAssign,
                                                            Allocator.getConfigurationInfo().getMinutesOfLeniency(),
                                                            DistributionRequester.DO_NOTHING_REQUESTER,
-                                                           false);
+                                                           OverwriteMode.KEEP_EXISTING);
         }
 
         //assigning to UNASSIGNED from a TA

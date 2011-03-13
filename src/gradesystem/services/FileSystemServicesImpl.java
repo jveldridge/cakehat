@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import utils.FileCopyingException;
 import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 import utils.system.NativeException;
 
 /**
@@ -48,7 +49,7 @@ public class FileSystemServicesImpl implements FileSystemServices
         }
     }
 
-    public List<File> copy(File src, File dst, boolean overwrite,
+    public List<File> copy(File src, File dst, OverwriteMode overwrite,
         boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         return Allocator.getFileSystemUtilities()

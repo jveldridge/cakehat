@@ -75,6 +75,30 @@ public interface FileSystemUtilities
     }
 
     /**
+     * Different options for overwriting files when copying.
+     */
+    public static enum OverwriteMode
+    {
+        /**
+         * If a file exists with the path that a file to be copied would have,
+         * overwrite it with the file to be copied.
+         */
+        REPLACE_EXISTING,
+        
+        /**
+         * If a file exists with the path that a file to be copied would have,
+         * do not overwrite the file.
+         */
+        KEEP_EXISTING,
+
+        /**
+         * If a file exists with the path that a file to be copied would have,
+         * abort copying by throwing an exception.
+         */
+        FAIL_ON_EXISTING;
+    }
+
+    /**
      * Returns a Calendar that represents the last modified date and time
      * of the file.
      *
@@ -111,7 +135,7 @@ public interface FileSystemUtilities
      * @return all files and directories created during the copy
      * @throws FileCopyingException
      */
-    public List<File> copy(File src, File dst, boolean overwrite,
+    public List<File> copy(File src, File dst, OverwriteMode overwrite,
             boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException;
     

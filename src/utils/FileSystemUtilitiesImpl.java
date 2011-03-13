@@ -44,7 +44,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return calendar;
     }
     
-    public List<File> copy(File src, File dst, boolean overwrite,
+    public List<File> copy(File src, File dst, OverwriteMode overwrite,
             boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
@@ -87,7 +87,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      * @throws IOException
      */
     private List<File> copyDirectory(File srcDir, File dstDir,
-            boolean overwrite, boolean preserveDate, String groupOwner,
+            OverwriteMode overwrite, boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         ArrayList<File> created = new ArrayList<File>();
@@ -151,8 +151,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             {
                 try
                 {
-                    this.copyFile(entry, entryDst, overwrite, preserveDate, groupOwner, copyPermissions);
-                    created.add(entryDst);
+                    created.addAll(this.copyFile(entry, entryDst, overwrite, preserveDate, groupOwner, copyPermissions));
                 }
                 catch(FileCopyingException e)
                 {
@@ -312,7 +311,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      *
      * @param srcFile
      * @param dstFile
-     * @param overrite
+     * @param overwrite
      * @param preserveDate
      * @param groupOwner
      * @param copyPermissions
@@ -321,8 +320,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      *
      * @return
      */
-    private List<File> copyFile(File srcFile, File dstFile, boolean overwrite,
-            boolean preserveDate, String groupOwner,
+    private List<File> copyFile(File srcFile, File dstFile,
+            OverwriteMode overwrite, boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         ArrayList<File> created = new ArrayList<File>();
@@ -345,7 +344,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
         if(dstFile.exists())
         {
-            if(overwrite)
+            if(overwrite == OverwriteMode.REPLACE_EXISTING)
             {
                 if(!dstFile.delete())
                 {
@@ -354,9 +353,19 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                             "Destination file: " + dstFile.getAbsolutePath());
                 }
             }
-            else
+            else if(overwrite == OverwriteMode.FAIL_ON_EXISTING)
             {
                 throw new FileExistsException(false, srcFile, dstFile);
+            }
+            else if(overwrite == OverwriteMode.KEEP_EXISTING)
+            {
+                return created;
+            }
+            else
+            {
+                throw new FileCopyingException(false, "Invalid "
+                        + OverwriteMode.class.getCanonicalName() + ": " +
+                        overwrite + ".");
             }
         }
 
