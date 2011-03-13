@@ -77,6 +77,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import utils.FileCopyingException;
 import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 import utils.system.NativeException;
 
 /**
@@ -259,7 +260,8 @@ public class BackendView extends JFrame
                     {
                         Allocator.getFileSystemServices()
                             .copy(Allocator.getPathServices().getDatabaseFile(),
-                            backupFile, false, false, FileCopyPermissions.READ_WRITE);
+                            backupFile, OverwriteMode.FAIL_ON_EXISTING,
+                            false, FileCopyPermissions.READ_WRITE);
                     }
                     catch(FileCopyingException ex)
                     {

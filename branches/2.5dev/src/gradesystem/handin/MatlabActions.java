@@ -37,6 +37,7 @@ import utils.FileCopyingException;
 import utils.FileExistsException;
 import utils.FileExtensionFilter;
 import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Actions that interact with MATLAB. These actions make use of the
@@ -195,7 +196,8 @@ class MatlabActions implements ActionProvider
                             }
 
                             Allocator.getFileSystemServices().copy(source, destination,
-                                    false, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
+                                    OverwriteMode.FAIL_ON_EXISTING, false,
+                                    FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
                         }
                         catch(FileCopyingException e)
                         {

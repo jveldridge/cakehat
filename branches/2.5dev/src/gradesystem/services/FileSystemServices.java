@@ -5,6 +5,7 @@ import java.util.List;
 import utils.FileCopyingException;
 import utils.FileSystemUtilities;
 import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * A service that interacts with the file system. Implementations make use of
@@ -53,6 +54,6 @@ public interface FileSystemServices
      *
      * @see FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.FileCopyPermissions) 
      */
-    public List<File> copy(File src, File dst, boolean overwrite,
+    public List<File> copy(File src, File dst, OverwriteMode overwrite,
             boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException;
 }
