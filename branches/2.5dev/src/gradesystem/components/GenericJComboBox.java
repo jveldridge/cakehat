@@ -3,6 +3,7 @@ package gradesystem.components;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 
 /**
@@ -38,4 +39,12 @@ public class GenericJComboBox<E> extends JComboBox {
         return objects;
     }
 
+    @Override
+    public E getItemAt(int index) {
+        return (E) super.getItemAt(index);
+    }
+
+    public void setItems(Collection<E> items) {
+        super.setModel(new DefaultComboBoxModel(items.toArray()));
+    }
 }

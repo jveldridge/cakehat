@@ -496,7 +496,7 @@ public class GradingServicesImpl implements GradingServices
 
         new EmailView(students, Allocator.getConfigurationInfo().getNotifyAddresses(),
                       "[" + Allocator.getCourseInfo().getCourse() + "] " + handin.getAssignment().getName() + " Graded",
-                      handin.getAssignment().getName() + " has been graded.", attachments);
+                      handin.getAssignment().getName() + " has been graded.", "submitted grading", attachments);
     }
 
     @Override

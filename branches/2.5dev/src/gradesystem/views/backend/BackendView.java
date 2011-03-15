@@ -416,7 +416,7 @@ public class BackendView extends JFrame
           _chartsButton, _emailReportsButton, _extensionsButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
           _viewReadmeButton, _viewRubricButton, _emailStudentRubric,
-          _printRubricButton, _disableStudentButton
+          _printRubricButton, _disableStudentButton, _exemptionsButton
         };
     }
 
@@ -1142,22 +1142,25 @@ public class BackendView extends JFrame
             {
                 Assignment selectedAsgn = this.getSingleSelectedAssignment(selection);
 
-                //if a single DistributablePart is selected
-                DistributablePart selectedDP = this.getSingleSelectedDP(selection);
+                Group group = null;
+                try {
+                    group = this.getGroup(selectedAsgn, studentLogin);
+                } catch (CakehatException ex) {
+                    new ErrorView(ex);
+                }
+                if (group != null && selection.get(selectedAsgn).isEmpty()) {
+                    _exemptionsButton.setEnabled(true);
+                }
                 
-                if (selectedDP == null) {
+                if (this.getSingleSelectedPart(selection) == null) {
                     if (selectedAsgn.hasHandin()) {
                         _extensionsButton.setEnabled(true);
                     }
                 }
-                else {
-                    Group group = null;
-                    try {
-                        group = this.getGroup(selectedAsgn, studentLogin);
-                    } catch (CakehatException ex) {
-                        new ErrorView(ex);
-                    }
 
+                //if a single DistributablePart is selected
+                DistributablePart selectedDP = this.getSingleSelectedDP(selection);
+                if (selectedDP != null) {
                     if (group != null) {
                         boolean hasHandin = false;
                         try {
@@ -1203,6 +1206,10 @@ public class BackendView extends JFrame
         //if one assignment selected
         if (selection.size() == 1) {
             Assignment selectedAsgn = selection.keySet().iterator().next();
+
+            if (selectedStudents.isEmpty() && selection.get(selectedAsgn).isEmpty()) {
+                _exemptionsButton.setEnabled(true);
+            }
 
             List<DistributablePart> selectedDPs = new LinkedList<DistributablePart>();
             for (Part p : selection.get(selectedAsgn)) {
@@ -1565,7 +1572,16 @@ public class BackendView extends JFrame
     }
 
     private void exemptionsButtonActionPerformed() {
-        JOptionPane.showMessageDialog(this, "This feature is not yet available.");
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+        Group group;
+        try {
+            group = this.getGroup(asgn, _studentList.getSelectedValue());
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
+        }
+        new ExemptionView(asgn, group);
     }
 
     private void openCodeButtonActionPerformed() {
