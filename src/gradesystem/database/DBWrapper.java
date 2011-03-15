@@ -1282,6 +1282,37 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
+    /**
+     * this is a bad implementation.
+     */
+    public Map<Part, Collection<Group>> getAllExemptions(Assignment a) throws SQLException{
+        HashMap<Part, Collection<Group>> result = new HashMap<Part, Collection<Group>>();
+
+        Collection<Group> groups = null;
+        try{
+            groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+        } catch (SQLException ex) {
+            new ErrorView(ex);
+        }
+
+        for (Part p : a.getParts()){
+            for (Group g : groups){
+                String note = this.getExemptionNote(g, p);
+                if (note != null){
+                    if (result.containsKey(p)){
+                        result.get(p).add(g);
+                    }
+                    else{
+                        ArrayList<Group> groupList = new ArrayList<Group>();
+                        groupList.add(g);
+                        result.put(p, groupList);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     @Override
     public String getExemptionNote(Group group, Part part) throws SQLException {
         String result = null;

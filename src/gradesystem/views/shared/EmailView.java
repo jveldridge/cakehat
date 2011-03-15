@@ -22,7 +22,7 @@ import gradesystem.resources.icons.IconLoader.IconSize;
 public class EmailView extends javax.swing.JFrame {
 
     private static String newline = System.getProperty("line.separator");
-
+    private String _action;
     private Map<String,String> _attachments;
     
     /** Creates new form EmailGUI */
@@ -49,7 +49,7 @@ public class EmailView extends javax.swing.JFrame {
         SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
     }
 
-    public EmailView(Collection<String> students, Collection<String> toNotify, String subject, String body, Map<String,String> attachments) {
+    public EmailView(Collection<String> students, Collection<String> toNotify, String subject, String body, String action, Map<String,String> attachments) {
         initComponents();
         this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
         try {
@@ -61,6 +61,8 @@ public class EmailView extends javax.swing.JFrame {
         subjectBox.setText(subject);
         fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain());
         bodyText.setText(body);
+
+        _action = action;
         
         if (attachments == null) {
             attachmentMessage.setText("No attachments will be sent with this message.");
@@ -296,8 +298,8 @@ public class EmailView extends javax.swing.JFrame {
         //send notification of message sent to sender and to the course's notification addresses
         String[] toNotify = notifyBox.getText().replace(" ", "").split("(,|;)");
         
-        String notificationMessage = "At " + now + ", grader " + Allocator.getUserUtilities().getUserLogin() +
-                " submitted grading for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
+        String notificationMessage = "At " + now + ", TA " + Allocator.getUserUtilities().getUserLogin() +
+                " " + _action + " for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
         for (String student : students) {
             student = student.split("@")[0];
             String attachment = "none";

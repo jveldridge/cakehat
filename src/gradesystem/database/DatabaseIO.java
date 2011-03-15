@@ -347,6 +347,15 @@ public interface DatabaseIO {
      */
     public String getExtensionNote(Group group, Handin handin) throws SQLException;
 
+
+    /**
+     * Returns the Map of Part to groups for a specific Assignment a.
+     *
+     * @return a map of exemptions given for the given assignment
+     * @throws SQLException
+     */
+    public Map<Part, Collection<Group>> getAllExemptions(Assignment a) throws SQLException;
+
     /**
      * Returns a string containing a message to indicate why the Group group
      * has been granted an exemption on Part part.
