@@ -1,6 +1,5 @@
 package gradesystem.database;
 
-import gradesystem.components.Student;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
@@ -83,7 +82,7 @@ public interface DatabaseIO {
      * @param students
      * @param taLogin
      */
-    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException;
+    public void blacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException;
 
     /**
      * Removes students in studentLogins from the blacklist of the given TA,

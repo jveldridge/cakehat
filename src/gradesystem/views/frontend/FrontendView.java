@@ -4,7 +4,6 @@ import gradesystem.components.GenericJList;
 import gradesystem.handin.ActionException;
 import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
-import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.config.TA;
 import gradesystem.CakehatAboutBox;
 import java.awt.BorderLayout;
@@ -49,7 +48,12 @@ import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.rubric.RubricSaveListener;
 import gradesystem.views.shared.ErrorView;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collections;
@@ -354,7 +358,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         outerPanel.add(Box.createVerticalStrut(gapSpace), BorderLayout.SOUTH);
         outerPanel.add(Box.createHorizontalStrut(gapSpace), BorderLayout.WEST);
         outerPanel.add(Box.createHorizontalStrut(gapSpace), BorderLayout.EAST);
-        this.add(outerPanel);
+        this.getContentPane().add(outerPanel);
 
         final int contentHeight = 315;
         JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -545,9 +549,27 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Collection<TA> taList = new ArrayList();
-                taList.add(USER);
-                new ModifyBlacklistView(taList);
+                // Invoke later so that the menu has time to dismiss
+                EventQueue.invokeLater(new Runnable()
+                {
+                    public void run()
+                    {
+                        JPanel panel = disableFrame();
+
+                        // Attempt to display the blacklist panel, if the necessary
+                        // database information cannot be retrieved succesfully, do not
+                        // show the blacklist panel
+                        try
+                        {
+                            panel.add(new BlacklistPanel(panel.getPreferredSize(), FrontendView.this));
+                        }
+                        catch(SQLException e)
+                        {
+                            new ErrorView(e, "Unable to modify blacklist");
+                            enableFrame();
+                        }
+                    }
+                });
             }
         });
         menu.add(blacklistItem);
@@ -598,6 +620,130 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
         });
         menu.add(aboutItem);
+    }
+
+    /**
+     * Disables the menu and the content pane. Unlike
+     * {@link JFrame#setEnabled(boolean) } and passing in false, this method
+     * does not disable the glass pane. Instead, the glasspane is made visible
+     * and semi-transparent areas are drawn over the frame's content and
+     * menubar. A panel is returned which content may be put into. That panel
+     * should provide so manner of re-enabling the frame via
+     * {@link #enableFrame() }.
+     *
+     * @return panel to put content into
+     *
+     * @see #enableFrame()
+     */
+    private JPanel disableFrame()
+    {
+        final JPanel glassPane = (JPanel) FrontendView.this.getGlassPane();
+        final Component contentPane = FrontendView.this.getContentPane();
+        final int paddingSize = 15;
+
+        // Disable pane
+        JPanel disablePanel = new JPanel(new BorderLayout(0, 0))
+        {
+            private BufferedImage _contentPaneImage = null;
+
+            @Override
+            protected void paintComponent(Graphics g)
+            {
+                // Turn on anti-aliasing
+                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Disable a component in Swing such that all of its
+                // subcomponents are disabled is an absurdly non-trivial task
+                // To fake this, take the content pane and draw its appearance
+                // to a BufferedImage, then hide the actual content pane and
+                // draw the BufferedImage
+                Rectangle contentPaneBounds = contentPane.getBounds();
+                if(_contentPaneImage == null)
+                {
+                    _contentPaneImage = new BufferedImage(contentPaneBounds.width, contentPaneBounds.height, BufferedImage.TYPE_INT_ARGB);
+                    contentPane.paint(_contentPaneImage.createGraphics());
+                    
+                    // Now hide the content pane
+                    contentPane.setVisible(false);
+                }
+                g.drawImage(_contentPaneImage, contentPaneBounds.x, contentPaneBounds.y, Color.WHITE, this);
+
+                // Draw a semi-transparent gray over everything
+                Rectangle glassPaneBounds = glassPane.getBounds();
+                g.setColor(new Color(192, 192, 192, 200));
+                g.fillRect(glassPaneBounds.x, glassPaneBounds.y, glassPaneBounds.width, glassPaneBounds.height);
+
+                // Draw a semi-transparent rounded rectangle with the top part
+                // off the top of the screen
+                int cornerRadius = 40;
+                int shadingPadding = 10;
+                g.setColor(new Color(128, 128, 128, 200));
+                g.fillRoundRect(paddingSize - shadingPadding,
+                        paddingSize - shadingPadding - cornerRadius,
+                        glassPaneBounds.width - (2 * paddingSize) + 2 * shadingPadding,
+                        glassPaneBounds.height - (2 * paddingSize) + 2 * shadingPadding + cornerRadius,
+                        cornerRadius, cornerRadius);
+            }
+        };
+
+        // Make the glass pane visible, add the disablePanel
+        glassPane.setVisible(true);
+        glassPane.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
+        disablePanel.setPreferredSize(glassPane.getBounds().getSize());
+        glassPane.removeAll();
+        glassPane.add(disablePanel);
+
+        // Entirely disable the menu bar
+        final JMenuBar menuBar = FrontendView.this.getJMenuBar();
+        menuBar.setEnabled(false);
+        for(int i = 0; i < menuBar.getMenuCount(); i++)
+        {
+            menuBar.getMenu(i).setEnabled(false);
+        }
+
+        // Center an overlay panel that will hold the content
+        final Dimension disablePanelSize = disablePanel.getPreferredSize();
+
+        disablePanel.add(Box.createRigidArea(new Dimension(disablePanelSize.width, paddingSize)), BorderLayout.NORTH);
+        disablePanel.add(Box.createRigidArea(new Dimension(disablePanelSize.width, paddingSize)), BorderLayout.SOUTH);
+        disablePanel.add(Box.createRigidArea(new Dimension(paddingSize, disablePanelSize.height)), BorderLayout.WEST);
+        disablePanel.add(Box.createRigidArea(new Dimension(paddingSize, disablePanelSize.height)), BorderLayout.EAST);
+
+        JPanel overlayPanel = new JPanel(new BorderLayout(0, 0));
+        overlayPanel.setBackground(new Color(0, 0, 0, 0));
+        overlayPanel.setPreferredSize(new Dimension(contentPane.getWidth() - 2 * paddingSize,
+                menuBar.getHeight() + contentPane.getHeight() - 2 * paddingSize));
+        disablePanel.add(overlayPanel, BorderLayout.CENTER);
+
+        return overlayPanel;
+    }
+
+    /**
+     * Enables the frame, to be called after a call to {@link #disableFrame() }.
+     * This method is package private to allow for separate classes such as
+     * {@link BlacklistPanel} that are displayed in the glasspane overlay to
+     * dismiss themselves and re-enable the frame.
+     *
+     * @see #disableFrame()
+     */
+    void enableFrame()
+    {
+        // Hide glass pane
+        final JPanel glassPane = (JPanel) FrontendView.this.getGlassPane();
+        glassPane.setVisible(false);
+
+        // Entirely enable the menu bar
+        final JMenuBar menuBar = FrontendView.this.getJMenuBar();
+        menuBar.setEnabled(true);
+        for(int i = 0; i < menuBar.getMenuCount(); i++)
+        {
+            menuBar.getMenu(i).setEnabled(true);
+        }
+
+        // Show the content pane
+        final Component contentPane = FrontendView.this.getContentPane();
+        contentPane.setVisible(true);
     }
 
     /**
@@ -1190,8 +1336,6 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void run()
             {
-                long start = System.currentTimeMillis();
-
                 Map<DistributablePart, List<GroupGradedStatus>> newMap;
                 try
                 {

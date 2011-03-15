@@ -4,7 +4,6 @@ import gradesystem.export.ExportException;
 import gradesystem.handin.ActionException;
 import gradesystem.rubric.RubricException;
 import gradesystem.views.backend.assignmentdist.AssignmentDistView;
-import gradesystem.views.shared.ModifyBlacklistView;
 import gradesystem.views.backend.assignmentdist.ReassignView;
 import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
@@ -1064,18 +1063,6 @@ public class BackendView extends JFrame
         buttonPanel.setPreferredSize(GENERAL_COMMANDS_BUTTON_PANEL_SIZE);
         panel.add(buttonPanel);
 
-        //Modify blacklist
-        _modifyBlacklistButton = this.createButton("Modify Blacklist", IconImage.FORMAT_TEXT_STRIKETHROUGH);
-        _modifyBlacklistButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                modifyBlacklistButtonActionPerformed();
-            }
-
-        });
-        buttonPanel.add(_modifyBlacklistButton);
-
         //Edit configuration
         _editConfigurationButton = this.createButton("Edit Configuration", IconImage.PREFERENCES_SYSTEM);
         _editConfigurationButton.addActionListener(new ActionListener()
@@ -1394,13 +1381,6 @@ public class BackendView extends JFrame
 
     //                          EVENTS BELOW                     //
 
-
-
-
-    private void modifyBlacklistButtonActionPerformed()
-    {
-        new ModifyBlacklistView(Allocator.getConfigurationInfo().getTAs());
-    }
 
     private void editConfigurationButtionActionPerformed()
     {
