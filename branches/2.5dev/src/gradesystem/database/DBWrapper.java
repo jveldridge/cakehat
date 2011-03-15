@@ -6,7 +6,6 @@ import gradesystem.handin.Handin;
 import gradesystem.rubric.TimeStatus;
 import gradesystem.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
-import gradesystem.components.Student;
 import gradesystem.config.Assignment;
 import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
@@ -211,14 +210,14 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException {
+    public void blacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO blacklist "
                         + "('sid', 'tid') VALUES (?, ?)");
 
-            for (Student student : students) {
-                ps.setString(1, student.getLogin());
+            for (String login : studentLogins) {
+                ps.setString(1, login);
                 ps.setString(2, ta.getLogin());
                 ps.addBatch();
             }
