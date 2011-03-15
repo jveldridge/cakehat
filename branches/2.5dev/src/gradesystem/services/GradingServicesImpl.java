@@ -364,15 +364,10 @@ public class GradingServicesImpl implements GradingServices
                 }
                 try {
                     //create groups of one for newly added or enabled students
-                    //and store their handin statuses
                     Allocator.getDatabaseIO().setGroups(asgn, groupsToAdd);
-
-                    Map<Group, HandinStatus> statuses = Allocator.getGradingServices().getHandinStatuses(asgn.getHandin(),
-                            groupsToAdd,
-                            Allocator.getDatabaseIO().getAllExtensions(asgn.getHandin()),
-                            Allocator.getConfigurationInfo().getMinutesOfLeniency());
-
-                    Allocator.getDatabaseIO().setHandinStatuses(asgn.getHandin(), statuses);
+                    
+                    //and store their handin statuses
+                    this.storeHandinStatuses(asgn.getHandin(), groupsToAdd, Allocator.getConfigurationInfo().getMinutesOfLeniency(), true);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not create internally required groups of one in " +
                                       "the database for the newly added and/or enabled students.");
@@ -535,9 +530,7 @@ public class GradingServicesImpl implements GradingServices
         }
     }
 
-
-    @Override
-    public HandinStatus getHandinStatus(Handin handin, Group group, Calendar extension, int minutesOfLeniency) throws ServicesException {
+    private HandinStatus calculateHandinStatus(Handin handin, Group group, Calendar extension, int minutesOfLeniency) throws ServicesException {
         File groupHandin;
         try {
             groupHandin = handin.getHandin(group);
@@ -608,15 +601,39 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public Map<Group, HandinStatus> getHandinStatuses(Handin handin, Collection<Group> groups,
-                                                  Map<Group, Calendar> extensions, int minutesOfLeniency) throws ServicesException {
-        Map<Group, HandinStatus> toReturn = new HashMap<Group, HandinStatus>();
-
-        for (Group group : groups) {
-            toReturn.put(group, getHandinStatus(handin, group, extensions.get(group), minutesOfLeniency));
+    public void storeHandinStatuses(Handin handin, Collection<Group> groups,
+                                    int minutesOfLeniency, boolean overwrite) throws ServicesException {
+        Map<Group, Calendar> extensions;
+        try {
+            extensions = Allocator.getDatabaseIO().getAllExtensions(handin);
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not read extensions for assignment " + handin.getAssignment() + " " +
+                                      "from the database.  Rubrics cannot be distributed because handin " +
+                                      "status cannot be determined.", ex);
         }
 
-        return toReturn;
+        Map<Group, HandinStatus> handinStatuses = new HashMap<Group, HandinStatus>();
+        for (Group group : groups) {
+            try {
+                //if overwrite is true or if group does not already have a handin status, calculate new handin status
+                if (overwrite || Allocator.getDatabaseIO().getHandinStatus(handin, group) == null) {
+                    handinStatuses.put(group, calculateHandinStatus(handin, group, extensions.get(group), minutesOfLeniency));
+                }
+            } catch (SQLException ex) {
+                throw new ServicesException("Could not determine whether group " +
+                                            group + " already has a handin status " +
+                                            "for assignment " + handin.getAssignment() +
+                                            ".  No handin statuses have been changed.", ex);
+            }
+        }
+
+        try {
+            Allocator.getDatabaseIO().setHandinStatuses(handin, handinStatuses);
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not store handin statuses in the database for " +
+                                      "assignment " + handin.getAssignment() + ".  Rubrics cannot be distributed.", ex);
+        }
+        
     }
 
     private int getDaysLate(Handin handin, Group group, Calendar extension, int minutesOfLeniency) throws ServicesException {

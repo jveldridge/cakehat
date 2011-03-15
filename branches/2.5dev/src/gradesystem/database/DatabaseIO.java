@@ -536,14 +536,25 @@ public interface DatabaseIO {
     public void setTimeStatus(Handin handin, Group group, TimeStatus status, int daysLate) throws SQLException;
 
     /**
-     * The HandinStatus for the Handin and Group is returned. If no record in the DB exists both fields of the
-     * HandinStatus will be null.
+     * The HandinStatus for the Handin and Group is returned. If no record in the DB exists,
+     * null will be returned
      *
      * @param handin
      * @param group
      * @return
      */
     public HandinStatus getHandinStatus(Handin handin, Group group) throws SQLException;
+
+    /**
+     * Returns whether or not at least one group for the given Handin has had a
+     * handin status set.
+     * 
+     * @param handin
+     * @return
+     * @throws SQLException
+     * @throws CakeHatDBIOException
+     */
+    public boolean areHandinStatusesSet(Handin handin) throws SQLException, CakeHatDBIOException;
 
     /**
      * Removes all data from database tables and rebuilds the tables. If no DB

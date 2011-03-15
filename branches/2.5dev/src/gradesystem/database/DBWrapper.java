@@ -1668,6 +1668,9 @@ public class DBWrapper implements DatabaseIO {
                 daysLate = rs.getInt("late");
             }
 
+            if (status == null && daysLate == null) {
+                return null;
+            }
             return new HandinStatus(status, daysLate);
         } finally {
             this.closeConnection(conn);
@@ -1694,6 +1697,27 @@ public class DBWrapper implements DatabaseIO {
     public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException {
         for (Group group : statuses.keySet()) {
             this.setTimeStatus(handin, group, statuses.get(group).getTimeStatus(), statuses.get(group).getDaysLate());
+        }
+    }
+
+    public boolean areHandinStatusesSet(Handin handin) throws SQLException, CakeHatDBIOException {
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS numStatuses" +
+                    " FROM handin AS h INNER JOIN asgngroup AS ag" +
+                    " ON h.gpid == ag.gpid WHERE ag.aid == ?;");
+            ps.setString(1, handin.getAssignment().getDBID());
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                throw new CakeHatDBIOException("Could not read number of statuses for assignment " +
+                                               handin.getAssignment() + " from the database.");
+            }
+
+            return rs.getInt("numStatuses") != 0;
+        } finally {
+            this.closeConnection(conn);
         }
     }
 

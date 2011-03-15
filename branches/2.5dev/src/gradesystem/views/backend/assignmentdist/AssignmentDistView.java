@@ -35,13 +35,14 @@ import gradesystem.resources.icons.IconLoader;
 import gradesystem.resources.icons.IconLoader.IconImage;
 import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.views.shared.ErrorView;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Box;
 import javax.swing.Icon;
+import javax.swing.JSeparator;
 import utils.FileSystemUtilities.OverwriteMode;
 
 /**
@@ -68,6 +69,8 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
     private JDialog _progressDialog;
     private JProgressBar _progressBar;
 
+    private JButton _setUpGradingButton, _makeNewRubricsButton, _recalculateHandinStatusesButton;
+
     public AssignmentDistView(Assignment asgn) {
         _asgn = asgn;
         try {
@@ -87,7 +90,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         _gradingTAs = new Vector<TA>(Allocator.getConfigurationInfo().getDefaultGraders());
         _nonGradingTAs = new Vector<TA>(Allocator.getConfigurationInfo().getNonDefaultGraders());
 
-        this.setTitle(String.format("Create Distribution for Assignment: %s", _asgn.getName()));
+        this.setTitle(String.format("Distribution for Assignment: %s", _asgn.getName()));
 
         _progressDialog = new JDialog(this, "Distribution In Progress", true);
         _progressDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -109,7 +112,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         JPanel instructionsPanel = new JPanel();
         instructionsPanel.add(new JLabel("<html>Enter the number of handins above or " +
                 "below the average each TA should grade. " +
-                "<br/>(-2 = two less to grade; don't use a + symbol for positive numbers)</html>"));
+                "<br/>(for example, -2 = two fewer students to grade)</html>"));
         topPanel.add(instructionsPanel);
 
         JPanel addGraderPanel = new JPanel();
@@ -140,43 +143,111 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         _graderPanelsPanel.setLayout(new GridLayout(0, 1));
         this.updateInterface();
 
-        JPanel buttonPanel = new JPanel();
+        JPanel buttonPanelPanel = new JPanel(new BorderLayout());
+        JPanel topButtonPanel = new JPanel();
+        JPanel bottomButtonPanel = new JPanel();
+
+        Dimension buttonSize = new Dimension(220, 25);
         
-        JButton createDistributionButton = new JButton("1. Distribute Students");
-        createDistributionButton.addActionListener(new ActionListener() {
+        _setUpGradingButton = new JButton("Set Up Grading");
+        _setUpGradingButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    generateDistribution();
+                    if (oneClickGradingSetup()) {
+                        JOptionPane.showMessageDialog(AssignmentDistView.this, "Success!");
+                    }
                 } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "Generating the distribution for assignment " +
-                                       _asgn + " failed." );
+                    new ErrorView(ex, "Grading setup failed.");
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Generating the distribution for assignment " +
-                                       _asgn + " failed." );
+                    new ErrorView(ex, "Grading setup failed.");
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "Generating the distribution for assignment " +
-                                       _asgn + " failed." );
+                    new ErrorView(ex, "Grading setup failed.");
                 } catch (IOException ex) {
-                    new ErrorView(ex, "Generating the distribution for assignment " +
-                                       _asgn + " failed." );
+                    new ErrorView(ex, "Grading setup failed.");
+                } catch (RubricException ex) {
+                    new ErrorView(ex, "Grading setup failed.");
                 }
             }
         });
-        buttonPanel.add(createDistributionButton);
+        _setUpGradingButton.setPreferredSize(buttonSize);
+        topButtonPanel.add(_setUpGradingButton);
 
-        JButton setupGradingButton = new JButton("2. Set Up Grading");
-        setupGradingButton.addActionListener(new ActionListener() {
+        _makeNewRubricsButton = new JButton("Make New Rubrics");
+        _makeNewRubricsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setUpGrading();
+                try {
+                    Set<Group> distributedGroups = new HashSet<Group>();
+                    for (DistributablePart dp : _asgn.getDistributableParts()) {
+                        distributedGroups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+                    }
+
+                    if (makeNewRubrics(distributedGroups, true)) {
+                        JOptionPane.showMessageDialog(AssignmentDistView.this, "Success!");
+                    }
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not make new rubrics.");
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "Could not make new rubrics.");
+                } catch (RubricException ex) {
+                    new ErrorView(ex, "Could not make new rubrics.");
+                }
             }
         });
-        buttonPanel.add(setupGradingButton);
+        _makeNewRubricsButton.setPreferredSize(buttonSize);
+        bottomButtonPanel.add(_makeNewRubricsButton);
+
+        _recalculateHandinStatusesButton = new JButton("Recalculate Handin Statuses");
+        _recalculateHandinStatusesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Set<Group> distributedGroups = new HashSet<Group>();
+                    for (DistributablePart dp : _asgn.getDistributableParts()) {
+                        distributedGroups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+                    }
+
+                    if (recalculateHandinStatuses(distributedGroups, true)) {
+                        JOptionPane.showMessageDialog(AssignmentDistView.this, "Success!");
+                    }
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not recalculate handin statuses.");
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "Could not recalculate handin statuses.");
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Could not recalculate handin statuses.");
+                }
+            }
+        });
+        _recalculateHandinStatusesButton.setPreferredSize(buttonSize);
+        bottomButtonPanel.add(_recalculateHandinStatusesButton);
+
+        JPanel separationPanel = new JPanel(new BorderLayout());
+        separationPanel.add(Box.createRigidArea(new Dimension(200, 10)), BorderLayout.NORTH);
+        separationPanel.add(new JSeparator(), BorderLayout.CENTER);
+        separationPanel.add(Box.createRigidArea(new Dimension(200, 10)), BorderLayout.SOUTH);
+
+        buttonPanelPanel.add(topButtonPanel, BorderLayout.NORTH);
+        buttonPanelPanel.add(separationPanel, BorderLayout.CENTER);
+        buttonPanelPanel.add(bottomButtonPanel, BorderLayout.SOUTH);
 
         this.add(topPanel, BorderLayout.NORTH);
         this.add(_graderPanelsPanel, BorderLayout.CENTER);
-        this.add(buttonPanel, BorderLayout.SOUTH);
+        this.add(buttonPanelPanel, BorderLayout.SOUTH);
+
+        //if no distribution has been made, disable all buttons except set up grading
+        try {
+            if (Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
+                _makeNewRubricsButton.setEnabled(false);
+                _recalculateHandinStatusesButton.setEnabled(false);
+            }
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could note determine whether or not a distribution exists " +
+                              "for assignment " + _asgn + ".  Clicking the \"Make New Rubrics\"" +
+                              "or \"Recalculate Handin Statuses\" buttons could result in " +
+                              "undesired behavior.");
+        }
 
         try {
             this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.ACCESSORIES_TEXT_EDITOR));
@@ -208,7 +279,81 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         this.pack();
     }
 
-    private void generateDistribution() throws ServicesException, SQLException, CakeHatDBIOException, IOException {
+    /**
+     * Performs all grading setup: creating a distribution, calculating and storing handin statuses,
+     * and making rubrics.  Returns true if the entire grading setup was completed successfully, and
+     * false otherwise.  A return value of false indicates either that the user cancelled an operation
+     * or that creating a complete distribution without violating the blacklist was not successful.
+     * 
+     * @return
+     * @throws ServicesException
+     * @throws SQLException
+     * @throws CakeHatDBIOException
+     * @throws IOException
+     * @throws RubricException
+     */
+    private boolean oneClickGradingSetup() throws ServicesException, SQLException, CakeHatDBIOException, IOException, RubricException {
+        boolean needConfirmation = false;
+        if (!Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
+            needConfirmation = true;
+        }
+        if (!needConfirmation && Allocator.getDatabaseIO().areHandinStatusesSet(_asgn.getHandin())) {
+            needConfirmation = true;
+        }
+        if (!needConfirmation && Allocator.getRubricManager().areRubricsDistributed(_asgn.getHandin())) {
+            needConfirmation = true;
+        }
+
+        if (needConfirmation) {
+            int n = JOptionPane.showConfirmDialog(this, "Any existing distribution, handin statuses, " +
+                                                        "and rubrics will be overwritten.  Do you wish to " +
+                                                        "continue?",
+                                                  "Confirm Overwrite",
+                                                  JOptionPane.YES_NO_OPTION);
+            if (n != JOptionPane.YES_OPTION) {
+                return false;
+            }
+        }
+
+        boolean success = generateDistribution(false);
+
+        Set<Group> distributedGroups = new HashSet<Group>();
+        for (DistributablePart dp : _asgn.getDistributableParts()) {
+            distributedGroups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+        }
+
+        if (success) {
+            success &= recalculateHandinStatuses(distributedGroups, false);
+        }
+
+        if (success) {
+            success &= makeNewRubrics(distributedGroups, false);
+        }
+
+        if (success) {
+            _makeNewRubricsButton.setEnabled(true);
+            _recalculateHandinStatusesButton.setEnabled(true);
+        }
+
+        return success;
+    }
+
+    /**
+     * Distributes Groups to TAs, respecting blacklists and storing the result in
+     * the database.  Returns true if distribution was completed successfully, and
+     * false otherwise.  A return value of false means that either that the user
+     * canceled the operation or that attempting to make a complete distribution
+     * without violating the blacklist was unsuccessful and that the user chose not to
+     * use the incomplete distribution.  If false is returned, no changes will have been
+     * made to the database.
+     *
+     * @return
+     * @throws ServicesException
+     * @throws SQLException
+     * @throws CakeHatDBIOException
+     * @throws IOException
+     */
+    private boolean generateDistribution(boolean requireConfirmation) throws ServicesException, SQLException, CakeHatDBIOException, IOException {
         //figure out which DistributableParts are being graded by which TAs
         Map<DistributablePart, Collection<TA>> graderMap = new HashMap<DistributablePart, Collection<TA>>();
         for (TA grader : _gradingTAs) {
@@ -233,28 +378,30 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                                                 "TAs assigned to grade them: " + partsWithoutGraders + ".  " +
                                                 "Students cannot be distributed.",
                                                 "Distribution Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            return false;
         }
 
-        try {
-            if (!Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
-                int n = JOptionPane.showConfirmDialog(this, "A distribution already exists for " + _asgn.getName() +
-                                                             ".\nAre you sure you want to overwrite the existing distribution?",
-                                                             "Confirm Overwrite",
-                                                             JOptionPane.YES_NO_OPTION);
-                if (n == JOptionPane.NO_OPTION) {
-                    return;
+        if (requireConfirmation) {
+            try {
+                if (!Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
+                    int n = JOptionPane.showConfirmDialog(this, "A distribution already exists for " + _asgn.getName() +
+                                                                 ".\nAre you sure you want to overwrite the existing distribution?",
+                                                                 "Confirm Overwrite",
+                                                                 JOptionPane.YES_NO_OPTION);
+                    if (n != JOptionPane.YES_OPTION) {
+                        return false;
+                    }
                 }
+            } catch (SQLException ex) {
+                int n = JOptionPane.showConfirmDialog(this, "Could not determine whether a distribution already exists " +
+                                                            "for assignment " + _asgn.getName() + ".\nDo you wish to proceed?  " +
+                                                            "Doing so will overwrite any existing distribution.",
+                                                            "Proceed?",
+                                                            JOptionPane.YES_NO_OPTION);
+                    if (n == JOptionPane.YES_OPTION) {
+                        return false;
+                    }
             }
-        } catch (SQLException ex) {
-            int n = JOptionPane.showConfirmDialog(this, "Could not determine whether a distribution already exists " +
-                                                        "for assignment " + _asgn.getName() + ".\nDo you wish to proceed?  " +
-                                                        "Doing so will overwrite any existing distribution.",
-                                                        "Proceed?",
-                                                        JOptionPane.YES_NO_OPTION);
-                if (n == JOptionPane.NO_OPTION) {
-                    return;
-                }
         }
 
         List<String> handinNames = _asgn.getHandin().getHandinNames();
@@ -293,8 +440,8 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                                                       JOptionPane.YES_NO_OPTION,
                                                       JOptionPane.QUESTION_MESSAGE,
                                                       null, options, options[0]);
-            if (proceed == JOptionPane.NO_OPTION) {
-                return;
+            if (proceed != JOptionPane.YES_OPTION) {
+                return false;
             }
         }
 
@@ -305,9 +452,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         Allocator.getDatabaseIO().setDistributablePartDist(distForDB);
 
-        JOptionPane.showMessageDialog(this, "Success!");
-
-        
+        return true;
     }
 
     private DistributionResponse generateDistForPart(Collection<TA> graders,
@@ -459,27 +604,28 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         return distribution;
     }
 
-    private void setUpGrading() {
-        int proceed = JOptionPane.showConfirmDialog(this, "<html>All handin statuses will be recalculated<br/>" +
-                                                          "and any existing rubrics will be overwritten.<br/>" +
-                                                          "Are you sure you wish to continue?</html>",
-                                                    "Continue?",
-                                                    JOptionPane.YES_NO_OPTION);
-        if (proceed != JOptionPane.YES_OPTION) {
-            return;
-        }
-
-
-        //create any necessary rubric directories that do not alreayd exist
-        for (DistributablePart dp : _asgn.getDistributableParts()) {
-            File directory = Allocator.getPathServices().getGMLDir(dp);
-            if (!directory.exists()) {
-                try {
-                    Allocator.getFileSystemServices().makeDirectory(directory);
-                } catch (ServicesException e) {
-                    new ErrorView(e, "Unable to create rubric directory: " + directory.getAbsolutePath() + "\n"
-                            + "Rubrics cannot be distributed.");
-                    return;
+    /**
+     * For each Group in the given Collection, calculates and stores in the database
+     * the Group's handin status.  Returns true if handin status storage was completed successfully, and
+     * false otherwise.  A return value of false does not mean that an error occurred; rather, it
+     * can indicate that the user cancelled an operation.
+     *
+     * @param groups
+     * @param requireConfirmation
+     * @return
+     * @throws ServicesException
+     * @throws SQLException
+     * @throws CakeHatDBIOException
+     */
+    private boolean recalculateHandinStatuses(Collection<Group> groups, boolean requireConfirmation) throws ServicesException, SQLException, CakeHatDBIOException {
+        if (requireConfirmation) {
+            if (Allocator.getDatabaseIO().areHandinStatusesSet(_asgn.getHandin())) {
+                int proceed = JOptionPane.showConfirmDialog(this, "<html>All existing handin statuses will be overwritten.<br/>" +
+                                                                  "Are you sure you wish to continue?</html>",
+                                                            "Continue?",
+                                                            JOptionPane.YES_NO_OPTION);
+                if (proceed != JOptionPane.YES_OPTION) {
+                    return false;
                 }
             }
         }
@@ -487,10 +633,10 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.ACCESSORIES_TEXT_EDITOR);
         String input = (String) JOptionPane.showInputDialog(this, "Enter minutes of leniency:",
                 "Set Grace Period", JOptionPane.PLAIN_MESSAGE, icon, null, "");
-        
+
         //return value will be null if cancel is clicked; should halt setup
         if (input == null) {
-            return;
+            return false;
         }
 
         int minsLeniency = Allocator.getConfigurationInfo().getMinutesOfLeniency();
@@ -507,41 +653,51 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                         "Invalid Entry", JOptionPane.WARNING_MESSAGE);
 
                 if (shouldContinue != JOptionPane.OK_OPTION) {
-                    return;
+                    return false;
                 }
             }
         }
-        final int minutesOfLeniency = minsLeniency;
+        
+        Allocator.getGradingServices().storeHandinStatuses(_asgn.getHandin(), groups, minsLeniency, true);
+        return true;
+    }
+
+    /**
+     * Creates a rubric for each Group in the given Collection for each DistributablePart
+     * of the selected Assignment. Returns true if rubric creation was completed successfully, and
+     * false otherwise.  A return value of false does not mean that an error occurred; rather, it
+     * can indicate that the user canceled an operation.
+     * 
+     * @param groups
+     * @param requireConfirmation
+     * @return
+     * @throws RubricException
+     */
+    private boolean makeNewRubrics(final Collection<Group> groups, boolean requireConfirmation) throws RubricException {
+        if (requireConfirmation) {
+            if (Allocator.getRubricManager().areRubricsDistributed(_asgn.getHandin())) {
+                int proceed = JOptionPane.showConfirmDialog(this, "<html>All existing rubrics will be overwritten.<br/>" +
+                                                                  "Are you sure you wish to continue?</html>",
+                                                            "Continue?",
+                                                            JOptionPane.YES_NO_OPTION);
+                if (proceed != JOptionPane.YES_OPTION) {
+                    return false;
+                }
+            }
+        }
 
         Thread distributionThread = new Thread() {
-
             @Override
             public void run() {
                 try {
-                    //figure out which Groups have been distributed for any DistributablePart
-                    //and make rubrics for them for all DistributableParts
-                    Set<Group> groups = new HashSet<Group>();
-                    for (DistributablePart dp : _asgn.getDistributableParts()) {
-                        groups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
-                    }
-                    
                     Allocator.getRubricManager().distributeRubrics(_asgn.getHandin(),
                                                                    groups,
-                                                                   minutesOfLeniency,
                                                                    AssignmentDistView.this,
                                                                    OverwriteMode.REPLACE_EXISTING);
                     
                     _progressDialog.dispose();
-                    JOptionPane.showMessageDialog(AssignmentDistView.this, "Grading setup complete.",
-                                                  "Success", JOptionPane.INFORMATION_MESSAGE);
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "The distribution for assignment " + _asgn + " " +
-                                      "could not be read from the database.");
-                } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "The distribution for assignment " + _asgn + " " +
-                                      "could not be read from the database.");
                 } catch (RubricException ex) {
-                    new ErrorView(ex, "Disributing rubrics for asignment " + _asgn + " failed.");
+                    new ErrorView(ex, "Distributing rubrics for asignment " + _asgn + " failed.");
                 } finally {
                     //get rid of progress dialog
                     _progressDialog.dispose();
@@ -555,6 +711,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         _progressDialog.setLocationRelativeTo(this);
         _progressDialog.setVisible(true);
 
+        return true;
     }
 
     public void updatePercentDone(int newPercentDone) {

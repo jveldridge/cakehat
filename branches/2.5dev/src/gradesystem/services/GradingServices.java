@@ -4,9 +4,7 @@ import gradesystem.config.Assignment;
 import gradesystem.config.ConfigurationInfo;
 import gradesystem.config.TA;
 import gradesystem.database.Group;
-import gradesystem.database.HandinStatus;
 import gradesystem.handin.Handin;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 
@@ -138,12 +136,21 @@ public interface GradingServices
      */
     public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException;
 
-    public HandinStatus getHandinStatus(Handin handin, Group group,
-                                    Calendar extension, int minsLeniency) throws ServicesException;
-
-    public Map<Group, HandinStatus> getHandinStatuses(Handin handin, Collection<Group> groups,
-                                                  Map<Group, Calendar> extensions, int minsLeniency) throws ServicesException;
-
+    /**
+     * For each Group in the given Collection, calculates the handin status for that
+     * Group for the given Handin and stores the handin status in the database.  If
+     * overwrite is true, any existing handin status will be overwritten.  If false,
+     * handin statuses will only be stored for groups that do not already have handin
+     * statuses.
+     *
+     * @param handin
+     * @param groups
+     * @param minsLeniency
+     * @param overwrite
+     * @throws ServicesException
+     */
+    public void storeHandinStatuses(Handin handin, Collection<Group> groups,
+                                    int minsLeniency, boolean overwrite) throws ServicesException;
 
     
 }

@@ -109,22 +109,27 @@ public interface RubricManager
 
     /**
      * Creates a rubric for each DistributablePart of the given Handin for each
-     * Group in the given Collection.  First calculates handin statuses and stores
-     * them in the database, then creates an appropriately placed copy of the each
-     * DistributablePart's rubric template for each student.  If the given overwrite
-     * parameter is true, any existing rubrics will be overwritten; if false, they
-     * will be preserved.
+     * Group in the given Collection by creating an appropriately placed copy of the each
+     * DistributablePart's rubric template for each student. If the Group already
+     * has a rubric, the behavior of the copy operation will be determined based
+     * on the given OverwriteMode parameter.
      *
      * @param handin
      * @param toDistribute
-     * @param minsLeniency
      * @param requester
      * @param overwrite
      * @throws RubricException
      */
     public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
-                                  int minsLeniency, DistributionRequester requester,
-                                  OverwriteMode overwrite) throws RubricException;
+                                  DistributionRequester requester, OverwriteMode overwrite) throws RubricException;
 
-    
+    /**
+     * Returns whether or not at least one Group has had a rubric created for the
+     * given assignment.
+     * 
+     * @param handin
+     * @return
+     */
+    public boolean areRubricsDistributed(Handin handin) throws RubricException;
+
 }
