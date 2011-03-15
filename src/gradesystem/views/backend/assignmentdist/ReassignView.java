@@ -634,10 +634,16 @@ public class ReassignView extends JFrame {
                     }
                 }
 
+                //set handin status for any Group that doesn't already have one;
+                //do not overwrite existing handin statuses
+                Allocator.getGradingServices().storeHandinStatuses(_dp.getHandin(),
+                                                               groups,
+                                                               Allocator.getConfigurationInfo().getMinutesOfLeniency(),
+                                                               false);
+
                 //create rubrics for any DPs for which the Group does not already
                 //have a rubric; do not overwrite existing rubrics
                 Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groups,
-                                                               Allocator.getConfigurationInfo().getMinutesOfLeniency(),
                                                                DistributionRequester.DO_NOTHING_REQUESTER,
                                                                OverwriteMode.KEEP_EXISTING);
             }
@@ -764,11 +770,17 @@ public class ReassignView extends JFrame {
                     Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, fromTA);
                 }
             }
-            
+
+            //set handin status for any Group that doesn't already have one;
+            //do not overwrite existing handin statuses
+            Allocator.getGradingServices().storeHandinStatuses(_dp.getHandin(),
+                                                               groupsToAssign,
+                                                               Allocator.getConfigurationInfo().getMinutesOfLeniency(),
+                                                               false);
+
             //create rubrics for any DPs for which the Group does not already
             //have a rubric; do not overwrite existing rubrics
             Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groupsToAssign,
-                                                           Allocator.getConfigurationInfo().getMinutesOfLeniency(),
                                                            DistributionRequester.DO_NOTHING_REQUESTER,
                                                            OverwriteMode.KEEP_EXISTING);
         }

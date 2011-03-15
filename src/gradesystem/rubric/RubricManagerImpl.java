@@ -18,10 +18,8 @@ import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
 import gradesystem.rubric.Rubric.Section;
 import gradesystem.rubric.Rubric.Subsection;
-import gradesystem.services.ServicesException;
 import gradesystem.views.shared.ErrorView;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import utils.FileCopyingException;
@@ -145,14 +143,17 @@ public class RubricManagerImpl implements RubricManager {
         Assignment asgn = handin.getAssignment();
         TimeInformation timeInfo = handin.getTimeInformation();
 
-        HandinStatus statusPair;
+        HandinStatus status;
         try {
-            statusPair = Allocator.getDatabaseIO().getHandinStatus(handin, group);
+            status = Allocator.getDatabaseIO().getHandinStatus(handin, group);
         } catch (SQLException ex) {
             throw new RubricException("Could not get handin status for group " +
                                         group + " on assignment " + asgn + ".", ex);
         }
-        TimeStatus status = statusPair.getTimeStatus();
+        if (status == null) {
+            return 0;
+        }
+        TimeStatus timeStatus = status.getTimeStatus();
 
         double outOf = 0;
         double score = 0;
@@ -190,7 +191,7 @@ public class RubricManagerImpl implements RubricManager {
         }
 
         // If NC Late, negate all points
-        if(status == TimeStatus.NC_LATE)
+        if(timeStatus == TimeStatus.NC_LATE)
         {
             return -score;
         }
@@ -200,7 +201,7 @@ public class RubricManagerImpl implements RubricManager {
 
         if(policy == LatePolicy.DAILY_DEDUCTION)
         {
-            if(status == TimeStatus.LATE)
+            if(timeStatus == TimeStatus.LATE)
             {
                 double dailyDeduction = 0;
                 if(units == GradeUnits.PERCENTAGE)
@@ -213,22 +214,22 @@ public class RubricManagerImpl implements RubricManager {
                     dailyDeduction = timeInfo.getOntimeValue();
                 }
 
-                return dailyDeduction * statusPair.getDaysLate();
+                return dailyDeduction * status.getDaysLate();
             }
         }
         else if(policy == LatePolicy.MULTIPLE_DEADLINES)
         {
             // get appropriate value
             double value = 0;
-            if(status == TimeStatus.EARLY)
+            if(timeStatus == TimeStatus.EARLY)
             {
                 value = timeInfo.getEarlyValue();
             }
-            else if(status == TimeStatus.ON_TIME)
+            else if(timeStatus == TimeStatus.ON_TIME)
             {
                 value = timeInfo.getOntimeValue();
             }
-            else if(status == TimeStatus.LATE)
+            else if(timeStatus == TimeStatus.LATE)
             {
                 value = timeInfo.getLateValue();
             }
@@ -291,10 +292,7 @@ public class RubricManagerImpl implements RubricManager {
 
     @Override
     public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
-                                  int minsLeniency, DistributionRequester requester,
-                                  OverwriteMode overwrite) throws RubricException {
-        this.storeHandinStatuses(handin.getAssignment(), toDistribute, minsLeniency);
-
+                                  DistributionRequester requester, OverwriteMode overwrite) throws RubricException {
         Collection<DistributablePart> distParts = handin.getAssignment().getDistributableParts();
         int numToDistribute = toDistribute.size() * distParts.size();
         int numDistributedSoFar = 0;
@@ -319,39 +317,24 @@ public class RubricManagerImpl implements RubricManager {
         }
     }
 
-    /**
-     * Calculates the HandinStatus (consisting of a TimeStatus and a number of days late)
-     * for each Group's handin for the given Assignment by calling the GradingServices
-     * getHandinStatuses(...) method and stores the result in the database.
-     *
-     * @param asgn
-     * @param groups
-     * @param minsLeniency
-     * @throws RubricException
-     */
-    private void storeHandinStatuses(Assignment asgn, Collection<Group> groups, int minsLeniency) throws RubricException {
-        Map<Group, Calendar> extensions;
+    @Override
+    public boolean areRubricsDistributed(Handin handin) throws RubricException {
+        Collection<Group> groups;
         try {
-            extensions = Allocator.getDatabaseIO().getAllExtensions(asgn.getHandin());
+            groups = Allocator.getDatabaseIO().getGroupsForAssignment(handin.getAssignment());
         } catch (SQLException ex) {
-            throw new RubricException("Could not read extensions for assignment " + asgn + " " +
-                                      "from the database.  Rubrics cannot be distributed because handin " +
-                                      "status cannot be determined.", ex);
+            throw new RubricException("Could not determine if rubrics have been distributed " +
+                                      "for assignment " + handin.getAssignment() + ".", ex);
+        }
+        for (Group group : groups) {
+            for (DistributablePart dp : handin.getAssignment().getDistributableParts()) {
+                if (this.hasRubric(dp, group)) {
+                    return true;
+                }
+            }
         }
 
-        Map<Group, HandinStatus> handinStatuses;
-        try {
-            handinStatuses = Allocator.getGradingServices().getHandinStatuses(asgn.getHandin(), groups, extensions, minsLeniency);
-        } catch (ServicesException ex) {
-            throw new RubricException("Could determine time statuses for handins. " +
-                                      "Rubrics cannot be distributed.", ex);
-        }
-        try {
-            Allocator.getDatabaseIO().setHandinStatuses(asgn.getHandin(), handinStatuses);
-        } catch (SQLException ex) {
-            throw new RubricException("Could not store handin statuses in the database for " +
-                                      "assignment " + asgn + ".  Rubrics cannot be distributed.", ex);
-        }
+        return false;
     }
     
 }
