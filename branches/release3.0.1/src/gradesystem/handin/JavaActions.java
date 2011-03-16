@@ -2,10 +2,10 @@ package gradesystem.handin;
 
 import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
+import gradesystem.components.GenericJComboBox;
+import gradesystem.components.ShadowJTextField;
 import gradesystem.database.Group;
-import gradesystem.resources.icons.IconLoader;
-import gradesystem.resources.icons.IconLoader.IconImage;
-import gradesystem.resources.icons.IconLoader.IconSize;
+import java.awt.GridLayout;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -17,7 +17,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -211,6 +214,7 @@ class JavaActions implements ActionProvider
                                      properties.get(CLASS_PATH_PROPERTY),
                                      properties.get(LIBRARY_PATH_PROPERTY),
                                      terminalName,
+                                     null,
                                      unarchiveDir);
                         }
                     }
@@ -402,20 +406,17 @@ class JavaActions implements ActionProvider
 
     private class RunMain implements DistributableActionDescription
     {
-        //TODO: Have property to allow for specifying run arguments
-
-        private final DistributableActionProperty MAIN_PROPERTY =
-            new DistributableActionProperty("main",
-            "The full path to the main class including package: ex. cakehat.gui.Main \n" +
-            "If no main class is specified or the main class does not exist in " +
-            "the distributable part, then the grader will be asked to choose " +
-            "from one of the main classes found.", false);
         private final DistributableActionProperty CLASS_PATH_PROPERTY =
             new DistributableActionProperty("classpath",
             "The classpath; use colons to separate each entry.", false);
         private final DistributableActionProperty LIBRARY_PATH_PROPERTY =
             new DistributableActionProperty("librarypath",
             "The java.library.path property. This values replaces, not appends, the property.", false);
+        private final DistributableActionProperty RUN_ARGS_PROPERTY =
+             new DistributableActionProperty("provide-args",
+             "By default the main method will be run without any arguments. " +
+             "Set this property to TRUE to allow for the grader to provide run " +
+             "arguments to the Java program.", false);
 
         public ActionProvider getProvider()
         {
@@ -435,7 +436,7 @@ class JavaActions implements ActionProvider
 
         public List<DistributableActionProperty> getProperties()
         {
-            return ImmutableList.of(MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
+            return ImmutableList.of(CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY, RUN_ARGS_PROPERTY);
         }
 
         public List<ActionMode> getSuggestedModes()
@@ -459,76 +460,54 @@ class JavaActions implements ActionProvider
                     //Deleted any already compiled files
                     deleteCompiledFiles(unarchiveDir);
 
-                    //Compile, compilation will fail if the code has compilation
-                    //errors
+                    //Compile, compilation will fail if the code has compilation errors
                     if(compileJava(unarchiveDir, properties.get(CLASS_PATH_PROPERTY)))
                     {
-                        //Get all of the main classes
                         List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
 
-                        //Check if the main specified actually exists
-                        ClassInfo mainToRun = null;
-                        if(properties.containsKey(MAIN_PROPERTY))
-                        {
-                            String specifiedMain = properties.get(MAIN_PROPERTY);
-                            for(ClassInfo info : mainClasses)
-                            {
-                                if(info.getClassName().equals(specifiedMain))
-                                {
-                                    mainToRun = info;
-                                    break;
-                                }
-                            }
-
-                            //If none was found, inform the grader
-                            if(mainToRun == null)
-                            {
-                                JOptionPane.showMessageDialog(null,
-                                        "The specified main class is not present in the handin. \n" +
-                                        "Specified main: " + specifiedMain + "\n\n" +
-                                        "If more than one main class is present you will \n" +
-                                        "be prompted to select from all main classes, \n" +
-                                        "otherwise the main class present will be run.",
-                                        "Specified main class not present", JOptionPane.WARNING_MESSAGE);
-                            }
-                        }
-
-                        if(mainToRun == null)
-                        {
-                            if(mainClasses.size() == 1)
-                            {
-                                mainToRun =  mainClasses.get(0);
-                            }
-                            //If more than one entry, pop up a dialog letting the user pick one
-                            else
-                            {
-                                Object[] possibilities = mainClasses.toArray();
-                                mainToRun = (ClassInfo) JOptionPane.showInputDialog(
-                                                    null,
-                                                    "Choose mainline class:",
-                                                    "Main class",
-                                                    JOptionPane.OK_OPTION,
-                                                    IconLoader.loadIcon(IconSize.s32x32, IconImage.GO_NEXT),
-                                                    possibilities,
-                                                    possibilities[0]);
-                            }
-                        }
-
-                        if(mainToRun == null)
+                        if(mainClasses.size() == 0)
                         {
                             JOptionPane.showMessageDialog(null, "No main class is available to run.");
                         }
-                        //Run compiled code
                         else
                         {
-                            String terminalName = group.getName() + "'s " +
-                                    part.getAssignment().getName() + " - " +
-                                    part.getName();
-                            executeJavaInVisibleTerminal(mainToRun,
-                                     properties.get(CLASS_PATH_PROPERTY),
-                                     properties.get(LIBRARY_PATH_PROPERTY),
-                                     terminalName,
-                                     unarchiveDir);
+                            // Whether the user should provide the run argument
+                            boolean provideArgs = "TRUE".equalsIgnoreCase(properties.get(RUN_ARGS_PROPERTY));
+
+                            // Get run information
+                            boolean shouldRun;
+                            ClassInfo mainToRun;
+                            String runArgs;
+
+                            // If only one main class and no run arguments are to be provided
+                            if(mainClasses.size() == 1 && !provideArgs)
+                            {
+                                shouldRun = true;
+                                mainToRun = mainClasses.get(0);
+                                runArgs = null;
+                            }
+                            // Prompt user for the main class and run arguments
+                            else
+                            {
+                                CompileAndRunDialog dialog = new CompileAndRunDialog(mainClasses, provideArgs);
+                                shouldRun = dialog.shouldRun();
+                                mainToRun = dialog.getSelectedMain();
+                                runArgs = dialog.getRunArguments();
+                            }
+
+                            // Run compiled code
+                            if(shouldRun)
+                            {
+                                String terminalName = group.getName() + "'s " +
+                                        part.getAssignment().getName() + " - " +
+                                        part.getName();
+                                executeJavaInVisibleTerminal(mainToRun,
+                                         properties.get(CLASS_PATH_PROPERTY),
+                                         properties.get(LIBRARY_PATH_PROPERTY),
+                                         terminalName,
+                                         runArgs,
+                                         unarchiveDir);
+                            }
                         }
                     }
                 }
@@ -538,6 +517,55 @@ class JavaActions implements ActionProvider
         }
     }
 
+    /**
+     * A dialog for selecting the main class, and potentially the run arguments.
+     */
+    private static class CompileAndRunDialog
+    {
+        private GenericJComboBox<ClassInfo> _mainClassesBox;
+        private JTextField _runArgsField;
+        private final boolean _shouldRun;
+
+        public CompileAndRunDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
+        {
+            int numElements = provideRunArgs ? 3 : 2;
+            JPanel panel = new JPanel(new GridLayout(numElements, 1));
+
+            panel.add(new JLabel("Choose the class containing the mainline to be run"));
+
+            _mainClassesBox = new GenericJComboBox<ClassInfo>(mainClasses);
+            panel.add(_mainClassesBox);
+
+            if(provideRunArgs)
+            {
+                _runArgsField = new ShadowJTextField("Run arguments");
+                _runArgsField.setColumns(30);
+                panel.add(_runArgsField);
+            }
+
+            String[] options = new String[] { "Run", "Cancel" };
+            int optionsIndex = JOptionPane.showOptionDialog(null, panel,
+                    "Run Options", JOptionPane.OK_OPTION,
+                    JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+
+            _shouldRun = (optionsIndex == 0);
+        }
+
+        public boolean shouldRun()
+        {
+            return _shouldRun;
+        }
+
+        public ClassInfo getSelectedMain()
+        {
+            return _mainClassesBox.getSelectedItem();
+        }
+
+        public String getRunArguments()
+        {
+            return _runArgsField == null ? null : _runArgsField.getText();
+        }
+    }
 
     /**************************************************************************\
     |*                             Shared Methods                             *|
@@ -734,11 +762,12 @@ class JavaActions implements ActionProvider
      * @param classpath the classpath to run this code with respect to, may be null
      * @param libraryPath the library path to run this code with respect to, may be null
      * @param termName the title bar displayed by the terminal
+     * @param runArgs the arguments provided to the Java program, may be null
      * @param directory the directory the terminal will be in
      */
     private static void executeJavaInVisibleTerminal(ClassInfo mainClass,
             String classpath, String libraryPath, String termName,
-            File directory) throws ActionException
+            String runArgs, File directory) throws ActionException
     {
         //Adds the packageDir to the classpath
         if(classpath == null)
@@ -750,18 +779,26 @@ class JavaActions implements ActionProvider
             classpath = mainClass.getRootPackageDirectory() + ":" +  classpath;
         }
 
-        //Add java.library.path component if an argument was passed in
+        //Build java.library.path component if an argument was passed in
         String javaLibrary = "";
         if(libraryPath != null)
         {
             javaLibrary = " -Djava.library.path=" + libraryPath;
         }
 
-        //Add classpath
+        //Build classpath
         String javaClassPath = " -classpath " + "'" + classpath + "'";
+
+        //Build run arguments
+        String javaRunArgs = "";
+        if(runArgs != null)
+        {
+            javaRunArgs = " '" + runArgs + "'";
+        }
         
         //Put together entire java comand
-        String javaCmd = "java " + javaLibrary + javaClassPath + " " + mainClass.getClassName();
+        String javaCmd = "java " + javaLibrary + javaClassPath + " " +
+                mainClass.getClassName() + javaRunArgs;
 
         try
         {
