@@ -1315,8 +1315,6 @@ public class BackendView extends JFrame
                 _viewDeductionsButton.setEnabled(selectedDP.hasDeductionList());
                 _runDemoButton.setEnabled(selectedDP.hasDemo());
             }
-
-            _manageGroupsButton.setEnabled(selectedAsgn.hasGroups());
         }
 
         //Update which panel is showing
@@ -1862,7 +1860,7 @@ public class BackendView extends JFrame
     }
 
     private void manageGroupsButtonActionPerformed() {
-        JOptionPane.showMessageDialog(rootPane, "This feature is not yet available.");
+        new GroupsView(this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
     }
 
     private Assignment getSingleSelectedAssignment(Map<Assignment, List<Part>> selection) {
