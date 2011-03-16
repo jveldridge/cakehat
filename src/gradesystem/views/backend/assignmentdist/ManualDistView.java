@@ -50,7 +50,7 @@ import utils.FileSystemUtilities.OverwriteMode;
  *
  * @author jeldridg
  */
-public class ReassignView extends JFrame {
+public class ManualDistView extends JFrame {
 
     private static final int LIST_HEIGHT = 300;
     private static final int LIST_WIDTH = 130;
@@ -78,7 +78,9 @@ public class ReassignView extends JFrame {
     private Assignment _asgn;
     private DistributablePart _dp;
 
-    public ReassignView(Assignment asgn, DistributablePart dp) {
+    public ManualDistView(Assignment asgn, DistributablePart dp) {
+        super("Manual Distribution");
+        
         _asgn = asgn;
         _dp = dp;
 
@@ -106,12 +108,12 @@ public class ReassignView extends JFrame {
                 new ErrorView(ex, "An error occurred while initializing the interface. " +
                                   "The ReassignView will now close.  If this problem " +
                                   "persists, please send an error report.");
-                ReassignView.this.dispose();
+                ManualDistView.this.dispose();
             } catch (SQLException ex) {
                 new ErrorView(ex, "An error occurred while initializing the interface. " +
                                   "The ReassignView will now close.  If this problem " +
                                   "persists, please send an error report.");
-                ReassignView.this.dispose();
+                ManualDistView.this.dispose();
             }
         }
 
@@ -145,12 +147,12 @@ public class ReassignView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 }
             }
         });
@@ -175,12 +177,12 @@ public class ReassignView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 }
             }
         });
@@ -226,17 +228,17 @@ public class ReassignView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. " +
                                       "The ReassignView will now close.  If this problem " +
                                       "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 }
             }
         });
@@ -435,17 +437,17 @@ public class ReassignView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "The ReassignView will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "The ReassignView will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "The ReassignView will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ReassignView.this.dispose();
+                    ManualDistView.this.dispose();
                 }
             }
         });
@@ -746,7 +748,7 @@ public class ReassignView extends JFrame {
                                   "without violating the blacklist.\nIf you would like to " +
                                   "override the blacklist, please manually select students " +
                                   "to be distributed.\n";
-            JOptionPane.showMessageDialog(ReassignView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(ManualDistView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -865,6 +867,6 @@ public class ReassignView extends JFrame {
 
     public static void main(String[] argv) {
         Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().iterator().next();
-        new ReassignView(asgn, null);
+        new ManualDistView(asgn, null);
     }
 }

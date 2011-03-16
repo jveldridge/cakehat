@@ -4,7 +4,7 @@ import gradesystem.export.ExportException;
 import gradesystem.handin.ActionException;
 import gradesystem.rubric.RubricException;
 import gradesystem.views.backend.assignmentdist.AssignmentDistView;
-import gradesystem.views.backend.assignmentdist.ReassignView;
+import gradesystem.views.backend.assignmentdist.ManualDistView;
 import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.config.LabPart;
@@ -175,7 +175,7 @@ public class BackendView extends JFrame
     }
 
     private JButton //Assignment wide buttons
-                    _manageGroupsButton, _createDistributionButton, _reassignGradingButton,
+                    _manageGroupsButton, _createDistributionButton, _manualDistributionButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionsButton,
@@ -400,7 +400,7 @@ public class BackendView extends JFrame
     {
         _assignmentButtons = new JButton[]
         {
-          _createDistributionButton, _reassignGradingButton,
+          _createDistributionButton, _manualDistributionButton,
           _previewRubricButton, _viewDeductionsButton,
           _runDemoButton, _manageGroupsButton
         };
@@ -991,16 +991,16 @@ public class BackendView extends JFrame
         buttonPanel.add(_createDistributionButton);
 
         //Reassign grading
-        _reassignGradingButton = createButton("Reassign Grading", IconImage.DOCUMENT_PROPERTIES);
-        _reassignGradingButton.addActionListener(new ActionListener()
+        _manualDistributionButton = createButton("Manual Distribution", IconImage.DOCUMENT_PROPERTIES);
+        _manualDistributionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                reassignGradingButtonActionPerformed();
+                manualDistributionButtonActionPerformed();
             }
 
         });
-        buttonPanel.add(_reassignGradingButton);
+        buttonPanel.add(_manualDistributionButton);
 
         //Preview rubric
         _previewRubricButton = createButton("Preview Rubric", IconImage.SYSTEM_SEARCH);
@@ -1307,7 +1307,7 @@ public class BackendView extends JFrame
             //   1. no parts are selected
             //   2. exactly 1 DistributablePart is selected
             if (selection != null || selection.get(selectedAsgn).isEmpty()) {
-                _reassignGradingButton.setEnabled(true);
+                _manualDistributionButton.setEnabled(true);
             }
 
             if (selectedDP != null) {
@@ -1474,10 +1474,10 @@ public class BackendView extends JFrame
         new AssignmentDistView(this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
     }
 
-    private void reassignGradingButtonActionPerformed()
+    private void manualDistributionButtonActionPerformed()
     {
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
-        new ReassignView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
+        new ManualDistView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
     }
 
     private void previewRubricButtonActionPerformed()

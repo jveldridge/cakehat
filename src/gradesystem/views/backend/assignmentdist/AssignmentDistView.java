@@ -415,7 +415,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         String message = "Not all students were successfully distributed for all distributable parts.\n " +
                          "For each distributable part, the result of distribution is shown below.  Please\n" +
                          "choose whether to use the incomplete distribution (in which case the undistributed\n" +
-                         "students must be distributed manually via the ReassignView) or to discard the distribution.\n\n";
+                         "students must be distributed manually) or to discard the distribution.\n\n";
         boolean someStudentsUndistributed = false;
         for (DistributablePart dp : _asgn.getDistributableParts()) {
             DistributionResponse resp = generateDistForPart(graderMap.get(dp), handinNames, groups);
