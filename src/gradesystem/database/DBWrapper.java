@@ -693,20 +693,20 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("CREATE TABLE 'distribution' ('gpid' INTEGER NOT NULL, "
                     + "'pid' VARCHAR NOT NULL, "
                     + "'tid' VARCHAR NOT NULL, "
-                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'exemption' ('gpid' INTEGER NOT NULL, "
                     + "'pid' VARCHAR NOT NULL, "
                     + "'note' TEXT, "
-                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'extension' ('gpid' INTEGER NOT NULL, "
                     + "'aid' VARCHAR NOT NULL, "
                     + "'ontime' INTEGER NOT NULL, "
                     + "'note' TEXT, "
-                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'grade' ('pid' VARCHAR NOT NULL, "
                     + "'gpid' INTEGER NOT NULL, "
                     + "'score' DOUBLE NOT NULL, "
-                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'groupmember' ('gpid' INTEGER NOT NULL, "
                     + "'sid' VARCHAR NOT NULL, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid), "
@@ -714,7 +714,7 @@ public class DBWrapper implements DatabaseIO {
             conn.createStatement().executeUpdate("CREATE TABLE 'handin' ('gpid' INTEGER NOT NULL, "
                     + "'status' VARCHAR NOT NULL, "
                     + "'late' INTEGER NOT NULL, "
-                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid));");
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'student' ('login' VARCHAR NOT NULL, "
                     + "'firstname' VARCHAR NOT NULL, "
                     + "'lastname' VARCHAR NOT NULL, "
