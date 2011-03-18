@@ -5,7 +5,12 @@ import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.components.ShadowJTextField;
 import gradesystem.database.Group;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -17,10 +22,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -30,6 +42,8 @@ import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
+import utils.ExternalProcessesUtilities;
+import utils.ExternalProcessesUtilities.TerminalStringValidity;
 import utils.FileCopyingException;
 import utils.FileExistsException;
 import utils.FileExtensionFilter;
@@ -521,56 +535,6 @@ class JavaActions implements ActionProvider
         }
     }
 
-    /**
-     * A dialog for selecting the main class, and potentially the run arguments.
-     */
-    private static class CompileAndRunDialog
-    {
-        private GenericJComboBox<ClassInfo> _mainClassesBox;
-        private JTextField _runArgsField;
-        private final boolean _shouldRun;
-
-        public CompileAndRunDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
-        {
-            int numElements = provideRunArgs ? 3 : 2;
-            JPanel panel = new JPanel(new GridLayout(numElements, 1));
-
-            panel.add(new JLabel("Choose the class containing the mainline to be run"));
-
-            _mainClassesBox = new GenericJComboBox<ClassInfo>(mainClasses);
-            panel.add(_mainClassesBox);
-
-            if(provideRunArgs)
-            {
-                _runArgsField = new ShadowJTextField("Run arguments");
-                _runArgsField.setColumns(30);
-                panel.add(_runArgsField);
-            }
-
-            String[] options = new String[] { "Run", "Cancel" };
-            int optionsIndex = JOptionPane.showOptionDialog(null, panel,
-                    "Run Options", JOptionPane.OK_OPTION,
-                    JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-
-            _shouldRun = (optionsIndex == 0);
-        }
-
-        public boolean shouldRun()
-        {
-            return _shouldRun;
-        }
-
-        public ClassInfo getSelectedMain()
-        {
-            return _mainClassesBox.getSelectedItem();
-        }
-
-        public String getRunArguments()
-        {
-            return _runArgsField == null ? null : _runArgsField.getText();
-        }
-    }
-
     /**************************************************************************\
     |*                             Shared Methods                             *|
     \**************************************************************************/
@@ -826,7 +790,7 @@ class JavaActions implements ActionProvider
         String javaRunArgs = "";
         if(runArgs != null)
         {
-            javaRunArgs = " '" + runArgs + "'";
+            javaRunArgs = " " + runArgs;
         }
 
         //Put together entire java comand
@@ -897,6 +861,195 @@ class JavaActions implements ActionProvider
         public String toString()
         {
             return _className;
+        }
+    }
+
+    /**
+     * A dialog for selecting the main class, and potentially the run arguments.
+     */
+    private static class CompileAndRunDialog extends JDialog
+    {
+        private GenericJComboBox<ClassInfo> _mainClassesBox;
+        private JTextField _runArgsField;
+        private JLabel _argsValidationLabel;
+        private JButton _runButton;
+
+        private boolean _shouldRun = false;
+
+        private static final int TOTAL_WIDTH = 450;
+        private static final int ELEMENT_HEIGHT = 30;
+        private static final int PADDING = 10;
+
+        public CompileAndRunDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
+        {
+            this.setTitle("Run Options");
+            this.getContentPane().setLayout(new BorderLayout(0, 0));
+
+            // Determine the number of elements that will be displayed
+            int numElements = 1; //For the button panel
+            if(mainClasses != null)
+            {
+                numElements += 2;
+            }
+            if(provideRunArgs)
+            {
+                numElements += 2;
+            }
+            int totalElementHeight = numElements * ELEMENT_HEIGHT;
+            int totalHeight = totalElementHeight + 2 * PADDING;
+            this.getContentPane().setPreferredSize(new Dimension(TOTAL_WIDTH, totalHeight));
+
+            //Padding
+            this.getContentPane().add(Box.createRigidArea(new Dimension(TOTAL_WIDTH, PADDING)),
+                    BorderLayout.NORTH);
+            this.getContentPane().add(Box.createRigidArea(new Dimension(PADDING, totalHeight)),
+                    BorderLayout.WEST);
+            this.getContentPane().add(Box.createRigidArea(new Dimension(PADDING, totalHeight)),
+                    BorderLayout.EAST);
+
+            //Content
+            JPanel contentPanel = new JPanel(new GridLayout(numElements, 1, 0, 0));
+            this.getContentPane().add(contentPanel, BorderLayout.CENTER);
+
+            if(mainClasses != null)
+            {
+                contentPanel.add(new JLabel("Choose the class containing the mainline to be run"));
+
+                _mainClassesBox = new GenericJComboBox<ClassInfo>(mainClasses);
+                contentPanel.add(_mainClassesBox);
+            }
+
+            if(provideRunArgs)
+            {
+                _runArgsField = new ShadowJTextField("Run arguments");
+
+                //Validate input
+                _runArgsField.getDocument().addDocumentListener(new DocumentListener()
+                {
+                    public void insertUpdate(DocumentEvent de) { validateInput(); }
+                    public void removeUpdate(DocumentEvent de) { validateInput(); }
+                    public void changedUpdate(DocumentEvent de){ validateInput(); }
+                });
+                //If enter key is pressed, close window is argument is valid
+                _runArgsField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "newline");
+                _runArgsField.getActionMap().put("newline", new AbstractAction()
+                {
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        //If the button is enabled, the arguments are valid
+                        if(_runButton.isEnabled())
+                        {
+                            _shouldRun = true;
+                            CompileAndRunDialog.this.dispose();
+                        }
+                    }
+                });
+
+                _runArgsField.setColumns(30);
+                contentPanel.add(_runArgsField);
+
+                _argsValidationLabel = new JLabel();
+                _argsValidationLabel.setForeground(Color.RED);
+                contentPanel.add(_argsValidationLabel);
+            }
+
+            JPanel buttonPanel = new JPanel();
+            contentPanel.add(buttonPanel);
+
+            _runButton = new JButton("Run");
+            _runButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    _shouldRun = true;
+                    CompileAndRunDialog.this.dispose();
+                }
+            });
+            buttonPanel.add(_runButton);
+
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    CompileAndRunDialog.this.dispose();
+                }
+            });
+            buttonPanel.add(cancelButton);
+
+            //Padding below the buttons
+            this.getContentPane().add(Box.createRigidArea(new Dimension(TOTAL_WIDTH, PADDING)),
+                    BorderLayout.SOUTH);
+
+            this.setModal(true);
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            this.pack();
+            this.setResizable(false);
+            this.setLocationRelativeTo(null);
+            this.setVisible(true);
+        }
+
+        public boolean shouldRun()
+        {
+            return _shouldRun;
+        }
+
+        public ClassInfo getSelectedMain()
+        {
+            return _mainClassesBox.getSelectedItem();
+        }
+
+        public String getRunArguments()
+        {
+            return _runArgsField == null ? null : _runArgsField.getText();
+        }
+
+        /**
+         * Arguments must be provided in a way that is acceptable in a terminal
+         * If they are not, then running the Java program would fail silently.
+         * For details see
+         * {@link ExternalProcessesUtilities#checkTerminalValidity(java.lang.String)}.
+         */
+        private void validateInput()
+        {
+            String runArgs = _runArgsField.getText();
+            boolean valid = true;
+            String problemMessage = null;
+
+            if(runArgs != null)
+            {
+                TerminalStringValidity validity = Allocator
+                        .getExternalProcessesUtilities().checkTerminalValidity(runArgs);
+
+                valid = validity.isValid();
+
+                //Only one problem at a time will be shown, so the ordering of
+                //this is somewhat arbitrary
+                if(!validity.isTerminatedProperly())
+                {
+                    problemMessage = "Cannot end with an unescaped backslash (\\)";
+                }
+                else if(!validity.isSingleQuotedProperly())
+                {
+                    problemMessage = "Single quotation (') marks must match or be escaped";
+                }
+                else if(!validity.isDoubleQuotedProperly())
+                {
+                    problemMessage = "Double quotation (\") marks must match or be escaped";
+                }
+            }
+
+            _runButton.setEnabled(valid);
+            if(valid)
+            {
+                _argsValidationLabel.setText("");
+            }
+            else
+            {
+                _argsValidationLabel.setText(problemMessage);
+            }
         }
     }
 }
