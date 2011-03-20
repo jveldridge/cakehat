@@ -15,11 +15,11 @@ public class CakehatReleaseInfo
 
     public static String getReleaseDate()
     {
-        return "unreleased";
+        return "March 20, 2011";
     }
 
     public static String getReleaseCommitNumber()
     {
-        return "N/A";
+        return "r695";
     }
 }
