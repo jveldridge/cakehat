@@ -1,13 +1,15 @@
 package utils;
 
+import java.awt.FontMetrics;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.SwingConstants;
 
 public class GeneralUtilitiesImpl implements GeneralUtilities
 {
@@ -96,4 +98,29 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         }
     }
 
+    public JButton createTextCenteredButton(String text, Icon icon,
+            int buttonWidth, boolean iconOnLeft)
+    {
+        JButton button = new JButton(text, icon);
+
+        if(iconOnLeft)
+        {
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            button.setHorizontalTextPosition(SwingConstants.RIGHT);
+        }
+        else
+        {
+            button.setHorizontalAlignment(SwingConstants.RIGHT);
+            button.setHorizontalTextPosition(SwingConstants.LEFT);
+        }
+
+        FontMetrics metrics = button.getFontMetrics(button.getFont());
+        int textWidth = metrics.charsWidth(text.toCharArray(), 0, text.length());
+        int textStartX = (buttonWidth - textWidth) / 2;
+        int insetWidth = iconOnLeft ? button.getInsets().left : button.getInsets().right;
+        int textGap = textStartX - insetWidth - icon.getIconWidth();
+        button.setIconTextGap(textGap);
+
+        return button;
+    }
 }

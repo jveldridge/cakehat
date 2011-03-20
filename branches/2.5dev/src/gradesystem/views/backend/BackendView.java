@@ -1477,7 +1477,9 @@ public class BackendView extends JFrame
     private void manualDistributionButtonActionPerformed()
     {
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
-        new ManualDistView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
+        ManualDistView view = new ManualDistView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
     private void previewRubricButtonActionPerformed()

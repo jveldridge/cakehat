@@ -1,6 +1,8 @@
 package utils;
 
 import java.util.Collection;
+import javax.swing.Icon;
+import javax.swing.JButton;
 
 /**
  * Utility methods that do not fit well into any other utility class. If
@@ -73,4 +75,21 @@ public interface GeneralUtilities
      */
     public void runWithSilencedError(Runnable toRun);
 
+    /**
+     * Creates a button with an icon that has centered text.
+     * <br/><br/>
+     * This is done by calculating the necessary gap space between the icon and
+     * the text. There is no built-in way to center the text in a button
+     * (including using HTML) when an icon is also present. When an icon is
+     * present, all text placement is relative to the icon.
+     *
+     * @param text
+     * @param icon
+     * @param buttonWidth the width the button will be when displayed
+     * @param iconOnLeft if <code>true</code> the icon will be displayed on the
+     * left, if <code>false</code> it will be displayed on the right
+     * @return
+     */
+    public JButton createTextCenteredButton(String text, Icon icon,
+            int buttonWidth, boolean iconOnLeft);
 }
