@@ -146,7 +146,7 @@ class BlacklistPanel extends JPanel
 
         // Blacklist button
         Icon previousIcon = IconLoader.loadIcon(IconLoader.IconSize.s16x16, IconLoader.IconImage.GO_PREVIOUS);
-        JButton blacklistButton = createTextCenteredButton("Blacklist",
+        JButton blacklistButton = Allocator.getGeneralUtilities().createTextCenteredButton("Blacklist",
                 previousIcon, blacklistButtonsPanel.getPreferredSize().width, true);
         blacklistButton.addActionListener(new ActionListener()
         {
@@ -184,7 +184,7 @@ class BlacklistPanel extends JPanel
 
         // Unblacklist button
         Icon nextIcon = IconLoader.loadIcon(IconLoader.IconSize.s16x16, IconLoader.IconImage.GO_NEXT);
-        JButton unblacklistButton = createTextCenteredButton("Unblacklist",
+        JButton unblacklistButton = Allocator.getGeneralUtilities().createTextCenteredButton("Unblacklist",
                 nextIcon, blacklistButtonsPanel.getPreferredSize().width, false);
         unblacklistButton.addActionListener(new ActionListener()
         {
@@ -262,44 +262,6 @@ class BlacklistPanel extends JPanel
         closePanel.add(closeButton);
 
         this.add(closePanel, BorderLayout.SOUTH);
-    }
-
-    /**
-     * Creates a button with an icon that has centered text. This is done by
-     * calculating the necessary gap space between the icon and the text. There
-     * is no built-in way to center the text in a button (including using HTML)
-     * when an icon is also present. When an icon is present, all text placement
-     * is relative to the icon.
-     *
-     * @param text
-     * @param icon
-     * @param buttonWidth the width the button will be when displayed
-     * @param iconOnLeft
-     * @return
-     */
-    private JButton createTextCenteredButton(String text, Icon icon, int buttonWidth, boolean iconOnLeft)
-    {
-        JButton button = new JButton(text, icon);
-
-        if(iconOnLeft)
-        {
-            button.setHorizontalAlignment(SwingConstants.LEFT);
-            button.setHorizontalTextPosition(SwingConstants.RIGHT);
-        }
-        else
-        {
-            button.setHorizontalAlignment(SwingConstants.RIGHT);
-            button.setHorizontalTextPosition(SwingConstants.LEFT);
-        }
-
-        FontMetrics metrics = button.getFontMetrics(button.getFont());
-        int textWidth = metrics.charsWidth(text.toCharArray(), 0, text.length());
-        int textStartX = (buttonWidth - textWidth) / 2;
-        int insetWidth = iconOnLeft ? button.getInsets().left : button.getInsets().right;
-        int textGap = textStartX - insetWidth - icon.getIconWidth();
-        button.setIconTextGap(textGap);
-
-        return button;
     }
 
     /**

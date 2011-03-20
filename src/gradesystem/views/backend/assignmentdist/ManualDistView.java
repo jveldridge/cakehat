@@ -12,9 +12,9 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,13 +35,26 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
+import gradesystem.components.GenericJList.StringConverter;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
 import gradesystem.views.shared.ErrorView;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.KeyAdapter;
+import java.util.Arrays;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.UIManager;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import utils.FileSystemUtilities.OverwriteMode;
 
 /**
@@ -51,13 +64,15 @@ import utils.FileSystemUtilities.OverwriteMode;
  * @author jeldridg
  */
 public class ManualDistView extends JFrame {
-
+    
     private static final int LIST_HEIGHT = 300;
     private static final int LIST_WIDTH = 130;
-    private static final int BUTTON_WIDTH = 160;
-    private static final int TEXT_HEIGHT = 25;
-
-    private List<TA> _tas;
+    private static final int BUTTON_WIDTH = 200;
+    private static final int TEXT_HEIGHT = 17;
+    
+    private final List<TA> _tas;
+    private GenericJComboBox<Assignment> _asgnComboBox;
+    private GenericJComboBox<DistributablePart> _dpComboBox;
     private GenericJList<String> _fromUnassigned;
     private GenericJList<TA> _fromTAList;
     private GenericJList<String> _fromRandom;
@@ -65,24 +80,22 @@ public class ManualDistView extends JFrame {
     private GenericJList<String> _toUnassigned;
     private GenericJList<TA> _toTAList;
     private GenericJList<Group> _toGroupList;
+    
+    private final TAStringConverter _taStringConverter;
+    private final UnassignedStringConverter _unassignedStringConverter;
 
     private JButton _assignButton;
     private JTextField _studentFilterBox;
-    private JSpinner _numStudentsSpinner;
-    private JLabel _numUnassignedLabel;
-    private JLabel _assignTypeLabel;
-
+    private JSpinner _randomStudentsSpinner;
+    private JLabel _randomStudentLabel;
     private Collection<Group> _unassignedGroups;
     private Collection<String> _unresolvedHandins;
 
-    private Assignment _asgn;
-    private DistributablePart _dp;
-
     public ManualDistView(Assignment asgn, DistributablePart dp) {
-        super("Manual Distribution");
-        
-        _asgn = asgn;
-        _dp = dp;
+        super("Manual Distributor");
+
+        _taStringConverter = new TAStringConverter();
+        _unassignedStringConverter = new UnassignedStringConverter();
 
         _tas = new LinkedList<TA>(Allocator.getConfigurationInfo().getTAs());
         Collections.sort(_tas);
@@ -90,38 +103,43 @@ public class ManualDistView extends JFrame {
         _unassignedGroups = new ArrayList<Group>();
 
         this.setLayout(new BorderLayout());
-        this.add(this.getTopPanel(), BorderLayout.NORTH);
-        this.add(this.getLeftPanel(), BorderLayout.WEST);
-        this.add(this.getCenterPanel(), BorderLayout.CENTER);
-        this.add(this.getRightPanel(), BorderLayout.EAST);
 
-        if (_dp == null) {
-            this.disableAll();
-        }
-        else {
-            //initialize starting selection state
-            _fromUnassigned.setSelectedIndex(0);
-            _toTAList.setSelectedIndex(0);
-            try {
-                this.updateAssignmentAndPart();
-            } catch (ServicesException ex) {
-                new ErrorView(ex, "An error occurred while initializing the interface. " +
-                                  "The ReassignView will now close.  If this problem " +
-                                  "persists, please send an error report.");
-                ManualDistView.this.dispose();
-            } catch (SQLException ex) {
-                new ErrorView(ex, "An error occurred while initializing the interface. " +
-                                  "The ReassignView will now close.  If this problem " +
-                                  "persists, please send an error report.");
-                ManualDistView.this.dispose();
-            }
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 0));
+        contentPanel.add(this.getTopPanel(asgn, dp), BorderLayout.NORTH);
+        contentPanel.add(this.getLeftPanel(), BorderLayout.WEST);
+        contentPanel.add(this.getCenterPanel(), BorderLayout.CENTER);
+        contentPanel.add(this.getRightPanel(), BorderLayout.EAST);
+
+        // Pad everything so it is not directly touching the frame border
+        int padding = 5;
+        this.add(Box.createVerticalStrut(padding), BorderLayout.NORTH);
+        this.add(Box.createVerticalStrut(padding), BorderLayout.SOUTH);
+        this.add(Box.createHorizontalStrut(padding), BorderLayout.EAST);
+        this.add(Box.createHorizontalStrut(padding), BorderLayout.WEST);
+        this.add(contentPanel, BorderLayout.CENTER);
+
+        //initialize starting selection state
+        _fromUnassigned.setSelectedIndex(0);
+        _toTAList.setSelectedIndex(0);
+        try {
+            this.updateAssignmentAndPart();
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "An error occurred while initializing the interface. "
+                    + "This view will now close.  If this problem "
+                    + "persists, please send an error report.");
+            ManualDistView.this.dispose();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "An error occurred while initializing the interface. "
+                    + "This view will now close.  If this problem "
+                    + "persists, please send an error report.");
+            ManualDistView.this.dispose();
         }
 
         this.pack();
-        this.setVisible(true);
+        this.setResizable(false);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         _studentFilterBox.requestFocus();
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     /**
@@ -129,67 +147,100 @@ public class ManualDistView extends JFrame {
      * This panel allows the user to select the assignment for which the
      * distribution should be modified.
      *
+     * @param initialAsgn the initial Assignment to be selected, may
+     * <strong>not</strong> be <code>null</code>
+     * @param initialDP the initial DistributablePart to be selected, may be
+     * <code>null</code>
+     *
      * @return a JPanel to be shown at the top of the screen.
      */
-    private JPanel getTopPanel() {
+    private JPanel getTopPanel(Assignment initialAsgn, DistributablePart initialDP) {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 10));
 
-        final GenericJComboBox<DistributablePart> dpComboBox = new GenericJComboBox<DistributablePart>(_asgn.getDistributableParts());
-        dpComboBox.setSelectedItem(_dp);
+        _dpComboBox = new GenericJComboBox<DistributablePart>(initialAsgn.getDistributableParts());
 
-        dpComboBox.addActionListener(new ActionListener() {
+        //The distributable part is specified
+        if (initialDP != null) {
+            _dpComboBox.setSelectedItem(initialDP);
+        }
+        //Not specified, and the assignment has multiple distributable parts
+        else if (initialAsgn.getDistributableParts().size() > 1) {
+            //Cannot open the popup menu until the combo box is actually on screen
+            this.addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentShown(ComponentEvent ce) {
+                    EventQueue.invokeLater(new Runnable(){
+                        public void run() {
+                            _dpComboBox.grabFocus();
+                            _dpComboBox.showPopup();
+                        }
+                    });
+                }
+            });
+        }
+        //Not specified, and the assignment has only one distributable part
+        else {
+                _dpComboBox.setSelectedItem(initialAsgn.getDistributableParts().get(0));
+        }
+
+        _dpComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                _dp = dpComboBox.getSelectedItem();
                 try {
                     updateAssignmentAndPart();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "This view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "This view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 }
             }
         });
 
-        final GenericJComboBox<Assignment> asgnComboBox =
-                new GenericJComboBox<Assignment>(Allocator.getConfigurationInfo().getHandinAssignments());
-        asgnComboBox.setSelectedItem(_asgn);
+        _asgnComboBox = new GenericJComboBox<Assignment>(Allocator.getConfigurationInfo().getHandinAssignments());
+        _asgnComboBox.setSelectedItem(initialAsgn);
 
-        asgnComboBox.addActionListener(new ActionListener() {
+        _asgnComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                _asgn = asgnComboBox.getSelectedItem();
-                dpComboBox.removeAllItems();
-                for (DistributablePart dp : _asgn.getDistributableParts()) {
-                    dpComboBox.addItem(dp);
+                List<DistributablePart> dps = _asgnComboBox.getSelectedItem().getDistributableParts();
+                _dpComboBox.setItems(dps);
+
+                //If there are multiple parts, open the popup list to indicate to
+                //the user there are multiple distributable parts to choose from
+                if(dps.size() > 1) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            _dpComboBox.grabFocus();
+                            _dpComboBox.showPopup();
+                        }
+                    });
                 }
-                _dp = null;
-                dpComboBox.setSelectedItem(null);
-                
+
                 try {
                     updateAssignmentAndPart();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "The view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "The view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 }
             }
         });
 
-        topPanel.add(new JLabel("Modify Distribution for Assignment: "));
-        topPanel.add(asgnComboBox);
-        topPanel.add(dpComboBox);
+        topPanel.add(new JLabel("Modify distribution for "));
+        topPanel.add(_asgnComboBox);
+        topPanel.add(_dpComboBox);
+        topPanel.add(Box.createVerticalStrut(15));
 
         return topPanel;
     }
@@ -205,10 +256,10 @@ public class ManualDistView extends JFrame {
      * @return a JPanel to be shown on the left-hand side of the screen.
      */
     private JPanel getLeftPanel() {
-        JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BorderLayout(5, 5));
+        JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
+        leftPanel.setBorder(BorderFactory.createTitledBorder("From"));
 
-        _fromUnassigned = new GenericJList<String>("UNASSIGNED");
+        _fromUnassigned = new GenericJList<String>(Arrays.asList("UNASSIGNED"), _unassignedStringConverter);
         _fromUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _fromUnassigned.addFocusListener(new FocusAdapter() {
             @Override
@@ -217,7 +268,7 @@ public class ManualDistView extends JFrame {
             }
         });
 
-        _fromTAList = new GenericJList<TA>(_tas);
+        _fromTAList = new GenericJList<TA>(_tas, _taStringConverter);
         _fromTAList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _fromTAList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -225,19 +276,19 @@ public class ManualDistView extends JFrame {
                 try {
                     updateFromList();
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "This view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "This view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. " +
-                                      "The ReassignView will now close.  If this problem " +
-                                      "persists, please send an error report.");
+                    new ErrorView(ex, "An error occurred while updating the interface. "
+                            + "This view will now close.  If this problem "
+                            + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 }
             }
@@ -247,28 +298,43 @@ public class ManualDistView extends JFrame {
             public void focusGained(FocusEvent e) {
                 _fromUnassigned.clearSelection();
             }
-
         });
 
         JScrollPane fromTASP = new JScrollPane();
-        
+
         fromTASP.setViewportView(_fromTAList);
         fromTASP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT));
 
         _studentFilterBox = new JTextField();
+        _studentFilterBox.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+
+        _studentFilterBox.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent de) { filterStudentLogins(); }
+            public void removeUpdate(DocumentEvent de) { filterStudentLogins(); }
+            public void changedUpdate(DocumentEvent de){ filterStudentLogins(); }
+        });
+
+        //If enter key is released and the from group list has at least one
+        //entry, select the first entry in the from group list and switch focus
+        //to the assign button.
+        //It is VERY important that this happen on key release (as opposed to
+        //key pressed).
+        //When this code executes, it will end with focus being set on the
+        //assign button. The assign button, aside from responding to click, also
+        //responds to the enter key being released.
+        //If this responded to the enter key being pressed, then when the enter
+        //key is released the assign button will respond because it will have focus.
         _studentFilterBox.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {
-                try {
-                    filterStudentLogins(e);
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "There was an error filtering student logins.");
-                } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "There was an error filtering student logins.");
+            public void keyReleased(KeyEvent ke) {
+                if(ke.getKeyCode() == KeyEvent.VK_ENTER &&
+                   _fromGroupList.getValuesCount() > 0) {
+                    _studentFilterBox.setText(_fromGroupList.getValues().get(0).getName());
+                    _fromGroupList.selectFirst();
+                    _assignButton.requestFocus();
                 }
             }
         });
-        _studentFilterBox.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
 
         _fromRandom = new GenericJList<String>("RANDOM");
         _fromRandom.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
@@ -295,8 +361,7 @@ public class ManualDistView extends JFrame {
         int fromStudentListHeight = LIST_HEIGHT - (TEXT_HEIGHT + 10);
         fromStudentSP.setPreferredSize(new Dimension(LIST_WIDTH, fromStudentListHeight));
 
-        JPanel leftPanel_upper = new JPanel();
-        leftPanel_upper.setLayout(new BorderLayout(5, 5));
+        JPanel leftPanel_upper = new JPanel(new BorderLayout(5, 5));
         leftPanel_upper.add(_fromUnassigned, BorderLayout.WEST);
         leftPanel_upper.add(_studentFilterBox, BorderLayout.EAST);
 
@@ -322,22 +387,36 @@ public class ManualDistView extends JFrame {
      */
     private JPanel getCenterPanel() {
         JPanel centerPanel = new JPanel();
-        centerPanel.setPreferredSize(new Dimension(2*LIST_WIDTH, LIST_HEIGHT));
+        centerPanel.setPreferredSize(new Dimension(2 * LIST_WIDTH, LIST_HEIGHT));
         centerPanel.setLayout(new GridLayout(0, 1));
 
         JPanel assignControlPanel = new JPanel();
         assignControlPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-        _assignTypeLabel = new JLabel();
-        _assignTypeLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        assignControlPanel.add(_assignTypeLabel);
+        //center asgnControlPanel
+        centerPanel.add(Box.createVerticalBox());
+        centerPanel.add(assignControlPanel);
+        centerPanel.add(Box.createVerticalBox());
 
-        _numStudentsSpinner = new JSpinner(new SpinnerNumberModel());
-        _numStudentsSpinner.setPreferredSize(new Dimension(LIST_WIDTH / 2, TEXT_HEIGHT));
-        assignControlPanel.add(_numStudentsSpinner);
-        _numStudentsSpinner.setVisible(false);
+        _randomStudentLabel = new JLabel("Random Student(s):");
+        //Initially do not show the text, instead of making invisible via
+        //setVisible(false) which would affect layout, just hide the text
+        _randomStudentLabel.setForeground(new Color(0, 0, 0, Color.TRANSLUCENT));
+        _randomStudentLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
+        assignControlPanel.add(_randomStudentLabel);
 
-        _assignButton = new JButton("Assign >>");
+        _randomStudentsSpinner = new JSpinner(new SpinnerNumberModel());
+        _randomStudentsSpinner.setPreferredSize(new Dimension(LIST_WIDTH / 2, TEXT_HEIGHT));
+        assignControlPanel.add(_randomStudentsSpinner);
+        _randomStudentsSpinner.setVisible(false);
+
+        _assignButton = Allocator.getGeneralUtilities()
+                .createTextCenteredButton("Assign",
+                IconLoader.loadIcon(IconLoader.IconSize.s16x16, IconLoader.IconImage.GO_NEXT),
+                BUTTON_WIDTH, false);
+        _assignButton.setPreferredSize(new Dimension(BUTTON_WIDTH, 25));
+        assignControlPanel.add(_assignButton);
+
         _assignButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -345,58 +424,31 @@ public class ManualDistView extends JFrame {
                     handleAssignButtonClick();
                 } catch (SQLException ex) {
                     //TODO ensure that all changes are rolled back properly!
-                    new ErrorView(ex, "An error occurred during assignment. " +
-                                      "No changes have been made.");
+                    new ErrorView(ex, "An error occurred during assignment. "
+                            + "No changes have been made.");
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred during assignment. " +
-                                      "No changes have been made.");
+                    new ErrorView(ex, "An error occurred during assignment. "
+                            + "No changes have been made.");
                 } catch (RubricException ex) {
-                    new ErrorView(ex, "An error occurred during assignment. " +
-                                      "No changes have been made.");
+                    new ErrorView(ex, "An error occurred during assignment. "
+                            + "No changes have been made.");
                 } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "An error occurred during assignment. " +
-                                      "No changes have been made.");
+                    new ErrorView(ex, "An error occurred during assignment. "
+                            + "No changes have been made.");
                 }
             }
         });
-
+        
         _assignButton.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent evt) {
-                if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-                    try {
-                        handleAssignButtonClick();
-                    } catch (SQLException ex) {
-                        //TODO ensure that all changes are rolled back properly!
-                        new ErrorView(ex, "An error occurred during assignment. " +
-                                          "No changes have been made.");
-                    } catch (ServicesException ex) {
-                        new ErrorView(ex, "An error occurred during assignment. " +
-                                          "No changes have been made.");
-                    } catch (RubricException ex) {
-                        new ErrorView(ex, "An error occurred during assignment. " +
-                                          "No changes have been made.");
-                    } catch (CakeHatDBIOException ex) {
-                        new ErrorView(ex, "An error occurred during assignment. " +
-                                          "No changes have been made.");
-                    }
-
+            public void keyReleased(KeyEvent ke) {
+                if(ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                    _assignButton.doClick();
                     _studentFilterBox.setText(null);
                     _studentFilterBox.requestFocus();
                 }
             }
         });
-
-        _assignButton.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_HEIGHT));
-        assignControlPanel.add(_assignButton);
-
-        _numUnassignedLabel = new JLabel();
-        assignControlPanel.add(_numUnassignedLabel);
-
-        //using JPanel buffers to center asgnControlPanel
-        centerPanel.add(new JPanel());
-        centerPanel.add(assignControlPanel);
-        centerPanel.add(new JPanel());
 
         return centerPanel;
     }
@@ -415,8 +467,9 @@ public class ManualDistView extends JFrame {
     private JPanel getRightPanel() {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout(5, 5));
+        rightPanel.setBorder(BorderFactory.createTitledBorder("To"));
 
-        _toUnassigned = new GenericJList<String>("UNASSIGNED");
+        _toUnassigned = new GenericJList<String>(Arrays.asList("UNASSIGNED"), _unassignedStringConverter);
         _toUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _toUnassigned.addFocusListener(new FocusAdapter() {
             @Override
@@ -425,7 +478,7 @@ public class ManualDistView extends JFrame {
             }
         });
 
-        _toTAList = new GenericJList<TA>(_tas);
+        _toTAList = new GenericJList<TA>(_tas, _taStringConverter);
         _toTAList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _toTAList.setSelectedIndex(0);
         _toTAList.addListSelectionListener(new ListSelectionListener() {
@@ -435,23 +488,24 @@ public class ManualDistView extends JFrame {
                     updateToList();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "The ReassignView will now close.  If this problem "
+                            + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "The ReassignView will now close.  If this problem "
+                            + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "The ReassignView will now close.  If this problem "
+                            + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
                     ManualDistView.this.dispose();
                 }
             }
         });
         _toTAList.addFocusListener(new FocusAdapter() {
+
             @Override
             public void focusGained(FocusEvent e) {
                 _toUnassigned.clearSelection();
@@ -460,11 +514,7 @@ public class ManualDistView extends JFrame {
 
         JScrollPane toTASP = new JScrollPane();
         toTASP.setViewportView(_toTAList);
-
-        //make toTAPane small enough to fit the toUnassigned JList above it
-        //and have the total height be equal to the height of the toStudent pane
-        int toTAPaneHeight = LIST_HEIGHT - (TEXT_HEIGHT + 5);
-        toTASP.setPreferredSize(new Dimension(LIST_WIDTH, toTAPaneHeight));
+        toTASP.setPreferredSize(new Dimension(LIST_WIDTH, LIST_HEIGHT - 5));
 
         _toGroupList = new GenericJList<Group>();
         _toGroupList.setEnabled(false);
@@ -474,15 +524,6 @@ public class ManualDistView extends JFrame {
 
         JPanel rightPanel_upper = new JPanel();
         rightPanel_upper.setLayout(new BorderLayout(5, 5));
-
-        JLabel toTALabel = new JLabel("To TA:");
-        toTALabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        rightPanel_upper.add(toTALabel, BorderLayout.WEST);
-
-        JLabel toStudentsLabel = new JLabel("Students:");
-        toStudentsLabel.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
-        rightPanel_upper.add(toStudentsLabel, BorderLayout.EAST);
-
         rightPanel.add(rightPanel_upper, BorderLayout.NORTH);
 
         JPanel toTAPanel = new JPanel();
@@ -498,36 +539,28 @@ public class ManualDistView extends JFrame {
     private void enableUseRandomAssignment() {
         _fromGroupList.clearSelection();
 
-        _numStudentsSpinner.setVisible(true);
-        _assignTypeLabel.setText("Random Student(s):");
+        //Make the text visible
+        _randomStudentLabel.setForeground(Color.BLACK);
+        _randomStudentsSpinner.setVisible(true);
 
-        _assignButton.setEnabled(_fromGroupList.getModel().getSize() > 0);
+        _assignButton.setEnabled(_fromGroupList.getValuesCount() > 0);
     }
 
     private void enableUseSelectedAssignment() {
         _fromRandom.clearSelection();
 
-        _numStudentsSpinner.setVisible(false);
-        _assignTypeLabel.setText("Selected Student(s):");
+        //Make the text invisible
+        _randomStudentLabel.setForeground(new Color(0, 0, 0, Color.TRANSLUCENT));
+        _randomStudentsSpinner.setVisible(false);
 
         _assignButton.setEnabled(_fromGroupList.getSelectedValue() != null);
     }
 
     private void updateAssignmentAndPart() throws ServicesException, SQLException {
-        this.setTitle(_asgn + " - [" + Allocator.getCourseInfo().getCourse() +"] Assignment Distributor");
-
-        _unresolvedHandins = Allocator.getGradingServices().resolveMissingStudents(_asgn);
+        _unresolvedHandins = Allocator.getGradingServices().resolveMissingStudents(_asgnComboBox.getSelectedItem());
         if (_unresolvedHandins == null) {
             this.dispose();
             return;
-        }
-
-        if (_dp == null) {
-            this.disableAll();
-            return;
-        }
-        else {
-            this.enableAll();
         }
 
         //default selections
@@ -539,6 +572,7 @@ public class ManualDistView extends JFrame {
         try {
             this.updateFromList();
             this.updateToList();
+            this.refreshTALists();
         } catch (CakeHatDBIOException ex) {
             ex.printStackTrace();
         }
@@ -549,31 +583,28 @@ public class ManualDistView extends JFrame {
 
         //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
-            _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgn, _unresolvedHandins).values();
-            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dp));
+            _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgnComboBox.getSelectedItem(), _unresolvedHandins).values();
+            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
             groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
 
             _assignButton.setEnabled(_unassignedGroups.size() > 0);
-            _numUnassignedLabel.setText(String.format("%d unassigned students to choose from", _unassignedGroups.size()));
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(_unassignedGroups.size());
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(_unassignedGroups.size() == 0 ? 0 : 1);
-        }
-        else {
+            ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setMinimum(1);
+            ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setMaximum(_unassignedGroups.size());
+            ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setValue(_unassignedGroups.size() == 0 ? 0 : 1);
+        } else {
             TA fromTA = _fromTAList.getSelectedValue();
-            Collection<Group> studentsAssigned = Allocator.getDatabaseIO().getGroupsAssigned(_dp, fromTA);
+            Collection<Group> studentsAssigned = Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA);
             groupsToDisplay = new LinkedList<Group>(studentsAssigned);
 
             _assignButton.setEnabled(studentsAssigned.size() > 0);
-            _numUnassignedLabel.setText(String.format("%d students to chose from TA %s",
-                                                      studentsAssigned.size(), fromTA));
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMinimum(1);
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setMaximum(studentsAssigned.size());
-            ((SpinnerNumberModel) _numStudentsSpinner.getModel()).setValue(studentsAssigned.size() == 0 ? 0 : 1);
+            ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setMinimum(1);
+            ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setMaximum(studentsAssigned.size());
+            ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setValue(studentsAssigned.size() == 0 ? 0 : 1);
         }
 
         Collections.sort(groupsToDisplay);
         _fromGroupList.setListData(groupsToDisplay);
+        filterStudentLogins();
 
         if (_fromRandom.isSelectionEmpty()) {
             _fromGroupList.setSelectedIndex(0);
@@ -584,15 +615,13 @@ public class ManualDistView extends JFrame {
         List<Group> groupsToDisplay;
 
         if (!_toUnassigned.isSelectionEmpty()) {
-            _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgn, _unresolvedHandins).values();
-            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dp));
+            _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgnComboBox.getSelectedItem(), _unresolvedHandins).values();
+            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
             groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
-        }
-        else if (!_toTAList.isSelectionEmpty()) {
+        } else if (!_toTAList.isSelectionEmpty()) {
             TA toTA = _toTAList.getSelectedValue();
-            groupsToDisplay = new LinkedList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dp, toTA));
-        }
-        else {
+            groupsToDisplay = new LinkedList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), toTA));
+        } else {
             groupsToDisplay = new LinkedList<Group>();
         }
 
@@ -603,10 +632,10 @@ public class ManualDistView extends JFrame {
     private void handleAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
         if (!_fromRandom.isSelectionEmpty()) {
             this.handleRandomAssignButtonClick();
-        }
-        else {
+        } else {
             this.handleSelectedAssignButtonClick();
         }
+        this.refreshTALists();
     }
 
     private void handleSelectedAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
@@ -628,7 +657,7 @@ public class ManualDistView extends JFrame {
                     }
 
                     try {
-                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dp, ta);
+                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), ta);
                     } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution even-though"
@@ -638,19 +667,18 @@ public class ManualDistView extends JFrame {
 
                 //set handin status for any Group that doesn't already have one;
                 //do not overwrite existing handin statuses
-                Allocator.getGradingServices().storeHandinStatuses(_dp.getHandin(),
-                                                               groups,
-                                                               Allocator.getConfigurationInfo().getMinutesOfLeniency(),
-                                                               false);
+                Allocator.getGradingServices().storeHandinStatuses(_dpComboBox.getSelectedItem().getHandin(),
+                        groups,
+                        Allocator.getConfigurationInfo().getMinutesOfLeniency(),
+                        false);
 
                 //create rubrics for any DPs for which the Group does not already
                 //have a rubric; do not overwrite existing rubrics
-                Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groups,
-                                                               DistributionRequester.DO_NOTHING_REQUESTER,
-                                                               OverwriteMode.KEEP_EXISTING);
+                Allocator.getRubricManager().distributeRubrics(_dpComboBox.getSelectedItem().getHandin(), groups,
+                        DistributionRequester.DO_NOTHING_REQUESTER,
+                        OverwriteMode.KEEP_EXISTING);
             }
         }
-
         //reassigning a student from one TA to another
         else {
             //"reassigning" to UNASSIGNED (i.e., unassigning)
@@ -659,7 +687,7 @@ public class ManualDistView extends JFrame {
 
                 for (Group group : groups) {
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, oldTA);
+                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
                 }
             }
 
@@ -674,10 +702,10 @@ public class ManualDistView extends JFrame {
                     }
 
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, oldTA);
+                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
 
                     try {
-                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dp, newTA);
+                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), newTA);
                     } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution. There"
@@ -702,15 +730,14 @@ public class ManualDistView extends JFrame {
         //assigning students who were previously assigned to UNASSIGNED
         if (!_fromUnassigned.isSelectionEmpty()) {
             groupsToChoseFrom = new ArrayList<Group>(_unassignedGroups);
-        }
-        else {
-            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dp, fromTA));
+        } else {
+            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA));
         }
         Collections.shuffle(groupsToChoseFrom);
 
         Collection<Group> groupsToAssign = new LinkedList<Group>();
 
-        int numStudentsToAssign = (Integer) _numStudentsSpinner.getValue();
+        int numStudentsToAssign = (Integer) _randomStudentsSpinner.getValue();
         int numGroupsAssignedSoFar = 0;
 
         //assigning to UNASSIGNED; no need to check blacklist
@@ -744,10 +771,10 @@ public class ManualDistView extends JFrame {
 
         //we weren't able to assign as many students as requested; show error and return
         if (numGroupsAssignedSoFar < numStudentsToAssign) {
-            String errMsg = "Cannot assign this many students " +
-                                  "without violating the blacklist.\nIf you would like to " +
-                                  "override the blacklist, please manually select students " +
-                                  "to be distributed.\n";
+            String errMsg = "Cannot assign this many students "
+                    + "without violating the blacklist.\nIf you would like to "
+                    + "override the blacklist, please manually select students "
+                    + "to be distributed.\n";
             JOptionPane.showMessageDialog(ManualDistView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -762,35 +789,33 @@ public class ManualDistView extends JFrame {
 
                 try {
                     //update distribution
-                    Allocator.getDatabaseIO().assignGroupToGrader(group, _dp, toTA);
+                    Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), toTA);
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "Reassigning failed because the student"
-                                + " was still in another TA's distribution.");
+                            + " was still in another TA's distribution.");
                 }
 
                 if (fromTA != null) {
-                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, fromTA);
+                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
                 }
             }
 
             //set handin status for any Group that doesn't already have one;
             //do not overwrite existing handin statuses
-            Allocator.getGradingServices().storeHandinStatuses(_dp.getHandin(),
-                                                               groupsToAssign,
-                                                               Allocator.getConfigurationInfo().getMinutesOfLeniency(),
-                                                               false);
+            Allocator.getGradingServices().storeHandinStatuses(_dpComboBox.getSelectedItem().getHandin(),
+                    groupsToAssign,
+                    Allocator.getConfigurationInfo().getMinutesOfLeniency(),
+                    false);
 
             //create rubrics for any DPs for which the Group does not already
             //have a rubric; do not overwrite existing rubrics
-            Allocator.getRubricManager().distributeRubrics(_dp.getHandin(), groupsToAssign,
-                                                           DistributionRequester.DO_NOTHING_REQUESTER,
-                                                           OverwriteMode.KEEP_EXISTING);
-        }
-
-        //assigning to UNASSIGNED from a TA
+            Allocator.getRubricManager().distributeRubrics(_dpComboBox.getSelectedItem().getHandin(), groupsToAssign,
+                    DistributionRequester.DO_NOTHING_REQUESTER,
+                    OverwriteMode.KEEP_EXISTING);
+        } //assigning to UNASSIGNED from a TA
         else if (fromTA != null) {
             for (Group group : groupsToAssign) {
-                Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dp, fromTA);
+                Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
             }
         }
 
@@ -798,7 +823,7 @@ public class ManualDistView extends JFrame {
         this.updateToList();
     }
 
-    private void filterStudentLogins(KeyEvent evt) throws SQLException, CakeHatDBIOException {
+    private void filterStudentLogins() {
         //term to filter against
         String filterTerm = _studentFilterBox.getText();
 
@@ -816,7 +841,18 @@ public class ManualDistView extends JFrame {
         //otherwise, filter from the selected TA's assigned students
         else {
             TA selectedTA = _fromTAList.getSelectedValue();
-            for (Group group : Allocator.getDatabaseIO().getGroupsAssigned(_dp, selectedTA)) {
+            Collection<Group> groups;
+            try {
+                groups = Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), selectedTA);
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Unable to filter student/group list");
+                return;
+            } catch (CakeHatDBIOException ex) {
+                new ErrorView(ex, "Unable to filter student/group list");
+                return;
+            }
+
+            for (Group group : groups) {
                 if (group.getName().startsWith(filterTerm)) {
                     matchingLogins.add(group);
                 }
@@ -824,49 +860,82 @@ public class ManualDistView extends JFrame {
         }
 
         _fromGroupList.setListData(matchingLogins);
+    }
 
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            if (matchingLogins.size() > 0) {
-                _studentFilterBox.setText(matchingLogins.get(0).getName());
-                _fromGroupList.setSelectedIndex(0);
-                _assignButton.requestFocus();
+    private void refreshTALists() {
+        _taStringConverter.updateData();
+        _fromTAList.refreshList();
+        _toTAList.refreshList();
+        
+        _fromUnassigned.refreshList();
+        _toUnassigned.refreshList();
+    }
+
+    private class UnassignedStringConverter implements StringConverter<String> {
+        public String convertToString(String item) {
+            String numStudents;
+
+            if(_unassignedGroups == null) {
+                numStudents = "?";
+            } else {
+                numStudents = Integer.toString(_unassignedGroups.size());
             }
+
+            return "<html>UNASSIGNED<font color=gray> (" + numStudents +
+                    ")</font></html>";
         }
     }
 
-    private void enableAll() {
-        _fromUnassigned.setEnabled(true);
-        _fromTAList.setEnabled(true);
-        _fromRandom.setEnabled(true);
-        _fromGroupList.setEnabled(true);
+    private class TAStringConverter implements StringConverter<TA> {
+        private Map<TA, Collection<Group>> _distribution;
+
+        public void updateData() {
+            _distribution = null;
+            try {
+                _distribution = Allocator.getDatabaseIO().getDistribution(_dpComboBox.getSelectedItem());
+            } catch (SQLException ex) {
+                new ErrorView(ex, "Unable to distribution data. The user " +
+                        "interface will be unable to display the number of" +
+                        "students/groups assigned to each TA.");
+            } catch (CakeHatDBIOException ex) {
+                new ErrorView(ex, "Unable to distribution data. The user " +
+                        "interface will be unable to display the number of" +
+                        "students/groups assigned to each TA.");
+            }
+        }
+
+        @Override
+        public String convertToString(TA ta) {
+            String numStudents;
+
+            if(_distribution == null) {
+                numStudents = "?";
+            }
+            else if(!_distribution.containsKey(ta)) {
+                numStudents = "0";
+            }
+            else {
+                numStudents = Integer.toString(_distribution.get(ta).size());
+            }
+
+            String representation = "<html>" + ta.getLogin() +
+                    "<font color=gray> (" + numStudents + ")</font></html>";
+
+            return representation;
+        }
+    }
+
+    public static void main(String[] argv) throws Throwable {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
         
-        _toUnassigned.setEnabled(true);
-        _toTAList.setEnabled(true);
-        _assignButton.setEnabled(true);
-    }
-
-    private void disableAll() {
-        _fromUnassigned.clearSelection();
-        _fromUnassigned.setEnabled(false);
-        _fromTAList.setEnabled(false);
-        _fromRandom.clearSelection();
-        _fromRandom.setEnabled(false);
-        _fromGroupList.clearList();
-        _fromGroupList.setEnabled(false);
-
-        _toUnassigned.clearSelection();
-        _toUnassigned.setEnabled(false);
-        _toTAList.setEnabled(false);
-        _toGroupList.clearList();
-        _assignButton.setEnabled(false);
-
-        _numStudentsSpinner.setVisible(false);
-        _assignTypeLabel.setText("");
-        _numUnassignedLabel.setText("");
-    }
-
-    public static void main(String[] argv) {
-        Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().iterator().next();
-        new ManualDistView(asgn, null);
+        List<Assignment> assignments = Allocator.getConfigurationInfo().getHandinAssignments();
+        if(assignments.size() > 0) {
+            ManualDistView view = new ManualDistView(assignments.get(0), null);
+            view.setLocationRelativeTo(null);
+            view.setVisible(true);
+        } else {
+            System.err.println("Cannot test view because the configuration " +
+                    "contains no assignments with distributable parts.");
+        }
     }
 }
