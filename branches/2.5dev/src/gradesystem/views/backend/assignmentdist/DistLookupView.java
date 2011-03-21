@@ -389,7 +389,7 @@ public class DistLookupView extends JFrame {
             if (asgn.getHandinPart().hasHandin(_studentList.getSelectedValue())) {
                 _taList = new GenericJComboBox<TA>(_tas);
                 _taList.addActionListener(new NewTAListener(this));
-                _taList.setSelectedItem(ta);
+                _taList.setGenericSelectedItem(ta);
                 _taList.setEnabled(studentEnabled);
                 this.add(_taList);
             } else {
@@ -401,13 +401,13 @@ public class DistLookupView extends JFrame {
 
         public boolean hasNewTA() {
             return ((_taList != null) &&
-                    (_origTA != _taList.getSelectedItem())) ||
+                    (_origTA != _taList.getGenericSelectedItem())) ||
                    ((_origTA != null) &&
-                    (!_origTA.equals(_taList.getSelectedItem())));
+                    (!_origTA.equals(_taList.getGenericSelectedItem())));
         }
 
         public TA getNewTA() {
-            return _taList.getSelectedItem();
+            return _taList.getGenericSelectedItem();
         }
 
         public Assignment getAsgn() {
