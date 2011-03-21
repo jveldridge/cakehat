@@ -665,7 +665,7 @@ class RubricPanel extends JPanel
                 break;
             }
         }
-        statusBox.setSelectedItem(toSelect);
+        statusBox.setGenericSelectedItem(toSelect);
         vGap = 10;
         layout.putConstraint(SpringLayout.NORTH, statusBox, vGap, SpringLayout.SOUTH, elemAbove);
         layout.putConstraint(SpringLayout.WEST, statusBox, 5, SpringLayout.WEST, panel);

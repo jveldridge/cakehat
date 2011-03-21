@@ -93,7 +93,7 @@ public class ExemptionView extends javax.swing.JFrame {
             _assignment = asgnMenu.getItemAt(0);
         }
 
-        asgnMenu.setSelectedItem(_assignment);
+        asgnMenu.setGenericSelectedItem(_assignment);
         asgnMenu.addActionListener(new AsgnMenuListener(asgnMenu));
 
         Collection<Group> groups = Collections.emptyList();
@@ -126,7 +126,7 @@ public class ExemptionView extends javax.swing.JFrame {
         if (_group == null) {
             _group = _groupMenu.getItemAt(0);
         }
-        _groupMenu.setSelectedItem(_group);
+        _groupMenu.setGenericSelectedItem(_group);
         _groupMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 _group = _groupMenu.getSelectedItem();

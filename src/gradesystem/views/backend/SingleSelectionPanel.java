@@ -26,6 +26,7 @@ import gradesystem.components.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
+import java.util.ArrayList;
 
 /**
  * Single selection panel of the backend.
@@ -416,15 +417,12 @@ class SingleSelectionPanel extends JPanel
 
         this.clearComponents();
 
-        //Populate the comboboxes
-        for(Part part : asgn.getNonHandinParts())
-        {
-            _nonHandinBox.addItem(part);
-        }
-        for(Part part : asgn.getLabParts())
-        {
-            _nonHandinBox.addItem(part);
-        }
+        //Populate the combobox
+        ArrayList<Part> partsToAdd = new ArrayList<Part>();
+        partsToAdd.addAll(asgn.getNonHandinParts());
+        partsToAdd.addAll(asgn.getLabParts());
+        _nonHandinBox.setItems(partsToAdd);
+
         _submitGradeButton.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
         
         _nonHandinBox.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
@@ -654,6 +652,6 @@ class SingleSelectionPanel extends JPanel
 
     public void selectPart(Part part)
     {
-        _nonHandinBox.setSelectedItem(part);
+        _nonHandinBox.setGenericSelectedItem(part);
     }
 }
