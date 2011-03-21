@@ -689,7 +689,7 @@ class MatlabActions implements ActionProvider
         {
             public void run()
             {
-                File mFile = relativeToAbsolute.get(functionsComboBox.getSelectedItem());
+                File mFile = relativeToAbsolute.get(functionsComboBox.getGenericSelectedItem());
                 //Convert file name to functionName
                 String evalCmd = mFile.getName().split("\\.")[0];
                 //Add function arguments if provided
@@ -723,7 +723,7 @@ class MatlabActions implements ActionProvider
                 RemoteMatlabProxy proxy = getMatlabProxy();
 
                 //Move to parent file's directory
-                String parentDir = relativeToAbsolute.get(functionsComboBox.getSelectedItem()).getParent();
+                String parentDir = relativeToAbsolute.get(functionsComboBox.getGenericSelectedItem()).getParent();
                 try
                 {
                     proxy.feval("cd", new String[] { parentDir });

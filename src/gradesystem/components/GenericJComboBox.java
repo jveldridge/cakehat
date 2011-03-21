@@ -1,6 +1,6 @@
 package gradesystem.components;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
@@ -19,7 +19,7 @@ public class GenericJComboBox<E> extends JComboBox
 
     public GenericJComboBox()
     {
-        this.setItems(new ArrayList<E>());
+        this.setItems(Collections.EMPTY_LIST);
     }
 
     public GenericJComboBox(Iterable<E> items)
@@ -58,8 +58,28 @@ public class GenericJComboBox<E> extends JComboBox
         _model.setGenericSelectedItem(item);
     }
 
+    /**
+     * Do not call this method. Use {@link #getGenericSelectedItem()} instead.
+     * <br/><br/>
+     * In order to properly interact with JComboBox this method must return the
+     * actual element in the combo box, not the data selected.
+     *
+     * @return
+     * @see #getGenericSelectedItem()
+     */
     @Override
-    public E getSelectedItem()
+    @Deprecated
+    public Object getSelectedItem()
+    {
+        return _model.getSelectedItem();
+    }
+
+    /**
+     * Returns the currently selected item.
+     * 
+     * @return
+     */
+    public E getGenericSelectedItem()
     {
         return _model.getSelectedData();
     }
