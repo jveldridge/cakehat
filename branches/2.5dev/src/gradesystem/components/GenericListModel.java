@@ -1,8 +1,9 @@
 package gradesystem.components;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractListModel;
@@ -23,19 +24,22 @@ class GenericListModel<T> extends AbstractListModel
 
     public GenericListModel(Iterable<T> data, StringConverter<T> converter)
     {
-        _data = ImmutableList.copyOf(data);
         _converter = converter;
 
-        ImmutableList.Builder<ItemRepresentation<T>> listBuilder = ImmutableList.builder();
-        ImmutableMap.Builder<T, ItemRepresentation<T>> mapBuilder = ImmutableMap.builder();
+        ArrayList<T> dataBuilder = new ArrayList<T>();
+        ArrayList<ItemRepresentation<T>> convertedDataBuilder = new ArrayList<ItemRepresentation<T>>();
+        HashMap<T, ItemRepresentation<T>> dataToConvertedDataBuilder = new HashMap<T, ItemRepresentation<T>>();
         for (T item : data)
         {
+            dataBuilder.add(item);
+
             ItemRepresentation<T> representation = new ItemRepresentation(item, converter);
-            mapBuilder.put(item, representation);
-            listBuilder.add(representation);
+            convertedDataBuilder.add(representation);
+            dataToConvertedDataBuilder.put(item, representation);
         }
-        _convertedData = listBuilder.build();
-        _dataToConvertedDataMap = mapBuilder.build();
+        _data = Collections.unmodifiableList(dataBuilder);
+        _convertedData = Collections.unmodifiableList(convertedDataBuilder);
+        _dataToConvertedDataMap = Collections.unmodifiableMap(dataToConvertedDataBuilder);
     }
 
     public GenericListModel(Iterable<T> data)
@@ -45,7 +49,7 @@ class GenericListModel<T> extends AbstractListModel
 
     public GenericListModel(T[] data, StringConverter<T> converter)
     {
-        this(ImmutableList.of(data), converter);
+        this(Arrays.asList(data), converter);
     }
 
     public GenericListModel(T[] data)

@@ -7,6 +7,8 @@ import javax.swing.JComboBox;
 /**
  * A parameterized {@link JComboBox}. Does <strong>not</strong> support adding,
  * inserting, or removing specific items.
+ * <br/><br/>
+ * All entries <strong>must</strong> be unique.
  * 
  * @author jeldridg
  * @author jak2

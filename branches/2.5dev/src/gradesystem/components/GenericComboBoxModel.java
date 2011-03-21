@@ -1,26 +1,19 @@
 package gradesystem.components;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.ComboBoxModel;
 
 /**
- * A generic data storage used by {@link GenericJComboBox}. By having this class be
- * generic, it allows for accessing the data with type safety and no need to
+ * A generic data storage used by {@link GenericJComboBox}. By having this class
+ * be generic, it allows for accessing the data with type safety and no need to
  * cast.
  *
  * @author jak2
  */
 class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxModel
 {
-//_selectedItem = _convertedData.isEmpty() ? null : _convertedData.get(0);
-
-    /**
-     * Only used when this class is used by {@link GenericJComboBox}.
-     */
     private ItemRepresentation<T> _selectedItem;
-
-
 
     public GenericComboBoxModel(Iterable<T> data, StringConverter<T> converter)
     {
@@ -36,7 +29,7 @@ class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxMod
 
     public GenericComboBoxModel(T[] data, StringConverter<T> converter)
     {
-        this(ImmutableList.of(data), converter);
+        this(Arrays.asList(data), converter);
     }
 
     public GenericComboBoxModel(T[] data)
