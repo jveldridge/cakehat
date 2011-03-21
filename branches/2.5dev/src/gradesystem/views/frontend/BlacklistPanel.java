@@ -2,7 +2,7 @@ package gradesystem.views.frontend;
 
 import gradesystem.Allocator;
 import gradesystem.components.GenericJList;
-import gradesystem.components.GenericJList.StringConverter;
+import gradesystem.components.StringConverter;
 import gradesystem.components.ShadowJTextField;
 import gradesystem.config.TA;
 import gradesystem.resources.icons.IconLoader;

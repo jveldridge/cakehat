@@ -3,10 +3,7 @@ package gradesystem.components;
 import com.google.common.collect.ImmutableList;
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
@@ -21,17 +18,6 @@ import javax.swing.ListModel;
  */
 public class GenericJList<E> extends JList
 {
-    /**
-     * Implement this interface to allow for displaying a String other than
-     * a value's <code>toString()</code> return.
-     * 
-     * @param <E>
-     */
-    public static interface StringConverter<E>
-    {
-        public String convertToString(E item);
-    }
-
     private GenericListModel<E> _model;
 
     public GenericJList()
@@ -359,116 +345,5 @@ public class GenericJList<E> extends JList
     public void useBoldFont()
     {
         this.setFont(this.getFont().deriveFont(Font.BOLD));
-    }
-    
-    /**
-     * This is the underlying data storage use by the JList. By having this
-     * class be generic, it allows for accessing the data with type safety and
-     * no need to cast.
-     */
-    private static class GenericListModel<T> extends AbstractListModel
-    {
-        private final List<T> _data;
-        private final StringConverter<T> _converter;
-        private final List<ItemRepresentation<T>> _convertedData;
-
-        public GenericListModel(Iterable<T> data, StringConverter<T> converter)
-        {
-            _data = ImmutableList.copyOf(data);
-            _converter = converter;
-
-            ImmutableList.Builder<ItemRepresentation<T>> builder = ImmutableList.builder();
-            for(T item : data)
-            {
-                builder.add(new ItemRepresentation(item, converter));
-            }
-            _convertedData = builder.build();
-        }
-
-        public GenericListModel(Iterable<T> data)
-        {
-            this(data, new DefaultStringConverter<T>());
-        }
-
-        public GenericListModel(T[] data, StringConverter<T> converter)
-        {
-            this(ImmutableList.of(data), converter);
-        }
-
-        public GenericListModel(T[] data)
-        {
-            this(data, new DefaultStringConverter<T>());
-        }
-
-        public GenericListModel()
-        {
-            _data = Collections.emptyList();
-            _converter = new DefaultStringConverter<T>();
-            _convertedData = new Vector<ItemRepresentation<T>>();
-        }
-
-        @Override
-        public int getSize()
-        {
-            return _convertedData.size();
-        }
-
-        @Override
-        public ItemRepresentation<T> getElementAt(int i)
-        {
-            return _convertedData.get(i);
-        }
-
-        public StringConverter<T> getConverter()
-        {
-            return _converter;
-        }
-
-        public T getDataAt(int i)
-        {
-            return _data.get(i);
-        }
-
-        public List<T> getData()
-        {
-            return _data;
-        }
-
-        public boolean hasData()
-        {
-            return !_data.isEmpty();
-        }
-
-        private static class ItemRepresentation<E>
-        {
-            private final E _item;
-            private final String _representation;
-
-            public ItemRepresentation(E item, StringConverter<E> converter)
-            {
-                _item = item;
-                _representation = converter.convertToString(_item);
-            }
-
-            public E getItem()
-            {
-                return _item;
-            }
-
-            @Override
-            public String toString()
-            {
-                return _representation;
-            }
-        }
-        
-        private static class DefaultStringConverter<E> implements StringConverter<E>
-        {
-            @Override
-            public String convertToString(E item)
-            {
-                return item + "";
-            }
-        }
     }
 }

@@ -38,7 +38,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJList.StringConverter;
+import gradesystem.components.StringConverter;
 import gradesystem.database.CakeHatDBIOException;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;

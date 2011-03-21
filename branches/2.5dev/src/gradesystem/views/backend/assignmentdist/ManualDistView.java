@@ -40,7 +40,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
-import gradesystem.components.GenericJList.StringConverter;
+import gradesystem.components.StringConverter;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.resources.icons.IconLoader;
@@ -162,7 +162,7 @@ public class ManualDistView extends JFrame {
 
         //The distributable part is specified
         if (initialDP != null) {
-            _dpComboBox.setSelectedItem(initialDP);
+            _dpComboBox.setGenericSelectedItem(initialDP);
         }
         //Not specified, and the assignment has multiple distributable parts
         else if (initialAsgn.getDistributableParts().size() > 1) {
@@ -181,7 +181,7 @@ public class ManualDistView extends JFrame {
         }
         //Not specified, and the assignment has only one distributable part
         else {
-                _dpComboBox.setSelectedItem(initialAsgn.getDistributableParts().get(0));
+                _dpComboBox.setGenericSelectedItem(initialAsgn.getDistributableParts().get(0));
         }
 
         _dpComboBox.addActionListener(new ActionListener() {
@@ -203,7 +203,7 @@ public class ManualDistView extends JFrame {
         });
 
         _asgnComboBox = new GenericJComboBox<Assignment>(Allocator.getConfigurationInfo().getHandinAssignments());
-        _asgnComboBox.setSelectedItem(initialAsgn);
+        _asgnComboBox.setGenericSelectedItem(initialAsgn);
 
         _asgnComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
