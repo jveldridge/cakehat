@@ -3,9 +3,7 @@ package gradesystem.components;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.AbstractListModel;
 
 /**
@@ -13,116 +11,60 @@ import javax.swing.AbstractListModel;
  * generic, it allows for accessing the data with type safety and no need to
  * cast.
  *
- * @jak2
+ * @author jak2
  */
 class GenericListModel<T> extends AbstractListModel
 {
-    protected final List<T> _data;
-    private final StringConverter<T> _converter;
-    protected final List<ItemRepresentation<T>> _convertedData;
-    protected final Map<T, ItemRepresentation<T>> _dataToConvertedDataMap;
-
-    public GenericListModel(Iterable<T> data, StringConverter<T> converter)
-    {
-        _converter = converter;
-
-        ArrayList<T> dataBuilder = new ArrayList<T>();
-        ArrayList<ItemRepresentation<T>> convertedDataBuilder = new ArrayList<ItemRepresentation<T>>();
-        HashMap<T, ItemRepresentation<T>> dataToConvertedDataBuilder = new HashMap<T, ItemRepresentation<T>>();
-        for (T item : data)
-        {
-            dataBuilder.add(item);
-
-            ItemRepresentation<T> representation = new ItemRepresentation(item, converter);
-            convertedDataBuilder.add(representation);
-            dataToConvertedDataBuilder.put(item, representation);
-        }
-        _data = Collections.unmodifiableList(dataBuilder);
-        _convertedData = Collections.unmodifiableList(convertedDataBuilder);
-        _dataToConvertedDataMap = Collections.unmodifiableMap(dataToConvertedDataBuilder);
-    }
+    private final List<T> _elements;
 
     public GenericListModel(Iterable<T> data)
     {
-        this(data, new DefaultStringConverter<T>());
-    }
-
-    public GenericListModel(T[] data, StringConverter<T> converter)
-    {
-        this(Arrays.asList(data), converter);
+        ArrayList<T> dataBuilder = new ArrayList<T>();
+        for(T item : data)
+        {
+            dataBuilder.add(item);
+        }
+        _elements = Collections.unmodifiableList(dataBuilder);
     }
 
     public GenericListModel(T[] data)
     {
-        this(data, new DefaultStringConverter<T>());
+        this(Arrays.asList(data));
     }
 
     public GenericListModel()
     {
-        this(Collections.EMPTY_LIST, new DefaultStringConverter<T>());
+        this(Collections.EMPTY_LIST);
     }
 
     @Override
     public int getSize()
     {
-        return _convertedData.size();
+        return _elements.size();
     }
 
     @Override
-    public ItemRepresentation<T> getElementAt(int i)
+    public T getElementAt(int i)
     {
-        return _convertedData.get(i);
+        return _elements.get(i);
     }
 
-    public StringConverter<T> getConverter()
+    public List<T> getElements()
     {
-        return _converter;
+        return _elements;
     }
 
-    public T getDataAt(int i)
+    public boolean hasElements()
     {
-        return _data.get(i);
+        return !_elements.isEmpty();
     }
 
-    public List<T> getData()
+    /**
+     * Fires off an event that all of the elements of this model have changed.
+     * This will result in the UI using this model to repaint the elements.
+     */
+    public void notifyRefresh()
     {
-        return _data;
-    }
-
-    public boolean hasData()
-    {
-        return !_data.isEmpty();
-    }
-
-    protected static class ItemRepresentation<E>
-    {
-        private final E _item;
-        private final String _representation;
-
-        public ItemRepresentation(E item, StringConverter<E> converter)
-        {
-            _item = item;
-            _representation = converter.convertToString(_item);
-        }
-
-        public E getItem()
-        {
-            return _item;
-        }
-
-        @Override
-        public String toString()
-        {
-            return _representation;
-        }
-    }
-
-    protected static class DefaultStringConverter<E> implements StringConverter<E>
-    {
-        @Override
-        public String convertToString(E item)
-        {
-            return item + "";
-        }
+        fireContentsChanged(this, 0, this.getSize() - 1);
     }
 }

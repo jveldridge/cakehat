@@ -1,21 +1,26 @@
 package gradesystem.components;
 
+import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 
 /**
  * A parameterized {@link JComboBox}. Does <strong>not</strong> support adding,
  * inserting, or removing specific items.
  * <br/><br/>
- * All entries <strong>must</strong> be unique.
+ * Unexpected behavior may arise if not all entries are unique.
  * 
- * @author jeldridg
  * @author jak2
  */
 public class GenericJComboBox<E> extends JComboBox
 {
     private GenericComboBoxModel<E> _model;
+    private StringConverterCellRenderer _renderer;
 
     public GenericJComboBox()
     {
@@ -27,67 +32,57 @@ public class GenericJComboBox<E> extends JComboBox
         this.setItems(items);
     }
 
-    public GenericJComboBox(Iterable<E> values, StringConverter<E> converter)
+    public GenericJComboBox(Iterable<E> values, final StringConverter<E> converter)
     {
-        this.setItems(values, converter);
+        this.setItems(values);
+
+        this.setStringConverter(converter);
+    }
+
+    public void setStringConverter(StringConverter<E> converter)
+    {
+        _renderer = new StringConverterCellRenderer(new BasicComboBoxRenderer(), converter);
+        this.setRenderer(_renderer);
+        _model.notifyRefresh();
     }
 
     /**
-     * Do not use the method, it cannot ensure type safety.
+     * For internal use <strong>only</strong>.
+     * <br/><br/>
+     * This method must be public in order to interact properly with
+     * {@link JComboBox}; however, it should not be called from other classes.
      *
      * @param obj
+     *
+     * @deprecated deprecated due to lack of type safety
      * @see #setGenericSelectedItem(java.lang.Object)
      */
     @Override
-    @Deprecated
     public void setSelectedItem(Object obj)
     {
-        //This method will still internally be called by JComboBox which
-        //will either be passing in null or an instance of the internal
-        //wrapper object that the GenericComboBoxModel uses
         _model.setSelectedItem(obj);
     }
 
     /**
-     * Sets the selected item in a type safe manner.
+     * Sets the selected item in a typesafe manner.
      *
-     * @param item may be <code>null</code>
+     * @param item
      */
     public void setGenericSelectedItem(E item)
     {
         _model.setGenericSelectedItem(item);
     }
 
-    /**
-     * Do not call this method. Use {@link #getGenericSelectedItem()} instead.
-     * <br/><br/>
-     * In order to properly interact with JComboBox this method must return the
-     * actual element in the combo box, not the data selected.
-     *
-     * @return
-     * @see #getGenericSelectedItem()
-     */
     @Override
-    @Deprecated
-    public Object getSelectedItem()
+    public E getSelectedItem()
     {
         return _model.getSelectedItem();
-    }
-
-    /**
-     * Returns the currently selected item.
-     * 
-     * @return
-     */
-    public E getGenericSelectedItem()
-    {
-        return _model.getSelectedData();
     }
 
     @Override
     public E getItemAt(int index)
     {
-        return _model.getDataAt(index);
+        return _model.getElementAt(index);
     }
 
     /**
@@ -98,18 +93,6 @@ public class GenericJComboBox<E> extends JComboBox
     public void setItems(Iterable<E> items)
     {
         this.setModel(new GenericComboBoxModel<E>(items));
-    }
-
-    /**
-     * Replaces all existing data with <code>items</code>. They will be
-     * displayed as defined by the <code>converter</code>.
-     *
-     * @param items
-     * @param converter
-     */
-    public void setItems(Iterable<E> items, StringConverter<E> converter)
-    {
-        this.setModel(new GenericComboBoxModel<E>(items, converter));
     }
 
     /**
@@ -206,5 +189,27 @@ public class GenericJComboBox<E> extends JComboBox
     public void removeItemAt(int anIndex)
     {
         throw new UnsupportedOperationException("Mutation not supported");
+    }
+
+    public static void main(String[] args) throws Throwable
+    {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
+
+        JFrame frame = new JFrame();
+
+        GenericJComboBox box = new GenericJComboBox(Arrays.asList("Hello", "World"),
+                new StringConverter<String>() {
+
+            public String convertToString(String item) {
+                return item + " !";
+            }
+
+        });
+
+        frame.add(box);
+
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
 }

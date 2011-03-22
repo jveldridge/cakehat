@@ -13,33 +13,49 @@ import javax.swing.ComboBoxModel;
  */
 class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxModel
 {
-    private ItemRepresentation<T> _selectedItem;
-
-    public GenericComboBoxModel(Iterable<T> data, StringConverter<T> converter)
-    {
-        super(data, converter);
-
-        _selectedItem = _convertedData.isEmpty() ? null : _convertedData.get(0);
-    }
+    private T _selectedItem;
 
     public GenericComboBoxModel(Iterable<T> data)
     {
-        this(data, new DefaultStringConverter<T>());
-    }
+        super(data);
 
-    public GenericComboBoxModel(T[] data, StringConverter<T> converter)
-    {
-        this(Arrays.asList(data), converter);
+        _selectedItem = this.hasElements() ? this.getElementAt(0) : null;
     }
 
     public GenericComboBoxModel(T[] data)
     {
-        this(data, new DefaultStringConverter<T>());
+        this(Arrays.asList(data));
     }
 
     public GenericComboBoxModel()
     {
-        this(Collections.EMPTY_LIST, new DefaultStringConverter<T>());
+        this(Collections.EMPTY_LIST);
+    }
+
+    @Override
+    public void setSelectedItem(Object item)
+    {
+        //If item is not the same as _selectedItem
+        if((_selectedItem != null && !_selectedItem.equals(item)) ||
+               (_selectedItem == null && item != null))
+        {
+            //If null (meaning no selection)
+            if(item == null)
+            {
+                _selectedItem = null;
+
+                //Matches behavior of javax.swing.DefaultComboBoxModel
+                fireContentsChanged(this, -1, -1);
+            }
+            //If the selection is literally contained in the data
+            else if(objectEquivalenceContained(item))
+            {
+                _selectedItem = (T) item;
+                
+                //Matches behavior of javax.swing.DefaultComboBoxModel
+                fireContentsChanged(this, -1, -1);
+            }
+        }
     }
 
     public void setGenericSelectedItem(T item)
@@ -56,57 +72,35 @@ class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxMod
                 //Matches behavior of javax.swing.DefaultComboBoxModel
                 fireContentsChanged(this, -1, -1);
             }
-            //If the selection is contained in the underlying data
-            else if(_data.contains(item))
+            //If the selection is contained in the data
+            else if(this.getElements().contains(item))
             {
-                //Select the corresponding wrapper around this item
-                _selectedItem = _dataToConvertedDataMap.get(item);
-                
+                _selectedItem = item;
+
                 //Matches behavior of javax.swing.DefaultComboBoxModel
                 fireContentsChanged(this, -1, -1);
             }
         }
     }
 
-    @Override
-    public void setSelectedItem(Object obj)
+    private boolean objectEquivalenceContained(Object obj)
     {
-        //If obj is not the same as _selectedItem
-        if((_selectedItem != null && !_selectedItem.equals(obj)) ||
-               (_selectedItem == null && obj != null))
+        boolean contained = false;
+
+        for(T element : this.getElements())
         {
-            //If null (meaning no selection)
-            if(obj == null)
+            if(obj == element)
             {
-                _selectedItem = null;
-
-                //Matches behavior of javax.swing.DefaultComboBoxModel
-                fireContentsChanged(this, -1, -1);
-            }
-            //If the selection is of the representation
-            else if(obj instanceof ItemRepresentation && _convertedData.contains(obj))
-            {
-                _selectedItem = (ItemRepresentation<T>) obj;
-
-                //Matches behavior of javax.swing.DefaultComboBoxModel
-                fireContentsChanged(this, -1, -1);
-            }
-            else if(!(obj instanceof ItemRepresentation))
-            {
-                throw new RuntimeException("Selection should never be set " +
-                        "to an object that is not an ItemRepresentation.");
+                contained = true;
             }
         }
+
+        return contained;
     }
 
     @Override
-    public ItemRepresentation<T> getSelectedItem()
+    public T getSelectedItem()
     {
         return _selectedItem;
-    }
-
-    public T getSelectedData()
-    {
-        return _selectedItem == null ? null : _selectedItem.getItem();
     }
 }
