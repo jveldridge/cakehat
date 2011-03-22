@@ -18,9 +18,15 @@ import javax.swing.ListCellRenderer;
  */
 class StringConverterCellRenderer<T> implements ListCellRenderer
 {
+    interface ItemInfoProvider<T>
+    {
+        public T getElementDisplayedAt(int i);
+    }
+
     private final StringConverter<T> _converter;
     private final ListCellRenderer _delegateRenderer;
     private final Map<T, String> _cachedConversions;
+    private final ItemInfoProvider<T> _infoProvider;
 
     /**
      * A ListCellRenderer that uses the <code>converter</code> to determine what
@@ -32,9 +38,10 @@ class StringConverterCellRenderer<T> implements ListCellRenderer
      * @param converter
      */
     public StringConverterCellRenderer(ListCellRenderer delegateRenderer,
-            StringConverter<T> converter)
+            ItemInfoProvider<T> infoProvider, StringConverter<T> converter)
     {
         _delegateRenderer = delegateRenderer;
+        _infoProvider = infoProvider;
         _converter = converter;
         _cachedConversions = new HashMap<T, String>();
     }
@@ -66,14 +73,12 @@ class StringConverterCellRenderer<T> implements ListCellRenderer
     public Component getListCellRendererComponent(JList list, Object value,
             int index, boolean isSelected, boolean cellHasFocus)
     {
-        //This cast will always succeed because the values being provided are
-        //from the model of the list or combo box
-        T castValue = (T) value;
-        if(!_cachedConversions.containsKey(castValue))
+        T valueInModel = _infoProvider.getElementDisplayedAt(index);
+        if(!_cachedConversions.containsKey(valueInModel))
         {
-            _cachedConversions.put(castValue, _converter.convertToString(castValue));
+            _cachedConversions.put(valueInModel, _converter.convertToString(valueInModel));
         }
-        String representation = _cachedConversions.get(castValue);
+        String representation = _cachedConversions.get(valueInModel);
 
         return _delegateRenderer.getListCellRendererComponent(list,
                 representation, index, isSelected, cellHasFocus);

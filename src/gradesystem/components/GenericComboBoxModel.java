@@ -39,7 +39,6 @@ class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxMod
         if((_selectedItem != null && !_selectedItem.equals(item)) ||
                (_selectedItem == null && item != null))
         {
-            //If null (meaning no selection)
             if(item == null)
             {
                 _selectedItem = null;
@@ -47,13 +46,19 @@ class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxMod
                 //Matches behavior of javax.swing.DefaultComboBoxModel
                 fireContentsChanged(this, -1, -1);
             }
-            //If the selection is literally contained in the data
-            else if(objectEquivalenceContained(item))
+            else
             {
-                _selectedItem = (T) item;
-                
-                //Matches behavior of javax.swing.DefaultComboBoxModel
-                fireContentsChanged(this, -1, -1);
+                //If item is in the model, then it will be returned in a
+                //typesafe manner, if it is not then null will be returned
+                //and no selection should be made
+                T itemInModel = findMatchingObject(item);
+                if(itemInModel != null)
+                {
+                    _selectedItem = itemInModel;
+
+                    //Matches behavior of javax.swing.DefaultComboBoxModel
+                    fireContentsChanged(this, -1, -1);
+                }
             }
         }
     }
@@ -64,7 +69,6 @@ class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxMod
         if((_selectedItem != null && !_selectedItem.equals(item)) ||
                (_selectedItem == null && item != null))
         {
-            //If null (meaning no selection)
             if(item == null)
             {
                 _selectedItem = null;
@@ -83,19 +87,27 @@ class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxMod
         }
     }
 
-    private boolean objectEquivalenceContained(Object obj)
+    /**
+     * Finds the object stored in this model that is the <strong>exact</code>
+     * same instance of <code>obj</code>. If none is found, null is returned.
+     *
+     * @param obj
+     * @return
+     */
+    private T findMatchingObject(Object obj)
     {
-        boolean contained = false;
+        T match = null;
 
-        for(T element : this.getElements())
+        for(T elem : this.getElements())
         {
-            if(obj == element)
+            if(obj == elem)
             {
-                contained = true;
+                match = elem;
+                break;
             }
         }
 
-        return contained;
+        return match;
     }
 
     @Override

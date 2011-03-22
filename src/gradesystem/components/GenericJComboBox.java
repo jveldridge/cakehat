@@ -1,23 +1,24 @@
 package gradesystem.components;
 
-import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 
 /**
  * A parameterized {@link JComboBox}. Does <strong>not</strong> support adding,
  * inserting, or removing specific items.
  * <br/><br/>
+ * Unlike the standard <code>JComboBox</code>, this class supports having an
+ * item that is <code>null</code>. However, when <code>null</code> is stored
+ * in this combo box, it is not possible to have no item in the combo box
+ * selected.
+ * <br/><br/>
  * Unexpected behavior may arise if not all entries are unique.
  * 
  * @author jak2
  */
-public class GenericJComboBox<E> extends JComboBox
+public class GenericJComboBox<E> extends JComboBox implements StringConverterCellRenderer.ItemInfoProvider<E>
 {
     private GenericComboBoxModel<E> _model;
     private StringConverterCellRenderer _renderer;
@@ -41,7 +42,7 @@ public class GenericJComboBox<E> extends JComboBox
 
     public void setStringConverter(StringConverter<E> converter)
     {
-        _renderer = new StringConverterCellRenderer(new BasicComboBoxRenderer(), converter);
+        _renderer = new StringConverterCellRenderer(new BasicComboBoxRenderer(), this, converter);
         this.setRenderer(_renderer);
         _model.notifyRefresh();
     }
@@ -77,6 +78,13 @@ public class GenericJComboBox<E> extends JComboBox
     public E getSelectedItem()
     {
         return _model.getSelectedItem();
+    }
+    
+    @Override
+    public int getSelectedIndex()
+    {
+        //This allows for a null item in the list to be considered selected
+        return _model.getElements().indexOf(_model.getSelectedItem());
     }
 
     @Override
@@ -134,6 +142,31 @@ public class GenericJComboBox<E> extends JComboBox
         super.setModel(model);
     }
     
+    /**
+     * This method must be public to match a required interface; however, it is
+     * not intended for external use.
+     *
+     * @param i
+     * @return
+     */
+    public E getElementDisplayedAt(int i)
+    {
+        E elem;
+
+        //For a JComboBox -1 indicates the popup is closed and it is rendering
+        //the selected item
+        if(i == -1)
+        {
+            elem = getSelectedItem();
+        }
+        else
+        {
+            elem = _model.getElementAt(i);
+        }
+
+        return elem;
+    }
+
     @Override
     public void removeAllItems()
     {
@@ -189,27 +222,5 @@ public class GenericJComboBox<E> extends JComboBox
     public void removeItemAt(int anIndex)
     {
         throw new UnsupportedOperationException("Mutation not supported");
-    }
-
-    public static void main(String[] args) throws Throwable
-    {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
-
-        JFrame frame = new JFrame();
-
-        GenericJComboBox box = new GenericJComboBox(Arrays.asList("Hello", "World"),
-                new StringConverter<String>() {
-
-            public String convertToString(String item) {
-                return item + " !";
-            }
-
-        });
-
-        frame.add(box);
-
-        frame.pack();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
     }
 }

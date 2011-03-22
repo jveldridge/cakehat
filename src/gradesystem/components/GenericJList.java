@@ -19,7 +19,7 @@ import javax.swing.ListModel;
  *
  * @param <E>
  */
-public class GenericJList<E> extends JList
+public class GenericJList<E> extends JList implements StringConverterCellRenderer.ItemInfoProvider<E>
 {
     private GenericListModel<E> _model;
     private StringConverterCellRenderer _renderer;
@@ -54,7 +54,7 @@ public class GenericJList<E> extends JList
      */
     public void setStringConverter(StringConverter<E> converter)
     {
-        _renderer = new StringConverterCellRenderer(new DefaultListCellRenderer(), converter);
+        _renderer = new StringConverterCellRenderer(new DefaultListCellRenderer(), this, converter);
         this.setCellRenderer(_renderer);
         _model.notifyRefresh();
     }
@@ -208,6 +208,18 @@ public class GenericJList<E> extends JList
         }
 
         return Collections.unmodifiableList(list);
+    }
+    
+    /**
+     * This method must be public to match a required interface; however, it is
+     * not intended for external use.
+     *
+     * @param i
+     * @return
+     */
+    public E getElementDisplayedAt(int i)
+    {
+        return _model.getElementAt(i);
     }
 
     /**
