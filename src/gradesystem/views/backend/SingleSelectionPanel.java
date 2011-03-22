@@ -106,7 +106,7 @@ class SingleSelectionPanel extends JPanel
             public void actionPerformed(ActionEvent ae) {
                 if (_asgn.hasNonHandinParts() || _asgn.hasLabParts()) {
                     double earned = _nonHandinEarnedField.getNumberValue();
-                    Part part = _nonHandinBox.getGenericSelectedItem();
+                    Part part = _nonHandinBox.getSelectedItem();
                     try {
                         Allocator.getDatabaseIO().enterGrade(_group, part, earned);
                     } catch (SQLException ex) {
@@ -158,7 +158,7 @@ class SingleSelectionPanel extends JPanel
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Part part = _nonHandinBox.getGenericSelectedItem();
+                Part part = _nonHandinBox.getSelectedItem();
                 if(part != null)
                 {
                     Double earned = null;
@@ -595,7 +595,7 @@ class SingleSelectionPanel extends JPanel
         //Non-handin
         if(_asgn.hasNonHandinParts())
         {
-            Part selectedPart = _nonHandinBox.getGenericSelectedItem();
+            Part selectedPart = _nonHandinBox.getSelectedItem();
             totalEarned += nonHandinEarned;
             totalOutOf += nonHandinOutOf;
 

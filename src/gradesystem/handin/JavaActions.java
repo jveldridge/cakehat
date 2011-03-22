@@ -998,7 +998,7 @@ class JavaActions implements ActionProvider
 
         public ClassInfo getSelectedMain()
         {
-            return _mainClassesBox.getGenericSelectedItem();
+            return _mainClassesBox.getSelectedItem();
         }
 
         public String getRunArguments()

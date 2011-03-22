@@ -98,9 +98,9 @@ public class ExemptionView extends javax.swing.JFrame {
 
         Collection<Group> groups = Collections.emptyList();
         try {
-            groups = Allocator.getDatabaseIO().getGroupsForAssignment(asgnMenu.getGenericSelectedItem());
+            groups = Allocator.getDatabaseIO().getGroupsForAssignment(asgnMenu.getSelectedItem());
         } catch (SQLException ex) {
-            new ErrorView(ex, "Could not get groups for assignment " + asgnMenu.getGenericSelectedItem());
+            new ErrorView(ex, "Could not get groups for assignment " + asgnMenu.getSelectedItem());
         }
         _groupMenu.setItems(groups);
         
@@ -129,7 +129,7 @@ public class ExemptionView extends javax.swing.JFrame {
         _groupMenu.setGenericSelectedItem(_group);
         _groupMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                _group = _groupMenu.getGenericSelectedItem();
+                _group = _groupMenu.getSelectedItem();
                 updateWest();
             }
         });
@@ -306,17 +306,17 @@ public class ExemptionView extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             Collection<Group> groups = Collections.emptyList();
             try {
-                groups = Allocator.getDatabaseIO().getGroupsForAssignment(_asgnMenu.getGenericSelectedItem());
+                groups = Allocator.getDatabaseIO().getGroupsForAssignment(_asgnMenu.getSelectedItem());
             } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get groups for assignment " + _asgnMenu.getGenericSelectedItem());
+                new ErrorView(ex, "Could not get groups for assignment " + _asgnMenu.getSelectedItem());
             }
 
-            if (_asgnMenu.getGenericSelectedItem().hasGroups() && groups.isEmpty()) {
+            if (_asgnMenu.getSelectedItem().hasGroups() && groups.isEmpty()) {
                 JOptionPane.showMessageDialog(ExemptionView.this, "No group has been created yet.");
                 return;
             }
 
-            _assignment = _asgnMenu.getGenericSelectedItem();
+            _assignment = _asgnMenu.getSelectedItem();
             updateViewByAsgn();
             _groupMenu.setItems(groups);
             updateWest();

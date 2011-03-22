@@ -717,7 +717,7 @@ class RubricPanel extends JPanel
 
             public void actionPerformed(ActionEvent ae) {
                 //Set new status
-                TimeStatus newStatus = statusBox.getGenericSelectedItem()._timeStatus;
+                TimeStatus newStatus = statusBox.getSelectedItem()._timeStatus;
                 _status = new HandinStatus(newStatus, 0);
                 _stateManager.setHandinStatus(_status);
 

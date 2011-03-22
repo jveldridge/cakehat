@@ -764,7 +764,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         }
 
         public DistributablePart getPartToGrade() {
-            return _partBox.getGenericSelectedItem();
+            return _partBox.getSelectedItem();
         }
 
     }

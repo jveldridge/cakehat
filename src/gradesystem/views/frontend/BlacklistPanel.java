@@ -11,7 +11,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.FontMetrics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,7 +26,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -47,7 +45,6 @@ class BlacklistPanel extends JPanel
     private final GenericJList<String> _nonblacklistJList;
     private final List<String> _nonblacklistedStudents;
     private final Map<String, String> _studentsMap;
-    private final LoginConverter _converter;
     private final TA _user;
 
     /**
@@ -64,7 +61,6 @@ class BlacklistPanel extends JPanel
         _frontend = frontend;
 
         this.setBackground(TRANSLUCENT);
-        _converter = new LoginConverter();
         _user = Allocator.getUserServices().getUser();
 
         _filterField = new ShadowJTextField("Filter List");
@@ -79,8 +75,9 @@ class BlacklistPanel extends JPanel
         _nonblacklistedStudents.removeAll(blacklist);
         Collections.sort(_nonblacklistedStudents);
 
-        _blacklistJList = new GenericJList<String>(blacklist, _converter);
-        _nonblacklistJList = new GenericJList<String>(_nonblacklistedStudents, _converter);
+        LoginConverter converter = new LoginConverter();
+        _blacklistJList = new GenericJList<String>(blacklist, converter);
+        _nonblacklistJList = new GenericJList<String>(_nonblacklistedStudents, converter);
 
         this.initUI();
     }
@@ -166,12 +163,12 @@ class BlacklistPanel extends JPanel
                     Collections.sort(allBlacklisted);
 
                     List<String> selected = _blacklistJList.getGenericSelectedValues();
-                    _blacklistJList.setListData(allBlacklisted, _converter);
+                    _blacklistJList.setListData(allBlacklisted);
                     _blacklistJList.setSelectedValues(selected);
 
                     //Update non-black list
                     _nonblacklistedStudents.removeAll(toBlacklist);
-                    _nonblacklistJList.setListData(_nonblacklistedStudents, _converter);
+                    _nonblacklistJList.setListData(_nonblacklistedStudents);
                     applyFilterField();
                 }
                 catch(SQLException ex)
@@ -199,13 +196,13 @@ class BlacklistPanel extends JPanel
                     //Update black list
                     List<String> blacklisted = new ArrayList<String>(_blacklistJList.getValues());
                     blacklisted.removeAll(toUnblacklist);
-                    _blacklistJList.setListData(blacklisted, _converter);
+                    _blacklistJList.setListData(blacklisted);
                     
                     //Update non-black list
                     _nonblacklistedStudents.addAll(toUnblacklist);
                     Collections.sort(_nonblacklistedStudents);
                     List<String> selected = _nonblacklistJList.getGenericSelectedValues();
-                    _nonblacklistJList.setListData(_nonblacklistedStudents, _converter);
+                    _nonblacklistJList.setListData(_nonblacklistedStudents);
                     _nonblacklistJList.setSelectedValues(selected);
                     applyFilterField();
                 }
@@ -308,7 +305,7 @@ class BlacklistPanel extends JPanel
         }
 
         List<String> selected = _nonblacklistJList.getGenericSelectedValues();
-        _nonblacklistJList.setListData(filteredLogins, _converter);
+        _nonblacklistJList.setListData(filteredLogins);
         _nonblacklistJList.setSelectedValues(selected);
     }
 }

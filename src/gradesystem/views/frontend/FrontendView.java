@@ -279,7 +279,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             groups.add(status.getGroup());
         }
-        _groupList.setListData(groups, new GroupConverter(selected), true);
+        _groupList.setStringConverter(new GroupConverter(selected));
+        _groupList.setListData(groups, true);
         if(_groupList.isSelectionEmpty())
         {
             _groupList.selectFirst();
@@ -375,7 +376,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         JLabel dpLabel = new JLabel("<html><b>Assignment Part</b></html>");
         dpLabel.setPreferredSize(dpLabelSize);
 
-        _dpList = new GenericJList<DistributablePart>();
+        _dpList = new GenericJList<DistributablePart>(Collections.EMPTY_LIST, new DPConverter());
         _dpList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _dpList.usePlainFont();
         _dpList.addListSelectionListener(new ListSelectionListener()
@@ -1447,7 +1448,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         List<DistributablePart> sortedParts =
                                 new ArrayList<DistributablePart>(_assignedGroups.keySet());
                         Collections.sort(sortedParts);
-                        _dpList.setListData(sortedParts, new DPConverter(), true);
+                        _dpList.setListData(sortedParts, true);
 
                         if(_dpList.isSelectionEmpty())
                         {
@@ -1465,7 +1466,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         {
                             groups.add(status.getGroup());
                         }
-                        _groupList.setListData(groups, new GroupConverter(currPart), true);
+                        _groupList.setStringConverter(new GroupConverter(currPart));
+                        _groupList.setListData(groups, true);
 
                         if(_groupList.isSelectionEmpty())
                         {

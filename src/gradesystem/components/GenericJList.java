@@ -1,9 +1,12 @@
 package gradesystem.components;
 
-import com.google.common.collect.ImmutableList;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
@@ -19,6 +22,7 @@ import javax.swing.ListModel;
 public class GenericJList<E> extends JList
 {
     private GenericListModel<E> _model;
+    private StringConverterCellRenderer _renderer;
 
     public GenericJList()
     {
@@ -27,7 +31,7 @@ public class GenericJList<E> extends JList
 
     public GenericJList(E... values)
     {
-        this.setListData(ImmutableList.of(values));
+        this.setListData(Arrays.asList(values));
     }
 
     public GenericJList(Iterable<E> values)
@@ -37,18 +41,31 @@ public class GenericJList<E> extends JList
 
     public GenericJList(Iterable<E> values, StringConverter<E> converter)
     {
-        this.setListData(values, converter);
+        this.setListData(values);
+
+        this.setStringConverter(converter);
+    }
+
+    /**
+     * Sets the StringConverter used to render all values in the list. This
+     * will cause the list to be refreshed, re-rendering all of its cells.
+     *
+     * @param converter
+     */
+    public void setStringConverter(StringConverter<E> converter)
+    {
+        _renderer = new StringConverterCellRenderer(new DefaultListCellRenderer(), converter);
+        this.setCellRenderer(_renderer);
+        _model.notifyRefresh();
     }
 
     /**
      * This method cannot be made type-safe due to Java's implementation of
      * generics: setListData(Object[]) and setListData(E[]) would result in a
      * signature clash due to type erasure.
-     * <br/><br/>
-     * Thus, this method cannot be supported.
      *
      * @see #setListData(java.lang.Iterable)
-     * @see #setListData(java.lang.Iterable, gradesystem.components.GenericJList.StringConverter)
+     * @see #setListData(java.lang.Iterable, boolean)
      *
      * @param values
      *
@@ -58,7 +75,26 @@ public class GenericJList<E> extends JList
     public void setListData(Object[] values)
     {
         throw new UnsupportedOperationException("Not valid for GenericJList. " +
-                "Please use setListData(...)");
+                "Please use setListData(Iterable<E>)");
+    }
+
+    /**
+     * This method cannot be made type-safe due to Java's implementation of
+     * generics: setListData(Vector<?>) and setListData(Vector<E>) would result
+     * in a signature clash due to type erasure.
+     *
+     * @see #setListData(java.lang.Iterable)
+     * @see #setListData(java.lang.Iterable, boolean)
+     *
+     * @param values
+     *
+     * @deprecated deprecated due to lack of type-safety
+     */
+    @Override
+    public void setListData(Vector<?> values)
+    {
+        throw new UnsupportedOperationException("Not valid for GenericJList. " +
+                "Please use setListData(Iterable<E>)");
     }
 
     /**
@@ -101,49 +137,6 @@ public class GenericJList<E> extends JList
     }
 
     /**
-     * Sets the values displayed in the list. They will be displayed as defined
-     * by the <code>converter</code>. Replaces all existing values. This will
-     * result no values being selected.
-     *
-     * @param values
-     * @param converter
-     */
-    public void setListData(Iterable<E> values, StringConverter<E> converter)
-    {
-        this.setListData(values, converter, false);
-    }
-
-    /**
-     * Sets the values displayed in the list. They will be displayed as defined
-     * by the <code>converter</code>. Replaces all existing values.
-     * <br/><br/>
-     * If <code>maintainSelected</code> is <code>true</code> then all currently
-     * selected values will be selected for the <code>values</code> passed in.
-     * This may result in no selections being made. If
-     * <code>maintainSelected</code> is <code>false</code> then no selections
-     * will be made.
-     *
-     * @param values
-     * @param converter
-     * @param maintainSelected
-     */
-    public void setListData(Iterable<E> values, StringConverter<E> converter, boolean maintainSelected)
-    {
-        List<E> selected = null;
-        if(maintainSelected)
-        {
-            selected = this.getGenericSelectedValues();
-        }
-
-        this.setModel(new GenericListModel<E>(values, converter));
-
-        if(maintainSelected)
-        {
-            this.setSelectedValues(selected);
-        }
-    }
-
-    /**
      * Removes all items from the list.
      */
     public void clearList()
@@ -154,6 +147,9 @@ public class GenericJList<E> extends JList
     /**
      * This method should never be called as doing so interferes with the
      * type-safety this class provides.
+     *
+     * @see #setListData(java.lang.Iterable)
+     * @see #setListData(java.lang.Iterable, boolean) 
      *
      * @param model
      * @deprecated deprecated due to lack of type-safety
@@ -190,7 +186,7 @@ public class GenericJList<E> extends JList
         int index = super.getSelectedIndex();
         if(index != -1)
         {
-            value = _model.getDataAt(index);
+            value = _model.getElementAt(index);
         }
 
         return value;
@@ -205,13 +201,13 @@ public class GenericJList<E> extends JList
     {
         int[] indices = super.getSelectedIndices();
 
-        ImmutableList.Builder<E> builder = ImmutableList.builder();
+        ArrayList<E> list = new ArrayList<E>();
         for(int index : indices)
         {
-            builder.add(_model.getDataAt(index));
+            list.add(_model.getElementAt(index));
         }
 
-        return builder.build();
+        return Collections.unmodifiableList(list);
     }
 
     /**
@@ -221,7 +217,7 @@ public class GenericJList<E> extends JList
      */
     public List<E> getValues()
     {
-        return _model.getData();
+        return _model.getElements();
     }
 
     /**
@@ -241,7 +237,7 @@ public class GenericJList<E> extends JList
      */
     public boolean hasValues()
     {
-        return _model.hasData();
+        return _model.hasElements();
     }
 
     /**
@@ -250,16 +246,12 @@ public class GenericJList<E> extends JList
      */
     public void refreshList()
     {
-        List<E> selectedValues = this.getGenericSelectedValues();
+        if(_renderer != null)
+        {
+            _renderer.clearCache();
+        }
 
-        //Resets the model
-        //This causes the converter to recalculate the displayed strings and
-        //for the list to recalculate the visualization
-        GenericListModel<E> model =
-                new GenericListModel<E>(_model.getData(), _model.getConverter());
-        this.setModel(model);
-
-        this.setSelectedValues(selectedValues);
+        _model.notifyRefresh();
     }
 
     /**
@@ -292,7 +284,7 @@ public class GenericJList<E> extends JList
      */
     public void setSelectedValue(E value)
     {
-        int index = _model.getData().indexOf(value);
+        int index = _model.getElements().indexOf(value);
 
         if(index != -1)
         {
@@ -332,7 +324,6 @@ public class GenericJList<E> extends JList
     /**
      * Causes the font used by the this list to be plain. By default the font
      * is bold.
-     *
      */
     public void usePlainFont()
     {

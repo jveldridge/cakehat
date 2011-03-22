@@ -401,13 +401,13 @@ public class DistLookupView extends JFrame {
 
         public boolean hasNewTA() {
             return ((_taList != null) &&
-                    (_origTA != _taList.getGenericSelectedItem())) ||
+                    (_origTA != _taList.getSelectedItem())) ||
                    ((_origTA != null) &&
-                    (!_origTA.equals(_taList.getGenericSelectedItem())));
+                    (!_origTA.equals(_taList.getSelectedItem())));
         }
 
         public TA getNewTA() {
-            return _taList.getGenericSelectedItem();
+            return _taList.getSelectedItem();
         }
 
         public Assignment getAsgn() {
