@@ -7,7 +7,6 @@ import gradesystem.rubric.TimeStatus;
 import gradesystem.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
 import gradesystem.config.TA;
 import java.sql.Connection;
@@ -24,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.JOptionPane;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -247,207 +245,6 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    @Deprecated
-    public void assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.sid) AS timesAssigned"
-                    + " FROM distribution AS d"
-                    + " WHERE d.sid == ?"
-                    + " AND d.pid == ?");
-            ps.setString(1, studentLogin);
-            ps.setString(2, part.getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            boolean isAssigned = (rs.getInt("timesAssigned") != 0);
-
-            if (!isAssigned) {
-                ps = conn.prepareStatement("INSERT INTO distribution ('sid', 'tid', 'pid')"
-                        + " VALUES (?, ?, ?)");
-                ps.setString(1, studentLogin);
-                ps.setString(2, ta.getLogin());
-                ps.setString(3, part.getDBID());
-                ps.executeUpdate();
-            } else {
-                throw new CakeHatDBIOException("The student: " + studentLogin
-                        + " is already assigned to a TA. You can't assign them to"
-                        + " another TA without removing them from the other TA's"
-                        + " dist.");
-            }
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public void unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
-                    + " WHERE pid == ?"
-                    + " AND sid == ?"
-                    + " AND tid ==  ?");
-            ps.setString(1, part.getDBID());
-            ps.setString(2, studentLogin);
-            ps.setString(3, ta.getLogin());
-
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public void grantExemption(String studentLogin, Part part, String note) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
-                    + " WHERE pid == ?"
-                    + " AND sid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setString(2, studentLogin);
-            ps.executeUpdate();
-
-            ps = conn.prepareStatement("INSERT INTO exemption ('sid', 'pid', 'note')"
-                    + " VALUES (?, ?, ?)");
-            ps.setString(1, studentLogin);
-            ps.setString(2, part.getDBID());
-            ps.setString(3, note);
-            ps.executeUpdate();
-
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public Map<String, Calendar> getExtensions(Part part) throws SQLException {
-        HashMap<String, Calendar> result = new HashMap<String, Calendar>();
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT e.sid AS studlogin, e.ontime AS date"
-                    + " FROM extension AS e"
-                    + " WHERE e.pid == ?");
-            ps.setString(1, part.getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Calendar cal = new GregorianCalendar();
-                cal.setTimeInMillis(rs.getInt("date") * 1000L);
-                result.put(rs.getString("studlogin"), cal);
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public Calendar getExtension(String studentLogin, Part part) throws SQLException {
-        Calendar result = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT e.ontime AS date"
-                    + " FROM extension AS e"
-                    + " WHERE e.pid == ?"
-                    + " AND e.sid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setString(2, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result = new GregorianCalendar();
-                result.setTimeInMillis(rs.getInt("date") * 1000L);
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public String getExemptionNote(String studentLogin, Part part) throws SQLException {
-        String result = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT x.note AS exenote"
-                    + " FROM exemption AS x"
-                    + " WHERE x.pid == ?"
-                    + " AND x.sid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setString(2, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result = rs.getString("exenote");
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public Double getStudentScore(String studentLogin, Part part) throws SQLException {
-        Double grade = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore"
-                    + " FROM grade AS g"
-                    + " WHERE g.sid == ?"
-                    + " AND g.pid == ?");
-            ps.setString(1, studentLogin);
-            ps.setString(2, part.getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                grade = rs.getDouble("partscore");
-            }
-
-            return grade;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public Double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException {
-        Double grade = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore"
-                    + " FROM grade AS g"
-                    + " WHERE g.sid == ?"
-                    + " AND g.pid IN (" + this.asgn2PartIDs(asgn) + ")");
-            ps.setString(1, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                grade = rs.getDouble("asgnscore");
-            }
-
-            return grade;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
     public void unBlacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
@@ -469,79 +266,6 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    @Deprecated
-    public Map<String, Double> getPartScores(Part part, Iterable<String> students) throws SQLException {
-        Map<String, Double> scores = new HashMap<String, Double>();
-
-        String studLogins = "";
-        for (String student : students) {
-            studLogins += ",'" + student + "'";
-        }
-        if (studLogins.length() > 1) {
-            studLogins = studLogins.substring(1);
-        }
-
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, g.sid AS studLogin"
-                    + " FROM grade AS g"
-                    + " WHERE g.sid IN (" + studLogins + ")"
-                    + " AND g.pid == '" + part.getDBID() + "'");
-            //TODO: restore prepared statement functionality
-            //ps.setString(1, studLogins);
-            //ps.setString(1, part.getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                scores.put(rs.getString("studLogin"), rs.getDouble("partscore"));
-            }
-
-            return scores;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public Map<String, Double> getAssignmentScores(Assignment asgn, Iterable<String> students) throws SQLException {
-        Map<String, Double> scores = new HashMap<String, Double>();
-
-        String studLogins = "";
-        for (String student : students) {
-            studLogins += ",'" + student + "'";
-        }
-        if (studLogins.length() > 1) {
-            studLogins = studLogins.substring(1);
-        }
-
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, g.sid AS studLogin"
-                    + " FROM grade AS g"
-                    + " WHERE g.sid IN (" + studLogins + ")"
-                    + " AND g.pid IN (" + this.asgn2PartIDs(asgn) + ")");
-            //TODO: restore prepared statement functionality
-            //ps.setString(1, studLogins);
-            //ps.setString(2, parts);
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                String studLogin = rs.getString("studLogin");
-                Double score = rs.getDouble("partscore");
-                if (scores.containsKey(studLogin)) {
-                    score += scores.get(studLogin);
-                }
-                scores.put(studLogin, score);
-            }
-
-            return scores;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
     public boolean isStudentEnabled(String studentLogin) throws SQLException {
         Connection conn = this.openConnection();
         try {
@@ -555,71 +279,6 @@ public class DBWrapper implements DatabaseIO {
             int enabled = rs.getInt("enabled");
 
             return (enabled == 1);
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public void removeExemption(String studentLogin, Part part) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
-                    + " WHERE pid == ?"
-                    + " AND sid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setString(2, studentLogin);
-
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Deprecated
-    public boolean setGroup(HandinPart part, String groupName, Collection<String> group) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            conn.setAutoCommit(false);
-
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(g.gpid) AS numgroups"
-                    + " FROM asgngroup AS g"
-                    + " WHERE g.name == ?");
-            ps.setString(1, groupName);
-
-            ResultSet testSet = ps.executeQuery();
-            if (testSet.getInt("numgroups") != 0) {
-                //not bothering to fix this b/c groups methods will be rewritten soon
-                JOptionPane.showMessageDialog(null, "A group with this name, " + groupName + ", already exists. Please pick another name. This group was not added.");
-                return false;
-            }
-
-            ps = conn.prepareStatement("INSERT INTO group"
-                    + " ('name') VALUES (?)");
-            ps.setString(1, groupName);
-            ps.executeUpdate();
-
-            ResultSet rs = ps.getGeneratedKeys();
-            int groupID = rs.getInt("groupid");
-
-            for (String student : group) {
-                ps = conn.prepareStatement("INSERT INTO groupmember "
-                        + "('gpid', 'sid', 'pid') "
-                        + "VALUES (?, ?, ?)");
-                ps.setInt(1, groupID);
-                ps.setString(2, student);
-                ps.setString(3, part.getDBID());
-                ps.executeUpdate();
-            }
-
-            conn.commit();
-
-            return true;
-        } catch (SQLException ex) {
-            conn.rollback();
-
-            throw ex;
         } finally {
             this.closeConnection(conn);
         }
@@ -1605,39 +1264,6 @@ public class DBWrapper implements DatabaseIO {
             }
 
             return parts;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-        Map<Assignment, TA> graders = new HashMap<Assignment, TA>();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS login, d.pid AS partID"
-                    + " FROM distribution AS d"
-                    + " WHERE d.sid == ?");
-            ps.setString(1, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                for (Assignment asgn : Allocator.getConfigurationInfo().getHandinAssignments()) {
-                    if (asgn.getHandinPart().getDBID().equals(rs.getString("partID"))) {
-                        String taLogin = rs.getString("login");
-                        TA ta = Allocator.getConfigurationInfo().getTA(taLogin);
-                        if (ta == null) {
-                            throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, "
-                                    + "but is assigned to grade student " + studentLogin + " for "
-                                    + "assignment " + asgn.getName() + ".");
-                        }
-                        graders.put(asgn, ta);
-                    }
-                }
-            }
-
-            return graders;
         } finally {
             this.closeConnection(conn);
         }
