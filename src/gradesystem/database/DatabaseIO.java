@@ -1,7 +1,6 @@
 package gradesystem.database;
 
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
 import gradesystem.config.TA;
 import gradesystem.handin.DistributablePart;
@@ -118,35 +117,6 @@ public interface DatabaseIO {
     public Collection<String> getTABlacklist(TA ta) throws SQLException;
 
     /**
-     * Assigns student with login studentLogin to the given TA to grade for
-     * HandinPart part, if not assigned already.  This will enable the TA to
-     * open, run, grade, etc. the student's code for the given HandinPart.
-     * The return value indicates whether or not the student was added.
-     *
-     * NOTE: This method should not be used to create an initial distribution
-     *       for a project; it should be used only to reassign grading.
-     *       To create an initial distribution, use setAsgnDist(...), below.
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @param ta
-     */
-    @Deprecated
-    public void assignStudentToGrader(String studentLogin, HandinPart part, TA ta) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * Unassigns student with login studentLogin to the given TA to grade for
-     * HandinPart part.
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @param ta
-     * @return
-     */
-    @Deprecated
-    public void unassignStudentFromGrader(String studentLogin, HandinPart part, TA ta) throws SQLException;
-
-    /**
      * Assigns a Group group to the given TA to grade for
      * DistributablePart part, if not assigned already.  This will enable the TA to
      * open, run, grade, etc. the Group's code for the given DistributablePart.
@@ -212,66 +182,6 @@ public interface DatabaseIO {
     public Set<DistributablePart> getDPsWithAssignedStudents(TA ta) throws SQLException;
 
     //may add: public Map<TA, Collection<String>> getDistribution(String assignmentName);
-
-    /**
-     * Grants an exemption for the student with login studentLogin for the HandinPart
-     * part.  The student's emailed grade report will indicate that the student
-     * has been exempted for theis assignment instead of showing a 0.  Additionally,
-     * this assignment will not be taken into account in the calculation of final grades
-     * (if support for final grade calculation is added).
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @param note
-     */
-    @Deprecated
-    public void grantExemption(String studentLogin, Part part, String note) throws SQLException;
-
-    /**
-     * Removes a previously granted exemption for the given student for the given Part.
-     * If the student did not previously have an exemption, this method has no effect.
-     *
-     * @param studentLogin
-     * @param part
-     */
-    @Deprecated
-    public void removeExemption(String studentLogin, Part part) throws SQLException;
-
-    /**
-     * Returns the Calendar representing the date when the Part is due
-     * for student with login studentLogin if that student has an extension.  Returns
-     * null if the student does not have an extension.
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @return
-     */
-    @Deprecated
-    public Calendar getExtension(String studentLogin, Part part) throws SQLException;
-
-    /**
-     * Returns the Map of student to extensions for a specific Part.  Returns
-     * null on error and empty map if no students have extension for the project.
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @return
-     */
-    @Deprecated
-    public Map<String, Calendar> getExtensions(Part part) throws SQLException;
-
-    /**
-     * Returns a string containing a message to indicate why the student with login
-     * studentLogin has been granted an exemption on Part part.  This takes a Part
-     * rather than a HandinPart because exemptions can also be granted on NON_HANDIN
-     * and LAB parts.  Returns null if the student does not have an exemption.
-     *
-     * @param studentLogin
-     * @param assignmentName
-     * @return
-     */
-    @Deprecated
-    public String getExemptionNote(String studentLogin, Part part) throws SQLException;
 
     /**
      * Grants an extension for the Group group for the Handin
@@ -366,46 +276,6 @@ public interface DatabaseIO {
      * @return
      */
     public String getExemptionNote(Group group, Part part) throws SQLException;
-
-    /**
-     * Returns the score of student with login studentLogin on Part part.
-     *
-     * @param studentLogin
-     * @param part - part getting score for
-     * @return
-     */
-    @Deprecated
-    public Double getStudentScore(String studentLogin, Part part) throws SQLException;
-
-    /**
-     * Returns the score of student with login studentLogin on an Assignment asgn.
-     *
-     * @param studentLogin
-     * @param asgn - assignment getting score for
-     * @return
-     */
-    @Deprecated
-    public Double getStudentAsgnScore(String studentLogin, Assignment asgn) throws SQLException;
-
-    /**
-     * Returns a map of all scores for the specified students for the
-     * specified Part with students' logins as the keys and their
-     * scores as the values.
-     * @param part
-     * @return
-     */
-    @Deprecated
-    public Map<String,Double> getPartScores(Part part, Iterable<String> students) throws SQLException;
-
-    /**
-     * Returns a map of all scores for the specified students for the
-     * specified Assignment with students' logins as the keys and their
-     * scores as the values.
-     * @param part
-     * @return
-     */
-    @Deprecated
-    public Map<String,Double> getAssignmentScores(Assignment asgn, Iterable<String> students) throws SQLException;
 
     /**
      * Assigns a grade of score to Group group on Part part.
@@ -508,14 +378,6 @@ public interface DatabaseIO {
      * @return
      */
     public void removeGroupsForAssignment(Assignment asgn) throws SQLException;
-
-    /**
-     * returns all the graders for a specific student
-     * @param studentlogin
-     * @return map of asgn to ta
-     */
-    @Deprecated
-    public Map<Assignment, TA> getAllGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException;
 
     public TA getGraderForGroup(DistributablePart part, Group group) throws SQLException, CakeHatDBIOException;
 
