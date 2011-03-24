@@ -1,6 +1,8 @@
 package gradesystem.rubric;
 
 import gradesystem.Allocator;
+import gradesystem.config.TA;
+import gradesystem.database.CakeHatDBIOException;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.resources.icons.IconLoader;
@@ -228,6 +230,29 @@ class GradingVisualizer extends JFrame
                 } catch (SQLException ex) {
                     new ErrorView(ex, "The new handin status for group " + _group + " on "
                             + "assignment " + _distPart.getAssignment() + " could not be stored in the database.");
+                }
+            }
+
+            if (!_stateManager.isGraderSaved()) {
+                try {
+                    //either the old or new grader can be null, which indicates UNASSIGNED
+                    TA oldGrader = Allocator.getDatabaseIO().getGraderForGroup(_distPart, _group);
+                    if (oldGrader != null) {
+                        Allocator.getDatabaseIO().unassignGroupFromGrader(_group, _distPart, oldGrader);
+                    }
+                    
+                    TA newGrader = _stateManager.getGrader();
+                    if (newGrader != null) {
+                        Allocator.getDatabaseIO().assignGroupToGrader(_group, _distPart, newGrader);
+                    }
+
+                    _stateManager.graderSaved();
+                } catch (SQLException ex) {
+                    new ErrorView(ex, "Could not change grader for group " + _group + " on " +
+                                      "asignment " + _distPart.getAssignment() + ".");
+                } catch (CakeHatDBIOException ex) {
+                    new ErrorView(ex, "Could not change grader for group " + _group + " on " +
+                                      "asignment " + _distPart.getAssignment() + ".");
                 }
             }
         }
