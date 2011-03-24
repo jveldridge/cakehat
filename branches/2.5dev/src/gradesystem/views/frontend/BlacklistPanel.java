@@ -2,8 +2,8 @@ package gradesystem.views.frontend;
 
 import gradesystem.Allocator;
 import gradesystem.components.GenericJList;
-import gradesystem.components.StringConverter;
 import gradesystem.components.ShadowJTextField;
+import gradesystem.components.StringConverter;
 import gradesystem.config.TA;
 import gradesystem.resources.icons.IconLoader;
 import gradesystem.views.shared.ErrorView;

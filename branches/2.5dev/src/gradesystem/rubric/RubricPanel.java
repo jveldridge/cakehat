@@ -25,6 +25,7 @@ import gradesystem.config.LatePolicy;
 import gradesystem.rubric.Rubric.*;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
+import gradesystem.components.StringConverter;
 import gradesystem.config.Assignment;
 import gradesystem.config.TA;
 import gradesystem.handin.DistributablePart;
@@ -33,6 +34,8 @@ import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -486,7 +489,6 @@ class RubricPanel extends JPanel
             score.setValue(section.getSectionScore());
         }
 
-//        _statusPointsField.setValue(Allocator.getGeneralUtilities().round(_rubric.getDeduction(), 2));
         _totalScoreField.setValue(_rubric.getTotalRubricScore());
     }
 	
@@ -559,33 +561,79 @@ class RubricPanel extends JPanel
         panel.add(studentName);
         height += studentName.getPreferredSize().height + vGap;
 
-        TA ta = null;
+        TA grader = null;
         try {
-            ta = Allocator.getDatabaseIO().getGraderForGroup(_rubric.getDistributablePart(), _rubric.getGroup());
+            grader = Allocator.getDatabaseIO().getGraderForGroup(_rubric.getDistributablePart(), _rubric.getGroup());
         } catch (SQLException e) {
             new ErrorView(e, "Could not get the grading TA.");
         } catch (CakeHatDBIOException e) {
             new ErrorView(e, "Could not get the grading TA.");
         }
 
-        String graderLogin = Allocator.getUserServices().getSanitizedTALogin(ta);
-        String graderName = Allocator.getUserServices().getSanitizedTAName(ta);
+        if (_isAdmin) {
+            vGap = 10;
+            int graderComponentHeight = 20;
 
-        //Grader
-        JLabel graderAcctLabel = new JLabel(" Grader's account: " + graderLogin);
-        vGap = 10;
-        layout.putConstraint(SpringLayout.NORTH, graderAcctLabel, vGap, SpringLayout.SOUTH, studentName);
-        panel.add(graderAcctLabel);
-        height += graderAcctLabel.getPreferredSize().height + vGap;
+            JLabel graderLabel = new JLabel(" Grader:");
+            layout.putConstraint(SpringLayout.NORTH, graderLabel, vGap, SpringLayout.SOUTH, studentName);
+            graderLabel.setPreferredSize(new Dimension(graderLabel.getPreferredSize().width, graderComponentHeight));
+            panel.add(graderLabel);
 
-        JLabel graderNameLabel = new JLabel(" Grader's name: " + graderName);
-        vGap = 2;
-        layout.putConstraint(SpringLayout.NORTH, graderNameLabel, vGap, SpringLayout.SOUTH, graderAcctLabel);
-        panel.add(graderNameLabel);
-        height += graderNameLabel.getPreferredSize().height + vGap;
+            //create StringConverter that will show TAs' names and logins and show null as "UNASSIGNED"
+            StringConverter<TA> graderConverter = new StringConverter<TA>() {
+                @Override
+                public String convertToString(TA ta) {
+                    if (ta == null) {
+                        return "UNASSIGNED";
+                    }
+
+                    return ta.getLogin() + " (" + ta.getName() + ")";
+                }
+            };
+
+            List<TA> graders = new ArrayList<TA>(Allocator.getConfigurationInfo().getTAs());
+            Collections.sort(graders);
+            graders.add(0, null);
+
+            final GenericJComboBox<TA> graderBox = new GenericJComboBox<TA>(graders, graderConverter);
+            graderBox.setGenericSelectedItem(grader);
+            graderBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    TA newGrader = graderBox.getSelectedItem();
+                    if (newGrader != _stateManager.getGrader()) {
+                        _stateManager.setGrader(graderBox.getSelectedItem());
+                    }
+                }
+            });
+
+            graderBox.setPreferredSize(new Dimension(graderBox.getPreferredSize().width, graderComponentHeight));
+            layout.putConstraint(SpringLayout.NORTH, graderBox, vGap, SpringLayout.SOUTH, studentName);
+            layout.putConstraint(SpringLayout.WEST, graderBox, 10, SpringLayout.EAST, graderLabel);
+            layout.putConstraint(SpringLayout.BASELINE, graderBox, 0, SpringLayout.BASELINE, graderLabel);
+            panel.add(graderBox);
+
+            height += graderComponentHeight + vGap;
+        }
+        else {
+            String graderLogin = Allocator.getUserServices().getSanitizedTALogin(grader);
+            String graderName = Allocator.getUserServices().getSanitizedTAName(grader);
+
+            //Grader
+            JLabel graderAcctLabel = new JLabel(" Grader's account: " + graderLogin);
+            vGap = 10;
+            layout.putConstraint(SpringLayout.NORTH, graderAcctLabel, vGap, SpringLayout.SOUTH, studentName);
+            panel.add(graderAcctLabel);
+            height += graderAcctLabel.getPreferredSize().height + vGap;
+
+            JLabel graderNameLabel = new JLabel(" Grader's name: " + graderName);
+            vGap = 2;
+            layout.putConstraint(SpringLayout.NORTH, graderNameLabel, vGap, SpringLayout.SOUTH, graderAcctLabel);
+            panel.add(graderNameLabel);
+            height += graderNameLabel.getPreferredSize().height + vGap;
+        }
 
         panel.setPreferredSize(new Dimension(this.getWidth(), height));
-
         this.addPanelBelow(panel);
     }
 
@@ -628,7 +676,7 @@ class RubricPanel extends JPanel
         String handinInfo = "";
         if (_isAdmin) {
             try {
-                File handin = _rubric.getDistributablePart().getHandin() .getHandin(_rubric.getGroup());
+                File handin = _rubric.getDistributablePart().getHandin().getHandin(_rubric.getGroup());
                 Calendar handinTime = Allocator.getFileSystemUtilities().getModifiedDate(handin);
                 handinInfo = String.format(" ( Received at: <b>%s</b> )",
                         Allocator.getCalendarUtilities().getCalendarAsHandinTime(handinTime));
@@ -718,48 +766,42 @@ class RubricPanel extends JPanel
             public void actionPerformed(ActionEvent ae) {
                 //Set new status
                 TimeStatus newStatus = statusBox.getSelectedItem()._timeStatus;
-                _status = new HandinStatus(newStatus, 0);
-                _stateManager.setHandinStatus(_status);
+                if (newStatus != _status.getTimeStatus()) {
+                    _status = new HandinStatus(newStatus, 0);
+                    _stateManager.setHandinStatus(_status);
 
-                //If the new time status is LATE and LatePolicy is DAILY_DEDUCTION
-                //then enable the text box, otherwise disable it
-                if (_rubric.getDistributablePart().getHandin().getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION) {
-                    boolean editable = (newStatus == TimeStatus.LATE);
-                    daysLateField.setEditable(editable);
-                    daysLateField.setVisible(editable);
-                }
-
-                //Update editability of extra credit
-                boolean ecEditable = RubricPanel.this.isECEditable();
-                for (NumberField ecField : _ecFields) {
-                    ecField.setEditable(ecEditable);
-                    //If not editable, clear score
-                    if (!ecEditable) {
-                        ecField.setValue(0);
+                    //If the new time status is LATE and LatePolicy is DAILY_DEDUCTION
+                    //then enable the text box, otherwise disable it
+                    if (_rubric.getDistributablePart().getHandin().getTimeInformation().getLatePolicy() == LatePolicy.DAILY_DEDUCTION) {
+                        boolean editable = (newStatus == TimeStatus.LATE);
+                        daysLateField.setEditable(editable);
+                        daysLateField.setVisible(editable);
                     }
-                }
 
-                double oldScore = RubricPanel.this._rubric.getTotalRubricScore();
-                //Recalculate score
-                RubricPanel.this.updateTotals();
-                double newScore = RubricPanel.this._rubric.getTotalRubricScore();
+                    //Update editability of extra credit
+                    boolean ecEditable = RubricPanel.this.isECEditable();
+                    for (NumberField ecField : _ecFields) {
+                        ecField.setEditable(ecEditable);
+                        //If not editable, clear score
+                        if (!ecEditable) {
+                            ecField.setValue(0);
+                        }
+                    }
 
-                if (newScore != oldScore) {
-                    _stateManager.rubricChanged();
+                    double oldScore = RubricPanel.this._rubric.getTotalRubricScore();
+                    //Recalculate score
+                    RubricPanel.this.updateTotals();
+                    double newScore = RubricPanel.this._rubric.getTotalRubricScore();
+
+                    if (newScore != oldScore) {
+                        _stateManager.rubricChanged();
+                    }
                 }
             }
         });
         
         panel.setPreferredSize(new Dimension(this.getWidth(), height + 5));
         this.addPanelBelow(panel);
-    }
-
-    void saveHandinStatus() throws RubricException {
-        try {
-            Allocator.getDatabaseIO().setHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup(), _status);
-        } catch (SQLException ex) {
-            throw new RubricException("Could not save handin status.", ex);
-        }
     }
 
     private class RubricHandinStatusPair {
