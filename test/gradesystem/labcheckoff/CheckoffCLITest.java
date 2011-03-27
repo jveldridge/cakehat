@@ -57,9 +57,7 @@ public class CheckoffCLITest
         expect(dbio.getAllStudents()).andReturn(allStudents);
         expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
         expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(group);
-        Map<Group, Double> partScores = new HashMap<Group, Double>();
-        partScores.put(group, 11.2);
-        expect(dbio.getPartScoresForGroups(eq(lab), anyObject(Iterable.class))).andReturn(partScores);
+        expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(11.2);
         replay(dbio);
 
         SingletonAllocation<DatabaseIO> dbioAlloc =
@@ -118,8 +116,7 @@ public class CheckoffCLITest
         expect(dbio.getAllStudents()).andReturn(allStudents);
         expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
         expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(group);
-        expect(dbio.getPartScoresForGroups(eq(lab), anyObject(Iterable.class)))
-                .andReturn(new HashMap<Group, Double>());
+        expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(null);
         dbio.enterGrade(group, lab, pointsGiven);
         expectLastCall();
         replay(dbio);
@@ -181,8 +178,7 @@ public class CheckoffCLITest
         expect(dbio.getAllStudents()).andReturn(allStudents);
         expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
         expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(group);
-        expect(dbio.getPartScoresForGroups(eq(lab), anyObject(Iterable.class)))
-                .andReturn(new HashMap<Group, Double>());
+        expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(null);
         dbio.enterGrade(group, lab, pointsGiven);
         expectLastCall();
         replay(dbio);
@@ -261,8 +257,7 @@ public class CheckoffCLITest
         expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(null);
         dbio.setGroup(eq(asgn), eq(group));
         expectLastCall();
-        expect(dbio.getPartScoresForGroups(eq(lab), anyObject(Iterable.class)))
-                .andReturn(new HashMap<Group, Double>());
+        expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(null);
         dbio.enterGrade(group, lab, pointsGiven);
         expectLastCall();
         replay(dbio);
