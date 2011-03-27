@@ -1145,6 +1145,8 @@ public class BackendView extends JFrame
                 Group group = null;
                 try {
                     group = this.getGroup(selectedAsgn, studentLogin);
+                } catch (MissingUserActionException ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
                 } catch (CakehatException ex) {
                     new ErrorView(ex);
                 }
@@ -1967,7 +1969,7 @@ public class BackendView extends JFrame
         }
 
         if (!_groupsCache.get(asgn).containsKey(studentLogin)) {
-            throw new CakehatException("Could not retrieve group for student " +
+            throw new MissingUserActionException("Could not retrieve group for student " +
                                        studentLogin + " on assignment " + asgn + ". " +
                                        "Check to make sure that the student has been " +
                                        "assigned to a group.");
