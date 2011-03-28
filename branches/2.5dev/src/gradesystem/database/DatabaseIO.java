@@ -309,7 +309,7 @@ public interface DatabaseIO {
      * specified Part with Groups as the keys and their scores as the values.
      * Any Groups with no score stored in the database will not have an entry
      * in the returned Map.
-     * 
+     *
      * @param part
      * @param groups
      * @return
@@ -388,22 +388,25 @@ public interface DatabaseIO {
      */
     public Map<DistributablePart, TA> getGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException;
 
-    public void setHandinStatus(Handin handin, Group group, HandinStatus status) throws SQLException;
-
-    public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException;
-
     /**
-     * For the given Handin and Group the TimeStatus and daysLate are stored in the DB.
+     * For the given Handin and Group the HandinStatus is stored in the DB.
      * In there is an existing record for that Handin and Group the currently stored value is removed.
      *
      * @param handin
      * @param group
      * @param status
-     * @param daysLate
      */
-    @Deprecated
-    //TODO move implementaiton SQL into getHandinStatus and/or getHandinStatuses methods
-    public void setTimeStatus(Handin handin, Group group, TimeStatus status, int daysLate) throws SQLException;
+    public void setHandinStatus(Handin handin, Group group, HandinStatus status) throws SQLException;
+
+    /**
+     * For the given Handin and Groups the TimeStatus is stored in the DB.
+     * Statuses maps Groups to their associated HandinStatus.
+     * If there is an existing record for that Handin and Group then currently stored value is removed.
+     *
+     * @param handin
+     * @param statuses
+     */
+    public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException;
 
     /**
      * The HandinStatus for the Handin and Group is returned. If no record in the DB exists,
