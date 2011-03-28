@@ -404,37 +404,39 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    //TODO : make this better
-    public void setGroups(Assignment asgn, Collection<Group> groupings) throws SQLException {
-        //put all the groups into the DB
-        for (Group group : groupings) {
-            this.setGroup(asgn, group);
-        }
-    }
-
-    @Override
-    public void setGroup(Assignment asgn, Group group) throws SQLException {
+    public void setGroups(Assignment asgn, Collection<Group> groups) throws SQLException {
         Connection conn = this.openConnection();
+
         try {
             conn.setAutoCommit(false);
 
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO asgngroup"
+            // insert all the groups
+            PreparedStatement psGroup = conn.prepareStatement("INSERT INTO asgngroup"
                     + " ('name', 'aid') VALUES (?, ?)");
-            ps.setString(1, group.getName());
-            ps.setString(2, asgn.getDBID());
-            ps.executeUpdate();
-
-            ResultSet rs = ps.getGeneratedKeys();
-            int groupID = rs.getInt(1);
-
-            for (String student : group.getMembers()) {
-                ps = conn.prepareStatement("INSERT INTO groupmember "
-                        + "('gpid', 'sid') "
-                        + "VALUES (?, ?)");
-                ps.setInt(1, groupID);
-                ps.setString(2, student);
-                ps.executeUpdate();
+            for (Group group : groups) {
+                psGroup.setString(1, group.getName());
+                psGroup.setString(2, asgn.getDBID());
+                psGroup.addBatch();
             }
+            psGroup.executeBatch();
+            psGroup.close();
+
+            // add all the members to those groups
+            PreparedStatement psMember = conn.prepareStatement("INSERT INTO groupmember "
+                    + "('gpid', 'sid') "
+                    + "VALUES ((SELECT gpid FROM asgngroup WHERE name==? AND aid==?), ?)");
+
+            for (Group group : groups) {
+
+                for (String student : group.getMembers()) {
+                    psMember.setString(1, group.getName());
+                    psMember.setString(2, asgn.getDBID());
+                    psMember.setString(3, student);
+                    psMember.addBatch();
+                }
+            }
+            psMember.executeBatch();
+            psMember.close();
 
             conn.commit();
         } catch (SQLException ex) {
@@ -444,6 +446,13 @@ public class DBWrapper implements DatabaseIO {
         } finally {
             this.closeConnection(conn);
         }
+    }
+
+    @Override
+    public void setGroup(Assignment asgn, Group group) throws SQLException {
+        Collection<Group> groups = new ArrayList<Group>(1);
+        groups.add(group);
+        this.setGroups(asgn, groups);
     }
 
     @Override
