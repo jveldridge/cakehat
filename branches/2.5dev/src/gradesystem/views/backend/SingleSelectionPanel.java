@@ -156,30 +156,10 @@ class SingleSelectionPanel extends JPanel
         _nonHandinBox = new GenericJComboBox<Part>();
         _nonHandinBox.addActionListener(new ActionListener()
         {
+
             public void actionPerformed(ActionEvent ae)
             {
-                Part part = _nonHandinBox.getSelectedItem();
-                if(part != null)
-                {
-                    Double earned = null;
-                    try {
-                        earned = Allocator.getDatabaseIO().getGroupScore(_group, part);
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
-                                          "part " + part + " from the database.");
-                        _nonHandinEarnedField.setUnknownScoreValue();
-                    }
-
-                    double outOf = part.getPoints();
-
-                    if (earned != null) {
-                        _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
-                    }
-                    else {
-                        _nonHandinEarnedField.setNoScoreValue();
-                    }
-                    _nonHandinOutOfField.setNumberValue(outOf);
-                }
+                updateNonHandinInfo();
             }
         });
         _nonHandinBox.setPreferredSize(boxSize);
@@ -395,9 +375,39 @@ class SingleSelectionPanel extends JPanel
         scorePanel.add(_overallScoreLabel);
     }
 
+    private void updateNonHandinInfo()
+    {
+        Part part = _nonHandinBox.getSelectedItem();
+        if(part != null)
+        {
+            Double earned = null;
+            try
+            {
+                earned = Allocator.getDatabaseIO().getGroupScore(_group, part);
+            }
+            catch (SQLException ex)
+            {
+                new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                                  "part " + part + " from the database.");
+                _nonHandinEarnedField.setUnknownScoreValue();
+            }
+
+            double outOf = part.getPoints();
+
+            if (earned != null)
+            {
+                _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
+            }
+            else
+            {
+                _nonHandinEarnedField.setNoScoreValue();
+            }
+            _nonHandinOutOfField.setNumberValue(outOf);
+        }
+    }
+
     private void clearComponents()
     {
-        _nonHandinBox.removeAllItems();
         _nonHandinOutOfField.setText("");
         _nonHandinEarnedField.setText("");
         _nonHandinScoreLabel.setText("0");
@@ -411,17 +421,23 @@ class SingleSelectionPanel extends JPanel
     {
         _suppressUpdateScores = true;
 
+        boolean asgnChanged = (_asgn != asgn);
+        
         _studentLogin = studentLogin;
         _group = group;
         _asgn = asgn;
 
         this.clearComponents();
 
-        //Populate the combobox
-        ArrayList<Part> partsToAdd = new ArrayList<Part>();
-        partsToAdd.addAll(asgn.getNonHandinParts());
-        partsToAdd.addAll(asgn.getLabParts());
-        _nonHandinBox.setItems(partsToAdd);
+        //Populate the combo box if the assignment has changed
+        if(asgnChanged)
+        {
+            ArrayList<Part> partsToAdd = new ArrayList<Part>();
+            partsToAdd.addAll(asgn.getNonHandinParts());
+            partsToAdd.addAll(asgn.getLabParts());
+            _nonHandinBox.setItems(partsToAdd);
+            this.updateNonHandinInfo();
+        }
 
         _submitGradeButton.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
         
