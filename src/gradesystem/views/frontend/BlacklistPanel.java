@@ -159,7 +159,7 @@ class BlacklistPanel extends JPanel
                     //Update black list
                     List<String> allBlacklisted = new ArrayList<String>();
                     allBlacklisted.addAll(toBlacklist);
-                    allBlacklisted.addAll(_blacklistJList.getValues());
+                    allBlacklisted.addAll(_blacklistJList.getListData());
                     Collections.sort(allBlacklisted);
 
                     List<String> selected = _blacklistJList.getGenericSelectedValues();
@@ -194,7 +194,7 @@ class BlacklistPanel extends JPanel
                     Allocator.getDatabaseIO().unBlacklistStudents(toUnblacklist, _user);
 
                     //Update black list
-                    List<String> blacklisted = new ArrayList<String>(_blacklistJList.getValues());
+                    List<String> blacklisted = new ArrayList<String>(_blacklistJList.getListData());
                     blacklisted.removeAll(toUnblacklist);
                     _blacklistJList.setListData(blacklisted);
                     

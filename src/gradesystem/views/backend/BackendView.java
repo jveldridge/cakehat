@@ -331,7 +331,7 @@ public class BackendView extends JFrame
                 //If filter field, select first result and place result into field
                 if(cmpnt == _filterField)
                 {
-                    if(_studentList.hasValues())
+                    if(_studentList.hasListData())
                     {
                         _studentList.selectFirst();
                         _filterField.setText(_studentList.getSelectedValue());

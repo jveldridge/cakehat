@@ -328,8 +328,8 @@ public class ManualDistView extends JFrame {
             @Override
             public void keyReleased(KeyEvent ke) {
                 if(ke.getKeyCode() == KeyEvent.VK_ENTER &&
-                   _fromGroupList.getValuesCount() > 0) {
-                    _studentFilterBox.setText(_fromGroupList.getValues().get(0).getName());
+                   _fromGroupList.hasListData()) {
+                    _studentFilterBox.setText(_fromGroupList.getListData().get(0).getName());
                     _fromGroupList.selectFirst();
                     _assignButton.requestFocus();
                 }
@@ -543,7 +543,7 @@ public class ManualDistView extends JFrame {
         _randomStudentLabel.setForeground(Color.BLACK);
         _randomStudentsSpinner.setVisible(true);
 
-        _assignButton.setEnabled(_fromGroupList.getValuesCount() > 0);
+        _assignButton.setEnabled(_fromGroupList.hasListData());
     }
 
     private void enableUseSelectedAssignment() {
