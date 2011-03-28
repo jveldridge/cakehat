@@ -40,7 +40,7 @@ public class ConfigurationData
         return name;
     }
 
-    private static String generateRandomString()
+    public static String generateRandomString()
     {
         String uid = UUID.randomUUID().toString();
         uid.replaceAll("-", "");
@@ -88,7 +88,7 @@ public class ConfigurationData
         DistributablePart dp2 = createMock(DistributablePart.class);
         expect(dp2.getAssignment()).andReturn(asgn).anyTimes();
         expect(dp2.getName()).andReturn("The Easy Part").anyTimes();
-        expect(dp1.getDBID()).andReturn("Amazing Assignment - The Easy Part").anyTimes();
+        expect(dp2.getDBID()).andReturn("Amazing Assignment - The Easy Part").anyTimes();
         expect(dp2.getNumber()).andReturn(2).anyTimes();
         expect(dp2.getPoints()).andReturn(10).anyTimes();
         replay(dp2);
