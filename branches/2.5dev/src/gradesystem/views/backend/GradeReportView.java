@@ -108,6 +108,11 @@ public class GradeReportView extends javax.swing.JFrame {
                     + "<tbody><tr style='font-weight: bold; background: #F0F0F0'><td>"
                     + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
 
+            if (group == null) {
+                htmlString += "<tr colspan=3 style='background: #FFFFFF" + "'><td>No grades recorded.</td></tr>";
+                continue;
+            }
+
             for (Part p : _asgnParts.get(a)) {
                 Calendar extension = null;
                 try {
