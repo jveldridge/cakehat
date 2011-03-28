@@ -186,8 +186,16 @@ public class CSVExporter implements Exporter
                         for(Part part : asgn.getParts())
                         {
                             try {
-                                //If no exemption
                                 Group studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, login);
+                                if (studentsGroup == null) {
+                                    printer.append("0 (No grade recorded),");
+                                    if (part instanceof DistributablePart) {
+                                       printer.append("(unknown handin status),");
+                                    }
+                                    continue;
+                                }
+
+                                //If no exemption
                                 if (Allocator.getDatabaseIO().getExemptionNote(studentsGroup, part) == null) {
                                     Double score = Allocator.getDatabaseIO().getGroupScore(studentsGroup, part);
                                     

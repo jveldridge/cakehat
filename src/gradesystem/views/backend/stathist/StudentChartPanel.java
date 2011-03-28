@@ -41,7 +41,7 @@ public class StudentChartPanel extends javax.swing.JPanel {
     }
     private JFreeChart _chart;
 
-    public void updateChart(String studName, Assignment[] assignments) {
+    public void updateChart(String studLogin, Assignment[] assignments) {
         DefaultXYDataset dataset = new DefaultXYDataset();
         double[][] data = new double[2][assignments.length];
         double[][] avgData = new double[2][assignments.length];
@@ -52,10 +52,13 @@ public class StudentChartPanel extends javax.swing.JPanel {
             Assignment asgn = assignments[i];
             Group studentsGroup;
             try {
-                studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, studName);
+                studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, studLogin);
             } catch (SQLException ex) {
-                new ErrorView("Could read group for student " + studName + " for assignment " +
+                new ErrorView("Could read group for student " + studLogin + " for assignment " +
                               asgn + " from the database.");
+                continue;
+            }
+            if (studentsGroup == null) {
                 continue;
             }
             for (Part p : asgn.getParts()) {
@@ -65,7 +68,7 @@ public class StudentChartPanel extends javax.swing.JPanel {
                     Double rawScore = Allocator.getDatabaseIO().getGroupScore(studentsGroup, p);
                     partScore = (rawScore == null ? 0 : rawScore);
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not read the score for student " + studName + " " +
+                    new ErrorView(ex, "Could not read the score for student " + studLogin + " " +
                                       "on part " + p + ".  FOR THESE CHARTS AND STATISTICS, THE " +
                                       "SCORE WILL BE TREATED AS A 0.");
                 }
@@ -92,7 +95,7 @@ public class StudentChartPanel extends javax.swing.JPanel {
             avgData[1][i] = (Statistics.calculateMean(scores) / assignments[i].getTotalPoints()) * 100;
         }
         
-        dataset.addSeries(studName + "'s Scores", data);
+        dataset.addSeries(studLogin + "'s Scores", data);
         dataset.addSeries("Class Average", avgData);
         ValueAxis yAxis = new NumberAxis("Score (%)");
         yAxis.setRange(0.0, 110.0);
@@ -113,7 +116,7 @@ public class StudentChartPanel extends javax.swing.JPanel {
         renderer.setSeriesItemLabelsVisible(1, Boolean.TRUE);
         renderer.setBaseItemLabelsVisible(true);
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-        _chart = new JFreeChart(studName + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
+        _chart = new JFreeChart(studLogin + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
         _chart.setBackgroundPaint(Color.white);
         this.repaint();
     }
