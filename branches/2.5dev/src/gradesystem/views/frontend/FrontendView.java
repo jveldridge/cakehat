@@ -227,7 +227,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         if(part == null)
         {
-            _groupList.clearList();
+            _groupList.clearListData();
         }
         else
         {
@@ -1000,7 +1000,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
     private void printAllButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
-        Collection<Group> groups = _groupList.getValues();
+        Collection<Group> groups = _groupList.getListData();
         try {
             dp.print(groups);
         } catch (ActionException ex) {
@@ -1031,7 +1031,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         if(dp != null)
         {
-            final SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getValues(),
+            final SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getListData(),
                     Allocator.getConfigurationInfo().getSubmitOptions());
 
             if(sd.showDialog() == JOptionPane.OK_OPTION)

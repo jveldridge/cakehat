@@ -11,7 +11,7 @@ import javax.swing.ComboBoxModel;
  *
  * @author jak2
  */
-class GenericComboBoxModel<T> extends GenericListModel<T> implements ComboBoxModel
+ public class GenericComboBoxModel<T> extends GenericImmutableListModel<T> implements ComboBoxModel
 {
     private T _selectedItem;
 

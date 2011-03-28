@@ -4,7 +4,9 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -24,26 +26,21 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     private GenericListModel<E> _model;
     private StringConverterCellRenderer _renderer;
 
-    public GenericJList()
-    {
-        this.clearList();
-    }
-
     public GenericJList(E... values)
     {
-        this.setListData(Arrays.asList(values));
+        this(Arrays.asList(values));
+    }
+
+    public GenericJList(Iterable<E> values, StringConverter<E> converter)
+    {
+        this(values);
+
+        this.setStringConverter(converter);
     }
 
     public GenericJList(Iterable<E> values)
     {
         this.setListData(values);
-    }
-
-    public GenericJList(Iterable<E> values, StringConverter<E> converter)
-    {
-        this.setListData(values);
-
-        this.setStringConverter(converter);
     }
 
     /**
@@ -116,6 +113,9 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
      * This may result in no selections being made. If
      * <code>maintainSelected</code> is <code>false</code> then no selections
      * will be made.
+     * <br/><br/>
+     * Unexpected behavior may arise in maintaining the selection if not all
+     * values are unique.
      *
      * @param values
      * @param maintainSelected
@@ -128,7 +128,7 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
             selected = this.getGenericSelectedValues();
         }
         
-        this.setModel(new GenericListModel<E>(values));
+        this.setModel(buildModel(values));
 
         if(maintainSelected)
         {
@@ -139,20 +139,17 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     /**
      * Removes all items from the list.
      */
-    public void clearList()
+    public void clearListData()
     {
-        this.setModel(new GenericListModel<E>());
+        this.setListData(Collections.EMPTY_LIST);
     }
 
     /**
      * This method should never be called as doing so interferes with the
      * type-safety this class provides.
      *
-     * @see #setListData(java.lang.Iterable)
-     * @see #setListData(java.lang.Iterable, boolean) 
-     *
      * @param model
-     * @deprecated deprecated due to lack of type-safety
+     * @deprecated due to lack of type-safety
      */
     @Override
     public void setModel(ListModel model)
@@ -162,8 +159,12 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     }
 
     /**
-     * Stores the model and passes it to the superclass.
-     * 
+     * Sets the model that represents the values of the list and notifies
+     * property change listeners. Situations should not arise in which direct
+     * users of this class will require a different model. Subclasses may wish
+     * to use a different model, in that case they should override
+     * {@link #buildModel(Iterable)}.
+     *
      * @param model
      */
     private void setModel(GenericListModel<E> model)
@@ -171,9 +172,73 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
         _model = model;
         super.setModel(model);
     }
+    
+    @Override
+    public GenericListModel<E> getModel()
+    {
+        return _model;
+    }
 
     /**
-     * Returns the first selected values in the list or <code>null</code> if no
+     * Override this method in subclasses to use a different list model. By
+     * default an immutable list model will be used.
+     * 
+     * @param values
+     * @return
+     */
+    protected GenericListModel<E> buildModel(Iterable<E> values)
+    {
+        return new GenericImmutableListModel<E>(values);
+    }
+    
+    /**
+     * This method must be public to match a required interface; however, it is
+     * not intended for external use.
+     *
+     * @param i
+     * @return
+     */
+    public E getElementDisplayedAt(int i)
+    {
+        return _model.getElementAt(i);
+    }
+
+    /**
+     * Returns an immutable list of all values in this list.
+     * 
+     * @return
+     */
+    public List<E> getListData()
+    {
+        return _model.getElements();
+    }
+
+    /**
+     * If there are any values in the list.
+     *
+     * @return
+     */
+    public boolean hasListData()
+    {
+        return _model.hasElements();
+    }
+
+    /**
+     * Visually updates the list. If a {@link StringConverter} is used it will
+     * recalculate the <code>String</code>s displayed.
+     */
+    public void refreshList()
+    {
+        if(_renderer != null)
+        {
+            _renderer.clearCache();
+        }
+
+        _model.notifyRefresh();
+    }
+
+    /**
+     * Returns the first selected value in the list or <code>null</code> if no
      * items are selected.
      *
      * @return
@@ -193,6 +258,25 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     }
 
     /**
+     * This method cannot properly be made typesafe because Java does not
+     * support generic array creation. (Casting an Object array to a generic
+     * array is possible, but problematic because the array then cannot ensure
+     * that all values of the array are of the generic type.)
+     *
+     * @see #getGenericSelectedValues()
+     *
+     * @return
+     * @deprecated
+     */
+    @Deprecated
+    @Override
+    public Object[] getSelectedValues()
+    {
+        throw new UnsupportedOperationException("Not valid for GenericJList. " +
+                "Please use getGenericSelectedValues()");
+    }
+
+    /**
      * Returns an immutable list of all the selected values in this JList.
      *
      * @return
@@ -209,84 +293,39 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
 
         return Collections.unmodifiableList(list);
     }
-    
-    /**
-     * This method must be public to match a required interface; however, it is
-     * not intended for external use.
-     *
-     * @param i
-     * @return
-     */
-    public E getElementDisplayedAt(int i)
-    {
-        return _model.getElementAt(i);
-    }
 
     /**
-     * Returns an immutable list of all values in this JList.
-     * 
-     * @return
-     */
-    public List<E> getValues()
-    {
-        return _model.getElements();
-    }
-
-    /**
-     * The number of values in the list.
+     * Returns an immutable map of all the selected indices mapped to the value
+     * at that index.
      *
      * @return
      */
-    public int getValuesCount()
+    public Map<Integer, E> getGenericSelectedValuesMap()
     {
-        return _model.getSize();
+        Map<Integer, E> map = new HashMap<Integer, E>();
+
+        int[] indices = super.getSelectedIndices();
+        for(int index : indices)
+        {
+            map.put(index, _model.getElementAt(index));
+        }
+
+        return Collections.unmodifiableMap(map);
     }
 
     /**
-     * If there are any items in the list.
+     * This method cannot be made typesafe.
      *
-     * @return
+     * @param anObject
+     * @param shouldScroll
+     *
+     * @deprecated due to lack of type safety
      */
-    public boolean hasValues()
+    @Override
+    public void setSelectedValue(Object anObject, boolean shouldScroll)
     {
-        return _model.hasElements();
-    }
-
-    /**
-     * Visually updates the list. If a {@link StringConverter} is used it will
-     * recalculate the Strings to display.
-     */
-    public void refreshList()
-    {
-        if(_renderer != null)
-        {
-            _renderer.clearCache();
-        }
-
-        _model.notifyRefresh();
-    }
-
-    /**
-     * Selects the first value if the list is not empty.
-     */
-    public void selectFirst()
-    {
-        if(this.hasValues())
-        {
-            this.setSelectedIndex(0);
-        }
-    }
-
-    /**
-     * Selects all values if the list is not empty.
-     */
-    public void selectAll()
-    {
-        int count = this.getValuesCount();
-        if(count != 0)
-        {
-            this.setSelectionInterval(0, count - 1);
-        }
+        throw new UnsupportedOperationException("Not valid for GenericJList. " +
+                "Please use setSelectedValue(...)");
     }
 
     /**
@@ -305,8 +344,9 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     }
 
     /**
-     * Selects all specified values. If a value does not exist in the list then
-     * it will not be selected, but no problems will arise.
+     * Selects the first occurence of each specified value. If a value does not
+     * exist in the list then it will not be selected, but no problems will
+     * arise.
      *
      * @param values
      */
@@ -315,7 +355,7 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
         List<Integer> indices = new ArrayList<Integer>();
         for(E value : values)
         {
-            int index = this.getValues().indexOf(value);
+            int index = this.getListData().indexOf(value);
             if(index != -1)
             {
                 indices.add(index);
@@ -330,6 +370,28 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
         if(convertedIndices.length != 0)
         {
             this.setSelectedIndices(convertedIndices);
+        }
+    }
+    
+    /**
+     * Selects the first value if the list has values.
+     */
+    public void selectFirst()
+    {
+        if(this.hasListData())
+        {
+            this.setSelectedIndex(0);
+        }
+    }
+
+    /**
+     * Selects all values if the list has values.
+     */
+    public void selectAll()
+    {
+        if(this.hasListData())
+        {
+            this.setSelectionInterval(0, this.getListData().size() - 1);
         }
     }
 

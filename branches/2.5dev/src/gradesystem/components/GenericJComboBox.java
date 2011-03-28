@@ -1,6 +1,7 @@
 package gradesystem.components;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
@@ -23,21 +24,21 @@ public class GenericJComboBox<E> extends JComboBox implements StringConverterCel
     private GenericComboBoxModel<E> _model;
     private StringConverterCellRenderer _renderer;
 
-    public GenericJComboBox()
+    public GenericJComboBox(E... values)
     {
-        this.setItems(Collections.EMPTY_LIST);
-    }
-
-    public GenericJComboBox(Iterable<E> items)
-    {
-        this.setItems(items);
+        this(Arrays.asList(values));
     }
 
     public GenericJComboBox(Iterable<E> values, final StringConverter<E> converter)
     {
-        this.setItems(values);
+        this(values);
 
         this.setStringConverter(converter);
+    }
+    
+    public GenericJComboBox(Iterable<E> items)
+    {
+        this.setItems(items);
     }
 
     public void setStringConverter(StringConverter<E> converter)
@@ -104,6 +105,16 @@ public class GenericJComboBox<E> extends JComboBox implements StringConverterCel
     }
 
     /**
+     * Returns an immutable list of all of items in this combo box.
+     * 
+     * @return
+     */
+    public List<E> getItems()
+    {
+        return _model.getElements();
+    }
+
+    /**
      * This method cannot ensure type safety.
      * <br/><br/>
      * The no argument super constructor will call this method with an empty
@@ -140,6 +151,12 @@ public class GenericJComboBox<E> extends JComboBox implements StringConverterCel
     {
         _model = model;
         super.setModel(model);
+    }
+
+    @Override
+    public GenericComboBoxModel<E> getModel()
+    {
+        return _model;
     }
     
     /**
@@ -190,12 +207,10 @@ public class GenericJComboBox<E> extends JComboBox implements StringConverterCel
      *
      * @param anObject
      * @param index
-     * @deprecated
      */
     @Override
     @Deprecated
-    public void insertItemAt(Object anObject,
-                         int index)
+    public void insertItemAt(Object anObject, int index)
     {
         throw new UnsupportedOperationException("Mutation not supported");
     }
