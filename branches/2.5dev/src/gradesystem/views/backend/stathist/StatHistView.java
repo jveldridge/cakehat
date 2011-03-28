@@ -4,12 +4,12 @@ import gradesystem.config.Assignment;
 import gradesystem.config.Part;
 import java.awt.CardLayout;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import gradesystem.Allocator;
@@ -37,7 +37,7 @@ public class StatHistView extends javax.swing.JFrame {
     public StatHistView(Collection<Assignment> assignments) {
         super("Charts and Histograms");
         
-        _assignments  = new Vector<Assignment>(assignments) {};
+        _assignments  = new ArrayList<Assignment>(assignments);
         Collections.sort(_assignments);
         _asgnChartMap = new HashMap<Assignment,AssignmentChartPanel>();
         _partChartMap = new HashMap<Part,AssignmentChartPanel>();
@@ -61,7 +61,7 @@ public class StatHistView extends javax.swing.JFrame {
 
     private void domoreinit() {
         
-        _parts = new Vector<Part>();
+        _parts = new ArrayList<Part>();
         
         //create AssignmentChartPanels for each Assignment and Part
         for (Assignment a : _assignments) {
@@ -109,7 +109,11 @@ public class StatHistView extends javax.swing.JFrame {
             }
         }
         
-        for (StudentChartPanel scp : _studChartMap.values()) {
+        List<String> studs = new ArrayList(_studChartMap.keySet());
+        Collections.sort(studs);
+        
+        for (String stud : studs) {
+            StudentChartPanel scp = _studChartMap.get(stud);
             sg.addComponent(scp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE);
             sg.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
         }
