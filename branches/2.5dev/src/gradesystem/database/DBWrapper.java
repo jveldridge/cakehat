@@ -1199,9 +1199,6 @@ public class DBWrapper implements DatabaseIO {
                     + " FROM grade AS g"
                     + " WHERE g.gpid IN (" + groupIDs + ")"
                     + " AND g.pid == '" + part.getDBID() + "'");
-            //TODO: restore prepared statement functionality
-            //ps.setString(1, studLogins);
-            //ps.setString(1, part.getDBID());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1237,9 +1234,6 @@ public class DBWrapper implements DatabaseIO {
                     + " WHERE g.gpid IN (" + groupIDs + ")"
                     + " AND g.pid IN (" + this.asgn2PartIDs(asgn) + ")"
                     + " GROUP BY g.gpid");
-            //TODO: restore prepared statement functionality
-            //ps.setString(1, studLogins);
-            //ps.setString(2, parts);
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -1278,7 +1272,6 @@ public class DBWrapper implements DatabaseIO {
         }
     }
 
-    //TODO improve efficiency of this method - don't pull all graders
     public TA getGraderForGroup(DistributablePart part, Group group) throws SQLException, CakeHatDBIOException {
         return this.getGradersForStudent(group.getMembers().iterator().next()).get(part);
     }
