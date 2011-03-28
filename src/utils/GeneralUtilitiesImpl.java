@@ -20,8 +20,6 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         return Double.toString(roundedVal);
     }
 
-    //TODO: Make this more efficient! Write the rounding code so that it
-    //      doesn't need to create a BigDecimal. This code gets called a lot.
     public double round(double d, int decimalPlace)
     {
         BigDecimal bd = new BigDecimal(Double.toString(d));

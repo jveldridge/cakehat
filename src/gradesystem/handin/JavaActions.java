@@ -245,8 +245,6 @@ class JavaActions implements ActionProvider
 
     private abstract class Demo implements DistributableActionDescription
     {
-        //TODO: Have property to allow for specifying run arguments
-
         protected final DistributableActionProperty CLASS_PATH_PROPERTY =
             new DistributableActionProperty("classpath",
             "The classpath; use colons to separate each entry.", false);

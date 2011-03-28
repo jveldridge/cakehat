@@ -147,33 +147,6 @@ public class BackendView extends JFrame
         }
     }
 
-    private class AssignmentOption
-    {
-        private String _name;
-        private DefaultListModel _model;
-
-        public AssignmentOption(String name, Collection<Assignment> asgns)
-        {
-            _name = name;
-            _model = new DefaultListModel();
-            for(Assignment asgn : asgns)
-            {
-                _model.addElement(asgn);
-            }
-        }
-
-        @Override
-        public String toString()
-        {
-            return _name;
-        }
-
-        public DefaultListModel getModel()
-        {
-            return _model;
-        }
-    }
-
     private JButton //Assignment wide buttons
                     _manageGroupsButton, _createDistributionButton, _manualDistributionButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
@@ -696,7 +669,6 @@ public class BackendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                //TODO select all
                 //_assignmentList.selectAll();
             }
         });
@@ -709,7 +681,6 @@ public class BackendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                //TODO clear selection
                 //_assignmentList.clearSelection();
             }
         });
@@ -718,28 +689,6 @@ public class BackendView extends JFrame
 
         //Gap space
         controlPanel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
-
-        //Assignment box
-        AssignmentOption[] options = {
-                                        new AssignmentOption("All Assignments", Allocator.getConfigurationInfo().getAssignments()),
-                                        new AssignmentOption("With Handin Part", Allocator.getConfigurationInfo().getHandinAssignments()),
-                                        new AssignmentOption("With NonHandin Parts", Allocator.getConfigurationInfo().getNonHandinAssignments()),
-                                        new AssignmentOption("With Lab Parts", Allocator.getConfigurationInfo().getLabAssignments())
-                                     };
-        final JComboBox assignmentsBox = new JComboBox(options);
-        assignmentsBox.setPreferredSize(LIST_SELECTOR_SIZE);
-        assignmentsBox.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                //TODO select different kinds of assignments
-                //AssignmentOption option = (AssignmentOption) assignmentsBox.getSelectedItem();
-                //_assignmentList.setModel(option.getModel());
-            }
-
-        });
-        controlPanel.add(assignmentsBox);
-        assignmentsBox.setVisible(false);
 
         //Gap space
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));

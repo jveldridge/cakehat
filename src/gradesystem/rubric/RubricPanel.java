@@ -331,7 +331,6 @@ class RubricPanel extends JPanel
         return editable;
     }
 
-    //TODO: Display each subsection's details
     private void displayExtraCredit()
     {
         int height = 0;

@@ -18,8 +18,6 @@ import java.util.Map;
 /**
  * Actions that print plain text files.
  *
- * TODO: Consider PDF printing support. Would any course actually use this?
- *
  * @author jak2
  */
 class PrintActions implements ActionProvider

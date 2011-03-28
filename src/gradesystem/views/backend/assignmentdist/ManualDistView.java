@@ -423,7 +423,6 @@ public class ManualDistView extends JFrame {
                 try {
                     handleAssignButtonClick();
                 } catch (SQLException ex) {
-                    //TODO ensure that all changes are rolled back properly!
                     new ErrorView(ex, "An error occurred during assignment. "
                             + "No changes have been made.");
                 } catch (ServicesException ex) {
