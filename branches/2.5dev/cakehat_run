@@ -1,10 +1,11 @@
 #!/bin/bash
 #==============================================================================
-# A convenience script to run cakehat.
+# A convenience script to run cakehat. Must be located somewhere within the
+# course directory from which cakehat will be run.
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 20, 2010
-# last updated: February 12, 2011
+# last updated: March 28, 2011
 #==============================================================================
 
 #message displayed when run incorrectly
@@ -13,8 +14,11 @@ usage="Usage: cakehat_run [frontend | backend] (ssh)"
 #retrieve the location of this script
 abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
 
-#extract the course name
-course=${abspath:8:5}
+#extract the course name by splitting on each / and then taking then second
+#argument of the resulting array, which will be the course so long as this
+#script is in the course directory (which it absolutely should be)
+path_parts=(`echo $abspath | tr '/' ' '`)
+course=${path_parts[1]}
 
 #location of jar to run
 cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
@@ -54,3 +58,4 @@ else
     echo "First argument must be frontend or backend; you used "$1
     exit 1
 fi
+
