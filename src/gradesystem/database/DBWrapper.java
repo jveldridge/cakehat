@@ -212,7 +212,7 @@ public class DBWrapper implements DatabaseIO {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO blacklist "
-                        + "('sid', 'tid') VALUES (?, ?)");
+                    + "('sid', 'tid') VALUES (?, ?)");
 
             for (String login : studentLogins) {
                 ps.setString(1, login);
@@ -1275,37 +1275,6 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public void setTimeStatus(Handin handin, Group group, TimeStatus status, int daysLate) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            conn.setAutoCommit(false);
-
-            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM handin"
-                    + " WHERE gpid == ?");
-            ps.setInt(1, groupID);
-            ps.executeUpdate();
-
-            ps = conn.prepareStatement("INSERT INTO handin ('gpid', 'status', 'late')"
-                    + " VALUES (?, ?, ?)");
-            ps.setInt(1, groupID);
-            ps.setString(2, status.name());
-            ps.setInt(3, daysLate);
-            ps.executeUpdate();
-
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
     public HandinStatus getHandinStatus(Handin handin, Group group) throws SQLException {
         Connection conn = this.openConnection();
 
@@ -1347,12 +1316,42 @@ public class DBWrapper implements DatabaseIO {
     }
 
     public void setHandinStatus(Handin handin, Group group, HandinStatus status) throws SQLException {
-        this.setTimeStatus(handin, group, status.getTimeStatus(), status.getDaysLate());
+        Map<Group, HandinStatus> statuses = new HashMap<Group, HandinStatus>();
+        statuses.put(group, status);
+        this.setHandinStatuses(handin, statuses);
     }
 
     public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException {
-        for (Group group : statuses.keySet()) {
-            this.setTimeStatus(handin, group, statuses.get(group).getTimeStatus(), statuses.get(group).getDaysLate());
+        Connection conn = this.openConnection();
+
+        try {
+            conn.setAutoCommit(false);
+
+            PreparedStatement psDelete = conn.prepareStatement("DELETE FROM handin"
+                    + " WHERE gpid == ?");
+            PreparedStatement psInsert = conn.prepareStatement("INSERT INTO handin ('gpid', 'status', 'late')"
+                    + " VALUES (?, ?, ?)");
+            for (Group group : statuses.keySet()) {
+                int groupID = this.group2groupID(conn, handin.getAssignment(), group);
+                
+                psDelete.setInt(1, groupID);
+                psDelete.addBatch();
+
+                psInsert.setInt(1, groupID);
+                psInsert.setString(2, statuses.get(group).getTimeStatus().name());
+                psInsert.setInt(3, statuses.get(group).getDaysLate());
+                psInsert.addBatch();
+            }
+            psDelete.executeBatch();
+            psInsert.executeBatch();
+
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
         }
     }
 
@@ -1376,5 +1375,4 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection(conn);
         }
     }
-
 }
