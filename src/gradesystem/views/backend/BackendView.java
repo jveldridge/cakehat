@@ -1339,7 +1339,7 @@ public class BackendView extends JFrame
                 _singleSelectionPanel.updateView(studentLogin, group, asgn);
 
                 if (selection.get(asgn).size() == 1 && getSingleSelectedDP(selection) == null) {
-                    _singleSelectionPanel.selectPart(selection.get(asgn).iterator().next());
+                    _singleSelectionPanel.selectPart(selection.get(asgn).get(0));
                 }
 
                 _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
