@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -95,7 +96,7 @@ class PrintActions implements ActionProvider
                     //Build print requests
                     if(printerName != null)
                     {
-                        ArrayList<PrintRequest> requests = new ArrayList<PrintRequest>();
+                        List<PrintRequest> requests = new ArrayList<PrintRequest>();
 
                         for(Group group : groups)
                         {
@@ -103,7 +104,7 @@ class PrintActions implements ActionProvider
 
                             FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
 
-                            Collection<File> filesToPrint;
+                            List<File> filesToPrint;
                             try
                             {
                                 filesToPrint = Allocator.getFileSystemUtilities()
@@ -116,6 +117,7 @@ class PrintActions implements ActionProvider
 
                             try
                             {
+                                Collections.sort(filesToPrint);
                                 PrintRequest request = new PrintRequest(filesToPrint,
                                         Allocator.getUserUtilities().getUserLogin(),
                                         group.getName());
