@@ -1,13 +1,13 @@
 package cakehat.database;
 
-import cakehat.handin.Handin;
+import cakehat.config.handin.Handin;
 import java.util.UUID;
 import cakehat.config.TA;
 import cakehat.config.LabPart;
 import java.util.Arrays;
 import cakehat.config.Part;
 import java.util.ArrayList;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.config.Assignment;
 import cakehat.config.NonHandinPart;
 

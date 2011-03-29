@@ -1,7 +1,7 @@
 package cakehat.rubric;
 
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 
 /**
  * Implement this interface to be notified of rubric saving.

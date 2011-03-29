@@ -1,8 +1,8 @@
 package cakehat.database;
 
 import cakehat.Allocator;
-import cakehat.handin.DistributablePart;
-import cakehat.handin.Handin;
+import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.Handin;
 import cakehat.rubric.TimeStatus;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;

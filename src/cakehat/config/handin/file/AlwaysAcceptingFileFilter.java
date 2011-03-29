@@ -1,4 +1,4 @@
-package cakehat.handin.file;
+package cakehat.config.handin.file;
 
 import java.io.File;
 import java.io.FileFilter;

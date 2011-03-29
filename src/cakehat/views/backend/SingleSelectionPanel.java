@@ -24,7 +24,7 @@ import javax.swing.event.DocumentListener;
 import cakehat.Allocator;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.views.shared.ErrorView;
 import java.util.ArrayList;
 

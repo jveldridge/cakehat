@@ -1,6 +1,6 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
-import cakehat.handin.file.OrFileFilter;
+import cakehat.config.handin.file.OrFileFilter;
 import java.io.FileFilter;
 import java.util.HashSet;
 import support.utils.FileExtensionFilter;

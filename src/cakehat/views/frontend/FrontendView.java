@@ -1,7 +1,7 @@
 package cakehat.views.frontend;
 
 import support.ui.GenericJList;
-import cakehat.handin.ActionException;
+import cakehat.config.handin.ActionException;
 import cakehat.rubric.RubricException;
 import cakehat.services.ServicesException;
 import cakehat.config.TA;
@@ -41,7 +41,7 @@ import cakehat.Allocator;
 import support.ui.StringConverter;
 import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;

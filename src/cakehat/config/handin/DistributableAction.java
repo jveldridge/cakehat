@@ -1,4 +1,4 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 import cakehat.database.Group;
 import java.util.Collection;

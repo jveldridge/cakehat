@@ -4,8 +4,8 @@ import cakehat.Allocator;
 import cakehat.CakehatRunMode;
 import cakehat.CakehatMain;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
-import cakehat.handin.Handin;
+import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.Handin;
 import java.io.File;
 
 /**

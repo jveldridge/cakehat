@@ -4,7 +4,7 @@ import cakehat.config.Assignment;
 import cakehat.config.ConfigurationInfo;
 import cakehat.config.TA;
 import cakehat.database.Group;
-import cakehat.handin.Handin;
+import cakehat.config.handin.Handin;
 import java.util.Collection;
 import java.util.Map;
 

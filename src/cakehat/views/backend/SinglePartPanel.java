@@ -5,7 +5,7 @@ import cakehat.config.Part;
 import cakehat.config.TA;
 import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

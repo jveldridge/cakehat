@@ -1,7 +1,7 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 import cakehat.config.ConfigurationException;
-import cakehat.handin.DistributableActionDescription.ActionMode;
+import cakehat.config.handin.DistributableActionDescription.ActionMode;
 import cakehat.views.shared.TextViewerView;
 import java.util.Arrays;
 import java.util.HashMap;

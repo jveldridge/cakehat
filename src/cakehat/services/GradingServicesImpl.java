@@ -32,7 +32,7 @@ import cakehat.config.LatePolicy;
 import cakehat.config.TA;
 import cakehat.database.Group;
 import cakehat.database.HandinStatus;
-import cakehat.handin.Handin;
+import cakehat.config.handin.Handin;
 import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
