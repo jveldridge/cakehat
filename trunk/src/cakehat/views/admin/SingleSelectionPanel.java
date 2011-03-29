@@ -36,7 +36,7 @@ import java.util.ArrayList;
 class SingleSelectionPanel extends JPanel
 {
     //Dimensions
-    private static final Dimension PANEL_SIZE = BackendView.MULTI_PANEL_CARD_SIZE;
+    private static final Dimension PANEL_SIZE = AdminView.MULTI_PANEL_CARD_SIZE;
 
     //Student and assignment this is displaying
     private String _studentLogin;

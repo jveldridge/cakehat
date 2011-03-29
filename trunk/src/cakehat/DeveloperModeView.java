@@ -1,6 +1,6 @@
 package cakehat;
 
-import cakehat.views.admin.BackendView;
+import cakehat.views.admin.AdminView;
 import cakehat.views.frontend.FrontendView;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -99,7 +99,7 @@ class DeveloperModeView extends JFrame
            public void actionPerformed(ActionEvent e)
            {
                CakehatMain.setRunMode(CakehatRunMode.BACKEND);
-               BackendView.launch();
+               AdminView.launch();
                DeveloperModeView.this.dispose();
            }
         });
