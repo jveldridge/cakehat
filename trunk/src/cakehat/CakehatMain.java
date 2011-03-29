@@ -1,7 +1,7 @@
 package cakehat;
 
 import cakehat.labcheckoff.CheckoffCLI;
-import cakehat.views.backend.BackendView;
+import cakehat.views.admin.AdminView;
 import cakehat.views.frontend.FrontendView;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +121,7 @@ public class CakehatMain
         else if(args[0].equalsIgnoreCase("backend"))
         {
             _runMode = CakehatRunMode.BACKEND;
-            BackendView.launch();
+            AdminView.launch();
         }
         else if(args[0].equalsIgnoreCase("lab"))
         {

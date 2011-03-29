@@ -1,4 +1,4 @@
-package cakehat.views.backend;
+package cakehat.views.admin;
 
 import support.ui.CalendarListener;
 import support.ui.CalendarView;

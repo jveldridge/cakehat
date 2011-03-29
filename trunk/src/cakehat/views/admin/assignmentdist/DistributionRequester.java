@@ -1,4 +1,4 @@
-package cakehat.views.backend.assignmentdist;
+package cakehat.views.admin.assignmentdist;
 
 /**
  * Must be implemented by classes that call the RubricManager 

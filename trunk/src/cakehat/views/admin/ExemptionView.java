@@ -4,7 +4,7 @@
  * Created on January 19, 2010, 12:49 AM
  */
 
-package cakehat.views.backend;
+package cakehat.views.admin;
 
 import cakehat.config.Assignment;
 import cakehat.config.Part;

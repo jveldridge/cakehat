@@ -1,4 +1,4 @@
-package cakehat.views.backend.stathist;
+package cakehat.views.admin.stathist;
 
 import java.awt.Color;
 import java.awt.Font;

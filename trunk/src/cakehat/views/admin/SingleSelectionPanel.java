@@ -1,4 +1,4 @@
-package cakehat.views.backend;
+package cakehat.views.admin;
 
 import cakehat.config.Assignment;
 import cakehat.config.Part;
