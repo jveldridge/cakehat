@@ -10,8 +10,8 @@ import gradesystem.handin.Handin;
 import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
-import utils.CalendarUtilities;
-import utils.UserUtilities;
+import support.utils.CalendarUtilities;
+import support.utils.UserUtilities;
 
 import static org.junit.Assert.*;
 import static org.easymock.EasyMock.*;

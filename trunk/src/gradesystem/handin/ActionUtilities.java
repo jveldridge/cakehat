@@ -3,8 +3,8 @@ package gradesystem.handin;
 import gradesystem.handin.file.OrFileFilter;
 import java.io.FileFilter;
 import java.util.HashSet;
-import utils.FileExtensionFilter;
-import utils.NoFileExtensionFilter;
+import support.utils.FileExtensionFilter;
+import support.utils.NoFileExtensionFilter;
 
 /**
  * Functionality used commonly by actions. This class exists to prevent code

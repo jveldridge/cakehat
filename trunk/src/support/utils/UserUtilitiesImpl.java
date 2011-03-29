@@ -1,9 +1,9 @@
-package utils;
+package support.utils;
 
 import java.util.HashMap;
 import java.util.List;
-import utils.system.NativeException;
-import utils.system.NativeFunctions;
+import support.utils.posix.NativeException;
+import support.utils.posix.NativeFunctions;
 
 public class UserUtilitiesImpl implements UserUtilities
 {

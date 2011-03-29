@@ -42,13 +42,13 @@ import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import utils.ExternalProcessesUtilities;
-import utils.ExternalProcessesUtilities.TerminalStringValidity;
-import utils.FileCopyingException;
-import utils.FileExistsException;
-import utils.FileExtensionFilter;
-import utils.FileSystemUtilities.FileCopyPermissions;
-import utils.FileSystemUtilities.OverwriteMode;
+import support.utils.ExternalProcessesUtilities;
+import support.utils.ExternalProcessesUtilities.TerminalStringValidity;
+import support.utils.FileCopyingException;
+import support.utils.FileExistsException;
+import support.utils.FileExtensionFilter;
+import support.utils.FileSystemUtilities.FileCopyPermissions;
+import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Actions for the Java programming language. Compilation of Java is done via

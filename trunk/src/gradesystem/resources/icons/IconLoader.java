@@ -12,7 +12,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import utils.FileExtensionFilter;
+import support.utils.FileExtensionFilter;
 
 /**
  * Loads an icon of size either 16x16 or 32x32 as specified by {@link IconSize}.

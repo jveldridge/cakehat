@@ -1,4 +1,4 @@
-package utils;
+package support.utils;
 
 import java.util.Collection;
 import javax.swing.Icon;

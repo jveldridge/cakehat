@@ -1,7 +1,7 @@
 package gradesystem.handin;
 
 import com.google.common.collect.ImmutableList;
-import utils.AlphabeticFileComparator;
+import support.utils.AlphabeticFileComparator;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import java.io.File;
@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
-import utils.FileExtensionFilter;
+import support.utils.FileExtensionFilter;
 
 /**
  * Actions that launch other applications such as text editors.

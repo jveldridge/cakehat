@@ -2,7 +2,7 @@ package gradesystem.services;
 
 import gradesystem.config.TA;
 import java.util.List;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 /**
  * Services relating to users. Unlike <code>UserUtilities</code>, these methods

@@ -4,7 +4,7 @@ import gradesystem.Allocator;
 import gradesystem.config.TA;
 import java.util.Arrays;
 import org.junit.Test;
-import utils.UserUtilities;
+import support.utils.UserUtilities;
 
 import gradesystem.Allocator.SingletonAllocation;
 import gradesystem.config.ConfigurationInfo;

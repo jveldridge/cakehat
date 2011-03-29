@@ -8,7 +8,7 @@ import gradesystem.services.UserServices.ValidityCheck;
 import gradesystem.views.shared.ErrorView;
 import java.util.Collection;
 import java.util.LinkedList;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 /**
  *

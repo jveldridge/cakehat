@@ -1,8 +1,10 @@
 package utils;
 
+import support.utils.UserUtilities;
+import support.utils.UserUtilitiesImpl;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 /**
  *

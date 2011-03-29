@@ -25,19 +25,19 @@ import gradesystem.services.PathServices;
 import gradesystem.services.PathServicesImpl;
 import gradesystem.services.UserServices;
 import gradesystem.services.UserServicesImpl;
-import testutils.TestUtilities;
-import utils.ArchiveUtilities;
-import utils.ArchiveUtilitiesImpl;
-import utils.CalendarUtilities;
-import utils.CalendarUtilitiesImpl;
-import utils.ExternalProcessesUtilities;
-import utils.ExternalProcessesUtilitiesImpl;
-import utils.FileSystemUtilities;
-import utils.FileSystemUtilitiesImpl;
-import utils.GeneralUtilities;
-import utils.GeneralUtilitiesImpl;
-import utils.UserUtilities;
-import utils.UserUtilitiesImpl;
+import support.testutils.TestUtilities;
+import support.utils.ArchiveUtilities;
+import support.utils.ArchiveUtilitiesImpl;
+import support.utils.CalendarUtilities;
+import support.utils.CalendarUtilitiesImpl;
+import support.utils.ExternalProcessesUtilities;
+import support.utils.ExternalProcessesUtilitiesImpl;
+import support.utils.FileSystemUtilities;
+import support.utils.FileSystemUtilitiesImpl;
+import support.utils.GeneralUtilities;
+import support.utils.GeneralUtilitiesImpl;
+import support.utils.UserUtilities;
+import support.utils.UserUtilitiesImpl;
 
 /**
  * Used to statically get references to utilities and services.

@@ -73,10 +73,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import utils.FileCopyingException;
-import utils.FileSystemUtilities.FileCopyPermissions;
-import utils.FileSystemUtilities.OverwriteMode;
-import utils.system.NativeException;
+import support.utils.FileCopyingException;
+import support.utils.FileSystemUtilities.FileCopyPermissions;
+import support.utils.FileSystemUtilities.OverwriteMode;
+import support.utils.posix.NativeException;
 
 /**
  *
