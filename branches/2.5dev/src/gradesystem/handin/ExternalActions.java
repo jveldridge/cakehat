@@ -58,10 +58,10 @@ class ExternalActions implements ActionProvider
                                    "name, student logins in the group and the " +
                                    "fully qualified path to the directory the " +
                                    "handin has been unarchived into. \n" +
-            ASSIGNMENT_NAME   + " - The name of the assignment" +
-            ASSIGNMENT_NUMBER + " - The number of the assignment" +
-            PART_NAME         + " - The name of the part" +
-            PART_NUMBER       + " - The number of the part" + "\n\n" +
+            ASSIGNMENT_NAME   + " - The name of the assignment \n" +
+            ASSIGNMENT_NUMBER + " - The number of the assignment \n" +
+            PART_NAME         + " - The name of the part \n" +
+            PART_NUMBER       + " - The number of the part \n\n" +
             "Information will be provided as JSON values, JSON maps, and JSON arrays. \n" +
             "String value: \"An Assignment Name\" \n" +
             "Number value: 11 \n" +
@@ -138,10 +138,10 @@ class ExternalActions implements ActionProvider
             STUDENT_LOGINS    + " - The logins of all students in the group \n" +
             UNARCHIVE_DIR     + " - The fully qualified path to the directory the " +
                                    "the handin has been unarchived into. " +
-            ASSIGNMENT_NAME   + " - The name of the assignment" +
-            ASSIGNMENT_NUMBER + " - The number of the assignment" +
-            PART_NAME         + " - The name of the part" +
-            PART_NUMBER       + " - The number of the part" + "\n\n" +
+            ASSIGNMENT_NAME   + " - The name of the assignment \n" +
+            ASSIGNMENT_NUMBER + " - The number of the assignment \n" +
+            PART_NAME         + " - The name of the part \n" +
+            PART_NUMBER       + " - The number of the part \n\n" +
             "Information will be provided as a JSON value or a JSON array. \n" +
             "String value: \"An Assignment Name\" \n" +
             "Number value: 11 \n" +
@@ -204,10 +204,10 @@ class ExternalActions implements ActionProvider
             "placed in the command will be replaced with cakehat supplied " +
             "information.\n" +
             "Character sequences: \n" +
-            ASSIGNMENT_NAME   + " - The name of the assignment" +
-            ASSIGNMENT_NUMBER + " - The number of the assignment" +
-            PART_NAME         + " - The name of the part" +
-            PART_NUMBER       + " - The number of the part" + "\n\n" +
+            ASSIGNMENT_NAME   + " - The name of the assignment \n" +
+            ASSIGNMENT_NUMBER + " - The number of the assignment \n" +
+            PART_NAME         + " - The name of the part \n" +
+            PART_NUMBER       + " - The number of the part \n\n" +
             "Information will be provided as a JSON value. \n" +
             "String value: \"An Assignment Name\" \n" +
             "Number value: 11",
