@@ -43,7 +43,7 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JSeparator;
-import utils.FileSystemUtilities.OverwriteMode;
+import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Provides an interface for creating a distribution for an assignment.

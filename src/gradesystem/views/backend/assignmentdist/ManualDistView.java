@@ -55,7 +55,7 @@ import javax.swing.Box;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import utils.FileSystemUtilities.OverwriteMode;
+import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Provides an interface to allow administrators to manually distribute

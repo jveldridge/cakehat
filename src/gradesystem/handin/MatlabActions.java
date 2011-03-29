@@ -1,7 +1,7 @@
 package gradesystem.handin;
 
 import com.google.common.collect.ImmutableList;
-import utils.AlphabeticFileComparator;
+import support.utils.AlphabeticFileComparator;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
 import gradesystem.components.ShadowJTextField;
@@ -33,11 +33,11 @@ import matlabcontrol.MatlabConnectionListener;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.RemoteMatlabProxy;
 import matlabcontrol.RemoteMatlabProxyFactory;
-import utils.FileCopyingException;
-import utils.FileExistsException;
-import utils.FileExtensionFilter;
-import utils.FileSystemUtilities.FileCopyPermissions;
-import utils.FileSystemUtilities.OverwriteMode;
+import support.utils.FileCopyingException;
+import support.utils.FileExistsException;
+import support.utils.FileExtensionFilter;
+import support.utils.FileSystemUtilities.FileCopyPermissions;
+import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Actions that interact with MATLAB. These actions make use of the

@@ -6,7 +6,7 @@ import gradesystem.handin.DistributablePart;
 import gradesystem.handin.Handin;
 import java.util.Collection;
 import java.util.Map;
-import utils.FileSystemUtilities.OverwriteMode;
+import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Don't directly create this class, access it via the Allocator.

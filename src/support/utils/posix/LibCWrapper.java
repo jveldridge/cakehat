@@ -1,4 +1,4 @@
-package utils.system;
+package support.utils.posix;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Library;

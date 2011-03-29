@@ -1,4 +1,4 @@
-package utils;
+package support.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,9 +16,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
-import utils.system.NativeFunctions;
-import utils.FileSystemUtilities.Permission;
-import utils.system.NativeException;
+import support.utils.posix.NativeFunctions;
+import support.utils.FileSystemUtilities.Permission;
+import support.utils.posix.NativeException;
 
 public class FileSystemUtilitiesImpl implements FileSystemUtilities
 {

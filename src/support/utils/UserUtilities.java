@@ -1,7 +1,7 @@
-package utils;
+package support.utils;
 
 import java.util.List;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 /**
  * Utilities that are login-related.

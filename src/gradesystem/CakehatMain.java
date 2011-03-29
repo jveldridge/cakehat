@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 /**
  * The entry point for the cakehat grading system.

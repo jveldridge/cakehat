@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 /**
  * Performs validation of configuration data. In order for the configuration to

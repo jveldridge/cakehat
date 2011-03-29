@@ -1,4 +1,4 @@
-package utils;
+package support.utils;
 
 import java.awt.FontMetrics;
 import java.io.IOException;

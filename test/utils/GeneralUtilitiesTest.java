@@ -1,5 +1,7 @@
 package utils;
 
+import support.utils.GeneralUtilities;
+import support.utils.GeneralUtilitiesImpl;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

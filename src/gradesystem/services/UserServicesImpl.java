@@ -6,7 +6,7 @@ import gradesystem.views.shared.ErrorView;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
-import utils.system.NativeException;
+import support.utils.posix.NativeException;
 
 public class UserServicesImpl implements UserServices
 {
