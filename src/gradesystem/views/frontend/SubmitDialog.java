@@ -1,32 +1,36 @@
 package gradesystem.views.frontend;
 
+import gradesystem.components.GenericJCheckBox;
+import gradesystem.config.Assignment;
 import gradesystem.config.SubmitOptions;
+import gradesystem.database.Group;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
-import java.util.Vector;
+import java.util.LinkedList;
 import javax.swing.*;
 
 /**
  * This class allows TAs to select various options for submitting grades.  Users can choose to
- * submit XML files (which will copy them to the submitted directory), print .GRD files, and send
- * an email to the graded students notifying them that their assignment has be graded.
+ * submit grades to the database, send an email to the graded students notifying them that their
+ * their assignment has be graded, and print or email GRD files if the Assignment only has a
+ * single DistributablePart.
  *
- * Users can also select which students they have graded to include on the notification email so that
- * failing students can be easily excluded.
+ * Users can also select which Groups they have graded to include on the notification email so that
+ * failing Groups can be easily excluded.
  * 
  * @author jeldridg
  */
 
-public class SubmitDialog{
+public class SubmitDialog {
 
     private JCheckBox _submitcb, _printGRDcb, _emailGRDcb, _notifyStudentscb;
     private JPanel _panel;
-    private Vector<JCheckBox> _studentBoxes;
+    private Collection<GenericJCheckBox<Group>> _groupBoxes;
 
-    public SubmitDialog(Collection<String> studentLogins, SubmitOptions options) {
+    public SubmitDialog(Assignment asgn, Collection<Group> groups, SubmitOptions options) {
         _submitcb = new JCheckBox("Submit Grades");
         _printGRDcb = new JCheckBox("Print GRD Files");
         _emailGRDcb = new JCheckBox("Email GRD Files");
@@ -63,22 +67,31 @@ public class SubmitDialog{
         optionsPanel.add(new JLabel("<html><b>Select submit options: </b></html>"));
         optionsPanel.add(_submitcb);
         optionsPanel.add(_notifyStudentscb);
-        optionsPanel.add(_emailGRDcb);
-        optionsPanel.add(_printGRDcb);
+
+        //only allow printing/emailing GRDs if there is only 1 DistributablePart for the Assignment
+        if (asgn.getDistributableParts().size() == 1) {
+            optionsPanel.add(_emailGRDcb);
+            optionsPanel.add(_printGRDcb);
+        }
+        else {
+            optionsPanel.add(new JLabel("<html>For handins with multiple parts,<br/>" +
+                                        "rubrics must be printed or emailed<br/>" +
+                                        "from the backend.</html>"));
+        }
 
         JPanel studentPanel = new JPanel();
         studentPanel.setLayout(new GridLayout(0,1));
-        _studentBoxes = new Vector<JCheckBox>();
+        _groupBoxes = new LinkedList<GenericJCheckBox<Group>>();
 
-        //create JCheckBox for each student
-        for (String studentLogin : studentLogins) {
-            _studentBoxes.add(new JCheckBox(studentLogin));
+        //create JCheckBox for each group
+        for (Group group : groups) {
+            _groupBoxes.add(new GenericJCheckBox<Group>(group));
         }
 
         studentPanel.add(new JLabel("<html><b>Select students to notify: </b><html>"));
 
         //default each each newly created JCheckBox to be selected and add to the panel
-        for (JCheckBox box : _studentBoxes) {
+        for (JCheckBox box : _groupBoxes) {
             box.setSelected(true);
             studentPanel.add(box);
         }
@@ -90,7 +103,7 @@ public class SubmitDialog{
         toggleAllButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {
-                for (JCheckBox box : SubmitDialog.this._studentBoxes) {
+                for (JCheckBox box : SubmitDialog.this._groupBoxes) {
                     box.setSelected(!box.isSelected());
                 }
             }
@@ -143,13 +156,14 @@ public class SubmitDialog{
      * @return a vector with the logins of the students whose checkboxes were checked
      * (meaning they should be included on the outgoing notification email)
      */
-    public Vector<String> getSelectedStudents() {
-        Vector<String> selected = new Vector<String>();
-        for (JCheckBox box : _studentBoxes) {
+    public Collection<Group> getSelectedGroups() {
+        Collection<Group> selected = new LinkedList<Group>();
+        for (GenericJCheckBox<Group> box : _groupBoxes) {
             if (box.isSelected()) {
-                selected.add(box.getText());
+                selected.add(box.getItem());
             }
         }
+
         return selected;
     }
 }

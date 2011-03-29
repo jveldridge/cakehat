@@ -1,30 +1,28 @@
 package utils.system;
 
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 
 /**
- * This class is for <strong>INTERNAL</strong> user only, it should never be
+ * This class is for <strong>INTERNAL</strong> use only, it should never be
  * accessed from outside of this package. Due to limitations with JNA (Java
  * Native Access) this class must be public and all of its fields must be
- * public.
+ * public. Do not access the public fields of this class from outside of this
+ * class.
  * <br/><br/>
  * The fields of this class match the following native struct:
- * <br/><br/>
- *  struct group {                              <br/>
- *      char   *gr_name;       // group name    <br/>
- *      char   *gr_passwd;     // group password<br/>
- *      gid_t   gr_gid;        // group ID      <br/>
- *      char  **gr_mem;        // group members <br/>
+ * <pre>
+ *  struct group {
+ *      char   *gr_name;       // group name
+ *      char   *gr_passwd;     // group password
+ *      gid_t   gr_gid;        // group ID
+ *      char  **gr_mem;        // group members
  *  };
- * <br/><br/>
+ * </pre>
  * This class stores information pertaining to a UNIX group.
- * <br/><br/>
- * Do not access the public fields of this class from outside of this class;
- * the fields must be public due to limitations of JNA (Java Native Access).
  *
  * @author jak2 (Joshua Kaplan)
  */
@@ -80,6 +78,7 @@ public class NativeGroup extends Structure
         return gr_gid;
     }
 
+    private List<String> _members;
     /**
      * List of the group's members' logins.
      *
@@ -87,14 +86,19 @@ public class NativeGroup extends Structure
      */
     public List<String> getMembers()
     {
-        ArrayList<String> members = new ArrayList<String>();
-
-        Pointer memberPtr;
-        for(int i = 0; (memberPtr = gr_mem.getPointer(i)) != null; i += Pointer.SIZE)
+        if(_members == null)
         {
-            members.add(memberPtr.getString(0));
+            ImmutableList.Builder<String> builder = ImmutableList.builder();
+
+            Pointer memberPtr;
+            for(int i = 0; (memberPtr = gr_mem.getPointer(i)) != null; i += Pointer.SIZE)
+            {
+                builder.add(memberPtr.getString(0));
+            }
+
+            _members = builder.build();
         }
 
-        return members;
+        return _members;
     }
 }

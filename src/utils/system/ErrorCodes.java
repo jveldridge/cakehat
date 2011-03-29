@@ -9,9 +9,9 @@ import java.util.Map;
  *
  * @author jak2 (Joshua Kaplan)
  */
-public class ErrorCodes
+class ErrorCodes
 {
-    public static enum NativeError
+    static enum NativeError
     {
         EPERM           (  1, "Operation not permitted"),
         ENOENT          (  2, "No such file or directory"),
@@ -185,7 +185,7 @@ public class ErrorCodes
      * @param errorCode
      * @return error information
      */
-    public static NativeError getError(int errorCode)
+    static NativeError getError(int errorCode)
     {
         return ERRORS.get(errorCode);
     }   

@@ -1,29 +1,53 @@
 package gradesystem.config;
 
 /**
- * Representation of the following xml:
+ * Representation of the following XML in the configuration file:
+ * <pre>
+ * {@code
  * <SUBMIT-OPTIONS SUBMIT="TRUE" NOTIFY="TRUE" EMAIL-GRD="FALSE" PRINT-GRD="TRUE"/>
- *
- * Default values:
- * SUBMIT    - TRUE
- * NOTIFY    - TRUE
- * EMAIL-GRD - TRUE
- * PRINT-GRD - FALSE
- *
- * This code is used by the SubmitDialog for determining the default state of
- * the checkboxes for:
- *  - Submit grades
- *  - Notify students
- *  - Email GRD files
- *  - Print GRD files
+ * }
+ * </pre>
+ * This code is used by the {@link gradesystem.views.frontend.SubmitDialog} for
+ * determining the default state of the checkboxes for:
+ * <ul>
+ * <li>Submit grades</li>
+ * <li>Notify students</li>
+ * <li>Email GRD files</li>
+ * <li>Print GRD files</li>
+ * </ul>
  *
  * @author jak2
  */
 public class SubmitOptions
 {
+    /**
+     * The default value for the submit check box if not specified in the
+     * configuration file.
+     */
+    public static final boolean SUBMIT_DEFAULT = true;
+
+    /**
+     * The default value for the notify check box if not specified in the
+     * configuration file.
+     */
+    public static final boolean NOTIFY_DEFAULT = true;
+
+    /**
+     * The default value for the email check box if not specified in the
+     * configuration file.
+     */
+    public static final boolean EMAIL_GRD_DEFAULT = true;
+
+    /**
+     * The default value for the print check box if not specified in the
+     * configuration file.
+     */
+    public static final boolean PRINT_GRD_DEFAULT = false;
+
+    
     private final boolean _submit, _notify, _emailGrd, _printGrd;
 
-    private SubmitOptions(boolean submit, boolean notify, boolean emailGrd, boolean printGrd)
+    SubmitOptions(boolean submit, boolean notify, boolean emailGrd, boolean printGrd)
     {
         _submit= submit;
         _notify = notify;
@@ -49,43 +73,5 @@ public class SubmitOptions
     public boolean isPrintGrdDefaultEnabled()
     {
         return _printGrd;
-    }
-
-    public static class Builder implements gradesystem.components.Builder<SubmitOptions>
-    {
-        //Defaults
-        private boolean _submit = true;
-        private boolean _notify = true;
-        private boolean _emailGrd = true;
-        private boolean _printGrd = false;
-
-        public SubmitOptions build()
-        {
-            return new SubmitOptions(_submit, _notify, _emailGrd, _printGrd);
-        }
-
-        public Builder setSubmit(boolean submit)
-        {
-            _submit = submit;
-            return this;
-        }
-
-        public Builder setNotify(boolean notify)
-        {
-            _notify = notify;
-            return this;
-        }
-
-        public Builder setEmailGrd(boolean emailGrd)
-        {
-            _emailGrd = emailGrd;
-            return this;
-        }
-
-        public Builder setPrintGrd(boolean printGrd)
-        {
-            _printGrd = printGrd;
-            return this;
-        }
     }
 }

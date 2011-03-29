@@ -2,6 +2,11 @@ package gradesystem.services;
 
 import gradesystem.Allocator;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import utils.FileCopyingException;
+import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 import utils.system.NativeException;
 
 /**
@@ -10,44 +15,45 @@ import utils.system.NativeException;
  */
 public class FileSystemServicesImpl implements FileSystemServices
 {
-    public void sanitize(File file) throws NativeException
+    public void sanitize(File file) throws ServicesException
     {
-        //Permissions
-        Allocator.getFileSystemUtilities().chmodDefault(file);
-
-        //Group owner
-        this.changeGroupToTAGroup(file);
-    }
-
-    public void makeDirectory(File dir) throws NativeException
-    {
-        //Do nothing if it already exists
-        if(!dir.exists())
+        try
         {
-            //Attempt to directly make the directory
-            //If it cannot be done, recursively make all parent directories and
-            //then make the directory
-            if(!dir.mkdir())
-            {
-                this.makeDirectory(dir.getParentFile());
-                dir.mkdir();
-            }
+            //Permissions
+            Allocator.getFileSystemUtilities().chmodDefault(file, true);
 
-            this.sanitize(dir);
+            //Group owner
+            Allocator.getFileSystemUtilities().changeGroup(file,
+                    Allocator.getCourseInfo().getTAGroup(), true);
+        }
+        catch(NativeException e)
+        {
+            throw new ServicesException("Unable to set group or permissions: " +
+                    file.getAbsolutePath(), e);
         }
     }
 
-    /**
-     * Changes the file or directory's group to be the TA group. The user
-     * must own the file or directory in order to change the group. For
-     * directories this call is recursive.
-     *
-     * @param file
-     * @throws NativeException thrown if the group cannot be changed
-     */
-    private void changeGroupToTAGroup(File file) throws NativeException
+    public List<File> makeDirectory(File dir) throws ServicesException
     {
-        Allocator.getFileSystemUtilities().changeGroup(file,
-                    Allocator.getCourseInfo().getTAGroup(), true);
+        try
+        {
+            List<File> directoriesMade = Allocator.getFileSystemUtilities()
+                    .makeDirectory(dir, Allocator.getCourseInfo().getTAGroup());
+
+            return directoriesMade;
+        }
+        catch(IOException e)
+        {
+            throw new ServicesException("Unable to create directory: " +
+                    dir.getAbsolutePath(), e);
+        }
+    }
+
+    public List<File> copy(File src, File dst, OverwriteMode overwrite,
+        boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException
+    {
+        return Allocator.getFileSystemUtilities()
+                .copy(src, dst, overwrite, preserveDate,
+                      Allocator.getCourseInfo().getTAGroup(), copyPermissions);
     }
 }

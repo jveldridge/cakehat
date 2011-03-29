@@ -1,7 +1,11 @@
 package gradesystem.services;
 
 import java.io.File;
-import utils.system.NativeException;
+import java.util.List;
+import utils.FileCopyingException;
+import utils.FileSystemUtilities;
+import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * A service that interacts with the file system. Implementations make use of
@@ -14,13 +18,14 @@ public interface FileSystemServices
 {
     /**
      * Sets the correct permissions and group owner of <code>file</code>.
-     *
+     * <br/><br/>
      * If <code>file</code> is a directory this will be applied recursively
      * for all files and directories inside of the directory.
      *
      * @param file
+     * @throws ServicesException
      */
-    public void sanitize(File file) throws NativeException;
+    public void sanitize(File file) throws ServicesException;
 
     /**
      * If the directory already exists no action is taken. If the directory does
@@ -29,7 +34,26 @@ public interface FileSystemServices
      * to be created that do not exist are also created in the same manner.
      *
      * @param dir
-     * @throws NativeException
+     * @return directories created
+     * @throws ServicesException
      */
-    public void makeDirectory(File dir) throws NativeException;
+    public List<File> makeDirectory(File dir) throws ServicesException;
+
+    /**
+     * This method is identical to
+     * {@link FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.CopyFilePermissionMode)}
+     * with the TA group set as the <code>groupOwner</code>.
+     *
+     * @param src
+     * @param dst
+     * @param overwrite
+     * @param preserveDate
+     * @param copyPermissions
+     * @return
+     * @throws FileCopyingException
+     *
+     * @see FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.FileCopyPermissions) 
+     */
+    public List<File> copy(File src, File dst, OverwriteMode overwrite,
+            boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException;
 }

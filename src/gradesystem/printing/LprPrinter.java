@@ -1,12 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package gradesystem.printing;
 
 import gradesystem.Allocator;
-import gradesystem.GradeSystemApp;
+import gradesystem.CakehatMain;
 import java.io.File;
 import java.io.IOException;
 
@@ -20,24 +15,27 @@ public class LprPrinter extends Printer
     public void print(Iterable<PrintRequest> requests, String printer) throws IOException
     {
         //Build command
-        String cmd = "lpr -P" + printer + " ";
+        String cmd = "lpr -P" + printer;
 
 	for(PrintRequest request : requests)
 	{
             for(File file : request.getFiles())
             {
-                cmd += file.getAbsolutePath() + " ";
+                cmd += " " + "'" + file.getAbsolutePath() + "'";
             }
 	}
 
-        if (GradeSystemApp.inTestMode())
+	//Execute command
+        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, workspace);
+
+        //If in developer mode, print out the command so it can be verified as
+        //the developer will quite possibly not be on a department machine
+        //where printing could actually occur
+        if(CakehatMain.isDeveloperMode())
         {
-            //Testing
-            System.out.println("lpr Command:");
+            System.out.println("lpr command:");
             System.out.println(cmd);
         }
-
-	//Execute command
-        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd);
     }
 }

@@ -43,6 +43,27 @@ class LibCWrapper
         //Per the man page, this function cannot fail. Therefore
         //LastErrorException does not need to be thrown.
         public int getuid();
+
+        //The following 3 *utxent methods only operate on Linux, they should not
+        //be called on OS X. This will not pose a problem as they are used to
+        //determine if a user is remotely connected (such as over ssh), which
+        //should never need to be determined when running as a developer on OS X.
+
+        //Documentation: man 3 setutxent
+        //(scroll down a bit, first part is about deprecated 32-bit UTMP API)
+        //
+        //Do not throw an exception as the department machines frequently raise
+        //an EACCES (permision denied) error while still properly resetting
+        //the pointer to the beginning of the database
+        public void setutxent();
+
+        //Documentation: man 3 getutxent
+        //(scroll down a bit, first part is about deprecated 32-bit UTMP API)
+        public NativeUTMPX getutxent() throws LastErrorException;
+
+        //Documentation: man 3 endutxent
+        //(scroll down a bit, first part is about deprecated 32-bit UTMP API)
+        public void endutxent() throws LastErrorException;
     }
 
     private final LibC _libC;
@@ -54,7 +75,8 @@ class LibCWrapper
 
     /**
      * Changes the permissions for the file or directory specified by the
-     * <code>filepath</code>.
+     * <code>filepath</code>. The user <strong>must</strong> be the owner of
+     * the file or directory specified by <code>filepath</code>.
      *
      * @param filepath
      * @param mode
@@ -68,8 +90,9 @@ class LibCWrapper
         }
         catch(LastErrorException e)
         {
-            String errorMsg = "Failure to change permissions to: " + mode +
-                              " (in octal), for: " + filepath;
+            String errorMsg = "Failure to change permissions to: " +
+                               Integer.toOctalString(mode) + " " +
+                               "(printed as octal), for: " + filepath;
             throw new NativeException(e, errorMsg);
         }
     }
@@ -180,5 +203,63 @@ class LibCWrapper
     public int getuid()
     {
         return _libC.getuid();
+    }
+
+    /**
+     * Resets the pointer to the beginning of the user accounting database. This
+     * should be called before a series of {@link #getutxent()} calls are made.
+     * <br/><br/>
+     * <strong>Only supported on Linux</strong>
+     */
+    public void setutxent()
+    {
+        _libC.setutxent();
+    }
+
+    /**
+     * Reads an entry from the user accounting database. If there are no more
+     * entries in the database then <code>null</code> will be returned.
+     * <br/><br/>
+     * <strong>Only supported on Linux</strong>
+     *
+     * @see #setutxent()
+     * @see #endutxent()
+     *
+     * @return
+     * @throws NativeException
+     */
+    public NativeUTMPX getutxent() throws NativeException
+    {
+        try
+        {
+            return _libC.getutxent();
+        }
+        catch(LastErrorException e)
+        {
+            String errorMsg = "Unable to retrieve entry from the user " +
+                    "accounting database";
+            throw new NativeException(e, errorMsg);
+        }
+    }
+
+    /**
+     * Closes the user accounting database. This should be called after a
+     * series of series of {@link #getutxent()} calls have been made.
+     * <br/><br/>
+     * <strong>Only supported on Linux</strong>
+     *
+     * @throws NativeException
+     */
+    public void endutxent() throws NativeException
+    {
+        try
+        {
+            _libC.endutxent();
+        }
+        catch(LastErrorException e)
+        {
+            String errorMsg = "Unable to close user accounting database";
+            throw new NativeException(e, errorMsg);
+        }
     }
 }

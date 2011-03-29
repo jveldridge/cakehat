@@ -1,5 +1,7 @@
 package gradesystem.rubric;
 
+import gradesystem.config.TA;
+import gradesystem.database.HandinStatus;
 import javax.swing.JButton;
 
 /**
@@ -8,31 +10,73 @@ import javax.swing.JButton;
  *
  * @author spoletto
  */
-class StateManager
-{	
-    private boolean _saved;
+class StateManager {
+    
+    private boolean _rubricSaved = true;
+    private boolean _statusSaved = true;
+    private boolean _graderSaved = true;
+    private HandinStatus _handinStatus;
+    private TA _grader;
     private JButton _saveButton;
 	
-    public StateManager(JButton saveButton, boolean saved)
-    {
-        _saved = saved;
+    public StateManager(JButton saveButton) {
         _saveButton = saveButton;
     }
-	
-    public void rubricSaved()
-    {
-        _saved = true;
-        _saveButton.setEnabled(false);
-    }
-	
-    public void rubricChanged()
-    {
-        _saved = false;
+
+    public void rubricChanged() {
+        _rubricSaved = false;
         _saveButton.setEnabled(true);
     }
-	
-    public boolean beenSaved()
-    {
-        return _saved;
+
+    public void rubricSaved() {
+        _rubricSaved = true;
+        _saveButton.setEnabled(!_statusSaved || !_graderSaved);
     }
+
+    public boolean isRubricSaved() {
+        return _rubricSaved;
+    }
+
+    public void setHandinStatus(HandinStatus status) {
+        _handinStatus = status;
+        _statusSaved = false;
+        _saveButton.setEnabled(true);
+    }
+
+    public HandinStatus getHandinStatus() {
+        return _handinStatus;
+    }
+
+    public void statusSaved() {
+        _statusSaved = true;
+        _saveButton.setEnabled(!_rubricSaved || !_graderSaved);
+    }
+
+    public boolean isStatusSaved() {
+        return _statusSaved;
+    }
+
+    public void setGrader(TA grader) {
+        _grader = grader;
+        _graderSaved = false;
+        _saveButton.setEnabled(true);
+    }
+
+    public TA getGrader() {
+        return _grader;
+    }
+
+    public void graderSaved() {
+        _graderSaved = true;
+        _saveButton.setEnabled(!_rubricSaved || !_statusSaved);
+    }
+
+    public boolean isGraderSaved() {
+        return _graderSaved;
+    }
+
+    public boolean beenSaved() {
+        return _rubricSaved && _statusSaved && _graderSaved;
+    }
+    
 }

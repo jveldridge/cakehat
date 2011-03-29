@@ -1,9 +1,8 @@
 package gradesystem.views.backend;
 
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
-import gradesystem.config.LabPart;
 import gradesystem.config.Part;
+import gradesystem.rubric.RubricException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -24,7 +23,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.Allocator;
 import gradesystem.components.GenericJComboBox;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;
+import java.util.ArrayList;
 
 /**
  * Single selection panel of the backend.
@@ -38,14 +40,14 @@ class SingleSelectionPanel extends JPanel
 
     //Student and assignment this is displaying
     private String _studentLogin;
+    private Group _group;
     private Assignment _asgn;
 
     //GUI components
-    private GenericJComboBox<Part> _nonHandinBox, _labBox;
+    private GenericJComboBox<Part> _nonHandinBox;
     private ScoreField _nonHandinEarnedField, _nonHandinOutOfField,
-                       _labEarnedField, _labOutOfField,
                        _handinEarnedField, _handinOutOfField;
-    private JLabel _nonHandinScoreLabel, _labScoreLabel, _handinScoreLabel,
+    private JLabel _nonHandinScoreLabel, _handinScoreLabel,
                    _overallEarnedPointsLabel, _overallTotalPointsLabel,
                    _overallScoreLabel;
     private JButton _submitGradeButton;
@@ -60,13 +62,11 @@ class SingleSelectionPanel extends JPanel
 
     private static final Dimension
     NON_HANDIN_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 130),
-    LAB_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 130),
     HANDIN_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 110),
     OVERALL_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10, 130),
     UPDATE_PANEL_SIZE = new Dimension(PANEL_SIZE.width - 10,
                                       PANEL_SIZE.height -
                                       NON_HANDIN_PANEL_SIZE.height -
-                                      LAB_PANEL_SIZE.height -
                                       HANDIN_PANEL_SIZE.height -
                                       OVERALL_PANEL_SIZE.height);
     private void initComponents()
@@ -79,11 +79,11 @@ class SingleSelectionPanel extends JPanel
         this.initNonHandinPanel(nonHandinPanel);
         this.add(nonHandinPanel);
 
-        //Lab
-        JPanel labPanel = new JPanel();
-        labPanel.setPreferredSize(LAB_PANEL_SIZE);
-        this.initLabPartsPanel(labPanel);
-        this.add(labPanel);
+        //Update
+        JPanel updatePanel = new JPanel();
+        updatePanel.setPreferredSize(UPDATE_PANEL_SIZE);
+        this.initUpdatePanel(updatePanel);
+        this.add(updatePanel);
 
         //Handin
         JPanel handinPanel = new JPanel();
@@ -96,42 +96,22 @@ class SingleSelectionPanel extends JPanel
         overallPanel.setPreferredSize(OVERALL_PANEL_SIZE);
         this.initOverallPanel(overallPanel);
         this.add(overallPanel);
-
-        //Update
-        JPanel updatePanel = new JPanel();
-        updatePanel.setPreferredSize(UPDATE_PANEL_SIZE);
-        this.initUpdatePanel(updatePanel);
-        this.add(updatePanel);
     }
 
     private void initUpdatePanel(JPanel panel)
     {
-        _submitGradeButton = new JButton("Submit Non-Handin Grade");
+        _submitGradeButton = new JButton("Submit Grade");
         _submitGradeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae) {
-                if (_asgn.hasNonHandinParts()) {
-                    double nonHandinEarned = _nonHandinEarnedField.getNumberValue();
-                    Part nonHandinPart = _nonHandinBox.getSelectedItem();
+                if (_asgn.hasNonHandinParts() || _asgn.hasLabParts()) {
+                    double earned = _nonHandinEarnedField.getNumberValue();
+                    Part part = _nonHandinBox.getSelectedItem();
                     try {
-                        Allocator.getDatabaseIO().enterGrade(_studentLogin, nonHandinPart, nonHandinEarned);
+                        Allocator.getDatabaseIO().enterGrade(_group, part, earned);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Saving the grade for student " + _studentLogin + " " +
-                                          "on part " + nonHandinPart + " of assignment " +
-                                          _asgn + " failed.");
-                    }
-                }
-
-                if (_asgn.hasLabParts()) {
-                    double labEarned = _labEarnedField.getNumberValue();
-                    Part labPart = _labBox.getSelectedItem();
-
-                    try {
-                        Allocator.getDatabaseIO().enterGrade(_studentLogin, labPart, labEarned);
-                        Allocator.getGradingServices().updateLabGradeFile((LabPart) labPart, labEarned, _studentLogin);
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, "Saving the lab grade for student " + _studentLogin + " " +
-                                          "on part " + labPart + " of assignment " +
+                                          "on part " + part + " of assignment " +
                                           _asgn + " failed.");
                     }
                 }
@@ -148,7 +128,7 @@ class SingleSelectionPanel extends JPanel
         Dimension panelSize = panel.getPreferredSize();
 
         //title label
-        JLabel titleLabel = new JLabel("<html><b>Non-Handin Parts</b><html>");
+        JLabel titleLabel = new JLabel("<html><b>Lab & Non-Handin Parts</b><html>");
         Dimension titleLabelSize = new Dimension(panelSize.width, 20);
         titleLabel.setPreferredSize(titleLabelSize);
         panel.add(titleLabel);
@@ -176,25 +156,10 @@ class SingleSelectionPanel extends JPanel
         _nonHandinBox = new GenericJComboBox<Part>();
         _nonHandinBox.addActionListener(new ActionListener()
         {
+
             public void actionPerformed(ActionEvent ae)
             {
-                Part part = _nonHandinBox.getSelectedItem();
-                if(part != null)
-                {
-                    double earned = 0;
-                    try {
-                        earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
-                                          "lab part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's lab part grade.");
-                    }
-
-                    double outOf = part.getPoints();
-
-                    _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
-                    _nonHandinOutOfField.setNumberValue(outOf);
-                }
+                updateNonHandinInfo();
             }
         });
         _nonHandinBox.setPreferredSize(boxSize);
@@ -254,120 +219,6 @@ class SingleSelectionPanel extends JPanel
         _nonHandinScoreLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
         _nonHandinScoreLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         scorePanel.add(_nonHandinScoreLabel);
-    }
-
-    private void initLabPartsPanel(JPanel panel)
-    {
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-
-        Dimension panelSize = panel.getPreferredSize();
-
-        //title label
-        JLabel titleLabel = new JLabel("<html><b>Lab Parts</b><html>");
-        Dimension titleLabelSize = new Dimension(panelSize.width, 20);
-        titleLabel.setPreferredSize(titleLabelSize);
-        panel.add(titleLabel);
-
-        //sections
-        JPanel sectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        Dimension sectionPanelSize = new Dimension(panelSize.width - 10,
-                                                   panelSize.height - titleLabelSize.height);
-        sectionPanel.setPreferredSize(sectionPanelSize);
-        panel.add(sectionPanel);
-
-        //Part selection
-        Dimension selectionPanelSize = new Dimension(sectionPanelSize.width, 30);
-        JPanel selectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        selectionPanel.setPreferredSize(selectionPanelSize);
-        sectionPanel.add(selectionPanel);
-
-        Dimension selectLabelSize = new Dimension(50, 30);
-        JLabel selectLabel = new JLabel("Select:");
-        selectLabel.setPreferredSize(selectLabelSize);
-        selectionPanel.add(selectLabel);
-
-        Dimension boxSize = new Dimension(sectionPanelSize.width - selectLabelSize.width,
-                                          22);
-        _labBox = new GenericJComboBox<Part>();
-        _labBox.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                Part part = _labBox.getSelectedItem();
-                if(part != null)
-                {
-                    double earned = 0;
-                    try {
-                        earned = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
-                                          "lab part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's lab part grade.");
-                    }
-                    double outOf = part.getPoints();
-
-                    _labEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
-                    _labOutOfField.setNumberValue(outOf);
-                }
-            }
-        });
-        _labBox.setPreferredSize(boxSize);
-        selectionPanel.add(_labBox);
-
-        //Points
-        JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        Dimension pointsPanelSize = new Dimension(sectionPanelSize.width, 30);
-        pointsPanel.setPreferredSize(pointsPanelSize);
-        sectionPanel.add(pointsPanel);
-
-        Dimension earnedLabelSize = new Dimension(100, 30);
-        Dimension earnedFieldSize = new Dimension(70, 22);
-        Dimension outOfLabelSize = new Dimension(50, 30);
-        Dimension outOfFieldSize = new Dimension(70, 22);
-        Dimension pointsGapSize = new Dimension(sectionPanelSize.width -
-                                                earnedLabelSize.width -
-                                                earnedFieldSize.width -
-                                                outOfLabelSize.width -
-                                                outOfFieldSize.width, 30);
-
-        JLabel earnedLabel = new JLabel("Earned Points:");
-        earnedLabel.setPreferredSize(earnedLabelSize);
-        pointsPanel.add(earnedLabel);
-
-        _labEarnedField = new ScoreField();
-        _labEarnedField.setPreferredSize(earnedFieldSize);        
-        pointsPanel.add(_labEarnedField);
-
-        pointsPanel.add(Box.createRigidArea(pointsGapSize));
-
-        JLabel outOfLabel = new JLabel("Out Of:");
-        outOfLabel.setPreferredSize(outOfLabelSize);
-        pointsPanel.add(outOfLabel);
-
-        _labOutOfField = new ScoreField();
-        _labOutOfField.setPreferredSize(outOfFieldSize);
-        _labOutOfField.setBackground(Color.LIGHT_GRAY);
-        _labOutOfField.setEditable(false);
-        pointsPanel.add(_labOutOfField);
-
-        //Score
-        JPanel scorePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        Dimension scorePanelSize = new Dimension(sectionPanelSize.width, 30);
-        scorePanel.setPreferredSize(scorePanelSize);
-        sectionPanel.add(scorePanel);
-
-        Dimension scoreTextLabelSize = new Dimension(100, 30);
-        Dimension scoreReceivedLabelSize = new Dimension(scorePanelSize.width - scoreTextLabelSize.width, 30);
-
-        JLabel scoreTextLabel = new JLabel("Score (%)");
-        scoreTextLabel.setPreferredSize(scoreTextLabelSize);
-        scorePanel.add(scoreTextLabel);
-
-        _labScoreLabel = new JLabel("0");
-        _labScoreLabel.setPreferredSize(scoreReceivedLabelSize);
-        _labScoreLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
-        _labScoreLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        scorePanel.add(_labScoreLabel);
     }
 
     private void initHandinPanel(JPanel panel)
@@ -524,77 +375,132 @@ class SingleSelectionPanel extends JPanel
         scorePanel.add(_overallScoreLabel);
     }
 
+    private void updateNonHandinInfo()
+    {
+        Part part = _nonHandinBox.getSelectedItem();
+        if(part != null)
+        {
+            Double earned = null;
+            try
+            {
+                earned = Allocator.getDatabaseIO().getGroupScore(_group, part);
+            }
+            catch (SQLException ex)
+            {
+                new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                                  "part " + part + " from the database.");
+                _nonHandinEarnedField.setUnknownScoreValue();
+            }
+
+            double outOf = part.getPoints();
+
+            if (earned != null)
+            {
+                _nonHandinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(earned, 2));
+            }
+            else
+            {
+                _nonHandinEarnedField.setNoScoreValue();
+            }
+            _nonHandinOutOfField.setNumberValue(outOf);
+        }
+    }
+
     private void clearComponents()
     {
-        _nonHandinBox.removeAllItems();
         _nonHandinOutOfField.setText("");
         _nonHandinEarnedField.setText("");
         _nonHandinScoreLabel.setText("0");
-
-        _labBox.removeAllItems();
-        _labOutOfField.setText("");
-        _labEarnedField.setText("");
-        _labScoreLabel.setText("0");
 
         _handinOutOfField.setText("");
         _handinEarnedField.setText("");
         _handinScoreLabel.setText("0");
     }
 
-    public void updateView(String studentLogin, Assignment asgn)
+    public void updateView(String studentLogin, Group group, Assignment asgn)
     {
         _suppressUpdateScores = true;
 
+        boolean asgnChanged = (_asgn != asgn);
+        
         _studentLogin = studentLogin;
+        _group = group;
         _asgn = asgn;
 
         this.clearComponents();
 
-        //Populate the comboboxes
-        for(Part part : asgn.getNonHandinParts())
+        //Populate the combo box if the assignment has changed
+        if(asgnChanged)
         {
-            _nonHandinBox.addItem(part);
+            ArrayList<Part> partsToAdd = new ArrayList<Part>();
+            partsToAdd.addAll(asgn.getNonHandinParts());
+            partsToAdd.addAll(asgn.getLabParts());
+            _nonHandinBox.setItems(partsToAdd);
+            this.updateNonHandinInfo();
         }
+
         _submitGradeButton.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
         
-        _nonHandinBox.setEnabled(asgn.hasNonHandinParts());
-        _nonHandinEarnedField.setEnabled(asgn.hasNonHandinParts());
-        if (!asgn.hasNonHandinParts()) {
+        _nonHandinBox.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
+        _nonHandinEarnedField.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
+        if (!asgn.hasNonHandinParts() && !asgn.hasLabParts()) {
             _nonHandinEarnedField.setBackground(Color.LIGHT_GRAY);
         }
         else {
             _nonHandinEarnedField.setBackground(Color.WHITE);
         }
 
-        for(LabPart part : asgn.getLabParts())
+        if(asgn.hasHandin())
         {
-            _labBox.addItem(part);
-        }
-
-        _labBox.setEnabled(asgn.hasLabParts());
-        _labEarnedField.setEnabled(asgn.hasLabParts());
-        if (!asgn.hasLabParts()) {
-            _labEarnedField.setBackground(Color.LIGHT_GRAY);
-        }
-        else {
-            _labEarnedField.setBackground(Color.WHITE);
-        }
-
-        if(asgn.hasHandinPart())
-        {
-            HandinPart handinPart = asgn.getHandinPart();
-
-            double handinEarned = 0;
+            boolean hasRubrics = false;
+            Double handinEarned = null;
             try {
-                handinEarned = Allocator.getDatabaseIO().getStudentScore(studentLogin, handinPart);
+                for (DistributablePart dp : asgn.getDistributableParts()) {
+                    Double dpScore = Allocator.getDatabaseIO().getGroupScore(group, dp);
+                    if (handinEarned == null) {
+                        handinEarned = dpScore;
+                    }
+                    else {
+                        handinEarned += (dpScore == null ? 0 : dpScore);
+                    }
+                    
+                    if (Allocator.getRubricManager().hasRubric(dp, group)) {
+                        hasRubrics = true;
+                    }
+                }
             } catch (SQLException ex) {
-                new ErrorView(ex, "Could not read score for student " + studentLogin + " on " +
-                                  "part " + handinPart + " from the database.  A SCORE OF 0 WILL BE " +
-                                  "ASSUMED for displaying the student's handin part grade.");
+                new ErrorView(ex, "Could not read scores for student " + studentLogin + " on " +
+                                  "distributable parts for assignment " + asgn + " from the database.");
+                _nonHandinEarnedField.setUnknownScoreValue();
             }
-            double handinOutOf = handinPart.getPoints();
 
-            _handinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(handinEarned, 2));
+            //if rubrics haven't been created, the handin time won't have been stored in the database,
+            //so trying to calculate the handin penalty would fail
+            if (hasRubrics) {
+                try {
+                    double handinPenalty = Allocator.getRubricManager().getHandinPenaltyOrBonus(asgn.getHandin(), group);
+                    if (handinEarned != null) {
+                        handinEarned += handinPenalty;
+                    }
+                } catch (RubricException ex) {
+                    new ErrorView(ex, "Could not determine early/late handin penalty/bonus for student " +
+                                      studentLogin + "'s group on assignment " + asgn + ".");
+                    _handinEarnedField.setUnknownScoreValue();
+                }
+            }
+
+            if (handinEarned != null) {
+                _handinEarnedField.setNumberValue(Allocator.getGeneralUtilities().round(handinEarned, 2));
+            }
+            else {
+                _handinEarnedField.setNoScoreValue();
+            }
+
+            int handinOutOf = 0;
+            for (DistributablePart dp : asgn.getDistributableParts()) {
+                handinOutOf += dp.getPoints();
+            }
+
             _handinOutOfField.setNumberValue(handinOutOf);
         }
 
@@ -626,7 +532,9 @@ class SingleSelectionPanel extends JPanel
 
             this.addFocusListener(new FocusListener()
             {
-                public void focusGained(FocusEvent fe) {}
+                public void focusGained(FocusEvent fe) {
+                    ScoreField.this.selectAll();
+                }
 
                 public void focusLost(FocusEvent fe)
                 {
@@ -640,6 +548,24 @@ class SingleSelectionPanel extends JPanel
             this.setText(value + "");
         }
 
+        /**
+         * Has the ScoreField show a value that indicates the student does
+         * not have a score for the corresponding assignment.  Note that after
+         * this method is called, getNumberValue() will return 0.
+         */
+        public void setNoScoreValue() {
+            this.setText("no score");
+        }
+
+        /**
+         * Has the ScoreField show a value that indicates the student's score
+         * for the corresponding assignment is unknown.  Note that after this
+         * method is called, getNumberValue() will return 0.
+         */
+        public void setUnknownScoreValue() {
+            this.setText("??");
+        }
+
         public double getNumberValue()
         {
             double value = 0;
@@ -647,7 +573,7 @@ class SingleSelectionPanel extends JPanel
             {
                 value = Double.parseDouble(this.getText());
             }
-            catch(Exception e) { }
+            catch(NumberFormatException e) { }
 
             return value;
         }
@@ -669,15 +595,6 @@ class SingleSelectionPanel extends JPanel
             _nonHandinScoreLabel.setText(nonHandinPercent + "");
         }
 
-        //Update lab parts
-        double labEarned = _labEarnedField.getNumberValue();
-        double labOutOf = _labOutOfField.getNumberValue();
-        if(labOutOf != 0)
-        {
-            double labPercent = Allocator.getGeneralUtilities().round(labEarned / labOutOf * 100.0, 2);
-            _labScoreLabel.setText(labPercent + "");
-        }
-
         //Update handin parts
         double handinEarned = _handinEarnedField.getNumberValue();
         double handinOutOf = _handinOutOfField.getNumberValue();
@@ -692,58 +609,33 @@ class SingleSelectionPanel extends JPanel
         double totalOutOf = 0;
 
         //Non-handin
-        if(_asgn.hasHandinPart())
+        if(_asgn.hasNonHandinParts())
         {
             Part selectedPart = _nonHandinBox.getSelectedItem();
             totalEarned += nonHandinEarned;
             totalOutOf += nonHandinOutOf;
 
-
             for(Part part : _asgn.getNonHandinParts())
             {
                 if(part != selectedPart)
                 {
-                    double partScore = 0;
+                    Double partScore = null;
                     try {
-                        partScore = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
+                        partScore = Allocator.getDatabaseIO().getGroupScore(_group, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
                                           "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's overall grade.");
+                                          "ASSUMED for displaying the student's overall assignment score.");
                     }
-                    
-                    totalEarned += partScore;
-                    totalOutOf += part.getPoints();
-                }
-            }
-        }
-        //Lab
-        if(_asgn.hasLabParts())
-        {
-            Part selectedPart = _labBox.getSelectedItem();
-            totalEarned += labEarned;
-            totalOutOf += labOutOf;
 
-            for(Part part : _asgn.getLabParts())
-            {
-                if(part != selectedPart)
-                {
-                    double partScore = 0;
-                    try {
-                        partScore = Allocator.getDatabaseIO().getStudentScore(_studentLogin, part);
-                    } catch (SQLException ex) {
-                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
-                                          "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
-                                          "ASSUMED for displaying the student's overall grade.");
-                    }
-                    
-                    totalEarned += partScore;
+                    totalEarned += (partScore == null ? 0 : partScore);
                     totalOutOf += part.getPoints();
                 }
             }
         }
+        
         //Handin
-        if(_asgn.hasHandinPart())
+        if(_asgn.hasHandin())
         {
             totalEarned += handinEarned;
             totalOutOf += handinOutOf;
@@ -764,11 +656,6 @@ class SingleSelectionPanel extends JPanel
         return _nonHandinEarnedField;
     }
 
-    public JFormattedTextField getLabEarnedField()
-    {
-        return _labEarnedField;
-    }
-
     public JComboBox getNonHandinBox()
     {
         return _nonHandinBox;
@@ -777,5 +664,10 @@ class SingleSelectionPanel extends JPanel
     public JButton getSubmitButton()
     {
         return _submitGradeButton;
+    }
+
+    public void selectPart(Part part)
+    {
+        _nonHandinBox.setGenericSelectedItem(part);
     }
 }
