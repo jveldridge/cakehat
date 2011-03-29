@@ -1,8 +1,9 @@
 package utils;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileFilter;
 import java.util.Collection;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
@@ -22,15 +23,29 @@ public interface ArchiveUtilities
      *
      * @param archive
      *
-     * @return collection of Strings with the paths of files and directories in the archive
+     * @return the entries in the archive
      */
-    public Collection<String> getArchiveContents(File archive) throws IOException, ArchiveException;
+    public Collection<ArchiveEntry> getArchiveContents(File archive) throws ArchiveException;
 
     /**
-     * Extracts an archive file. Supported extensions: zip, tar, tgz, tar.gz
+     * Extracts an archive file. Each file and directory to be created will be
+     * checked against the <code>filter</code>. Only if it accepts will the file
+     * be unarchived.
+     * <br/><br/>
+     * Supported extensions: zip, tar, tgz, tar.gz
      *
-     * @param archive the archive file
-     * @param dstDir the directory the archive file will be expanded into
+     * @param archive
+     * @param dstDir
+     * @param filter
+     * @throws ArchiveException
      */
-    public void extractArchive(File archive, File dstDir) throws IOException, ArchiveException;
+    public void extractArchive(File archive, File dstDir, FileFilter filter) throws ArchiveException;
+
+    /**
+     * Returns a FileFilter which only accepts files that ArchiveUtilities
+     * is able to unarchive.
+     *
+     * @return
+     */
+    public FileFilter getSupportedFormatsFilter();
 }

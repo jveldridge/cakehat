@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package gradesystem.views.backend.stathist;
 
 import java.awt.Color;
@@ -50,7 +46,7 @@ public class HistogramPanel extends JComponent {
         _chart.setTitle(tt);
         XYPlot p = _chart.getXYPlot();
         ((NumberAxis) p.getRangeAxis()).setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        p.getRenderer().setSeriesPaint(0, Color.darkGray);//new Color(79, 129, 189));\
+        p.getRenderer().setSeriesPaint(0, Color.darkGray);
         p.getRenderer().setBaseOutlinePaint(Color.white);
         p.setBackgroundPaint(Color.white);
         p.setRangeGridlinePaint(Color.darkGray);

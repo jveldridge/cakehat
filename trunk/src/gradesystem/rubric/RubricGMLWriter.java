@@ -6,16 +6,18 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import gradesystem.rubric.Rubric.Detail;
 import gradesystem.rubric.Rubric.Section;
 import gradesystem.rubric.Rubric.Subsection;
+import gradesystem.services.ServicesException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import gradesystem.views.shared.ErrorView;
-import utils.system.NativeException;
+import javax.xml.transform.TransformerException;
 
 /**
  *
@@ -28,28 +30,14 @@ class RubricGMLWriter implements RubricConstants
      * Writes a Rubric to GML.
      *
      * @param rubric
-     * @param filepath location to write file to
+     * @param gmlFile the file that the XML will be written to
      */
-    static void write(Rubric rubric, String filepath)
+    static void write(Rubric rubric, File gmlFile) throws RubricException
     {
         Document document = createXMLDocument();
 
         //Create the root node of the XML document
         Element rubricNode = document.createElement(RUBRIC);
-
-        //Set name, number and status attributes
-        rubricNode.setAttribute(NAME, rubric.getName());
-        rubricNode.setAttribute(NUMBER, Integer.toString(rubric.getNumber()));
-        rubricNode.setAttribute(STATUS, rubric.getStatus().toString());
-        rubricNode.setAttribute(DAYS_LATE, Integer.toString(rubric.getDaysLate()));
-
-        //Create the student node of the XML document
-        Element student = document.createElement(STUDENT);
-        student.setAttribute(NAME, rubric.getStudentName());
-        student.setAttribute(ACCT, rubric.getStudentAccount());
-
-        //Add the student node to the root node
-        rubricNode.appendChild(student);
 
         for (Section section : rubric.getSections())
         {
@@ -168,7 +156,7 @@ class RubricGMLWriter implements RubricConstants
         //Append rubric to document
         document.appendChild(rubricNode);
 
-        saveXMLFile(document, filepath);
+        saveXMLFile(document, gmlFile);
     }
 
     private static Document createXMLDocument()
@@ -187,48 +175,65 @@ class RubricGMLWriter implements RubricConstants
         return document;
     }
 
-    private static void saveXMLFile(Document document, String XMLFilePath)
+    private static void saveXMLFile(Document document, File gmlFile) throws RubricException
     {
+        // determine if we are creating the file or overwriting it
+        boolean willCreateFile = !gmlFile.exists();
+
+        // dom source and transformer
+        DOMSource source = new DOMSource(document);
+        Transformer transformer;
         try
         {
-            // dom source and transformer
-            DOMSource source = new DOMSource(document);
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-
-            // properties
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-            // ensure directory where the file is going to be saved exists
-            File xmlFile = new File(XMLFilePath);
-            try
-            {
-                Allocator.getFileSystemServices().makeDirectory(xmlFile.getParentFile());
-            }
-            catch(NativeException e)
-            {
-                new ErrorView(e, "Unable to make directory to save rubric (gml file) in. \n" +
-                        "Rubric location is: " + xmlFile.getAbsolutePath());
-            }
-
-            // write file
-            StreamResult result = new StreamResult(xmlFile);
-            transformer.transform(source, result);
-
-            // ensure the file written has the correct permissions and group
-            try
-            {
-                Allocator.getFileSystemServices().sanitize(xmlFile);
-            }
-            catch(NativeException e)
-            {
-                new ErrorView(e, "Unable to set correct permissions and group for rubric (gml file).");
-            }
+            transformer = TransformerFactory.newInstance().newTransformer();
         }
-        catch (Exception e)
+        catch (TransformerConfigurationException e)
         {
-            new ErrorView(e, "Unable to save rubric (gml file): " + XMLFilePath);
+            throw new RubricException("Unable to save rubric (gml file).\n" +
+                    "Rubric location: " + gmlFile.getAbsolutePath(), e);
+        }
+
+        // properties
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+        // ensure directory where the file is going to be saved exists
+        try
+        {
+            Allocator.getFileSystemServices().makeDirectory(gmlFile.getParentFile());
+        }
+        catch(ServicesException e)
+        {
+            throw new RubricException("Unable to make directory to save rubric (gml file) in. \n" +
+                    "Rubric location is: " + gmlFile.getAbsolutePath(), e);
+        }
+
+        // write file
+        StreamResult result = new StreamResult(gmlFile);
+        try
+        {
+            transformer.transform(source, result);
+        }
+        catch(TransformerException e)
+        {
+            throw new RubricException("Unable to save rubric (gml file).\n" +
+                    "Rubric location: " + gmlFile.getAbsolutePath(), e);
+        }
+
+        // if the file was just created by this user, then ensure it has the
+        // correct permissions and group
+        if(willCreateFile)
+        {
+            try
+            {
+                Allocator.getFileSystemServices().sanitize(gmlFile);
+            }
+            catch(ServicesException e)
+            {
+                throw new RubricException("Unable to set correct permissions and " +
+                        "group for rubric (gml file).", e);
+            }
         }
     }   
 }

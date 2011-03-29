@@ -23,38 +23,55 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.statistics.Statistics;
 import org.jfree.data.xy.DefaultXYDataset;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import java.awt.Dimension;
 import java.util.HashMap;
+import javax.swing.JPanel;
 
 /**
  *
- * @author Paul
+ * @author psastras
  * @author jeldridg
+ * @author jak2
  */
-public class StudentChartPanel extends javax.swing.JPanel {
+public class StudentChartPanel extends JPanel {
 
-    /** Creates new form StudentDataPanel */
-    public StudentChartPanel() {
-        this.setBackground(Color.white);
-        initComponents();
-    }
     private JFreeChart _chart;
 
-    public void updateChart(String studName, Assignment[] assignments) {
+    public StudentChartPanel() {
+        this.setBackground(Color.white);
+        this.setPreferredSize(new Dimension(637, 309));
+    }
+
+    public void updateChart(String studLogin, Assignment[] assignments) {
         DefaultXYDataset dataset = new DefaultXYDataset();
         double[][] data = new double[2][assignments.length];
         double[][] avgData = new double[2][assignments.length];
-        
+
         for (int i = 0; i < assignments.length; i++) {
             data[0][i] = i;
             double studentScore = 0;
-            for (Part p : assignments[i].getParts()) {
+            Assignment asgn = assignments[i];
+            Group studentsGroup;
+            try {
+                studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, studLogin);
+            } catch (SQLException ex) {
+                new ErrorView("Could read group for student " + studLogin + " for assignment " +
+                              asgn + " from the database.");
+                continue;
+            }
+            if (studentsGroup == null) {
+                continue;
+            }
+            for (Part p : asgn.getParts()) {
 
                 double partScore = 0;
                 try {
-                    partScore = Allocator.getDatabaseIO().getStudentScore(studName, p);
+                    Double rawScore = Allocator.getDatabaseIO().getGroupScore(studentsGroup, p);
+                    partScore = (rawScore == null ? 0 : rawScore);
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not read the score for student " + studName + " " +
+                    new ErrorView(ex, "Could not read the score for student " + studLogin + " " +
                                       "on part " + p + ".  FOR THESE CHARTS AND STATISTICS, THE " +
                                       "SCORE WILL BE TREATED AS A 0.");
                 }
@@ -63,34 +80,34 @@ public class StudentChartPanel extends javax.swing.JPanel {
             }
 
             data[1][i] = studentScore / assignments[i].getTotalPoints() * 100;
-            
+
             Vector<Double> scores = new Vector<Double>();
-            Map<String, Double> scoreMap;
+            Map<Group, Double> scoreMap;
             try {
-                scoreMap = Allocator.getDatabaseIO().getAssignmentScores(assignments[i], Allocator.getDatabaseIO().getEnabledStudents().keySet());
+                scoreMap = Allocator.getDatabaseIO().getAssignmentScoresForGroups(asgn, Allocator.getDatabaseIO().getGroupsForAssignment(asgn));
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not get scores for assignment " + assignments[i] + ".");
-                scoreMap = new HashMap<String, Double>();
+                scoreMap = new HashMap<Group, Double>();
             }
 
-            for (String student : scoreMap.keySet()) {
-                scores.add(scoreMap.get(student));
+            for (Group group : scoreMap.keySet()) {
+                scores.add(scoreMap.get(group));
             }
-            
+
             avgData[0][i] = i;
             avgData[1][i] = (Statistics.calculateMean(scores) / assignments[i].getTotalPoints()) * 100;
         }
-        
-        dataset.addSeries(studName + "'s Scores", data);
+
+        dataset.addSeries(studLogin + "'s Scores", data);
         dataset.addSeries("Class Average", avgData);
         ValueAxis yAxis = new NumberAxis("Score (%)");
         yAxis.setRange(0.0, 110.0);
-        
+
         String[] asgnNames = new String[assignments.length];
         for (int i = 0; i < assignments.length; i++) {
             asgnNames[i] = assignments[i].getName();
         }
-        
+
         SymbolAxis sa = new SymbolAxis("Assignment Name", asgnNames);
         sa.setAutoRange(true);
         ValueAxis xAxis = sa;
@@ -102,7 +119,7 @@ public class StudentChartPanel extends javax.swing.JPanel {
         renderer.setSeriesItemLabelsVisible(1, Boolean.TRUE);
         renderer.setBaseItemLabelsVisible(true);
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-        _chart = new JFreeChart(studName + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
+        _chart = new JFreeChart(studLogin + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
         _chart.setBackgroundPaint(Color.white);
         this.repaint();
     }
@@ -117,30 +134,4 @@ public class StudentChartPanel extends javax.swing.JPanel {
             _chart.draw((Graphics2D) g, new Rectangle2D.Double(0.0, 0.0, (double) this.getWidth(), (double) this.getHeight()));
         }
     }
-
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        setBackground(new java.awt.Color(255, 255, 255));
-        setPreferredSize(new java.awt.Dimension(637, 309));
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 637, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 309, Short.MAX_VALUE)
-        );
-    }// </editor-fold>//GEN-END:initComponents
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
 }

@@ -1,6 +1,5 @@
 package gradesystem.rubric;
 
-import com.inet.jortho.SpellChecker;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.BorderFactory;
@@ -36,18 +35,6 @@ class TextField extends JTextArea
         }
         
         this.setText(storedText);
-    }
-
-    /**
-     * Turns on spell checking for this field.
-     *
-     * TODO: Is this really necessary / useful? Lots of code references will
-     * be considered improper spelling.
-     */
-    private void enableSpellChecking()
-    {
-        SpellChecker.register(this);
-        SpellChecker.registerDictionaries(getClass().getResource("/gradesystem/resources/dictionary_en.ortho"), "en");
     }
 
     /**

@@ -51,4 +51,17 @@ public class UserUtilitiesImpl implements UserUtilities
 
         return isMember;
     }
+
+    //Cache the result of this method as the value will not change and it is
+    //slightly expensive (~100 milliseconds) to compute
+    private Boolean _isRemote = null;
+    public boolean isUserRemotelyConnected() throws NativeException
+    {
+        if(_isRemote == null)
+        {
+            _isRemote = NATIVE_FUNCTIONS.isUserRemotelyConnected();
+        }
+
+        return _isRemote;
+    }
 }

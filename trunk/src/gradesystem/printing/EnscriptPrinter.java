@@ -1,11 +1,7 @@
 package gradesystem.printing;
 
-import gradesystem.GradeSystemApp;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -35,18 +31,14 @@ public class EnscriptPrinter extends Printer {
             String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
                     dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer, tmpFile.getAbsolutePath());
 
-            if (GradeSystemApp.inTestMode()) {
-                System.out.println("enscript Command:");
-                System.out.println(cmd);
-            }
-
             //Execute command
             fullCommand = fullCommand + cmd;
 
             dontPrintCoverSheet = "--no-job-header ";  //prevent future jobs in the batch from having a cover sheet
         }
 
-        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand);
+        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand, workspace);
     }
 
     /**
@@ -55,43 +47,25 @@ public class EnscriptPrinter extends Printer {
      * @param request
      * @return the file created
      */
-    private File convertRequest(PrintRequest request)
+    private File convertRequest(PrintRequest request) throws IOException
     {
         //Create temp file that combines the entire request into one file
-        String tmpFilePath =
-                Allocator.getGradingServices().getUserGradingDirectory() +
-                ".print_temp_"+System.currentTimeMillis()+".tmp";
-        File tmpFile = new File(tmpFilePath);
+        File tmpFile = File.createTempFile("request", null, Allocator.getPathServices().getUserWorkspaceDir());
 
-        //Check if we screwed up by using a file name that already exists
-        if(tmpFile.exists())
+        //Confirm the temporary file was created
+        if(tmpFile == null)
         {
-            System.err.println("Error in printing, temp name conflict: " + tmpFilePath);
-            return null;
+            throw new IOException("Cannot print files: unable to create " +
+                    "temporary file used for printing.");
         }
 
         //Get entire request as a string
         String text = this.getFilesAsCombinedString(request);
 
         //Write combined text to file
-        try
-        {
-            tmpFile.createNewFile();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        try
-        {
-            Writer output = new BufferedWriter(new FileWriter(tmpFile));
-            output.write(text);
-            output.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        Writer output = new BufferedWriter(new FileWriter(tmpFile));
+        output.write(text);
+        output.close();
 
         return tmpFile;
     }
@@ -103,7 +77,7 @@ public class EnscriptPrinter extends Printer {
      * @param request
      * @return
      */
-    private String getFilesAsCombinedString(PrintRequest request)
+    private String getFilesAsCombinedString(PrintRequest request) throws IOException
     {
         String text = "";
 
@@ -113,7 +87,7 @@ public class EnscriptPrinter extends Printer {
             text += "\n";
             text += "\n";
 
-            text += fileToString(file);
+            text += Allocator.getFileSystemUtilities().readFile(file);
             text += "\n";
             text += "\n";
         }
@@ -142,53 +116,4 @@ public class EnscriptPrinter extends Printer {
 
         return header;
     }
-
-    /**
-     * Reads a text file into a string.
-     *
-     * @param filePath
-     * @return
-     */
-    private String fileToString(File file)
-    {
-        StringBuffer contents = new StringBuffer();
-        BufferedReader reader = null;
-
-        try
-        {
-            reader = new BufferedReader(new FileReader(file));
-            String text = null;
-
-            // repeat until all lines are read
-            while ((text = reader.readLine()) != null)
-            {
-                contents.append(text).append(System.getProperty("line.separator"));
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                if (reader != null)
-                {
-                    reader.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return contents.toString();
-    }
-
 }

@@ -1,17 +1,14 @@
 package gradesystem.views.backend;
 
-import gradesystem.database.CakeHatDBIOException;
 import gradesystem.export.ExportException;
+import gradesystem.handin.ActionException;
+import gradesystem.rubric.RubricException;
 import gradesystem.views.backend.assignmentdist.AssignmentDistView;
-import gradesystem.views.shared.ModifyBlacklistView;
-import gradesystem.views.backend.assignmentdist.ReassignView;
-import gradesystem.views.backend.stathist.StatHistView;
+import gradesystem.views.backend.assignmentdist.ManualDistView;
 import gradesystem.components.GenericJList;
 import gradesystem.config.Assignment;
-import gradesystem.config.HandinPart;
 import gradesystem.config.LabPart;
 import gradesystem.config.Part;
-import gradesystem.GradeSystemApp;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -29,23 +26,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -60,13 +53,29 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.application.SingleFrameApplication;
 import gradesystem.Allocator;
+import gradesystem.CakehatException;
+import gradesystem.CakehatMain;
+import gradesystem.MissingUserActionException;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
+import gradesystem.resources.icons.IconLoader;
+import gradesystem.resources.icons.IconLoader.IconImage;
+import gradesystem.resources.icons.IconLoader.IconSize;
 import gradesystem.services.ServicesException;
 import gradesystem.services.UserServices.ValidityCheck;
+import gradesystem.views.backend.stathist.StatHistView;
 import gradesystem.views.shared.ErrorView;
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import utils.FileCopyingException;
+import utils.FileSystemUtilities.FileCopyPermissions;
+import utils.FileSystemUtilities.OverwriteMode;
 import utils.system.NativeException;
 
 /**
@@ -137,37 +146,9 @@ public class BackendView extends JFrame
         }
     }
 
-    private class AssignmentOption
-    {
-        private String _name;
-        private DefaultListModel _model;
-
-        public AssignmentOption(String name, Collection<Assignment> asgns)
-        {
-            _name = name;
-            _model = new DefaultListModel();
-            for(Assignment asgn : asgns)
-            {
-                _model.addElement(asgn);
-            }
-        }
-
-        @Override
-        public String toString()
-        {
-            return _name;
-        }
-
-        public DefaultListModel getModel()
-        {
-            return _model;
-        }
-    }
-
     private JButton //Assignment wide buttons
-                    _createDistributionButton, _reassignGradingButton, _importLabsButton,
+                    _manageGroupsButton, _createDistributionButton, _manualDistributionButton,
                     _previewRubricButton, _viewDeductionsButton, _runDemoButton,
-                    _manageGroupsButton,
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionsButton,
                     _openCodeButton, _runCodeButton, _exemptionsButton,
@@ -179,16 +160,20 @@ public class BackendView extends JFrame
                     _resetDatabaseButton;
     private JButton[] _assignmentButtons, _generalCommandsButtons, _studentButtons;
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
-    private GenericJList<Assignment> _assignmentList;
+    private JLabel _messageLabel;
+    private AssignmentTree _assignmentTree;
     private GenericJList<String> _studentList;
     private JTextField _filterField;
     private JPanel _cardPanel = new JPanel();
     private List<String> _studentLogins;
     private final static String WELCOME_PANEL_TAG = "Welcome panel",
                                 MULTI_SELECT_PANEL_TAG = "Multiple selected students panel",
+                                SINGLE_PART_PANEL_TAG = "Single part selected panel",
                                 SINGLE_SELECT_PANEL_TAG = "Single selected students panel";
     private CardLayout _cardLayout;
+    private SinglePartPanel _singlePartPanel;
     private SingleSelectionPanel _singleSelectionPanel;
+    private Map<Assignment, Map<String, Group>> _groupsCache = new HashMap<Assignment, Map<String, Group>>();
 
     private BackendView()
     {
@@ -209,7 +194,7 @@ public class BackendView extends JFrame
 
         try {
             //make the user's temporary grading directory
-            Allocator.getGradingServices().makeUserGradingDirectory();
+            Allocator.getGradingServices().makeUserWorkspace();
         } catch (ServicesException e) {
             new ErrorView(e, "Could not make user grading directory; " +
                              "functionality will be significantly impaired.  " +
@@ -223,10 +208,36 @@ public class BackendView extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                Allocator.getGradingServices().removeUserGradingDirectory();
-                if (!GradeSystemApp.inTestMode()) {
-                    String bk_name = Allocator.getCourseInfo().getCourse() + "db_bk_" + Allocator.getCalendarUtilities().getCalendarAsString(Calendar.getInstance()).replaceAll("(\\s|:)", "_");
-                    Allocator.getFileSystemUtilities().copyFile(Allocator.getCourseInfo().getDatabaseFilePath(), Allocator.getCourseInfo().getDatabaseBackupDir() + bk_name);
+                try
+                {
+                    Allocator.getGradingServices().removeUserWorkspace();
+                }
+                catch(ServicesException ex)
+                {
+                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
+                }
+
+                //If in not developing cakehat, backup the database on close
+                if(!CakehatMain.isDeveloperMode())
+                {
+                    String backupFileName = Allocator.getCourseInfo().getCourse() +
+                            "db_bk_" +
+                            Allocator.getCalendarUtilities()
+                            .getCalendarAsString(Calendar.getInstance())
+                            .replaceAll("(\\s|:)", "_");
+                    File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(),
+                            backupFileName);
+                    try
+                    {
+                        Allocator.getFileSystemServices()
+                            .copy(Allocator.getPathServices().getDatabaseFile(),
+                            backupFile, OverwriteMode.FAIL_ON_EXISTING,
+                            false, FileCopyPermissions.READ_WRITE);
+                    }
+                    catch(FileCopyingException ex)
+                    {
+                        new ErrorView(ex, "Unable to backup database.");
+                    }
                 }
             }
         });
@@ -237,10 +248,10 @@ public class BackendView extends JFrame
         this.initButtonGroups();
         this.initFocusTraversalPolicy();
 
-        this.updateGUI();
+        this.updateGUI(_assignmentTree.getSelection());
     }
 
-        /**
+    /**
      * Initializes this frame's icon. Only visible on certain operating systems
      * and window managers.
      */
@@ -253,22 +264,22 @@ public class BackendView extends JFrame
             switch ((int) (Math.random() * 5))
             {
                 case 0:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-devilish.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_DEVILISH);
                     break;
                 case 1:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-angel.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_ANGEL);
                     break;
                 case 2:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-surprise.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_SURPRISE);
                     break;
                 case 3:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-crying.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_CRYING);
                     break;
                 case 4:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-monkey.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_MONKEY);
                     break;
                 case 5:
-                    icon = ImageIO.read(getClass().getResource("/gradesystem/resources/icons/32x32/face-glasses.png"));
+                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_GLASSES);
                     break;
             }
             this.setIconImage(icon);
@@ -283,7 +294,6 @@ public class BackendView extends JFrame
         {
             private JButton _submitButton = _singleSelectionPanel.getSubmitButton();
             private JFormattedTextField _nonHandinEarnedField = _singleSelectionPanel.getNonHandinEarnedField();
-            private JFormattedTextField _labEarnedField = _singleSelectionPanel.getLabEarnedField();
 
             @Override
             public Component getComponentAfter(Container cntnr, Component cmpnt)
@@ -293,7 +303,7 @@ public class BackendView extends JFrame
                 //If filter field, select first result and place result into field
                 if(cmpnt == _filterField)
                 {
-                    if(_studentList.hasItems())
+                    if(_studentList.hasListData())
                     {
                         _studentList.selectFirst();
                         _filterField.setText(_studentList.getSelectedValue());
@@ -314,10 +324,6 @@ public class BackendView extends JFrame
                     return _nonHandinEarnedField;
                 }
                 else if(cmpnt == _nonHandinEarnedField && _submitButton.isEnabled())
-                {
-                    return _submitButton;
-                }
-                else if(cmpnt == _labEarnedField && _submitButton.isEnabled())
                 {
                     return _submitButton;
                 }
@@ -366,8 +372,8 @@ public class BackendView extends JFrame
     {
         _assignmentButtons = new JButton[]
         {
-          _createDistributionButton, _reassignGradingButton,
-          _importLabsButton, _previewRubricButton, _viewDeductionsButton,
+          _createDistributionButton, _manualDistributionButton,
+          _previewRubricButton, _viewDeductionsButton,
           _runDemoButton, _manageGroupsButton
         };
 
@@ -382,7 +388,7 @@ public class BackendView extends JFrame
           _chartsButton, _emailReportsButton, _extensionsButton,
           _openCodeButton, _runCodeButton, _testCodeButton, _printCodeButton,
           _viewReadmeButton, _viewRubricButton, _emailStudentRubric,
-          _printRubricButton, _disableStudentButton
+          _printRubricButton, _disableStudentButton, _exemptionsButton
         };
     }
 
@@ -460,6 +466,11 @@ public class BackendView extends JFrame
                                                            MULTI_PANEL_LABEL_SIZE.height - 15);
     private void initMultiPanel(JPanel panel)
     {
+        //general message label
+        _messageLabel = new JLabel();
+        _messageLabel.setPreferredSize(MULTI_PANEL_LABEL_SIZE);
+        panel.add(_messageLabel);
+
         //Student label
         _selectedStudentLabel = new SelectedLabel("Selected Student", "students selected");
         _selectedStudentLabel.setPreferredSize(MULTI_PANEL_LABEL_SIZE);
@@ -486,6 +497,11 @@ public class BackendView extends JFrame
         //Singleselect card
         _singleSelectionPanel = new SingleSelectionPanel();
         _cardPanel.add(_singleSelectionPanel, SINGLE_SELECT_PANEL_TAG);
+
+        //single part selected card
+        _singlePartPanel = new SinglePartPanel();
+        _cardPanel.add(_singlePartPanel, SINGLE_PART_PANEL_TAG);
+
     }
 
     private void initMultiSelectPanel(JPanel panel)
@@ -507,7 +523,7 @@ public class BackendView extends JFrame
     }
 
     //List panel sizes (for both student & assignment)
-    private static final Dimension
+    public static final Dimension
     LIST_CONTROL_PANEL_SIZE = new Dimension(LIST_PANEL_SIZE.width - 10, 80),
     LIST_LABEL_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 20),
     LIST_GAP_SPACE_SIZE = new Dimension(LIST_CONTROL_PANEL_SIZE.width, 5),
@@ -652,10 +668,11 @@ public class BackendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                _assignmentList.selectAll();
+                //_assignmentList.selectAll();
             }
         });
         buttonPanel.add(selectAllButton);
+        selectAllButton.setVisible(false);
 
         //Select none
         JButton selectNoneButton = new JButton("None");
@@ -663,53 +680,28 @@ public class BackendView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                _assignmentList.clearSelection();
+                //_assignmentList.clearSelection();
             }
         });
         buttonPanel.add(selectNoneButton);
+        selectNoneButton.setVisible(false);
 
         //Gap space
         controlPanel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
-        //Assignment box
-        AssignmentOption[] options = {
-                                        new AssignmentOption("All Assignments", Allocator.getCourseInfo().getAssignments()),
-                                        new AssignmentOption("With Handin Part", Allocator.getCourseInfo().getHandinAssignments()),
-                                        new AssignmentOption("With NonHandin Parts", Allocator.getCourseInfo().getNonHandinAssignments()),
-                                        new AssignmentOption("With Lab Parts", Allocator.getCourseInfo().getLabAssignments())
-                                     };
-        final JComboBox assignmentsBox = new JComboBox(options);
-        assignmentsBox.setPreferredSize(LIST_SELECTOR_SIZE);
-        assignmentsBox.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                AssignmentOption option = (AssignmentOption) assignmentsBox.getSelectedItem();
-                _assignmentList.setModel(option.getModel());
-            }
-
-        });
-        controlPanel.add(assignmentsBox);
-
         //Gap space
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
-        //List
-        _assignmentList = new GenericJList<Assignment>(Allocator.getCourseInfo().getAssignments());
-        _assignmentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        _assignmentList.addListSelectionListener(new ListSelectionListener()
-        {
-            public void valueChanged(ListSelectionEvent lse)
-            {
-                if(!lse.getValueIsAdjusting())
-                {
-                    assignmentListValueChanged();
-                }
-            }
-        });
-        JScrollPane assignmentPane = new JScrollPane(_assignmentList);
-        assignmentPane.setPreferredSize(LIST_LIST_PANE_SIZE);
-        panel.add(assignmentPane);
+        //Assignment tree
+        _assignmentTree = new AssignmentTree();
+        _assignmentTree.addSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                assignmentTreeValueChanged(_assignmentTree.getSelection());
+              }
+          });
+
+        _assignmentTree.setPreferredSize(LIST_LIST_PANE_SIZE);
+        panel.add(_assignmentTree);
     }
 
     private static final int STUDENT_BUTTON_PANEL_BUFFER_HEIGHT = 90,
@@ -736,7 +728,7 @@ public class BackendView extends JFrame
         panel.add(buttonPanel);
 
         //Charts & histograms
-        _chartsButton = createButton("View Charts", "/gradesystem/resources/icons/16x16/x-office-spreadsheet.png");
+        _chartsButton = createButton("View Charts", IconImage.X_OFFICE_SPREADSHEET);
         _chartsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -748,7 +740,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_chartsButton);
 
         //Email grade reports
-        _emailReportsButton = createButton("Email Reports", "/gradesystem/resources/icons/16x16/mail-message-new.png");
+        _emailReportsButton = createButton("Email Reports", IconImage.MAIL_MESSAGE_NEW);
         _emailReportsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -761,7 +753,7 @@ public class BackendView extends JFrame
 
         buttonPanel.add(Box.createVerticalBox());//space
 
-        _exemptionsButton = createButton("Exemptions", "/gradesystem/resources/icons/16x16/dialog-error.png");
+        _exemptionsButton = createButton("Exemptions", IconImage.DIALOG_ERROR);
         _exemptionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -775,7 +767,7 @@ public class BackendView extends JFrame
 
         //Extensions & Exemptions
 
-        _extensionsButton = createButton("Extensions", "/gradesystem/resources/icons/16x16/office-calendar.png");
+        _extensionsButton = createButton("Extensions", IconImage.OFFICE_CALENDAR);
         _extensionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -789,7 +781,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //Open Student Code
-        _openCodeButton = createButton("Open Student Code", "/gradesystem/resources/icons/16x16/document-open.png");
+        _openCodeButton = createButton("Open Student Code", IconImage.DOCUMENT_OPEN);
         _openCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -801,7 +793,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_openCodeButton);
 
         //Run Student Code
-        _runCodeButton = createButton("Run Student Code", "/gradesystem/resources/icons/16x16/go-next.png");
+        _runCodeButton = createButton("Run Student Code", IconImage.GO_NEXT);
         _runCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -813,7 +805,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_runCodeButton);
 
         //Test Student Code
-        _testCodeButton = createButton("Test Student Code", "/gradesystem/resources/icons/16x16/utilities-system-monitor.png");
+        _testCodeButton = createButton("Test Student Code", IconImage.UTILITIES_SYSTEM_MONITOR);
         _testCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -825,7 +817,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_testCodeButton);
 
         //Print Student Code
-        _printCodeButton = createButton("Print Student Code", "/gradesystem/resources/icons/16x16/printer.png");
+        _printCodeButton = createButton("Print Student Code", IconImage.PRINTER);
         _printCodeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -839,7 +831,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //View readme
-        _viewReadmeButton =createButton("View Readme", "/gradesystem/resources/icons/16x16/text-x-generic.png");
+        _viewReadmeButton =createButton("View Readme", IconImage.TEXT_X_GENERIC);
         _viewReadmeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -853,7 +845,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //View student rubric
-        _viewRubricButton = createButton("View Student Rubric", "/gradesystem/resources/icons/16x16/font-x-generic.png");
+        _viewRubricButton = createButton("View Student Rubric", IconImage.FONT_X_GENERIC);
         _viewRubricButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -865,7 +857,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_viewRubricButton);
 
         //Email student rubric
-        _emailStudentRubric = createButton("Email Student Rubric", "/gradesystem/resources/icons/16x16/mail-forward.png");
+        _emailStudentRubric = createButton("Email Student Rubric", IconImage.MAIL_FORWARD);
         _emailStudentRubric.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -878,7 +870,7 @@ public class BackendView extends JFrame
 
 
         //Print student rubric
-        _printRubricButton = createButton("Print Student Rubric", "/gradesystem/resources/icons/16x16/document-print.png");
+        _printRubricButton = createButton("Print Student Rubric", IconImage.DOCUMENT_PRINT);
         _printRubricButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -892,7 +884,7 @@ public class BackendView extends JFrame
         buttonPanel.add(Box.createVerticalBox());//space
 
         //Disable student
-        _disableStudentButton = createButton("Disable Student", "/gradesystem/resources/icons/16x16/list-remove.png");
+        _disableStudentButton = createButton("Disable Student", IconImage.LIST_REMOVE);
         _disableStudentButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -922,8 +914,20 @@ public class BackendView extends JFrame
         buttonPanel.setPreferredSize(SELECTED_ASSIGNMENT_BUTTON_PANEL_SIZE);
         panel.add(buttonPanel);
 
+        //Manage groups
+        _manageGroupsButton = createButton("Manage Groups", IconImage.SYSTEM_USERS);
+        _manageGroupsButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent ae)
+            {
+                manageGroupsButtonActionPerformed();
+            }
+
+        });
+        buttonPanel.add(_manageGroupsButton);
+
         //Generate Distribution
-        _createDistributionButton = createButton("Create Distribution", "/gradesystem/resources/icons/16x16/document-save-as.png");
+        _createDistributionButton = createButton("Create Distribution", IconImage.DOCUMENT_SAVE_AS);
         _createDistributionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -935,31 +939,19 @@ public class BackendView extends JFrame
         buttonPanel.add(_createDistributionButton);
 
         //Reassign grading
-        _reassignGradingButton = createButton("Reassign Grading", "/gradesystem/resources/icons/16x16/document-properties.png");
-        _reassignGradingButton.addActionListener(new ActionListener()
+        _manualDistributionButton = createButton("Manual Distribution", IconImage.DOCUMENT_PROPERTIES);
+        _manualDistributionButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                reassignGradingButtonActionPerformed();
+                manualDistributionButtonActionPerformed();
             }
 
         });
-        buttonPanel.add(_reassignGradingButton);
-
-        //Import grades
-        _importLabsButton = createButton("Import Lab Grades", "/gradesystem/resources/icons/16x16/mail-send-receive.png");
-        _importLabsButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                importGradesButtonActionPerformed();
-            }
-
-        });
-        buttonPanel.add(_importLabsButton);
+        buttonPanel.add(_manualDistributionButton);
 
         //Preview rubric
-        _previewRubricButton = createButton("Preview Rubric", "/gradesystem/resources/icons/16x16/system-search.png");
+        _previewRubricButton = createButton("Preview Rubric", IconImage.SYSTEM_SEARCH);
         _previewRubricButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -971,7 +963,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_previewRubricButton);
 
         //Deductions List
-        _viewDeductionsButton = createButton("Deductions List", "/gradesystem/resources/icons/16x16/text-x-generic.png");
+        _viewDeductionsButton = createButton("Deductions List", IconImage.TEXT_X_GENERIC);
         _viewDeductionsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -983,7 +975,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_viewDeductionsButton);
 
         //Run Demo
-        _runDemoButton = createButton("Run Demo", "/gradesystem/resources/icons/16x16/applications-system.png");
+        _runDemoButton = createButton("Run Demo", IconImage.APPLICATIONS_SYSTEM);
         _runDemoButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -993,21 +985,6 @@ public class BackendView extends JFrame
 
         });
         buttonPanel.add(_runDemoButton);
-
-        //Space
-        buttonPanel.add(Box.createVerticalBox());//space
-
-        //Manage groups
-        _manageGroupsButton = createButton("Manage Groups", "/gradesystem/resources/icons/16x16/system-users.png");
-        _manageGroupsButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                manageGroupsButtonActionPerformed();
-            }
-
-        });
-        buttonPanel.add(_manageGroupsButton);
 
         //Space
         buttonPanel.add(Box.createVerticalBox());//space
@@ -1034,20 +1011,8 @@ public class BackendView extends JFrame
         buttonPanel.setPreferredSize(GENERAL_COMMANDS_BUTTON_PANEL_SIZE);
         panel.add(buttonPanel);
 
-        //Modify blacklist
-        _modifyBlacklistButton = this.createButton("Modify Blacklist", "/gradesystem/resources/icons/16x16/format-text-strikethrough.png");
-        _modifyBlacklistButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                modifyBlacklistButtonActionPerformed();
-            }
-
-        });
-        buttonPanel.add(_modifyBlacklistButton);
-
         //Edit configuration
-        _editConfigurationButton = this.createButton("Edit Configuration", "/gradesystem/resources/icons/16x16/preferences-system.png");
+        _editConfigurationButton = this.createButton("Edit Configuration", IconImage.PREFERENCES_SYSTEM);
         _editConfigurationButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1059,7 +1024,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_editConfigurationButton);
 
         //Export grades
-        _exportGradesButton = this.createButton("Export Grades", "/gradesystem/resources/icons/16x16/edit-redo.png");
+        _exportGradesButton = this.createButton("Export Grades", IconImage.EDIT_REDO);
         _exportGradesButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1071,7 +1036,7 @@ public class BackendView extends JFrame
         buttonPanel.add(_exportGradesButton);
 
         //Reset database
-        _resetDatabaseButton = this.createButton("Reset Database", "/gradesystem/resources/icons/16x16/view-refresh.png");
+        _resetDatabaseButton = this.createButton("Reset Database", IconImage.VIEW_REFRESH);
         _resetDatabaseButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1087,10 +1052,48 @@ public class BackendView extends JFrame
      * Updates the buttons, the student assignment labels, and which panel is
      * shown in the center.
      */
-    private void updateGUI()
+    private void updateGUI(Map<Assignment, List<Part>> selection)
     {
-        Collection<Assignment> selectedAssignments = _assignmentList.getGenericSelectedValues();
-        Collection<String> selectedStudents = _studentList.getGenericSelectedValues();
+        Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
+        
+        //map a student login to Groups for that student for the selected assignments
+        Map<String, Map<Assignment, Group>> studentToGroups = new HashMap<String, Map<Assignment, Group>>();
+        StringBuilder errMsgBuilder = new StringBuilder("The following students do not have groups for the assignments listed.\n\n");
+        
+        boolean someGroupMissing = false;
+        
+        for (String student : selectedStudents) {
+            studentToGroups.put(student, new HashMap<Assignment, Group>());
+            List<Assignment> missing = new ArrayList<Assignment>(selection.size());
+            
+            for (Assignment asgn : selection.keySet()) {
+                try {
+                    studentToGroups.get(student).put(asgn, this.getGroup(asgn, student));
+                } catch (MissingUserActionException ex) {
+                    missing.add(asgn);
+                }  catch (CakehatException ex) {
+                   new ErrorView(ex);
+                }
+            }
+
+            if (!missing.isEmpty()) {
+                someGroupMissing = true;
+                
+                String missingForStudent = student + ": ";
+                for (int i = 0; i < missing.size(); i++) {
+                    missingForStudent += missing.get(i);
+                    if (i < missing.size() - 1) {
+                        missingForStudent += ", ";
+                    }
+                }
+                errMsgBuilder.append(missingForStudent + "\n");
+            }
+        }
+
+        if (someGroupMissing) {
+            errMsgBuilder.append("\nThey will not be included in any actions performed on assignments for which they do not have groups.");
+            JOptionPane.showMessageDialog(this, errMsgBuilder.toString(), "Missing Groups", JOptionPane.WARNING_MESSAGE);
+        }
 
         //Update button states
 
@@ -1105,102 +1108,151 @@ public class BackendView extends JFrame
         //If one student selected
         if(selectedStudents.size() == 1)
         {
-            //If zero or more assignments
-            if(selectedAssignments.size() >= 0)
-            {
-                String studentLogin = _studentList.getSelectedValue();
-                try {
-                    this.updateDisableEnableButton(Allocator.getDatabaseIO().isStudentEnabled(studentLogin));
-                    _disableStudentButton.setEnabled(true);
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "WARNING: Could not determine whether or not " +
-                                      "student " + studentLogin + " is enabled.");
-                    _disableStudentButton.setEnabled(false);
-                }
+            String studentLogin = _studentList.getSelectedValue();
+            try {
+                this.updateDisableEnableButton(Allocator.getDatabaseIO().isStudentEnabled(studentLogin));
+                _disableStudentButton.setEnabled(true);
+            } catch (SQLException ex) {
+                new ErrorView(ex, "WARNING: Could not determine whether or not " +
+                                  "student " + studentLogin + " is enabled.  Enabling or " +
+                                  "disabling the student is disabled.");
             }
+
             //If one or more assignments
-            if(selectedAssignments.size() >= 1)
+            if(selection.size() >= 1)
             {
-                _chartsButton.setEnabled(true);
                 _emailReportsButton.setEnabled(true);
-                _extensionsButton.setEnabled(true);
             }
+            
             //If one assigment
-            if(selectedAssignments.size() == 1)
+            if(selection.size() == 1)
             {
-
-                //If it has a handin part
-                if(_assignmentList.getSelectedValue().hasHandinPart())
-                {
-                    HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-
-                    String studentLogin = _studentList.getSelectedValue();
-                    String handinLogin = null;
-                    try {
-                        handinLogin = getHandinLogin(studentLogin, part);
-                    } catch (CakeHatDBIOException ex) {
-                        new ErrorView(ex);
-                    }
-                    boolean hasHandin = (handinLogin != null);
-
-                    _testCodeButton.setEnabled(hasHandin && part.hasTester());
-                    _runCodeButton.setEnabled(hasHandin && part.hasRun() );
-                    _openCodeButton.setEnabled(hasHandin && part.hasOpen());
-                    _viewReadmeButton.setEnabled(hasHandin && part.hasReadme(handinLogin));
-
-                    boolean hasRubric = part.hasRubric() &&
-                                        Allocator.getRubricManager().hasRubric(part, _studentList.getSelectedValue());
-                    _viewRubricButton.setEnabled(hasRubric);
-                    _emailStudentRubric.setEnabled(hasRubric);
-                }
-            }
-        }
-        //Multiple students selected
-        else
-        {
-            if(selectedAssignments.size() >= 1)
-            {
-                _chartsButton.setEnabled(true);
-                _emailReportsButton.setEnabled(true);
-                _extensionsButton.setEnabled(true);
-            }
-        }
-
-        if (selectedAssignments.size() == 1) {
-            Assignment asgn = selectedAssignments.iterator().next();
-
-            if (asgn.hasHandinPart()) {
-                HandinPart handinPart = asgn.getHandinPart();
-
-                boolean anyRubric = false;
-                boolean anyCode = false;
-                for (String student : selectedStudents) {
-                    if (Allocator.getRubricManager().hasRubric(handinPart, student)) {
-                        anyRubric = true;
+                Assignment selectedAsgn = this.getSingleSelectedAssignment(selection);
+                Group group = studentToGroups.get(studentLogin).get(selectedAsgn);
+                
+                if (group != null) {
+                    if (selection.get(selectedAsgn).isEmpty()) {
+                        _exemptionsButton.setEnabled(true);
                     }
 
-                    try {
-                        Map<String, Collection<String>> groups = Allocator.getDatabaseIO().getGroups(handinPart);
-                        for (String groupMember : groups.get(student)) {
-                            if (handinPart.hasHandin(groupMember)) {
-                                anyCode = true;
-                            }
+                    if (this.getSingleSelectedPart(selection) == null) {
+                        if (selectedAsgn.hasHandin()) {
+                            _extensionsButton.setEnabled(true);
                         }
-                    } catch (SQLException e) {
-                        new ErrorView(e, "Could not determine if there is a handin for " +
-                                         "student " + student + " because the student's " +
-                                         "group could not be retrieved from the database.");
                     }
 
-                    if (anyRubric && anyCode) {
-                        break;
+                    //if a single DistributablePart is selected
+                    DistributablePart selectedDP = this.getSingleSelectedDP(selection);
+                    if (selectedDP != null) {
+                        boolean hasHandin = false;
+                        try {
+                            hasHandin = selectedAsgn.getHandin().getHandin(group) != null;
+                        } catch (IOException e) {
+                            new ErrorView(e);
+                        }
+
+                        _testCodeButton.setEnabled(hasHandin && selectedDP.hasTester());
+                        _runCodeButton.setEnabled(hasHandin && selectedDP.hasRun());
+                        _openCodeButton.setEnabled(hasHandin && selectedDP.hasOpen());
+                        try {
+                            _viewReadmeButton.setEnabled(hasHandin && selectedDP.hasReadme(group));
+                        } catch (ActionException ex) {
+                            new ErrorView(ex, "Could not determine whether group "
+                                    + group + " has a README for assignment "
+                                    + selectedAsgn + ".");
+                        }
+
+                        boolean hasRubric = selectedDP.hasRubricTemplate()
+                                && Allocator.getRubricManager().hasRubric(selectedDP, group);
+                        _viewRubricButton.setEnabled(hasRubric);
+                        _emailStudentRubric.setEnabled(hasRubric);
+                    }
+                }
+            }
+        }
+
+        //Multiple students selected
+        else if (!selectedStudents.isEmpty())
+        {
+            if(selection.size() >= 1)
+            {
+                _emailReportsButton.setEnabled(true);
+            }
+        }
+
+        //no students selected
+        else {
+            _chartsButton.setEnabled(true);
+        }
+
+        //if one assignment selected
+        if (selection.size() == 1) {
+            Assignment selectedAsgn = selection.keySet().iterator().next();
+
+            if (selectedStudents.isEmpty() && selection.get(selectedAsgn).isEmpty()) {
+                _exemptionsButton.setEnabled(true);
+            }
+
+            //determine which DistributableParts are selected
+            List<DistributablePart> selectedDPs = new LinkedList<DistributablePart>();
+            for (Part p : selection.get(selectedAsgn)) {
+                if (p instanceof DistributablePart) {
+                    selectedDPs.add((DistributablePart) p);
+                }
+            }
+
+
+            if (!selectedDPs.isEmpty()) {
+                boolean anyDPRubric = false;
+                boolean anyDPPrint = false;
+
+                boolean anyGroupRubric = false;
+                boolean anyGroupCode = false;
+
+                //determine which selected students have groups for the selected Assignment
+                Collection<Group> selectedGroups = new ArrayList<Group>(selectedStudents.size());
+                for (String student : studentToGroups.keySet()) {
+                    if (studentToGroups.get(student).containsKey(selectedAsgn)) {
+                        selectedGroups.add(studentToGroups.get(student).get(selectedAsgn));
                     }
                 }
 
-                _printRubricButton.setEnabled(handinPart.hasRubric() && anyRubric);
-                _emailStudentRubric.setEnabled(handinPart.hasRubric() && anyRubric);
-                _printCodeButton.setEnabled(handinPart.hasPrint() && anyCode);
+                for (DistributablePart dp : selectedDPs) {
+                    if (dp.hasRubricTemplate()) {
+                        anyDPRubric = true;
+                    }
+
+                    if (dp.hasPrint()) {
+                        anyDPPrint = true;
+                    }
+
+                    for (Group group : selectedGroups) {
+                        if (Allocator.getRubricManager().hasRubric(dp, group)) {
+                            anyGroupRubric = true;
+                        }
+
+                        File handin = null;
+                        try {
+                            handin = selectedAsgn.getHandin().getHandin(group);
+                        } catch(IOException e) {
+                            new ErrorView(e);
+                        }
+                        if (handin != null) {
+                            anyGroupCode = true;
+                        }
+
+
+                        if (anyGroupRubric && anyGroupCode) {
+                            break;
+                        }
+                    }
+                }
+
+                _printRubricButton.setEnabled(anyDPRubric && anyGroupRubric);
+                _emailStudentRubric.setEnabled(anyDPRubric && anyGroupRubric);
+                _printCodeButton.setEnabled(anyDPPrint && anyGroupCode);
             }
+
         }
         
 
@@ -1208,107 +1260,108 @@ public class BackendView extends JFrame
 
 
         //Disable the assignment buttons, and then re-enable as appropriate
+        
         for(JButton button : _assignmentButtons)
         {
             button.setEnabled(false);
         }
+        
         //If one assignment is selected, enable assignment buttons as appropriate
-        if(selectedAssignments.size() == 1)
+        if(selection.size() == 1)
         {
-            _importLabsButton.setEnabled(_assignmentList.getSelectedValue().hasLabParts());
+            Assignment selectedAsgn = this.getSingleSelectedAssignment(selection);
 
-            if(_assignmentList.getSelectedValue().hasHandinPart())
-            {
-                HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
+            //to avoid user confusion, only allow operations that function on the
+            //whole assignment (i.e., not on individual parts) if just the assignment
+            //and none of its parts are selected
+            if (selection.get(selectedAsgn).isEmpty()) {
+                if (selectedAsgn.hasDistributableParts()) {
+                    _createDistributionButton.setEnabled(true);
+                }
 
-                _manageGroupsButton.setEnabled(true);
-
-                _createDistributionButton.setEnabled(true);
-                _reassignGradingButton.setEnabled(true);
-
-                _previewRubricButton.setEnabled(part.hasRubric());
-                _viewDeductionsButton.setEnabled(part.hasDeductionList());
-                _runDemoButton.setEnabled(part.hasDemo());
-            }
-        }
-        //If more than one assignment is selected, check if they have labs
-        else
-        {
-            boolean allHaveLabs = true;
-            for(Assignment asgn : selectedAssignments)
-            {
-                allHaveLabs &= asgn.hasLabParts();
+                if (selectedAsgn.hasGroups()) {
+                    _manageGroupsButton.setEnabled(true);
+                }
             }
 
-            _importLabsButton.setEnabled(allHaveLabs);
+            DistributablePart selectedDP = this.getSingleSelectedDP(selection);
+
+            //enable reassign button if either:
+            //   1. no parts are selected
+            //   2. exactly 1 DistributablePart is selected
+            if (selection != null || selection.get(selectedAsgn).isEmpty()) {
+                _manualDistributionButton.setEnabled(true);
+            }
+
+            if (selectedDP != null) {
+                _previewRubricButton.setEnabled(selectedDP.hasRubricTemplate());
+                _viewDeductionsButton.setEnabled(selectedDP.hasDeductionList());
+                _runDemoButton.setEnabled(selectedDP.hasDemo());
+            }
         }
 
         //Update which panel is showing
+        boolean panelUpdated = false;
 
-        //If no students or assignments selected, show welcome panel
-        if(selectedAssignments.isEmpty() || selectedStudents.isEmpty())
+        //If one assignment and one student selected
+        if (selection.size() == 1 && selectedStudents.size() == 1) {
+            Assignment asgn = this.getSingleSelectedAssignment(selection);
+            String studentLogin = _studentList.getSelectedValue();
+            
+            Group group = studentToGroups.get(studentLogin).get(asgn);
+            if (group != null) {
+                _singleSelectionPanel.updateView(studentLogin, group, asgn);
+
+                if (selection.get(asgn).size() == 1 && getSingleSelectedDP(selection) == null) {
+                    _singleSelectionPanel.selectPart(selection.get(asgn).get(0));
+                }
+
+                _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
+                panelUpdated = true;
+            }
+            else {
+                //if student doesn't have a group, we can't update the SSP, but we also
+                //shouldn't show the SSP for the previously selected student, so let's clear the
+                //student selection and update the panel using one of the options below
+                _studentList.clearSelection();
+                selectedStudents = Collections.emptyList();
+            }
+        }
+
+         //If no students or assignments selected, show welcome panel
+        if(selection.isEmpty() && selectedStudents.isEmpty())
         {
             _cardLayout.show(_cardPanel, WELCOME_PANEL_TAG);
+            panelUpdated = true;
         }
-        //If one assignment and one student selected
-        else if(selectedAssignments.size() == 1 && selectedStudents.size() == 1)
-        {
-            _singleSelectionPanel.updateView(_studentList.getSelectedValue(), _assignmentList.getSelectedValue());
-            _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
+        //if one part and no students selected
+        if (getSingleSelectedPart(selection) != null && selectedStudents.isEmpty()) {
+            _singlePartPanel.updatePart(getSingleSelectedPart(selection));
+            _cardLayout.show(_cardPanel, SINGLE_PART_PANEL_TAG);
+            panelUpdated = true;
         }
         //If multiple assignments and one or more students, OR
         //multiple students and one or more assignments
-        else
+        else if (!panelUpdated)
         {
             _cardLayout.show(_cardPanel, MULTI_SELECT_PANEL_TAG);
         }
 
         //Update labels
         _selectedStudentLabel.setText(selectedStudents);
-        _selectedAssignmentLabel.setText(selectedAssignments);
-    }
-
-    /**
-     * Takes in a student login and a handin part and taking into account
-     * groups returns the student login that the handin. If there is no
-     * handin for any member of the group, null is returned;
-     *
-     * @param studentLogin
-     * @param part
-     * @return
-     */
-    private String getHandinLogin(String studentLogin, HandinPart part) throws CakeHatDBIOException
-    {
-        Collection<String> group;
-        try {
-            group = Allocator.getDatabaseIO().getGroup(part, studentLogin);
-        } catch (SQLException e) {
-            throw new CakeHatDBIOException("The handin for student " + studentLogin + " could not " +
-                                           "be determined because the student's group could not be " +
-                                           "retrieved from the database.", e);
-        }
-
-        for(String login : group)
-        {
-            if(part.hasHandin(login))
-            {
-                return login;
-            }
-        }
-
-        return null;
+        _selectedAssignmentLabel.setText(selection.keySet());
     }
 
     /**
      * Creates a button with bold text and an image.
      *
      * @param text
-     * @param imagePath
+     * @param image
      * @return
      */
-    private JButton createButton(String text, String imagePath)
+    private JButton createButton(String text, IconImage image)
     {
-        Icon icon = new ImageIcon(getClass().getResource(imagePath));
+        Icon icon = IconLoader.loadIcon(IconSize.s16x16, image);
         JButton button = new JButton("<html><b>" + text + "</b></html>", icon);
         button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         button.setIconTextGap(10);
@@ -1320,13 +1373,6 @@ public class BackendView extends JFrame
 
     //                          EVENTS BELOW                     //
 
-
-
-
-    private void modifyBlacklistButtonActionPerformed()
-    {
-        new ModifyBlacklistView(Allocator.getCourseInfo().getTAs());
-    }
 
     private void editConfigurationButtionActionPerformed()
     {
@@ -1344,10 +1390,10 @@ public class BackendView extends JFrame
 
     private void resetDatabaseButtonActionPerformed()
     {
-        //check that user performing reset is an HTA
-        if(!Allocator.getUserServices().isUserHTA()) {
+        //check that user performing reset is an administrator
+        if(!Allocator.getUserServices().getUser().isAdmin()) {
             JOptionPane.showMessageDialog(this, "You are not authorized to reset the database; " +
-                    "only HTAs may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
+                    "only administrators may reset the database.", "Not Allowed", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -1368,7 +1414,7 @@ public class BackendView extends JFrame
         //get confirmation
         int response = JOptionPane.showConfirmDialog(this, confirmDialogPanel,
                 "Confirm Database Reset", JOptionPane.YES_NO_OPTION);
-        if (response == JOptionPane.NO_OPTION) {
+        if (response != JOptionPane.YES_OPTION) {
             return;
         }
 
@@ -1407,316 +1453,374 @@ public class BackendView extends JFrame
         JOptionPane.showMessageDialog(this, "Changes successful.  " +
                 "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
         this.dispose();
-        SingleFrameApplication.launch(GradeSystemApp.class, new String[]{"backend"});
+        BackendView.launch();
     }
 
     private void generateDistributionButtonActionPerformed()
     {
-        new AssignmentDistView(_assignmentList.getSelectedValue());
+        new AssignmentDistView(this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
     }
 
-    private void reassignGradingButtonActionPerformed()
+    private void manualDistributionButtonActionPerformed()
     {
-        new ReassignView(_assignmentList.getSelectedValue());
-    }
-
-    private void importGradesButtonActionPerformed()
-    {
-        for(Assignment asgn : _assignmentList.getGenericSelectedValues())
-        {
-            for(LabPart part : asgn.getLabParts())
-            {
-                try {
-                    Allocator.getGradingServices().importLabGrades(part);
-                } catch (ServicesException ex) {
-                    new ErrorView(ex, "Importing lab grades failed.");
-                }
-            }
-        }
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        ManualDistView view = new ManualDistView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
     private void previewRubricButtonActionPerformed()
     {
-        Allocator.getRubricManager().viewTemplate(_assignmentList.getSelectedValue().getHandinPart());
+        try {
+            Allocator.getRubricManager().viewTemplate(this.getSingleSelectedDP(_assignmentTree.getSelection()));
+        } catch (RubricException ex) {
+            new ErrorView(ex, "Could not show rubric preview.");
+        }
     }
 
     private void viewDeductionsButtonActionPerformed()
     {
-        _assignmentList.getSelectedValue().getHandinPart().viewDeductionList();
+        try {
+            this.getSingleSelectedDP(_assignmentTree.getSelection()).viewDeductionList();
+        } catch (FileNotFoundException ex) {
+            new ErrorView(ex);
+        }
     }
 
     private void runDemoButtonActionPerformed()
     {
-        _assignmentList.getSelectedValue().getHandinPart().runDemo();
+        DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
+        try {
+            dp.runDemo();
+        } catch (ActionException ex) {
+            new ErrorView(ex);
+        }
     }
 
     private void chartsButtonActionPerformed()
     {
-        new StatHistView(_assignmentList.getGenericSelectedValues(), _studentList.getGenericSelectedValues());
+        StatHistView view = new StatHistView(_assignmentTree.getSelection().keySet());
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
     private void emailReportsButtonActionPerformed()
     {
-        JPanel messagePanel = new JPanel();
-        messagePanel.setLayout(new GridLayout(0,1));
-        HashMap<Part,JCheckBox> boxMap = new HashMap<Part,JCheckBox>();
-        for (Assignment a : _assignmentList.getGenericSelectedValues())
-        {
-            for (Part p : a.getParts())
-            {
-                JCheckBox partBox = new JCheckBox(a.getName() + ": " + p.getName());
-                partBox.setSelected(true);
-                boxMap.put(p, partBox);
-                messagePanel.add(partBox);
+        Set<String> enabledStudents;
+        try {
+            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+        } catch (SQLException ex) {
+            new ErrorView(ex, "Could not read enabled students from the database. " +
+                              "Grade reports cannot be sent.");
+            return;
+        }
+
+        Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
+        Collection<String> selectedButDisabled = new ArrayList<String>();
+        for (String student : selectedStudents) {
+            if (!enabledStudents.contains(student)) {
+                selectedButDisabled.add(student);
             }
         }
 
-        if (JOptionPane.showConfirmDialog(null, messagePanel,
-                                          "Select Assignment Parts",
-                                          JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION )
-        {
-            Map<Assignment,Collection<Part>> map = new HashMap<Assignment,Collection<Part>>();
-            for (Assignment a : _assignmentList.getGenericSelectedValues())
-            {
-                Vector<Part> parts = new Vector<Part>();
-                for (Part p : a.getParts())
-                {
-                    if (boxMap.get(p).isSelected())
-                    {
-                        parts.add(p);
-                    }
-                }
-                if (!parts.isEmpty())
-                {
-                    map.put(a, parts);
-                }
+        if (!selectedButDisabled.isEmpty()) {
+            int proceed = JOptionPane.showConfirmDialog(this, "The following students were selected " +
+                                                              "but are disabled: \n" + selectedButDisabled + "\n" +
+                                                              "They will not be emailed reports.",
+                                                        "Disabled Students Selected",
+                                                        JOptionPane.OK_CANCEL_OPTION);
+            if (proceed != JOptionPane.OK_OPTION) {
+                return;
             }
+            selectedStudents.removeAll(selectedButDisabled);
+        }
 
-            Vector<String> students = new Vector<String>();
-            Collection<String> undeterminedStudents = new LinkedList<String>();
-            for (String student : _studentList.getGenericSelectedValues()) {
-                try {
-                    if (Allocator.getDatabaseIO().isStudentEnabled(student)) {
-                        students.add(student);
-                    }
-                } catch (SQLException ex) {
-                    undeterminedStudents.add(student);
-                }
-            }
-
-            if (!undeterminedStudents.isEmpty()) {
-                new ErrorView("It could not be determined if the following students "
-                        + "are enabled: " + undeterminedStudents + ".\n\n"
-                        + "Their grades will not be included in the grade reports.");
-            }
-            
-            GradeReportView grv = new GradeReportView(map, students);
-            grv.setLocationRelativeTo(null);
-            grv.setVisible(true);
+        if (selectedStudents.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No enabled students selected.");
+        }
+        else {
+            new GradeReportView(_assignmentTree.getSelection(), selectedStudents);
         }
     }
 
-    private void extensionsButtonActionPerformed()
-    {
-        Assignment a = _assignmentList.getSelectedValue();
-        if (a.hasHandinPart()) {
-            new ExtensionView(a.getHandinPart(), _studentList.getSelectedValue());
+    private void extensionsButtonActionPerformed() {
+        String student = _studentList.getSelectedValue();
+
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+
+        Group group;
+        try {
+            group = this.getGroup(asgn, student);
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
         }
 
+        new ExtensionView(asgn, group);
     }
 
     private void exemptionsButtonActionPerformed() {
-        new ExemptionView(_assignmentList.getGenericSelectedValues(),
-                          _studentList.getGenericSelectedValues());
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+        Group group;
+        try {
+            group = this.getGroup(asgn, _studentList.getSelectedValue());
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
+        }
+        new ExemptionView(asgn, group);
     }
 
-    private void openCodeButtonActionPerformed()
-    {
-        String studentLogin = _studentList.getSelectedValue();
+    private void openCodeButtonActionPerformed() {
+        String student = _studentList.getSelectedValue();
+
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+
+        Group group;
         try {
-            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-            String handinLogin = this.getHandinLogin(studentLogin, part);
-            part.openCode(handinLogin);
-        } catch (CakeHatDBIOException ex) {
-            new ErrorView(ex, "Could not open code.");
+            group = this.getGroup(asgn, student);
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
+        }
+
+        DistributablePart dp = this.getSingleSelectedDP(selection);
+        try {
+            dp.open(group);
+        } catch (ActionException ex) {
+            new ErrorView(ex);
         }
     }
 
-    private void runCodeButtonActionPerformed()
-    {
-        String studentLogin = _studentList.getSelectedValue();
+    private void runCodeButtonActionPerformed() {
+        String student = _studentList.getSelectedValue();
+
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+
+        Group group;
         try {
-            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-            String handinLogin = this.getHandinLogin(studentLogin, part);
-            part.run(handinLogin);
-        } catch (CakeHatDBIOException ex) {
-            new ErrorView(ex, "Could not run code.");
+            group = this.getGroup(asgn, student);
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
+        }
+
+        DistributablePart dp = this.getSingleSelectedDP(selection);
+        try {
+            dp.run(group);
+        } catch (ActionException ex) {
+            new ErrorView(ex);
         }
     }
 
-    private void testCodeButtonActionPerformed()
-    {
-        String studentLogin = _studentList.getSelectedValue();
+    private void testCodeButtonActionPerformed() {
+        String student = _studentList.getSelectedValue();
+
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+
+        Group group;
         try {
-            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-            String login = this.getHandinLogin(studentLogin, part);
-            part.runTester(login);
-        } catch (CakeHatDBIOException ex) {
-            new ErrorView(ex, "Could not test code.");
+            group = this.getGroup(asgn, student);
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
+        }
+
+        DistributablePart dp = this.getSingleSelectedDP(selection);
+        try {
+            dp.runTester(group);
+        } catch (ActionException ex) {
+            new ErrorView(ex);
         }
     }
 
     private void printCodeButtonActionPerformed() {
-        
-        if (_assignmentList.getSelectedValue().hasHandinPart()) {
 
-            String printer = Allocator.getGradingServices().getPrinter();
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+        DistributablePart dp = this.getSingleSelectedDP(selection);
 
-            //printer == null if "Cancel" button was clicked on printer select dialog
-            if (printer == null) {
+        Collection<Group> groupsToPrint = new LinkedList<Group>();
+        Collection<Group> groupsWithoutCode = new LinkedList<Group>();
+
+        try {
+            for (String student : _studentList.getGenericSelectedValues()) {
+                Group group = this.getGroup(asgn, student);
+                
+                File handin = null;
+                try {
+                    handin = asgn.getHandin().getHandin(group);
+                } catch (IOException e) {
+                    new ErrorView(e);
+                }
+
+                if (handin != null) {
+                    groupsToPrint.add(group);
+                } else {
+                    groupsWithoutCode.add(group);
+                }
+            }
+        } catch (CakehatException ex) {
+            new ErrorView(ex, "Could not print code.");
+        }
+
+        if (groupsWithoutCode.size() > 0) {
+            String message = "The following groups do not have handins; \n" +
+                             "thus, their handins cannot be printed:\n";
+            for (Group group : groupsWithoutCode) {
+                message += group.getName() + "(" + group.getMembers() + ")\n";
+            }
+
+            Object[] options = {"Proceed", "Cancel"};
+            int shouldContinue = JOptionPane.showOptionDialog(this, message,
+                    "Not all students have code!",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null, options, options[0]);
+            if (shouldContinue != JOptionPane.OK_OPTION) {
                 return;
             }
-
-            HandinPart handinPart = _assignmentList.getSelectedValue().getHandinPart();
-
-            Collection<String> loginsToPrint = new LinkedList<String>();
-            Collection<String> studentsWithoutCode = new LinkedList<String>();
-            
-            for (String student : _studentList.getGenericSelectedValues()) {
-                String handinLogin;
-                try {
-                    handinLogin = this.getHandinLogin(student, handinPart);
-                } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "Could not print code.");
-                    continue;
-                }
-
-                if (handinLogin != null) {
-                    loginsToPrint.add(handinLogin);
-                }
-                else {
-                    studentsWithoutCode.add(student);
-                }
-            }
-
-            if (studentsWithoutCode.size() > 0) {
-                String message = "The following students do not have code\n"
-                        + "and will not be printed:\n";
-                for (String student : studentsWithoutCode) {
-                    message += student + "\n";
-                }
-
-                Object[] options = {"Proceed", "Cancel"};
-                int shouldContinue = JOptionPane.showOptionDialog(this, message,
-                                                                  "Not all students have code!",
-                                                                  JOptionPane.YES_NO_OPTION,
-                                                                  JOptionPane.WARNING_MESSAGE,
-                                                                  null, options, options[0]);
-                if (shouldContinue != JOptionPane.OK_OPTION) {
-                    return;
-                }
-            }
-
-            handinPart.printCode(loginsToPrint, printer);
         }
-    }
-
-    private void viewReadmeButtonActionPerformed()
-    {
-        String studentLogin = _studentList.getSelectedValue();
         try {
-            HandinPart part = _assignmentList.getSelectedValue().getHandinPart();
-            String login = this.getHandinLogin(studentLogin, part);
-            part.viewReadme(login);
-        } catch (CakeHatDBIOException ex) {
-            new ErrorView(ex, "Could not show README.");
+            dp.print(groupsToPrint);
+        } catch (ActionException ex) {
+            new ErrorView(ex);
         }
     }
 
-    private void viewRubricButtonActionPerformed()
-    {
-        if (_assignmentList.getSelectedValue().hasHandinPart() && _assignmentList.getSelectedValue().getHandinPart().hasRubric())
-        {
-            Allocator.getRubricManager().view(_assignmentList.getSelectedValue().getHandinPart(), _studentList.getSelectedValue(), true);
+    private void viewReadmeButtonActionPerformed() {
+        String student = _studentList.getSelectedValue();
+
+        DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
+        Group group;
+        try {
+            group = this.getGroup(dp.getAssignment(), student);
+        } catch (CakehatException ex) {
+            this.dieNoGroup(ex, student, dp.getAssignment());
+            return;
+        }
+
+        try {
+            dp.viewReadme(group);
+        } catch (ActionException ex) {
+            new ErrorView(ex);
+        }
+    }
+
+    private void viewRubricButtonActionPerformed() {
+        String student = _studentList.getSelectedValue();
+
+        Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
+        Assignment asgn = this.getSingleSelectedAssignment(selection);
+
+        Group group;
+        try {
+            group = this.getGroup(asgn, student);
+        } catch (CakehatException ex) {
+            new ErrorView(ex);
+            return;
+        }
+
+        DistributablePart part = this.getSingleSelectedDP(_assignmentTree.getSelection());
+        Allocator.getRubricManager().view(part, group, true);
+    }
+
+    private void printRubricButtonActionPerformed() {
+        Assignment asgn = this.getSingleSelectedAssignment(_assignmentTree.getSelection());
+        List<String> students = new ArrayList<String>(_studentList.getGenericSelectedValues());
+
+        Collection<Group> groupsToPrint = this.getGroupsToConvertToGRD(asgn, students);
+
+        //return value of null means "Cancel" button was clicked
+        if (groupsToPrint == null) {
+            return;
+        }
+        try {
+            Allocator.getGradingServices().printGRDFiles(asgn.getHandin(), groupsToPrint);
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "Could not print GRD files.");
         }
     }
 
     private void emailRubricButtonActionPerformed() {
-        Vector<String> students = new Vector<String>(_studentList.getGenericSelectedValues());
-        if (_assignmentList.getSelectedValue().hasHandinPart()) {
-            HandinPart handinPart = _assignmentList.getSelectedValue().getHandinPart();
+        Assignment asgn = this.getSingleSelectedAssignment(_assignmentTree.getSelection());
+        List<String> students = new ArrayList<String>(_studentList.getGenericSelectedValues());
 
-            //remove any students who don't have rubrics
-            Iterator<String> studentIterator = students.iterator();
-            Collection<String> studentsWithoutRubrics = new LinkedList<String>();
-            while (studentIterator.hasNext()) {
-                String student = studentIterator.next();
-                if (!Allocator.getRubricManager().hasRubric(handinPart, student)) {
-                    studentIterator.remove();
-                    studentsWithoutRubrics.add(student);
-                }
-            }
+        Collection<Group> groupsToEmail = this.getGroupsToConvertToGRD(asgn, students);
 
-            if (studentsWithoutRubrics.size() > 0) {
-                String message = "The following students do not have rubrics\n" +
-                        "and will not be emailed:\n";
-                for (String student : studentsWithoutRubrics) {
-                    message += student + "\n";
-                }
-
-                int shouldContinue = JOptionPane.showConfirmDialog(this, message, "Not all students have rubrics!", JOptionPane.WARNING_MESSAGE);
-                if (shouldContinue != JOptionPane.OK_OPTION) {
-                    return;
-                }
-            }
-
-            Allocator.getRubricManager().convertToGRD(handinPart, students);
-            Allocator.getGradingServices().notifyStudents(handinPart, students, true);
+        //return value of null means "Cancel" button was clicked
+        if (groupsToEmail == null) {
+            return;
         }
+
+        Allocator.getGradingServices().notifyStudents(asgn.getHandin(), groupsToEmail, true);
     }
 
-    private void printRubricButtonActionPerformed()
-    {
-        Vector<String> students = new Vector<String>(_studentList.getGenericSelectedValues());
-        if (_assignmentList.getSelectedValue().hasHandinPart()) {
-            HandinPart handinPart = _assignmentList.getSelectedValue().getHandinPart();
+    private Collection<Group> getGroupsToConvertToGRD(Assignment asgn, List<String> students) {
+        List<Group> groupsConverted = new ArrayList<Group>(_studentList.getGenericSelectedValues().size());
+        Collection<String> studentsWithoutGroups = new LinkedList<String>();
+        Map<Group, Collection<DistributablePart>> partsMissingRubrics = new HashMap<Group, Collection<DistributablePart>>();
 
-            //remove any students who don't have rubrics
-            Iterator<String> studentIterator = students.iterator();
-            Collection<String> studentsWithoutRubrics = new LinkedList<String>();
-            while (studentIterator.hasNext()) {
-                String student = studentIterator.next();
-                if (!Allocator.getRubricManager().hasRubric(handinPart, student)) {
-                    studentIterator.remove();
-                    studentsWithoutRubrics.add(student);
-                }
+        for (String student : students) {
+            Group group;
+            try {
+                group = this.getGroup(asgn, student);
+            } catch (CakehatException ex) {
+                studentsWithoutGroups.add(student);
+                continue;
             }
 
-            if (studentsWithoutRubrics.size() > 0) {
-                String message = "The following students do not have rubrics\n" +
-                        "and will not be printed:\n";
-                for (String student : studentsWithoutRubrics) {
-                    message += student + "\n";
-                }
-
-                Object[] options = {"Proceed", "Cancel"};
-                int shouldContinue = JOptionPane.showOptionDialog(this, message,
-                                                                  "Not all students have rubrics!",
-                                                                  JOptionPane.YES_NO_OPTION,
-                                                                  JOptionPane.WARNING_MESSAGE,
-                                                                  null, options, options[0]);
-                if (shouldContinue != JOptionPane.OK_OPTION) {
-                    return;
-                }
+            Collection<DistributablePart> missing = Allocator.getRubricManager().getMissingRubrics(asgn.getHandin(), group);
+            if (!missing.isEmpty()) {
+                partsMissingRubrics.put(group, missing);
             }
-
-            Allocator.getRubricManager().convertToGRD(handinPart, students);
-            Allocator.getGradingServices().printGRDFiles(handinPart, students);
+            else {
+                groupsConverted.add(group);
+            }
         }
+
+        String errMsg = "";
+        if (!studentsWithoutGroups.isEmpty()) {
+            errMsg += "Groups could not be determined for the following students; thus, " +
+                      "their GRD files cannot be produced:\n" + studentsWithoutGroups + "\n\n";
+        }
+
+        if (!partsMissingRubrics.isEmpty()) {
+            errMsg += "Some groups are missing rubrics for some distributable parts, as " +
+                      "listed below.  Their their GRD files cannot be produced.\n";
+            for (Group group : partsMissingRubrics.keySet()) {
+                errMsg += group + ": " + partsMissingRubrics.get(group) + "\n";
+            }
+        }
+
+        if (!errMsg.isEmpty()) {
+            Object[] options = {"Proceed", "Cancel"};
+            int shouldContinue = JOptionPane.showOptionDialog(this, errMsg,
+                    "Not all students have rubrics!",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null, options, options[0]);
+            if (shouldContinue != JOptionPane.OK_OPTION) {
+                return null;
+            }
+        }
+
+        try {
+            Allocator.getRubricManager().convertToGRD(asgn.getHandin(), groupsConverted);
+        } catch (RubricException ex) {
+            new ErrorView(ex, "Could not create GRD files to email rubrics.");
+            return null;
+        }
+
+        return groupsConverted;
     }
 
-    private void disableStudentButtonActionPerformed()
-    {
+    private void disableStudentButtonActionPerformed() {
         String studentLogin = _studentList.getSelectedValue();
         
         try {
@@ -1733,47 +1837,162 @@ public class BackendView extends JFrame
         }
     }
 
-    private void updateDisableEnableButton(boolean enabled)
-    {
+    private void updateDisableEnableButton(boolean enabled) {
         if(enabled)
         {
-            _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-remove.png")));
+            _disableStudentButton.setIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.LIST_REMOVE));
             _disableStudentButton.setText("Disable Student");
         }
         else
         {
-            _disableStudentButton.setIcon(new ImageIcon(getClass().getResource("/gradesystem/resources/icons/16x16/list-add.png")));
+            _disableStudentButton.setIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.LIST_ADD));
             _disableStudentButton.setText("Enable Student");
         }
     }
 
-    private void manageGroupsButtonActionPerformed()
-    {
-        new GroupsView(this._assignmentList.getSelectedValue().getHandinPart());
+    private void manageGroupsButtonActionPerformed() {
+        new GroupsView(this, this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
     }
 
-    private void assignmentListValueChanged()
-    {
-        if (!_assignmentList.isSelectionEmpty()) {
-            //Create directory for the assignment so GRD files can be created,
-            //even if no assignments have been untarred
-            File assigmentDir = new File(Allocator.getGradingServices().getUserGradingDirectory() +
-                                         _assignmentList.getSelectedValue().getName());
-            try
-            {
-                Allocator.getFileSystemServices().makeDirectory(assigmentDir);
-            }
-            catch(NativeException e)
-            {
-                new ErrorView(e, "Unable to create directory for assignment: " + _assignmentList.getSelectedValue().getName());
+    private Assignment getSingleSelectedAssignment(Map<Assignment, List<Part>> selection) {
+        if (selection.size() != 1) {
+            return null;
+        }
+        return selection.keySet().iterator().next();
+    }
+
+    private Part getSingleSelectedPart(Map<Assignment, List<Part>> selection) {
+        return this.getSingleSelectedPart(selection, Part.class);
+    }
+
+    private DistributablePart getSingleSelectedDP(Map<Assignment, List<Part>> selection) {
+        return this.getSingleSelectedPart(selection, DistributablePart.class);
+    }
+
+    private LabPart getSingleSelectedLabPart(Map<Assignment, List<Part>> selection) {
+        return this.getSingleSelectedPart(selection, LabPart.class);
+    }
+
+    private <T extends Part> T getSingleSelectedPart(Map<Assignment, List<Part>> selection, Class<T> partType) {
+        if (selection.size() != 1) {
+            return null;
+        }
+
+        Assignment singleAsgn = selection.keySet().iterator().next();
+        List<Part> parts = selection.get(singleAsgn);
+
+        if (parts.size() != 1) {
+            return null;
+        }
+
+        Part singlePart = parts.get(0);
+        if (partType.isAssignableFrom(singlePart.getClass())) {
+            return (T) singlePart;
+        }
+
+        return null;
+    }
+
+    void updateGroupsCache(Assignment asgn) {
+        try {
+             Map<String, Group> loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
+             _groupsCache.put(asgn, loginsToGroups);
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "Could not update groups cache for assignment " + asgn + ".");
+        }
+
+        this.updateStudentListEnabledState();
+    }
+    
+    private void assignmentTreeValueChanged(Map<Assignment, List<Part>> selection) {
+        _messageLabel.setText("");
+        _studentList.setEnabled(true);
+
+        //get Group objects
+        for (Assignment asgn : selection.keySet()) {
+            if (!_groupsCache.containsKey(asgn)) {
+                Map<String, Group> loginsToGroups = Collections.emptyMap();
+                try {
+                    loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Could not get Group objects for assignment " + asgn + ".");
+                }
+                _groupsCache.put(asgn, loginsToGroups);
             }
         }
 
-        updateGUI();
+        DistributablePart dp = this.getSingleSelectedDP(selection);
+        if (dp != null) {
+            //Create directory for the assignment so GRD files can be created,
+            //even if no assignments have been untarred
+
+            File partDir = Allocator.getPathServices().getUserPartDir(dp);
+            try {
+                Allocator.getFileSystemServices().makeDirectory(partDir);
+            } catch (ServicesException e) {
+                new ErrorView(e, "Unable to create directory for assignment: " + this.getSingleSelectedAssignment(selection).getName());
+            }
+            
+        }
+
+        this.updateStudentListEnabledState();
+        this.updateGUI(selection);
+    }
+
+    private void updateStudentListEnabledState() {
+        //if any selected assignment has groups and groups have not yet been created,
+        //disable the student list and clear its selection since no student-related
+        //backend functionality works without groups set
+        boolean needsToBeDisabled = false;
+        for (Assignment asgn : _assignmentTree.getSelection().keySet()) {
+            if (asgn.hasGroups()
+                    && _groupsCache.get(asgn).isEmpty()) {
+                _studentList.clearSelection();
+                _studentList.setEnabled(false);
+                _messageLabel.setText("NOTE: No groups have yet been created for this assignment.");
+
+                needsToBeDisabled = true;
+                break;
+            }
+        }
+
+        if (!needsToBeDisabled) {
+            _messageLabel.setText(null);
+            _studentList.setEnabled(true);
+        }
+    }
+
+    private Group getGroup(Assignment asgn, String studentLogin) throws CakehatException {
+        if (!_groupsCache.get(asgn).containsKey(studentLogin) && !asgn.hasGroups()) {
+            Group newGroup = new Group(studentLogin, studentLogin);
+
+            try {
+                Allocator.getDatabaseIO().setGroup(asgn, newGroup);
+                _groupsCache.get(asgn).put(studentLogin, newGroup);
+            } catch (SQLException ex) {
+                throw new CakehatException("Could not create group of one for " +
+                                           "student " + studentLogin + " on " +
+                                           "assignment " + asgn + ".", ex);
+            }
+        }
+
+        if (!_groupsCache.get(asgn).containsKey(studentLogin)) {
+            throw new MissingUserActionException("Could not retrieve group for student " +
+                                       studentLogin + " on assignment " + asgn + ". " +
+                                       "Check to make sure that the student has been " +
+                                       "assigned to a group.");
+        }
+        return _groupsCache.get(asgn).get(studentLogin);
+    }
+
+    private void dieNoGroup(Exception ex, String student, Assignment asgn) {
+        new ErrorView(ex, "Could not get the group for student " + student + " on " +
+                          "assignment " + asgn + ".");
     }
 
     private void studentListValueChanged()
     {
-        updateGUI();
+        updateGUI(_assignmentTree.getSelection());
     }
+
 }

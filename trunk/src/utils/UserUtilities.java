@@ -53,4 +53,13 @@ public interface UserUtilities
      * @throws NativeException thrown if the group does not exist
      */
     public boolean isMemberOfGroup(String login, String group) throws NativeException;
+
+    /**
+     * Returns whether or not the user is remotely connected (such as over ssh)
+     * to the computer running cakehat.
+     *
+     * @return
+     * @throws NativeException
+     */
+    public boolean isUserRemotelyConnected() throws NativeException;
 }

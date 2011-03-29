@@ -1,5 +1,6 @@
 package utils.system;
 
+import com.sun.jna.Platform;
 import java.util.List;
 import java.io.File;
 
@@ -18,7 +19,8 @@ public class NativeFunctions
     }
 
     /**
-     * Changes the permissions on a file or directory.
+     * Changes the permissions on a file or directory. The user
+     * <strong>must</strong> be the owner of the file or directory.
      *
      * @param file the file or directory
      * @param mode the <b>octal</b> form permission, such as 0770 or 0666
@@ -126,5 +128,53 @@ public class NativeFunctions
                     "This should never happen, something is very wrong with " +
                     "native functionality.", ex);
         }
+    }
+
+    /**
+     * Returns whether the user executing this code is remotely connected to
+     * the computer running cakehat.
+     *
+     * @return
+     * @throws NativeException
+     */
+    public boolean isUserRemotelyConnected() throws NativeException
+    {
+        //If the code is not running on Linux, just assume the user is running
+        //locally because determining this information is not supported on
+        //non-Linux platforms
+        if(!Platform.isLinux())
+        {
+            return false;
+        }
+
+        String userLogin = this.getUserLogin();
+        boolean isRemote = false;
+
+        //Open user account database
+        _wrapper.setutxent();
+
+        //Just in case something fails, always close the user account database
+        try
+        {
+            NativeUTMPX utmpx = _wrapper.getutxent();
+            while(utmpx != null)
+            {
+                //If the entry is for this user and the IP address is remote
+                if(userLogin.equals(utmpx.getUser()) && utmpx.isRemoteIP())
+                {
+                    isRemote = true;
+                    break;
+                }
+
+                utmpx = _wrapper.getutxent();
+            }
+        }
+        finally
+        {
+            //Close user account database
+            _wrapper.endutxent();
+        }
+
+        return isRemote;
     }
 }

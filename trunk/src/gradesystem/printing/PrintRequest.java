@@ -2,7 +2,6 @@ package gradesystem.printing;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Collection;
 import java.util.Vector;
 
 /**
@@ -43,7 +42,7 @@ public class PrintRequest
      * @param studentLogin
      * @throws FileNotFoundException thrown if a file is passed in that does not exist
      */
-    public PrintRequest(Collection<File> files, String taLogin, String studentLogin)
+    public PrintRequest(Iterable<File> files, String taLogin, String studentLogin)
                                                         throws FileNotFoundException
     {
         this(files);
@@ -57,7 +56,7 @@ public class PrintRequest
      * @param files
      * @throws FileNotFoundException thrown if a file is passed in that does not exist
      */
-    public PrintRequest(Collection<File> files) throws FileNotFoundException
+    public PrintRequest(Iterable<File> files) throws FileNotFoundException
     {
         this.addFiles(files);
     }

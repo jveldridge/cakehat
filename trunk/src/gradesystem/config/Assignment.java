@@ -1,46 +1,54 @@
 package gradesystem.config;
 
-import java.util.Vector;
-import gradesystem.Allocator;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import gradesystem.handin.DistributablePart;
+import gradesystem.handin.Handin;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * A representation of an Assigment, composed of any number of non-handin parts,
- * any number of lab parts, and zero or one handin parts. This assignment has
- * a name, that must be unique, and a number that does not need to be unique. If
- * the number of this assignment is the same as that of another assignment then
- * those assignments will be considered alternatives of one another, e.g.
- * multiple options for a final project.
+ * A representation of an assigment, composed of any number of non-handin parts,
+ * any number of lab parts, any number of distributable parts and zero or one
+ * handins. If there are any distributable parts then there will be a handin,
+ * and if there is a handin there will be at least one distributable part. This
+ * assignment has a name and number, both of which are unique.
  *
  * @author jak2
  */
 public class Assignment implements Comparable<Assignment>
 {
-    private String _name;
-    private int _number;
-    private Vector<NonHandinPart> _nonHandinParts = new Vector<NonHandinPart>();
-    private Vector<LabPart> _labParts = new Vector<LabPart>();
-    private HandinPart _handinPart;
-    private Vector<Part> _allParts = null;
+    private final String _name;
+    private final int _number;
+    private final boolean _hasGroups;
 
-    Assignment(String name, int number)
+    private final ImmutableList.Builder<NonHandinPart> _nonHandinBuilder = ImmutableList.builder();
+    private final ImmutableList.Builder<LabPart> _labBuilder = ImmutableList.builder();
+    private final ImmutableList.Builder<DistributablePart> _distributableBuilder = ImmutableList.builder();
+    
+    private Handin _handin = null;
+
+    Assignment(String name, int number, boolean hasGroups)
     {
         _name = name;
         _number = number;
+        _hasGroups = hasGroups;
     }
 
+    /**
+     * The name of the this assignment. It is unique.
+     *
+     * @return
+     */
     public String getName()
     {
         return _name;
     }
 
-    public String getDBID() {
-        return _name;
-    }
-
     /**
-     * The number of this assignment. It does not need to be unique; assignments
-     * with the same number are considered to be alternatives, e.g. multiple
-     * options for a final project.
+     * The number of this assignment. It is unique.
      *
      * @return
      */
@@ -49,78 +57,33 @@ public class Assignment implements Comparable<Assignment>
         return _number;
     }
 
-    // Parts
-
-    void addNonHandinPart(NonHandinPart part)
-    {
-        _nonHandinParts.add(part);
-    }
-
-    public Iterable<NonHandinPart> getNonHandinParts()
-    {
-        return _nonHandinParts;
-    }
-
-    public boolean hasNonHandinParts()
-    {
-        return !_nonHandinParts.isEmpty();
-    }
-
-    void addLabPart(LabPart part)
-    {
-        _labParts.add(part);
-    }
-
-    public Iterable<LabPart> getLabParts()
-    {
-        return _labParts;
-    }
-
-    public boolean hasLabParts()
-    {
-        return !_labParts.isEmpty();
-    }
-
-    void addHandinPart(HandinPart codePart)
-    {
-        _handinPart = codePart;
-    }
-
-    public HandinPart getHandinPart()
-    {
-        return _handinPart;
-    }
-
-    public boolean hasHandinPart()
-    {
-        return (_handinPart != null);
-    }
-
     /**
-     * Returns all Parts of this Assignment.
-     * 
+     * The String used by the database that identifies this assignment.
      * @return
      */
-    public Iterable<Part> getParts()
+    public String getDBID()
     {
-        //If this has not been created yet, build it
-        if(_allParts == null)
-        {
-            _allParts = new Vector<Part>();
-
-            _allParts.addAll(_labParts);
-            _allParts.addAll(_nonHandinParts);
-            if(this.hasHandinPart())
-            {
-                _allParts.add(_handinPart);
-            }
-        }
-
-        return _allParts;
+        return _name;
     }
 
     /**
-     * Sums all of the point values for this Assignment's parts.
+     * Whether this assignment has groups or not.
+     * <br/><br/>
+     * From a code point of view many times there are implicit groups of one,
+     * this is not what this method describes. Instead it is whether the course
+     * will be specifying groups for this assignment.
+     *
+     * @return
+     */
+    public boolean hasGroups()
+    {
+        return _hasGroups;
+    }
+    
+    /**
+     * The total value of this assignment. This is done by summing the values
+     * for each part number. All parts with the same number must have the same
+     * point value.
      *
      * @return
      */
@@ -128,35 +91,149 @@ public class Assignment implements Comparable<Assignment>
     {
         int points = 0;
 
-        for(Part part : this.getParts())
+        Multimap<Integer, Part> multimap = this.getPartsMultimap();
+        for(int partNum : multimap.keySet())
         {
-            points += part.getPoints();
+            Collection<Part> parts = multimap.get(partNum);
+            
+            points += Iterables.get(parts, 0).getPoints();
         }
 
         return points;
     }
 
+    // Parts
+
+    void addNonHandinPart(NonHandinPart part)
+    {
+        _nonHandinBuilder.add(part);
+    }
+
+    private List<NonHandinPart> _nonHandinParts;
+    public List<NonHandinPart> getNonHandinParts()
+    {
+        if(_nonHandinParts == null)
+        {
+            _nonHandinParts = _nonHandinBuilder.build();
+        }
+
+        return _nonHandinParts;
+    }
+
+    public boolean hasNonHandinParts()
+    {
+        return !getNonHandinParts().isEmpty();
+    }
+
+    void addLabPart(LabPart part)
+    {
+        _labBuilder.add(part);
+    }
+
+    private List<LabPart> _labParts;
+    public List<LabPart> getLabParts()
+    {
+        if(_labParts == null)
+        {
+            _labParts = _labBuilder.build();
+        }
+
+        return _labParts;
+    }
+
+    public boolean hasLabParts()
+    {
+        return !getLabParts().isEmpty();
+    }
+
+    void addDistributablePart(DistributablePart part)
+    {
+        _distributableBuilder.add(part);
+    }
+
+    private List<DistributablePart> _distributableParts;
+    public List<DistributablePart> getDistributableParts()
+    {
+        if(_distributableParts == null)
+        {
+            _distributableParts = _distributableBuilder.build();
+        }
+
+        return _distributableParts;
+    }
+
+    public boolean hasDistributableParts()
+    {
+        return !getDistributableParts().isEmpty();
+    }
+
+    void setHandin(Handin handin)
+    {
+        _handin = handin;
+    }
+
+    public Handin getHandin()
+    {
+        return _handin;
+    }
+
+    public boolean hasHandin()
+    {
+        return _handin != null;
+    }
+
+    private List<Part> _allParts;
     /**
-     * Returns if this assignment has a unique assignment number.
+     * Returns all Parts of this Assignment.
+     * 
+     * @return
+     */
+    public List<Part> getParts()
+    {
+        //If this has not been created yet, build it
+        if(_allParts == null)
+        {
+            ImmutableList.Builder<Part> builder = ImmutableList.builder();
+
+            builder.addAll(getLabParts());
+            builder.addAll(getNonHandinParts());
+            builder.addAll(getDistributableParts());
+
+            _allParts = builder.build();
+        }
+
+        return _allParts;
+    }
+
+    public Multimap<Integer, Part> _allPartsMultimap;
+    /**
+     * Returns all Parts of this Assignments as a multimap from
+     * {@link Part#getNumber()} to the Parts that have that number. Parts that
+     * have the same number are considered mututally exclusive.
      *
      * @return
      */
-    public boolean isUnique()
+    public Multimap<Integer, Part> getPartsMultimap()
     {
-        for(Assignment asgn : Allocator.getCourseInfo().getAssignments())
+        if(_allPartsMultimap == null)
         {
-            if(asgn != this)
+            ImmutableMultimap.Builder<Integer, Part> builder = ImmutableMultimap.builder();
+            for(Part part : getParts())
             {
-                if(asgn.getNumber() == this.getNumber())
-                {
-                    return false;
-                }
+                builder.put(part.getNumber(), part);
             }
+
+            _allPartsMultimap = builder.build();
         }
 
-        return true;
+        return _allPartsMultimap;
     }
-
+    
+    /**
+     * Returns the name of the Assignment.
+     *
+     * @return
+     */
     @Override
     public String toString()
     {
@@ -173,4 +250,5 @@ public class Assignment implements Comparable<Assignment>
     {
         return ((Integer)this.getNumber()).compareTo(a.getNumber());
     }
+
 }

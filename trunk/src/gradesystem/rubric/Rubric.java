@@ -1,13 +1,13 @@
 package gradesystem.rubric;
 
-import gradesystem.config.HandinPart;
 import gradesystem.config.Part;
-import gradesystem.config.TimeInformation;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import gradesystem.Allocator;
+import gradesystem.database.Group;
+import gradesystem.handin.DistributablePart;
 
 /**
  * An object representation of a GML file. Used internally within the the rubric
@@ -18,101 +18,24 @@ import gradesystem.Allocator;
  */
 class Rubric
 {
-    private String _name = "";
-    private TimeStatus _status;
-    private int _number = 0;
-    private int _daysLate = 0;
-    private Person _student = new Person();
+
+    private DistributablePart _distPart;
+    private Group _group;
     private Vector<Section> _sections = new Vector<Section>();
     private Section _extraCredit = new Section();
-    protected HandinPart _handinPart;
+    
 
-    Rubric(HandinPart part)
-    {
-        _handinPart = part;
+    Rubric(DistributablePart part, Group group) {
+        _distPart = part;
+        _group = group;
     }
 
-    // Time Information
-
-    TimeInformation getTimeInformation()
-    {
-        return _handinPart.getTimeInformation();
+    public DistributablePart getDistributablePart() {
+        return _distPart;
     }
 
-    // Name
-
-    void setName(String name)
-    {
-        _name = name;
-    }
-
-    public String getName()
-    {
-        return _name;
-    }
-
-    // Status
-
-    void setStatus(TimeStatus status)
-    {
-        _status = status;
-    }
-
-    public TimeStatus getStatus()
-    {
-        return _status;
-    }
-
-    // Number
-
-    void setNumber(int number)
-    {
-        _number = number;
-    }
-
-    public int getNumber()
-    {
-        return _number;
-    }
-
-    // Days Late
-
-    void setDaysLate(int numDays)
-    {
-        _daysLate = numDays;
-    }
-
-    public int getDaysLate()
-    {
-        return _daysLate;
-    }
-
-    // Student
-
-    void setStudent(String name, String acct)
-    {
-        _student.setName(name);
-        _student.setAccount(acct);
-    }
-
-    void setStudent(Person student)
-    {
-        _student = student;
-    }
-
-    public Person getStudent()
-    {
-        return _student;
-    }
-
-    public String getStudentName()
-    {
-        return _student.getName();
-    }
-
-    public String getStudentAccount()
-    {
-        return _student.getAccount();
+    public Group getGroup() {
+        return _group;
     }
 
     // Sections
@@ -150,13 +73,14 @@ class Rubric
     }
 
     /**
-     * Total points earned by the student for all the rubric components.
+     * Total points earned by the student for all the rubric components,
+     * including scores for components that are pulled from another source.
      *
      * Does not take into account handin status rewards/deductions.
      *
      * @return
      */
-    double getTotalRubricPoints()
+    double getTotalRubricScore()
     {
         double score = 0.0;
         for (Section section : _sections)
@@ -177,23 +101,6 @@ class Rubric
     }
 
     /**
-     * Total points earned by the student for all the rubric components.
-     *
-     * Applies the handin status rewards/deductions.
-     *
-     * @return
-     */
-    public double getTotalRubricScore()
-    {
-        double points = getTotalRubricPoints();
-
-        // Apply status
-        points += getDeduction();
-
-        return points;
-    }
-
-    /**
      * Total points earned by the student for the rubric components that are
      * part of the handin; does not include any parts that pull from sources.
      *
@@ -201,7 +108,7 @@ class Rubric
      *
      * @return
      */
-    double getTotalHandinPoints()
+    double getTotalDistPartScore()
     {
         double score = 0.0;
         for (Section section : _sections)
@@ -225,29 +132,6 @@ class Rubric
         score = Allocator.getGeneralUtilities().round(score, 2);
 
         return score;
-    }
-
-    /**
-     * Total points earned by the student for all the rubric components that are
-     * part of the handin; does not include any parts that pull from sources.
-     *
-     * Applies the handin status rewards/deductions.
-     *
-     * @return
-     */
-    public double getTotalHandinScore()
-    {
-        double points = getTotalHandinPoints();
-
-        // Apply status
-        points += getDeduction();
-
-        return points;
-    }
-
-    double getDeduction()
-    {
-        return _status.getDeduction(_handinPart, this);
     }
 
     /**
@@ -277,7 +161,7 @@ class Rubric
      *
      * @return
      */
-    public double getTotalHandinOutOf()
+    public double getTotalDistPartOutOf()
     {
         double outOf = 0.0;
         for (Section section: _sections)
@@ -296,40 +180,6 @@ class Rubric
         return outOf;
     }
 
-    // Person
-
-    public static class Person
-    {
-        private String _name = "", _acct = "";
-
-        Person() { }
-
-        Person(String name, String acct)
-        {
-            this.setName(name);
-            this.setAccount(acct);
-        }
-
-        void setName(String name)
-        {
-            _name = name;
-        }
-
-        public String getName()
-        {
-            return _name;
-        }
-
-        void setAccount(String acct)
-        {
-            _acct = acct;
-        }
-
-        public String getAccount()
-        {
-            return _acct;
-        }
-    }
 
     // Section
 
@@ -464,7 +314,7 @@ class Rubric
         {
             //Get corresponding part
             Part sourcePart = null;
-            for(Part part : Rubric.this._handinPart.getAssignment().getParts())
+            for(Part part : Rubric.this._distPart.getAssignment().getParts())
             {
                 if(part.getName().equals(_source))
                 {
@@ -476,18 +326,18 @@ class Rubric
             {
                 JOptionPane.showMessageDialog(null, "Rubric specifies source part named [" +
                                               _source + "] for assignment [" +
-                                              Rubric.this._handinPart.getAssignment().getName() + "]. \n" +
+                                              Rubric.this._distPart.getAssignment().getName() + "]. \n" +
                                               "This part was not found.");
 
                 return;
             }
 
             //If a there is a student account (when not a template), load score
-            if(!Rubric.this.getStudentAccount().isEmpty())
-            {
-                String studentLogin = Rubric.this.getStudentAccount();
+            if(Rubric.this.getGroup() != null) {
+                Group group = Rubric.this.getGroup();
                 try {
-                    _score = Allocator.getDatabaseIO().getStudentScore(studentLogin, sourcePart);
+                    Double score = Allocator.getDatabaseIO().getGroupScore(group, sourcePart);
+                    _score = (score == null ? 0 : score);
                 } catch (SQLException ex) {
                     throw new RubricException("The grade for part " + sourcePart + " could not be " +
                                               "loaded from the database.", ex);
