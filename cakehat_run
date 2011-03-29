@@ -1,55 +1,37 @@
 #!/bin/bash
 #==============================================================================
-# A convenience script to run cakehat.
+# A convenience script to run cakehat. Must be located somewhere within the
+# course directory from which cakehat will be run.
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 20, 2010
+# last updated: March 28, 2011
 #==============================================================================
 
 #message displayed when run incorrectly
-usage="Usage: cakehat_run [frontend | backend] (ssh)"
+usage="Usage: cakehat_run (backend)"
 
 #retrieve the location of this script
 abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
 
-#extract the course name
-course=${abspath:8:5}
+#extract the course name by splitting on each / and then taking the second
+#argument of the resulting array, which will be the course so long as this
+#script is in the course directory (which it absolutely should be)
+path_parts=(`echo $abspath | tr '/' ' '`)
+course=${path_parts[1]}
 
 #location of jar to run
-grade_sys="/course/"$course"/.cakehat/bin/GradeSystem.jar"
+cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
 
-#if the number of arguments passed in is invalid
-if [[ !( $# == 1 || $# == 2 ) ]]
+#If no arguments, run the frontend
+if [[ ( $# == 0 ) ]]
 then
-    echo $usage
-	exit 1
-fi
-
-#ssh option
-option2="" #default to no second option
-#check if they have a second option
-if [[ ( $# == 2 ) ]]
+    java -jar $cakehat frontend
+#Else if exactly 1 argument and the argument is backend
+elif [[ ( $# == 1 && $1 == "backend") ]]
 then
-    if [ "$2" == "ssh" ]
-    then
-        option2="ssh"
-    #if the second arguement isn't ssh, let them know this is wrong
-    else
-        echo $usage
-        echo "Optional second argument must be ssh; you used "$2
-        exit 1
-    fi
-fi
-
-#check appropriate arguements: frontend, backend
-if [[ $1 == "frontend" ]]
-then
-    java -jar $grade_sys frontend $option2
-elif [[ $1 == "backend" ]]
-then
-    java -jar $grade_sys backend $option2
+    java -jar $cakehat backend
+#Else, improper usage
 else
     echo $usage
-    echo "First argument must be frontend or backend; you used "$1
-    exit 1
 fi
