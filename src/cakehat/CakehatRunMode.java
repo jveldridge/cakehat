@@ -6,5 +6,5 @@ package cakehat;
  */
 public enum CakehatRunMode
 {
-    FRONTEND, BACKEND, LAB, UNKNOWN;
+    FRONTEND, ADMIN, LAB, UNKNOWN;
 }

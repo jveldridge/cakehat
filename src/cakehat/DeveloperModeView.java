@@ -98,7 +98,7 @@ class DeveloperModeView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
-               CakehatMain.setRunMode(CakehatRunMode.BACKEND);
+               CakehatMain.setRunMode(CakehatRunMode.ADMIN);
                AdminView.launch();
                DeveloperModeView.this.dispose();
            }
