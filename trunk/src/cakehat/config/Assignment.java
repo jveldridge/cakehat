@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import cakehat.handin.DistributablePart;
-import cakehat.handin.Handin;
+import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.Handin;
 import java.util.Collection;
 import java.util.List;
 

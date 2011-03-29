@@ -42,7 +42,7 @@ import cakehat.Allocator;
 import support.ui.GenericJComboBox;
 import support.ui.StringConverter;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
 import cakehat.views.shared.ErrorView;
 import java.awt.Color;

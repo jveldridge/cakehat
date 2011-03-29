@@ -7,7 +7,7 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 import cakehat.Allocator;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 
 /**
  * An object representation of a GML file. Used internally within the the rubric

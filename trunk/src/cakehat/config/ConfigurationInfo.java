@@ -1,6 +1,6 @@
 package cakehat.config;
 
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import java.util.List;
 
 /**

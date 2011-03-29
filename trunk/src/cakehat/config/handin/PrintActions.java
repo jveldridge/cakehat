@@ -1,4 +1,4 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;

@@ -1,4 +1,4 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 import java.util.List;
 

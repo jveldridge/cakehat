@@ -1,4 +1,4 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 /**
  * An exception that occurred while performing a {@link DistributableAction} or

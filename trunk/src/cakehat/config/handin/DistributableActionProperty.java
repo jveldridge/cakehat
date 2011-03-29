@@ -1,4 +1,4 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 /**
  * The description of a property.

@@ -1,7 +1,7 @@
 package cakehat.views.backend;
 
 import cakehat.export.ExportException;
-import cakehat.handin.ActionException;
+import cakehat.config.handin.ActionException;
 import cakehat.rubric.RubricException;
 import cakehat.views.backend.assignmentdist.AssignmentDistView;
 import cakehat.views.backend.assignmentdist.ManualDistView;
@@ -58,7 +58,7 @@ import cakehat.CakehatException;
 import cakehat.CakehatMain;
 import cakehat.MissingUserActionException;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;

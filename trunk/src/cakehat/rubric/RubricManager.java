@@ -2,8 +2,8 @@ package cakehat.rubric;
 
 import cakehat.views.backend.assignmentdist.DistributionRequester;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
-import cakehat.handin.Handin;
+import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.Handin;
 import java.util.Collection;
 import java.util.Map;
 import support.utils.FileSystemUtilities.OverwriteMode;

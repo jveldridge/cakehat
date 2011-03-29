@@ -2,7 +2,7 @@ package cakehat.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.views.shared.ErrorView;
 import java.io.StringWriter;
 import java.util.List;

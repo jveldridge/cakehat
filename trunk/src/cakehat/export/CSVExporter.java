@@ -13,7 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import cakehat.Allocator;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.rubric.TimeStatus;
 import java.util.ArrayList;
 import cakehat.views.shared.ErrorView;

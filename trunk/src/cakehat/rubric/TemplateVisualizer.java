@@ -1,6 +1,6 @@
 package cakehat.rubric;
 
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

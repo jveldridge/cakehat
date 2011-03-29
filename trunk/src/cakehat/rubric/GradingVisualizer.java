@@ -4,7 +4,7 @@ import cakehat.Allocator;
 import cakehat.config.TA;
 import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;

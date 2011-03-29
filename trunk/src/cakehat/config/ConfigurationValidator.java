@@ -2,7 +2,7 @@ package cakehat.config;
 
 import com.google.common.collect.Multimap;
 import cakehat.Allocator;
-import cakehat.handin.Handin;
+import cakehat.config.handin.Handin;
 import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.Collection;

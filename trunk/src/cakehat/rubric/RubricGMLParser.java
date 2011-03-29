@@ -1,7 +1,7 @@
 package cakehat.rubric;
 
 import cakehat.database.Group;
-import cakehat.handin.DistributablePart;
+import cakehat.config.handin.DistributablePart;
 import java.io.File;
 
 import java.util.Collection;

@@ -1,10 +1,10 @@
-package cakehat.handin;
+package cakehat.config.handin;
 
 import cakehat.Allocator;
 import cakehat.config.Part;
 import cakehat.database.Group;
-import cakehat.handin.file.FilterProvider;
-import cakehat.handin.file.OrFileFilter;
+import cakehat.config.handin.file.FilterProvider;
+import cakehat.config.handin.file.OrFileFilter;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.TextViewerView;
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
-import cakehat.handin.file.AlwaysAcceptingFileFilter;
+import cakehat.config.handin.file.AlwaysAcceptingFileFilter;
 import java.util.ArrayList;
 
 /**
