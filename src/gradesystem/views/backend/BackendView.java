@@ -1463,7 +1463,9 @@ public class BackendView extends JFrame
 
     private void chartsButtonActionPerformed()
     {
-        new StatHistView(_assignmentTree.getSelection().keySet());
+        StatHistView view = new StatHistView(_assignmentTree.getSelection().keySet());
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
     private void emailReportsButtonActionPerformed()

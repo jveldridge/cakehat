@@ -11,19 +11,73 @@ import org.jfree.data.statistics.Statistics;
 import gradesystem.Allocator;
 import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.Collection;
 import java.util.HashMap;
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  *
  * @author psastras
  * @author jeldridg
+ * @author jak2
  */
-public class AssignmentChartPanel extends javax.swing.JPanel {
+public class AssignmentChartPanel extends JPanel {
 
-    /** Creates new form ChartDataPanel */
+    private HistogramPanel _chartPanel;
+    private JLabel _meanLabel;
+    private JLabel _medianLabel;
+    private JLabel _numStudentsLabel;
+    private JLabel _stdDevLabel;
+
     public AssignmentChartPanel() {
         initComponents();
+    }
+
+    public void initComponents() {
+        this.setLayout(new BorderLayout(0, 0));
+        this.setBackground(Color.WHITE);
+
+        //Chart
+        _chartPanel = new HistogramPanel();
+        _chartPanel.setPreferredSize(new Dimension(587, 262));
+        this.add(_chartPanel, BorderLayout.NORTH);
+
+        //Padding to the right and left of statistics
+        JPanel lowerPanel = new JPanel(new BorderLayout());
+        lowerPanel.setBackground(Color.WHITE);
+        this.add(lowerPanel, BorderLayout.CENTER);
+        lowerPanel.add(Box.createHorizontalStrut(50), BorderLayout.WEST);
+        lowerPanel.add(Box.createHorizontalStrut(50), BorderLayout.EAST);
+
+        //Statistics
+        JPanel statsPanel = new JPanel(new GridLayout(2, 4));
+        statsPanel.setBackground(Color.WHITE);
+        lowerPanel.add(statsPanel, BorderLayout.CENTER);
+
+        statsPanel.add(new JLabel("<html><b>Number of Students</b></html>"));
+        _numStudentsLabel = new JLabel("0");
+        statsPanel.add(_numStudentsLabel);
+
+        statsPanel.add(new JLabel("<html><b>Median</b></html>"));
+        _medianLabel = new JLabel("0");
+        statsPanel.add(_medianLabel);
+
+        statsPanel.add(new JLabel("<html><b>Mean / Average</b></html>"));
+        _meanLabel = new JLabel("0");
+        statsPanel.add(_meanLabel);
+
+        statsPanel.add(new JLabel("<html><b>Standard Deviation</b></html>"));
+        _stdDevLabel = new JLabel("0");
+        statsPanel.add(_stdDevLabel);
+
+        //Padding below statistics
+        this.add(Box.createVerticalStrut(25), BorderLayout.SOUTH);
     }
 
     public void updateChartData(Assignment asgn, Collection<Group> groups) {
@@ -37,7 +91,7 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
         }
 
         double outOf = asgn.getTotalPoints();
-        
+
         List<Double> scores = new ArrayList<Double>();
         for (Group group : scoreMap.keySet()) {
             double earned = scoreMap.get(group);
@@ -46,7 +100,7 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
 
         this.updateChartData(asgn.getName(), scores);
     }
-    
+
     public void updateChartData(Part part, Iterable<Group> groups) {
         Map<Group, Double> scoreMap;
         try {
@@ -67,13 +121,13 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
 
         this.updateChartData(part.getAssignment().getName() + ": " + part.getName(), scores);
     }
-    
+
     private void updateChartData(String asgnName, List<Double> scores) {
         if(scores.size() == 0){
-            chartPanel.loadData(asgnName, new double[]{});
+            _chartPanel.loadData(asgnName, new double[]{});
             return;
         }
-        
+
         double[] data = new double[scores.size()];
         for (int i = 0; i < data.length; i++) {
             data[i] = scores.get(i);
@@ -83,143 +137,14 @@ public class AssignmentChartPanel extends javax.swing.JPanel {
             dataAsNumber[i] = (Number) data[i];
         }
 
-        nLabel.setText("" + data.length);
-        medianLabel.setText("" + Statistics.calculateMedian(scores));
-        meanLabel.setText("" + Statistics.calculateMean(scores));
-        stdDevLabel.setText("" + Statistics.getStdDev(dataAsNumber));
-        chartPanel.loadData(asgnName, data);
+        _numStudentsLabel.setText("" + data.length);
+        _medianLabel.setText(Allocator.getGeneralUtilities().doubleToString(Statistics.calculateMedian(scores)));
+        _meanLabel.setText(Allocator.getGeneralUtilities().doubleToString(Statistics.calculateMean(scores)));
+        _stdDevLabel.setText(Allocator.getGeneralUtilities().doubleToString(Statistics.getStdDev(dataAsNumber)));
+        _chartPanel.loadData(asgnName, data);
     }
 
     public BufferedImage getImage(int w, int h) {
-        return chartPanel.getImage(w, h);
+        return _chartPanel.getImage(w, h);
     }
-
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jLabel1 = new javax.swing.JLabel();
-        medianLabel = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        nLabel = new javax.swing.JLabel();
-        stdDevLabel = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        meanLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        chartPanel = new gradesystem.views.backend.stathist.HistogramPanel();
-
-        setName("Form"); // NOI18N
-
-        jLabel1.setForeground(new java.awt.Color(30, 30, 30));
-        jLabel1.setText("<html><b>Number of Students</b></html>");
-        jLabel1.setName("jLabel1"); // NOI18N
-
-        medianLabel.setForeground(new java.awt.Color(30, 30, 30));
-        medianLabel.setText("0");
-        medianLabel.setName("medianLabel"); // NOI18N
-
-        jLabel5.setForeground(new java.awt.Color(30, 30, 30));
-        jLabel5.setText("<html><b>Median</b></html>");
-        jLabel5.setName("jLabel5"); // NOI18N
-
-        nLabel.setForeground(new java.awt.Color(30, 30, 30));
-        nLabel.setText("0");
-        nLabel.setName("nLabel"); // NOI18N
-
-        stdDevLabel.setForeground(new java.awt.Color(30, 30, 30));
-        stdDevLabel.setText("0");
-        stdDevLabel.setName("stdDevLabel"); // NOI18N
-
-        jLabel7.setForeground(new java.awt.Color(30, 30, 30));
-        jLabel7.setText("<html><b>Standard Deviation</b></html>");
-        jLabel7.setName("jLabel7"); // NOI18N
-
-        meanLabel.setForeground(new java.awt.Color(30, 30, 30));
-        meanLabel.setText("0");
-        meanLabel.setName("meanLabel"); // NOI18N
-
-        jLabel3.setForeground(new java.awt.Color(30, 30, 30));
-        jLabel3.setText("<html><b>Mean / Average</b></html>");
-        jLabel3.setName("jLabel3"); // NOI18N
-
-        chartPanel.setName("chartPanel"); // NOI18N
-
-        javax.swing.GroupLayout chartPanelLayout = new javax.swing.GroupLayout(chartPanel);
-        chartPanel.setLayout(chartPanelLayout);
-        chartPanelLayout.setHorizontalGroup(
-            chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 587, Short.MAX_VALUE)
-        );
-        chartPanelLayout.setVerticalGroup(
-            chartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 262, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chartPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(meanLabel)
-                            .addComponent(nLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(stdDevLabel)
-                            .addComponent(medianLabel))))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(chartPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel7)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(nLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(meanLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(medianLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(stdDevLabel)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-    }// </editor-fold>//GEN-END:initComponents
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private gradesystem.views.backend.stathist.HistogramPanel chartPanel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel meanLabel;
-    private javax.swing.JLabel medianLabel;
-    private javax.swing.JLabel nLabel;
-    private javax.swing.JLabel stdDevLabel;
-    // End of variables declaration//GEN-END:variables
 }

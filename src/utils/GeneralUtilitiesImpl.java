@@ -22,10 +22,20 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
 
     public double round(double d, int decimalPlace)
     {
-        BigDecimal bd = new BigDecimal(Double.toString(d));
-        bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+        double roundedValue;
 
-        return bd.doubleValue();
+        if(Double.isNaN(d))
+        {
+            roundedValue = Double.NaN;
+        }
+        else
+        {
+            BigDecimal bd = new BigDecimal(Double.toString(d));
+            bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+            roundedValue = bd.doubleValue();
+        }
+
+        return roundedValue;
     }
 
     public <T> boolean containsAny(Collection<T> col1, Collection<T> col2)
