@@ -5,9 +5,9 @@ import gradesystem.views.backend.BackendView;
 import gradesystem.views.frontend.FrontendView;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import utils.system.NativeException;
 
 /**
  * The entry point for the cakehat grading system.
@@ -16,21 +16,9 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
  */
 public class CakehatMain
 {
-    private static boolean _isSSHMode = false;
     private static boolean _isDeveloperMode = false;
     private static boolean _didStartNormally = false;
     private static CakehatRunMode _runMode = CakehatRunMode.UNKNOWN;
-
-    /**
-     * If the application is being run in SSH mode. This is no guarantee that
-     * the application is actually being run over ssh.
-     *
-     * @return if in SSH mode
-     */
-    public static boolean isSSHMode()
-    {
-        return _isSSHMode;
-    }
 
     /**
      * If the application was run in developer mode, meaning the developer was
@@ -88,35 +76,41 @@ public class CakehatMain
         
         CakehatUncaughtExceptionHandler.registerHandler();
 
-        // Values from run arguments
-        _isSSHMode = (args.length >= 2) && args[1].equalsIgnoreCase("ssh");
-        _isDeveloperMode = (args.length == 0);
-
         // Appearance
-        if(_isSSHMode)
+        try
         {
-            System.setProperty("awt.useSystemAAFontSettings", "false");
-            System.setProperty("swing.aatext", "false");
+            UIManager.setLookAndFeel(new MetalLookAndFeel());
         }
-        else
+        // Depending on the windowing toolkit the user has, this call may fail
+        // but cakehat most likely will still appear similar enough to what
+        // is intended to be functional
+        catch(Exception e)
         {
-            try
+            System.err.println("cakehat could not set its default appearance. " +
+                    "Some interfaces may not appear as intended.");
+        }
+
+        // Turn off anti-aliasing if running cakehat remotely (ssh)
+        try
+        {
+            if(Allocator.getUserUtilities().isUserRemotelyConnected())
             {
-                UIManager.setLookAndFeel(new MetalLookAndFeel());
+                System.setProperty("awt.useSystemAAFontSettings", "false");
+                System.setProperty("swing.aatext", "false");
             }
-            //Depending on the windowing toolkit the user has this call may fail
-            //but cakehat most likely will still appear similar enough to what
-            //is intended to be functional
-            catch(Exception e)
-            {
-                System.out.println("cakehat could not set its default appearance. " +
-                        "Some interfaces may not appear as intended.");
-            }
+        }
+        catch(NativeException e)
+        {
+            System.err.println("Unable to determine if you are remotely " +
+                    "connected. cakehat will run as if you were running " +
+                    "locally. Underlying cause: \n");
+            e.printStackTrace();
         }
 
         // Launch the appropriate view
-        if(_isDeveloperMode)
+        if(args.length == 0)
         {
+            _isDeveloperMode = true;
             DeveloperModeView.launch();
         }
         else if(args[0].equalsIgnoreCase("frontend"))
@@ -141,7 +135,7 @@ public class CakehatMain
         }
         else
         {
-            JOptionPane.showMessageDialog(null, "Invalid run property: " + args[0]);
+            System.out.println("Invalid run property: " + args[0]);
         }
     }
 }
