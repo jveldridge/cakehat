@@ -1,6 +1,5 @@
 package gradesystem.components.calendar;
 
-import gradesystem.handin.Handin;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -14,7 +13,6 @@ import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -31,124 +29,30 @@ import javax.swing.table.DefaultTableModel;
  */
 public class CalendarView extends JPanel
 {
-    public static void main(String[] args)
-    {
-        JFrame frame = new JFrame();
-
-        CalendarView view = new CalendarView(getCalendar(2010, 0, 8), null, getCalendar(2010, 0, 12));
-        
-        CalendarListener listener = new CalendarListener()
-        {
-            public void dateSelected(Calendar cal)
-            {
-                System.out.println(cal);
-            }
-
-        };
-        view.addCalendarListener(listener);
-
-        frame.add(view);
-        frame.pack();
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
-
-    private DefaultTableModel _tableModel;
-    private JTable _calendar;
-    private JScrollPane _calendarPane;
-    private JButton _prevButton, _nextButton;
-    private JLabel _monthYearLabel;
+    private final HashMap<Calendar, Color> _dates;
+    
+    private final DefaultTableModel _tableModel;
+    private final JTable _calendar;
+    private final JScrollPane _calendarPane;
+    private final JButton _prevButton, _nextButton;
+    private final JLabel _monthYearLabel;
     private int _currentMonth, _currentYear;
     private Calendar _selectedDate;
     private int _maxYear = Integer.MAX_VALUE, _minYear = Integer.MIN_VALUE;
 
-    private Vector<CalendarListener> _listeners = new Vector<CalendarListener>();
+    private final Vector<CalendarListener> _listeners = new Vector<CalendarListener>();
 
-    private static Color SELECTED_COLOR = new Color(238,221,130),
-                         EARLY_COLOR = new Color(135,206,250),
-                         ON_TIME_COLOR = new Color(152,251,152),
-                         LATE_COLOR = new Color(205,92,92),
-                         NORMAL_DAY_COLOR = Color.WHITE,
-                         NON_DAY_COLOR = Color.LIGHT_GRAY;
-
-    private static Calendar getCalendar(int year, int month, int day)
-    {
-        Calendar cal = GregorianCalendar.getInstance();
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, month);
-        cal.set(Calendar.DAY_OF_MONTH, day);
-
-        return cal;
-    }
-
-    private static boolean areSameDay(Calendar cal1, Calendar cal2)
-    {
-        int year1 = cal1.get(Calendar.YEAR);
-        int year2 = cal2.get(Calendar.YEAR);
-
-        int month1 = cal1.get(Calendar.MONTH);
-        int month2 = cal2.get(Calendar.MONTH);
-
-        int day1 = cal1.get(Calendar.DAY_OF_MONTH);
-        int day2 = cal2.get(Calendar.DAY_OF_MONTH);
-
-        return (year1 == year2 && month1 == month2 && day1 == day2);
-    }
-
+    private final static Color SELECTED_COLOR = new Color(238,221,130),
+                               NORMAL_DAY_COLOR = Color.WHITE,
+                               NON_DAY_COLOR = Color.LIGHT_GRAY;
+    
     /**
      * Constructs a Calendar.
-     *
      */
     public CalendarView()
     {
         this(new HashMap<Calendar, Color>());
     }
-
-    public CalendarView(Handin handin)
-    {
-        this(handin.getTimeInformation().getEarlyDate(),
-             handin.getTimeInformation().getOntimeDate(),
-             handin.getTimeInformation().getLateDate());
-    }
-
-    /**
-     * Constructs a calendar and highlights early, ontime, and late dates with
-     * default set colors. Any or all of these calendars may be null.
-     *
-     * @param early
-     * @param ontime
-     * @param late
-     */
-    public CalendarView(Calendar early, Calendar ontime, Calendar late)
-    {
-        this(createMapping(early, ontime, late));
-
-        if(ontime != null)
-        {
-            refreshCalendar(ontime.get(Calendar.MONTH), ontime.get(Calendar.YEAR));
-        }
-    }
-
-    private static HashMap<Calendar, Color> createMapping(Calendar early, Calendar ontime, Calendar late)
-    {
-       HashMap<Calendar,Color> map = new HashMap<Calendar,Color>();
-       if(early != null)
-       {
-           map.put(early, EARLY_COLOR);
-       }
-       if(ontime != null)
-       {
-           map.put(ontime, ON_TIME_COLOR);
-       }
-       if(late != null)
-       {
-           map.put(late, LATE_COLOR);
-       }
-
-       return map;
-    }
-
-    private HashMap<Calendar, Color> _dates;
 
     /**
      * Constructs a Calendar with the specified dates and colors. For each
@@ -319,16 +223,6 @@ public class CalendarView extends JPanel
         //Update buttons appropriately
         _prevButton.setEnabled(!((_currentYear == _minYear && _currentMonth == 0)));
         _nextButton.setEnabled(!(_currentYear == _maxYear && _currentMonth == 11));
-        /*
-        if(_currentYear == _minYear && _currentMonth == 0)
-        {
-            _prevButton.setEnabled(false);
-        }
-        if(_currentYear == _maxYear && _currentMonth == 11)
-        {
-            _nextButton.setEnabled(false);
-        }
-         */
 
         //Update the label showing the current month and year
         _monthYearLabel.setText(MONTHS[month] + ", " + year);
@@ -398,5 +292,29 @@ public class CalendarView extends JPanel
             }
             refreshCalendar(_currentMonth, _currentYear);
         }
+    }
+
+    private static Calendar getCalendar(int year, int month, int day)
+    {
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month);
+        cal.set(Calendar.DAY_OF_MONTH, day);
+
+        return cal;
+    }
+
+    private static boolean areSameDay(Calendar cal1, Calendar cal2)
+    {
+        int year1 = cal1.get(Calendar.YEAR);
+        int year2 = cal2.get(Calendar.YEAR);
+
+        int month1 = cal1.get(Calendar.MONTH);
+        int month2 = cal2.get(Calendar.MONTH);
+
+        int day1 = cal1.get(Calendar.DAY_OF_MONTH);
+        int day2 = cal2.get(Calendar.DAY_OF_MONTH);
+
+        return (year1 == year2 && month1 == month2 && day1 == day2);
     }
 }

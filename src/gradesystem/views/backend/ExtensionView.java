@@ -29,8 +29,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.Allocator;
+import gradesystem.config.TimeInformation;
 import gradesystem.database.Group;
 import gradesystem.views.shared.ErrorView;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 
 /**
@@ -46,7 +48,7 @@ public class ExtensionView extends JFrame
         {
             public void run()
             {
-                Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().iterator().next();
+                Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().get(0);
                 Group group;
                 try {
                     group = Allocator.getDatabaseIO().getGroupsForAssignment(asgn).iterator().next();
@@ -155,7 +157,23 @@ public class ExtensionView extends JFrame
         JPanel mainPanel = new JPanel();
         this.add(mainPanel);
 
-        _calendarView = new CalendarView(_asgn.getHandin());
+        //Create calendar showing early, ontime, and late deadlines
+        TimeInformation timeInfo = _asgn.getHandin().getTimeInformation();
+        HashMap<Calendar,Color> dateColorMap = new HashMap<Calendar,Color>();
+        if(timeInfo.getEarlyDate() != null)
+        {
+           dateColorMap.put(timeInfo.getEarlyDate(), new Color(135,206,250));
+        }
+        if(timeInfo.getOntimeDate() != null)
+        {
+           dateColorMap.put(timeInfo.getOntimeDate(), new Color(152,251,152));
+        }
+        if(timeInfo.getLateDate() != null)
+        {
+           dateColorMap.put(timeInfo.getLateDate(), new Color(205,92,92));
+        }
+        _calendarView = new CalendarView(dateColorMap);
+
         mainPanel.add(Box.createRigidArea(new Dimension(_calendarView.getPreferredSize().width, 10)));
         mainPanel.add(_calendarView);
         mainPanel.setPreferredSize(new Dimension(_calendarView.getPreferredSize().width + 30, 600));
