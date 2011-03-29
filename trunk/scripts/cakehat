@@ -28,9 +28,9 @@ if [[ ( $# == 0 ) ]]
 then
     java -jar $cakehat frontend
 #Else if exactly 1 argument and the argument is backend
-elif [[ ( $# == 1 && $1 == "backend") ]]
+elif [[ ( $# == 1 && $1 == "admin") ]]
 then
-    java -jar $cakehat backend
+    java -jar $cakehat admin
 #Else, improper usage
 else
     echo $usage

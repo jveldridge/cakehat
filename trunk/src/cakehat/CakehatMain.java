@@ -118,9 +118,9 @@ public class CakehatMain
             _runMode = CakehatRunMode.FRONTEND;
             FrontendView.launch();
         }
-        else if(args[0].equalsIgnoreCase("backend"))
+        else if(args[0].equalsIgnoreCase("admin"))
         {
-            _runMode = CakehatRunMode.BACKEND;
+            _runMode = CakehatRunMode.ADMIN;
             AdminView.launch();
         }
         else if(args[0].equalsIgnoreCase("lab"))

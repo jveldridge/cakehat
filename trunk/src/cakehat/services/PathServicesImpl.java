@@ -95,7 +95,7 @@ public class PathServicesImpl implements PathServices
             workspace = new File(parent,
                     Allocator.getUserUtilities().getUserLogin());
         }
-        else if(mode == CakehatRunMode.BACKEND)
+        else if(mode == CakehatRunMode.ADMIN)
         {
             workspace = new File(parent,
                     Allocator.getUserUtilities().getUserLogin() + "-admin");
