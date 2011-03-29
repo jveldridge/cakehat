@@ -1,4 +1,4 @@
-package gradesystem.components;
+package support.ui;
 
 import java.awt.Font;
 import java.util.ArrayList;

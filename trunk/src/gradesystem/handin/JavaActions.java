@@ -2,8 +2,8 @@ package gradesystem.handin;
 
 import com.google.common.collect.ImmutableList;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJComboBox;
-import gradesystem.components.ShadowJTextField;
+import support.ui.GenericJComboBox;
+import support.ui.ShadowJTextField;
 import gradesystem.database.Group;
 import java.awt.BorderLayout;
 import java.awt.Color;

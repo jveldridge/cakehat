@@ -22,7 +22,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJComboBox;
+import support.ui.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.views.shared.ErrorView;

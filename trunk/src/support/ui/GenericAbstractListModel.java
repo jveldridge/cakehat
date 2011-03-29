@@ -1,4 +1,4 @@
-package gradesystem.components;
+package support.ui;
 
 import javax.swing.AbstractListModel;
 

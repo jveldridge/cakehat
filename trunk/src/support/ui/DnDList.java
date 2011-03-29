@@ -1,4 +1,4 @@
-package gradesystem.components;
+package support.ui;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;

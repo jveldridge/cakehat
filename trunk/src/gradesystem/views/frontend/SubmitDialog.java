@@ -1,6 +1,6 @@
 package gradesystem.views.frontend;
 
-import gradesystem.components.GenericJCheckBox;
+import support.ui.GenericJCheckBox;
 import gradesystem.config.Assignment;
 import gradesystem.config.SubmitOptions;
 import gradesystem.database.Group;

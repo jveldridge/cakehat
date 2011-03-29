@@ -1,6 +1,6 @@
 package gradesystem.views.frontend;
 
-import gradesystem.components.GenericJList;
+import support.ui.GenericJList;
 import gradesystem.handin.ActionException;
 import gradesystem.rubric.RubricException;
 import gradesystem.services.ServicesException;
@@ -38,7 +38,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
-import gradesystem.components.StringConverter;
+import support.ui.StringConverter;
 import gradesystem.database.CakeHatDBIOException;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;

@@ -5,7 +5,7 @@ import gradesystem.handin.ActionException;
 import gradesystem.rubric.RubricException;
 import gradesystem.views.backend.assignmentdist.AssignmentDistView;
 import gradesystem.views.backend.assignmentdist.ManualDistView;
-import gradesystem.components.GenericJList;
+import support.ui.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.config.LabPart;
 import gradesystem.config.Part;

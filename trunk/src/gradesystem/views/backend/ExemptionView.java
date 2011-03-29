@@ -18,7 +18,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJComboBox;
+import support.ui.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.views.shared.EmailView;
 import gradesystem.views.shared.ErrorView;
