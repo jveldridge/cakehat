@@ -1,10 +1,10 @@
-package cakehat.views.backend;
+package cakehat.views.admin;
 
 import cakehat.export.ExportException;
 import cakehat.config.handin.ActionException;
 import cakehat.rubric.RubricException;
-import cakehat.views.backend.assignmentdist.AssignmentDistView;
-import cakehat.views.backend.assignmentdist.ManualDistView;
+import cakehat.views.admin.assignmentdist.AssignmentDistView;
+import cakehat.views.admin.assignmentdist.ManualDistView;
 import support.ui.GenericJList;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
@@ -37,11 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.Box;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -64,7 +62,7 @@ import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
 import cakehat.services.UserServices.ValidityCheck;
-import cakehat.views.backend.stathist.StatHistView;
+import cakehat.views.admin.stathist.StatHistView;
 import cakehat.views.shared.ErrorView;
 import java.io.File;
 import java.sql.SQLException;
@@ -177,7 +175,7 @@ public class BackendView extends JFrame
 
     private BackendView()
     {
-        super("[cakehat] backend - " + Allocator.getUserUtilities().getUserLogin());
+        super("[cakehat] admin - " + Allocator.getUserUtilities().getUserLogin());
 
         try {
             //student logins

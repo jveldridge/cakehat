@@ -1,6 +1,6 @@
 package cakehat;
 
-import cakehat.views.backend.BackendView;
+import cakehat.views.admin.BackendView;
 import cakehat.views.frontend.FrontendView;
 import java.awt.Dimension;
 import java.awt.GridLayout;

@@ -1,4 +1,4 @@
-package cakehat.views.backend.assignmentdist;
+package cakehat.views.admin.assignmentdist;
 
 import support.ui.GenericJList;
 import cakehat.config.Assignment;

@@ -1,4 +1,4 @@
-package cakehat.views.backend;
+package cakehat.views.admin;
 
 import cakehat.services.ServicesException;
 import java.awt.event.ActionEvent;

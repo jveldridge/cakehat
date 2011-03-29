@@ -1,4 +1,4 @@
-package cakehat.views.backend;
+package cakehat.views.admin;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;

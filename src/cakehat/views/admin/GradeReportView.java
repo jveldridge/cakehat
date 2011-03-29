@@ -1,7 +1,7 @@
-package cakehat.views.backend;
+package cakehat.views.admin;
 
-import cakehat.views.backend.stathist.AssignmentChartPanel;
-import cakehat.views.backend.stathist.StudentChartPanel;
+import cakehat.views.admin.stathist.AssignmentChartPanel;
+import cakehat.views.admin.stathist.StudentChartPanel;
 import com.google.common.collect.Iterables;
 import cakehat.config.Assignment;
 import cakehat.config.Part;
