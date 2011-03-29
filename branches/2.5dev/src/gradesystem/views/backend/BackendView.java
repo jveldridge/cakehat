@@ -1056,6 +1056,45 @@ public class BackendView extends JFrame
     private void updateGUI(Map<Assignment, List<Part>> selection)
     {
         Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
+        
+        //map a student login to Groups for that student for the selected assignments
+        Map<String, Map<Assignment, Group>> studentToGroups = new HashMap<String, Map<Assignment, Group>>();
+        StringBuilder errMsgBuilder = new StringBuilder("The following students do not have groups for the assignments listed.\n\n");
+        
+        boolean someGroupMissing = false;
+        
+        for (String student : selectedStudents) {
+            studentToGroups.put(student, new HashMap<Assignment, Group>());
+            List<Assignment> missing = new ArrayList<Assignment>(selection.size());
+            
+            for (Assignment asgn : selection.keySet()) {
+                try {
+                    studentToGroups.get(student).put(asgn, this.getGroup(asgn, student));
+                } catch (MissingUserActionException ex) {
+                    missing.add(asgn);
+                }  catch (CakehatException ex) {
+                   new ErrorView(ex);
+                }
+            }
+
+            if (!missing.isEmpty()) {
+                someGroupMissing = true;
+                
+                String missingForStudent = student + ": ";
+                for (int i = 0; i < missing.size(); i++) {
+                    missingForStudent += missing.get(i);
+                    if (i < missing.size() - 1) {
+                        missingForStudent += ", ";
+                    }
+                }
+                errMsgBuilder.append(missingForStudent + "\n");
+            }
+        }
+
+        if (someGroupMissing) {
+            errMsgBuilder.append("\nThey will not be included in any actions performed on assignments for which they do not have groups.");
+            JOptionPane.showMessageDialog(this, errMsgBuilder.toString(), "Missing Groups", JOptionPane.WARNING_MESSAGE);
+        }
 
         //Update button states
 
@@ -1090,29 +1129,22 @@ public class BackendView extends JFrame
             if(selection.size() == 1)
             {
                 Assignment selectedAsgn = this.getSingleSelectedAssignment(selection);
-
-                Group group = null;
-                try {
-                    group = this.getGroup(selectedAsgn, studentLogin);
-                } catch (MissingUserActionException ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage());
-                } catch (CakehatException ex) {
-                    new ErrorView(ex);
-                }
-                if (group != null && selection.get(selectedAsgn).isEmpty()) {
-                    _exemptionsButton.setEnabled(true);
-                }
+                Group group = studentToGroups.get(studentLogin).get(selectedAsgn);
                 
-                if (this.getSingleSelectedPart(selection) == null) {
-                    if (selectedAsgn.hasHandin()) {
-                        _extensionsButton.setEnabled(true);
+                if (group != null) {
+                    if (selection.get(selectedAsgn).isEmpty()) {
+                        _exemptionsButton.setEnabled(true);
                     }
-                }
 
-                //if a single DistributablePart is selected
-                DistributablePart selectedDP = this.getSingleSelectedDP(selection);
-                if (selectedDP != null) {
-                    if (group != null) {
+                    if (this.getSingleSelectedPart(selection) == null) {
+                        if (selectedAsgn.hasHandin()) {
+                            _extensionsButton.setEnabled(true);
+                        }
+                    }
+
+                    //if a single DistributablePart is selected
+                    DistributablePart selectedDP = this.getSingleSelectedDP(selection);
+                    if (selectedDP != null) {
                         boolean hasHandin = false;
                         try {
                             hasHandin = selectedAsgn.getHandin().getHandin(group) != null;
@@ -1121,18 +1153,18 @@ public class BackendView extends JFrame
                         }
 
                         _testCodeButton.setEnabled(hasHandin && selectedDP.hasTester());
-                        _runCodeButton.setEnabled(hasHandin && selectedDP.hasRun() );
+                        _runCodeButton.setEnabled(hasHandin && selectedDP.hasRun());
                         _openCodeButton.setEnabled(hasHandin && selectedDP.hasOpen());
                         try {
                             _viewReadmeButton.setEnabled(hasHandin && selectedDP.hasReadme(group));
                         } catch (ActionException ex) {
-                            new ErrorView(ex, "Could not determine whether group " + 
-                                              group + " has a README for assignment " + 
-                                              selectedAsgn + ".");
+                            new ErrorView(ex, "Could not determine whether group "
+                                    + group + " has a README for assignment "
+                                    + selectedAsgn + ".");
                         }
 
-                        boolean hasRubric = selectedDP.hasRubricTemplate() &&
-                                            Allocator.getRubricManager().hasRubric(selectedDP, group);
+                        boolean hasRubric = selectedDP.hasRubricTemplate()
+                                && Allocator.getRubricManager().hasRubric(selectedDP, group);
                         _viewRubricButton.setEnabled(hasRubric);
                         _emailStudentRubric.setEnabled(hasRubric);
                     }
@@ -1162,6 +1194,7 @@ public class BackendView extends JFrame
                 _exemptionsButton.setEnabled(true);
             }
 
+            //determine which DistributableParts are selected
             List<DistributablePart> selectedDPs = new LinkedList<DistributablePart>();
             for (Part p : selection.get(selectedAsgn)) {
                 if (p instanceof DistributablePart) {
@@ -1169,12 +1202,21 @@ public class BackendView extends JFrame
                 }
             }
 
+
             if (!selectedDPs.isEmpty()) {
                 boolean anyDPRubric = false;
                 boolean anyDPPrint = false;
 
                 boolean anyGroupRubric = false;
                 boolean anyGroupCode = false;
+
+                //determine which selected students have groups for the selected Assignment
+                Collection<Group> selectedGroups = new ArrayList<Group>(selectedStudents.size());
+                for (String student : studentToGroups.keySet()) {
+                    if (studentToGroups.get(student).containsKey(selectedAsgn)) {
+                        selectedGroups.add(studentToGroups.get(student).get(selectedAsgn));
+                    }
+                }
 
                 for (DistributablePart dp : selectedDPs) {
                     if (dp.hasRubricTemplate()) {
@@ -1185,16 +1227,7 @@ public class BackendView extends JFrame
                         anyDPPrint = true;
                     }
 
-                    for (String student : selectedStudents) {
-                        Group group = null;
-                        try {
-                            group = this.getGroup(selectedAsgn, student);
-                        } catch (CakehatException ex) {
-                            new ErrorView(ex, "Could not determine the group for student "
-                                    + student + " on assignment " + selectedAsgn);
-                            continue;
-                        }
-
+                    for (Group group : selectedGroups) {
                         if (Allocator.getRubricManager().hasRubric(dp, group)) {
                             anyGroupRubric = true;
                         }
@@ -1269,22 +1302,15 @@ public class BackendView extends JFrame
         }
 
         //Update which panel is showing
+        boolean panelUpdated = false;
 
-        //If no students or assignments selected, show welcome panel
-        if(selection.isEmpty() && selectedStudents.isEmpty())
-        {
-            _cardLayout.show(_cardPanel, WELCOME_PANEL_TAG);
-        }
         //If one assignment and one student selected
-        else if (selection.size() == 1 && selectedStudents.size() == 1) {
+        if (selection.size() == 1 && selectedStudents.size() == 1) {
             Assignment asgn = this.getSingleSelectedAssignment(selection);
-
-            //for right now, only show SSP if just the assignment name, and none
-            //of its parts, are selected in the AssignmentTree
             String studentLogin = _studentList.getSelectedValue();
-            Group group = null;
-            try {
-                group = this.getGroup(asgn, studentLogin);
+            
+            Group group = studentToGroups.get(studentLogin).get(asgn);
+            if (group != null) {
                 _singleSelectionPanel.updateView(studentLogin, group, asgn);
 
                 if (selection.get(asgn).size() == 1 && getSingleSelectedDP(selection) == null) {
@@ -1292,21 +1318,32 @@ public class BackendView extends JFrame
                 }
 
                 _cardLayout.show(_cardPanel, SINGLE_SELECT_PANEL_TAG);
-            } catch (MissingUserActionException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
-            } catch (CakehatException ex) {
-                new ErrorView(ex);
+                panelUpdated = true;
             }
+            else {
+                //if student doesn't have a group, we can't update the SSP, but we also
+                //shouldn't show the SSP for the previously selected student, so let's clear the
+                //student selection and update the panel using one of the options below
+                _studentList.clearSelection();
+                selectedStudents = Collections.emptyList();
+            }
+        }
 
+         //If no students or assignments selected, show welcome panel
+        if(selection.isEmpty() && selectedStudents.isEmpty())
+        {
+            _cardLayout.show(_cardPanel, WELCOME_PANEL_TAG);
+            panelUpdated = true;
         }
         //if one part and no students selected
-        else if (getSingleSelectedPart(selection) != null && selectedStudents.isEmpty()) {
+        if (getSingleSelectedPart(selection) != null && selectedStudents.isEmpty()) {
             _singlePartPanel.updatePart(getSingleSelectedPart(selection));
             _cardLayout.show(_cardPanel, SINGLE_PART_PANEL_TAG);
+            panelUpdated = true;
         }
         //If multiple assignments and one or more students, OR
         //multiple students and one or more assignments
-        else
+        else if (!panelUpdated)
         {
             _cardLayout.show(_cardPanel, MULTI_SELECT_PANEL_TAG);
         }
@@ -1815,7 +1852,7 @@ public class BackendView extends JFrame
     }
 
     private void manageGroupsButtonActionPerformed() {
-        new GroupsView(this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
+        new GroupsView(this, this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
     }
 
     private Assignment getSingleSelectedAssignment(Map<Assignment, List<Part>> selection) {
@@ -1856,6 +1893,17 @@ public class BackendView extends JFrame
 
         return null;
     }
+
+    void updateGroupsCache(Assignment asgn) {
+        try {
+             Map<String, Group> loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
+             _groupsCache.put(asgn, loginsToGroups);
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "Could not update groups cache for assignment " + asgn + ".");
+        }
+
+        this.updateStudentListEnabledState();
+    }
     
     private void assignmentTreeValueChanged(Map<Assignment, List<Part>> selection) {
         _messageLabel.setText("");
@@ -1867,7 +1915,6 @@ public class BackendView extends JFrame
                 Map<String, Group> loginsToGroups = Collections.emptyMap();
                 try {
                     loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
-                    _groupsCache.put(asgn, loginsToGroups);
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "Could not get Group objects for assignment " + asgn + ".");
                 }
@@ -1889,20 +1936,31 @@ public class BackendView extends JFrame
             
         }
 
+        this.updateStudentListEnabledState();
+        this.updateGUI(selection);
+    }
+
+    private void updateStudentListEnabledState() {
         //if any selected assignment has groups and groups have not yet been created,
         //disable the student list and clear its selection since no student-related
         //backend functionality works without groups set
-        for (Assignment asgn : selection.keySet()) {
+        boolean needsToBeDisabled = false;
+        for (Assignment asgn : _assignmentTree.getSelection().keySet()) {
             if (asgn.hasGroups()
                     && _groupsCache.get(asgn).isEmpty()) {
                 _studentList.clearSelection();
                 _studentList.setEnabled(false);
                 _messageLabel.setText("NOTE: No groups have yet been created for this assignment.");
+
+                needsToBeDisabled = true;
                 break;
             }
         }
 
-        updateGUI(selection);
+        if (!needsToBeDisabled) {
+            _messageLabel.setText(null);
+            _studentList.setEnabled(true);
+        }
     }
 
     private Group getGroup(Assignment asgn, String studentLogin) throws CakehatException {
