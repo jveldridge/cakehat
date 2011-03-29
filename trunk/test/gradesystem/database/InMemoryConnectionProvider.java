@@ -4,6 +4,7 @@ import gradesystem.views.shared.ErrorView;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import org.sqlite.SQLiteConfig;
 
 /**
  * Creates connections to a in memory SQLite test DB. Each connection will connect
@@ -19,10 +20,12 @@ public class InMemoryConnectionProvider implements ConnectionProvider {
     public Connection createConnection() throws SQLException {
         try {
             Class.forName("org.sqlite.JDBC");
+            SQLiteConfig config = new SQLiteConfig();
+            config.enforceForeignKeys(true);
 
             // if no connection has been made then create a connection.
             if (_conn == null) {
-                _conn = DriverManager.getConnection("jdbc:sqlite::memory:");
+                _conn = DriverManager.getConnection("jdbc:sqlite::memory:", config.toProperties());
             }
         } catch (ClassNotFoundException e) {
             new ErrorView(e, "Could not open a connection to an in memory test DB.");
