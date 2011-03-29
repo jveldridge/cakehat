@@ -31,10 +31,10 @@ import javax.swing.JPanel;
 public class GroupsView extends javax.swing.JFrame {
 
     private FileFilter _groupFilter;
-    private BackendView _backend;
+    private AdminView _backend;
     private Assignment _asgn;
     
-    public GroupsView(BackendView backend, Assignment asgn) {
+    public GroupsView(AdminView backend, Assignment asgn) {
         _backend = backend;
         _asgn = asgn;
         _groupFilter = new GroupFilter();

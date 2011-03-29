@@ -80,18 +80,18 @@ import support.utils.posix.NativeException;
  *
  * @author jak2
  */
-public class BackendView extends JFrame
+public class AdminView extends JFrame
 {
     public static void main(String[] args)
     {
-        new BackendView();
+        new AdminView();
     }
 
     public static void launch()
     {
         if(Allocator.getUserServices().isUserAdmin())
         {
-            new BackendView();
+            new AdminView();
         }
         else
         {
@@ -173,7 +173,7 @@ public class BackendView extends JFrame
     private SingleSelectionPanel _singleSelectionPanel;
     private Map<Assignment, Map<String, Group>> _groupsCache = new HashMap<Assignment, Map<String, Group>>();
 
-    private BackendView()
+    private AdminView()
     {
         super("[cakehat] admin - " + Allocator.getUserUtilities().getUserLogin());
 
@@ -1451,7 +1451,7 @@ public class BackendView extends JFrame
         JOptionPane.showMessageDialog(this, "Changes successful.  " +
                 "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
         this.dispose();
-        BackendView.launch();
+        AdminView.launch();
     }
 
     private void generateDistributionButtonActionPerformed()
