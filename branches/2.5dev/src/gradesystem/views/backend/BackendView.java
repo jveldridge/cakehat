@@ -57,7 +57,6 @@ import gradesystem.Allocator;
 import gradesystem.CakehatException;
 import gradesystem.CakehatMain;
 import gradesystem.MissingUserActionException;
-import gradesystem.components.AssignmentTree;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.resources.icons.IconLoader;

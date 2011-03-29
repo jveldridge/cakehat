@@ -1,4 +1,4 @@
-package gradesystem.components;
+package gradesystem.views.backend;
 
 import gradesystem.Allocator;
 import gradesystem.config.Assignment;
@@ -20,7 +20,7 @@ import javax.swing.tree.TreePath;
  *
  * @author jeldridg
  */
-public class AssignmentTree extends JScrollPane {
+class AssignmentTree extends JScrollPane {
 
     private JTree _tree;
 
