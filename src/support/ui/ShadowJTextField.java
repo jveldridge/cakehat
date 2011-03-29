@@ -1,4 +1,4 @@
-package gradesystem.components;
+package support.ui;
 
 import java.awt.Color;
 import java.awt.event.FocusEvent;

@@ -1,4 +1,4 @@
-package gradesystem.components;
+package support.ui;
 
 /**
  * Implement this interface to allow for displaying a String other than

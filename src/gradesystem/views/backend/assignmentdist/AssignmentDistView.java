@@ -1,6 +1,6 @@
 package gradesystem.views.backend.assignmentdist;
 
-import gradesystem.components.IntegerField;
+import support.ui.IntegerField;
 import gradesystem.config.Assignment;
 import gradesystem.config.TA;
 import gradesystem.database.CakeHatDBIOException;
@@ -28,7 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJComboBox;
+import support.ui.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.resources.icons.IconLoader;

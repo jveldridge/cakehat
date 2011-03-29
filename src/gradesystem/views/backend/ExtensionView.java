@@ -1,7 +1,7 @@
 package gradesystem.views.backend;
 
-import gradesystem.components.calendar.CalendarListener;
-import gradesystem.components.calendar.CalendarView;
+import support.ui.CalendarListener;
+import support.ui.CalendarView;
 import gradesystem.config.Assignment;
 import java.awt.Color;
 import java.awt.Dimension;

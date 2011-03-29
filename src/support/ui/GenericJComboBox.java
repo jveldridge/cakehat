@@ -1,4 +1,4 @@
-package gradesystem.components;
+package support.ui;
 
 import java.util.Arrays;
 import java.util.List;

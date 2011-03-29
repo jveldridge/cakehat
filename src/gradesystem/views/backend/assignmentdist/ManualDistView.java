@@ -1,6 +1,6 @@
 package gradesystem.views.backend.assignmentdist;
 
-import gradesystem.components.GenericJList;
+import support.ui.GenericJList;
 import gradesystem.config.Assignment;
 import gradesystem.config.TA;
 import gradesystem.database.CakeHatDBIOException;
@@ -39,8 +39,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJComboBox;
-import gradesystem.components.StringConverter;
+import support.ui.GenericJComboBox;
+import support.ui.StringConverter;
 import gradesystem.database.Group;
 import gradesystem.handin.DistributablePart;
 import gradesystem.resources.icons.IconLoader;

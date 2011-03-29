@@ -3,7 +3,7 @@ package gradesystem.views.backend.stathist;
 import gradesystem.config.Assignment;
 import gradesystem.config.Part;
 import gradesystem.Allocator;
-import gradesystem.components.GenericJComboBox;
+import support.ui.GenericJComboBox;
 import gradesystem.database.Group;
 import gradesystem.resources.icons.IconLoader;
 import gradesystem.resources.icons.IconLoader.IconImage;
