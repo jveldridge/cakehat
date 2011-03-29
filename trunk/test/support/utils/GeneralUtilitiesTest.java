@@ -1,4 +1,4 @@
-package utils;
+package support.utils;
 
 import support.utils.GeneralUtilities;
 import support.utils.GeneralUtilitiesImpl;

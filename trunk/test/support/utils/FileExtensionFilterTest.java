@@ -1,4 +1,4 @@
-package utils;
+package support.utils;
 
 import support.utils.FileExtensionFilter;
 import java.io.File;
