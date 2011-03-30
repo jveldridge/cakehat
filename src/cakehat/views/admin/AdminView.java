@@ -1557,7 +1557,9 @@ public class AdminView extends JFrame
             return;
         }
 
-        new ExtensionView(asgn, group);
+        ExtensionView view = new ExtensionView(asgn, group);
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
     private void exemptionsButtonActionPerformed() {

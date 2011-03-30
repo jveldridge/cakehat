@@ -21,6 +21,9 @@ import javax.swing.event.DocumentListener;
  */
 public class IntegerField extends JFormattedTextField
 {
+    private boolean _showLeadingZero = false;
+    private DocumentListener _rangeRestricter;
+
     /**
      * A field that only accepts integer values.
      */
@@ -60,27 +63,32 @@ public class IntegerField extends JFormattedTextField
     }
 
     /**
-     * A field that only accepts integer values between the specified
-     * minimum and maximum.
-     * 
-     * @param initValue
+     * Restricts the allowable range between <code>min</code> and
+     * <code>max</code> inclusive.
+     *
      * @param min
      * @param max
      */
-    public IntegerField(int initValue, final int min, final int max)
+    public void setRangeRestriction(final int min, final int max)
     {
-        this(initValue);
+        //If there was previous range restricter, remove it
+        if(_rangeRestricter != null)
+        {
+            this.getDocument().removeDocumentListener(_rangeRestricter);
+        }
 
-        this.getDocument().addDocumentListener(new DocumentListener()
+        _rangeRestricter = new DocumentListener()
         {
             public void changedUpdate(DocumentEvent e){}
 
             public void insertUpdate(DocumentEvent e)
             {
                 int value = 0;
-                try {
+                try
+                {
                     String text = getText();
-                    if (text.startsWith("+")) {
+                    if (text.startsWith("+"))
+                    {
                         text = text.substring(1);
                     }
                     value = Integer.parseInt(text);
@@ -116,7 +124,12 @@ public class IntegerField extends JFormattedTextField
             {
                 insertUpdate(e);
             }
-        });
+        };
+
+        this.getDocument().addDocumentListener(_rangeRestricter);
+
+        //Apply it immediately
+        this.setIntValue(this.getIntValue());
     }
 
     /**
@@ -126,27 +139,51 @@ public class IntegerField extends JFormattedTextField
      */
     public int getIntValue()
     {
-        try {
+        int value = 0;
+
+        try
+        {
             String text = getText();
-            if (text.startsWith("+")) {
+            if (text.startsWith("+"))
+            {
                 text = text.substring(1);
             }
-            return Integer.parseInt(text);
+            value = Integer.parseInt(text);
         }
-        catch (NumberFormatException e) {
-            return 0;
-        }
+        catch (NumberFormatException e) { }
+
+        return value;
     }
 
     /**
-     * Set this field as the given value. If between 0 and 9 a leading 0 is
-     * appended. So '3' will display as '03'.
+     * Set this field as the given value.
      *
      * @param value
      */
     public void setIntValue(int value)
     {
-        this.setText(Integer.toString(value));
+        String valueText = Integer.toString(value);
+        if(_showLeadingZero && value > -1 && value < 10)
+        {
+            valueText = "0" + valueText;
+        }
+        this.setText(valueText);
+    }
+
+    /**
+     * If <code>show</code> is <code>true</code> then when the integer is
+     * between <code>0</code> and <code>9</code> inclusive it will be displayed
+     * with a leading <code>0</code>. For example the value <code>3</code> will
+     * be displayed as <code>03</code>.
+     *
+     * @param show
+     */
+    public void setShowLeadingZero(boolean show)
+    {
+        _showLeadingZero = show;
+
+        //Apply immediately
+        this.setIntValue(this.getIntValue());
     }
 
     /**
@@ -180,5 +217,4 @@ public class IntegerField extends JFormattedTextField
             return INTEGER_FORMAT.formatToCharacterIterator(obj);
         }
     }
-
 }
