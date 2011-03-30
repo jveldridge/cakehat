@@ -308,7 +308,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         //General commands
         _demoButton.setEnabled(part.hasDemo());
-        _gradingGuideButton.setEnabled(part.hasDeductionList());
+        _gradingGuideButton.setEnabled(part.hasGradingGuide());
         _submitGradingButton.setEnabled(part.hasRubricTemplate());
         _printAllButton.setEnabled(part.hasPrint());
 
@@ -1015,7 +1015,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
     {
         DistributablePart dp = _dpList.getSelectedValue();
         try {
-            dp.viewDeductionList();
+            dp.viewGradingGuide();
         } catch (FileNotFoundException ex) {
             this.generateErrorView("view deductions list", null, dp, ex);
         }

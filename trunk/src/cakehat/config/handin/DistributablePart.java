@@ -17,7 +17,6 @@ import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import cakehat.config.handin.file.AlwaysAcceptingFileFilter;
-import java.util.ArrayList;
 
 /**
  * Part of a group's handin.
@@ -29,7 +28,7 @@ public class DistributablePart extends Part
     private final Handin _handin;
     private final FilterProvider _filterProvider;
 
-    private final File _deductionsList;
+    private final File _gradingGuide;
     private final File _rubricTemplate;
 
     private final DistributableAction _runAction;
@@ -64,7 +63,7 @@ public class DistributablePart extends Part
      * @param number if the same as another part that means the parts are
      * mutually exclusive (a student/group does only one of them)
      * @param points point value for this part
-     * @param deductionsList plain text file that contains deduction information
+     * @param gradingGuide plain text file that contains grading guidelines
      * @param rubricTemplate template gml file
      * @param filterProvider provider of the FileFilter that describes which
      * files belong to this part. This is necessary because any number of
@@ -77,7 +76,7 @@ public class DistributablePart extends Part
      * @param printAction action used to print the part for a given group, may be null
      */
     public DistributablePart(Handin handin, String name, int number, int points,
-            File deductionsList,
+            File gradingGuide,
             File rubricTemplate,
             FilterProvider filterProvider,
             DistributableAction runAction,
@@ -91,7 +90,7 @@ public class DistributablePart extends Part
         _handin = handin;
         _filterProvider = filterProvider;
 
-        _deductionsList = deductionsList;
+        _gradingGuide = gradingGuide;
         _rubricTemplate = rubricTemplate;
 
         _runAction = runAction;
@@ -426,38 +425,38 @@ public class DistributablePart extends Part
     }
 
     /**
-     * If there is a deduction list for this DistributablePart.
+     * If there is a grading guide for this DistributablePart.
      *
      * @return
      */
-    public boolean hasDeductionList()
+    public boolean hasGradingGuide()
     {
-        boolean exists = (_deductionsList != null) && (_deductionsList.exists());
+        boolean exists = (_gradingGuide != null) && (_gradingGuide.exists());
 
         return exists;
     }
 
     /**
-     * Displays to the grader the deduction list for this DistributablePart.
+     * Displays to the grader the grading guide for this DistributablePart.
      *
-     * @throws FileNotFoundException if no deductions list was not specified or
+     * @throws FileNotFoundException if no grading guide was specified or
      * the specified file does not exist
      */
-    public void viewDeductionList() throws FileNotFoundException
+    public void viewGradingGuide() throws FileNotFoundException
     {
-        if(_deductionsList == null)
+        if(_gradingGuide == null)
         {
-            throw new FileNotFoundException("No deduction file specified for " +
+            throw new FileNotFoundException("No grading guide file specified for " +
                     this.getAssignment() + " - " + this.getName());
         }
-        if(!_deductionsList.exists())
+        if(!_gradingGuide.exists())
         {
-            throw new FileNotFoundException("Specified deduction list for " +
+            throw new FileNotFoundException("Specified grading guide for " +
                     this.getAssignment() + "-" + this.getName() + " does not exist. \n" +
-                    "Specified file: " + _deductionsList.getAbsolutePath());
+                    "Specified file: " + _gradingGuide.getAbsolutePath());
         }
 
-        new TextViewerView(_deductionsList, this.getAssignment().getName() + " Deductions List");
+        new TextViewerView(_gradingGuide, this.getAssignment().getName() + " Grading Guide");
     }
 
     /**
