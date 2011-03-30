@@ -146,7 +146,7 @@ public class AdminView extends JFrame
 
     private JButton //Assignment wide buttons
                     _manageGroupsButton, _createDistributionButton, _manualDistributionButton,
-                    _previewRubricButton, _viewDeductionsButton, _runDemoButton,
+                    _previewRubricButton, _viewGradingGuideButton, _runDemoButton,
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionsButton,
                     _openCodeButton, _runCodeButton, _exemptionsButton,
@@ -371,7 +371,7 @@ public class AdminView extends JFrame
         _assignmentButtons = new JButton[]
         {
           _createDistributionButton, _manualDistributionButton,
-          _previewRubricButton, _viewDeductionsButton,
+          _previewRubricButton, _viewGradingGuideButton,
           _runDemoButton, _manageGroupsButton
         };
 
@@ -961,16 +961,16 @@ public class AdminView extends JFrame
         buttonPanel.add(_previewRubricButton);
 
         //Deductions List
-        _viewDeductionsButton = createButton("Deductions List", IconImage.TEXT_X_GENERIC);
-        _viewDeductionsButton.addActionListener(new ActionListener()
+        _viewGradingGuideButton = createButton("Grading Guide", IconImage.TEXT_X_GENERIC);
+        _viewGradingGuideButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                viewDeductionsButtonActionPerformed();
+                viewGradingGuideButtonActionPerformed();
             }
 
         });
-        buttonPanel.add(_viewDeductionsButton);
+        buttonPanel.add(_viewGradingGuideButton);
 
         //Run Demo
         _runDemoButton = createButton("Run Demo", IconImage.APPLICATIONS_SYSTEM);
@@ -1293,7 +1293,7 @@ public class AdminView extends JFrame
 
             if (selectedDP != null) {
                 _previewRubricButton.setEnabled(selectedDP.hasRubricTemplate());
-                _viewDeductionsButton.setEnabled(selectedDP.hasDeductionList());
+                _viewGradingGuideButton.setEnabled(selectedDP.hasGradingGuide());
                 _runDemoButton.setEnabled(selectedDP.hasDemo());
             }
         }
@@ -1476,10 +1476,10 @@ public class AdminView extends JFrame
         }
     }
 
-    private void viewDeductionsButtonActionPerformed()
+    private void viewGradingGuideButtonActionPerformed()
     {
         try {
-            this.getSingleSelectedDP(_assignmentTree.getSelection()).viewDeductionList();
+            this.getSingleSelectedDP(_assignmentTree.getSelection()).viewGradingGuide();
         } catch (FileNotFoundException ex) {
             new ErrorView(ex);
         }
