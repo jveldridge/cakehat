@@ -113,17 +113,17 @@ public class CakehatMain
             _isDeveloperMode = true;
             DeveloperModeView.launch();
         }
-        else if(args[0].equalsIgnoreCase("frontend"))
+        else if(args[0].equalsIgnoreCase(CakehatRunMode.FRONTEND.getTerminalFlag()))
         {
             _runMode = CakehatRunMode.FRONTEND;
             FrontendView.launch();
         }
-        else if(args[0].equalsIgnoreCase("admin"))
+        else if(args[0].equalsIgnoreCase(CakehatRunMode.ADMIN.getTerminalFlag()))
         {
             _runMode = CakehatRunMode.ADMIN;
             AdminView.launch();
         }
-        else if(args[0].equalsIgnoreCase("lab"))
+        else if(args[0].equalsIgnoreCase(CakehatRunMode.LAB.getTerminalFlag()))
         {
             _runMode = CakehatRunMode.LAB;
             //Creating the ArrayList is necessary because the list created
