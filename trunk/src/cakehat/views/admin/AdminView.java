@@ -154,7 +154,7 @@ public class AdminView extends JFrame
                     _viewRubricButton, _emailStudentRubric, _printRubricButton,
                     _disableStudentButton,
                     //General command buttons
-                    _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
+                    _modifyBlacklistButton, _addStudentsButton, _exportGradesButton,
                     _resetDatabaseButton;
     private JButton[] _assignmentButtons, _generalCommandsButtons, _studentButtons;
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
@@ -377,7 +377,7 @@ public class AdminView extends JFrame
 
         _generalCommandsButtons = new JButton[]
         {
-          _modifyBlacklistButton, _editConfigurationButton, _exportGradesButton,
+          _modifyBlacklistButton, _addStudentsButton, _exportGradesButton,
           _resetDatabaseButton
         };
 
@@ -1010,16 +1010,16 @@ public class AdminView extends JFrame
         panel.add(buttonPanel);
 
         //Edit configuration
-        _editConfigurationButton = this.createButton("Edit Configuration", IconImage.PREFERENCES_SYSTEM);
-        _editConfigurationButton.addActionListener(new ActionListener()
+        _addStudentsButton = this.createButton("Add Students", IconImage.PREFERENCES_SYSTEM);
+        _addStudentsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                editConfigurationButtionActionPerformed();
+                addStudentsButtonActionPerformed();
             }
 
         });
-        buttonPanel.add(_editConfigurationButton);
+        buttonPanel.add(_addStudentsButton);
 
         //Export grades
         _exportGradesButton = this.createButton("Export Grades", IconImage.EDIT_REDO);
@@ -1372,9 +1372,11 @@ public class AdminView extends JFrame
     //                          EVENTS BELOW                     //
 
 
-    private void editConfigurationButtionActionPerformed()
+    private void addStudentsButtonActionPerformed()
     {
-        new ConfigManager();
+        AddStudentsView view = new AddStudentsView();
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
     private void exportGradesButtonActionPerformed()
