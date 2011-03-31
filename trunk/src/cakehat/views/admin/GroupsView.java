@@ -31,11 +31,11 @@ import javax.swing.JPanel;
 public class GroupsView extends javax.swing.JFrame {
 
     private FileFilter _groupFilter;
-    private AdminView _backend;
+    private AdminView _admin;
     private Assignment _asgn;
     
-    public GroupsView(AdminView backend, Assignment asgn) {
-        _backend = backend;
+    public GroupsView(AdminView admin, Assignment asgn) {
+        _admin = admin;
         _asgn = asgn;
         _groupFilter = new GroupFilter();
         this.initComponents();
@@ -168,7 +168,7 @@ public class GroupsView extends javax.swing.JFrame {
             }
 
             JOptionPane.showMessageDialog(this, "Group Import Successful!");
-            _backend.updateGroupsCache(_asgn);
+            _admin.updateGroupsCache(_asgn);
         }
     }
 
@@ -184,7 +184,7 @@ public class GroupsView extends javax.swing.JFrame {
             Allocator.getDatabaseIO().removeGroupsForAssignment(_asgn);
 
             JOptionPane.showMessageDialog(this, "Groups removed successfully.");
-            _backend.updateGroupsCache(_asgn);
+            _admin.updateGroupsCache(_asgn);
         } catch (SQLException ex) {
             new ErrorView(ex, "Groups could not be removed from the database.");
         }

@@ -131,7 +131,7 @@ public interface PathServices
      * }
      * </pre>
      * 
-     * If cakehat is running from the backend:
+     * If cakehat is running from the admin view:
      * <pre>
      * {@code
      * /course/<course>/.cakehat/workspaces/<ta login>-admin/
@@ -147,7 +147,7 @@ public interface PathServices
      * </pre>
      *
      * Any other state (such as during lab checkoff) will result in a runtime
-     * exception being thrown. If cakehat is not using the frontend, backend,
+     * exception being thrown. If cakehat is not using the frontend, admin,
      * or testing then the user workspace directory should not need be needed.
      * <br/><br/>
      * All other path methods that reference {@code <ta login>} in their path

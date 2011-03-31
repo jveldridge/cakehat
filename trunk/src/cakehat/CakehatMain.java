@@ -22,7 +22,7 @@ public class CakehatMain
 
     /**
      * If the application was run in developer mode, meaning the developer was
-     * able to select either the frontend or backend.
+     * able to select either the frontend or admin.
      *
      * @return
      */
@@ -54,8 +54,8 @@ public class CakehatMain
 
     /**
      * Sets the mode that cakehat is running in. This is to be used
-     * <strong>exclusively</strong> by {@link GradeSystemView} after the
-     * developer has selected whether to launch the frontend or backend.
+     * <strong>exclusively</strong> by {@link DeveloperModeView} after the
+     * developer has selected whether to launch the frontend or admin.
      *
      * @param mode
      */

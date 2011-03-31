@@ -528,8 +528,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
         this.setJMenuBar(menuBar);
 
         //File menu
-        JMenu menu = new JMenu("File");
-        menuBar.add(menu);
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
 
         //Refresh item
         JMenuItem refreshItem = new JMenuItem("Refresh");
@@ -541,7 +541,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 loadAssignedGrading(true);
             }
         });
-        menu.add(refreshItem);
+        fileMenu.add(refreshItem);
 
         //Blacklist item
         JMenuItem blacklistItem = new JMenuItem("Modify Blacklist");
@@ -573,7 +573,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 });
             }
         });
-        menu.add(blacklistItem);
+        fileMenu.add(blacklistItem);
 
         //Quit item
         JMenuItem quitItem = new JMenuItem("Quit");
@@ -594,25 +594,14 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 System.exit(0);
             }
         });
-        menu.add(quitItem);
+        fileMenu.add(quitItem);
 
         //Help menu
-        menu = new JMenu("Help");
-        menuBar.add(menu);
-
-        //Help contents item
-        JMenuItem helpItem = new JMenuItem("Help Contents");
-        helpItem.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                JOptionPane.showMessageDialog(FrontendView.this, "This feature is not yet available");
-            }
-        });
-        menu.add(helpItem);
+        JMenu helpMenu = new JMenu("Help");
+        menuBar.add(helpMenu);
 
         //About
-        JMenuItem aboutItem = new JMenuItem("About");
+        JMenuItem aboutItem = new JMenuItem("About cakehat");
         aboutItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -620,7 +609,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 CakehatAboutBox.displayRelativeTo(FrontendView.this);
             }
         });
-        menu.add(aboutItem);
+        helpMenu.add(aboutItem);
     }
 
     /**

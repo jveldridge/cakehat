@@ -18,7 +18,7 @@ import javax.swing.KeyStroke;
 
 /**
  * Window shown when running in developer mode that allows for selecting either
- * the frontend or backend view.
+ * the frontend or admin view.
  *
  * @author jak2
  */
@@ -92,9 +92,9 @@ class DeveloperModeView extends JFrame
         });
         panel.add(frontendButton);
 
-        // Backend
-        JButton backendButton = new JButton("Backend");
-        backendButton.addActionListener(new ActionListener()
+        // Admin
+        JButton adminButton = new JButton("Admin");
+        adminButton.addActionListener(new ActionListener()
         {
            public void actionPerformed(ActionEvent e)
            {
@@ -103,7 +103,7 @@ class DeveloperModeView extends JFrame
                DeveloperModeView.this.dispose();
            }
         });
-        panel.add(backendButton);
+        panel.add(adminButton);
 
         // Configure for display
         this.pack();

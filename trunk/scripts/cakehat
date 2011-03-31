@@ -5,11 +5,11 @@
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 20, 2010
-# last updated: March 28, 2011
+# last updated: March 30, 2011
 #==============================================================================
 
 #message displayed when run incorrectly
-usage="Usage: cakehat_run (backend)"
+usage="Usage: cakehat (admin)"
 
 #retrieve the location of this script
 abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
@@ -27,7 +27,7 @@ cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
 if [[ ( $# == 0 ) ]]
 then
     java -jar $cakehat frontend
-#Else if exactly 1 argument and the argument is backend
+#Else if exactly 1 argument and the argument is admin
 elif [[ ( $# == 1 && $1 == "admin") ]]
 then
     java -jar $cakehat admin

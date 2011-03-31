@@ -1944,7 +1944,7 @@ public class AdminView extends JFrame
     private void updateStudentListEnabledState() {
         //if any selected assignment has groups and groups have not yet been created,
         //disable the student list and clear its selection since no student-related
-        //backend functionality works without groups set
+        //admin functionality works without groups set
         boolean needsToBeDisabled = false;
         for (Assignment asgn : _assignmentTree.getSelection().keySet()) {
             if (asgn.hasGroups()
