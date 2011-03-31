@@ -131,5 +131,4 @@ public class ProgressView extends JFrame
         _exportComplete = true;
         _button.setText("Close");
     }
-
 }

@@ -1,8 +1,5 @@
 package cakehat.services;
 
-
-import cakehat.services.CourseInfo;
-import cakehat.services.PathServices;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.config.Assignment;

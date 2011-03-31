@@ -18,7 +18,6 @@ import cakehat.config.handin.DistributablePart;
  */
 class Rubric
 {
-
     private DistributablePart _distPart;
     private Group _group;
     private Vector<Section> _sections = new Vector<Section>();
@@ -453,5 +452,4 @@ class Rubric
             return _value;
         }
     }
-
 }

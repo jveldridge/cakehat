@@ -1,7 +1,5 @@
 package support.utils;
 
-import support.utils.UserUtilities;
-import support.utils.UserUtilitiesImpl;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import support.utils.posix.NativeException;
@@ -18,7 +16,7 @@ public class UserUtilitiesTest {
         _instance = new UserUtilitiesImpl();
     }
 
-//This tests the getUserName method in the UserUtilities class.
+    //This tests the getUserName method in the UserUtilities class.
     @Test
     public void testUserName() {
         boolean error = false;
@@ -32,5 +30,4 @@ public class UserUtilitiesTest {
 
         assertFalse(error);
     }
-
 }

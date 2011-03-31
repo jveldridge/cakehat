@@ -34,6 +34,5 @@ public interface StringManipulationServices {
      * @param groups
      * @return
      */
-    public String localizeText(String text, Assignment asgn, Collection<Group> groups);
-    
+    public String localizeText(String text, Assignment asgn, Collection<Group> groups);   
 }

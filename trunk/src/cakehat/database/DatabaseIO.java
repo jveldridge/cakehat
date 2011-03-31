@@ -5,7 +5,6 @@ import cakehat.config.Part;
 import cakehat.config.TA;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
-import cakehat.rubric.TimeStatus;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Collection;

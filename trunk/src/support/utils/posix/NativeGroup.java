@@ -2,7 +2,6 @@ package support.utils.posix;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 

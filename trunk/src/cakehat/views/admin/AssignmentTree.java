@@ -113,5 +113,4 @@ class AssignmentTree extends JScrollPane {
         frame.pack();
         frame.setVisible(true);
     }
-
 }

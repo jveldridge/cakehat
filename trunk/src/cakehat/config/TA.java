@@ -61,5 +61,4 @@ public class TA implements Comparable<TA>
 
        return this._login.equals(((TA) o).getLogin());
     }
-
 }

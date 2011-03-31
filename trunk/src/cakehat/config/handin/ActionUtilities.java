@@ -14,7 +14,6 @@ import support.utils.NoFileExtensionFilter;
  */
 class ActionUtilities
 {
-
     /**
      * Creates a FileFilter that parses a string containing a comma-separated
      * list of file extensions. To represent a file that has no file extension,

@@ -78,5 +78,4 @@ class StateManager {
     public boolean beenSaved() {
         return _rubricSaved && _statusSaved && _graderSaved;
     }
-    
 }

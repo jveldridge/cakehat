@@ -197,7 +197,5 @@ public class SinglePartPanel extends JPanel {
             this.setText("<html><b>" + _preText + " " + _unitText + " " +
                          _postText + ":</b> ???</html>");
         }
-
     }
-
 }

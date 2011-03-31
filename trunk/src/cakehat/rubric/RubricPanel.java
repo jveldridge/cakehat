@@ -222,9 +222,10 @@ class RubricPanel extends JPanel
                 }
                 else
                 {
-                    detailName = new JTextArea(detail.getName() + " (" + detail.getName() +" points)");
+                    detailName = new JTextArea(detail.getName() + " (" + detail.getValue() + " points)");
                 }
-                detailName.setSize(new Dimension(250,200));
+                detailName.setSize(new Dimension(425,200));
+                detailName.setForeground(Color.GRAY);
                 detailName.setEditable(false);
                 detailName.setLineWrap(true);
                 detailName.setWrapStyleWord(true);
@@ -820,5 +821,4 @@ class RubricPanel extends JPanel
                                                                     .getCalendarAsHandinTime(_calendar));
         }
     }
-
 }

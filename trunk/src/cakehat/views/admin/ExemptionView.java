@@ -1,9 +1,3 @@
-/*
- * ExemptionView.java
- *
- * Created on January 19, 2010, 12:49 AM
- */
-
 package cakehat.views.admin;
 
 import cakehat.config.Assignment;
@@ -45,7 +39,7 @@ import javax.swing.LayoutStyle;
 
 /**
  *
- * @author Yudi
+ * @author yf6
  */
 public class ExemptionView extends javax.swing.JFrame {
 
@@ -422,5 +416,4 @@ public class ExemptionView extends javax.swing.JFrame {
             }
         }
     }
-
 }

@@ -1,7 +1,5 @@
 package cakehat.config.handin;
 
-import cakehat.config.handin.ExternalActions;
-import cakehat.config.handin.DistributablePart;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.config.Assignment;

@@ -131,5 +131,4 @@ public interface RubricManager
      * @return
      */
     public boolean areRubricsDistributed(Handin handin) throws RubricException;
-
 }

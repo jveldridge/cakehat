@@ -1,7 +1,5 @@
 package support.utils;
 
-import support.utils.GeneralUtilities;
-import support.utils.GeneralUtilitiesImpl;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -18,7 +16,6 @@ public class GeneralUtilitiesTest {
         _instance = new GeneralUtilitiesImpl();
     }
 
-    
     @Test
     public void testDoubleToString() {
         assertEquals("3.35", _instance.doubleToString(3.34999));
@@ -34,5 +31,4 @@ public class GeneralUtilitiesTest {
         assertEquals(3.32, _instance.round(3.32, 2), 0);
         assertEquals(19, _instance.round(18.95432, 0), 0);
     }
-
 }
