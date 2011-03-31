@@ -1,7 +1,6 @@
 package support.utils.posix;
 
 import java.io.File;
-
 import com.sun.jna.Structure;
 
 /**

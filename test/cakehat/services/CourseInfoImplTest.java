@@ -1,6 +1,5 @@
 package cakehat.services;
 
-import cakehat.services.CourseInfoImpl;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -47,5 +46,4 @@ public class CourseInfoImplTest {
         expected = null;
         assertEquals(expected, cii.getCourseFromPath(path));
     }
-
 }

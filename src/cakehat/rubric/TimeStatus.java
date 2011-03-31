@@ -84,5 +84,4 @@ public enum TimeStatus
 
         throw new Error("Invalid status string: " + statusString);
     }
-
 }

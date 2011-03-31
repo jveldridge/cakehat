@@ -3,8 +3,8 @@ package cakehat.database;
 import cakehat.rubric.TimeStatus;
 
 public class HandinStatus {
-    private TimeStatus _status;
-    private Integer _daysLate;
+    private final TimeStatus _status;
+    private final Integer _daysLate;
 
     public HandinStatus(TimeStatus status, Integer daysLate) {
         _status = status;

@@ -1,9 +1,6 @@
 package cakehat.services;
 
-import cakehat.services.StringManipulationServices;
-import cakehat.services.StringManipulationServicesImpl;
 import com.google.common.collect.ImmutableList;
-import cakehat.Allocator;
 import cakehat.config.Assignment;
 import cakehat.database.Group;
 import java.util.Collection;
@@ -101,7 +98,6 @@ public class StringManipulationServicesTest {
 
         assertEquals("Incorrect result for multiple groups on assignment with groups.",
                      expected, _services.localizeText(text, asgn, groups));
-
     }
 
     @Test
@@ -159,7 +155,5 @@ public class StringManipulationServicesTest {
 
         assertEquals("Incorrect result for multiple groups on assignment without groups.",
                      expected, _services.localizeText(text, asgn, groups));
-
     }
-
 }

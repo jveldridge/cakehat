@@ -151,6 +151,4 @@ public interface GradingServices
      */
     public void storeHandinStatuses(Handin handin, Collection<Group> groups,
                                     int minsLeniency, boolean overwrite) throws ServicesException;
-
-    
 }

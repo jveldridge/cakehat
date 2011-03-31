@@ -65,5 +65,4 @@ public class StringManipulationServicesImpl implements StringManipulationService
             }
         }
     }
-
 }

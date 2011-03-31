@@ -7,10 +7,6 @@ package cakehat.export;
  */
 public class ExportException extends Exception {
 
-    public ExportException() {
-        super();
-    }
-
     public ExportException(String msg) {
         super(msg);
     }
@@ -18,5 +14,4 @@ public class ExportException extends Exception {
     public ExportException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
 }

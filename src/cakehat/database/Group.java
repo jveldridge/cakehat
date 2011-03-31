@@ -63,5 +63,4 @@ public class Group implements Comparable<Group>
 
         return false;
     }
-
 }

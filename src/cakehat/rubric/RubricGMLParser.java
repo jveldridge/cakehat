@@ -3,17 +3,13 @@ package cakehat.rubric;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import java.io.File;
-
 import java.util.Collection;
 import java.util.Vector;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import cakehat.rubric.Rubric.Detail;
 import cakehat.rubric.Rubric.Section;
 import cakehat.rubric.Rubric.Subsection;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -27,7 +23,6 @@ import org.w3c.dom.NodeList;
  */
 class RubricGMLParser implements RubricConstants
 {
-    
     /**
      * Converts GML to a Rubric.
      *

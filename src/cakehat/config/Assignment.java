@@ -250,5 +250,4 @@ public class Assignment implements Comparable<Assignment>
     {
         return ((Integer)this.getNumber()).compareTo(a.getNumber());
     }
-
 }

@@ -1,6 +1,5 @@
 package cakehat.database;
 
-import cakehat.database.ConnectionProvider;
 import cakehat.views.shared.ErrorView;
 import java.sql.Connection;
 import java.sql.DriverManager;

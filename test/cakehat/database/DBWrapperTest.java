@@ -1,10 +1,5 @@
 package cakehat.database;
 
-import cakehat.database.ConnectionProvider;
-import cakehat.database.DatabaseIO;
-import cakehat.database.DBWrapper;
-import cakehat.database.CakeHatDBIOException;
-import cakehat.database.Group;
 import cakehat.config.Assignment;
 import java.sql.SQLException;
 import org.junit.After;

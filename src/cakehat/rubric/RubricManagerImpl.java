@@ -336,5 +336,4 @@ public class RubricManagerImpl implements RubricManager {
 
         return false;
     }
-    
 }

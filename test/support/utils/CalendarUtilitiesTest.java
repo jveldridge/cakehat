@@ -1,7 +1,5 @@
 package support.utils;
 
-import support.utils.CalendarUtilities;
-import support.utils.CalendarUtilitiesImpl;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import java.util.Calendar;
@@ -51,6 +49,4 @@ public class CalendarUtilitiesTest {
         assertEquals("", _instance.getCalendarAsHandinTime(null));
         assertEquals("3:45 10-31-2010", _instance.getCalendarAsHandinTime(_cal));
     }
-
-
 }

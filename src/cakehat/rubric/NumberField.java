@@ -4,12 +4,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.NumberFormat;
 import javax.swing.JFormattedTextField;
-
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import cakehat.rubric.Rubric.Subsection;
-
 import cakehat.Allocator;
 
 /**

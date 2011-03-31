@@ -599,8 +599,6 @@ class RubricGRDWriter {
         public Score(double score, double outOf) {
             _score = score;
             _outOf = outOf;
-        }
-        
+        }   
     }
-
 }

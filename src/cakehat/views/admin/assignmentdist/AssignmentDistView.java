@@ -793,5 +793,4 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
     public static void main(String[] argv) {
         new AssignmentDistView(Allocator.getConfigurationInfo().getHandinAssignments().get(0));
     }
-
 }

@@ -1996,5 +1996,4 @@ public class AdminView extends JFrame
     {
         updateGUI(_assignmentTree.getSelection());
     }
-
 }

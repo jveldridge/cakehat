@@ -1,6 +1,5 @@
 package support.utils;
 
-import support.utils.FileExtensionFilter;
 import java.io.File;
 import org.junit.Test;
 import static org.junit.Assert.*;
