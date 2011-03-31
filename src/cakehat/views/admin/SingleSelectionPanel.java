@@ -29,7 +29,7 @@ import cakehat.views.shared.ErrorView;
 import java.util.ArrayList;
 
 /**
- * Single selection panel of the backend.
+ * Single selection panel of {@link AdminView}.
  *
  * @author jak2
  */

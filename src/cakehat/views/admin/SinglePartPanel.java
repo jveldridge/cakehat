@@ -24,7 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * Panel part of the BackendView that shows the grading status of a single
+ * Panel part of the {@link AdminView} that shows the grading status of a single
  * selected Part when no students are selected.  The SinglePartPanel shows the
  * number of students who have grades out of the total number of enabled students.
  * If the selected Part is a DistributablePart, it also shows the number of students

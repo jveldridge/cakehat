@@ -76,7 +76,7 @@ public class SubmitDialog {
         else {
             optionsPanel.add(new JLabel("<html>For handins with multiple parts,<br/>" +
                                         "rubrics must be printed or emailed<br/>" +
-                                        "from the backend.</html>"));
+                                        "from the admin interface.</html>"));
         }
 
         JPanel studentPanel = new JPanel();

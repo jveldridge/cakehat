@@ -16,7 +16,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 /**
- * A panel containing a tree of Assignments and Parts show in the backend.
+ * A panel containing a tree of Assignments and Parts show in {@link AdminView}.
  *
  * @author jeldridg
  */
