@@ -2,6 +2,7 @@ package cakehat.rubric;
 
 import cakehat.database.CakeHatDBIOException;
 import cakehat.database.HandinStatus;
+import cakehat.services.ServicesException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -601,8 +602,20 @@ class RubricPanel extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     TA newGrader = graderBox.getSelectedItem();
-                    if (newGrader != _stateManager.getGrader()) {
-                        _stateManager.setGrader(graderBox.getSelectedItem());
+                    try {
+                        if (newGrader != _stateManager.getGrader()) {
+                            if (Allocator.getGradingServices().isOkToDistribute(_rubric.getGroup(), newGrader)) {
+                                _stateManager.setGrader(graderBox.getSelectedItem());
+                            }
+                            else {
+                                //if the group should not be distributed, set the combo box selection to the
+                                //value it had before the most recent change
+                                graderBox.setGenericSelectedItem(_stateManager.getGrader());
+                            }
+                        }
+                    } catch (ServicesException ex) {
+                        new ErrorView(ex, "Could not determine whether it is OK to distribute group " +
+                                          _rubric.getGroup() + " to grader " + newGrader + ".");
                     }
                 }
             });
