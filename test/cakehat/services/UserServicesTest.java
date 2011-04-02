@@ -2,14 +2,10 @@ package cakehat.services;
 
 import cakehat.Allocator;
 import cakehat.config.TA;
-import java.util.Arrays;
-import org.junit.Test;
-import support.utils.UserUtilities;
-
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.config.ConfigurationInfo;
-import java.util.List;
-
+import support.utils.UserUtilities;
+import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.easymock.EasyMock.*;
 
@@ -33,11 +29,9 @@ public class UserServicesTest
         final ConfigurationInfo configurationInfo = createMock(ConfigurationInfo.class);
 
         TA ta = createMock(TA.class);
-        expect(ta.getLogin()).andReturn("jak2");
         replay(ta);
-        List<TA> tas = Arrays.asList(new TA[] { ta });
 
-        expect(configurationInfo.getTAs()).andReturn(tas);
+        expect(configurationInfo.getTA("jak2")).andReturn(ta);
         replay(configurationInfo);
 
         SingletonAllocation<ConfigurationInfo> configurationInfoAlloc =
@@ -46,7 +40,7 @@ public class UserServicesTest
                 public ConfigurationInfo allocate() { return configurationInfo; };
             };
 
-        //Customizer the Allocator with mocked objects
+        //Customize the Allocator with mocked objects
         new Allocator.Customizer()
                 .setConfigurationInfo(configurationInfoAlloc)
                 .setUserUtils(userUtilsAlloc)
@@ -57,7 +51,6 @@ public class UserServicesTest
 
         //Verify that mocked methods were called
         verify(userUtils);
-        verify(ta);
-        verify(configurationInfoAlloc);
+        verify(configurationInfo);
     }
 }
