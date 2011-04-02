@@ -31,13 +31,13 @@ public class ExternalActionsTest
         command = "open ^student_logins^ close";
         modifiedCmd = ExternalActions.replaceHandinSequences(command, null, group);
         assertEquals("Could not replace single instance of ^student_logins^",
-                "open [\\\"member_1\\\",\\\"member_2\\\"] close",
+                "open [\"member_1\",\"member_2\"] close",
                 modifiedCmd);
 
         command = "open ^student_logins^ middle ^student_logins^ close";
         modifiedCmd = ExternalActions.replaceHandinSequences(command, null, group);
         assertEquals("Could not replace multiple instances of ^student_logins^",
-                "open [\\\"member_1\\\",\\\"member_2\\\"] middle [\\\"member_1\\\",\\\"member_2\\\"] close",
+                "open [\"member_1\",\"member_2\"] middle [\"member_1\",\"member_2\"] close",
                 modifiedCmd);
     }
 
@@ -53,13 +53,13 @@ public class ExternalActionsTest
         command = "open ^group_name^ close";
         modifiedCmd = ExternalActions.replaceHandinSequences(command, null, group);
         assertEquals("Could not replace single instance of ^group_name^",
-                "open \\\"the group\\\" close",
+                "open \"the group\" close",
                 modifiedCmd);
 
         command = "open ^group_name^ middle ^group_name^ close";
         modifiedCmd = ExternalActions.replaceHandinSequences(command, null, group);
         assertEquals("Could not replace single instance of ^group_names^",
-                "open \\\"the group\\\" middle \\\"the group\\\" close",
+                "open \"the group\" middle \"the group\" close",
                 modifiedCmd);
     }
 
@@ -88,14 +88,14 @@ public class ExternalActionsTest
         command = "open ^unarchive_dir^ close";
         modifiedCmd = ExternalActions.replaceHandinSequences(command, null, group);
         assertEquals("Could not replace single instance of ^unarchive_dirs^",
-                "open \\\"" + unarchiveDir.getAbsolutePath() + "\\\" close",
+                "open \"" + unarchiveDir.getAbsolutePath() + "\" close",
                 modifiedCmd);
 
         command = "open ^unarchive_dir^ middle ^unarchive_dir^ close";
         modifiedCmd = ExternalActions.replaceHandinSequences(command, null, group);
         assertEquals("Could not replace multiple instances of ^unarchive_dirs^",
-                "open \\\"" + unarchiveDir.getAbsolutePath() + "\\\" middle \\\"" +
-                unarchiveDir.getAbsolutePath() + "\\\" close",
+                "open \"" + unarchiveDir.getAbsolutePath() + "\" middle \"" +
+                unarchiveDir.getAbsolutePath() + "\" close",
                 modifiedCmd);
     }
 
@@ -125,13 +125,13 @@ public class ExternalActionsTest
         command = "open ^assignment_name^ close";
         modifiedCmd = ExternalActions.replaceAssignmentSequences(command, part);
         assertEquals("Could not replace single instance of ^assignment_name^",
-                "open \\\"" + assignmentName + "\\\" close",
+                "open \"" + assignmentName + "\" close",
                 modifiedCmd);
 
         command = "open ^assignment_name^ middle ^assignment_name^ close";
         modifiedCmd = ExternalActions.replaceAssignmentSequences(command, part);
         assertEquals("Could not replace multiple instances of ^assignment_name^",
-                "open \\\"" + assignmentName + "\\\" middle \\\"" + assignmentName + "\\\" close",
+                "open \"" + assignmentName + "\" middle \"" + assignmentName + "\" close",
                 modifiedCmd);
 
 
@@ -150,13 +150,13 @@ public class ExternalActionsTest
         command = "open ^part_name^ close";
         modifiedCmd = ExternalActions.replaceAssignmentSequences(command, part);
         assertEquals("Could not replace single instance of ^part_name^",
-                "open \\\"" + partName + "\\\" close",
+                "open \"" + partName + "\" close",
                 modifiedCmd);
 
         command = "open ^part_name^ middle ^part_name^ close";
         modifiedCmd = ExternalActions.replaceAssignmentSequences(command, part);
         assertEquals("Could not replace multiple instances of ^part_name^",
-                "open \\\"" + partName + "\\\" middle \\\"" + partName + "\\\" close",
+                "open \"" + partName + "\" middle \"" + partName + "\" close",
                 modifiedCmd);
 
         command = "open ^part_number^ close";
@@ -202,10 +202,10 @@ public class ExternalActionsTest
         command = "open ^groups_info^ close";
         modifiedCmd = ExternalActions.replaceGroupInfoSequences(command, null, groups);
         assertEquals("Could not replace single instance of ^groups_info^",
-                "open [{\\\"name\\\":\\\"group A\\\",\\\"members\\\":[\\\"member_1a\\\",\\\"member_2a\\\"]," +
-                "\\\"unarchive_dir\\\":\\\"" + dirA.getAbsolutePath() + "\\\"}," +
-                "{\\\"name\\\":\\\"group B\\\",\\\"members\\\":[\\\"member_1b\\\",\\\"member_2b\\\"]," +
-                "\\\"unarchive_dir\\\":\\\"" + dirB.getAbsolutePath() + "\\\"}] close",
+                "open [{\"name\":\"group A\",\"members\":[\"member_1a\",\"member_2a\"]," +
+                "\"unarchive_dir\":\"" + dirA.getAbsolutePath() + "\"}," +
+                "{\"name\":\"group B\",\"members\":[\"member_1b\",\"member_2b\"]," +
+                "\"unarchive_dir\":\"" + dirB.getAbsolutePath() + "\"}] close",
                 modifiedCmd);
     }
 }
