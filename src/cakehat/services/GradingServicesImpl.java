@@ -146,7 +146,7 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException {
+    public Collection<String> resolveUnexpectedHandins(Assignment asgn) throws ServicesException {
         Collection<String> handinNames;
         try {
             handinNames = asgn.getHandin().getHandinNames();
@@ -185,16 +185,16 @@ public class GradingServicesImpl implements GradingServices
 
             if (!badHandins.isEmpty()) {
                 String errMsg = "The following handins do not correspond to a group name " +
-                                "or a group member's login: " + badHandins + ".  Distribution " +
-                                "cannot continue until these handins are dealt with appropriately.";
-                JOptionPane.showMessageDialog(null, errMsg, "Cannot Create Distribution", JOptionPane.ERROR_MESSAGE);
+                                "or a group member's login:\n";
+                for (String handin : badHandins) {
+                    errMsg += handin + "\n";
+                }
+                errMsg += "They will not be available for distribution.";
 
-                //return null to indicate that distribution cannot continue
-                return null;
+                JOptionPane.showMessageDialog(null, errMsg, "Unexpected Handins", JOptionPane.WARNING_MESSAGE);
             }
 
-            //there were no issues, so there are no issues remaining
-            return Collections.emptyList();
+            return badHandins;
         }
 
         //not a group project- every handin's name will be a student's login,

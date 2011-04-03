@@ -74,7 +74,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
     public AssignmentDistView(Assignment asgn) {
         _asgn = asgn;
         try {
-            _remainingBadLogins = Allocator.getGradingServices().resolveMissingStudents(_asgn);
+            _remainingBadLogins = Allocator.getGradingServices().resolveUnexpectedHandins(_asgn);
         } catch (ServicesException ex) {
             new ErrorView(ex);
             this.dispose();
