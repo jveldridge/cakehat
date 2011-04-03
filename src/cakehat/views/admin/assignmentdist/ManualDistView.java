@@ -786,17 +786,12 @@ public class ManualDistView extends JFrame {
             while (iterator.hasNext()) {
                 Group group = iterator.next();
 
-                try {
-                    //update distribution
-                    Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), toTA);
-                } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "Reassigning failed because the student"
-                            + " was still in another TA's distribution.");
-                }
-
+                //update distribution
                 if (fromTA != null) {
                     Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
                 }
+                Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), toTA);
+
             }
 
             //set handin status for any Group that doesn't already have one;
