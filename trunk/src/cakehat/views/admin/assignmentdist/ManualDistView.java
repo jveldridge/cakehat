@@ -556,7 +556,7 @@ public class ManualDistView extends JFrame {
     }
 
     private void updateAssignmentAndPart() throws ServicesException, SQLException {
-        _unresolvedHandins = Allocator.getGradingServices().resolveMissingStudents(_asgnComboBox.getSelectedItem());
+        _unresolvedHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_asgnComboBox.getSelectedItem());
         if (_unresolvedHandins == null) {
             this.dispose();
             return;

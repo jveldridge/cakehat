@@ -124,7 +124,7 @@ public interface GradingServices
      * If the Assignment is a group assignment, this method checks that the name of each handin
      * is either the name of some group or the login of a member of some group.  If this is
      * not the case for any handin, a message listing the problematic handins will be shown
-     * to the user, and null will be returned to indicate that distribution may not continue.
+     * to the user, and the names of the problematic handins will be returned.
      *
      * If the Assignment is not a group assignment, this method checks that the name of each
      * handin is the login of a student who is in the database and enabled.  If this is not the
@@ -132,9 +132,9 @@ public interface GradingServices
      * corresponding to these handins can either be either added/enabled them or ignored.
      *
      * @param asgn
-     * @return what are the remaining bad logins (null if the user clicked Cancel or Group resolution failed)
+     * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
-    public Collection<String> resolveMissingStudents(Assignment asgn) throws ServicesException;
+    public Collection<String> resolveUnexpectedHandins(Assignment asgn) throws ServicesException;
 
     /**
      * For each Group in the given Collection, calculates the handin status for that
