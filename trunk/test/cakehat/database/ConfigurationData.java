@@ -1,15 +1,16 @@
 package cakehat.database;
 
-import cakehat.config.handin.Handin;
-import java.util.UUID;
-import cakehat.config.TA;
-import cakehat.config.LabPart;
-import java.util.Arrays;
-import cakehat.config.Part;
-import java.util.ArrayList;
-import cakehat.config.handin.DistributablePart;
 import cakehat.config.Assignment;
+import cakehat.config.LabPart;
 import cakehat.config.NonHandinPart;
+import cakehat.config.Part;
+import cakehat.config.TA;
+import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.Handin;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.UUID;
 
 import static org.easymock.EasyMock.*;
 
@@ -46,11 +47,6 @@ public class ConfigurationData
         uid.replaceAll("-", "");
         uid = uid.substring(8);
         return uid;
-    }
-
-    public static void main(String[] args)
-    {
-        generateHandin();
     }
 
     public static Handin generateHandin()
@@ -183,4 +179,15 @@ public class ConfigurationData
 
         return asgn;
     }
+
+    public static Group generateRandomGroup() {
+        Random rand = new Random();
+        int numMembers = rand.nextInt(5) + 1;
+        ArrayList<String> members = new ArrayList<String>();
+        for (int i = 0; i < numMembers; i++) {
+            members.add(generateRandomString());
+        }
+        return new Group(generateRandomString(), members);
+    }
+
 }
