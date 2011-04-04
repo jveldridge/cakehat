@@ -436,8 +436,8 @@ class SingleSelectionPanel extends JPanel
             partsToAdd.addAll(asgn.getNonHandinParts());
             partsToAdd.addAll(asgn.getLabParts());
             _nonHandinBox.setItems(partsToAdd);
-            this.updateNonHandinInfo();
         }
+        this.updateNonHandinInfo();
 
         _submitGradeButton.setEnabled(asgn.hasNonHandinParts() || asgn.hasLabParts());
         
