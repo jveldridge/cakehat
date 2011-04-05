@@ -63,7 +63,7 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  *
  * @author jeldridg
  */
-public class ManualDistView extends JFrame {
+public class ManualDistributorView extends JFrame {
     
     private static final int LIST_HEIGHT = 300;
     private static final int LIST_WIDTH = 130;
@@ -91,7 +91,7 @@ public class ManualDistView extends JFrame {
     private Collection<Group> _unassignedGroups;
     private Collection<String> _unresolvedHandins;
 
-    public ManualDistView(Assignment asgn, DistributablePart dp) {
+    public ManualDistributorView(Assignment asgn, DistributablePart dp) {
         super("Manual Distributor");
 
         _taStringConverter = new TAStringConverter();
@@ -127,12 +127,12 @@ public class ManualDistView extends JFrame {
             new ErrorView(ex, "An error occurred while initializing the interface. "
                     + "This view will now close.  If this problem "
                     + "persists, please send an error report.");
-            ManualDistView.this.dispose();
+            ManualDistributorView.this.dispose();
         } catch (SQLException ex) {
             new ErrorView(ex, "An error occurred while initializing the interface. "
                     + "This view will now close.  If this problem "
                     + "persists, please send an error report.");
-            ManualDistView.this.dispose();
+            ManualDistributorView.this.dispose();
         }
 
         this.pack();
@@ -192,12 +192,12 @@ public class ManualDistView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 }
             }
         });
@@ -227,12 +227,12 @@ public class ManualDistView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "The view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "The view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 }
             }
         });
@@ -279,17 +279,17 @@ public class ManualDistView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 }
             }
         });
@@ -489,17 +489,17 @@ public class ManualDistView extends JFrame {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
-                    ManualDistView.this.dispose();
+                    ManualDistributorView.this.dispose();
                 }
             }
         });
@@ -774,7 +774,7 @@ public class ManualDistView extends JFrame {
                     + "without violating the blacklist.\nIf you would like to "
                     + "override the blacklist, please manually select students "
                     + "to be distributed.\n";
-            JOptionPane.showMessageDialog(ManualDistView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(ManualDistributorView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -924,7 +924,7 @@ public class ManualDistView extends JFrame {
         
         List<Assignment> assignments = Allocator.getConfigurationInfo().getHandinAssignments();
         if(assignments.size() > 0) {
-            ManualDistView view = new ManualDistView(assignments.get(0), null);
+            ManualDistributorView view = new ManualDistributorView(assignments.get(0), null);
             view.setLocationRelativeTo(null);
             view.setVisible(true);
         } else {

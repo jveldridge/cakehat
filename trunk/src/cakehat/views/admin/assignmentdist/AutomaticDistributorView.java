@@ -43,17 +43,23 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JSeparator;
+import javax.swing.UIManager;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
- * Provides an interface for creating a distribution for an assignment.
+ * Provides an interface for automatically creating a distribution for an
+ * assignment.
+ * <br/><br/>
+ * Also provides for automatically recalculating all handin statuses for an
+ * assignment, and for creating new rubrics.
  * 
  * @author jeldridg
  */
-public class AssignmentDistView extends JFrame implements DistributionRequester {
+public class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
     private static int GRADER_PANEL_WIDTH = 600;
-    private static int GRADER_PANEL_HEIGHT = 30;
+    private static int GRADER_PANEL_HEIGHT = 25;
 
     private Assignment _asgn;
 
@@ -71,8 +77,10 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
     private JButton _setUpGradingButton, _makeNewRubricsButton, _recalculateHandinStatusesButton;
 
-    public AssignmentDistView(Assignment asgn) {
+    public AutomaticDistributorView(Assignment asgn) {
         _asgn = asgn;
+        this.setTitle("Automatic Distributor - " + _asgn.getName());
+
         try {
             _remainingBadLogins = Allocator.getGradingServices().resolveUnexpectedHandins(_asgn);
         } catch (ServicesException ex) {
@@ -89,8 +97,6 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         _gradingTAs = new Vector<TA>(Allocator.getConfigurationInfo().getDefaultGraders());
         _nonGradingTAs = new Vector<TA>(Allocator.getConfigurationInfo().getNonDefaultGraders());
-
-        this.setTitle(String.format("Distribution for Assignment: %s", _asgn.getName()));
 
         _progressDialog = new JDialog(this, "Distribution In Progress", true);
         _progressDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -110,9 +116,12 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
         topPanel.setLayout(new GridLayout(0, 1));
 
         JPanel instructionsPanel = new JPanel();
-        instructionsPanel.add(new JLabel("<html>Enter the number of handins above or " +
-                "below the average each TA should grade. " +
-                "<br/>(for example, -2 = two fewer students to grade)</html>"));
+
+        instructionsPanel.add(new JLabel("<html>Enter the number " +
+                "of handins above or below the average for each TA to grade" +
+                "<br/>" +
+                "<font color=gray>Examples: -2 = two fewer to grade, " +
+                "3 = three more to grade</font></html>"));
         topPanel.add(instructionsPanel);
 
         JPanel addGraderPanel = new JPanel();
@@ -155,7 +164,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (oneClickGradingSetup()) {
-                        JOptionPane.showMessageDialog(AssignmentDistView.this, "Success!");
+                        JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Success!");
                     }
                 } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "Grading setup failed.");
@@ -184,7 +193,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                     }
 
                     if (makeNewRubrics(distributedGroups, true)) {
-                        JOptionPane.showMessageDialog(AssignmentDistView.this, "Success!");
+                        JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Success!");
                     }
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not make new rubrics.");
@@ -209,7 +218,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                     }
 
                     if (recalculateHandinStatuses(distributedGroups, true)) {
-                        JOptionPane.showMessageDialog(AssignmentDistView.this, "Success!");
+                        JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Success!");
                     }
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not recalculate handin statuses.");
@@ -255,7 +264,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.pack();
-        this.setVisible(true);
+        this.setResizable(false);
     }
 
     private void updateInterface() {
@@ -692,7 +701,7 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                 try {
                     Allocator.getRubricManager().distributeRubrics(_asgn.getHandin(),
                                                                    groups,
-                                                                   AssignmentDistView.this,
+                                                                   AutomaticDistributorView.this,
                                                                    OverwriteMode.REPLACE_EXISTING);
                     
                     _progressDialog.dispose();
@@ -731,13 +740,16 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
             this.setPreferredSize(new Dimension(GRADER_PANEL_WIDTH, GRADER_PANEL_HEIGHT));
 
             JLabel loginLabel = new JLabel(_grader.getLogin());
-            JPanel loginPanel = new JPanel();
-            loginPanel.add(loginLabel);
+            loginLabel.setVerticalTextPosition(JLabel.CENTER);
+
+            JPanel loginPanel = new JPanel(new BorderLayout(0, 0));
+            loginPanel.add(Box.createHorizontalStrut(50), BorderLayout.WEST);
+            loginPanel.add(loginLabel, BorderLayout.CENTER);
+            loginPanel.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
 
             _numDiffField = new IntegerField(0);
-            _numDiffField.setPreferredSize(new Dimension(100, 25));
 
-            Collection<DistributablePart> parts = AssignmentDistView.this._asgn.getDistributableParts();
+            Collection<DistributablePart> parts = AutomaticDistributorView.this._asgn.getDistributableParts();
             _partBox = new GenericJComboBox<DistributablePart>(parts);
 
             JButton removeGraderButton = new JButton("Remove Grader");
@@ -750,8 +762,10 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
                 }
             });
 
-            JPanel removePanel = new JPanel();
-            removePanel.add(removeGraderButton);
+            JPanel removePanel = new JPanel(new BorderLayout(0, 0));
+            removePanel.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
+            removePanel.add(removeGraderButton, BorderLayout.CENTER);
+            removePanel.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
 
             this.add(loginPanel);
             this.add(_numDiffField);
@@ -790,7 +804,11 @@ public class AssignmentDistView extends JFrame implements DistributionRequester 
 
     }
 
-    public static void main(String[] argv) {
-        new AssignmentDistView(Allocator.getConfigurationInfo().getHandinAssignments().get(0));
+    public static void main(String[] argv) throws Throwable {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
+
+        AutomaticDistributorView view = new AutomaticDistributorView(Allocator.getConfigurationInfo().getHandinAssignments().get(0));
+        view.setLocationRelativeTo(null);
+        view.setVisible(true);
     }
 }

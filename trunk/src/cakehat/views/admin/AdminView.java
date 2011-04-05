@@ -3,8 +3,8 @@ package cakehat.views.admin;
 import cakehat.export.ExportException;
 import cakehat.config.handin.ActionException;
 import cakehat.rubric.RubricException;
-import cakehat.views.admin.assignmentdist.AssignmentDistView;
-import cakehat.views.admin.assignmentdist.ManualDistView;
+import cakehat.views.admin.assignmentdist.AutomaticDistributorView;
+import cakehat.views.admin.assignmentdist.ManualDistributorView;
 import support.ui.GenericJList;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
@@ -148,7 +148,7 @@ public class AdminView extends JFrame
     }
 
     private JButton //Assignment wide buttons
-                    _manageGroupsButton, _createDistributionButton, _manualDistributionButton,
+                    _manageGroupsButton, _autoDistributorButton, _manualDistributorButton,
                     _previewRubricButton, _viewGradingGuideButton, _runDemoButton,
                     //Student buttons
                     _chartsButton, _emailReportsButton, _extensionsButton,
@@ -373,7 +373,7 @@ public class AdminView extends JFrame
     {
         _assignmentButtons = new JButton[]
         {
-          _createDistributionButton, _manualDistributionButton,
+          _autoDistributorButton, _manualDistributorButton,
           _previewRubricButton, _viewGradingGuideButton,
           _runDemoButton, _manageGroupsButton
         };
@@ -929,29 +929,29 @@ public class AdminView extends JFrame
         });
         buttonPanel.add(_manageGroupsButton);
 
-        //Generate Distribution
-        _createDistributionButton = createButton("Create Distribution", IconImage.DOCUMENT_SAVE_AS);
-        _createDistributionButton.addActionListener(new ActionListener()
+        //Automatic Distributor
+        _autoDistributorButton = createButton("Auto Distributor", IconImage.DOCUMENT_SAVE_AS);
+        _autoDistributorButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                generateDistributionButtonActionPerformed();
+                autoDistributorButtonActionPerformed();
             }
 
         });
-        buttonPanel.add(_createDistributionButton);
+        buttonPanel.add(_autoDistributorButton);
 
-        //Reassign grading
-        _manualDistributionButton = createButton("Manual Distribution", IconImage.DOCUMENT_PROPERTIES);
-        _manualDistributionButton.addActionListener(new ActionListener()
+        //Manual Distributor
+        _manualDistributorButton = createButton("Manual Distributor", IconImage.DOCUMENT_PROPERTIES);
+        _manualDistributorButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                manualDistributionButtonActionPerformed();
+                manualDistributorButtonActionPerformed();
             }
 
         });
-        buttonPanel.add(_manualDistributionButton);
+        buttonPanel.add(_manualDistributorButton);
 
         //Preview rubric
         _previewRubricButton = createButton("Preview Rubric", IconImage.SYSTEM_SEARCH);
@@ -1279,7 +1279,7 @@ public class AdminView extends JFrame
             //and none of its parts are selected
             if (selection.get(selectedAsgn).isEmpty()) {
                 if (selectedAsgn.hasDistributableParts()) {
-                    _createDistributionButton.setEnabled(true);
+                    _autoDistributorButton.setEnabled(true);
                 }
 
                 if (selectedAsgn.hasGroups()) {
@@ -1294,7 +1294,7 @@ public class AdminView extends JFrame
             //   2. exactly 1 DistributablePart is selected
             if ((selectedAsgn.hasDistributableParts() && selection.get(selectedAsgn).isEmpty())
                     || (selectedDP != null)) {
-                _manualDistributionButton.setEnabled(true);
+                _manualDistributorButton.setEnabled(true);
             }
 
             if (selectedDP != null) {
@@ -1462,15 +1462,17 @@ public class AdminView extends JFrame
         AdminView.launch();
     }
 
-    private void generateDistributionButtonActionPerformed()
+    private void autoDistributorButtonActionPerformed()
     {
-        new AssignmentDistView(this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
+        AutomaticDistributorView view = new AutomaticDistributorView(this.getSingleSelectedAssignment(_assignmentTree.getSelection()));
+        view.setLocationRelativeTo(this);
+        view.setVisible(true);
     }
 
-    private void manualDistributionButtonActionPerformed()
+    private void manualDistributorButtonActionPerformed()
     {
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
-        ManualDistView view = new ManualDistView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
+        ManualDistributorView view = new ManualDistributorView(this.getSingleSelectedAssignment(selection), this.getSingleSelectedDP(selection));
         view.setLocationRelativeTo(this);
         view.setVisible(true);
     }
