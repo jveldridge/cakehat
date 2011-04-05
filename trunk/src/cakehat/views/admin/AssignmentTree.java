@@ -41,7 +41,7 @@ class AssignmentTree extends JScrollPane {
 
         _tree = new JTree(root);
         _tree.setRootVisible(false);
-        _tree.setToggleClickCount(1);
+        _tree.setShowsRootHandles(true);
 
         this.setViewportView(_tree);
     }
