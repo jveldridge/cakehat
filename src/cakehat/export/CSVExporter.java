@@ -14,7 +14,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
-import cakehat.rubric.TimeStatus;
+import cakehat.database.HandinStatus;
 import java.util.ArrayList;
 import cakehat.views.shared.ErrorView;
 
@@ -182,16 +182,18 @@ public class CSVExporter implements Exporter
                     //If there is no attempt to cancel
                     if(!_attemptCancel)
                     {
-                        double total = 0;
-                        for(Part part : asgn.getParts())
-                        {
-                            try {
-                                Group studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, login);
+                        try {
+                            Group studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, login);
+                            double total = 0;
+
+                            for(Part part : asgn.getParts())
+                            {
                                 if (studentsGroup == null) {
                                     printer.append("0 (No grade recorded),");
                                     if (part instanceof DistributablePart) {
                                        printer.append("(unknown handin status),");
                                     }
+                                    pView.updateProgress(login, asgn, part, ++currStep);
                                     continue;
                                 }
 
@@ -211,23 +213,23 @@ public class CSVExporter implements Exporter
                                 }
                                 
                                 if (part instanceof DistributablePart) {
-                                    TimeStatus status = Allocator.getDatabaseIO().getHandinStatus(part.getAssignment().getHandin(), studentsGroup).getTimeStatus();
-                                    if (status != null) {
-                                        printer.append(status + ",");
+                                    HandinStatus handinStatus = Allocator.getDatabaseIO().getHandinStatus(part.getAssignment().getHandin(), studentsGroup);
+                                    if (handinStatus != null) {
+                                        printer.append(handinStatus.getTimeStatus() + ",");
                                     }
                                     else {
                                         printer.append("(unknown handin status),");
                                     }
                                 }
                                 pView.updateProgress(login, asgn, part, ++currStep);
-                            } catch (SQLException ex) {
-                                _exportFile.delete();
-                                throw new ExportException("Export failed; grades data could not be retrieved " +
-                                                          "from the database.", ex);
+                            
                             }
+                            printer.append(total + ",");
+                        } catch (SQLException ex) {
+                            _exportFile.delete();
+                            throw new ExportException("Export failed; grades data could not be retrieved " +
+                                                      "from the database.", ex);
                         }
-                        printer.append(total + ",");
-
                     }
                     //If attempting to cancel, delete the file created
                     else
