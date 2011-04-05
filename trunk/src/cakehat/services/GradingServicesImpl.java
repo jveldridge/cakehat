@@ -42,6 +42,7 @@ import cakehat.views.shared.EmailView;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -72,7 +73,7 @@ public class GradingServicesImpl implements GradingServices
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();
         try
         {
-            Allocator.getFileSystemUtilities().deleteFile(workspace);
+            Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(workspace));
         }
         catch(IOException e)
         {

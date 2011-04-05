@@ -177,32 +177,6 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
 
     /**
-     * Deletes all files, throwing an informative exception if any of the files
-     * cannot be deleted.
-     *
-     * @param files
-     * @throws IOException
-     */
-    private void deleteFiles(List<File> files) throws IOException
-    {
-        ArrayList<File> failedToDelete = new ArrayList<File>();
-
-        for(File file : files)
-        {
-            if(!file.delete())
-            {
-                failedToDelete.add(file);
-            }
-        }
-
-        if(!failedToDelete.isEmpty())
-        {
-            throw new IOException("Unable to delete the following" +
-                    "files and/or directories: \n" + failedToDelete);
-        }
-    }
-
-    /**
      * Helper method used by copy methods to delete files if an issue has been
      * encountered in copying. This should be used when a copy has failed and
      * an exception must be thrown, but before doing so all of the files created
@@ -241,37 +215,81 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
-    public void deleteFile(File file) throws IOException
+    public void deleteFiles(Iterable<File> files) throws IOException
     {
-        if(!file.exists())
+        List<File> failedToDelete = deleteFilesHelper(files);
+
+        if(!failedToDelete.isEmpty())
         {
-            throw new IOException("File does not exist: " + file.getAbsolutePath());
-        }
-        else if(file.isFile())
-        {
-            if(!file.delete())
+            StringBuilder failedToDeleteBuilder = new StringBuilder();
+            for(File nonDeleted : failedToDelete)
             {
-                throw new IOException("Cannot delete file: " + file.getAbsolutePath());
-            }
-        }
-        else if(file.isDirectory())
-        {
-            //To delete a directory its entire contents must first be deleted
-            for(File entry : file.listFiles())
-            {
-                deleteFile(entry);
+                failedToDeleteBuilder.append("\n" + nonDeleted.getAbsolutePath());
             }
 
-            if(!file.delete())
+            throw new IOException("Unable to delete:" + failedToDeleteBuilder.toString());
+        }
+    }
+
+    /**
+     * Helper method that attempts to delete all the <code>files</code>. Those
+     * files which could not be deleted were returned.
+     *
+     * @param files
+     * @return files that could not be deleted
+     */
+    private List<File> deleteFilesHelper(Iterable<File> files)
+    {
+        ArrayList<File> failedToDelete = new ArrayList<File>();
+
+        for(File file : files)
+        {
+            if(!file.exists())
             {
-                throw new IOException("Cannot delete directory: " + file.getAbsolutePath());
+                failedToDelete.add(file);
+            }
+            if(file.isDirectory())
+            {
+                //To delete a directory succesfully, all of contents must first
+                //be deleted
+                File[] entries = file.listFiles();
+
+                //This can occur if the permission to see the directory's
+                //entries was not given
+                if(entries == null)
+                {
+                    failedToDelete.add(file);
+                }
+                else
+                {
+                    //Recursively delete contents
+                    List<File> nonDeletedEntries = this.deleteFilesHelper(Arrays.asList(entries));
+                    failedToDelete.addAll(nonDeletedEntries);
+
+                    //Delete directory if all contents were deleted
+                    if(nonDeletedEntries.isEmpty())
+                    {
+                        if(!file.delete())
+                        {
+                            failedToDelete.add(file);
+                        }
+                    }
+                    else
+                    {
+                        failedToDelete.add(file);
+                    }
+                }
+            }
+            else
+            {
+                if(!file.delete())
+                {
+                    failedToDelete.add(file);
+                }
             }
         }
-        else
-        {
-            throw new IOException("Unable to handle non-file and non-directory: " +
-                    file.getAbsolutePath());
-        }
+
+        return failedToDelete;
     }
 
     public List<File> makeDirectory(File dir, String groupOwner) throws IOException

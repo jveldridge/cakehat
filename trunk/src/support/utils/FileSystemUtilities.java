@@ -138,17 +138,16 @@ public interface FileSystemUtilities
     public List<File> copy(File src, File dst, OverwriteMode overwrite,
             boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException;
-    
+
     /**
-     * Deletes the <code>file</code>. If a directory, all of the files and
-     * subdirectories of that directory will also be deleted.
+     * Deletes the <code>files</code>. Attempts to delete all files, and will
+     * continue even if unable to delete one or more files.
      *
-     * @param file
-     *
-     * @throws IOException if unable to delete the file or directory or any
-     * files or directories in the directory
+     * @param files
+     * @throws IOException If unable to delete one or more files. Documents all
+     * files that could not be deleted.
      */
-    public void deleteFile(File file) throws IOException;
+    public void deleteFiles(Iterable<File> files) throws IOException;
 
     /**
      * Creates a directory, recursively creating parent directories as
