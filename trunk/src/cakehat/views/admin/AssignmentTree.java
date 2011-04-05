@@ -2,8 +2,15 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.config.Assignment;
+import cakehat.config.LabPart;
+import cakehat.config.NonHandinPart;
 import cakehat.config.Part;
+import cakehat.config.handin.DistributablePart;
+import cakehat.resources.icons.IconLoader;
+import cakehat.resources.icons.IconLoader.IconImage;
+import cakehat.resources.icons.IconLoader.IconSize;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,8 +18,11 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 /**
@@ -42,6 +52,68 @@ class AssignmentTree extends JScrollPane {
         _tree = new JTree(root);
         _tree.setRootVisible(false);
         _tree.setShowsRootHandles(true);
+
+        //Partially override the default renderer to use custom icons
+        _tree.setCellRenderer(new DefaultTreeCellRenderer()
+        {
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value,
+                    boolean selected, boolean expanded, boolean leaf, int row,
+                    boolean hasFocus)
+            {
+                //Extract value in the tree object
+                Object userObject = null;
+                if(value instanceof GenericTreeNode)
+                {
+                    userObject = ((GenericTreeNode) value).getUserObject();
+                }
+
+                if(userObject instanceof Assignment)
+                {
+                    if(expanded)
+                    {
+                        this.setOpenIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.FOLDER_OPEN));
+                    }
+                    else
+                    {
+                        this.setClosedIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.FOLDER));
+                    }
+                }
+                else if(userObject instanceof LabPart)
+                {
+                    this.setLeafIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.NETWORK_IDLE));
+                }
+                else if(userObject instanceof NonHandinPart)
+                {
+                    this.setLeafIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.ACCESSORIES_TEXT_EDITOR));
+                }
+                else if(userObject instanceof DistributablePart)
+                {
+                    this.setLeafIcon(IconLoader.loadIcon(IconSize.s16x16, IconImage.PACKAGE_X_GENERIC));
+                }
+                else
+                {
+                    if(leaf)
+                    {
+                        this.setIcon(this.getLeafIcon());
+                    }
+                    else
+                    {
+                        if(expanded)
+                        {
+                            this.setIcon(this.getDefaultOpenIcon());
+                        }
+                        else
+                        {
+                            this.setIcon(this.getDefaultClosedIcon());
+                        }
+                    }
+                }
+
+
+                return super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+            }
+        });
 
         this.setViewportView(_tree);
     }
@@ -104,7 +176,9 @@ class AssignmentTree extends JScrollPane {
 
     }
 
-    public static void main(String[] argv) {
+    public static void main(String[] argv) throws Throwable {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
+
         JFrame frame = new JFrame("Tree Test");
 
         frame.add(new AssignmentTree());
