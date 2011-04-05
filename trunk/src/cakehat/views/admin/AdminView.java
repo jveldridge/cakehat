@@ -1284,10 +1284,11 @@ public class AdminView extends JFrame
 
             DistributablePart selectedDP = this.getSingleSelectedDP(selection);
 
-            //enable reassign button if either:
-            //   1. no parts are selected
+            //enable manual distribution button if either:
+            //   1. no parts are selected and the assignment has DistributableParts
             //   2. exactly 1 DistributablePart is selected
-            if (selection != null || selection.get(selectedAsgn).isEmpty()) {
+            if ((selectedAsgn.hasDistributableParts() && selection.get(selectedAsgn).isEmpty())
+                    || (selectedDP != null)) {
                 _manualDistributionButton.setEnabled(true);
             }
 
