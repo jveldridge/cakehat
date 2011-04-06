@@ -598,13 +598,14 @@ class RubricPanel extends JPanel
 
             final GenericJComboBox<TA> graderBox = new GenericJComboBox<TA>(graders, graderConverter);
             graderBox.setGenericSelectedItem(grader);
+            _stateManager.setGrader(grader);
             graderBox.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     TA newGrader = graderBox.getSelectedItem();
                     try {
                         if (newGrader != _stateManager.getGrader()) {
-                            if (Allocator.getGradingServices().isOkToDistribute(_rubric.getGroup(), newGrader)) {
+                            if (newGrader == null || Allocator.getGradingServices().isOkToDistribute(_rubric.getGroup(), newGrader)) {
                                 _stateManager.setGrader(graderBox.getSelectedItem());
                             }
                             else {
