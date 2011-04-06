@@ -6,14 +6,14 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * The about box displays very basic information about cakehat.
+ * The about box displays information about which release of cakehat this is
+ * and gives credit to the developers who have worked on it.
  *
  * @author jak2 (Joshua Kaplan)
  */
@@ -37,25 +37,25 @@ public class CakehatAboutBox extends JFrame
         this.add(panel);
 
         // Icon
-        Icon cakehatIcon = new ImageIcon(getClass().getResource("/cakehat/resources/cakehat.png"));
-        int vOffset = (IMAGE_PANEL_SIZE.height - cakehatIcon.getIconHeight()) / 2;
-        int hOffset = (IMAGE_PANEL_SIZE.width - cakehatIcon.getIconWidth()) / 2;
-        JPanel imagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, hOffset, vOffset));
-        imagePanel.setPreferredSize(IMAGE_PANEL_SIZE);
-        JLabel imageLabel = new JLabel(cakehatIcon);
-        imagePanel.add(imageLabel);
-        panel.add(imagePanel, BorderLayout.WEST);
+        ImageIcon cakehatIcon = new ImageIcon(getClass().getResource("/cakehat/resources/cakehat.png"));
+        panel.add(new JLabel(cakehatIcon), BorderLayout.CENTER);
 
         // Info
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        infoPanel.add(new JLabel("<html><h3>Version " +
-                CakehatReleaseInfo.getVersion() + "</h3><font size=2>" +
-                CakehatReleaseInfo.getReleaseCommitNumber()
-                + " (" + CakehatReleaseInfo.getReleaseDate() + ")</font></html>"));
-        infoPanel.add(new JLabel("<html><h4>A Brown CS grading system started by<br/>the CS015 TA Staff in 2009.</h4></html>"));
-        infoPanel.add(new JLabel("<html><h3>Creators</h3>Jonathan Eldridge, Joshua Kaplan, Stephen<br/>Poletto, Paul Sastrasinh, & Alex Unger</html>"));
-        infoPanel.add(new JLabel("<html><br/><a href=\"http://cakehat.googlecode.com/\">http://cakehat.googlecode.com</a></html>"));
-        infoPanel.setPreferredSize(INFO_PANEL_SIZE);
+        String infoText =
+                "<html><h2>Version " + CakehatReleaseInfo.getVersion() + "</h2>" +
+               "<font color=gray>" +
+                CakehatReleaseInfo.getReleaseCommitNumber() +
+                " (" + CakehatReleaseInfo.getReleaseDate() + ")</font>" +
+                "<br/><br/>" +
+                "<h3>Developers</h3>" +
+                "Jonathan Eldridge, Yudi Fu, Joshua Kaplan," +
+                "<br/>Stephen Poletto, Hannah Rosen, Paul" +
+                "<br/>Sastrasinh, & Alex Unger" +
+                "<br/><br/>" +
+                "<a href=http://cakehat.googlecode.com/>http://cakehat.googlecode.com</a>" +
+                "</html>";
+        infoPanel.add(new JLabel(infoText));infoPanel.setPreferredSize(INFO_PANEL_SIZE);
         panel.add(infoPanel, BorderLayout.EAST);
 
         // Display
@@ -76,7 +76,7 @@ public class CakehatAboutBox extends JFrame
 
     /**
      * Displays the about box. If the about box is already open it will be
-     * brought to the front and positioned relatove to <code>relativeTo</code>.
+     * brought to the front and positioned relative to <code>relativeTo</code>.
      *
      * @param relativeTo The component the about box will be displayed relative
      * to. null may be passed in, in which case the about box is centered on the

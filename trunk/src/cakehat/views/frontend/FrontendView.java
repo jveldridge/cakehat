@@ -50,6 +50,7 @@ import cakehat.views.shared.ErrorView;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -69,7 +70,7 @@ import javax.swing.SwingConstants;
  * A frontend view to be used by TAs that are grading.
  * <br/><br/>
  * In order to have a very responsive user interface, this class uses a non-UI
- * thread to load information. Whenver these changes lead to UI changes, the
+ * thread to load information. Whenever these changes lead to UI changes, the
  * code that will do this is placed on the AWT Event Queue. In particular,
  * {@link #_assignedGroups} can be loaded using a non-UI thread. This is done
  * via the {@link #loadAssignedGrading(boolean)} method.
@@ -90,6 +91,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         public CurrentlyGradingLabel()
         {
             super(_begin + _default + _end);
+            this.setFont(this.getFont().deriveFont(Font.PLAIN));
         }
 
         public void update(Group group)
