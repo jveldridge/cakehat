@@ -1450,7 +1450,15 @@ public class FrontendView extends JFrame implements RubricSaveListener
                     if(updateGrouplist)
                     {
                         DistributablePart currPart = _dpList.getSelectedValue();
-                        List<GroupGradedStatus> statuses = new ArrayList(_assignedGroups.get(currPart));
+                        List<GroupGradedStatus> statuses;
+                        if(_assignedGroups.containsKey(currPart))
+                        {
+                            statuses = new ArrayList(_assignedGroups.get(currPart));
+                        }
+                        else
+                        {
+                            statuses = Collections.emptyList();
+                        }
                         Collections.sort(statuses);
                         List<Group> groups = new ArrayList<Group>();
                         for(GroupGradedStatus status : statuses)
