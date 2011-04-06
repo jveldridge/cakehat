@@ -1573,13 +1573,17 @@ public class AdminView extends JFrame
     private void exemptionsButtonActionPerformed() {
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
-        Group group;
-        try {
-            group = this.getGroup(asgn, _studentList.getSelectedValue());
-        } catch (CakehatException ex) {
-            new ErrorView(ex);
-            return;
+        String selectedStudent = _studentList.getSelectedValue();
+        Group group = null;
+        if (selectedStudent!=null){
+            try {
+                group = this.getGroup(asgn, selectedStudent);
+            } catch (CakehatException ex) {
+                new ErrorView(ex);
+                return;
+            }
         }
+
         new ExemptionView(asgn, group);
     }
 
