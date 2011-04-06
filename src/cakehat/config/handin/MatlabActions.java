@@ -38,6 +38,7 @@ import support.utils.FileExistsException;
 import support.utils.FileExtensionFilter;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
+import support.utils.posix.NativeException;
 
 /**
  * Actions that interact with MATLAB. These actions make use of the
@@ -637,7 +638,7 @@ class MatlabActions implements ActionProvider
     }
     
     private RemoteMatlabProxy _proxy; //Only getMatlabProxy() should use this variable
-    private RemoteMatlabProxy getMatlabProxy() throws MatlabConnectionException
+    private RemoteMatlabProxy getMatlabProxy() throws MatlabConnectionException, ActionException
     {
         if(_proxy == null)
         {
@@ -651,7 +652,23 @@ class MatlabActions implements ActionProvider
                     _proxy = null;
                 }
             });
-            _proxy = factory.getProxy();
+            
+            //Have a timeout of 90000 milliseconds = 1.5 minutes
+            //If over ssh, double the timeout to 3 minutes
+            long timeout = 90000;
+            try
+            {
+                if(Allocator.getUserUtilities().isUserRemotelyConnected())
+                {
+                    timeout *= 2;
+                }
+            }
+            catch(NativeException e)
+            {
+                throw new ActionException("Unable to determine if connected over ssh", e);
+            }
+
+            _proxy = factory.getProxy(timeout);
         }
 
         return _proxy;
