@@ -20,6 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.text.html.HTMLEditorKit;
 import cakehat.Allocator;
+import cakehat.config.handin.DistributablePart;
 import cakehat.database.Group;
 import cakehat.views.shared.ErrorView;
 import java.util.List;
@@ -113,8 +114,8 @@ public class GradeReportView extends javax.swing.JFrame {
                 continue;
             }
 
-            for (Part p : _asgnParts.get(a)) {
-                Calendar extension = null;
+            Calendar extension = null;
+            if (a.hasHandin()) {
                 try {
                     extension = Allocator.getDatabaseIO().getExtension(group, a.getHandin());
                 } catch (SQLException e) {
@@ -122,7 +123,9 @@ public class GradeReportView extends javax.swing.JFrame {
                             + "an extension for assignment " + a + ".  It will be assumed that "
                             + "the student does not have an extension.");
                 }
+            }
 
+            for (Part p : _asgnParts.get(a)) {
                 String exemptionNote = null;
                 try {
                     exemptionNote = Allocator.getDatabaseIO().getExemptionNote(group, p);
@@ -137,7 +140,7 @@ public class GradeReportView extends javax.swing.JFrame {
                 try {
                     studentScore = Allocator.getDatabaseIO().getGroupScore(group, p);
                 } catch (SQLException e) {
-                    new ErrorView(e, "Could not retrieve the socre for student " + student
+                    new ErrorView(e, "Could not retrieve the score for student " + student
                             + "on part " + p + ".  The student's score will be displayed "
                             + "as \"UNKNOWN\".");
                     scoreString = "UNKNOWN";
@@ -146,11 +149,16 @@ public class GradeReportView extends javax.swing.JFrame {
                 if (exemptionNote != null) {
                     htmlString += "<tr style='background: #FFFFFF" + "'><td>"
                             + p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
-                } else if (extension != null && studentScore == null && (extension.getTimeInMillis() > System.currentTimeMillis())) {
+                }
+                else if (extension != null &&
+                           p instanceof DistributablePart &&
+                           studentScore == null &&
+                           (extension.getTimeInMillis() > System.currentTimeMillis())) {
                     htmlString += "<tr style='background: #FFFFFF" + "'><td>"
                             + p.getName() + "</td><td>Extension until: "
                             + extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
-                } else {
+                }
+                else {
                     if (studentScore != null) {
                         scoreString = Double.toString(studentScore);
                     } else {
