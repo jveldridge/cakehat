@@ -17,19 +17,23 @@ import java.util.Map;
 public interface GradingServices
 {
     /**
-     * Makes the user's workspace as specified by {@link PathServices#getUserWorkspace()}.
+     * Makes the user's workspace as specified by
+     * {@link PathServices#getUserWorkspace()}. If the workspace already exists,
+     * it will attempt to delete it, but if it does not succeed at this it will
+     * fail silently.
      *
      * @throws ServicesException if unable to create directory
      */
     public void makeUserWorkspace() throws ServicesException;
 
     /**
-     * Removes the user's workspace as specified by {@link PathServices#getUserWorkspace()}.
+     * Removes the user's workspace as specified by
+     * {@link PathServices#getUserWorkspace()}. This may silently fail if there
+     * are issues with NFS (network file system).
      *
-     * @throws ServicesException if unable to remove directory
+     * @throws ServicesException
      */
-    public void removeUserWorkspace() throws ServicesException;
-
+    public void removeUserWorkspace();
 
     public void printGRDFiles(Handin part, Iterable<Group> groups) throws ServicesException;
 
