@@ -162,7 +162,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
     private FrontendView()
     {
         //Frame title
-        super("[cakehat] - " + Allocator.getUserUtilities().getUserLogin());
+        super("cakehat");
 
         //Create the directory to work in
         try {
