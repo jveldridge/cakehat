@@ -599,6 +599,7 @@ class RubricPanel extends JPanel
             final GenericJComboBox<TA> graderBox = new GenericJComboBox<TA>(graders, graderConverter);
             graderBox.setGenericSelectedItem(grader);
             _stateManager.setGrader(grader);
+            _stateManager.graderSaved();
             graderBox.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
