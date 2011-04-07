@@ -139,6 +139,14 @@ public interface FileSystemUtilities
             boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException;
 
+
+    /**
+     * Deletes a file or directory on exit.
+     * 
+     * @param file
+     */
+    public void deleteFileOnExit(File file);
+
     /**
      * Deletes the <code>files</code>. Attempts to delete all files, and will
      * continue even if unable to delete one or more files.
