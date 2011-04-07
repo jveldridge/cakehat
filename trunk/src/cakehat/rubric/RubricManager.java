@@ -1,6 +1,5 @@
 package cakehat.rubric;
 
-import cakehat.views.admin.assignmentdist.DistributionRequester;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;

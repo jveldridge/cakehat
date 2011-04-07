@@ -41,7 +41,7 @@ import javax.swing.LayoutStyle;
  *
  * @author yf6
  */
-public class ExemptionView extends javax.swing.JFrame {
+class ExemptionView extends javax.swing.JFrame {
 
     private Assignment _assignment;
     private Collection<Part> _selectedParts;

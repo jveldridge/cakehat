@@ -32,7 +32,7 @@ import javax.swing.JPanel;
  *
  * @author jeldridg
  */
-public class SinglePartPanel extends JPanel {
+class SinglePartPanel extends JPanel {
 
     private TextAndValueLabel _partLabel;
     private TextAndValueLabel _numHandinsLabel;

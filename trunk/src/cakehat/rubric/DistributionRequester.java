@@ -1,4 +1,4 @@
-package cakehat.views.admin.assignmentdist;
+package cakehat.rubric;
 
 /**
  * Must be implemented by classes that call the RubricManager 
@@ -14,7 +14,7 @@ public interface DistributionRequester {
     public void updatePercentDone(int newPercentDone);
 
     /**
-     * Defuault implementation whose <code>updatePercentDone(...)</code> method
+     * Default implementation whose <code>updatePercentDone(...)</code> method
      * does nothing.  Callers using this implementation will not actually be
      * informed of the progress of the rubric distribution.
      */

@@ -1,4 +1,4 @@
-package cakehat.views.admin.assignmentdist;
+package cakehat.views.admin;
 
 import support.ui.GenericJList;
 import cakehat.config.Assignment;
@@ -44,6 +44,7 @@ import support.ui.StringConverter;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
+import cakehat.rubric.DistributionRequester;
 import cakehat.views.shared.ErrorView;
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -63,7 +64,7 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  *
  * @author jeldridg
  */
-public class ManualDistributorView extends JFrame {
+class ManualDistributorView extends JFrame {
     
     private static final int LIST_HEIGHT = 300;
     private static final int LIST_WIDTH = 130;
