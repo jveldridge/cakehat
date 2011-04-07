@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import support.utils.posix.NativeFunctions;
 import support.utils.FileSystemUtilities.Permission;
 import support.utils.posix.NativeException;
@@ -215,6 +217,23 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
+    public void deleteFileOnExit(File file)
+    {
+        if(file.isDirectory())
+        {
+            file.deleteOnExit();
+
+            for(File entry : file.listFiles())
+            {
+                this.deleteFileOnExit(entry);
+            }
+        }
+        else
+        {
+            file.deleteOnExit();
+        }
+    }
+
     public void deleteFiles(Iterable<File> files) throws IOException
     {
         List<File> failedToDelete = deleteFilesHelper(files);
@@ -248,7 +267,14 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             {
                 failedToDelete.add(file);
             }
-            if(file.isDirectory())
+            else if(file.isFile())
+            {
+                if(!file.delete())
+                {
+                    failedToDelete.add(file);
+                }
+            }
+            else if(file.isDirectory())
             {
                 //To delete a directory succesfully, all of contents must first
                 //be deleted
@@ -264,7 +290,6 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 {
                     //Recursively delete contents
                     List<File> nonDeletedEntries = this.deleteFilesHelper(Arrays.asList(entries));
-                    failedToDelete.addAll(nonDeletedEntries);
 
                     //Delete directory if all contents were deleted
                     if(nonDeletedEntries.isEmpty())
@@ -274,18 +299,18 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                             failedToDelete.add(file);
                         }
                     }
+                    //Not all contents were deleted, so it will not be possible
+                    //to delete this directory
                     else
                     {
+                        failedToDelete.addAll(nonDeletedEntries);
                         failedToDelete.add(file);
                     }
                 }
             }
             else
             {
-                if(!file.delete())
-                {
-                    failedToDelete.add(file);
-                }
+                failedToDelete.add(file);
             }
         }
 

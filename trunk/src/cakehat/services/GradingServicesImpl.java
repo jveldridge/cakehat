@@ -42,7 +42,6 @@ import cakehat.views.shared.EmailView;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -71,15 +70,7 @@ public class GradingServicesImpl implements GradingServices
     public void removeUserWorkspace() throws ServicesException
     {
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();
-        try
-        {
-            Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(workspace));
-        }
-        catch(IOException e)
-        {
-            throw new ServicesException("Unable to remove user's workspace: " +
-                    workspace.getAbsolutePath(), e);
-        }
+        Allocator.getFileSystemUtilities().deleteFileOnExit(workspace);
     }
 
     @Override
