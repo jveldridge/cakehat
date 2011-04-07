@@ -508,9 +508,7 @@ public class AdminView extends JFrame
 
         JLabel instructionsLabel = new JLabel("<html><br/>To get started, select one " +
                                               "or more students<br/>or assignments" +
-                                              " from the lists to the left. <br/>" +
-                                              "<br/>For more information, consult " +
-                                              "the Help menu.</html>");
+                                              " from the lists to the left.</html>");
         panel.add(instructionsLabel);
     }
 
