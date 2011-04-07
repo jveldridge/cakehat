@@ -6,7 +6,7 @@ import support.utils.posix.NativeException;
 
 /**
  *
- * @author hdrosen
+ * @author aunger
  */
 public class UserUtilitiesTest {
 
@@ -16,18 +16,25 @@ public class UserUtilitiesTest {
         _instance = new UserUtilitiesImpl();
     }
 
-    //This tests the getUserName method in the UserUtilities class.
     @Test
-    public void testUserName() {
-        boolean error = false;
+    public void testUserName() throws NativeException {
+        // will fail if run on non department machine
+        assertEquals("System Management", _instance.getUserName("system"));
+    }
 
-        try {
-            assertEquals("Ashley Rose Tuccero", _instance.getUserName("ashley"));
-            assertEquals("UNKNOWN_LOGIN", _instance.getUserName("hello"));
-        } catch (NativeException ex) {
-            error = true;
-        }
+    @Test(expected=NativeException.class)
+    public void testUserName_NonExistant() throws NativeException {
+        _instance.getUserName("hellooooo"); // can't be more than 8 chars
+    }
 
-        assertFalse(error);
+    @Test
+    public void testIsLoginValid() {
+        // will fail if run on non department machine
+        assertTrue(_instance.isLoginValid("system"));
+    }
+
+    @Test
+    public void testIsLoginValid_NonExistant() {
+        assertFalse(_instance.isLoginValid("hellooooo")); // can't be more than 8 chars
     }
 }
