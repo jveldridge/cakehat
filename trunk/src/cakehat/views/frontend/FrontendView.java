@@ -584,15 +584,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                try
-                {
-                    Allocator.getGradingServices().removeUserWorkspace();
-                }
-                catch(ServicesException ex)
-                {
-                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
-                }
-
+                Allocator.getGradingServices().removeUserWorkspace();
                 System.exit(0);
             }
         });
@@ -1192,15 +1184,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
             @Override 
             public void windowClosing(WindowEvent e)
             {
-                //remove user grading directory when frontend is closed
-                try
-                {
-                    Allocator.getGradingServices().removeUserWorkspace();
-                }
-                catch(ServicesException ex)
-                {
-                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
-                }
+                Allocator.getGradingServices().removeUserWorkspace();
             }
         });
     }

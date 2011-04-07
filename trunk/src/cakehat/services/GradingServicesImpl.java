@@ -42,6 +42,7 @@ import cakehat.views.shared.EmailView;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -55,6 +56,21 @@ public class GradingServicesImpl implements GradingServices
     public void makeUserWorkspace() throws ServicesException
     {
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();
+
+        //If the workspace already exists, attempt to delete it
+        if(workspace.exists())
+        {
+            try
+            {
+                Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(workspace));
+            }
+            //Do not do anything if this fails, because it will almost certainly
+            //be due to NFS (networked file system) issues about which nothing
+            //can be done
+            catch(IOException e) { }
+        }
+
+        //Create the workspace
         try
         {
             Allocator.getFileSystemServices().makeDirectory(workspace);
@@ -67,8 +83,11 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public void removeUserWorkspace() throws ServicesException
+    public void removeUserWorkspace()
     {
+        //Due to NFS (networked file system) behavior, the workspace might not
+        //always be succesfully deleted - there is NOTHING that can be done
+        //about this, even 'rm -rf' will fail in these situations
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();
         Allocator.getFileSystemUtilities().deleteFileOnExit(workspace);
     }

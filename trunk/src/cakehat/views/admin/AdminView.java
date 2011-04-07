@@ -209,14 +209,7 @@ public class AdminView extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                try
-                {
-                    Allocator.getGradingServices().removeUserWorkspace();
-                }
-                catch(ServicesException ex)
-                {
-                    new ErrorView(ex, "Unable to remove your cakehat workspace directory.");
-                }
+                Allocator.getGradingServices().removeUserWorkspace();
 
                 //If in not developing cakehat, backup the database on close
                 if(!CakehatMain.isDeveloperMode())
