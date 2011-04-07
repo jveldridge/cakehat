@@ -178,8 +178,8 @@ public class AdminView extends JFrame
 
     private AdminView()
     {
-        super("[cakehat] admin - " + Allocator.getUserUtilities().getUserLogin());
-
+        super("cakehat (admin)");
+        
         try {
             //student logins
             _studentLogins = new LinkedList(Allocator.getDatabaseIO().getAllStudents().keySet());
