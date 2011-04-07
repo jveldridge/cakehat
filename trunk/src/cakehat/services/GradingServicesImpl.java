@@ -356,7 +356,6 @@ public class GradingServicesImpl implements GradingServices
                         String studentLogin = disabledPanel.getStudentLogin();
                         try {
                             Allocator.getDatabaseIO().enableStudent(studentLogin);
-                            groupsToAdd.add(new Group(studentLogin, studentLogin));
                             handinsDisabled.remove(studentLogin);
                         } catch (SQLException e) {
                             new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
