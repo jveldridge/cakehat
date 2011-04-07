@@ -1,6 +1,5 @@
 package cakehat.rubric;
 
-import cakehat.views.admin.assignmentdist.DistributionRequester;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;

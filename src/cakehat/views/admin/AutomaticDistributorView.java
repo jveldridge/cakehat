@@ -1,4 +1,4 @@
-package cakehat.views.admin.assignmentdist;
+package cakehat.views.admin;
 
 import support.ui.IntegerField;
 import cakehat.config.Assignment;
@@ -34,6 +34,7 @@ import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.rubric.DistributionRequester;
 import cakehat.views.shared.ErrorView;
 import java.io.IOException;
 import java.util.HashSet;
@@ -56,7 +57,7 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  * 
  * @author jeldridg
  */
-public class AutomaticDistributorView extends JFrame implements DistributionRequester {
+class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
     private static int GRADER_PANEL_WIDTH = 600;
     private static int GRADER_PANEL_HEIGHT = 25;

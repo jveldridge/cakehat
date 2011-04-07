@@ -22,7 +22,7 @@ import org.jfree.data.statistics.HistogramDataset;
  *
  * @author Paul
  */
-public class HistogramPanel extends JComponent {
+class HistogramPanel extends JComponent {
 
     private JFreeChart _chart;
 

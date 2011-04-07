@@ -34,7 +34,7 @@ import java.util.List;
  * @author psastras
  * @author jeldridg
  */
-public class GradeReportView extends javax.swing.JFrame {
+class GradeReportView extends javax.swing.JFrame {
 
     /** Creates new form GradeReportView */
     private Collection<String> _students;

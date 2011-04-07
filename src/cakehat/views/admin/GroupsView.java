@@ -28,7 +28,7 @@ import javax.swing.JPanel;
  *
  * @author aunger
  */
-public class GroupsView extends javax.swing.JFrame {
+class GroupsView extends javax.swing.JFrame {
 
     private FileFilter _groupFilter;
     private AdminView _admin;

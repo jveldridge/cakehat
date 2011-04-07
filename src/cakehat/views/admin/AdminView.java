@@ -3,8 +3,6 @@ package cakehat.views.admin;
 import cakehat.export.ExportException;
 import cakehat.config.handin.ActionException;
 import cakehat.rubric.RubricException;
-import cakehat.views.admin.assignmentdist.AutomaticDistributorView;
-import cakehat.views.admin.assignmentdist.ManualDistributorView;
 import support.ui.GenericJList;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
