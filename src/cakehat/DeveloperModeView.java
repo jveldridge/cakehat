@@ -12,7 +12,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
@@ -26,7 +25,7 @@ class DeveloperModeView extends JFrame
 {
     private DeveloperModeView()
     {
-        super("[cakehat] developer mode - " + Allocator.getUserUtilities().getUserLogin());
+        super("cakehat (developer)");
 
          //Menu bar
         JMenuBar menuBar = new JMenuBar();
@@ -52,19 +51,8 @@ class DeveloperModeView extends JFrame
         menu = new JMenu("Help");
         menuBar.add(menu);
 
-        //Help contents item
-        menuItem = new JMenuItem("Help Contents");
-        menuItem.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                JOptionPane.showMessageDialog(DeveloperModeView.this, "This feature is not yet available");
-            }
-        });
-        menu.add(menuItem);
-
         //About
-        menuItem = new JMenuItem("About");
+        menuItem = new JMenuItem("About cakehat");
         menuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -75,8 +63,8 @@ class DeveloperModeView extends JFrame
         menu.add(menuItem);
 
         // Panel for buttons
-        JPanel panel = new JPanel(new GridLayout(1,2));
-        panel.setPreferredSize(new Dimension(300,80));
+        JPanel panel = new JPanel(new GridLayout(1, 2));
+        panel.setPreferredSize(new Dimension(300, 80));
         this.add(panel);
 
         // Frontend

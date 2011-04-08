@@ -28,7 +28,7 @@ public class CakehatAboutBox extends JFrame
 
     private CakehatAboutBox()
     {
-        super("[cakehat] about");
+        super("About cakehat");
 
         // Overall
         JPanel panel = new JPanel(new BorderLayout());
