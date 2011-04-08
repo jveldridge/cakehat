@@ -185,7 +185,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         this.initializeMenuBar();
 
         this.createButtonGroups();
-        
+
         //Setup close property
         this.initializeWindowCloseProperty();
 
@@ -297,7 +297,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
     private void updateButtonStates()
     {
         DistributablePart part = _dpList.getSelectedValue();
- 
+
         //If there is no distributable part selected, disable all of the buttons
         if(part == null)
         {
@@ -404,7 +404,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         Dimension groupLabelSize = new Dimension(groupListPanelSize.width, 13);
         Dimension groupListSize = new Dimension(groupListPanelSize.width,
                 groupListPanelSize.height - groupLabelSize.height);
-        
+
         JPanel groupPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         groupPanel.setPreferredSize(groupListPanelSize);
         _groupListLabel = new JLabel("Student");
@@ -607,13 +607,13 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Disables the menu and the content pane. Unlike
-     * {@link JFrame#setEnabled(boolean) } and passing in false, this method
-     * does not disable the glass pane. Instead, the glasspane is made visible
-     * and semi-transparent areas are drawn over the frame's content and
-     * menubar. A panel is returned which content may be put into. That panel
-     * should provide so manner of re-enabling the frame via
-     * {@link #enableFrame() }.
+     * Disables the menu and the content pane. Unlike calling
+     * {@link JFrame#setEnabled(boolean)} and passing in <code>false</code>,
+     * this method does not disable the glass pane. Instead, the glasspane is
+     * made visible and semi-transparent areas are drawn over the frame's
+     * content and menubar. A panel is returned which content may be put into.
+     * That panel should provide a manner of re-enabling the frame via
+     * {@link #enableFrame()}.
      *
      * @return panel to put content into
      *
@@ -621,42 +621,40 @@ public class FrontendView extends JFrame implements RubricSaveListener
      */
     private JPanel disableFrame()
     {
-        final JPanel glassPane = (JPanel) FrontendView.this.getGlassPane();
-        final Component contentPane = FrontendView.this.getContentPane();
+        // Padding used around edges to prevent the content from being flush
+        // with the frame
         final int paddingSize = 15;
 
-        // Disable pane
+        // Disabling a component in Swing such that all of its
+        // subcomponents are disabled is an absurdly non-trivial task
+        // To fake this, take the content pane and draw its appearance
+        // to a BufferedImage, then hide the actual content pane and
+        // draw the BufferedImage
+        Component contentPane = this.getContentPane();
+        final Rectangle contentPaneBounds = contentPane.getBounds();
+        final BufferedImage contentPaneImage = new BufferedImage(contentPaneBounds.width,
+                contentPaneBounds.height, BufferedImage.TYPE_INT_ARGB);
+        contentPane.paint(contentPaneImage.createGraphics());
+
+        // Hide the content pane and menu bar
+        contentPane.setVisible(false);
+        this.getJMenuBar().setVisible(false);
+
+        // Add a panel to the glass pane, make it visible
         JPanel disablePanel = new JPanel(new BorderLayout(0, 0))
         {
-            private BufferedImage _contentPaneImage = null;
-
             @Override
             protected void paintComponent(Graphics g)
             {
                 // Turn on anti-aliasing
-                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
+                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Disable a component in Swing such that all of its
-                // subcomponents are disabled is an absurdly non-trivial task
-                // To fake this, take the content pane and draw its appearance
-                // to a BufferedImage, then hide the actual content pane and
-                // draw the BufferedImage
-                Rectangle contentPaneBounds = contentPane.getBounds();
-                if(_contentPaneImage == null)
-                {
-                    _contentPaneImage = new BufferedImage(contentPaneBounds.width, contentPaneBounds.height, BufferedImage.TYPE_INT_ARGB);
-                    contentPane.paint(_contentPaneImage.createGraphics());
-                    
-                    // Now hide the content pane
-                    contentPane.setVisible(false);
-                }
-                g.drawImage(_contentPaneImage, contentPaneBounds.x, contentPaneBounds.y, Color.WHITE, this);
+                // Draw the image of the content pane
+                g.drawImage(contentPaneImage, contentPaneBounds.x, contentPaneBounds.y, this);
 
                 // Draw a semi-transparent gray over everything
-                Rectangle glassPaneBounds = glassPane.getBounds();
                 g.setColor(new Color(192, 192, 192, 200));
-                g.fillRect(glassPaneBounds.x, glassPaneBounds.y, glassPaneBounds.width, glassPaneBounds.height);
+                g.fillRect(0, 0, this.getWidth(), this.getHeight());
 
                 // Draw a semi-transparent rounded rectangle with the top part
                 // off the top of the screen
@@ -665,29 +663,21 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 g.setColor(new Color(128, 128, 128, 200));
                 g.fillRoundRect(paddingSize - shadingPadding,
                         paddingSize - shadingPadding - cornerRadius,
-                        glassPaneBounds.width - (2 * paddingSize) + 2 * shadingPadding,
-                        glassPaneBounds.height - (2 * paddingSize) + 2 * shadingPadding + cornerRadius,
+                        this.getWidth() - (2 * paddingSize) + (2 * shadingPadding),
+                        this.getHeight() - (2 * paddingSize) + (2 * shadingPadding) + cornerRadius,
                         cornerRadius, cornerRadius);
             }
         };
 
-        // Make the glass pane visible, add the disablePanel
+        JPanel glassPane = (JPanel) this.getGlassPane();
         glassPane.setVisible(true);
-        glassPane.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
+        glassPane.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         disablePanel.setPreferredSize(glassPane.getBounds().getSize());
         glassPane.removeAll();
         glassPane.add(disablePanel);
 
-        // Entirely disable the menu bar
-        final JMenuBar menuBar = FrontendView.this.getJMenuBar();
-        menuBar.setEnabled(false);
-        for(int i = 0; i < menuBar.getMenuCount(); i++)
-        {
-            menuBar.getMenu(i).setEnabled(false);
-        }
-
-        // Center an overlay panel that will hold the content
-        final Dimension disablePanelSize = disablePanel.getPreferredSize();
+        // Center an overlay panel in the disablePanel that will hold the content
+        Dimension disablePanelSize = disablePanel.getPreferredSize();
 
         disablePanel.add(Box.createRigidArea(new Dimension(disablePanelSize.width, paddingSize)), BorderLayout.NORTH);
         disablePanel.add(Box.createRigidArea(new Dimension(disablePanelSize.width, paddingSize)), BorderLayout.SOUTH);
@@ -696,8 +686,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         JPanel overlayPanel = new JPanel(new BorderLayout(0, 0));
         overlayPanel.setBackground(new Color(0, 0, 0, 0));
-        overlayPanel.setPreferredSize(new Dimension(contentPane.getWidth() - 2 * paddingSize,
-                menuBar.getHeight() + contentPane.getHeight() - 2 * paddingSize));
+        overlayPanel.setPreferredSize(new Dimension(disablePanelSize.width - 2 * paddingSize,
+                disablePanelSize.height - 2 * paddingSize));
         disablePanel.add(overlayPanel, BorderLayout.CENTER);
 
         return overlayPanel;
@@ -714,20 +704,11 @@ public class FrontendView extends JFrame implements RubricSaveListener
     void enableFrame()
     {
         // Hide glass pane
-        final JPanel glassPane = (JPanel) FrontendView.this.getGlassPane();
-        glassPane.setVisible(false);
+        this.getGlassPane().setVisible(false);
 
-        // Entirely enable the menu bar
-        final JMenuBar menuBar = FrontendView.this.getJMenuBar();
-        menuBar.setEnabled(true);
-        for(int i = 0; i < menuBar.getMenuCount(); i++)
-        {
-            menuBar.getMenu(i).setEnabled(true);
-        }
-
-        // Show the content pane
-        final Component contentPane = FrontendView.this.getContentPane();
-        contentPane.setVisible(true);
+        // Show the menu bar and content pane
+        this.getJMenuBar().setVisible(true);
+        this.getContentPane().setVisible(true);
     }
 
     /**
@@ -748,7 +729,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         });
         generalButtonsPanel.add(_demoButton);
-        
+
         //Submit Grading
         _submitGradingButton = createButton(IconImage.MAIL_SEND_RECEIVE, "Submit Grading");
         _submitGradingButton.addActionListener(new ActionListener()
@@ -804,7 +785,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         });
         groupButtonsPanel.add(_runButton);
-        
+
         //Test
         _testButton = createButton(IconImage.UTILITIES_SYSTEM_MONITOR, "Test");
         _testButton.addActionListener(new ActionListener()
@@ -883,7 +864,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         return button;
     }
-    
+
     /**
      * Called when the run code button is clicked.
      */
@@ -1129,7 +1110,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
      */
     private void generateErrorView(String msgInsert, Group group, DistributablePart dp, Exception cause) {
         String message = "Could not " + msgInsert;
-        
+
         if (group != null) {
             message += " for group " + group;
         }
@@ -1178,10 +1159,10 @@ public class FrontendView extends JFrame implements RubricSaveListener
     private void initializeWindowCloseProperty()
     {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        
+
         this.addWindowListener(new WindowAdapter()
         {
-            @Override 
+            @Override
             public void windowClosing(WindowEvent e)
             {
                 Allocator.getGradingServices().removeUserWorkspace();
@@ -1304,7 +1285,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
      * The likely reason this method would not be run with a separate thread is
      * if the calling code is already running on a non-UI thread.
      *
-     * @param useSeparateThread 
+     * @param useSeparateThread
      */
     private void loadAssignedGrading(boolean useSeparateThread)
     {
