@@ -854,6 +854,7 @@ class ManualDistributorView extends JFrame {
             }
         }
 
+        Collections.sort(matchingLogins);
         _fromGroupList.setListData(matchingLogins);
     }
 
