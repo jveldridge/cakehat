@@ -36,12 +36,15 @@ import java.util.List;
  */
 class GradeReportView extends javax.swing.JFrame {
 
-    /** Creates new form GradeReportView */
+    private static String NEWLINE = System.getProperty("line.separator");
+
     private Collection<String> _students;
     private Map<Assignment, List<Part>> _asgnParts;
     private Vector<Assignment> _sortedAssignments;
+    private String _previewText;
 
     public GradeReportView(Map<Assignment, List<Part>> asgnParts, Collection<String> students) {
+        super("Email Grade Reports");
         initComponents();
 
         _asgnParts = asgnParts;
@@ -52,47 +55,84 @@ class GradeReportView extends javax.swing.JFrame {
         Collections.sort(_sortedAssignments);
 
         HTMLEditorKit k = new HTMLEditorKit();
-
         _previewPane.setEditorKit(k);
         _previewPane.setDocument(k.createDefaultDocument());
+
         String course = Allocator.getCourseInfo().getCourse();
-        _messageText.setText("<p>Here are your current grades for the course.<br />"
-                + "</p>\n<p>-The "+ course + " TAs</p>\n");
+        _messageText.setLineWrap(true);
+        _messageText.setWrapStyleWord(true);
+        _messageText.setText("Here are your current grades for the course.\n\n"
+                + "-The "+ course + " TAs\n");
         if (_students.size() <= 5) {
             _toText.setText(_students.toString());
-        } else {
+        }
+        else {
             _toText.setText(_students.size() + " students");
         }
 
         _fromText.setText(course + "headtas@cs.brown.edu");
         updatePreview();
 
-        new File(".tmpdata").mkdirs();
+        //include charts by default
+        attachHistButton.setSelected(true);
+        attachScoreGraphButton.setSelected(true);
+
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setVisible(true);
     }
 
     /** 
-     * Displays the grade report as it would be sent to the course's test account
+     * Displays the grade report as it would be sent to the first student to whom
+     * reports will be sent.
      */
-    public void updatePreview() {
+    private void updatePreview() {
         String student = Iterables.get(_students, 0);
-        _previewPane.setText(htmlBuilder(student));
+
+        String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>"
+                + "<h1 style='font-weight: bold; font-size:11pt'>"
+                + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>"
+                + "<hr />" + _messageText.getText() + "<br/><br/>";
+
+        if (_previewText == null) {
+            _previewText = this.gradeHtmlBuilder(student);
+        }
+        htmlString += _previewText;
+        htmlString += "</html>";
+        htmlString = htmlString.replace(NEWLINE, "<br/>");
+
+        _previewPane.setText(htmlString);
     }
 
     /**
-     * Constructs the body of the email message for the given student, adding
-     * the student's grades (or extensions/exemptions as appropriate) for each Part
-     * of each Assignment.
+     * Constructs the body of the email message for the given student.
+     * This includes both the message typed in the _messageText text area and
+     * table showing the student's grades (or extensions/exemptions as
+     * appropriate) for each Part of each Assignment.
      * 
      * @param student
      * @return
      */
-    public String htmlBuilder(String student) {
+    private String htmlBuilder(String student) {
         String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>"
                 + "<h1 style='font-weight: bold; font-size:11pt'>"
                 + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>"
-                + "<hr />" + _messageText.getText();
+                + "<hr/>" + _messageText.getText() + "<br/><br/>";
+        htmlString += gradeHtmlBuilder(student);
+        htmlString += "</html>";
+        htmlString = htmlString.replace(NEWLINE, "<br/>");
+        
+        return htmlString;
+    }
+
+    /**
+     * Constructs the HTML for a table showing the given student's grades (or
+     * extensions/exemptions as appropriate) for each Part of each Assignment.
+     *
+     * @param student
+     * @return
+     */
+    private String gradeHtmlBuilder(String student) {
+        StringBuilder htmlString = new StringBuilder("<table cellspacing='0' cellpadding='5' style='width: 100%'>");
 
         //constructing the message body
         for (Assignment a : _sortedAssignments) {
@@ -105,12 +145,15 @@ class GradeReportView extends javax.swing.JFrame {
                 return null;
             }
 
-            htmlString += "<hr /><table cellspacing='0' cellpadding='5' style='width: 100%'>"
-                    + "<tbody><tr style='font-weight: bold; background: #F0F0F0'><td>"
-                    + a.getName() + "</td><td>Earned Points</td><td>Total Points</td></tr>";
+            htmlString.append("<tr><td colspan='3'><hr/></td></tr>");
+            htmlString.append("<tr style='font-weight: bold; background: #F0F0F0'>"
+                                + "<td>" + a.getName() + "</td>"
+                                + "<td>Earned Points</td>"
+                                + "<td>Total Points</td>"
+                                + "</tr>");
 
             if (group == null) {
-                htmlString += "<tr colspan=3 style='background: #FFFFFF" + "'><td>No grades recorded.</td></tr>";
+                htmlString.append("<tr colspan=3 style='background: #FFFFFF" + "'><td>No grades recorded.</td></tr>");
                 continue;
             }
 
@@ -147,16 +190,16 @@ class GradeReportView extends javax.swing.JFrame {
                 }
 
                 if (exemptionNote != null) {
-                    htmlString += "<tr style='background: #FFFFFF" + "'><td>"
-                            + p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>";
+                    htmlString.append("<tr style='background: #FFFFFF" + "'><td>"
+                            + p.getName() + "</td><td>Exemption Granted</td><td>" + p.getPoints() + "</td></tr>");
                 }
                 else if (extension != null &&
                            p instanceof DistributablePart &&
                            studentScore == null &&
                            (extension.getTimeInMillis() > System.currentTimeMillis())) {
-                    htmlString += "<tr style='background: #FFFFFF" + "'><td>"
+                    htmlString.append("<tr style='background: #FFFFFF" + "'><td>"
                             + p.getName() + "</td><td>Extension until: "
-                            + extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>";
+                            + extension.getTime() + "</td><td>" + p.getPoints() + "</td></tr>");
                 }
                 else {
                     if (studentScore != null) {
@@ -165,16 +208,17 @@ class GradeReportView extends javax.swing.JFrame {
                         scoreString = "0 (No grade recorded)";
                     }
 
-                    htmlString += "<tr style='background: #FFFFFF" + "'><td>"
+                    htmlString.append("<tr style='background: #FFFFFF" + "'><td>"
                             + p.getName() + "</td><td>" + scoreString + "</td><td>"
-                            + p.getPoints() + "</td></tr>";
+                            + p.getPoints() + "</td></tr>");
                 }
             }
 
-            htmlString += "</tbody></table>";
+            htmlString.append("</tr>");
         }
 
-        return htmlString;
+        htmlString.append("</table>");
+        return htmlString.toString();
     }
 
     /** This method is called from within the constructor to
@@ -202,10 +246,6 @@ class GradeReportView extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         _toText = new javax.swing.JTextField();
         sendToOtherButton = new javax.swing.JButton();
-        menuBar = new javax.swing.JMenuBar();
-        fileMenu = new javax.swing.JMenu();
-        closeMenuItem = new javax.swing.JMenuItem();
-        editMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -274,28 +314,6 @@ class GradeReportView extends javax.swing.JFrame {
             }
         });
 
-        menuBar.setName("jMenuBar1"); // NOI18N
-
-        fileMenu.setText("File");
-        fileMenu.setName("jMenu1"); // NOI18N
-
-        closeMenuItem.setText("Close");
-        closeMenuItem.setName("closeMenuItem"); // NOI18N
-        closeMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                closeMenuItemMousePressed(evt);
-            }
-        });
-        fileMenu.add(closeMenuItem);
-
-        menuBar.add(fileMenu);
-
-        editMenu.setText("Edit");
-        editMenu.setName("jMenu2"); // NOI18N
-        menuBar.add(editMenu);
-
-        setJMenuBar(menuBar);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -306,7 +324,7 @@ class GradeReportView extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
                                 .addGap(305, 305, 305))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -317,8 +335,8 @@ class GradeReportView extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-                                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
                                                     .addGroup(layout.createSequentialGroup()
                                                         .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
                                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -342,7 +360,7 @@ class GradeReportView extends javax.swing.JFrame {
                                 .addComponent(jScrollPane3)
                                 .addContainerGap())))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(sendToOtherButton, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(sendToOtherButton, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(sendToStudsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
@@ -367,17 +385,17 @@ class GradeReportView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
-                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(attachScoreGraphButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(attachHistButton))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(sendToOtherButton)
-                    .addComponent(sendToStudsButton))
+                    .addComponent(sendToStudsButton)
+                    .addComponent(sendToOtherButton))
                 .addContainerGap())
         );
 
@@ -474,9 +492,6 @@ class GradeReportView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_sendToOtherButtonActionPerformed
 
-    private void closeMenuItemMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeMenuItemMousePressed
-        this.dispose();
-    }//GEN-LAST:event_closeMenuItemMousePressed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField _fromText;
     private javax.swing.JTextArea _messageText;
@@ -484,9 +499,6 @@ class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JTextField _toText;
     private javax.swing.JCheckBox attachHistButton;
     private javax.swing.JCheckBox attachScoreGraphButton;
-    private javax.swing.JMenuItem closeMenuItem;
-    private javax.swing.JMenu editMenu;
-    private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -495,7 +507,6 @@ class GradeReportView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JMenuBar menuBar;
     private javax.swing.JButton sendToOtherButton;
     private javax.swing.JButton sendToStudsButton;
     // End of variables declaration//GEN-END:variables
