@@ -24,10 +24,12 @@ public interface StringManipulationServices {
      * replaced based on the given Assignment and Collection of Groups.
      *
      * The following tags are recognized:
-     * -%BE%       (replaced by "is" or "are")
-     * -%UNIT%     (replaced by "student", "students", "group", or "groups")
-     * -%CAP_UNIT% (identical with %UNIT%, but with the first character capitalized)
-     * -%NUM%      (replaced by the number of groups)
+     * <ul>
+     * <li>%BE%       (replaced by "is" or "are")</li>
+     * <li>%UNIT%     (replaced by "student", "students", "group", or "groups")</li>
+     * <li>%CAP_UNIT% (identical with %UNIT%, but with the first character capitalized)</li>
+     * <li>%NUM%      (replaced by the number of groups)</li>
+     * <ul>
      *
      * @param text
      * @param asgn

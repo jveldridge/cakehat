@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents all of the handins from all of the groups for a given assignment.
- * Each assignment has at most only one handin.
+ * Represents all of the handins from all of the groups for a given Assignment.
+ * <br/><br/>
+ * Each {@link Assignment} has at most one <code>Handin</code>.
  *
  * @author jak2
  */
@@ -23,8 +24,10 @@ public class Handin
     private final TimeInformation _timeInfo;
 
     /**
-     * Populated with the files representin the handins. It will not exist until
-     * it is first requested with a call to {@link #getHandins() }.
+     * Populated with the files representing the handins. It will be
+     * <code>null</code> until it is first requested with a call to
+     * {@link #getHandins()} and it may become <code>null</code> again when the
+     * cache is cleared by {@link #clearHandinCache()}.
      */
     private List<File> _handins = null;
 
@@ -45,10 +48,18 @@ public class Handin
     }
 
     /**
-     * Returns an immutable list of the Files for each handin for this
-     * assignment. If this method has not been called before it will load all of
-     * the handins. Subsequent calls of this method will return the same list,
-     * so changes to the underlying file system will not be taken into account.
+     * Clears the cached list of the files that are the handins.
+     */
+    public void clearHandinCache()
+    {
+        _handins = null;
+    }
+
+    /**
+     * Returns an immutable list of the {@link File}s for each handin for this
+     * assignment. If this method has not been called before it will load all
+     * of the handins. Subsequent calls of this method will return the same list
+     * unless the cache has been cleared with {@link #clearHandinCache()}.
      *
      * @return handins
      */
@@ -130,6 +141,18 @@ public class Handin
         }
 
         return mostRecentHandin;
+    }
+
+    /**
+     * Whether the handin exists.
+     *
+     * @param group
+     * @return
+     * @throws IOException
+     */
+    public boolean hasHandin(Group group) throws IOException
+    {
+        return (this.getHandin(group) != null);
     }
 
     /**

@@ -1,15 +1,32 @@
 package cakehat.views.frontend;
 
-import support.ui.GenericJList;
-import cakehat.config.handin.ActionException;
-import cakehat.rubric.RubricException;
-import cakehat.services.ServicesException;
-import cakehat.config.TA;
+import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
+import cakehat.config.TA;
+import cakehat.config.handin.ActionException;
+import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.MissingHandinException;
+import cakehat.database.CakeHatDBIOException;
+import cakehat.database.Group;
+import cakehat.resources.icons.IconLoader;
+import cakehat.resources.icons.IconLoader.IconImage;
+import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.rubric.RubricException;
+import cakehat.rubric.RubricSaveListener;
+import cakehat.services.ServicesException;
+import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -17,13 +34,25 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -35,36 +64,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import cakehat.Allocator;
+import support.ui.GenericJList;
 import support.ui.StringConverter;
-import cakehat.database.CakeHatDBIOException;
-import cakehat.database.Group;
-import cakehat.config.handin.DistributablePart;
-import cakehat.resources.icons.IconLoader;
-import cakehat.resources.icons.IconLoader.IconImage;
-import cakehat.resources.icons.IconLoader.IconSize;
-import cakehat.rubric.RubricSaveListener;
-import cakehat.views.shared.ErrorView;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import javax.swing.SwingConstants;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -79,57 +83,25 @@ import javax.swing.SwingConstants;
  */
 public class FrontendView extends JFrame implements RubricSaveListener
 {
+    private final TA USER = Allocator.getUserServices().getUser();
+
+    private GenericJList<DistributablePart> _dpList;
+    private GenericJList<Group> _groupList;
+    private JLabel _groupListLabel;
+    private CurrentlyGradingLabel _currentlyGradingLabel;
+    private JLabel _selectedGroupCommandsLabel;
+    private JButton _demoButton, _gradingGuideButton, _printAllButton,
+                    _submitGradingButton, _readmeButton, _openButton,
+                    _testButton, _printButton, _gradeButton,
+                    _runButton;
+    private JButton[] _allButtons, _groupButtons;
+    private Map<DistributablePart, List<GroupStatus>> _assignedGroups;
+
     /**
-     * Label that displays the currently selected student.
+     * Launches a visible instance of the <code>FrontendView</code> if the user
+     * is a TA as specified by the cakehat configuration. Otherwise the user
+     * will be informed they are not an authorized user.
      */
-    private class CurrentlyGradingLabel extends JLabel
-    {
-        private final static String _begin ="<html><b>Currently Grading</b><br/>",
-                                    _end = "</html>",
-                                    _default = "None";
-
-        public CurrentlyGradingLabel()
-        {
-            super(_begin + _default + _end);
-            this.setFont(this.getFont().deriveFont(Font.PLAIN));
-        }
-
-        public void update(Group group)
-        {
-            if(group == null)
-            {
-                this.setText(_begin + _default + _end);
-            }
-            else
-            {
-                this.setText(_begin + getGroupText(group) + _end);
-            }
-        }
-
-        private String getGroupText(Group group)
-        {
-            String text;
-
-            //If group assignment, show group name and members
-            if(_dpList.getSelectedValue().getAssignment().hasGroups())
-            {
-                text = group.getName() + " " + group.getMembers();
-            }
-            //If not a group assignment, show name of student
-            else if(!group.getMembers().isEmpty())
-            {
-                text = group.getMembers().get(0);
-            }
-            //A non-group assignment with no student, this situation should not arise
-            else
-            {
-                text = "Unknown";
-            }
-
-            return text;
-        }
-    }
-
     public static void launch()
     {
         if(Allocator.getUserServices().isUserTA())
@@ -145,33 +117,22 @@ public class FrontendView extends JFrame implements RubricSaveListener
         }
     }
 
-    private final TA USER = Allocator.getUserServices().getUser();
-
-    private GenericJList<DistributablePart> _dpList;
-    private GenericJList<Group> _groupList;
-    private JLabel _groupListLabel;
-    private CurrentlyGradingLabel _currentlyGradingLabel;
-    private JLabel _selectedGroupCommandsLabel;
-    private JButton _demoButton, _gradingGuideButton, _printAllButton,
-                    _submitGradingButton, _readmeButton, _openButton,
-                    _testButton, _printButton, _gradeButton,
-                    _runButton;
-    private JButton[] _allButtons, _groupButtons;
-    private Map<DistributablePart, List<GroupGradedStatus>> _assignedGroups;
-
     private FrontendView()
     {
         //Frame title
         super("cakehat");
 
         //Create the directory to work in
-        try {
+        try
+        {
             Allocator.getGradingServices().makeUserWorkspace();
-        } catch (ServicesException ex) {
+        }
+        catch (ServicesException ex)
+        {
             new ErrorView(ex, "Could not make user cakehat workspace directory; " +
-                             "functionality will be significantly impaired.  " +
-                             "You are advised to restart cakehat and to send an " +
-                             "error report if the problem persists.");
+                    "functionality will be significantly impaired.  " +
+                    "You are advised to restart cakehat and to send an " +
+                    "error report if the problem persists.");
         }
 
         //Initialize GUI components necessary to show database information
@@ -181,12 +142,12 @@ public class FrontendView extends JFrame implements RubricSaveListener
         this.loadAssignedGrading(true);
 
         //Initialize more GUI components
-        this.initializeFrameIcon();
         this.initializeMenuBar();
 
+        //Set up logical grouping of buttons
         this.createButtonGroups();
 
-        //Setup close property
+        //Set up close property
         this.initializeWindowCloseProperty();
 
         //Update button states
@@ -217,6 +178,24 @@ public class FrontendView extends JFrame implements RubricSaveListener
                                         _printButton, _testButton,
                                         _runButton, _gradeButton
                                       };
+    }
+
+    /**
+     * Ensures when the window closes the program terminates and that the
+     * user's grading directory is removed.
+     */
+    private void initializeWindowCloseProperty()
+    {
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        this.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                Allocator.getGradingServices().removeUserWorkspace();
+            }
+        });
     }
 
     /**
@@ -274,10 +253,10 @@ public class FrontendView extends JFrame implements RubricSaveListener
     private void populateGroupsList()
     {
         DistributablePart selected = _dpList.getSelectedValue();
-        List<GroupGradedStatus> statuses = new ArrayList(_assignedGroups.get(selected));
+        List<GroupStatus> statuses = new ArrayList(_assignedGroups.get(selected));
         Collections.sort(statuses);
         List<Group> groups = new ArrayList<Group>();
-        for(GroupGradedStatus status : statuses)
+        for(GroupStatus status : statuses)
         {
             groups.add(status.getGroup());
         }
@@ -312,37 +291,64 @@ public class FrontendView extends JFrame implements RubricSaveListener
         _demoButton.setEnabled(part.hasDemo());
         _gradingGuideButton.setEnabled(part.hasGradingGuide());
         _submitGradingButton.setEnabled(part.hasRubricTemplate());
-        _printAllButton.setEnabled(part.hasPrint());
 
-        //Get selected student
-        Group group = _groupList.getSelectedValue();
+        //Determine if this group has a handin, if there is no selected group
+        //then it will be treated as not having a handin
+        Group selectedGroup = _groupList.getSelectedValue();
+        boolean groupHasHandin = false;
+        boolean anyGroupsHaveHandins = false;
 
-        //If no group is selected, disable all group buttons
-        if(group == null)
+        //The statuses should not be null, but if there were exceptions thrown
+        //when retrieving the info from the database it could be
+        List<GroupStatus> statuses = _assignedGroups.get(part);
+        if(statuses != null)
+        {
+            for(GroupStatus status : statuses)
+            {
+                if(status.getGroup() == selectedGroup)
+                {
+                    groupHasHandin = status.hasHandin();
+                }
+
+                if(status.hasHandin())
+                {
+                    anyGroupsHaveHandins = true;
+                }
+            }
+        }
+
+        //Enable Print All if any groups have handins
+        _printAllButton.setEnabled(anyGroupsHaveHandins);
+
+        if(!groupHasHandin)
         {
             for(JButton button : _groupButtons)
             {
                 button.setEnabled(false);
             }
-
-            _submitGradingButton.setEnabled(false);
-            _printAllButton.setEnabled(false);
         }
-        //If there is a student, enable buttons appropriately
+        //If there is a selected group and that group has a handin, enable buttons appropriately
         else
         {
-            //Student buttons
-            _gradeButton.setEnabled(part.hasRubricTemplate());
-            _testButton.setEnabled(part.hasTester());
+            //Group buttons
+            _gradeButton.setEnabled(Allocator.getRubricManager().hasRubric(part, selectedGroup));
+            _testButton.setEnabled(part.hasTest());
             _runButton.setEnabled(part.hasRun());
             _openButton.setEnabled(part.hasOpen());
             _printButton.setEnabled(part.hasPrint());
 
-            boolean hasReadme = true;
-            try {
-                hasReadme = part.hasReadme(group);
-            } catch (ActionException ex) {
-                new ErrorView(ex, "Could not determine if group " + group + " has a README");
+            boolean hasReadme = false;
+            try
+            {
+                hasReadme = part.hasReadme(selectedGroup);
+            }
+            catch(ActionException ex)
+            {
+                new ErrorView(ex, "Could not determine if " + selectedGroup + " has a README");
+            }
+            catch(MissingHandinException ex)
+            {
+                this.notifyHandinMissing(ex);
             }
             _readmeButton.setEnabled(hasReadme);
         }
@@ -418,8 +424,34 @@ public class FrontendView extends JFrame implements RubricSaveListener
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    _currentlyGradingLabel.update(_groupList.getSelectedValue());
-                    updateButtonStates(); //To check for README
+                    Group selectedGroup = _groupList.getSelectedValue();
+
+                    //Update the currently grading label and buttons
+                    _currentlyGradingLabel.update(selectedGroup);
+                    updateButtonStates();
+
+                    //If the selected group does not have a handin, inform the user
+                    if(selectedGroup != null)
+                    {
+                        boolean hasHandin = false;
+                        List<GroupStatus> statuses = _assignedGroups.get(_dpList.getSelectedValue());
+                        if(statuses != null)
+                        {
+                            for(GroupStatus status : statuses)
+                            {
+                                if(status.getGroup().equals(selectedGroup))
+                                {
+                                    hasHandin = status.hasHandin();
+                                }
+                            }
+                        }
+                        if(!hasHandin)
+                        {
+                            JOptionPane.showMessageDialog(FrontendView.this,
+                                    "The handin for " + selectedGroup.getName() + " is missing.",
+                                    "Handin Missing", JOptionPane.WARNING_MESSAGE);
+                        }
+                    }
                 }
             }
         });
@@ -623,22 +655,46 @@ public class FrontendView extends JFrame implements RubricSaveListener
     {
         // Padding used around edges to prevent the content from being flush
         // with the frame
-        final int paddingSize = 15;
+        int paddingSize = 15;
 
-        // Disabling a component in Swing such that all of its
-        // subcomponents are disabled is an absurdly non-trivial task
-        // To fake this, take the content pane and draw its appearance
-        // to a BufferedImage, then hide the actual content pane and
-        // draw the BufferedImage
+        // Disabling a component in Swing such that all of its subcomponents are
+        // disabled is an absurdly non-trivial task
+        // To fake this, take the menu bar and content pane and draw its
+        // appearance to a BufferedImage, then hide the actual menu bar and
+        // content pane and draw the BufferedImage
         Component contentPane = this.getContentPane();
-        final Rectangle contentPaneBounds = contentPane.getBounds();
-        final BufferedImage contentPaneImage = new BufferedImage(contentPaneBounds.width,
-                contentPaneBounds.height, BufferedImage.TYPE_INT_ARGB);
-        contentPane.paint(contentPaneImage.createGraphics());
+        Rectangle contentPaneBounds = contentPane.getBounds();
+        final BufferedImage disableImage = new BufferedImage(contentPaneBounds.width,
+                contentPaneBounds.height + contentPaneBounds.y, BufferedImage.TYPE_INT_ARGB);
+        
+        // Draw the menu bar and content pane
+        Graphics2D imageGraphics = disableImage.createGraphics();
+        this.getJMenuBar().paint(imageGraphics);
+        imageGraphics.translate(0, contentPaneBounds.y);
+        contentPane.paint(imageGraphics);
+        imageGraphics.translate(0, -contentPaneBounds.y);
 
         // Hide the content pane and menu bar
         contentPane.setVisible(false);
         this.getJMenuBar().setVisible(false);
+
+        // Turn on anti-aliasing
+        imageGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Draw a semi-transparent gray over everything
+        imageGraphics.setColor(new Color(192, 192, 192, 200));
+        imageGraphics.fillRect(0, 0, disableImage.getWidth(), disableImage.getHeight());
+
+        // Draw a semi-transparent rounded rectangle with the top part
+        // off the top of the screen
+        int cornerRadius = 40;
+        int shadingPadding = 10;
+        imageGraphics.setColor(new Color(128, 128, 128, 200));
+        imageGraphics.fillRoundRect(paddingSize - shadingPadding,
+                paddingSize - shadingPadding - cornerRadius,
+                disableImage.getWidth() - (2 * paddingSize) + (2 * shadingPadding),
+                disableImage.getHeight() - (2 * paddingSize) + (2 * shadingPadding) + cornerRadius,
+                cornerRadius, cornerRadius);
 
         // Add a panel to the glass pane, make it visible
         JPanel disablePanel = new JPanel(new BorderLayout(0, 0))
@@ -646,26 +702,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
             @Override
             protected void paintComponent(Graphics g)
             {
-                // Turn on anti-aliasing
-                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Draw the image of the content pane
-                g.drawImage(contentPaneImage, contentPaneBounds.x, contentPaneBounds.y, this);
-
-                // Draw a semi-transparent gray over everything
-                g.setColor(new Color(192, 192, 192, 200));
-                g.fillRect(0, 0, this.getWidth(), this.getHeight());
-
-                // Draw a semi-transparent rounded rectangle with the top part
-                // off the top of the screen
-                int cornerRadius = 40;
-                int shadingPadding = 10;
-                g.setColor(new Color(128, 128, 128, 200));
-                g.fillRoundRect(paddingSize - shadingPadding,
-                        paddingSize - shadingPadding - cornerRadius,
-                        this.getWidth() - (2 * paddingSize) + (2 * shadingPadding),
-                        this.getHeight() - (2 * paddingSize) + (2 * shadingPadding) + cornerRadius,
-                        cornerRadius, cornerRadius);
+                g.drawImage(disableImage, 0, 0, this);
             }
         };
 
@@ -724,7 +761,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                runDemoButtonActionPerformed();
+                demoButtonActionPerformed();
             }
 
         });
@@ -748,7 +785,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                viewDeductionsButtonActionPerformed();
+                gradingGuideButtonActionPerformed();
             }
 
         });
@@ -780,7 +817,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                runCodeButtonActionPerformed();
+                runButtonActionPerformed();
             }
 
         });
@@ -792,7 +829,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                runTesterButtonActionPerformed();
+                testButtonActionPerformed();
             }
 
         });
@@ -804,7 +841,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                openCodeButtonActionPerformed();
+                openButtonActionPerformed();
             }
 
         });
@@ -816,7 +853,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                viewReadmeButtonActionPerformed();
+                readmeButtonActionPerformed();
             }
 
         });
@@ -840,7 +877,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                printStudentButtonActionPerformed();
+                printButtonActionPerformed();
             }
 
         });
@@ -866,16 +903,23 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Called when the run code button is clicked.
+     * Called when the run button is clicked.
      */
-    private void runCodeButtonActionPerformed()
+    private void runButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        try {
+        try
+        {
             dp.run(group);
-        } catch (ActionException ex) {
-            this.generateErrorView("run code", group, dp, ex);
+        }
+        catch(ActionException ex)
+        {
+            this.generateErrorView("run", group, dp, ex);
+        }
+        catch(MissingHandinException ex)
+        {
+            this.notifyHandinMissing(ex);
         }
     }
 
@@ -890,71 +934,102 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Called when the print student code button is clicked.
+     * Called when the print button is clicked.
      */
-    private void printStudentButtonActionPerformed()
+    private void printButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        try {
+        try
+        {
             dp.print(group);
-        } catch (ActionException ex) {
-            this.generateErrorView("print code", group, dp, ex);
+        }
+        catch(ActionException ex)
+        {
+            this.generateErrorView("print", group, dp, ex);
+        }
+        catch(MissingHandinException ex)
+        {
+            this.notifyHandinMissing(ex);
         }
     }
 
     /**
-     * Called when the run tester button is clicked.
+     * Called when the test button is clicked.
      */
-    private void runTesterButtonActionPerformed()
+    private void testButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        try {
-            dp.runTester(group);
-        } catch (ActionException ex) {
-            this.generateErrorView("run tester", group, dp, ex);
+        try
+        {
+            dp.test(group);
+        }
+        catch(ActionException ex)
+        {
+            this.generateErrorView("test", group, dp, ex);
+        }
+        catch(MissingHandinException ex)
+        {
+            this.notifyHandinMissing(ex);
         }
     }
 
     /**
-     * Called when the open code button is clicked.
+     * Called when the open button is clicked.
      */
-    private void openCodeButtonActionPerformed()
+    private void openButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        try {
+        try
+        {
             dp.open(group);
-        } catch (ActionException ex) {
-            this.generateErrorView("open code", group, dp, ex);
+        }
+        catch(ActionException ex)
+        {
+            this.generateErrorView("open", group, dp, ex);
+        }
+        catch(MissingHandinException ex)
+        {
+            this.notifyHandinMissing(ex);
         }
     }
 
     /**
-     * Called when the view readme button is clicked.
+     * Called when the readme button is clicked.
      */
-    private void viewReadmeButtonActionPerformed()
+    private void readmeButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        try {
+        try
+        {
             dp.viewReadme(group);
-        } catch (ActionException ex) {
+        }
+        catch(ActionException ex)
+        {
             this.generateErrorView("view README", group, dp, ex);
         }
+        catch(MissingHandinException ex)
+        {
+            this.notifyHandinMissing(ex);
+        }
     }
 
     /**
-     * Called when the run demo button is clicked.
+     * Called when the demo button is clicked.
      */
-    private void runDemoButtonActionPerformed()
+    private void demoButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
-        try {
-            dp.runDemo();
-        } catch (ActionException ex) {
-            this.generateErrorView("run code", null, dp, ex);
+        try
+        {
+            dp.demo();
+        }
+        catch(ActionException ex)
+        {
+            this.generateErrorView("demo", null, dp, ex);
         }
     }
 
@@ -965,24 +1040,41 @@ public class FrontendView extends JFrame implements RubricSaveListener
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Collection<Group> groups = _groupList.getListData();
-        try {
+        try
+        {
             dp.print(groups);
-        } catch (ActionException ex) {
-            this.generateErrorViewMultiple("print code", groups, dp, ex);
+        }
+        catch(ActionException ex)
+        {
+            this.generateErrorViewMultiple("print", groups, dp, ex);
         }
     }
 
     /**
-     * Called when the view deductions button is clicked.
+     * Called when the grading guide button is clicked.
      */
-    private void viewDeductionsButtonActionPerformed()
+    private void gradingGuideButtonActionPerformed()
     {
         DistributablePart dp = _dpList.getSelectedValue();
-        try {
+        try
+        {
             dp.viewGradingGuide();
-        } catch (FileNotFoundException ex) {
-            this.generateErrorView("view deductions list", null, dp, ex);
         }
+        catch (FileNotFoundException ex)
+        {
+            this.generateErrorView("view grading guide", null, dp, ex);
+        }
+    }
+
+    private void notifyHandinMissing(MissingHandinException ex)
+    {
+        JOptionPane.showMessageDialog(this,
+            "The handin for " + ex.getGroup().getName() + " is missing.\n" +
+            "The data will now be refreshed.",
+            "Handin Missing",
+            JOptionPane.WARNING_MESSAGE);
+
+        this.loadAssignedGrading(true);
     }
 
     private final ExecutorService _submitExecutor = Executors.newSingleThreadExecutor();
@@ -1098,24 +1190,29 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Creates an ErrorView with the message "Could not <msgInsert> for group <group> on
-     * part <dp> of assignment <dp.getAssignment()> and the given Exception.
+     * Creates an {@link ErrorView} with the message "Could not
+     * <code>msgInsert</code> for group <code>group</code> on part
+     * <code>dp</code> of assignment <code>dp.getAssignment()</code>." and the
+     * given <code>cause</code>.
      *
-     * Use generateErrorViewMultiple when the failing operation was to be run on multiple groups.
+     * @see #generateErrorViewMultiple(java.lang.String, java.util.Collection, cakehat.config.handin.DistributablePart, java.lang.Exception)
      *
      * @param msgInsert
      * @param group
      * @param dp
      * @param cause
      */
-    private void generateErrorView(String msgInsert, Group group, DistributablePart dp, Exception cause) {
+    private void generateErrorView(String msgInsert, Group group, DistributablePart dp, Exception cause)
+    {
         String message = "Could not " + msgInsert;
 
-        if (group != null) {
+        if(group != null)
+        {
             message += " for group " + group;
         }
 
-        if (dp != null) {
+        if(dp != null)
+        {
             message += " on part " + dp + " of assignment " + dp.getAssignment();
         }
 
@@ -1125,85 +1222,35 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Creates an ErrorView with the message "Could not <msgInsert> for groups <groups> on
-     * part <dp> of assignment <dp.getAssignment()> and the given Exception.
+     * Creates an {@link ErrorView} with the message "Could not
+     * <code>msgInsert</code> for groups <code>groups</code> on part
+     * <code>dp</code> of assignment <code>dp.getAssignment()</code>." and the
+     * given <code>cause</code>.
      *
-     * Use generateErrorView when the failing operation was to be run on a single group.
+     * @see #generateErrorView(java.lang.String, cakehat.database.Group, cakehat.config.handin.DistributablePart, java.lang.Exception)
      *
      * @param msgInsert
      * @param group
      * @param dp
      * @param cause
      */
-    private void generateErrorViewMultiple(String msgInsert, Collection<Group> groups, DistributablePart dp, Exception cause) {
+    private void generateErrorViewMultiple(String msgInsert, Collection<Group> groups, DistributablePart dp, Exception cause)
+    {
         String message = "Could not " + msgInsert;
 
-        if (!groups.isEmpty()) {
+        if(!groups.isEmpty())
+        {
             message += " for groups " + groups;
         }
 
-        if (dp != null) {
+        if(dp != null)
+        {
             message += " on part " + dp + " of assignment " + dp.getAssignment();
         }
 
         message += ".";
 
         new ErrorView(cause, message);
-    }
-
-
-    /**
-     * Ensures when the window closes the program terminates and that the
-     * user's grading directory is removing.
-     */
-    private void initializeWindowCloseProperty()
-    {
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        this.addWindowListener(new WindowAdapter()
-        {
-            @Override
-            public void windowClosing(WindowEvent e)
-            {
-                Allocator.getGradingServices().removeUserWorkspace();
-            }
-        });
-    }
-
-    /**
-     * Initializes this frame's icon. Only visible on certain operating systems
-     * and window managers.
-     */
-    private void initializeFrameIcon()
-    {
-        try
-        {
-            //randomly selects one of 5 icons
-            BufferedImage icon = null;
-            switch ((int) (Math.random() * 5))
-            {
-                case 0:
-                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_DEVILISH);
-                    break;
-                case 1:
-                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_ANGEL);
-                    break;
-                case 2:
-                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_SURPRISE);
-                    break;
-                case 3:
-                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_CRYING);
-                    break;
-                case 4:
-                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_MONKEY);
-                    break;
-                case 5:
-                    icon = IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.FACE_GLASSES);
-                    break;
-            }
-            this.setIconImage(icon);
-        }
-        catch (IOException e) { }
     }
 
     /**
@@ -1229,18 +1276,18 @@ public class FrontendView extends JFrame implements RubricSaveListener
         //This map is built instead of directly mutating _assignedGroups so
         //that the showAssignedGradingChanges(...) method can be called which
         //will update the UI, if necessary, by comparing against _assignedGroups
-        Map<DistributablePart, List<GroupGradedStatus>> updatedMap =
-                new HashMap<DistributablePart, List<GroupGradedStatus>>();
+        Map<DistributablePart, List<GroupStatus>> updatedMap =
+                new HashMap<DistributablePart, List<GroupStatus>>();
 
         for(DistributablePart part : _assignedGroups.keySet())
         {
-            List<GroupGradedStatus> statuses = _assignedGroups.get(part);
+            List<GroupStatus> statuses = _assignedGroups.get(part);
 
             //If this is the part, find and update the status
             if(part.equals(savedPart))
             {
-                GroupGradedStatus currStatus = null;
-                for(GroupGradedStatus status : statuses)
+                GroupStatus currStatus = null;
+                for(GroupStatus status : statuses)
                 {
                     if(status.getGroup().equals(savedGroup))
                     {
@@ -1256,11 +1303,12 @@ public class FrontendView extends JFrame implements RubricSaveListener
                     return;
                 }
 
-                GroupGradedStatus newStatus = new GroupGradedStatus(savedGroup,
-                        currStatus.isSubmitted(), hasRubricScore);
+                GroupStatus newStatus = new GroupStatus(savedGroup,
+                        currStatus.isSubmitted(), hasRubricScore,
+                        currStatus.hasHandin());
 
                 int currStatusIndex = statuses.indexOf(currStatus);
-                ArrayList<GroupGradedStatus> newStatuses = new ArrayList<GroupGradedStatus>(statuses);
+                ArrayList<GroupStatus> newStatuses = new ArrayList<GroupStatus>(statuses);
                 newStatuses.set(currStatusIndex, newStatus);
                 statuses = newStatuses;
             }
@@ -1293,29 +1341,41 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void run()
             {
-                Map<DistributablePart, List<GroupGradedStatus>> newMap;
+                Map<DistributablePart, List<GroupStatus>> newMap =
+                        new HashMap<DistributablePart, List<GroupStatus>>();
                 try
                 {
-                    newMap = new HashMap<DistributablePart, List<GroupGradedStatus>>();
-
                     Set<DistributablePart> parts = Allocator.getDatabaseIO().getDPsWithAssignedStudents(USER);
                     for(DistributablePart part : parts)
                     {
+                        part.getHandin().clearHandinCache();
+
                         Collection<Group> groups = Allocator.getDatabaseIO().getGroupsAssigned(part, USER);
                         Map<Group, Double> submittedScores = Allocator.getDatabaseIO()
                                 .getPartScoresForGroups(part, groups);
                         Map<Group, Double> rubricScores = Allocator.getRubricManager()
                                 .getPartScores(part, groups);
 
-                        List<GroupGradedStatus> statuses = new Vector<GroupGradedStatus>();
+                        List<GroupStatus> statuses = new ArrayList<GroupStatus>();
                         newMap.put(part, statuses);
 
                         for(Group group : groups)
                         {
-                            GroupGradedStatus status = new GroupGradedStatus(group,
+                            boolean hasHandin = false;
+                            try
+                            {
+                                hasHandin = part.getHandin().hasHandin(group);
+                            }
+                            catch(IOException e)
+                            {
+                                new ErrorView(e, "Unable to determine if " + group + " has a handin");
+                            }
+
+                            GroupStatus status = new GroupStatus(group,
                                     submittedScores.containsKey(group),
                                     rubricScores.containsKey(group) &&
-                                    rubricScores.get(group) != 0);
+                                    rubricScores.get(group) != 0,
+                                    hasHandin);
                             statuses.add(status);
                         }
                     }
@@ -1356,7 +1416,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
      *
      * @param newAssignedGroups
      */
-    private void showAssignedGradingChanges(final Map<DistributablePart, List<GroupGradedStatus>> newAssignedGroups)
+    private void showAssignedGradingChanges(final Map<DistributablePart, List<GroupStatus>> newAssignedGroups)
     {
         //Determine if any data has changed
         boolean dpChanged = false;
@@ -1379,8 +1439,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
             DistributablePart selected = _dpList.getSelectedValue();
             if(selected != null)
             {
-                List<GroupGradedStatus> currGroups = _assignedGroups.get(selected);
-                List<GroupGradedStatus> newGroups = newAssignedGroups.get(selected);
+                List<GroupStatus> currGroups = _assignedGroups.get(selected);
+                List<GroupStatus> newGroups = newAssignedGroups.get(selected);
                 groupsChangedForSelectedDP = !Allocator.getGeneralUtilities()
                         .containSameElements(currGroups, newGroups);
             }
@@ -1415,7 +1475,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                     if(updateGrouplist)
                     {
                         DistributablePart currPart = _dpList.getSelectedValue();
-                        List<GroupGradedStatus> statuses;
+                        List<GroupStatus> statuses;
                         if(_assignedGroups.containsKey(currPart))
                         {
                             statuses = new ArrayList(_assignedGroups.get(currPart));
@@ -1426,7 +1486,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         }
                         Collections.sort(statuses);
                         List<Group> groups = new ArrayList<Group>();
-                        for(GroupGradedStatus status : statuses)
+                        for(GroupStatus status : statuses)
                         {
                             groups.add(status.getGroup());
                         }
@@ -1442,6 +1502,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         //to be updated to reflect this
                         _dpList.refreshList();
                     }
+
+                    updateButtonStates();
                 }
             };
 
@@ -1453,17 +1515,27 @@ public class FrontendView extends JFrame implements RubricSaveListener
         }
     }
 
-    private static class GroupGradedStatus implements Comparable<GroupGradedStatus>
+    /**
+     * The status of a group, which contains the following information:
+     * <ul>
+     * <li>If a grade has been submitted</li>
+     * <li>If the rubric has a non-zero score</li>
+     * <li>If there is a handin</li>
+     * </ul>
+     */
+    private static class GroupStatus implements Comparable<GroupStatus>
     {
         private final Group _group;
         private final boolean _submitted;
         private final boolean _hasRubricScore;
+        private final boolean _hasHandin;
 
-        public GroupGradedStatus(Group group, boolean submitted, boolean hasRubricScore)
+        public GroupStatus(Group group, boolean submitted, boolean hasRubricScore, boolean hasHandin)
         {
             _group = group;
             _submitted = submitted;
             _hasRubricScore = hasRubricScore;
+            _hasHandin = hasHandin;
         }
 
         public Group getGroup()
@@ -1481,24 +1553,30 @@ public class FrontendView extends JFrame implements RubricSaveListener
             return _hasRubricScore;
         }
 
+        public boolean hasHandin()
+        {
+            return _hasHandin;
+        }
+
         @Override
         public boolean equals(Object obj)
         {
             boolean equals = false;
-            if(obj instanceof GroupGradedStatus)
+            if(obj instanceof GroupStatus)
             {
-                GroupGradedStatus other = (GroupGradedStatus) obj;
+                GroupStatus other = (GroupStatus) obj;
 
                 equals = other._group.equals(_group) &&
                          other._submitted == _submitted &&
-                         other._hasRubricScore == _hasRubricScore;
+                         other._hasRubricScore == _hasRubricScore &&
+                         other._hasHandin == _hasHandin;
             }
 
             return equals;
         }
 
         @Override
-        public int compareTo(GroupGradedStatus other)
+        public int compareTo(GroupStatus other)
         {
             //Comparison on group names breaks ties
             int groupComp = this.getGroup().getName().compareTo(other.getGroup().getName());
@@ -1507,7 +1585,20 @@ public class FrontendView extends JFrame implements RubricSaveListener
             // - submitted
             // - rubric score
             // - nothing
-            if(this.isSubmitted() && other.isSubmitted())
+            // - missing handin
+            if(!this.hasHandin() && !other.hasHandin())
+            {
+                return groupComp;
+            }
+            else if(!this.hasHandin())
+            {
+                return 1;
+            }
+            else if(!other.hasHandin())
+            {
+                return -1;
+            }
+            else if(this.isSubmitted() && other.isSubmitted())
             {
                 return groupComp;
             }
@@ -1549,23 +1640,29 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         public String convertToString(Group group)
         {
-            //Determine status of this group
             boolean hasRubricScore = false;
             boolean submitted = false;
-            List<GroupGradedStatus> statuses = _assignedGroups.get(_part);
-            for(GroupGradedStatus status : statuses)
+            boolean hasHandin = false;
+            List<GroupStatus> statuses = _assignedGroups.get(_part);
+            for(GroupStatus status : statuses)
             {
                 if(status.getGroup().equals(group))
                 {
                     submitted = status.isSubmitted();
                     hasRubricScore = status.hasRubricScore();
+                    hasHandin = status.hasHandin();
                 }
             }
 
             //Build representation
-            String pre = "";
-            String post = "";
-            if(submitted)
+            String pre;
+            String post;
+            if(!hasHandin)
+            {
+                pre = "<font color=red>✗</font> <strike>";
+                post = "</strike>";
+            }
+            else if(submitted)
             {
                 pre = "<font color=green>✓</font> <font color=#686868>";
                 post = "</font>";
@@ -1594,8 +1691,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
             //Because all parts shown have at least one group, this will never
             //be vacuously true
             boolean allGroupsSubmitted = true;
-            List<GroupGradedStatus> statuses = _assignedGroups.get(part);
-            for(GroupGradedStatus status : statuses)
+            List<GroupStatus> statuses = _assignedGroups.get(part);
+            for(GroupStatus status : statuses)
             {
                 if(!status.isSubmitted())
                 {
@@ -1605,8 +1702,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
 
             //Build representation
-            String pre = "";
-            String post = "";
+            String pre;
+            String post;
 
             if(allGroupsSubmitted)
             {
@@ -1623,6 +1720,58 @@ public class FrontendView extends JFrame implements RubricSaveListener
             String representation = "<html>" + pre + name + post + "</html>";
 
             return representation;
+        }
+    }
+
+    /**
+     * Label that displays the currently selected student.
+     */
+    private class CurrentlyGradingLabel extends JLabel
+    {
+        private final static String BEGIN ="<html><b>Currently Grading</b><br/>",
+                                    END = "</html>",
+                                    DEFAULT = "None";
+
+        public CurrentlyGradingLabel()
+        {
+            super(BEGIN + DEFAULT + END);
+
+            this.setFont(this.getFont().deriveFont(Font.PLAIN));
+        }
+
+        public void update(Group group)
+        {
+            if(group == null)
+            {
+                this.setText(BEGIN + DEFAULT + END);
+            }
+            else
+            {
+                this.setText(BEGIN + getGroupText(group) + END);
+            }
+        }
+
+        private String getGroupText(Group group)
+        {
+            String text;
+
+            //If group assignment, show group name and members
+            if(_dpList.getSelectedValue().getAssignment().hasGroups())
+            {
+                text = group.getName() + " " + group.getMembers();
+            }
+            //If not a group assignment, show name of student
+            else if(!group.getMembers().isEmpty())
+            {
+                text = group.getMembers().get(0);
+            }
+            //A non-group assignment with no student, this situation should not arise
+            else
+            {
+                text = "Unknown";
+            }
+
+            return text;
         }
     }
 }
