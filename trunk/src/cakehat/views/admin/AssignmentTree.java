@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
 import cakehat.config.NonHandinPart;
@@ -18,9 +19,7 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -176,8 +175,8 @@ class AssignmentTree extends JScrollPane {
 
     }
 
-    public static void main(String[] argv) throws Throwable {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+    public static void main(String[] argv) {
+        CakehatMain.applyLookAndFeel();
 
         JFrame frame = new JFrame("Tree Test");
 

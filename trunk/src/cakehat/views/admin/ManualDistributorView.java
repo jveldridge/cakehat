@@ -39,6 +39,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import support.ui.GenericJComboBox;
 import support.ui.StringConverter;
 import cakehat.database.Group;
@@ -53,9 +54,7 @@ import java.awt.event.KeyAdapter;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
@@ -921,8 +920,8 @@ class ManualDistributorView extends JFrame {
         }
     }
 
-    public static void main(String[] argv) throws Throwable {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+    public static void main(String[] argv) {
+        CakehatMain.applyLookAndFeel();
         
         List<Assignment> assignments = Allocator.getConfigurationInfo().getHandinAssignments();
         if(assignments.size() > 0) {

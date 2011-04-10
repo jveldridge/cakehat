@@ -68,10 +68,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
@@ -83,9 +81,9 @@ import support.utils.posix.NativeException;
  */
 public class AdminView extends JFrame
 {
-    public static void main(String[] args) throws Throwable
+    public static void main(String[] args)
     {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+        CakehatMain.applyLookAndFeel();
         new AdminView();
     }
 

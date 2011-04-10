@@ -73,23 +73,49 @@ public class CakehatMain
     public static void main(String[] args)
     {
         _didStartNormally = true;
-        
+
         CakehatUncaughtExceptionHandler.registerHandler();
 
-        // Appearance
-        try
+        // Launch the appropriate view
+        if(args.length == 0)
         {
-            UIManager.setLookAndFeel(new MetalLookAndFeel());
+            _isDeveloperMode = true;
+            applyLookAndFeel();
+            adjustIfRemote();
+            DeveloperModeView.launch();
         }
-        // Depending on the windowing toolkit the user has, this call may fail
-        // but cakehat most likely will still appear similar enough to what
-        // is intended to be functional
-        catch(Exception e)
+        else if(args[0].equalsIgnoreCase(CakehatRunMode.FRONTEND.getTerminalFlag()))
         {
-            System.err.println("cakehat could not set its default appearance. " +
-                    "Some interfaces may not appear as intended.");
+            _runMode = CakehatRunMode.FRONTEND;
+            applyLookAndFeel();
+            adjustIfRemote();
+            FrontendView.launch();
         }
+        else if(args[0].equalsIgnoreCase(CakehatRunMode.ADMIN.getTerminalFlag()))
+        {
+            _runMode = CakehatRunMode.ADMIN;
+            applyLookAndFeel();
+            adjustIfRemote();
+            AdminView.launch();
+        }
+        else if(args[0].equalsIgnoreCase(CakehatRunMode.LAB.getTerminalFlag()))
+        {
+            _runMode = CakehatRunMode.LAB;
+            //Creating the ArrayList is necessary because the list created
+            //by Arrays.asList(...) is immutable
+            ArrayList<String> argList = new ArrayList(Arrays.asList(args));
+            argList.remove(0);
 
+            CheckoffCLI.performCheckoff(argList);
+        }
+        else
+        {
+            System.out.println("Invalid run property: " + args[0]);
+        }
+    }
+
+    private static void adjustIfRemote()
+    {
         // Turn off anti-aliasing if running cakehat remotely (ssh)
         try
         {
@@ -106,36 +132,27 @@ public class CakehatMain
                     "locally. Underlying cause: \n");
             e.printStackTrace();
         }
+    }
 
-        // Launch the appropriate view
-        if(args.length == 0)
+    /**
+     * This method should only be called from within this class or from the
+     * test main methods. Applies the look and feel that cakehat uses, which
+     * may differ from the default look and feel used by a given operating
+     * system or Linux windowing toolkit.
+     */
+    public static void applyLookAndFeel()
+    {
+        try
         {
-            _isDeveloperMode = true;
-            DeveloperModeView.launch();
+            UIManager.setLookAndFeel(new MetalLookAndFeel());
         }
-        else if(args[0].equalsIgnoreCase(CakehatRunMode.FRONTEND.getTerminalFlag()))
+        // Depending on the windowing toolkit the user has, this call may fail
+        // but cakehat most likely will still appear similar enough to what
+        // is intended to be functional
+        catch(Exception e)
         {
-            _runMode = CakehatRunMode.FRONTEND;
-            FrontendView.launch();
-        }
-        else if(args[0].equalsIgnoreCase(CakehatRunMode.ADMIN.getTerminalFlag()))
-        {
-            _runMode = CakehatRunMode.ADMIN;
-            AdminView.launch();
-        }
-        else if(args[0].equalsIgnoreCase(CakehatRunMode.LAB.getTerminalFlag()))
-        {
-            _runMode = CakehatRunMode.LAB;
-            //Creating the ArrayList is necessary because the list created
-            //by Arrays.asList(...) is immutable
-            ArrayList<String> argList = new ArrayList(Arrays.asList(args));
-            argList.remove(0);
-
-            CheckoffCLI.performCheckoff(argList);
-        }
-        else
-        {
-            System.out.println("Invalid run property: " + args[0]);
+            System.err.println("cakehat could not set its default appearance. " +
+                    "Some interfaces may not appear as intended.");
         }
     }
 }

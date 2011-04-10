@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
@@ -354,6 +355,8 @@ public class EmailView extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        CakehatMain.applyLookAndFeel();
+        
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {

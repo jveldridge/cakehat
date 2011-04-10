@@ -3,6 +3,7 @@ package cakehat.views.admin.stathist;
 import cakehat.config.Assignment;
 import cakehat.config.Part;
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
 import cakehat.resources.icons.IconLoader;
@@ -20,7 +21,6 @@ import java.awt.event.ActionEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -28,8 +28,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 
 /**
  *
@@ -220,16 +218,12 @@ public class StatHistView extends JFrame {
         }
     }
 
-    public static void main(String args[]) throws Throwable {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+    public static void main(String args[]) {
+        CakehatMain.applyLookAndFeel();
         
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                StatHistView view = new StatHistView(Allocator.getConfigurationInfo().getHandinAssignments());
-                view.setLocationRelativeTo(null);
-                view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                view.setVisible(true);
-            }
-        });
+        StatHistView view = new StatHistView(Allocator.getConfigurationInfo().getHandinAssignments());
+        view.setLocationRelativeTo(null);
+        view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        view.setVisible(true);
     }
 }

@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import cakehat.services.ServicesException;
 import cakehat.services.UserServices.ValidityCheck;
 import cakehat.views.shared.ErrorView;
@@ -17,8 +18,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import support.ui.ShadowJTextField;
 import support.utils.posix.NativeException;
 
@@ -163,9 +162,9 @@ class AddStudentsView extends JFrame
         }
     }
 
-    public static void main(String[] args) throws Throwable
+    public static void main(String[] args)
     {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+        CakehatMain.applyLookAndFeel();
 
         AddStudentsView view = new AddStudentsView();
         view.setLocationRelativeTo(null);
