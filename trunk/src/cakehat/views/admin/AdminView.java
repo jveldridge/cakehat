@@ -55,6 +55,7 @@ import cakehat.CakehatMain;
 import cakehat.MissingUserActionException;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.config.handin.MissingHandinException;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
@@ -1138,12 +1139,12 @@ public class AdminView extends JFrame
                     if (selectedDP != null) {
                         boolean hasHandin = false;
                         try {
-                            hasHandin = selectedAsgn.getHandin().getHandin(group) != null;
+                            hasHandin = selectedAsgn.getHandin().hasHandin(group);
                         } catch (IOException e) {
                             new ErrorView(e);
                         }
 
-                        _testCodeButton.setEnabled(hasHandin && selectedDP.hasTester());
+                        _testCodeButton.setEnabled(hasHandin && selectedDP.hasTest());
                         _runCodeButton.setEnabled(hasHandin && selectedDP.hasRun());
                         _openCodeButton.setEnabled(hasHandin && selectedDP.hasOpen());
                         try {
@@ -1152,6 +1153,8 @@ public class AdminView extends JFrame
                             new ErrorView(ex, "Could not determine whether group "
                                     + group + " has a README for assignment "
                                     + selectedAsgn + ".");
+                        } catch (MissingHandinException ex) {
+                            this.notifyHandinMissing(ex);
                         }
 
                         boolean hasRubric = selectedDP.hasRubricTemplate()
@@ -1223,16 +1226,13 @@ public class AdminView extends JFrame
                             anyGroupRubric = true;
                         }
 
-                        File handin = null;
                         try {
-                            handin = selectedAsgn.getHandin().getHandin(group);
+                            if (selectedAsgn.getHandin().hasHandin(group)) {
+                                anyGroupCode = true;
+                            }
                         } catch(IOException e) {
                             new ErrorView(e);
                         }
-                        if (handin != null) {
-                            anyGroupCode = true;
-                        }
-
 
                         if (anyGroupRubric && anyGroupCode) {
                             break;
@@ -1488,7 +1488,7 @@ public class AdminView extends JFrame
     {
         DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
         try {
-            dp.runDemo();
+            dp.demo();
         } catch (ActionException ex) {
             new ErrorView(ex);
         }
@@ -1595,6 +1595,8 @@ public class AdminView extends JFrame
             dp.open(group);
         } catch (ActionException ex) {
             new ErrorView(ex);
+        } catch (MissingHandinException ex) {
+            this.notifyHandinMissing(ex);
         }
     }
 
@@ -1617,6 +1619,8 @@ public class AdminView extends JFrame
             dp.run(group);
         } catch (ActionException ex) {
             new ErrorView(ex);
+        } catch (MissingHandinException ex) {
+            this.notifyHandinMissing(ex);
         }
     }
 
@@ -1636,9 +1640,11 @@ public class AdminView extends JFrame
 
         DistributablePart dp = this.getSingleSelectedDP(selection);
         try {
-            dp.runTester(group);
+            dp.test(group);
         } catch (ActionException ex) {
             new ErrorView(ex);
+        } catch (MissingHandinException ex) {
+            this.notifyHandinMissing(ex);
         }
     }
 
@@ -1712,6 +1718,8 @@ public class AdminView extends JFrame
             dp.viewReadme(group);
         } catch (ActionException ex) {
             new ErrorView(ex);
+        } catch (MissingHandinException ex) {
+            this.notifyHandinMissing(ex);
         }
     }
 
@@ -1996,5 +2004,13 @@ public class AdminView extends JFrame
     private void studentListValueChanged()
     {
         updateGUI(_assignmentTree.getSelection());
+    }
+
+    private void notifyHandinMissing(MissingHandinException ex)
+    {
+        JOptionPane.showMessageDialog(this,
+            "The handin for " + ex.getGroup().getName() + " could not be found.",
+            "Handin Missing",
+            JOptionPane.OK_OPTION);
     }
 }
