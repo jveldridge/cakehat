@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
@@ -40,10 +41,10 @@ public class DistributablePart extends Part
     /**
      * Only groups that have had their handins unarchived are included.
      * Key: Group
-     * Value: StringBuffer containing a description of the files and directories
-     * that are supposed to exist for this distributable part, but do not
+     * Value: String a description of the files and directories that are
+     * supposed to exist for this distributable part, but do not
      */
-    private final HashMap<Group, StringBuffer> _unarchivedGroups = new HashMap<Group, StringBuffer>();
+    private final HashMap<Group, String> _unarchivedGroups = new HashMap<Group, String>();
 
     /**
      * Keeps track of which groups have readmes so this only needs to be
@@ -105,7 +106,8 @@ public class DistributablePart extends Part
      *
      * @return
      */
-    public Handin getHandin() {
+    public Handin getHandin()
+    {
         return _handin;
     }
 
@@ -122,14 +124,16 @@ public class DistributablePart extends Part
     /**
      * Invokes the run mode for this DistributablePart.
      *
+     * @throws ActionException
+     * @throws MissingHandinException
+     *
      * @param group
      */
-    public void run(Group group) throws ActionException
+    public void run(Group group) throws ActionException, MissingHandinException
     {
         if(_runAction == null)
         {
-            throw new ActionException("No run action exists for " +
-                    _handin.getAssignment().getName() + " - " + this.getName());
+            throw this.createActionException("run");
         }
 
         this.unarchive(group);
@@ -149,14 +153,15 @@ public class DistributablePart extends Part
     /**
      * Invokes the demo mode for this DistributablePart.
      *
+     * @throws ActionException
+     *
      * @param group
      */
-    public void runDemo() throws ActionException
+    public void demo() throws ActionException
     {
         if(_demoAction == null)
         {
-            throw new ActionException("No demo action exists for " +
-                    _handin.getAssignment().getName() + " - " + this.getName());
+            throw this.createActionException("demo");
         }
 
         _demoAction.performAction(this, (Group) null);
@@ -175,34 +180,73 @@ public class DistributablePart extends Part
     /**
      * Invokes the print mode for this DistributablePart.
      *
+     * @throws ActionException
+     *
      * @param group
      */
     public void print(Collection<Group> groups) throws ActionException
     {
         if(_printAction == null)
         {
-            throw new ActionException("No print action exists for " +
-                    _handin.getAssignment().getName() + " - " + this.getName());
+            throw this.createActionException("print");
         }
 
+        //Unarchive each group's handin, keep track of those with missing handins
+        ArrayList<Group> groupsWithMissingHandins = new ArrayList<Group>();
         for(Group group : groups)
         {
-            this.unarchive(group);
+            try
+            {
+                this.unarchive(group);
+            }
+            catch(MissingHandinException e)
+            {
+                groupsWithMissingHandins.add(e.getGroup());
+            }
         }
-        _printAction.performAction(this, groups);
+
+        //If some groups have missing handins
+        if(!groupsWithMissingHandins.isEmpty())
+        {
+            String groupsOrStudents = (this.getAssignment().hasGroups() ? "groups" : "students");
+
+            String message = "The following " + groupsOrStudents +
+                    " are missing handins:";
+            for(Group group : groupsWithMissingHandins)
+            {
+                message += "\n • " + group.getName();
+            }
+            message += "\n\nDo you want to print the " + groupsOrStudents + " with handins?";
+
+            int result = JOptionPane.showConfirmDialog(null,
+                    message, "Missing Handins", JOptionPane.YES_NO_OPTION);
+
+            if(result == JOptionPane.YES_OPTION)
+            {
+                ArrayList<Group> groupsWithHandins = new ArrayList<Group>(groups);
+                groupsWithHandins.removeAll(groupsWithMissingHandins);
+                _printAction.performAction(this, groupsWithHandins);
+            }
+        }
+        else
+        {
+            _printAction.performAction(this, groups);
+        }
     }
 
     /**
      * Invokes the print mode for this DistributablePart.
      *
+     * @throws ActionException
+     * @throws MissingHandinException
+     *
      * @param group
      */
-    public void print(Group group) throws ActionException
+    public void print(Group group) throws ActionException, MissingHandinException
     {
         if(_printAction == null)
         {
-            throw new ActionException("No print action exists for " +
-                    _handin.getAssignment().getName() + " - " + this.getName());
+            throw this.createActionException("print");
         }
 
         this.unarchive(group);
@@ -221,15 +265,17 @@ public class DistributablePart extends Part
 
     /**
      * Invokes the open mode for this DistributablePart.
+     * 
+     * @throws ActionException
+     * @throws MissingHandinException
      *
      * @param group
      */
-    public void open(Group group) throws ActionException
+    public void open(Group group) throws ActionException, MissingHandinException
     {
         if(_openAction == null)
         {
-            throw new ActionException("No open action exists for " +
-                    _handin.getAssignment().getName() + " - " + this.getName());
+            throw this.createActionException("open");
         }
 
         this.unarchive(group);
@@ -237,30 +283,50 @@ public class DistributablePart extends Part
     }
 
     /**
-     * If there is a specified tester mode for this DistributablePart.
+     * If there is a specified test mode for this DistributablePart.
      *
      * @return
      */
-    public boolean hasTester()
+    public boolean hasTest()
     {
         return (_testAction != null);
     }
 
     /**
-     * Invokes the tester mode for this DistributablePart.
+     * Invokes the test mode for this DistributablePart.
+     * 
+     * @throws ActionException
+     * @throws MissingHandinException
      *
      * @param group
      */
-    public void runTester(Group group) throws ActionException
+    public void test(Group group) throws ActionException, MissingHandinException
     {
         if(_testAction == null)
         {
-            throw new ActionException("No test action exists for " +
-                    _handin.getAssignment().getName() + " - " + this.getName());
+            throw this.createActionException("test");
         }
 
         this.unarchive(group);
         _testAction.performAction(this, group);
+    }
+
+    /**
+     * Create an {@link ActionException} for a {@link DistributableAction} that
+     * does not exist.
+     * <br/><br/>
+     * Message will read:
+     * <br/>
+     * No <code>dneAction</code> action exists for <code>[Assignment Name] -
+     * [Part Name]</code>
+     *
+     * @param missingAction
+     * @return
+     */
+    private ActionException createActionException(String dneAction)
+    {
+        return new ActionException("No " + dneAction + " action exists for " +
+                    this.getAssignment().getName() + " - " + this.getName());
     }
 
     /**
@@ -271,9 +337,12 @@ public class DistributablePart extends Part
      * extension is found, the grader will be informed the file cannot be opened
      * by cakehat.
      *
+     * @throws ActionException
+     * @throws MissingHandinException
+     *
      * @param group
      */
-    public void viewReadme(Group group) throws ActionException
+    public void viewReadme(Group group) throws ActionException, MissingHandinException
     {
         Collection<File> readmes = this.getReadmes(group);
 
@@ -296,7 +365,7 @@ public class DistributablePart extends Part
                             .getUnarchiveHandinDir(this, group);
                     Allocator.getExternalProcessesUtilities()
                             .executeAsynchronously("kpdf " + 
-                            readme.getAbsolutePath(), unarchiveDir);
+                            "'" + readme.getAbsolutePath() + "'", unarchiveDir);
                 }
                 catch(IOException e)
                 {
@@ -317,10 +386,13 @@ public class DistributablePart extends Part
      * Returns Files that begin with "readme" (case insensitive), do not end
      * with ~, and are not hidden.
      *
+     * @throws ActionException
+     * @throws MissingHandinException
+     *
      * @param group
      * @return
      */
-    private Collection<File> getReadmes(Group group) throws ActionException
+    private Collection<File> getReadmes(Group group) throws ActionException, MissingHandinException
     {
         if(!_readmes.containsKey(group))
         {
@@ -358,12 +430,13 @@ public class DistributablePart extends Part
      * Determines if a readme exists for the group without unarchiving the
      * handin.
      *
+     * @throws ActionException
+     * @throws MissingHandinException
+     *
      * @param group
-     * @throws ActionException thrown if no handin for the group can be found or
-     * the contents of the archive cannot be read
      * @return
      */
-    public boolean hasReadme(Group group) throws ActionException
+    public boolean hasReadme(Group group) throws ActionException, MissingHandinException
     {
         if(!_groupsWithReadme.containsKey(group))
         {
@@ -379,11 +452,10 @@ public class DistributablePart extends Part
                 throw new ActionException(e);
             }
 
-            if(handin == null)
+            //Because the handins are cached, check it still exists
+            if(handin == null || !handin.exists())
             {
-                throw new ActionException("The handin for the group: " + group.getName() +
-                        " could not be found. This could be because the file " +
-                        "was moved or you do not have access to that file.");
+                throw new MissingHandinException(group);
             }
             else
             {
@@ -484,9 +556,12 @@ public class DistributablePart extends Part
     /**
      * Unarchives a group's most recent handin.
      *
+     * @throws ActionException
+     * @throws MissingHandinException
+     *
      * @param group
      */
-    private void unarchive(Group group) throws ActionException
+    private void unarchive(Group group) throws ActionException, MissingHandinException
     {
         if(!_unarchivedGroups.containsKey(group))
         {
@@ -507,14 +582,13 @@ public class DistributablePart extends Part
                 {
                     throw new ActionException(e);
                 }
-                
-                if(handin == null)
+
+                //Because the handins are cached, check it still exists
+                if(handin == null || !handin.exists())
                 {
-                    throw new ActionException("The handin for the group: " + group.getName() +
-                            " could not be found. This could be because the file " +
-                            "was moved or you do not have access to that file.");
+                    throw new MissingHandinException(group);
                 }
-                
+
                 try
                 {
                     //Determine if all of files and directories that belong to
@@ -549,7 +623,7 @@ public class DistributablePart extends Part
                     //Extract
                     Allocator.getArchiveUtilities().extractArchive(handin, groupDir, filter);
 
-                    _unarchivedGroups.put(group, buffer);
+                    _unarchivedGroups.put(group, buffer.toString());
                 }
                 catch (ArchiveException e)
                 {
@@ -564,8 +638,7 @@ public class DistributablePart extends Part
             }
         }
 
-        StringBuffer failureBuffer = _unarchivedGroups.get(group);
-        String failureReasons = failureBuffer.toString();
+        String failureReasons = _unarchivedGroups.get(group);
         if(!failureReasons.isEmpty())
         {
             String msg =
