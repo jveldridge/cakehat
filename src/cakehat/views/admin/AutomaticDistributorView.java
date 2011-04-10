@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
@@ -44,8 +45,6 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JSeparator;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
@@ -805,8 +804,8 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
     }
 
-    public static void main(String[] argv) throws Throwable {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+    public static void main(String[] argv) {
+        CakehatMain.applyLookAndFeel();
 
         AutomaticDistributorView view = new AutomaticDistributorView(Allocator.getConfigurationInfo().getHandinAssignments().get(0));
         view.setLocationRelativeTo(null);

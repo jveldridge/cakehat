@@ -261,23 +261,17 @@ public class ErrorView extends JFrame
     //For testing
     public static void main(String args[])
     {
-        java.awt.EventQueue.invokeLater(new Runnable()
+        CakehatMain.applyLookAndFeel();
+
+        try
         {
-            public void run()
-            {
-                try
-                {
-                    UIManager.setLookAndFeel(new MetalLookAndFeel());
-                    
-                    throw new RuntimeException("Mo' code, mo' problems");
-                }
-                catch(Exception e)
-                {
-                    new ErrorView(e, "A message that is quite long because it is " +
-                            "going to require wrapping due to its long length " +
-                            "and that is just a good test of what is occurring.");
-                }
-            }
-        });
+            throw new RuntimeException("Mo' code, mo' problems");
+        }
+        catch(Exception e)
+        {
+            new ErrorView(e, "A message that is quite long because it is " +
+                    "going to require wrapping due to its long length " +
+                    "and that is just a good test of what is occurring.");
+        }
     }
 }

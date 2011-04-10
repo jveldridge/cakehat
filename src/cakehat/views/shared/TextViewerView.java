@@ -37,6 +37,7 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
@@ -610,15 +611,11 @@ public class TextViewerView extends JFrame
         }
     }
 
-
     public static void main(String args[])
     {
-        java.awt.EventQueue.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                new TextViewerView(new File("/course/cs000/grading/asgn/2010/Clock/dq_grading_guide.txt"), "Test File");
-            }
-        });
+        CakehatMain.applyLookAndFeel();
+
+        File fileToView = new File("/course/cs000/grading/asgn/2010/Clock/dq_grading_guide.txt");
+        new TextViewerView(fileToView, "Test File");
     }
 }

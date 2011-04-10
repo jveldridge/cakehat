@@ -21,19 +21,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import cakehat.Allocator;
+import cakehat.CakehatMain;
 import cakehat.config.TimeInformation;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
-import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import support.ui.GenericJComboBox;
 import support.ui.IntegerField;
 import support.ui.StringConverter;
@@ -497,28 +495,22 @@ class ExtensionView extends JFrame
         }
     }
 
-    public static void main(String args[]) throws Throwable
+    public static void main(String args[])
     {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
+        CakehatMain.applyLookAndFeel();
 
-        EventQueue.invokeLater(new Runnable()
+        Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().get(0);
+        try
         {
-            public void run()
-            {
-                Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().get(0);
-                try
-                {
-                    Group group = Allocator.getDatabaseIO().getGroupsForAssignment(asgn).iterator().next();
+            Group group = Allocator.getDatabaseIO().getGroupsForAssignment(asgn).iterator().next();
 
-                    ExtensionView view = new ExtensionView(asgn, group);
-                    view.setLocationRelativeTo(null);
-                    view.setVisible(true);
-                }
-                catch (SQLException ex)
-                {
-                    ex.printStackTrace();
-                }
-            }
-        });
+            ExtensionView view = new ExtensionView(asgn, group);
+            view.setLocationRelativeTo(null);
+            view.setVisible(true);
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+        }
     }
 }

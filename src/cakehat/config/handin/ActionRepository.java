@@ -209,13 +209,4 @@ public class ActionRepository
     {
         return description.getProvider().getNamespace() + ":" + description.getName();
     }
-    
-    //TESTING
-
-    public static void main(String[] args) throws ConfigurationException
-    {
-        ActionRepository repository = new ActionRepository();
-
-        repository.displayActionsInfo();
-    }
 }
