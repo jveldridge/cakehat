@@ -38,6 +38,7 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
+import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
@@ -527,11 +528,11 @@ public class TextViewerView extends JFrame
             return;
         }
 
-        String printer = Allocator.getGradingServices().getPrinter();
+        CITPrinter printer = Allocator.getGradingServices().getPrinter();
 
         try
         {
-            Allocator.getPortraitPrinter().print(request, printer);
+            Allocator.getPortraitPrintingService().print(request, printer);
         }
         catch(IOException e)
         {

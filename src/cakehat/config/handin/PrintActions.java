@@ -3,6 +3,7 @@ package cakehat.config.handin;
 import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;
 import cakehat.database.Group;
+import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import java.io.File;
 import java.io.FileFilter;
@@ -89,10 +90,10 @@ class PrintActions implements ActionProvider
 
                 public void performAction(DistributablePart part, Collection<Group> groups) throws ActionException
                 {
-                    String printerName = Allocator.getGradingServices().getPrinter();
+                    CITPrinter printer = Allocator.getGradingServices().getPrinter();
                     
                     //Build print requests
-                    if(printerName != null)
+                    if(printer != null)
                     {
                         List<PrintRequest> requests = new ArrayList<PrintRequest>();
 
@@ -131,7 +132,7 @@ class PrintActions implements ActionProvider
                         //Issue print command
                         try
                         {
-                            Allocator.getLandscapePrinter().print(requests, printerName);
+                            Allocator.getLandscapePrintingService().print(requests, printer);
                         }
                         catch (IOException e)
                         {

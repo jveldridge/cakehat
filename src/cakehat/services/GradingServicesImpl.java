@@ -33,6 +33,7 @@ import cakehat.config.TA;
 import cakehat.database.Group;
 import cakehat.database.HandinStatus;
 import cakehat.config.handin.Handin;
+import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
@@ -92,33 +93,48 @@ public class GradingServicesImpl implements GradingServices
         Allocator.getFileSystemUtilities().deleteFileOnExit(workspace);
     }
 
+    private static final List<CITPrinter> NORMALLY_ALLOWED_PRINTERS =
+            Arrays.asList(CITPrinter.bw3, CITPrinter.bw4, CITPrinter.bw5);
+    private static final List<CITPrinter> DEVELOPER_ALLOWED_PRINTERS =
+            Arrays.asList(CITPrinter.bw1, CITPrinter.bw2, CITPrinter.bw3, CITPrinter.bw4, CITPrinter.bw5);
+    private static final CITPrinter DEFAULT_PRINTER = CITPrinter.bw3;
+
     @Override
-    public String getPrinter()
+    public CITPrinter getPrinter()
     {
         return this.getPrinter("Please select a printer.");
     }
 
-    private static final String[] DEVELOPER_PRINTERS = new String[] { "bw1", "bw2", "bw3", "bw4", "bw5" };
-    private static final String[] DEFAULT_PRINTERS = new String[] { "bw3", "bw4", "bw5" };
-    private static final String DEFAULT_PRINTER = "bw3";
     @Override
-    public String getPrinter(String message)
+    public CITPrinter getDefaultPrinter()
     {
-        String[] printerChoices = null;
+        return CITPrinter.bw3;
+    }
 
-        // select printer choices based on if under developer mode
-        if (CakehatMain.isDeveloperMode())
+    @Override
+    public List<CITPrinter> getAllowedPrinters()
+    {
+        List<CITPrinter> allowed;
+        if(CakehatMain.isDeveloperMode())
         {
-            printerChoices = DEVELOPER_PRINTERS;
+            allowed = DEVELOPER_ALLOWED_PRINTERS;
         }
         else
         {
-            printerChoices = DEFAULT_PRINTERS;
+            allowed = NORMALLY_ALLOWED_PRINTERS;
         }
+
+        return allowed;
+    }
+
+    @Override
+    public CITPrinter getPrinter(String message)
+    {
+        CITPrinter[] printerChoices = getAllowedPrinters().toArray(new CITPrinter[0]);
 
         Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.PRINTER);
 
-        return (String) JOptionPane.showInputDialog(new JFrame(), message,
+        return (CITPrinter) JOptionPane.showInputDialog(new JFrame(), message,
                 "Select Printer", JOptionPane.PLAIN_MESSAGE, icon,
                 printerChoices, DEFAULT_PRINTER);
     }
@@ -510,31 +526,33 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public void printGRDFiles(Handin handin, Iterable<Group> groups) throws ServicesException {
-        String printer = this.getPrinter("Select printer to print .GRD files");
-
-        if (printer == null) {
-            return;
-        }
-
+    public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException
+    {
         String taLogin = Allocator.getUserUtilities().getUserLogin();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
-        for (Group group : groups) {
+        for(Group group : groups)
+        {
             File file = Allocator.getPathServices().getGroupGRDFile(handin, group);
-            for (String student : group.getMembers()) {
-                try {
+            for(String student : group.getMembers())
+            {
+                try
+                {
                     requests.add(new PrintRequest(file, taLogin, student));
-                } catch (FileNotFoundException ex) {
+                }
+                catch (FileNotFoundException ex) {
                     throw new ServicesException("Could not print GRD files because a requested" +
                                                 "file was not found.\nFile: " + file.getAbsolutePath(), ex);
                 }
             }
         }
 
-        try {
-            Allocator.getPortraitPrinter().print(requests, printer);
-        } catch (IOException e) {
+        try
+        {
+            Allocator.getPortraitPrintingService().print(requests, printer);
+        }
+        catch(IOException e)
+        {
             new ErrorView(e, "Unable to issue print command for " + handin.getAssignment() + ".\n" +
                               "For the following students: " + groups);
         }

@@ -10,12 +10,12 @@ import java.io.IOException;
  *
  * @author jak2
  */
-public class LprPrinter extends Printer
+public class LprPrintingService extends PrintingService
 {
-    public void print(Iterable<PrintRequest> requests, String printer) throws IOException
+    public void print(Iterable<PrintRequest> requests, PhysicalPrinter printer) throws IOException
     {
         //Build command
-        String cmd = "lpr -P" + printer;
+        String cmd = "lpr -P" + printer.getPrinterName();
 
 	for(PrintRequest request : requests)
 	{

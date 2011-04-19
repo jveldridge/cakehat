@@ -2,6 +2,7 @@ package cakehat.views.frontend;
 
 import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
+import cakehat.CakehatMain;
 import cakehat.config.TA;
 import cakehat.config.handin.ActionException;
 import cakehat.config.handin.DistributablePart;
@@ -11,13 +12,13 @@ import cakehat.database.Group;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
-import cakehat.rubric.RubricException;
 import cakehat.rubric.RubricSaveListener;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -47,12 +48,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -67,8 +64,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import support.ui.AlphaJPanel;
 import support.ui.GenericJList;
 import support.ui.StringConverter;
+import support.utils.posix.NativeException;
 
 /**
  * A frontend view to be used by TAs that are grading.
@@ -85,6 +84,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
 {
     private final TA USER = Allocator.getUserServices().getUser();
 
+    private final boolean _isSSH;
     private GenericJList<DistributablePart> _dpList;
     private GenericJList<Group> _groupList;
     private JLabel _groupListLabel;
@@ -106,7 +106,14 @@ public class FrontendView extends JFrame implements RubricSaveListener
     {
         if(Allocator.getUserServices().isUserTA())
         {
-            new FrontendView();
+            boolean isSSH = false;
+            try
+            {
+                isSSH = Allocator.getUserUtilities().isUserRemotelyConnected();
+            }
+            catch(NativeException e){}
+
+            new FrontendView(isSSH);
         }
         else
         {
@@ -117,10 +124,12 @@ public class FrontendView extends JFrame implements RubricSaveListener
         }
     }
 
-    private FrontendView()
+    private FrontendView(boolean isSSH)
     {
         //Frame title
-        super("cakehat");
+        super("cakehat" + (isSSH ? " [ssh]" : ""));
+
+        _isSSH = isSSH;
 
         //Create the directory to work in
         try
@@ -589,19 +598,22 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 {
                     public void run()
                     {
-                        JPanel panel = disableFrame();
+                        JPanel panel = showModalContentInFrame();
 
                         // Attempt to display the blacklist panel, if the necessary
                         // database information cannot be retrieved succesfully, do not
                         // show the blacklist panel
                         try
                         {
-                            panel.add(new BlacklistPanel(panel.getPreferredSize(), FrontendView.this));
+                            BlacklistPanel blacklistPanel = new BlacklistPanel(
+                                    panel.getPreferredSize(),
+                                    panel.getBackground());
+                            panel.add(blacklistPanel);
                         }
                         catch(SQLException e)
                         {
-                            new ErrorView(e, "Unable to modify blacklist");
-                            enableFrame();
+                            new ErrorView(e, "Unable to launch modify blacklist view");
+                            showNormalContentInFrame();
                         }
                     }
                 });
@@ -639,19 +651,19 @@ public class FrontendView extends JFrame implements RubricSaveListener
     }
 
     /**
-     * Disables the menu and the content pane. Unlike calling
-     * {@link JFrame#setEnabled(boolean)} and passing in <code>false</code>,
-     * this method does not disable the glass pane. Instead, the glasspane is
-     * made visible and semi-transparent areas are drawn over the frame's
-     * content and menubar. A panel is returned which content may be put into.
-     * That panel should provide a manner of re-enabling the frame via
-     * {@link #enableFrame()}.
+     * Hides the menu and the components of the content pane. Visually it
+     * appears as if they are disabled. A panel is returned to put the modal
+     * content into.
+     * <br/>
+     * The disabled appearance does not look as good over SSH because when
+     * running over SSH transparency is very expensive, so transparency is not
+     * used when running over SSH.
      *
      * @return panel to put content into
      *
-     * @see #enableFrame()
+     * @see #showNormalContentInFrame()
      */
-    private JPanel disableFrame()
+    private JPanel showModalContentInFrame()
     {
         // Padding used around edges to prevent the content from being flush
         // with the frame
@@ -662,7 +674,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         // To fake this, take the menu bar and content pane and draw its
         // appearance to a BufferedImage, then hide the actual menu bar and
         // content pane and draw the BufferedImage
-        Component contentPane = this.getContentPane();
+        Container contentPane = this.getContentPane();
         Rectangle contentPaneBounds = contentPane.getBounds();
         final BufferedImage disableImage = new BufferedImage(contentPaneBounds.width,
                 contentPaneBounds.height + contentPaneBounds.y, BufferedImage.TYPE_INT_ARGB);
@@ -674,22 +686,31 @@ public class FrontendView extends JFrame implements RubricSaveListener
         contentPane.paint(imageGraphics);
         imageGraphics.translate(0, -contentPaneBounds.y);
 
-        // Hide the content pane and menu bar
-        contentPane.setVisible(false);
+        // Hide the menu bar and the components of the content pane
+        for(Component component : contentPane.getComponents())
+        {
+            component.setVisible(false);
+        }
         this.getJMenuBar().setVisible(false);
 
-        // Turn on anti-aliasing
+        // Turn on anti-aliasing so rounded corners are not jagged
         imageGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Draw a semi-transparent gray over everything
         imageGraphics.setColor(new Color(192, 192, 192, 200));
         imageGraphics.fillRect(0, 0, disableImage.getWidth(), disableImage.getHeight());
 
-        // Draw a semi-transparent rounded rectangle with the top part
-        // off the top of the screen
+        // Draw a rounded rectangle with the top part off the top of the screen
         int cornerRadius = 40;
         int shadingPadding = 10;
-        imageGraphics.setColor(new Color(128, 128, 128, 200));
+        if(_isSSH)
+        {
+            imageGraphics.setColor(new Color(144, 144, 144));
+        }
+        else
+        {
+            imageGraphics.setColor(new Color(128, 128, 128, 200));
+        }
         imageGraphics.fillRoundRect(paddingSize - shadingPadding,
                 paddingSize - shadingPadding - cornerRadius,
                 disableImage.getWidth() - (2 * paddingSize) + (2 * shadingPadding),
@@ -706,46 +727,91 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
         };
 
-        JPanel glassPane = (JPanel) this.getGlassPane();
-        glassPane.setVisible(true);
-        glassPane.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        disablePanel.setPreferredSize(glassPane.getBounds().getSize());
-        glassPane.removeAll();
-        glassPane.add(disablePanel);
+        disablePanel.setPreferredSize(new Dimension(disableImage.getWidth(), disableImage.getHeight()));
+        this.getContentPane().add(disablePanel);
 
         // Center an overlay panel in the disablePanel that will hold the content
         Dimension disablePanelSize = disablePanel.getPreferredSize();
 
         disablePanel.add(Box.createRigidArea(new Dimension(disablePanelSize.width, paddingSize)), BorderLayout.NORTH);
         disablePanel.add(Box.createRigidArea(new Dimension(disablePanelSize.width, paddingSize)), BorderLayout.SOUTH);
-        disablePanel.add(Box.createRigidArea(new Dimension(paddingSize, disablePanelSize.height)), BorderLayout.WEST);
-        disablePanel.add(Box.createRigidArea(new Dimension(paddingSize, disablePanelSize.height)), BorderLayout.EAST);
+        disablePanel.add(Box.createRigidArea(new Dimension(paddingSize, disablePanelSize.height - 2 * paddingSize)), BorderLayout.WEST);
+        disablePanel.add(Box.createRigidArea(new Dimension(paddingSize, disablePanelSize.height - 2 * paddingSize)), BorderLayout.EAST);
 
-        JPanel overlayPanel = new JPanel(new BorderLayout(0, 0));
-        overlayPanel.setBackground(new Color(0, 0, 0, 0));
-        overlayPanel.setPreferredSize(new Dimension(disablePanelSize.width - 2 * paddingSize,
-                disablePanelSize.height - 2 * paddingSize));
+        AlphaJPanel overlayPanel = new AlphaJPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        Dimension overlayPanelSize = new Dimension(disablePanelSize.width - 2 * paddingSize, disablePanelSize.height - 2 * paddingSize);
+        overlayPanel.setPreferredSize(overlayPanelSize);
         disablePanel.add(overlayPanel, BorderLayout.CENTER);
 
-        return overlayPanel;
+        if(_isSSH)
+        {
+            overlayPanel.setBackground(new Color(144, 144, 144));
+        }
+        else
+        {
+            overlayPanel.setBackground(new Color(0, 0, 0, 0));
+        }
+
+        // Create the panel that will host the content provided from elsewhere,
+        // and place a button to "Close" the view, which will re-enable the frame
+        int closeVerticalGap = 5;
+        int closeButtonWidth = 120;
+        int closeButtonHeight = 25;
+
+        AlphaJPanel overlayContentPanel = new AlphaJPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        overlayContentPanel.setPreferredSize(new Dimension(overlayPanelSize.width,
+                overlayPanelSize.height - closeVerticalGap - closeButtonHeight));
+        overlayContentPanel.setBackground(overlayPanel.getBackground());
+
+        overlayPanel.add(overlayContentPanel);
+
+        overlayPanel.add(Box.createRigidArea(new Dimension(overlayPanelSize.width, closeVerticalGap)));
+
+        JPanel closePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        closePanel.setPreferredSize(new Dimension(overlayPanelSize.width, closeButtonHeight));
+        closePanel.setBackground(overlayPanel.getBackground());
+        overlayPanel.add(closePanel);
+
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                FrontendView.this.showNormalContentInFrame();
+            }
+        });
+        closeButton.setPreferredSize(new Dimension(closeButtonWidth, closeButtonHeight));
+        closePanel.add(closeButton);
+
+        return overlayContentPanel;
     }
 
     /**
-     * Enables the frame, to be called after a call to {@link #disableFrame() }.
-     * This method is package private to allow for separate classes such as
-     * {@link BlacklistPanel} that are displayed in the glasspane overlay to
-     * dismiss themselves and re-enable the frame.
+     * Removes the modally displayed content in the frame, and restores the
+     * frame to showing its normal content.
      *
-     * @see #disableFrame()
+     * @see #showModalContentInFrame()
      */
-    void enableFrame()
+    private void showNormalContentInFrame()
     {
-        // Hide glass pane
-        this.getGlassPane().setVisible(false);
-
-        // Show the menu bar and content pane
+        // Show the menu bar
         this.getJMenuBar().setVisible(true);
-        this.getContentPane().setVisible(true);
+
+        // Remove the components visible in the content pane
+        // Show all of the hidden components as that is the normal content
+        Component[] children = this.getContentPane().getComponents();
+        for(Component child : children)
+        {
+            if(child.isVisible())
+            {
+                this.getContentPane().remove(child);
+            }
+            else
+            {
+                child.setVisible(true);
+            }
+        }
     }
 
     /**
@@ -768,7 +834,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         generalButtonsPanel.add(_demoButton);
 
         //Submit Grading
-        _submitGradingButton = createButton(IconImage.MAIL_SEND_RECEIVE, "Submit Grading");
+        _submitGradingButton = createButton(IconImage.DOCUMENT_SAVE, "Submit Grading");
         _submitGradingButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
@@ -1077,116 +1143,34 @@ public class FrontendView extends JFrame implements RubricSaveListener
         this.loadAssignedGrading(true);
     }
 
-    private final ExecutorService _submitExecutor = Executors.newSingleThreadExecutor();
     /**
      * Called when the submit grading button is clicked.
      */
     private void submitGradingButtonActionPerformed()
-    {
-        final DistributablePart dp = _dpList.getSelectedValue();
-
-        if(dp != null)
+    {                
+        // Invoke later so that the button has time to unclick
+        EventQueue.invokeLater(new Runnable()
         {
-            final SubmitDialog sd = new SubmitDialog(dp.getAssignment(), _groupList.getListData(),
-                    Allocator.getConfigurationInfo().getSubmitOptions());
-
-            if(sd.showDialog() == JOptionPane.OK_OPTION)
+            public void run()
             {
-                final Collection<Group> selected = sd.getSelectedGroups();
+                JPanel disablePanel = showModalContentInFrame();
 
-                //Enter grades into database
-                if(sd.submitChecked())
+                try
                 {
-                    Runnable submitRunnable = new Runnable()
-                    {
-                        public void run()
-                        {
-                            Map<Group, Double> handinTotals = Allocator
-                                    .getRubricManager().getPartScores(dp, selected);
-                            for(Group group : handinTotals.keySet())
-                            {
-                                try
-                                {
-                                    Allocator.getDatabaseIO()
-                                            .enterGrade(group, dp, handinTotals.get(group));
-                                }
-                                catch (SQLException ex)
-                                {
-                                    generateErrorView("enter grade", group, dp, ex);
-                                }
-                            }
-
-                            //Retrieve updated database information to reflect submitted grades
-                            loadAssignedGrading(false);
-                        }
-                    };
-
-                    _submitExecutor.submit(submitRunnable);
+                    SubmitPanel submitPanel = new SubmitPanel(disablePanel.getPreferredSize(),
+                            disablePanel.getBackground(),
+                            FrontendView.this,
+                            _dpList.getSelectedValue(),
+                            _groupList.getListData());
+                    disablePanel.add(submitPanel);
                 }
-
-                //Generate GRD files if they will be emailed or printer
-                if(sd.emailChecked() || sd.printChecked())
+                catch(SQLException e)
                 {
-                    Runnable convertRunnable = new Runnable()
-                    {
-                        public void run()
-                        {
-                            try
-                            {
-                                Allocator.getRubricManager()
-                                        .convertToGRD(dp.getHandin(), selected);
-                            }
-                            catch (RubricException ex)
-                            {
-                                generateErrorViewMultiple("enter grade", selected, dp, ex);
-                            }
-                        }
-                    };
-                    _submitExecutor.submit(convertRunnable);
-                }
-
-                //Print GRD files
-                if(sd.printChecked())
-                {
-                    //This needs to be placed on the submission executor so that
-                    //it is guaranteed run after the rubrics have been converted
-                    //to GRD files
-                    Runnable printRunnable = new Runnable()
-                    {
-                        public void run()
-                        {
-                            try
-                            {
-                                Allocator.getGradingServices()
-                                        .printGRDFiles(dp.getHandin(), selected);
-                            }
-                            catch (ServicesException ex)
-                            {
-                                new ErrorView(ex, "Could not print GRD files.");
-                            }
-                        }
-                    };
-                    _submitExecutor.submit(printRunnable);
-                }
-
-                //If groups/students are to be notified
-                if(sd.notifyChecked())
-                {
-                    //This needs to be placed on the submission executor so that
-                    //it is guaranteed run after the rubrics have been converted
-                    //to GRD files
-                    Runnable notifyRunnable = new Runnable()
-                    {
-                        public void run()
-                        {
-                           Allocator.getGradingServices().notifyStudents(
-                                   dp.getHandin(), selected, sd.emailChecked());
-                        }
-                    };
-                    _submitExecutor.submit(notifyRunnable);
+                    showNormalContentInFrame();
+                    new ErrorView(e, "Unable to show submit grading view due to database issues");
                 }
             }
-        }
+        });
     }
 
     /**
@@ -1335,7 +1319,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
      *
      * @param useSeparateThread
      */
-    private void loadAssignedGrading(boolean useSeparateThread)
+    void loadAssignedGrading(boolean useSeparateThread)
     {
         Runnable loadRunnable = new Runnable()
         {

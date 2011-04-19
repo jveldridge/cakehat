@@ -9,9 +9,9 @@ import cakehat.database.DBWrapper;
 import cakehat.database.DatabaseIO;
 import cakehat.export.CSVExporter;
 import cakehat.export.Exporter;
-import cakehat.printing.EnscriptPrinter;
-import cakehat.printing.LprPrinter;
-import cakehat.printing.Printer;
+import cakehat.printing.EnscriptPrintingService;
+import cakehat.printing.LprPrintingService;
+import cakehat.printing.PrintingService;
 import cakehat.rubric.RubricManager;
 import cakehat.rubric.RubricManagerImpl;
 import cakehat.services.Constants;
@@ -122,8 +122,8 @@ public class Allocator
     private final SingletonAllocation<StringManipulationServices> _stringManipServices;
     private final SingletonAllocation<Constants> _constants;
     private final SingletonAllocation<DatabaseIO> _database;
-    private final SingletonAllocation<Printer> _landscapePrinter;
-    private final SingletonAllocation<Printer> _portraitPrinter;
+    private final SingletonAllocation<PrintingService> _landscapePrintingService;
+    private final SingletonAllocation<PrintingService> _portraitPrintingService;
     private final SingletonAllocation<Exporter> _csvExporter;
     private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
@@ -146,8 +146,8 @@ public class Allocator
      * @param fileSystemServices
      * @param constants
      * @param database
-     * @param landscapePrinter
-     * @param portraitPrinter
+     * @param landscapePrintingService
+     * @param portraitPrintingService
      * @param csvExporter
      * @param generalUtils
      * @param archiveUtils
@@ -166,8 +166,8 @@ public class Allocator
                       SingletonAllocation<StringManipulationServices> stringManipServices,
                       SingletonAllocation<Constants> constants,
                       SingletonAllocation<DatabaseIO> database,
-                      SingletonAllocation<Printer> landscapePrinter,
-                      SingletonAllocation<Printer> portraitPrinter,
+                      SingletonAllocation<PrintingService> landscapePrintingService,
+                      SingletonAllocation<PrintingService> portraitPrintingService,
                       SingletonAllocation<Exporter> csvExporter,
                       SingletonAllocation<GeneralUtilities> generalUtils,
                       SingletonAllocation<ArchiveUtilities> archiveUtils,
@@ -276,24 +276,24 @@ public class Allocator
             _database = database;
         }
 
-        if(landscapePrinter == null)
+        if(landscapePrintingService == null)
         {
-            _landscapePrinter = new SingletonAllocation<Printer>()
-                                { public Printer allocate() { return new EnscriptPrinter(); } };
+            _landscapePrintingService = new SingletonAllocation<PrintingService>()
+                                { public PrintingService allocate() { return new EnscriptPrintingService(); } };
         }
         else
         {
-            _landscapePrinter = landscapePrinter;
+            _landscapePrintingService = landscapePrintingService;
         }
 
-        if(portraitPrinter == null)
+        if(portraitPrintingService == null)
         {
-            _portraitPrinter = new SingletonAllocation<Printer>()
-                                { public Printer allocate() { return new LprPrinter(); } };
+            _portraitPrintingService = new SingletonAllocation<PrintingService>()
+                                { public PrintingService allocate() { return new LprPrintingService(); } };
         }
         else
         {
-            _portraitPrinter = portraitPrinter;
+            _portraitPrintingService = portraitPrintingService;
         }
 
         if(csvExporter == null)
@@ -417,14 +417,14 @@ public class Allocator
         return getInstance()._database.getInstance();
     }
 
-    public static Printer getLandscapePrinter()
+    public static PrintingService getLandscapePrintingService()
     {
-        return getInstance()._landscapePrinter.getInstance();
+        return getInstance()._landscapePrintingService.getInstance();
     }
 
-    public static Printer getPortraitPrinter()
+    public static PrintingService getPortraitPrintingService()
     {
-        return getInstance()._portraitPrinter.getInstance();
+        return getInstance()._portraitPrintingService.getInstance();
     }
 
     public static Exporter getCSVExporter()
@@ -481,8 +481,8 @@ public class Allocator
         private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
         private SingletonAllocation<DatabaseIO> _database;
-        private SingletonAllocation<Printer> _landscapePrinter;
-        private SingletonAllocation<Printer> _portraitPrinter;
+        private SingletonAllocation<PrintingService> _landscapePrintingService;
+        private SingletonAllocation<PrintingService> _portraitPrintingService;
         private SingletonAllocation<Exporter> _csvExporter;
         private SingletonAllocation<GeneralUtilities> _generalUtils;
         private SingletonAllocation<ArchiveUtilities> _archiveUtils;
@@ -561,16 +561,16 @@ public class Allocator
             return this;
         }
 
-        public Customizer setLandscapePrinter(SingletonAllocation<Printer> landscapePrinter)
+        public Customizer setLandscapePrintingService(SingletonAllocation<PrintingService> landscapePrintingService)
         {
-            _landscapePrinter = landscapePrinter;
+            _landscapePrintingService = landscapePrintingService;
 
             return this;
         }
 
-        public Customizer setPortraitPrinter(SingletonAllocation<Printer> portraitPrinter)
+        public Customizer setPortraitPrintingService(SingletonAllocation<PrintingService> portraitPrintingService)
         {
-            _portraitPrinter = portraitPrinter;
+            _portraitPrintingService = portraitPrintingService;
 
             return this;
         }
@@ -652,8 +652,8 @@ public class Allocator
                     _stringManipServices,
                     _constants,
                     _database,
-                    _landscapePrinter,
-                    _portraitPrinter,
+                    _landscapePrintingService,
+                    _portraitPrintingService,
                     _csvExporter,
                     _generalUtils,
                     _archiveUtils,
