@@ -1,9 +1,6 @@
 package cakehat.views.frontend;
 
 import cakehat.Allocator;
-import support.ui.GenericJList;
-import support.ui.ShadowJTextField;
-import support.ui.StringConverter;
 import cakehat.config.TA;
 import cakehat.resources.icons.IconLoader;
 import cakehat.views.shared.ErrorView;
@@ -23,11 +20,14 @@ import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import support.ui.AlphaJPanel;
+import support.ui.AlphaJScrollPane;
+import support.ui.GenericJList;
+import support.ui.ShadowJTextField;
+import support.ui.StringConverter;
 
 /**
  * Panel which allows for blacklisting and unblacklisting of students for the
@@ -35,11 +35,8 @@ import javax.swing.event.DocumentListener;
  *
  * @author jak2
  */
-class BlacklistPanel extends JPanel
+class BlacklistPanel extends AlphaJPanel
 {
-    private static final Color TRANSLUCENT = new Color(255, 255, 255, Color.TRANSLUCENT);
-
-    private final FrontendView _frontend;
     private final JTextField _filterField;
     private final GenericJList<String> _blacklistJList;
     private final GenericJList<String> _nonblacklistJList;
@@ -51,16 +48,16 @@ class BlacklistPanel extends JPanel
      * Constructs the panel.
      *
      * @param size
+     * @param background
      * @param frontend
      * @throws SQLException if the data needed for the initial state cannot
      * be retrieved from the database
      */
-    public BlacklistPanel(Dimension size, FrontendView frontend) throws SQLException
+    public BlacklistPanel(Dimension size, Color background) throws SQLException
     {
         this.setPreferredSize(size);
-        _frontend = frontend;
 
-        this.setBackground(TRANSLUCENT);
+        this.setBackground(background);
         _user = Allocator.getUserServices().getUser();
 
         _filterField = new ShadowJTextField("Filter List");
@@ -96,38 +93,38 @@ class BlacklistPanel extends JPanel
         final int padWidth = 10;
 
         // Panel to hold the contents
-        JPanel contentPanel = new JPanel(new BorderLayout(0, 0));
-        Dimension contentSize = new Dimension(size.width, size.height - 30);
+        AlphaJPanel contentPanel = new AlphaJPanel(new BorderLayout(0, 0));
+        Dimension contentSize = new Dimension(size.width, size.height);
         contentPanel.setPreferredSize(contentSize);
-        contentPanel.setBackground(TRANSLUCENT);
+        contentPanel.setBackground(this.getBackground());
         this.add(contentPanel, BorderLayout.NORTH);
 
         // Black list
-        JPanel blacklistPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        AlphaJPanel blacklistPanel = new AlphaJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         blacklistPanel.setPreferredSize(new Dimension(listPanelWidth, contentSize.height));
-        blacklistPanel.setBackground(TRANSLUCENT);
+        blacklistPanel.setBackground(contentPanel.getBackground());
 
         JLabel blacklistLabel = new JLabel("Blacklisted Students");
         blacklistLabel.setPreferredSize(new Dimension(listPanelWidth, labelHeight));
         blacklistPanel.add(blacklistLabel);
 
-        JScrollPane blacklistScrollPane = new JScrollPane(_blacklistJList);
+        AlphaJScrollPane blacklistScrollPane = new AlphaJScrollPane(_blacklistJList);
         blacklistScrollPane.setPreferredSize(new Dimension(listPanelWidth, contentSize.height - labelHeight));
         blacklistPanel.add(blacklistScrollPane);
 
         contentPanel.add(blacklistPanel, BorderLayout.WEST);
 
         // Commands
-        JPanel paddingPanel = new JPanel(new BorderLayout(0, 0));
+        AlphaJPanel paddingPanel = new AlphaJPanel(new BorderLayout(0, 0));
         paddingPanel.setPreferredSize(new Dimension(commandPanelWidth, contentSize.height));
-        paddingPanel.setBackground(TRANSLUCENT);
+        paddingPanel.setBackground(contentPanel.getBackground());
         paddingPanel.add(Box.createRigidArea(new Dimension(padWidth, contentSize.height)), BorderLayout.WEST);
         paddingPanel.add(Box.createRigidArea(new Dimension(padWidth, contentSize.height)), BorderLayout.EAST);
         contentPanel.add(paddingPanel, BorderLayout.CENTER);
 
-        JPanel commandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        AlphaJPanel commandPanel = new AlphaJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         paddingPanel.add(commandPanel, BorderLayout.CENTER);
-        commandPanel.setBackground(TRANSLUCENT);
+        commandPanel.setBackground(contentPanel.getBackground());
 
         // Gap space between top and blacklist/unblacklist buttons
         int buttonGap = 10;
@@ -135,10 +132,10 @@ class BlacklistPanel extends JPanel
                 (contentSize.height - buttonGap - 2 * buttonHeight)/2)));
 
         // Command buttons
-        JPanel blacklistButtonsPanel = new JPanel(new GridLayout(2, 1, 0, buttonGap));
+        AlphaJPanel blacklistButtonsPanel = new AlphaJPanel(new GridLayout(2, 1, 0, buttonGap));
         blacklistButtonsPanel.setPreferredSize(new Dimension(commandPanelWidth - 2 * padWidth,
                 2 * buttonHeight + buttonGap));
-        blacklistButtonsPanel.setBackground(TRANSLUCENT);
+        blacklistButtonsPanel.setBackground(contentPanel.getBackground());
         commandPanel.add(blacklistButtonsPanel);
 
         // Blacklist button
@@ -215,9 +212,9 @@ class BlacklistPanel extends JPanel
         blacklistButtonsPanel.add(unblacklistButton);
 
         // Non-black list
-        JPanel nonblacklistPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        AlphaJPanel nonblacklistPanel = new AlphaJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         nonblacklistPanel.setPreferredSize(new Dimension(listPanelWidth, contentSize.height));
-        nonblacklistPanel.setBackground(TRANSLUCENT);
+        nonblacklistPanel.setBackground(contentPanel.getBackground());
 
         JLabel nonblacklistLabel = new JLabel("Non-blacklisted Students");
         nonblacklistLabel.setPreferredSize(new Dimension(listPanelWidth, labelHeight));
@@ -233,32 +230,12 @@ class BlacklistPanel extends JPanel
         _filterField.setPreferredSize(new Dimension(listPanelWidth, filterFieldHeight));
         nonblacklistPanel.add(_filterField);
 
-        JScrollPane nonblacklistScrollPane = new JScrollPane(_nonblacklistJList);
+        AlphaJScrollPane nonblacklistScrollPane = new AlphaJScrollPane(_nonblacklistJList);
         nonblacklistScrollPane.setPreferredSize(new Dimension(listPanelWidth,
                 contentSize.height - labelHeight - filterFieldHeight));
         nonblacklistPanel.add(nonblacklistScrollPane);
         
         contentPanel.add(nonblacklistPanel, BorderLayout.EAST);
-
-        // Gap
-        this.add(Box.createRigidArea(new Dimension(size.width, 5)), BorderLayout.CENTER);
-
-        // Add button to close blacklist
-        JPanel closePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        closePanel.setBackground(TRANSLUCENT);
-        
-        JButton closeButton = new JButton("Close");
-        closeButton.setPreferredSize(new Dimension(listPanelWidth / 2, 25));
-        closeButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                _frontend.enableFrame();
-            }
-        });
-        closePanel.add(closeButton);
-
-        this.add(closePanel, BorderLayout.SOUTH);
     }
 
     /**

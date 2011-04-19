@@ -13,23 +13,26 @@ import cakehat.Allocator;
  *
  * @author jak2
  */
-public class EnscriptPrinter extends Printer {
+public class EnscriptPrintingService extends PrintingService
+{
     //So that it prints currentPage/totalNumberOfPages - e.g. 2/4 for page 2 of 4
     private static final String PAGE_NUMBER_FORMATTING = "$%/$=";
 
-    public void print(Iterable<PrintRequest> requests, String printer) throws IOException {
+    public void print(Iterable<PrintRequest> requests, PhysicalPrinter printer) throws IOException
+    {
         //Set to '--no-job-header' after first request to prevent cover sheet printing after the first handin
         String dontPrintCoverSheet = "";
 
         String fullCommand = "";
 
-        for(PrintRequest request : requests) {
+        for(PrintRequest request : requests)
+        {
             //Convert request to one text file
             File tmpFile = convertRequest(request);
 
             //Build command
             String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
-                    dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer, tmpFile.getAbsolutePath());
+                    dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer.getPrinterName(), tmpFile.getAbsolutePath());
 
             //Execute command
             fullCommand = fullCommand + cmd;

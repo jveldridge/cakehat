@@ -1,11 +1,12 @@
 package cakehat.services;
 
 import cakehat.config.Assignment;
-import cakehat.config.ConfigurationInfo;
 import cakehat.config.TA;
 import cakehat.database.Group;
 import cakehat.config.handin.Handin;
+import cakehat.printing.CITPrinter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,7 +36,33 @@ public interface GradingServices
      */
     public void removeUserWorkspace();
 
-    public void printGRDFiles(Handin part, Iterable<Group> groups) throws ServicesException;
+    /**
+     * Returns an immutable list of the printers in the CIT that the user is
+     * allowed to print to.
+     *
+     * @return
+     */
+    public List<CITPrinter> getAllowedPrinters();
+
+    /**
+     * Returns the default CIT printer to be used. This printer corresponds to
+     * the printer available on the floor 3, the floor the TA Lab is on.
+     *
+     * @return
+     */
+    public CITPrinter getDefaultPrinter();
+
+    /**
+     * Prints GRD files for the specified groups and handin. This method does
+     * <strong>not</strong> generate GRD files, if any GRD files are missing
+     * then an exception will be thrown.
+     *
+     * @param handin
+     * @param groups
+     * @param printer
+     * @throws ServicesException
+     */
+    public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException;
 
     /**
      * Opens a new EmailView so that user TA can inform students that their assignment
@@ -58,15 +85,15 @@ public interface GradingServices
      *
      * @return printer selected
      */
-    public String getPrinter();
+    public CITPrinter getPrinter();
 
     /**
      * Print dialogue for selecting printer.  Message passed in will be displayed as instructions to the user
      * 
      * @param message
-     * @return the name of the printer selected
+     * @return printer selected
      */
-    public String getPrinter(String message);
+    public CITPrinter getPrinter(String message);
 
     /**
      * Returns whether or not it is OK to distribute the given group to the given

@@ -56,6 +56,7 @@ import cakehat.MissingUserActionException;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.MissingHandinException;
+import cakehat.printing.CITPrinter;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
@@ -81,17 +82,18 @@ import support.utils.posix.NativeException;
  */
 public class AdminView extends JFrame
 {
-    public static void main(String[] args)
-    {
-        CakehatMain.applyLookAndFeel();
-        new AdminView();
-    }
-
     public static void launch()
     {
         if(Allocator.getUserServices().isUserAdmin())
         {
-            new AdminView();
+            boolean isSSH = false;
+            try
+            {
+                isSSH = Allocator.getUserUtilities().isUserRemotelyConnected();
+            }
+            catch(NativeException e){}
+
+            new AdminView(isSSH);
         }
         else
         {
@@ -144,6 +146,7 @@ public class AdminView extends JFrame
         }
     }
 
+    private final boolean _isSSH;
     private JButton //Assignment wide buttons
                     _manageGroupsButton, _autoDistributorButton, _manualDistributorButton,
                     _previewRubricButton, _viewGradingGuideButton, _runDemoButton,
@@ -173,9 +176,11 @@ public class AdminView extends JFrame
     private SingleSelectionPanel _singleSelectionPanel;
     private Map<Assignment, Map<String, Group>> _groupsCache = new HashMap<Assignment, Map<String, Group>>();
 
-    private AdminView()
+    private AdminView(boolean isSSH)
     {
-        super("cakehat (admin)");
+        super("cakehat (admin)" + (isSSH ? " [ssh]" : ""));
+        
+        _isSSH = isSSH;
         
         try {
             //student logins
@@ -1746,13 +1751,14 @@ public class AdminView extends JFrame
         Collection<Group> groupsToPrint = this.getGroupsToConvertToGRD(asgn, students);
 
         //return value of null means "Cancel" button was clicked
-        if (groupsToPrint == null) {
-            return;
-        }
-        try {
-            Allocator.getGradingServices().printGRDFiles(asgn.getHandin(), groupsToPrint);
-        } catch (ServicesException ex) {
-            new ErrorView(ex, "Could not print GRD files.");
+        if (groupsToPrint != null) {
+            CITPrinter printer = Allocator.getGradingServices().getPrinter("Select printer to print rubric");
+
+            try {
+                Allocator.getGradingServices().printGRDFiles(asgn.getHandin(), groupsToPrint, printer);
+            } catch (ServicesException ex) {
+                new ErrorView(ex, "Could not print GRD files.");
+            }
         }
     }
 
