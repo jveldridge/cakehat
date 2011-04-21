@@ -5,8 +5,9 @@ import cakehat.config.ConfigurationInfoImpl;
 import cakehat.services.CourseInfo;
 import cakehat.services.CourseInfoImpl;
 import cakehat.services.GradingServices;
-import cakehat.database.DBWrapper;
-import cakehat.database.DatabaseIO;
+import cakehat.database.DatabaseImpl;
+import cakehat.database.DataServices;
+import cakehat.database.Database;
 import cakehat.export.CSVExporter;
 import cakehat.export.Exporter;
 import cakehat.printing.EnscriptPrintingService;
@@ -16,6 +17,7 @@ import cakehat.rubric.RubricManager;
 import cakehat.rubric.RubricManagerImpl;
 import cakehat.services.Constants;
 import cakehat.services.ConstantsImpl;
+import cakehat.database.DataServicesImpl;
 import cakehat.services.FileSystemServices;
 import cakehat.services.FileSystemServicesImpl;
 import cakehat.services.GradingServicesImpl;
@@ -117,14 +119,15 @@ public class Allocator
     private final SingletonAllocation<RubricManager> _rubricManager;
     private final SingletonAllocation<GradingServices> _gradingServices;
     private final SingletonAllocation<UserServices> _userServices;
+    private final SingletonAllocation<DataServices> _dataServices;
     private final SingletonAllocation<FileSystemServices> _fileSystemServices;
     private final SingletonAllocation<PathServices> _pathServices;
     private final SingletonAllocation<StringManipulationServices> _stringManipServices;
     private final SingletonAllocation<Constants> _constants;
-    private final SingletonAllocation<DatabaseIO> _database;
     private final SingletonAllocation<PrintingService> _landscapePrintingService;
     private final SingletonAllocation<PrintingService> _portraitPrintingService;
     private final SingletonAllocation<Exporter> _csvExporter;
+    private final SingletonAllocation<Database> _database;
     private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
     private final SingletonAllocation<CalendarUtilities> _calendarUtils;
@@ -142,6 +145,7 @@ public class Allocator
      * @param rubricManager
      * @param gradingServices
      * @param userServices
+     * @param dataServices
      * @param pathServices
      * @param fileSystemServices
      * @param constants
@@ -161,11 +165,12 @@ public class Allocator
                       SingletonAllocation<RubricManager> rubricManager,
                       SingletonAllocation<GradingServices> gradingServices,
                       SingletonAllocation<UserServices> userServices,
+                      SingletonAllocation<DataServices> dataServices,
                       SingletonAllocation<FileSystemServices> fileSystemServices,
                       SingletonAllocation<PathServices> pathServices,
                       SingletonAllocation<StringManipulationServices> stringManipServices,
                       SingletonAllocation<Constants> constants,
-                      SingletonAllocation<DatabaseIO> database,
+                      SingletonAllocation<Database> database,
                       SingletonAllocation<PrintingService> landscapePrintingService,
                       SingletonAllocation<PrintingService> portraitPrintingService,
                       SingletonAllocation<Exporter> csvExporter,
@@ -226,6 +231,16 @@ public class Allocator
             _userServices = userServices;
         }
 
+        if(dataServices == null)
+        {
+            _dataServices = new SingletonAllocation<DataServices>()
+                            { public DataServices allocate() { return new DataServicesImpl(); } };
+        }
+        else
+        {
+            _dataServices = dataServices;
+        }
+
         if(fileSystemServices == null)
         {
             _fileSystemServices = new SingletonAllocation<FileSystemServices>()
@@ -268,8 +283,8 @@ public class Allocator
 
         if(database == null)
         {
-            _database = new SingletonAllocation<DatabaseIO>()
-                            { public DatabaseIO allocate() { return new DBWrapper(); } };
+            _database = new SingletonAllocation<Database>()
+                            { public Database allocate() { return new DatabaseImpl(); } };
         }
         else
         {
@@ -392,6 +407,11 @@ public class Allocator
         return getInstance()._userServices.getInstance();
     }
 
+    public static DataServices getDataServices()
+    {
+        return getInstance()._dataServices.getInstance();
+    }
+
     public static FileSystemServices getFileSystemServices()
     {
         return getInstance()._fileSystemServices.getInstance();
@@ -412,7 +432,7 @@ public class Allocator
         return getInstance()._constants.getInstance();
     }
 
-    public static DatabaseIO getDatabaseIO()
+    public static Database getDatabase()
     {
         return getInstance()._database.getInstance();
     }
@@ -476,11 +496,12 @@ public class Allocator
         private SingletonAllocation<RubricManager> _rubricManager;
         private SingletonAllocation<GradingServices> _gradingServices;
         private SingletonAllocation<UserServices> _userServices;
+        private SingletonAllocation<DataServices> _dataServices;
         private SingletonAllocation<FileSystemServices> _fileSystemServices;
         private SingletonAllocation<PathServices> _pathServices;
         private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
-        private SingletonAllocation<DatabaseIO> _database;
+        private SingletonAllocation<Database> _database;
         private SingletonAllocation<PrintingService> _landscapePrintingService;
         private SingletonAllocation<PrintingService> _portraitPrintingService;
         private SingletonAllocation<Exporter> _csvExporter;
@@ -526,6 +547,13 @@ public class Allocator
             return this;
         }
 
+        public Customizer setDataServices(SingletonAllocation<DataServices> dataServices)
+        {
+            _dataServices = dataServices;
+
+            return this;
+        }
+
         public Customizer setFileSystemServices(SingletonAllocation<FileSystemServices> fileSystemServices)
         {
             _fileSystemServices = fileSystemServices;
@@ -554,7 +582,7 @@ public class Allocator
             return this;
         }
 
-        public Customizer setDatabase(SingletonAllocation<DatabaseIO> database)
+        public Customizer setDatabase(SingletonAllocation<Database> database)
         {
             _database = database;
 
@@ -647,6 +675,7 @@ public class Allocator
                     _rubricManager,
                     _gradingServices,
                     _userServices,
+                    _dataServices,
                     _fileSystemServices,
                     _pathServices,
                     _stringManipServices,

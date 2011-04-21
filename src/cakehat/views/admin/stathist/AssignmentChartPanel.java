@@ -83,7 +83,7 @@ public class AssignmentChartPanel extends JPanel {
     public void updateChartData(Assignment asgn, Collection<Group> groups) {
         Map<Group, Double> scoreMap;
         try {
-            scoreMap = Allocator.getDatabaseIO().getAssignmentScoresForGroups(asgn, groups);
+            scoreMap = Allocator.getDatabase().getAssignmentScoresForGroups(asgn, groups);
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not retrieve scores on assignment " + asgn + " " +
                               "for groups " + groups + ".");
@@ -104,7 +104,7 @@ public class AssignmentChartPanel extends JPanel {
     public void updateChartData(Part part, Iterable<Group> groups) {
         Map<Group, Double> scoreMap;
         try {
-            scoreMap = Allocator.getDatabaseIO().getPartScoresForGroups(part, groups);
+            scoreMap = Allocator.getDatabase().getPartScoresForGroups(part, groups);
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get scores on part " + part + " " +
                               "for groups " + groups + ".");

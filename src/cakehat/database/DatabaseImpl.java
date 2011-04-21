@@ -29,14 +29,14 @@ import org.sqlite.SQLiteConfig;
  * all DB accessor and mutator methods for cakehat
  * @author alexku
  */
-public class DBWrapper implements DatabaseIO {
+public class DatabaseImpl implements Database {
 
     private ConnectionProvider _connProvider;
 
     /**
      * sets DB path to regular location
      */
-    public DBWrapper() {
+    public DatabaseImpl() {
         _connProvider = new ConnectionProvider() {
 
             public Connection createConnection() throws SQLException {
@@ -71,7 +71,7 @@ public class DBWrapper implements DatabaseIO {
      * this constructor should only be used for testing the DBWrapper
      * @param cp - a connection provider to connect to a DB
      */
-    public DBWrapper(ConnectionProvider cp) {
+    public DatabaseImpl(ConnectionProvider cp) {
         _connProvider = cp;
     }
 
@@ -111,7 +111,7 @@ public class DBWrapper implements DatabaseIO {
     }
 
     @Override
-    public void addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
+    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO student"
@@ -120,9 +120,13 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(1, studentLogin);
             ps.setString(2, studentFirstName);
             ps.setString(3, studentLastName);
-            ps.executeUpdate();
+            int numRowsInserted = ps.executeUpdate();
 
             ps.close();
+
+            //if the student was already in the database, the INSERT command
+            //will simply be ignored and no new rows will have been inserted
+            return numRowsInserted > 0;
         } finally {
             this.closeConnection(conn);
         }
@@ -159,6 +163,31 @@ public class DBWrapper implements DatabaseIO {
             ps.setString(1, studentLogin);
 
             ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Collection<Student> getStudents() throws SQLException {
+        Collection<Student> result = new ArrayList<Student>();
+
+        Connection conn = this.openConnection();
+        try {
+            ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin, "
+                    + "s.firstname AS fname, "
+                    + "s.lastname AS lname, "
+                    + "s.enabled AS isenabled "
+                    + "FROM student AS s ");
+
+            while (rs.next()) {
+                result.add(new Student(rs.getString("studlogin"),
+                                       rs.getString("fname"),
+                                       rs.getString("lname"),
+                                       rs.getBoolean("isenabled")));
+            }
+
+            return Collections.unmodifiableCollection(result);
         } finally {
             this.closeConnection(conn);
         }
@@ -958,7 +987,7 @@ public class DBWrapper implements DatabaseIO {
 
         Collection<Group> groups = null;
         try{
-            groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+            groups = Allocator.getDatabase().getGroupsForAssignment(a);
         } catch (SQLException ex) {
             new ErrorView(ex);
         }
@@ -1377,4 +1406,5 @@ public class DBWrapper implements DatabaseIO {
             this.closeConnection(conn);
         }
     }
+    
 }

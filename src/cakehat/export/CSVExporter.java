@@ -82,7 +82,7 @@ public class CSVExporter implements Exporter
 
         int numStudents;
         try {
-            numStudents = Allocator.getDatabaseIO().getEnabledStudents().size();
+            numStudents = Allocator.getDatabase().getEnabledStudents().size();
         } catch (SQLException ex) {
             throw new ExportException("Export failed; enabled students could not be " +
                                       "retrieved from the database.", ex);
@@ -183,7 +183,7 @@ public class CSVExporter implements Exporter
                     if(!_attemptCancel)
                     {
                         try {
-                            Group studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, login);
+                            Group studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, login);
                             double total = 0;
 
                             for(Part part : asgn.getParts())
@@ -198,8 +198,8 @@ public class CSVExporter implements Exporter
                                 }
 
                                 //If no exemption
-                                if (Allocator.getDatabaseIO().getExemptionNote(studentsGroup, part) == null) {
-                                    Double score = Allocator.getDatabaseIO().getGroupScore(studentsGroup, part);
+                                if (Allocator.getDatabase().getExemptionNote(studentsGroup, part) == null) {
+                                    Double score = Allocator.getDatabase().getGroupScore(studentsGroup, part);
                                     
                                     if (score != null) {
                                         total += score;
@@ -213,7 +213,7 @@ public class CSVExporter implements Exporter
                                 }
                                 
                                 if (part instanceof DistributablePart) {
-                                    HandinStatus handinStatus = Allocator.getDatabaseIO().getHandinStatus(part.getAssignment().getHandin(), studentsGroup);
+                                    HandinStatus handinStatus = Allocator.getDatabase().getHandinStatus(part.getAssignment().getHandin(), studentsGroup);
                                     if (handinStatus != null) {
                                         printer.append(handinStatus.getTimeStatus() + ",");
                                     }
@@ -256,7 +256,7 @@ public class CSVExporter implements Exporter
         {
             Map<String, String> students;
             try {
-                students = Allocator.getDatabaseIO().getEnabledStudents();
+                students = Allocator.getDatabase().getEnabledStudents();
             } catch (SQLException ex) {
                 throw new ExportException("Export failed; enabled students could not be " +
                                           "retrieved from the database.", ex);

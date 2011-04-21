@@ -2,8 +2,8 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.CakehatMain;
+import cakehat.database.DataServices.ValidityCheck;
 import cakehat.services.ServicesException;
-import cakehat.services.UserServices.ValidityCheck;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -112,7 +112,7 @@ class AddStudentsView extends JFrame
             {
                 try
                 {
-                    Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                    Allocator.getDataServices().addStudent(login, ValidityCheck.BYPASS);
                 }
                 catch (ServicesException ex)
                 {
@@ -148,11 +148,11 @@ class AddStudentsView extends JFrame
                 String lastName = _lastNameField.getText();
                 if(firstName == null || firstName.isEmpty() || lastName == null || lastName.isEmpty())
                 {
-                    Allocator.getUserServices().addStudent(login, ValidityCheck.CHECK);
+                    Allocator.getDataServices().addStudent(login, ValidityCheck.CHECK);
                 }
                 else
                 {
-                    Allocator.getUserServices().addStudent(login, firstName, lastName, ValidityCheck.CHECK);
+                    Allocator.getDataServices().addStudent(login, firstName, lastName, ValidityCheck.CHECK);
                 }
             }
             catch (ServicesException ex)

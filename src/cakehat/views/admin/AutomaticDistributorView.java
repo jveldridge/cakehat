@@ -189,7 +189,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
                 try {
                     Set<Group> distributedGroups = new HashSet<Group>();
                     for (DistributablePart dp : _asgn.getDistributableParts()) {
-                        distributedGroups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+                        distributedGroups.addAll(Allocator.getDatabase().getAllAssignedGroups(dp));
                     }
 
                     if (makeNewRubrics(distributedGroups, true)) {
@@ -214,7 +214,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
                 try {
                     Set<Group> distributedGroups = new HashSet<Group>();
                     for (DistributablePart dp : _asgn.getDistributableParts()) {
-                        distributedGroups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+                        distributedGroups.addAll(Allocator.getDatabase().getAllAssignedGroups(dp));
                     }
 
                     if (recalculateHandinStatuses(distributedGroups, true)) {
@@ -247,7 +247,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
         //if no distribution has been made, disable all buttons except set up grading
         try {
-            if (Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
+            if (Allocator.getDatabase().isDistEmpty(_asgn)) {
                 _makeNewRubricsButton.setEnabled(false);
                 _recalculateHandinStatusesButton.setEnabled(false);
             }
@@ -303,10 +303,10 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
      */
     private boolean oneClickGradingSetup() throws ServicesException, SQLException, CakeHatDBIOException, IOException, RubricException {
         boolean needConfirmation = false;
-        if (!Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
+        if (!Allocator.getDatabase().isDistEmpty(_asgn)) {
             needConfirmation = true;
         }
-        if (!needConfirmation && Allocator.getDatabaseIO().areHandinStatusesSet(_asgn.getHandin())) {
+        if (!needConfirmation && Allocator.getDatabase().areHandinStatusesSet(_asgn.getHandin())) {
             needConfirmation = true;
         }
         if (!needConfirmation && Allocator.getRubricManager().areRubricsDistributed(_asgn.getHandin())) {
@@ -328,7 +328,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
         Set<Group> distributedGroups = new HashSet<Group>();
         for (DistributablePart dp : _asgn.getDistributableParts()) {
-            distributedGroups.addAll(Allocator.getDatabaseIO().getAllAssignedGroups(dp));
+            distributedGroups.addAll(Allocator.getDatabase().getAllAssignedGroups(dp));
         }
 
         if (success) {
@@ -392,7 +392,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
         if (requireConfirmation) {
             try {
-                if (!Allocator.getDatabaseIO().isDistEmpty(_asgn)) {
+                if (!Allocator.getDatabase().isDistEmpty(_asgn)) {
                     int n = JOptionPane.showConfirmDialog(this, "A distribution already exists for " + _asgn.getName() +
                                                                  ".\nAre you sure you want to overwrite the existing distribution?",
                                                                  "Confirm Overwrite",
@@ -459,7 +459,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
             distForDB.put(dp, distribution.get(dp).getDistribution());
         }
 
-        Allocator.getDatabaseIO().setDistributablePartDist(distForDB);
+        Allocator.getDatabase().setDistributablePartDist(distForDB);
 
         return true;
     }
@@ -470,7 +470,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
         //get TA blacklists
         Map<TA, Collection<String>> taBlacklists = new HashMap<TA, Collection<String>>();
         for (TA grader : graders) {
-            Collection<String> taBlacklist = Allocator.getDatabaseIO().getTABlacklist(grader);
+            Collection<String> taBlacklist = Allocator.getDatabase().getTABlacklist(grader);
             taBlacklists.put(grader, taBlacklist);
         }
 
@@ -628,7 +628,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
      */
     private boolean recalculateHandinStatuses(Collection<Group> groups, boolean requireConfirmation) throws ServicesException, SQLException, CakeHatDBIOException {
         if (requireConfirmation) {
-            if (Allocator.getDatabaseIO().areHandinStatusesSet(_asgn.getHandin())) {
+            if (Allocator.getDatabase().areHandinStatusesSet(_asgn.getHandin())) {
                 int proceed = JOptionPane.showConfirmDialog(this, "<html>All existing handin statuses will be overwritten.<br/>" +
                                                                   "Are you sure you wish to continue?</html>",
                                                             "Continue?",

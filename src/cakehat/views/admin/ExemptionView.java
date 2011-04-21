@@ -92,7 +92,7 @@ class ExemptionView extends javax.swing.JFrame {
 
         Collection<Group> groups = Collections.emptyList();
         try {
-            groups = Allocator.getDatabaseIO().getGroupsForAssignment(asgnMenu.getSelectedItem());
+            groups = Allocator.getDatabase().getGroupsForAssignment(asgnMenu.getSelectedItem());
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get groups for assignment " + asgnMenu.getSelectedItem());
         }
@@ -236,7 +236,7 @@ class ExemptionView extends javax.swing.JFrame {
 
         Map<Part, Collection<Group>> exemptions = null;
         try {
-            exemptions = Allocator.getDatabaseIO().getAllExemptions(_assignment);
+            exemptions = Allocator.getDatabase().getAllExemptions(_assignment);
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get exemptions for assignment " + _assignment);
         }
@@ -250,7 +250,7 @@ class ExemptionView extends javax.swing.JFrame {
                 for (final Group group : exemptions.get(part)) {
                     String note = null;
                     try {
-                        note = Allocator.getDatabaseIO().getExemptionNote(group, part);
+                        note = Allocator.getDatabase().getExemptionNote(group, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not get exemption note for group "
                                         + group + " on part " + part + ".");
@@ -267,7 +267,7 @@ class ExemptionView extends javax.swing.JFrame {
                                 return;
                             }
                             try {
-                                Allocator.getDatabaseIO().removeExemption(group, part);
+                                Allocator.getDatabase().removeExemption(group, part);
                             } catch (SQLException ex) {
                                 new ErrorView(ex, "Could not remove exemption for group "
                                         + group + " on part " + part + ".");
@@ -300,7 +300,7 @@ class ExemptionView extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             Collection<Group> groups = Collections.emptyList();
             try {
-                groups = Allocator.getDatabaseIO().getGroupsForAssignment(_asgnMenu.getSelectedItem());
+                groups = Allocator.getDatabase().getGroupsForAssignment(_asgnMenu.getSelectedItem());
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not get groups for assignment " + _asgnMenu.getSelectedItem());
             }
@@ -383,7 +383,7 @@ class ExemptionView extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent arg0) {
                 for (Part p : _selectedParts) {
                     try {
-                        Allocator.getDatabaseIO().grantExemption(_group, p, _notes);
+                        Allocator.getDatabase().grantExemption(_group, p, _notes);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not grant exemption for group "
                                         + _group + " on part " + p + ".");

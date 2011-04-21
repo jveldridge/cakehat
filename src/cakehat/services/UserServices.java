@@ -12,44 +12,6 @@ import support.utils.posix.NativeException;
  */
 public interface UserServices
 {
-    public enum ValidityCheck {BYPASS, CHECK};
-
-    /**
-     * Adds the given studentLogin to the database.  A warning will be shown
-     * if the given studentLogin is not a valid login or is not in the course's
-     * student group; the user will then have the option of adding the student
-     * anyway or cancelling the operation.  The students's first and last name
-     * will be set to the firstName and lastName parameters, respectively.
-     *
-     * @param studentLogin
-     * @param firstName
-     * @param lastName
-     * @param checkValidity parameter that indicates whether the student should be
-     *                    added to the database without checking that the login is
-     *                    valid and that the the student is in the course student
-     *                    group.  This should be passed as BYPASS when both of
-     *                    these conditions are known to be true (for example, when
-     *                    adding all members of the course group)
-     */
-    public void addStudent(String studentLogin, String firstName, String lastName,
-            ValidityCheck checkValidity) throws ServicesException;
-
-    /**
-     * Adds the given studentLogin to the database.  A warning will be shown
-     * if the given studentLogin is not a valid login or is not in the course's
-     * student group; the user will then have the option of adding the student
-     * anyway or cancelling the operation.  The students's first and last name
-     * will be looked up.
-     *
-     * @param studentLogin
-     * @param checkValidity parameter that indicates whether the student should be
-     *                    added to the database without checking that the login is
-     *                    valid and that the the student is in the course student
-     *                    group.  This should be passed as BYPASS when both of
-     *                    these conditions are known to be true (for example, when
-     *                    adding all members of the course group)
-     */
-    public void addStudent(String studentLogin, ValidityCheck checkValidity) throws ServicesException;
 
     /**
      * Returns the TA object representing the current user.

@@ -2,7 +2,6 @@ package cakehat.views.frontend;
 
 import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
-import cakehat.CakehatMain;
 import cakehat.config.TA;
 import cakehat.config.handin.ActionException;
 import cakehat.config.handin.DistributablePart;
@@ -1329,13 +1328,13 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         new HashMap<DistributablePart, List<GroupStatus>>();
                 try
                 {
-                    Set<DistributablePart> parts = Allocator.getDatabaseIO().getDPsWithAssignedStudents(USER);
+                    Set<DistributablePart> parts = Allocator.getDatabase().getDPsWithAssignedStudents(USER);
                     for(DistributablePart part : parts)
                     {
                         part.getHandin().clearHandinCache();
 
-                        Collection<Group> groups = Allocator.getDatabaseIO().getGroupsAssigned(part, USER);
-                        Map<Group, Double> submittedScores = Allocator.getDatabaseIO()
+                        Collection<Group> groups = Allocator.getDatabase().getGroupsAssigned(part, USER);
+                        Map<Group, Double> submittedScores = Allocator.getDatabase()
                                 .getPartScoresForGroups(part, groups);
                         Map<Group, Double> rubricScores = Allocator.getRubricManager()
                                 .getPartScores(part, groups);

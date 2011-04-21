@@ -80,7 +80,7 @@ class RubricPanel extends JPanel
         //if _stateManager is null, template rubric; no student or grader
         if (_stateManager != null) {
             try {
-                _status = Allocator.getDatabaseIO().getHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup());
+                _status = Allocator.getDatabase().getHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup());
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not get handin status.  On-time status will be assumed.");
                 _status = new HandinStatus(TimeStatus.ON_TIME, 0);
@@ -526,7 +526,7 @@ class RubricPanel extends JPanel
         //Get all students in the group
         Map<String, String> allLogins = null;
         try {
-            allLogins = Allocator.getDatabaseIO().getAllStudents();
+            allLogins = Allocator.getDatabase().getAllStudents();
         } catch (SQLException e) {
             new ErrorView(e, "Could not retrieve student list from the database " +
                              "(needed to get the names of this rubric's students).");
@@ -564,7 +564,7 @@ class RubricPanel extends JPanel
 
         TA grader = null;
         try {
-            grader = Allocator.getDatabaseIO().getGraderForGroup(_rubric.getDistributablePart(), _rubric.getGroup());
+            grader = Allocator.getDatabase().getGraderForGroup(_rubric.getDistributablePart(), _rubric.getGroup());
         } catch (SQLException e) {
             new ErrorView(e, "Could not get the grading TA.");
         } catch (CakeHatDBIOException e) {
@@ -710,7 +710,7 @@ class RubricPanel extends JPanel
 
         //Status
         try {
-            _status = Allocator.getDatabaseIO().getHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup());
+            _status = Allocator.getDatabase().getHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup());
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not get time status; assuming on-time handin.");
             _status = new HandinStatus(TimeStatus.ON_TIME, 0);

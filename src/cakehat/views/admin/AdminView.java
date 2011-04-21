@@ -56,12 +56,12 @@ import cakehat.MissingUserActionException;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.MissingHandinException;
+import cakehat.database.DataServices.ValidityCheck;
 import cakehat.printing.CITPrinter;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
-import cakehat.services.UserServices.ValidityCheck;
 import cakehat.views.admin.stathist.StatHistView;
 import cakehat.views.shared.ErrorView;
 import java.io.File;
@@ -184,7 +184,7 @@ public class AdminView extends JFrame
         
         try {
             //student logins
-            _studentLogins = new LinkedList(Allocator.getDatabaseIO().getAllStudents().keySet());
+            _studentLogins = new LinkedList(Allocator.getDatabase().getAllStudents().keySet());
             Collections.sort(_studentLogins);
         } catch (SQLException e) {
             new ErrorView(e, "Could not get students from database; " +
@@ -1106,7 +1106,7 @@ public class AdminView extends JFrame
         {
             String studentLogin = _studentList.getSelectedValue();
             try {
-                this.updateDisableEnableButton(Allocator.getDatabaseIO().isStudentEnabled(studentLogin));
+                this.updateDisableEnableButton(Allocator.getDatabase().isStudentEnabled(studentLogin));
                 _disableStudentButton.setEnabled(true);
             } catch (SQLException ex) {
                 new ErrorView(ex, "WARNING: Could not determine whether or not " +
@@ -1419,7 +1419,7 @@ public class AdminView extends JFrame
         //clear database
         if (clearDatabaseRB.isSelected()) {
             try {
-                Allocator.getDatabaseIO().resetDatabase();
+                Allocator.getDatabase().resetDatabase();
             } catch (SQLException ex) {
                 new ErrorView(ex, "Resetting the database failed.");
                 return;
@@ -1432,7 +1432,7 @@ public class AdminView extends JFrame
                 Collection<String> studentsNotAdded = new LinkedList<String>();
                 for (String login : Allocator.getUserServices().getStudentLogins()) {
                     try {
-                        Allocator.getUserServices().addStudent(login, ValidityCheck.BYPASS);
+                        Allocator.getDataServices().addStudent(login, ValidityCheck.BYPASS);
                     } catch (ServicesException ex) {
                        studentsNotAdded.add(login);
                     }
@@ -1508,7 +1508,7 @@ public class AdminView extends JFrame
     {
         Set<String> enabledStudents;
         try {
-            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+            enabledStudents = Allocator.getDatabase().getEnabledStudents().keySet();
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not read enabled students from the database. " +
                               "Grade reports cannot be sent.");
@@ -1839,12 +1839,12 @@ public class AdminView extends JFrame
         String studentLogin = _studentList.getSelectedValue();
         
         try {
-            if (Allocator.getDatabaseIO().isStudentEnabled(studentLogin)) {
-                Allocator.getDatabaseIO().disableStudent(studentLogin);
+            if (Allocator.getDatabase().isStudentEnabled(studentLogin)) {
+                Allocator.getDatabase().disableStudent(studentLogin);
                 this.updateDisableEnableButton(false);
             }
             else {
-                Allocator.getDatabaseIO().enableStudent(studentLogin);
+                Allocator.getDatabase().enableStudent(studentLogin);
                 this.updateDisableEnableButton(true);
             }
         } catch (SQLException ex) {
@@ -1982,7 +1982,7 @@ public class AdminView extends JFrame
             Group newGroup = new Group(studentLogin, studentLogin);
 
             try {
-                Allocator.getDatabaseIO().setGroup(asgn, newGroup);
+                Allocator.getDatabase().setGroup(asgn, newGroup);
                 _groupsCache.get(asgn).put(studentLogin, newGroup);
             } catch (SQLException ex) {
                 throw new CakehatException("Could not create group of one for " +

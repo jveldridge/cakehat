@@ -17,18 +17,30 @@ import java.util.Set;
  *
  * @author jeldridg
  */
-public interface DatabaseIO {
+public interface Database {
 
+    /**
+     * Returns an immutable Collection containing a Student object for each student
+     * in the database.  If the database contains no students, an empty Collection
+     * is returned.
+     * 
+     * @return
+     * @throws SQLException
+     */
+    public Collection<Student> getStudents() throws SQLException;
 
     /**
      * Checks to see if the student already exists. If not, creates new entry
-     * in the database.  Newly added students are enabled by default.
+     * in the database.  Newly added students are enabled by default.  The return
+     * value indicates whether of not the student was in fact added; it will be
+     * true if the student was not previously in the database, and false if the
+     * student was previously in the database.
      *
      * @param studentLogin
      * @param studentFirstName
      * @param studentLastName
      */
-    public void addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
+    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
 
     /**
      * Marks the student as disabled; use instead of removing if a student has dropped

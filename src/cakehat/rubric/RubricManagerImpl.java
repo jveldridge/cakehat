@@ -144,7 +144,7 @@ public class RubricManagerImpl implements RubricManager {
 
         HandinStatus status;
         try {
-            status = Allocator.getDatabaseIO().getHandinStatus(handin, group);
+            status = Allocator.getDatabase().getHandinStatus(handin, group);
         } catch (SQLException ex) {
             throw new RubricException("Could not get handin status for group " +
                                         group + " on assignment " + asgn + ".", ex);
@@ -251,7 +251,7 @@ public class RubricManagerImpl implements RubricManager {
     public void convertToGRD(Handin handin, Group group) throws RubricException {
         HandinStatus status;
         try {
-            status = Allocator.getDatabaseIO().getHandinStatus(handin, group);
+            status = Allocator.getDatabase().getHandinStatus(handin, group);
         } catch (SQLException ex) {
             throw new RubricException("Could not read handin status for group " + group + " " +
                                          "on assignment " + handin.getAssignment() + " from the database.", ex);
@@ -320,7 +320,7 @@ public class RubricManagerImpl implements RubricManager {
     public boolean areRubricsDistributed(Handin handin) throws RubricException {
         Collection<Group> groups;
         try {
-            groups = Allocator.getDatabaseIO().getGroupsForAssignment(handin.getAssignment());
+            groups = Allocator.getDatabase().getGroupsForAssignment(handin.getAssignment());
         } catch (SQLException ex) {
             throw new RubricException("Could not determine if rubrics have been distributed " +
                                       "for assignment " + handin.getAssignment() + ".", ex);
