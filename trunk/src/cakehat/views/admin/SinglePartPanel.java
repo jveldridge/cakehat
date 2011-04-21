@@ -91,8 +91,8 @@ class SinglePartPanel extends JPanel {
         _partLabel.updateValue(p.getAssignment().getName() + " - " + p.getName());
 
         try {
-            Collection<Group> groupsForAssignment = Allocator.getDatabaseIO().getGroupsForAssignment(p.getAssignment());
-            _numSubmittedGradesLabel.updateValue(Allocator.getDatabaseIO().getPartScoresForGroups(p, groupsForAssignment).size());
+            Collection<Group> groupsForAssignment = Allocator.getDatabase().getGroupsForAssignment(p.getAssignment());
+            _numSubmittedGradesLabel.updateValue(Allocator.getDatabase().getPartScoresForGroups(p, groupsForAssignment).size());
         } catch (SQLException ex) {
             _numSubmittedGradesLabel.setUnknownValue();
             new ErrorView(ex, "Could not determine the number of groups with grades for" +
@@ -115,7 +115,7 @@ class SinglePartPanel extends JPanel {
             }
 
             try {
-                _numDistributedLabel.updateValue(Allocator.getDatabaseIO().getAllAssignedGroups(dp).size());
+                _numDistributedLabel.updateValue(Allocator.getDatabase().getAllAssignedGroups(dp).size());
             } catch (SQLException ex) {
                 _numDistributedLabel.setUnknownValue();
                 new ErrorView(ex, "Could not determine the number of distributed groups for" +
@@ -142,7 +142,7 @@ class SinglePartPanel extends JPanel {
     private void updateNonzeroRubricScoreCount(DistributablePart dp) {
         List<Group> distributedGroups = new ArrayList<Group>();
         try {
-            Map<TA, Collection<Group>> dist = Allocator.getDatabaseIO().getDistribution(dp);
+            Map<TA, Collection<Group>> dist = Allocator.getDatabase().getDistribution(dp);
             for (TA ta : dist.keySet()) {
                 distributedGroups.addAll(dist.get(ta));
             }

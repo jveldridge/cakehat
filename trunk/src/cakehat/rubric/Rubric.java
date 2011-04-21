@@ -335,7 +335,7 @@ class Rubric
             if(Rubric.this.getGroup() != null) {
                 Group group = Rubric.this.getGroup();
                 try {
-                    Double score = Allocator.getDatabaseIO().getGroupScore(group, sourcePart);
+                    Double score = Allocator.getDatabase().getGroupScore(group, sourcePart);
                     _score = (score == null ? 0 : score);
                 } catch (SQLException ex) {
                     throw new RubricException("The grade for part " + sourcePart + " could not be " +

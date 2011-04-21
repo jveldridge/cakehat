@@ -55,7 +55,7 @@ public class StudentChartPanel extends JPanel {
             Assignment asgn = assignments[i];
             Group studentsGroup;
             try {
-                studentsGroup = Allocator.getDatabaseIO().getStudentsGroup(asgn, studLogin);
+                studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, studLogin);
             } catch (SQLException ex) {
                 new ErrorView("Could read group for student " + studLogin + " for assignment " +
                               asgn + " from the database.");
@@ -68,7 +68,7 @@ public class StudentChartPanel extends JPanel {
 
                 double partScore = 0;
                 try {
-                    Double rawScore = Allocator.getDatabaseIO().getGroupScore(studentsGroup, p);
+                    Double rawScore = Allocator.getDatabase().getGroupScore(studentsGroup, p);
                     partScore = (rawScore == null ? 0 : rawScore);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not read the score for student " + studLogin + " " +
@@ -84,7 +84,7 @@ public class StudentChartPanel extends JPanel {
             Vector<Double> scores = new Vector<Double>();
             Map<Group, Double> scoreMap;
             try {
-                scoreMap = Allocator.getDatabaseIO().getAssignmentScoresForGroups(asgn, Allocator.getDatabaseIO().getGroupsForAssignment(asgn));
+                scoreMap = Allocator.getDatabase().getAssignmentScoresForGroups(asgn, Allocator.getDatabase().getGroupsForAssignment(asgn));
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not get scores for assignment " + assignments[i] + ".");
                 scoreMap = new HashMap<Group, Double>();

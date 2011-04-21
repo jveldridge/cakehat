@@ -214,7 +214,7 @@ class GradingVisualizer extends JFrame
 
             if (!_stateManager.isRubricSaved()) {
                 try {
-                    Allocator.getDatabaseIO().enterGrade(_group, _distPart, score);
+                    Allocator.getDatabase().enterGrade(_group, _distPart, score);
                     _stateManager.rubricSaved();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "The new grade for group " + _group + " on part "
@@ -225,7 +225,7 @@ class GradingVisualizer extends JFrame
 
             if (!_stateManager.isStatusSaved()) {
                 try {
-                    Allocator.getDatabaseIO().setHandinStatus(_distPart.getHandin(), _group, _stateManager.getHandinStatus());
+                    Allocator.getDatabase().setHandinStatus(_distPart.getHandin(), _group, _stateManager.getHandinStatus());
                     _stateManager.statusSaved();
                 } catch (SQLException ex) {
                     new ErrorView(ex, "The new handin status for group " + _group + " on "
@@ -236,14 +236,14 @@ class GradingVisualizer extends JFrame
             if (!_stateManager.isGraderSaved()) {
                 try {
                     //either the old or new grader can be null, which indicates UNASSIGNED
-                    TA oldGrader = Allocator.getDatabaseIO().getGraderForGroup(_distPart, _group);
+                    TA oldGrader = Allocator.getDatabase().getGraderForGroup(_distPart, _group);
                     if (oldGrader != null) {
-                        Allocator.getDatabaseIO().unassignGroupFromGrader(_group, _distPart, oldGrader);
+                        Allocator.getDatabase().unassignGroupFromGrader(_group, _distPart, oldGrader);
                     }
                     
                     TA newGrader = _stateManager.getGrader();
                     if (newGrader != null) {
-                        Allocator.getDatabaseIO().assignGroupToGrader(_group, _distPart, newGrader);
+                        Allocator.getDatabase().assignGroupToGrader(_group, _distPart, newGrader);
                     }
 
                     _stateManager.graderSaved();

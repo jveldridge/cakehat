@@ -138,7 +138,7 @@ class GradeReportView extends javax.swing.JFrame {
         for (Assignment a : _sortedAssignments) {
             Group group;
             try {
-                group = Allocator.getDatabaseIO().getStudentsGroup(a, student);
+                group = Allocator.getDatabase().getStudentsGroup(a, student);
             } catch (SQLException ex) {
                 new ErrorView(ex, "Could not get group for student " + student + " on "
                         + "assignment " + a + ".");
@@ -160,7 +160,7 @@ class GradeReportView extends javax.swing.JFrame {
             Calendar extension = null;
             if (a.hasHandin()) {
                 try {
-                    extension = Allocator.getDatabaseIO().getExtension(group, a.getHandin());
+                    extension = Allocator.getDatabase().getExtension(group, a.getHandin());
                 } catch (SQLException e) {
                     new ErrorView(e, "Could not determine if student " + student + " has "
                             + "an extension for assignment " + a + ".  It will be assumed that "
@@ -171,7 +171,7 @@ class GradeReportView extends javax.swing.JFrame {
             for (Part p : _asgnParts.get(a)) {
                 String exemptionNote = null;
                 try {
-                    exemptionNote = Allocator.getDatabaseIO().getExemptionNote(group, p);
+                    exemptionNote = Allocator.getDatabase().getExemptionNote(group, p);
                 } catch (SQLException e) {
                     new ErrorView(e, "Could not determine if student " + student + " has "
                             + "an exemption for part " + p + ".  It will be assumed that "
@@ -181,7 +181,7 @@ class GradeReportView extends javax.swing.JFrame {
                 Double studentScore = null;
                 String scoreString;
                 try {
-                    studentScore = Allocator.getDatabaseIO().getGroupScore(group, p);
+                    studentScore = Allocator.getDatabase().getGroupScore(group, p);
                 } catch (SQLException e) {
                     new ErrorView(e, "Could not retrieve the score for student " + student
                             + "on part " + p + ".  The student's score will be displayed "
@@ -417,7 +417,7 @@ class GradeReportView extends javax.swing.JFrame {
             for (Assignment a : _sortedAssignments) {
                 Collection<Group> groups;
                 try {
-                    groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+                    groups = Allocator.getDatabase().getGroupsForAssignment(a);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not get read groups from database for assignment " + a + "." +
                                       "Charts for this assignment will not be included.");

@@ -33,6 +33,7 @@ import cakehat.config.TA;
 import cakehat.database.Group;
 import cakehat.database.HandinStatus;
 import cakehat.config.handin.Handin;
+import cakehat.database.DataServices.ValidityCheck;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
@@ -143,7 +144,7 @@ public class GradingServicesImpl implements GradingServices
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException {
         Map<TA, Collection<String>> blacklistMap = new HashMap<TA, Collection<String>>();
         try {
-            blacklistMap.put(ta, Allocator.getDatabaseIO().getTABlacklist(ta));
+            blacklistMap.put(ta, Allocator.getDatabase().getTABlacklist(ta));
         } catch (SQLException ex) {
             throw new ServicesException("Could not read blacklist for TA " + ta + " " +
                                         "from the database.", ex);
@@ -189,7 +190,7 @@ public class GradingServicesImpl implements GradingServices
 
             Collection<Group> groups;
             try {
-                groups = Allocator.getDatabaseIO().getGroupsForAssignment(asgn);
+                groups = Allocator.getDatabase().getGroupsForAssignment(asgn);
             } catch (SQLException ex) {
                 throw new ServicesException("Could not resolve missing students for " +
                                             "assignment " + asgn + " because groups could " +
@@ -231,8 +232,8 @@ public class GradingServicesImpl implements GradingServices
             Collection<String> allStudents;
             Collection<String> enabledStudents;
             try {
-                allStudents = Allocator.getDatabaseIO().getAllStudents().keySet();
-                enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+                allStudents = Allocator.getDatabase().getAllStudents().keySet();
+                enabledStudents = Allocator.getDatabase().getEnabledStudents().keySet();
             } catch (SQLException e) {
                 throw new ServicesException("Students could not be retrieved from the database.", e);
             }
@@ -371,7 +372,7 @@ public class GradingServicesImpl implements GradingServices
                 for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
                     if (notInDBPanel.isChangeSelected()) {
                         String studentLogin = notInDBPanel.getStudentLogin();
-                        Allocator.getUserServices().addStudent(studentLogin, UserServices.ValidityCheck.CHECK);
+                        Allocator.getDataServices().addStudent(studentLogin, ValidityCheck.CHECK);
                         groupsToAdd.add(new Group(studentLogin, studentLogin));
                         handinsNotInDB.remove(studentLogin);
                     }
@@ -381,7 +382,7 @@ public class GradingServicesImpl implements GradingServices
                     if (disabledPanel.isChangeSelected()) {
                         String studentLogin = disabledPanel.getStudentLogin();
                         try {
-                            Allocator.getDatabaseIO().enableStudent(studentLogin);
+                            Allocator.getDatabase().enableStudent(studentLogin);
                             handinsDisabled.remove(studentLogin);
                         } catch (SQLException e) {
                             new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
@@ -390,7 +391,7 @@ public class GradingServicesImpl implements GradingServices
                 }
                 try {
                     //create groups of one for newly added or enabled students
-                    Allocator.getDatabaseIO().setGroups(asgn, groupsToAdd);
+                    Allocator.getDatabase().setGroups(asgn, groupsToAdd);
                     
                     //and store their handin statuses
                     this.storeHandinStatuses(asgn.getHandin(), groupsToAdd, Allocator.getConfigurationInfo().getMinutesOfLeniency(), true);
@@ -421,7 +422,7 @@ public class GradingServicesImpl implements GradingServices
 
         Collection<Group> groups;
         try {
-            groups = Allocator.getDatabaseIO().getGroupsForAssignment(asgn);
+            groups = Allocator.getDatabase().getGroupsForAssignment(asgn);
         } catch (SQLException ex) {
             throw new ServicesException("Could not get groups for assignment " + asgn + " "
                     + "from the database.", ex);
@@ -457,7 +458,7 @@ public class GradingServicesImpl implements GradingServices
     public Map<String, Group> getGroupsForStudents(Assignment asgn) throws ServicesException {
         Collection<Group> groups;
         try {
-            groups = Allocator.getDatabaseIO().getGroupsForAssignment(asgn);
+            groups = Allocator.getDatabase().getGroupsForAssignment(asgn);
         } catch (SQLException ex) {
             throw new ServicesException("Could not get groups for assignment " + asgn + " "
                     + "from the database.", ex);
@@ -465,7 +466,7 @@ public class GradingServicesImpl implements GradingServices
 
         Collection<String> students;
         try {
-            students = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+            students = Allocator.getDatabase().getEnabledStudents().keySet();
         } catch (SQLException ex) {
             throw new ServicesException("Could not get list of enabled students from the database.", ex);
         }
@@ -490,7 +491,7 @@ public class GradingServicesImpl implements GradingServices
                 }
             }
             try {
-                Allocator.getDatabaseIO().setGroups(asgn, groupsToAdd);
+                Allocator.getDatabase().setGroups(asgn, groupsToAdd);
             } catch (SQLException ex) {
                 throw new ServicesException("Could not save internal groups of " +
                                             "one to database for students " + groupsToAdd +
@@ -633,7 +634,7 @@ public class GradingServicesImpl implements GradingServices
                                     int minutesOfLeniency, boolean overwrite) throws ServicesException {
         Map<Group, Calendar> extensions;
         try {
-            extensions = Allocator.getDatabaseIO().getAllExtensions(handin);
+            extensions = Allocator.getDatabase().getAllExtensions(handin);
         } catch (SQLException ex) {
             throw new ServicesException("Could not read extensions for assignment " + handin.getAssignment() + " " +
                                       "from the database.  Rubrics cannot be distributed because handin " +
@@ -644,7 +645,7 @@ public class GradingServicesImpl implements GradingServices
         for (Group group : groups) {
             try {
                 //if overwrite is true or if group does not already have a handin status, calculate new handin status
-                if (overwrite || Allocator.getDatabaseIO().getHandinStatus(handin, group) == null) {
+                if (overwrite || Allocator.getDatabase().getHandinStatus(handin, group) == null) {
                     handinStatuses.put(group, calculateHandinStatus(handin, group, extensions.get(group), minutesOfLeniency));
                 }
             } catch (SQLException ex) {
@@ -656,7 +657,7 @@ public class GradingServicesImpl implements GradingServices
         }
 
         try {
-            Allocator.getDatabaseIO().setHandinStatuses(handin, handinStatuses);
+            Allocator.getDatabase().setHandinStatuses(handin, handinStatuses);
         } catch (SQLException ex) {
             throw new ServicesException("Could not store handin statuses in the database for " +
                                       "assignment " + handin.getAssignment() + ".  Rubrics cannot be distributed.", ex);

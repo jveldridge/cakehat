@@ -583,7 +583,7 @@ class ManualDistributorView extends JFrame {
         //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
             _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgnComboBox.getSelectedItem(), _unresolvedHandins).values();
-            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
+            _unassignedGroups.removeAll(Allocator.getDatabase().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
             groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
 
             _assignButton.setEnabled(_unassignedGroups.size() > 0);
@@ -592,7 +592,7 @@ class ManualDistributorView extends JFrame {
             ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setValue(_unassignedGroups.size() == 0 ? 0 : 1);
         } else {
             TA fromTA = _fromTAList.getSelectedValue();
-            Collection<Group> studentsAssigned = Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA);
+            Collection<Group> studentsAssigned = Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA);
             groupsToDisplay = new LinkedList<Group>(studentsAssigned);
 
             _assignButton.setEnabled(studentsAssigned.size() > 0);
@@ -615,11 +615,11 @@ class ManualDistributorView extends JFrame {
 
         if (!_toUnassigned.isSelectionEmpty()) {
             _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgnComboBox.getSelectedItem(), _unresolvedHandins).values();
-            _unassignedGroups.removeAll(Allocator.getDatabaseIO().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
+            _unassignedGroups.removeAll(Allocator.getDatabase().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
             groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
         } else if (!_toTAList.isSelectionEmpty()) {
             TA toTA = _toTAList.getSelectedValue();
-            groupsToDisplay = new LinkedList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), toTA));
+            groupsToDisplay = new LinkedList<Group>(Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), toTA));
         } else {
             groupsToDisplay = new LinkedList<Group>();
         }
@@ -656,7 +656,7 @@ class ManualDistributorView extends JFrame {
                     }
 
                     try {
-                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), ta);
+                        Allocator.getDatabase().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), ta);
                     } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution even-though"
@@ -686,7 +686,7 @@ class ManualDistributorView extends JFrame {
 
                 for (Group group : groups) {
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
+                    Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
                 }
             }
 
@@ -701,10 +701,10 @@ class ManualDistributorView extends JFrame {
                     }
 
                     //modify the distribution
-                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
+                    Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
 
                     try {
-                        Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), newTA);
+                        Allocator.getDatabase().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), newTA);
                     } catch (CakeHatDBIOException ex) {
                         new ErrorView(ex, "Reassigning failed because the student"
                                 + " was still in another TA's distribution. There"
@@ -730,7 +730,7 @@ class ManualDistributorView extends JFrame {
         if (!_fromUnassigned.isSelectionEmpty()) {
             groupsToChoseFrom = new ArrayList<Group>(_unassignedGroups);
         } else {
-            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA));
+            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA));
         }
         Collections.shuffle(groupsToChoseFrom);
 
@@ -759,7 +759,7 @@ class ManualDistributorView extends JFrame {
                 }
 
                 Map<TA, Collection<String>> blacklistMap = new HashMap<TA, Collection<String>>();
-                blacklistMap.put(toTA, Allocator.getDatabaseIO().getTABlacklist(toTA));
+                blacklistMap.put(toTA, Allocator.getDatabase().getTABlacklist(toTA));
 
                 if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(group, blacklistMap)) {
                     groupsToAssign.add(group);
@@ -788,9 +788,9 @@ class ManualDistributorView extends JFrame {
 
                 //update distribution
                 if (fromTA != null) {
-                    Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
+                    Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
                 }
-                Allocator.getDatabaseIO().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), toTA);
+                Allocator.getDatabase().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), toTA);
 
             }
 
@@ -809,7 +809,7 @@ class ManualDistributorView extends JFrame {
         } //assigning to UNASSIGNED from a TA
         else if (fromTA != null) {
             for (Group group : groupsToAssign) {
-                Allocator.getDatabaseIO().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
+                Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
             }
         }
 
@@ -837,7 +837,7 @@ class ManualDistributorView extends JFrame {
             TA selectedTA = _fromTAList.getSelectedValue();
             Collection<Group> groups;
             try {
-                groups = Allocator.getDatabaseIO().getGroupsAssigned(_dpComboBox.getSelectedItem(), selectedTA);
+                groups = Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), selectedTA);
             } catch (SQLException ex) {
                 new ErrorView(ex, "Unable to filter student/group list");
                 return;
@@ -887,7 +887,7 @@ class ManualDistributorView extends JFrame {
         public void updateData() {
             _distribution = null;
             try {
-                _distribution = Allocator.getDatabaseIO().getDistribution(_dpComboBox.getSelectedItem());
+                _distribution = Allocator.getDatabase().getDistribution(_dpComboBox.getSelectedItem());
             } catch (SQLException ex) {
                 new ErrorView(ex, "Unable to distribution data. The user " +
                         "interface will be unable to display the number of" +

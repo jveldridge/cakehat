@@ -108,7 +108,7 @@ class SingleSelectionPanel extends JPanel
                     double earned = _nonHandinEarnedField.getNumberValue();
                     Part part = _nonHandinBox.getSelectedItem();
                     try {
-                        Allocator.getDatabaseIO().enterGrade(_group, part, earned);
+                        Allocator.getDatabase().enterGrade(_group, part, earned);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Saving the grade for student " + _studentLogin + " " +
                                           "on part " + part + " of assignment " +
@@ -383,7 +383,7 @@ class SingleSelectionPanel extends JPanel
             Double earned = null;
             try
             {
-                earned = Allocator.getDatabaseIO().getGroupScore(_group, part);
+                earned = Allocator.getDatabase().getGroupScore(_group, part);
             }
             catch (SQLException ex)
             {
@@ -456,7 +456,7 @@ class SingleSelectionPanel extends JPanel
             Double handinEarned = null;
             try {
                 for (DistributablePart dp : asgn.getDistributableParts()) {
-                    Double dpScore = Allocator.getDatabaseIO().getGroupScore(group, dp);
+                    Double dpScore = Allocator.getDatabase().getGroupScore(group, dp);
                     if (handinEarned == null) {
                         handinEarned = dpScore;
                     }
@@ -621,7 +621,7 @@ class SingleSelectionPanel extends JPanel
                 {
                     Double partScore = null;
                     try {
-                        partScore = Allocator.getDatabaseIO().getGroupScore(_group, part);
+                        partScore = Allocator.getDatabase().getGroupScore(_group, part);
                     } catch (SQLException ex) {
                         new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
                                           "part " + part + " from the database.  A SCORE OF 0 WILL BE " +

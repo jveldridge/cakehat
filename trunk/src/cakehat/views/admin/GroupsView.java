@@ -83,7 +83,7 @@ class GroupsView extends javax.swing.JFrame {
     private void selectGroupsFileActionPerformed() {
         Collection<Group> groupAlready = null;
         try {
-            groupAlready = Allocator.getDatabaseIO().getGroupsForAssignment(_asgn);
+            groupAlready = Allocator.getDatabase().getGroupsForAssignment(_asgn);
         } catch (SQLException ex) {
             new ErrorView(ex,"Groups could not be retrieved from the DB. We therefore can't determine if groups already exist.");
         }
@@ -102,7 +102,7 @@ class GroupsView extends javax.swing.JFrame {
                 return;
             }
             try {
-                Allocator.getDatabaseIO().removeGroupsForAssignment(_asgn);
+                Allocator.getDatabase().removeGroupsForAssignment(_asgn);
             } catch (SQLException ex) {
                new ErrorView(ex, "Groups could not be removed from the database.");
                return;
@@ -119,7 +119,7 @@ class GroupsView extends javax.swing.JFrame {
 
         Set<String> studLogins;
         try {
-            studLogins = Allocator.getDatabaseIO().getAllStudents().keySet();
+            studLogins = Allocator.getDatabase().getAllStudents().keySet();
         } catch (SQLException ex) {
             new ErrorView(ex, "Students could not be retrieved from the database; " +
                               "groups info. cannot be imported.  If this problem persists, " +
@@ -161,7 +161,7 @@ class GroupsView extends javax.swing.JFrame {
                 for (String groupName : groupsMap.keySet()) {
                     groups.add(new Group(groupName,groupsMap.get(groupName)));
                 }
-                Allocator.getDatabaseIO().setGroups(_asgn, groups);
+                Allocator.getDatabase().setGroups(_asgn, groups);
             } catch (SQLException ex) {
                 new ErrorView(ex, "Saving groups info to the database failed.");
                 return;
@@ -181,7 +181,7 @@ class GroupsView extends javax.swing.JFrame {
             if (doRemove != JOptionPane.YES_OPTION) {
                 return;
             }
-            Allocator.getDatabaseIO().removeGroupsForAssignment(_asgn);
+            Allocator.getDatabase().removeGroupsForAssignment(_asgn);
 
             JOptionPane.showMessageDialog(this, "Groups removed successfully.");
             _admin.updateGroupsCache(_asgn);

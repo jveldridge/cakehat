@@ -73,7 +73,7 @@ public class StatHistView extends JFrame {
 
         Collection<String> enabledStudents;
         try {
-            enabledStudents = Allocator.getDatabaseIO().getEnabledStudents().keySet();
+            enabledStudents = Allocator.getDatabase().getEnabledStudents().keySet();
         } catch (SQLException ex) {
             new ErrorView(ex, "Could not retrieve enabled students from the database.");
             enabledStudents = Collections.emptyList();
@@ -162,7 +162,7 @@ public class StatHistView extends JFrame {
             for (Assignment a : _assignments) {
                 Collection<Group> groups;
                 try {
-                    groups = Allocator.getDatabaseIO().getGroupsForAssignment(a);
+                    groups = Allocator.getDatabase().getGroupsForAssignment(a);
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not get groups for assignment " + a + ".");
                     groups = Collections.emptyList();
@@ -184,7 +184,7 @@ public class StatHistView extends JFrame {
             for (Part p : _parts) {
                 Collection<Group> groups;
                 try {
-                    groups = Allocator.getDatabaseIO().getGroupsForAssignment(p.getAssignment());
+                    groups = Allocator.getDatabase().getGroupsForAssignment(p.getAssignment());
                 } catch (SQLException ex) {
                     new ErrorView(ex, "Could not get groups for assignment " + p.getAssignment() + ".");
                     groups = Collections.emptyList();

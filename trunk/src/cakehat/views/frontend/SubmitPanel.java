@@ -109,7 +109,7 @@ class SubmitPanel extends AlphaJPanel
 
     private void sortGroupsIntoCategories(List<Group> groups) throws SQLException
     {
-        Map<Group, Double> submittedScores = Allocator.getDatabaseIO().getPartScoresForGroups(_part, groups);
+        Map<Group, Double> submittedScores = Allocator.getDatabase().getPartScoresForGroups(_part, groups);
 
         List<Group> sortedGroups = new ArrayList<Group>(groups);
         Collections.sort(sortedGroups);
@@ -292,7 +292,7 @@ class SubmitPanel extends AlphaJPanel
                 {
                     try
                     {
-                        Allocator.getDatabaseIO().enterGrade(group, _part, _rubricScores.get(group));
+                        Allocator.getDatabase().enterGrade(group, _part, _rubricScores.get(group));
                     }
                     catch(SQLException ex)
                     {

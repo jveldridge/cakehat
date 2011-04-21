@@ -66,7 +66,7 @@ class ExtensionView extends JFrame
         try
         {
             //Get extension, if none available default to on time date
-            _extensionDate = Allocator.getDatabaseIO().getExtension(group, asgn.getHandin());
+            _extensionDate = Allocator.getDatabase().getExtension(group, asgn.getHandin());
         }
         catch (SQLException ex)
         {
@@ -163,7 +163,7 @@ class ExtensionView extends JFrame
         String comment = null;
         try
         {
-            comment = Allocator.getDatabaseIO().getExtensionNote(_group, _asgn.getHandin());
+            comment = Allocator.getDatabase().getExtensionNote(_group, _asgn.getHandin());
         }
         catch (SQLException ex)
         {
@@ -211,7 +211,7 @@ class ExtensionView extends JFrame
                 //Call to remove extension
                 try
                 {
-                    Allocator.getDatabaseIO().removeExtension(_group, _asgn.getHandin());
+                    Allocator.getDatabase().removeExtension(_group, _asgn.getHandin());
                     JOptionPane.showMessageDialog(ExtensionView.this, "Extension removed successfully.");
                 }
                 catch (SQLException ex)
@@ -236,7 +236,7 @@ class ExtensionView extends JFrame
                 Calendar cal = getCalendar();
                 try
                 {
-                    Allocator.getDatabaseIO().grantExtension(_group, _asgn.getHandin(), cal, text);
+                    Allocator.getDatabase().grantExtension(_group, _asgn.getHandin(), cal, text);
                     
                     String successMessage = "Extension added successfully.";
 
@@ -429,7 +429,7 @@ class ExtensionView extends JFrame
         {
             try
             {
-                if(Allocator.getDatabaseIO().getAllAssignedGroups(part).contains(_group))
+                if(Allocator.getDatabase().getAllAssignedGroups(part).contains(_group))
                 {
                     alreadyDistributed = true;
                     break;
@@ -502,7 +502,7 @@ class ExtensionView extends JFrame
         Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().get(0);
         try
         {
-            Group group = Allocator.getDatabaseIO().getGroupsForAssignment(asgn).iterator().next();
+            Group group = Allocator.getDatabase().getGroupsForAssignment(asgn).iterator().next();
 
             ExtensionView view = new ExtensionView(asgn, group);
             view.setLocationRelativeTo(null);

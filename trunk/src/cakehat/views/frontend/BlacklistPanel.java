@@ -62,9 +62,9 @@ class BlacklistPanel extends AlphaJPanel
 
         _filterField = new ShadowJTextField("Filter List");
         
-        _studentsMap = Allocator.getDatabaseIO().getAllStudents();
+        _studentsMap = Allocator.getDatabase().getAllStudents();
 
-        List<String> blacklist = new ArrayList<String>(Allocator.getDatabaseIO().getTABlacklist(_user));
+        List<String> blacklist = new ArrayList<String>(Allocator.getDatabase().getTABlacklist(_user));
         Collections.sort(blacklist);
 
         _nonblacklistedStudents = new ArrayList<String>();
@@ -151,7 +151,7 @@ class BlacklistPanel extends AlphaJPanel
                 try
                 {
                     //Perform black list
-                    Allocator.getDatabaseIO().blacklistStudents(toBlacklist, _user);
+                    Allocator.getDatabase().blacklistStudents(toBlacklist, _user);
 
                     //Update black list
                     List<String> allBlacklisted = new ArrayList<String>();
@@ -188,7 +188,7 @@ class BlacklistPanel extends AlphaJPanel
 
                 try
                 {
-                    Allocator.getDatabaseIO().unBlacklistStudents(toUnblacklist, _user);
+                    Allocator.getDatabase().unBlacklistStudents(toUnblacklist, _user);
 
                     //Update black list
                     List<String> blacklisted = new ArrayList<String>(_blacklistJList.getListData());

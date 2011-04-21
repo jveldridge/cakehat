@@ -74,7 +74,7 @@ class RubricGRDWriter {
 
         Map<String, String> students;
         try {
-            students = Allocator.getDatabaseIO().getAllStudents();
+            students = Allocator.getDatabase().getAllStudents();
         } catch (SQLException ex) {
             throw new RubricException("Could not read student names from database. " +
                                       "Rubrics cannot be generated.", ex);
@@ -121,7 +121,7 @@ class RubricGRDWriter {
 
         TA grader;
         try {
-            grader = Allocator.getDatabaseIO().getGraderForGroup(dp, group);
+            grader = Allocator.getDatabase().getGraderForGroup(dp, group);
         } catch (SQLException ex) {
             throw new RubricException("Could not read grader for group " + group + " on " +
                                       "part " + dp + " of assignment " + handin.getAssignment() + ". ", ex);
@@ -303,7 +303,7 @@ class RubricGRDWriter {
     private static void writeFinalScore(Handin handin, Group group, Score totalScore, BufferedWriter output) throws RubricException {
         HandinStatus status;
         try {
-            status = Allocator.getDatabaseIO().getHandinStatus(handin, group);
+            status = Allocator.getDatabase().getHandinStatus(handin, group);
         } catch (SQLException ex) {
             throw new RubricException("Could not get handin status for " +
                                       "group " + group + " on assignment " + handin.getAssignment() + ".", ex);

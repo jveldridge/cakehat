@@ -6,7 +6,7 @@ import cakehat.config.Assignment;
 import cakehat.config.ConfigurationException;
 import cakehat.config.LabConfigurationParser;
 import cakehat.config.LabPart;
-import cakehat.database.DatabaseIO;
+import cakehat.database.Database;
 import cakehat.database.Group;
 import cakehat.labcheckoff.CheckoffCLI.CheckoffException;
 import java.sql.SQLException;
@@ -51,7 +51,7 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
-        final DatabaseIO dbio = createMock(DatabaseIO.class);
+        final Database dbio = createMock(Database.class);
         Map<String, String> allStudents = new HashMap<String, String>();
         allStudents.put(studentLogin, "Joshua Kaplan");
         expect(dbio.getAllStudents()).andReturn(allStudents);
@@ -60,10 +60,10 @@ public class CheckoffCLITest
         expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(11.2);
         replay(dbio);
 
-        SingletonAllocation<DatabaseIO> dbioAlloc =
-            new SingletonAllocation<DatabaseIO>()
+        SingletonAllocation<Database> dbioAlloc =
+            new SingletonAllocation<Database>()
             {
-                public DatabaseIO allocate() { return dbio; };
+                public Database allocate() { return dbio; };
             };
         new Allocator.Customizer().setDatabase(dbioAlloc).customize();
 
@@ -110,7 +110,7 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
-        final DatabaseIO dbio = createMock(DatabaseIO.class);
+        final Database dbio = createMock(Database.class);
         Map<String, String> allStudents = new HashMap<String, String>();
         allStudents.put(studentLogin, "Joshua Kaplan");
         expect(dbio.getAllStudents()).andReturn(allStudents);
@@ -121,10 +121,10 @@ public class CheckoffCLITest
         expectLastCall();
         replay(dbio);
 
-        SingletonAllocation<DatabaseIO> dbioAlloc =
-            new SingletonAllocation<DatabaseIO>()
+        SingletonAllocation<Database> dbioAlloc =
+            new SingletonAllocation<Database>()
             {
-                public DatabaseIO allocate() { return dbio; };
+                public Database allocate() { return dbio; };
             };
         new Allocator.Customizer().setDatabase(dbioAlloc).customize();
 
@@ -172,7 +172,7 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
-        final DatabaseIO dbio = createMock(DatabaseIO.class);
+        final Database dbio = createMock(Database.class);
         Map<String, String> allStudents = new HashMap<String, String>();
         allStudents.put(studentLogin, "Joshua Kaplan");
         expect(dbio.getAllStudents()).andReturn(allStudents);
@@ -183,10 +183,10 @@ public class CheckoffCLITest
         expectLastCall();
         replay(dbio);
 
-        SingletonAllocation<DatabaseIO> dbioAlloc =
-            new SingletonAllocation<DatabaseIO>()
+        SingletonAllocation<Database> dbioAlloc =
+            new SingletonAllocation<Database>()
             {
-                public DatabaseIO allocate() { return dbio; };
+                public Database allocate() { return dbio; };
             };
         new Allocator.Customizer().setDatabase(dbioAlloc).customize();
 
@@ -249,7 +249,7 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
-        final DatabaseIO dbio = createMock(DatabaseIO.class);
+        final Database dbio = createMock(Database.class);
         Map<String, String> allStudents = new HashMap<String, String>();
         allStudents.put(studentLogin, "Joshua Kaplan");
         expect(dbio.getAllStudents()).andReturn(allStudents);
@@ -262,10 +262,10 @@ public class CheckoffCLITest
         expectLastCall();
         replay(dbio);
 
-        SingletonAllocation<DatabaseIO> dbioAlloc =
-            new SingletonAllocation<DatabaseIO>()
+        SingletonAllocation<Database> dbioAlloc =
+            new SingletonAllocation<Database>()
             {
-                public DatabaseIO allocate() { return dbio; };
+                public Database allocate() { return dbio; };
             };
         new Allocator.Customizer().setDatabase(dbioAlloc).customize();
 

@@ -20,9 +20,9 @@ import static org.junit.Assert.*;
  * @author aunger
  * @author hdrosen
  */
-public class DBWrapperTest {
+public class DatabaseTest {
 
-    private DatabaseIO _instance;
+    private Database _instance;
     private ConnectionProvider _connProvider;
 
     /**
@@ -47,7 +47,7 @@ public class DBWrapperTest {
     @Before
     public void setUp() throws SQLException {
         _connProvider = new InMemoryConnectionProvider();
-        _instance = new DBWrapper(_connProvider);
+        _instance = new DatabaseImpl(_connProvider);
 
         boolean exception = false;
         _instance.resetDatabase();
@@ -399,6 +399,64 @@ public class DBWrapperTest {
         _instance.addStudent(s2login, s2first, s2last);
         _instance.enableStudent(s2login);
         assertTrue(_instance.isStudentEnabled(s2login));
+
+    }
+
+    @Test
+    public void testGetStudents() throws SQLException {
+        String s1login = "hdunne";
+        String s1first = "Heather";
+        String s1last = "Dunne";
+
+        _instance.addStudent(s1login, s1first, s1last);
+
+        String s2login = "bross";
+        String s2first = "Brian";
+        String s2last = "Ross";
+
+        _instance.addStudent(s2login, s2first, s2last);
+
+        String s3login = "trock";
+        String s3first = "Timothy";
+        String s3last = "Rock";
+
+        _instance.addStudent(s3login, s3first, s3last);
+        _instance.disableStudent(s3login);
+
+        Collection<Student> students = _instance.getStudents();
+        assertEquals(3, students.size());
+
+        Student s1 = null, s2 = null, s3 = null;
+        for (Student s : students) {
+            if (s.getLogin().equals(s1login)) {
+                s1 = s;
+            }
+            else if(s.getLogin().equals(s2login)) {
+                s2 = s;
+            }
+            else if (s.getLogin().equals(s3login)) {
+                s3 = s;
+            }
+            else {
+                fail("Student object with unexpected login");
+            }
+        }
+
+        assertNotNull(s1);
+        assertNotNull(s2);
+        assertNotNull(s3);
+
+        assertEquals(s1first, s1.getFirstName());
+        assertEquals(s1last, s1.getLastName());
+        assertEquals(true, s1.isEnabled());
+
+        assertEquals(s2first, s2.getFirstName());
+        assertEquals(s2last, s2.getLastName());
+        assertEquals(true, s2.isEnabled());
+
+        assertEquals(s3first, s3.getFirstName());
+        assertEquals(s3last, s3.getLastName());
+        assertEquals(false, s3.isEnabled());
 
     }
 

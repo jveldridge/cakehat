@@ -127,7 +127,7 @@ public class CheckoffCLI
         {
             try
             {
-                Allocator.getDatabaseIO().enterGrade(group, lab, pointsNum);
+                Allocator.getDatabase().enterGrade(group, lab, pointsNum);
             }
             catch(SQLException e)
             {
@@ -193,7 +193,7 @@ public class CheckoffCLI
             group = new Group(studentLogin, studentLogin);
             try
             {
-                Allocator.getDatabaseIO().setGroup(lab.getAssignment(), group);
+                Allocator.getDatabase().setGroup(lab.getAssignment(), group);
             }
             catch(SQLException e)
             {
@@ -215,7 +215,7 @@ public class CheckoffCLI
     {
         try
         {
-            Set<String> allStudentLogins = Allocator.getDatabaseIO().getAllStudents().keySet();
+            Set<String> allStudentLogins = Allocator.getDatabase().getAllStudents().keySet();
             if(!allStudentLogins.contains(studentLogin))
             {
                 throw new CheckoffException("Provided student login [" + 
@@ -230,7 +230,7 @@ public class CheckoffCLI
 
         try
         {
-            if(!Allocator.getDatabaseIO().isStudentEnabled(studentLogin))
+            if(!Allocator.getDatabase().isStudentEnabled(studentLogin))
             {
                 throw new CheckoffException("Provided student login [" + studentLogin +
                         "] is not enabled. A cakehat admin may re-enable the student");
@@ -334,7 +334,7 @@ public class CheckoffCLI
         Group group = null;
         try
         {
-            group = Allocator.getDatabaseIO().getStudentsGroup(lab.getAssignment(), studentLogin);
+            group = Allocator.getDatabase().getStudentsGroup(lab.getAssignment(), studentLogin);
 
         }
         catch(SQLException e)
@@ -371,7 +371,7 @@ public class CheckoffCLI
 
         try
         {
-            Double score = Allocator.getDatabaseIO().getGroupScore(group, lab);
+            Double score = Allocator.getDatabase().getGroupScore(group, lab);
 
             //If there is an existing group
             if(score != null)
