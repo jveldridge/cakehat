@@ -89,7 +89,6 @@ class RubricGRDWriter {
             writeLine("GROUP: " + group.getName(), output);
             String member = members.next();
             writeLine("MEMBERS: " + students.get(member) + " (" + member + ")", output);
-            members.remove();
             while (members.hasNext()) {
                 member = members.next();
                 printSpaces(9, output);
