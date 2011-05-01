@@ -23,7 +23,10 @@ import cakehat.Allocator;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.Group;
 import cakehat.views.shared.ErrorView;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 /**
  * Interface for sending grade reports to students.  Grade reports will be sent
@@ -408,10 +411,40 @@ class GradeReportView extends javax.swing.JFrame {
 
     private void sendToStudsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToStudsButtonActionPerformed
 
-        this.sendToStudsButton.setEnabled(false);
+        //creates map of emails for students
+        Map<String,String> emailMap = new HashMap<String,String>();
+        for (String student : _students) {
+               emailMap.put(student,student + "@" +Allocator.getConstants().getEmailDomain());
+         }
+        this.sendGradeEmail(emailMap);
+    }//GEN-LAST:event_sendToStudsButtonActionPerformed
 
-        ArrayDeque<File> fullFileList = new ArrayDeque<File>();
+    private void sendToOtherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToOtherButtonActionPerformed
+        JTextField addressBox = new JTextField();
+        int res = JOptionPane.showConfirmDialog(this, addressBox, "Enter email address", JOptionPane.OK_CANCEL_OPTION);
+        if (res == JOptionPane.OK_OPTION) {
+            //creates the email map
+            Map<String,String> emailMap = new HashMap<String,String>();
+            for (String student : _students) {
+                emailMap.put(student,addressBox.getText());
+            }
+            this.sendGradeEmail(emailMap);
+        }
+    }//GEN-LAST:event_sendToOtherButtonActionPerformed
 
+
+    /**
+    * Helper method that sends grade reports to a list of emails that it takes
+    * as a parameter
+    * @param emailList
+    *
+    */
+    private void sendGradeEmail(Map<String, String> emailMap){
+
+	final int imageWidth = 600;
+        final int imageHeight = 250;
+
+        ArrayList<String> asgnChartAttachments = new ArrayList<String>();
         //generate Assignment histograms
         if (attachHistButton.isSelected()) {
             for (Assignment a : _sortedAssignments) {
@@ -428,8 +461,8 @@ class GradeReportView extends javax.swing.JFrame {
                     AssignmentChartPanel acp = new AssignmentChartPanel();
                     acp.updateChartData(a, groups);
                     File tmp = new File(Allocator.getPathServices().getUserWorkspaceDir(), a.getName() + ".png");
-                    fullFileList.add(tmp);
-                    ImageIO.write(acp.getImage(600, 250), "png", fullFileList.peekLast());
+                    ImageIO.write(acp.getImage(imageWidth, imageHeight), "png", tmp);
+                    asgnChartAttachments.add(tmp.getAbsolutePath());
                 } catch (IOException ex) {
                     new ErrorView(ex, "Could not generate histogram image for assignment " +
                                        a.getName() + ".");
@@ -437,16 +470,12 @@ class GradeReportView extends javax.swing.JFrame {
             }
         }
 
-        String[] attachPaths = new String[fullFileList.size() + 1];
-        int size = fullFileList.size();
-        for (int i = 0; i < size; i++) {
-            attachPaths[i] = fullFileList.removeFirst().getAbsolutePath();
-        }
-        attachPaths[attachPaths.length - 1] = null;                   //last will be for student chart
 
         //send email to each student
         StudentChartPanel scp = new StudentChartPanel();
         for (String student : _students) {
+            //creates individual attachments list for each student
+            ArrayList<String> attachments = new ArrayList<String>(asgnChartAttachments);
 
             //create student score chart
             if (attachScoreGraphButton.isSelected()) {
@@ -455,42 +484,26 @@ class GradeReportView extends javax.swing.JFrame {
                     Arrays.sort(asgns);
                     scp.updateChart(student, asgns);
                     File tmp = new File(Allocator.getPathServices().getUserWorkspaceDir(), student + ".png");
-                    fullFileList.add(tmp);
-                    ImageIO.write(scp.getImage(600, 250), "png", fullFileList.peekLast());
-                    attachPaths[attachPaths.length - 1] = tmp.getAbsolutePath();
+                    ImageIO.write(scp.getImage(imageWidth, imageHeight), "png", tmp);
+                    attachments.add(tmp.getAbsolutePath());
                 } catch (IOException ex) {
                     new ErrorView(ex, "Could not generate graph for student " + student + ".");
                 }
             }
-
             Allocator.getConfigurationInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
                     + "headtas@cs.brown.edu",
-                    new String[]{student + "@cs.brown.edu"},
+                    Arrays.asList(emailMap.get(student)),
                     null, null,
                     "[" + Allocator.getCourseInfo().getCourse()
                     + "] Grade Report", htmlBuilder(student),
-                    attachPaths);
-            this.sendToStudsButton.setEnabled(false);
-            this.setVisible(false);
+                    attachments);
             this.dispose();
         }
-    }//GEN-LAST:event_sendToStudsButtonActionPerformed
 
-    private void sendToOtherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToOtherButtonActionPerformed
-        JTextField addressBox = new JTextField();
-        int res = JOptionPane.showConfirmDialog(this, addressBox, "Enter email address", JOptionPane.OK_CANCEL_OPTION);
-        if (res == JOptionPane.OK_OPTION) {
-            for (String student : _students) {
-                Allocator.getConfigurationInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
-                        + "headtas@cs.brown.edu",
-                        new String[]{addressBox.getText()},
-                        null, null,
-                        "[" + Allocator.getCourseInfo().getCourse()
-                        + "] Grade Report", htmlBuilder(student),
-                        null);
-            }
-        }
-    }//GEN-LAST:event_sendToOtherButtonActionPerformed
+    }
+
+
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField _fromText;
