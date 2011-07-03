@@ -1,5 +1,6 @@
 package cakehat.views.shared;
 
+import cakehat.CakehatException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -612,9 +613,9 @@ public class TextViewerView extends JFrame
         }
     }
 
-    public static void main(String args[])
+    public static void main(String args[]) throws CakehatException
     {
-        CakehatMain.applyLookAndFeel();
+        CakehatMain.initializeForTesting();
 
         File fileToView = new File("/course/cs000/grading/asgn/2010/Clock/dq_grading_guide.txt");
         new TextViewerView(fileToView, "Test File");

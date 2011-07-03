@@ -3,6 +3,7 @@ package cakehat.config.handin;
 import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -374,9 +375,7 @@ class ExternalActions implements ActionProvider
     private static String buildJSONGroupMap(DistributablePart part, Group group)
     {
         String jsonInfo = "{" + quote("name") + ":" + quote(jsonEscape(group.getName())) + ",";
-
-        jsonInfo += quote("members") + ":" +
-                buildJSONArray(new ArrayList<String>(group.getMembers()), true) + ",";
+        jsonInfo += quote("members") + ":" + buildJSONArray(group.getMemberLogins(), true) + ",";
 
         File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
         jsonInfo += quote("unarchive_dir") + ":" + quote(jsonEscape(unarchiveDir.getAbsolutePath())) + "}";
@@ -400,9 +399,7 @@ class ExternalActions implements ActionProvider
     {
         if(command.contains(STUDENT_LOGINS))
         {
-            ArrayList<String> logins = new ArrayList<String>(group.getMembers());
-
-            command = replace(command, STUDENT_LOGINS, logins);
+            command = replace(command, STUDENT_LOGINS, group.getMemberLogins());
         }
         if(command.contains(GROUP_NAME))
         {

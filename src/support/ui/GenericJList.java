@@ -127,7 +127,10 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
         {
             selected = this.getGenericSelectedValues();
         }
-        
+
+        if (_renderer != null) {
+            _renderer.clearCache();
+        }
         this.setModel(buildModel(values));
 
         if(maintainSelected)

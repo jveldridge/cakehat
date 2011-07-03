@@ -1,6 +1,7 @@
 package cakehat;
 
 import cakehat.labcheckoff.CheckoffCLI;
+import cakehat.services.ServicesException;
 import cakehat.views.admin.AdminView;
 import cakehat.views.frontend.FrontendView;
 import java.util.ArrayList;
@@ -76,42 +77,44 @@ public class CakehatMain
 
         CakehatUncaughtExceptionHandler.registerHandler();
 
-        // Launch the appropriate view
-        if(args.length == 0)
-        {
-            _isDeveloperMode = true;
-            applyLookAndFeel();
-            adjustIfRemote();
-            DeveloperModeView.launch();
-        }
-        else if(args[0].equalsIgnoreCase(CakehatRunMode.FRONTEND.getTerminalFlag()))
-        {
-            _runMode = CakehatRunMode.FRONTEND;
-            applyLookAndFeel();
-            adjustIfRemote();
-            FrontendView.launch();
-        }
-        else if(args[0].equalsIgnoreCase(CakehatRunMode.ADMIN.getTerminalFlag()))
-        {
-            _runMode = CakehatRunMode.ADMIN;
-            applyLookAndFeel();
-            adjustIfRemote();
-            AdminView.launch();
-        }
-        else if(args[0].equalsIgnoreCase(CakehatRunMode.LAB.getTerminalFlag()))
-        {
-            _runMode = CakehatRunMode.LAB;
-            //Creating the ArrayList is necessary because the list created
-            //by Arrays.asList(...) is immutable
-            ArrayList<String> argList = new ArrayList(Arrays.asList(args));
-            argList.remove(0);
+        try {
+            // Launch the appropriate view
+            if (args.length == 0) {
+                _isDeveloperMode = true;
+                loadDataCache();
+                applyLookAndFeel();
+                adjustIfRemote();
+                DeveloperModeView.launch();
+            } else if (args[0].equalsIgnoreCase(CakehatRunMode.FRONTEND.getTerminalFlag())) {
+                _runMode = CakehatRunMode.FRONTEND;
+                loadDataCache();
+                applyLookAndFeel();
+                adjustIfRemote();
+                FrontendView.launch();
+            } else if (args[0].equalsIgnoreCase(CakehatRunMode.ADMIN.getTerminalFlag())) {
+                _runMode = CakehatRunMode.ADMIN;
+                loadDataCache();
+                applyLookAndFeel();
+                adjustIfRemote();
+                AdminView.launch();
+            } else if (args[0].equalsIgnoreCase(CakehatRunMode.LAB.getTerminalFlag())) {
+                _runMode = CakehatRunMode.LAB;
+                loadDataCache();
+                //Creating the ArrayList is necessary because the list created
+                //by Arrays.asList(...) is immutable
+                ArrayList<String> argList = new ArrayList(Arrays.asList(args));
+                argList.remove(0);
 
-            CheckoffCLI.performCheckoff(argList);
+                CheckoffCLI.performCheckoff(argList);
+            } else {
+                System.out.println("Invalid run property: " + args[0]);
+            }
+        } catch (CakehatException ex) {
+            System.err.println("cakehat could not initialize properly; please try again. " +
+                               "If this problem persists, please contact the cakehat team.\n" +
+                               "Cause: " + ex.getCause().getMessage());
         }
-        else
-        {
-            System.out.println("Invalid run property: " + args[0]);
-        }
+
     }
 
     private static void adjustIfRemote()
@@ -130,17 +133,30 @@ public class CakehatMain
             System.err.println("Unable to determine if you are remotely " +
                     "connected. cakehat will run as if you were running " +
                     "locally. Underlying cause: \n");
-            e.printStackTrace();
+            e.printStackTrace(System.err);
+        }
+    }
+    
+    /**
+     * Loads cached data from the database.  At present, this consists only of
+     * student information.
+     * 
+     * @throws CakehatException 
+     */
+    private static void loadDataCache() throws CakehatException {
+        try {
+            Allocator.getDataServices().updateDataCache();
+        } catch (ServicesException ex) {
+            throw new CakehatException("Could not load data to be cached.", ex);
         }
     }
 
     /**
-     * This method should only be called from within this class or from the
-     * test main methods. Applies the look and feel that cakehat uses, which
-     * may differ from the default look and feel used by a given operating
+     * Applies the look and feel that cakehat uses, which may differ
+     * from the default look and feel used by a given operating
      * system or Linux windowing toolkit.
      */
-    public static void applyLookAndFeel()
+    private static void applyLookAndFeel()
     {
         try
         {
@@ -154,5 +170,15 @@ public class CakehatMain
             System.err.println("cakehat could not set its default appearance. " +
                     "Some interfaces may not appear as intended.");
         }
+    }
+
+    /**
+     * This method should only be called from within this class or from the
+     * test main methods. Loads cache data into memory and applies look and
+     * feel.
+     */
+    public static void initializeForTesting() throws CakehatException {
+        loadDataCache();
+        applyLookAndFeel();  
     }
 }

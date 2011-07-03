@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +21,8 @@ import javax.swing.text.html.HTMLEditorKit;
 import cakehat.Allocator;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.views.shared.ErrorView;
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -41,12 +40,12 @@ class GradeReportView extends javax.swing.JFrame {
 
     private static String NEWLINE = System.getProperty("line.separator");
 
-    private Collection<String> _students;
+    private Collection<Student> _students;
     private Map<Assignment, List<Part>> _asgnParts;
     private Vector<Assignment> _sortedAssignments;
     private String _previewText;
 
-    public GradeReportView(Map<Assignment, List<Part>> asgnParts, Collection<String> students) {
+    public GradeReportView(Map<Assignment, List<Part>> asgnParts, Collection<Student> students) {
         super("Email Grade Reports");
         initComponents();
 
@@ -89,12 +88,13 @@ class GradeReportView extends javax.swing.JFrame {
      * reports will be sent.
      */
     private void updatePreview() {
-        String student = Iterables.get(_students, 0);
+        Student student = Iterables.get(_students, 0);
 
         String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>"
                 + "<h1 style='font-weight: bold; font-size:11pt'>"
-                + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>"
-                + "<hr />" + _messageText.getText() + "<br/><br/>";
+                + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " 
+                + student.getLogin() + "</h1>" + "<hr />"
+                + _messageText.getText() + "<br/><br/>";
 
         if (_previewText == null) {
             _previewText = this.gradeHtmlBuilder(student);
@@ -115,10 +115,10 @@ class GradeReportView extends javax.swing.JFrame {
      * @param student
      * @return
      */
-    private String htmlBuilder(String student) {
+    private String htmlBuilder(Student student) {
         String htmlString = "<body style='font-family: sans-serif; font-size: 10pt'>"
                 + "<h1 style='font-weight: bold; font-size:11pt'>"
-                + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student + "</h1>"
+                + "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report - " + student.getLogin() + "</h1>"
                 + "<hr/>" + _messageText.getText() + "<br/><br/>";
         htmlString += gradeHtmlBuilder(student);
         htmlString += "</html>";
@@ -134,7 +134,7 @@ class GradeReportView extends javax.swing.JFrame {
      * @param student
      * @return
      */
-    private String gradeHtmlBuilder(String student) {
+    private String gradeHtmlBuilder(Student student) {
         StringBuilder htmlString = new StringBuilder("<table cellspacing='0' cellpadding='5' style='width: 100%'>");
 
         //constructing the message body
@@ -410,11 +410,10 @@ class GradeReportView extends javax.swing.JFrame {
     }//GEN-LAST:event__messageTextKeyReleased
 
     private void sendToStudsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToStudsButtonActionPerformed
-
         //creates map of emails for students
-        Map<String,String> emailMap = new HashMap<String,String>();
-        for (String student : _students) {
-               emailMap.put(student,student + "@" +Allocator.getConstants().getEmailDomain());
+        Map<Student, String> emailMap = new HashMap<Student, String>();
+        for (Student student : _students) {
+               emailMap.put(student, student.getEmailAddress());
          }
         this.sendGradeEmail(emailMap);
     }//GEN-LAST:event_sendToStudsButtonActionPerformed
@@ -424,9 +423,9 @@ class GradeReportView extends javax.swing.JFrame {
         int res = JOptionPane.showConfirmDialog(this, addressBox, "Enter email address", JOptionPane.OK_CANCEL_OPTION);
         if (res == JOptionPane.OK_OPTION) {
             //creates the email map
-            Map<String,String> emailMap = new HashMap<String,String>();
-            for (String student : _students) {
-                emailMap.put(student,addressBox.getText());
+            Map<Student, String> emailMap = new HashMap<Student, String>();
+            for (Student student : _students) {
+                emailMap.put(student, addressBox.getText());
             }
             this.sendGradeEmail(emailMap);
         }
@@ -439,7 +438,7 @@ class GradeReportView extends javax.swing.JFrame {
     * @param emailList
     *
     */
-    private void sendGradeEmail(Map<String, String> emailMap){
+    private void sendGradeEmail(Map<Student, String> emailMap){
 
 	final int imageWidth = 600;
         final int imageHeight = 250;
@@ -473,7 +472,7 @@ class GradeReportView extends javax.swing.JFrame {
 
         //send email to each student
         StudentChartPanel scp = new StudentChartPanel();
-        for (String student : _students) {
+        for (Student student : _students) {
             //creates individual attachments list for each student
             ArrayList<String> attachments = new ArrayList<String>(asgnChartAttachments);
 

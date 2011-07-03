@@ -31,6 +31,7 @@ import cakehat.config.Assignment;
 import cakehat.config.TA;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
+import cakehat.database.Student;
 import cakehat.views.shared.ErrorView;
 import java.io.File;
 import java.io.IOException;
@@ -519,35 +520,12 @@ class RubricPanel extends JPanel
         SpringLayout layout = new SpringLayout();
         JPanel panel = new JPanel(layout);
 
-        boolean error = false;
-        String studentNames = "";
-        String studentLogins = "";
-
-        //Get all students in the group
-        Map<String, String> allLogins = null;
-        try {
-            allLogins = Allocator.getDatabase().getAllStudents();
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not retrieve student list from the database " +
-                             "(needed to get the names of this rubric's students).");
-            allLogins = new HashMap<String, String>();
-            studentNames = "Student names could not be read from the database.";
-            error = true;
-        }
-
-        if (!error) {
-            int i = 0;
-            for (String student : _rubric.getGroup().getMembers()) {
-                if (i != 0) {
-                    studentLogins += ", ";
-                    studentNames += ", ";
-                }
-                studentLogins += student;
-
-                String studentName = allLogins.get(student);
-                studentNames += (studentName == null) ? "" : studentName;
-                i++;
-            }
+        List<Student> groupMembers = _rubric.getGroup().getMembers();
+        String studentNames = groupMembers.get(0).getName();
+        String studentLogins = groupMembers.get(0).getLogin();
+        for (int i = 1; i < groupMembers.size(); i++) {
+            studentLogins += ", " + groupMembers.get(i).getLogin();
+            studentNames += ", " + groupMembers.get(i).getName();
         }
 
         //Student

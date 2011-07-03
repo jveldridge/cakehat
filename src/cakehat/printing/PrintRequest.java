@@ -1,8 +1,13 @@
 package cakehat.printing;
 
+import cakehat.config.TA;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A request to be submitted to a Printer. Each file added to the request should
@@ -15,23 +20,55 @@ import java.util.Vector;
  */
 public class PrintRequest
 {
-    private Vector<File> _files = new Vector<File>();
-    private String _taLogin = "", _studentLogin = "";
+    private List<File> _files = new ArrayList<File>();
+    private TA _ta;
+    private String _displayString;
 
     /**
      * A request of text files.
      *
      * @param file
-     * @param taLogin
-     * @param studentLogin
+     * @param ta
+     * @param group
      * @throws FileNotFoundException thrown if a file is passed in that does not exist
      */
-    public PrintRequest(File file, String taLogin, String studentLogin)
+    public PrintRequest(File file, TA ta, Group group) throws FileNotFoundException
+    {
+        this(Arrays.asList(file), ta, group);
+    }
+
+    /**
+     * A request of text files.
+     *
+     * @param files
+     * @param ta
+     * @param group
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
+    public PrintRequest(Iterable<File> files, TA ta, Group group)
                                                         throws FileNotFoundException
     {
-        this.addFile(file);
-        _taLogin = taLogin;
-        _studentLogin = studentLogin;
+        this(files);
+        _ta = ta;
+        if (group.size() == 1) {
+            _displayString = "student: " + group.getName();
+        }
+        else {
+            _displayString = "group: " + group.getName();
+        }
+    }
+
+        /**
+     * A request of text files.
+     *
+     * @param file
+     * @param ta
+     * @param student
+     * @throws FileNotFoundException thrown if a file is passed in that does not exist
+     */
+    public PrintRequest(File file, TA ta, Student student) throws FileNotFoundException
+    {
+        this(Arrays.asList(file), ta, student);
     }
 
     /**
@@ -39,15 +76,15 @@ public class PrintRequest
      *
      * @param files
      * @param taLogin
-     * @param studentLogin
+     * @param student
      * @throws FileNotFoundException thrown if a file is passed in that does not exist
      */
-    public PrintRequest(Iterable<File> files, String taLogin, String studentLogin)
+    public PrintRequest(Iterable<File> files, TA ta, Student student)
                                                         throws FileNotFoundException
     {
         this(files);
-        _taLogin = taLogin;
-        _studentLogin = studentLogin;
+        _ta = ta;
+        _displayString = "student: " + student.getLogin();
     }
 
     /**
@@ -93,24 +130,14 @@ public class PrintRequest
         }
     }
 
-    public void setTALogin(String taLogin)
+    public TA getTA()
     {
-        _taLogin = taLogin;
+        return _ta;
     }
 
-    public String getTALogin()
+    public String getHeaderString()
     {
-        return _taLogin;
-    }
-
-    public void setStudentLogin(String studentLogin)
-    {
-        _studentLogin = studentLogin;
-    }
-
-    public String getStudentLogin()
-    {
-        return _studentLogin;
+        return _displayString;
     }
 
     /**

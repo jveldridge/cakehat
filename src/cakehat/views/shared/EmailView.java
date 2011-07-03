@@ -1,19 +1,17 @@
 package cakehat.views.shared;
 
 import com.inet.jortho.SpellChecker;
-import java.awt.event.ActionEvent;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.KeyStroke;
 import cakehat.Allocator;
-import cakehat.CakehatMain;
+import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import java.io.File;
 
 /**
  *
@@ -24,43 +22,22 @@ public class EmailView extends javax.swing.JFrame {
 
     private static String newline = System.getProperty("line.separator");
     private String _action;
-    private Map<String,String> _attachments;
-    
-    /** Creates new form EmailGUI */
-    public EmailView() {
-        initComponents();
-        bodyText.setLineWrap(true);
-        bodyText.setWrapStyleWord(true);
-        this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
-        try {
-            this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
-        } catch (Exception e) {
-        }
-        
-        bodyText.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "newline");
-        bodyText.getActionMap().put("newline", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                bodyText.append("\n");
-            }
-        });
-        
-        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu");
-        this.setLocationRelativeTo(null);
-        SpellChecker.register(bodyText);
-        SpellChecker.registerDictionaries(getClass().getResource("/cakehat/resources/dictionary_en.ortho"), "en");
-    }
+    private Map<Student, File> _attachments;
+    private Collection<Student> _students;
 
-    public EmailView(Collection<String> students, Collection<String> toNotify, String subject, String body, String action, Map<String,String> attachments) {
+    public EmailView(Collection<Student> students, Collection<String> toNotify, String subject, String body, String action, Map<Student, File> attachments) {
         initComponents();
-        this.setTitle(Allocator.getUserUtilities().getUserLogin() + "@cs.brown.edu - Send Email");
+        this.setTitle(Allocator.getUserServices().getUser().getEmailAddress() + " - Send Email");
         try {
             this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.INTERNET_MAIL));
         } catch (Exception e) {
         }
+        _students = students;
         studentsBox.setText(Arrays.toString(students.toArray()).replace("[", "").replace("]", ""));
+        studentsBox.setEditable(false);
         notifyBox.setText(Arrays.toString(toNotify.toArray()).replace("[", "").replace("]", ""));
         subjectBox.setText(subject);
-        fromBox.setText(Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain());
+        fromBox.setText(Allocator.getUserServices().getUser().getEmailAddress());
         bodyText.setText(body);
 
         _action = action;
@@ -280,20 +257,19 @@ public class EmailView extends javax.swing.JFrame {
         body = body.replace(newline, "<br/>");
         
         //send message to each student
-        String[] students = studentsBox.getText().replace(" ", "").split("(,|;)");
-        for (String student : students) {
+        for (Student student : _students) {
             String attachmentPath = null;
             if (_attachments != null) {
-                attachmentPath = _attachments.get(student.split("@")[0]);
+                attachmentPath = _attachments.get(student).getAbsolutePath();
             }
             
-            Allocator.getConfigurationInfo().getEmailAccount().sendMail(fromBox.getText(),              //from
-                                                                  new String[] {student},               //to
-                                                                  null,                                 //cc
-                                                                  null,                                 //bcc
+            Allocator.getConfigurationInfo().getEmailAccount().sendMail(fromBox.getText(),                 //from
+                                                                  new String[] {student.getEmailAddress()},//to
+                                                                  null,                                    //cc
+                                                                  null,                                    //bcc
                                                                   subjectBox.getText(),
                                                                   body, 
-                                                                  new String[] {attachmentPath});   //attachment paths
+                                                                  new String[] {attachmentPath});          //attachment paths
         }
         
         //send notification of message sent to sender and to the course's notification addresses
@@ -301,11 +277,10 @@ public class EmailView extends javax.swing.JFrame {
         
         String notificationMessage = "At " + now + ", TA " + Allocator.getUserUtilities().getUserLogin() +
                 " " + _action + " for assignment " + subjectBox.getText().split(" ")[1] + " for the following students: <blockquote>";
-        for (String student : students) {
-            student = student.split("@")[0];
+        for (Student student : _students) {
             String attachment = "none";
             if (_attachments != null) {
-                attachment = _attachments.get(student);
+                attachment = _attachments.get(student).getAbsolutePath();
             }
             notificationMessage += student + "; attachment: " + attachment + "<br />";
         }
@@ -351,19 +326,6 @@ public class EmailView extends javax.swing.JFrame {
         fromBox.setText(s);
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        CakehatMain.applyLookAndFeel();
-        
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new EmailView().setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel attachmentMessage;
     private javax.swing.JTextArea bodyText;

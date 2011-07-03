@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatException;
 import cakehat.CakehatMain;
 import cakehat.database.DataServices.ValidityCheck;
 import cakehat.services.ServicesException;
@@ -162,9 +163,9 @@ class AddStudentsView extends JFrame
         }
     }
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws CakehatException
     {
-        CakehatMain.applyLookAndFeel();
+        CakehatMain.initializeForTesting();
 
         AddStudentsView view = new AddStudentsView();
         view.setLocationRelativeTo(null);

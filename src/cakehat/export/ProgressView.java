@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import cakehat.Allocator;
+import cakehat.database.Student;
 
 /**
  * Displays the progress of exporting.
@@ -91,7 +92,7 @@ public class ProgressView extends JFrame
         this.setVisible(true);
     }
 
-    public void updateProgress(String currStudent, Assignment currAssignment, Part currPart, int currStep)
+    public void updateProgress(Student currStudent, Assignment currAssignment, Part currPart, int currStep)
     {
         //Percent so far
         double percentComplete = ( (double) currStep ) / ( (double) _numSteps ) * 100.0;
@@ -111,7 +112,7 @@ public class ProgressView extends JFrame
         _progressBar.setValue(currStep);
         _statusLabel.setText("<html>" +
                              "<b>" + status + "</b><br/>" +
-                             "<b>Student: </b>"+ currStudent + "<br/>" +
+                             "<b>Student: </b>"+ currStudent.getLogin() + "<br/>" +
                              "<b>Assignment: </b>" + currAssignment.getName() + "<br/>" +
                              "<b>Part: </b>" + currPart.getName() + "<br/> <br/>" +
                              "<b>Completed " + percentComplete + "%" +

@@ -1,7 +1,8 @@
 package cakehat.database;
 
+import cakehat.config.TA;
 import cakehat.services.ServicesException;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Services methods relating to fundamental data.  These methods are ultimately
@@ -19,33 +20,34 @@ public interface DataServices {
     public enum ValidityCheck {BYPASS, CHECK};
 
     /**
-     * Returns an immutable Set containing a Student object for each student
-     * in the database.  If the database contains no students, an empty Set
-     * is returned.  The first call to this method in a cakehat session will result
-     * in a database call; all other calls will return cached data.
-     *
+     * Returns an immutable Collection containing a Student object for each student
+     * in the database at the time {@link DataServices#updateDataCache()} was called.
+     * If the database contained no students, an empty Collection is returned.  Note
+     * that the returned Collection is like a Set in that all elements are unique.
+     * 
+     * @param slcl
      * @return
-     * @throws ServicesException
      */
-    public Set<Student> getAllStudents() throws ServicesException;
+    public Collection<Student> getAllStudents();
 
     /**
-     * Returns an immutable Set containing a Student object for each enabled
-     * student in the database.  If the database contains no enabled students, an
-     * empty Set is returned.  The first call to this method in a cakehat session
-     * will result in a database call; all other calls will return cached data.
+     * Returns an immutable Collection containing a Student object for each enabled
+     * student in the database at the time {@link DataServices#updateDataCache()} 
+     * was called.  If the database contained no enabled students, an empty
+     * Collection is returned.  Note that the returned Collection is like a Set
+     * in that all elements are unique.
      *
      * @return
-     * @throws ServicesException
      */
-    public Set<Student> getEnabledStudents() throws ServicesException;
+    public Collection<Student> getEnabledStudents();
 
     /**
      * Adds the given studentLogin to the database.  A warning will be shown
      * if the given studentLogin is not a valid login or is not in the course's
      * student group; the user will then have the option of adding the student
      * anyway or cancelling the operation.  The students's first and last name
-     * will be looked up.
+     * will be looked up.  If a student with the given login is already in the
+     * database, this method has no effect.
      *
      * @param studentLogin
      * @param checkValidity parameter that indicates whether the student should be
@@ -62,7 +64,9 @@ public interface DataServices {
      * if the given studentLogin is not a valid login or is not in the course's
      * student group; the user will then have the option of adding the student
      * anyway or cancelling the operation.  The students's first and last name
-     * will be set to the firstName and lastName parameters, respectively.
+     * will be set to the firstName and lastName parameters, respectively.  If a
+     * student with the given login is already in the database, this method has
+     * no effect.
      *
      * @param studentLogin
      * @param firstName
@@ -78,19 +82,52 @@ public interface DataServices {
                            ValidityCheck checkValidity) throws ServicesException;
 
     /**
-     * Marks the student as disabled; use instead of removing if a student has dropped
-     * the course.  Disabled students will not be sent grade reports.
+     * Sets the given Student's enabled status.  Students are enabled by default,
+     * but students who have dropped the course should be disabled.  Disabled students
+     * will not be sent grade reports.
      *
      * @param student
+     * @param enabled
+     * @throws ServicesException
      */
-    public void disableStudent(Student student) throws ServicesException;
+    public void setStudentEnabled(Student student, boolean enabled) throws ServicesException;
+    
+    public Collection<Student> getBlacklistedStudents() throws ServicesException;
+    
+    public Collection<Student> getTABlacklist(TA ta) throws ServicesException;
+
+    @Deprecated
+    /**
+     * Temporary method for getting Student objects from student IDs.  This will
+     * be removed once Group objects are converted such that there is only one
+     * instance per group.
+     */
+    public Student getStudentFromID(int id);
+    
+    /**
+     * Returns the Student object corresponding to the given studentLogin.
+     * If no such student exists in the database, <code>null</code> will be
+     * returned.
+     *
+     * @param studentLogin
+     * @return
+     */
+    public Student getStudentFromLogin(String studentLogin);
 
     /**
-     * "Undo" of disabling a student.  All active students must be enabled to
-     * receive grade reports.
-     *
-     * @param student
+     * Returns whether or not the given student login corresponds to
+     * a valid Student object.
+     * 
+     * @param studentLogin
+     * @return
      */
-    public void enableStudent(Student student) throws ServicesException;
+    public boolean isStudentLoginInDatabase(String studentLogin);
+    
+    /**
+     * Loads Student objects into memory for all students in the database.
+     *
+     * @throws ServicesException
+     */
+    public void updateDataCache() throws ServicesException;
 
 }

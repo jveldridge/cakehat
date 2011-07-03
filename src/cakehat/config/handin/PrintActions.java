@@ -118,8 +118,7 @@ class PrintActions implements ActionProvider
                             {
                                 Collections.sort(filesToPrint);
                                 PrintRequest request = new PrintRequest(filesToPrint,
-                                        Allocator.getUserUtilities().getUserLogin(),
-                                        group.getName());
+                                        Allocator.getUserServices().getUser(), group);
                                 requests.add(request);
                             }
                             catch (FileNotFoundException e)

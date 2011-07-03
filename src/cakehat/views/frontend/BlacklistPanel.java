@@ -2,7 +2,9 @@ package cakehat.views.frontend;
 
 import cakehat.Allocator;
 import cakehat.config.TA;
+import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -15,7 +17,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -38,10 +39,9 @@ import support.ui.StringConverter;
 class BlacklistPanel extends AlphaJPanel
 {
     private final JTextField _filterField;
-    private final GenericJList<String> _blacklistJList;
-    private final GenericJList<String> _nonblacklistJList;
-    private final List<String> _nonblacklistedStudents;
-    private final Map<String, String> _studentsMap;
+    private final GenericJList<Student> _blacklistJList;
+    private final GenericJList<Student> _nonblacklistJList;
+    private final List<Student> _nonblacklistedStudents;
     private final TA _user;
 
     /**
@@ -53,7 +53,7 @@ class BlacklistPanel extends AlphaJPanel
      * @throws SQLException if the data needed for the initial state cannot
      * be retrieved from the database
      */
-    public BlacklistPanel(Dimension size, Color background) throws SQLException
+    public BlacklistPanel(Dimension size, Color background) throws SQLException, ServicesException
     {
         this.setPreferredSize(size);
 
@@ -61,20 +61,18 @@ class BlacklistPanel extends AlphaJPanel
         _user = Allocator.getUserServices().getUser();
 
         _filterField = new ShadowJTextField("Filter List");
-        
-        _studentsMap = Allocator.getDatabase().getAllStudents();
 
-        List<String> blacklist = new ArrayList<String>(Allocator.getDatabase().getTABlacklist(_user));
+        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServices().getTABlacklist(_user));
         Collections.sort(blacklist);
 
-        _nonblacklistedStudents = new ArrayList<String>();
-        _nonblacklistedStudents.addAll(_studentsMap.keySet());
+        _nonblacklistedStudents = new ArrayList<Student>();
+        _nonblacklistedStudents.addAll(Allocator.getDataServices().getAllStudents());
         _nonblacklistedStudents.removeAll(blacklist);
         Collections.sort(_nonblacklistedStudents);
 
-        LoginConverter converter = new LoginConverter();
-        _blacklistJList = new GenericJList<String>(blacklist, converter);
-        _nonblacklistJList = new GenericJList<String>(_nonblacklistedStudents, converter);
+        StudentConverter converter = new StudentConverter();
+        _blacklistJList = new GenericJList<Student>(blacklist, converter);
+        _nonblacklistJList = new GenericJList<Student>(_nonblacklistedStudents, converter);
 
         this.initUI();
     }
@@ -146,7 +144,7 @@ class BlacklistPanel extends AlphaJPanel
         {
             public void actionPerformed(ActionEvent e)
             {
-                List<String> toBlacklist = _nonblacklistJList.getGenericSelectedValues();
+                List<Student> toBlacklist = _nonblacklistJList.getGenericSelectedValues();
 
                 try
                 {
@@ -154,12 +152,12 @@ class BlacklistPanel extends AlphaJPanel
                     Allocator.getDatabase().blacklistStudents(toBlacklist, _user);
 
                     //Update black list
-                    List<String> allBlacklisted = new ArrayList<String>();
+                    List<Student> allBlacklisted = new ArrayList<Student>();
                     allBlacklisted.addAll(toBlacklist);
                     allBlacklisted.addAll(_blacklistJList.getListData());
                     Collections.sort(allBlacklisted);
 
-                    List<String> selected = _blacklistJList.getGenericSelectedValues();
+                    List<Student> selected = _blacklistJList.getGenericSelectedValues();
                     _blacklistJList.setListData(allBlacklisted);
                     _blacklistJList.setSelectedValues(selected);
 
@@ -184,21 +182,21 @@ class BlacklistPanel extends AlphaJPanel
         {
             public void actionPerformed(ActionEvent e)
             {
-                List<String> toUnblacklist = _blacklistJList.getGenericSelectedValues();
+                List<Student> toUnblacklist = _blacklistJList.getGenericSelectedValues();
 
                 try
                 {
                     Allocator.getDatabase().unBlacklistStudents(toUnblacklist, _user);
 
                     //Update black list
-                    List<String> blacklisted = new ArrayList<String>(_blacklistJList.getListData());
+                    List<Student> blacklisted = new ArrayList<Student>(_blacklistJList.getListData());
                     blacklisted.removeAll(toUnblacklist);
                     _blacklistJList.setListData(blacklisted);
                     
                     //Update non-black list
                     _nonblacklistedStudents.addAll(toUnblacklist);
                     Collections.sort(_nonblacklistedStudents);
-                    List<String> selected = _nonblacklistJList.getGenericSelectedValues();
+                    List<Student> selected = _nonblacklistJList.getGenericSelectedValues();
                     _nonblacklistJList.setListData(_nonblacklistedStudents);
                     _nonblacklistJList.setSelectedValues(selected);
                     applyFilterField();
@@ -241,11 +239,11 @@ class BlacklistPanel extends AlphaJPanel
     /**
      * Displays the login and name as <code>login (FirstName LastName)</code>
      */
-    private class LoginConverter implements StringConverter<String>
+    private class StudentConverter implements StringConverter<Student>
     {
-        public String convertToString(String login)
+        public String convertToString(Student student)
         {
-            return login + " (" + _studentsMap.get(login) + ")";
+            return student.getLogin() + " (" + student.getName() + ")";
         }
     }
 
@@ -257,22 +255,18 @@ class BlacklistPanel extends AlphaJPanel
     {
         String filterText = _filterField.getText();
 
-        List<String> filteredLogins = new ArrayList<String>();
+        List<Student> filteredLogins = new ArrayList<Student>();
         if(filterText != null && !filterText.isEmpty())
         {
             filterText = _filterField.getText().toLowerCase();
 
-            for(String login : _nonblacklistedStudents)
+            for(Student student : _nonblacklistedStudents)
             {
-                String[] name = _studentsMap.get(login).split(" ");
-                String firstName = name[0];
-                String lastName = name[1];
-
-                if(login.toLowerCase().startsWith(filterText) ||
-                        firstName.toLowerCase().startsWith(filterText) ||
-                        lastName.toLowerCase().startsWith(filterText))
+                if(student.getLogin().toLowerCase().startsWith(filterText) ||
+                   student.getFirstName().toLowerCase().startsWith(filterText) ||
+                   student.getLastName().toLowerCase().startsWith(filterText))
                 {
-                    filteredLogins.add(login);
+                    filteredLogins.add(student);
                 }
             }
         }
@@ -281,7 +275,7 @@ class BlacklistPanel extends AlphaJPanel
             filteredLogins.addAll(_nonblacklistedStudents);
         }
 
-        List<String> selected = _nonblacklistJList.getGenericSelectedValues();
+        List<Student> selected = _nonblacklistJList.getGenericSelectedValues();
         _nonblacklistJList.setListData(filteredLogins);
         _nonblacklistJList.setSelectedValues(selected);
     }

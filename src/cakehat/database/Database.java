@@ -20,27 +20,16 @@ import java.util.Set;
 public interface Database {
 
     /**
-     * Returns an immutable Collection containing a Student object for each student
-     * in the database.  If the database contains no students, an empty Collection
-     * is returned.
-     * 
-     * @return
-     * @throws SQLException
-     */
-    public Collection<Student> getStudents() throws SQLException;
-
-    /**
      * Checks to see if the student already exists. If not, creates new entry
      * in the database.  Newly added students are enabled by default.  The return
-     * value indicates whether of not the student was in fact added; it will be
-     * true if the student was not previously in the database, and false if the
-     * student was previously in the database.
+     * value is the auto-generated ID for that student in the database.  This will
+     * be 0 if a student with that login is already in the database.
      *
      * @param studentLogin
      * @param studentFirstName
      * @param studentLastName
      */
-    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
+    public int addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
 
     /**
      * Marks the student as disabled; use instead of removing if a student has dropped
@@ -48,7 +37,7 @@ public interface Database {
      *
      * @param studentLogin
      */
-    public void disableStudent(String studentLogin) throws SQLException;
+    public void disableStudent(int studentID) throws SQLException;
 
     /**
      * "Undo" of disabling a student.  All active students must be enabled to
@@ -56,32 +45,17 @@ public interface Database {
      *
      * @param studentLogin
      */
-    public void enableStudent(String studentLogin) throws SQLException;
+    public void enableStudent(int studentID) throws SQLException;
 
     /**
-     * Returns true if the student is enabled and false otherwise
-     * @param studentLogin
-     * @return
-     */
-    public boolean isStudentEnabled(String studentLogin) throws SQLException;
-
-    /**
-     * Returns a Map of all students currently in the database
-     * Key: String studentLogin
-     * Value: String studentName (as "FirstName LastName")
+     * Returns an immutable Collection containing a StudentRecord object for each student
+     * in the database.  If the database contains no students, an empty Collection
+     * is returned.
      *
      * @return
+     * @throws SQLException
      */
-    public Map<String,String> getAllStudents() throws SQLException;
-
-    /**
-     * Returns a Map of all currently enabled student
-     * Key: String studentLogin
-     * Value: String studentName (as "FirstName LastName")
-     *
-     * @return
-     */
-    public Map<String,String> getEnabledStudents() throws SQLException;
+    public Collection<StudentRecord> getAllStudents() throws SQLException;
 
     /**
      * Adds all the students in students to the blacklist of the given TA, if
@@ -92,17 +66,17 @@ public interface Database {
      * @param students
      * @param taLogin
      */
-    public void blacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException;
+    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException;
 
     /**
-     * Removes students in studentLogins from the blacklist of the given TA,
+     * Removes students in students from the blacklist of the given TA,
      * if the student was on that TA's blacklist.  If the student was not on the
      * TA's blacklist, this method has no effect.
      *
-     * @param studentLogins
+     * @param students
      * @param ta
      */
-    public void unBlacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException;
+    public void unBlacklistStudents(Collection<Student> students, TA ta) throws SQLException;
 
     /**
      * Indicates whether the Assignment has a distribution.  Returns true if
@@ -114,18 +88,18 @@ public interface Database {
     public boolean isDistEmpty(Assignment asgn) throws SQLException;
 
     /**
-     * Returns the logins of all students who are on some TA's blacklist.
+     * Returns the IDs of all students who are on some TA's blacklist.
      *
      * @return
      */
-    public Collection<String> getBlacklistedStudents() throws SQLException;
+    public Collection<Integer> getBlacklistedStudents() throws SQLException;
 
     /**
-     * Returns the logins of all students who are on this TA's blacklist
+     * Returns the IDs of all students who are on this TA's blacklist
      * @param ta
      * @return
      */
-    public Collection<String> getTABlacklist(TA ta) throws SQLException;
+    public Collection<Integer> getTABlacklist(TA ta) throws SQLException;
 
     /**
      * Assigns a Group group to the given TA to grade for
@@ -325,7 +299,7 @@ public interface Database {
      * @param groups
      * @return
      */
-    public Map<Group,Double> getPartScoresForGroups(Part part, Iterable<Group> groups) throws SQLException;
+    public Map<Group, Double> getPartScoresForGroups(Part part, Iterable<Group> groups) throws SQLException;
 
     /**
      * Returns a map of all scores for the specified Groups for the
@@ -335,7 +309,7 @@ public interface Database {
      * @param groups
      * @return
      */
-    public Map<Group,Double> getAssignmentScoresForGroups(Assignment asgn, Iterable<Group> groups) throws SQLException;
+    public Map<Group, Double> getAssignmentScoresForGroups(Assignment asgn, Iterable<Group> groups) throws SQLException;
 
     /**
      * pulls the distribution for a DistributablePart from the DB
@@ -366,7 +340,7 @@ public interface Database {
      * @param student
      * @return
      */
-    public Group getStudentsGroup(Assignment asgn, String student) throws SQLException;
+    public Group getStudentsGroup(Assignment asgn, Student student) throws SQLException;
 
     /**
      * return all the groups that have been created for an assignment
@@ -396,8 +370,11 @@ public interface Database {
      * returns all the graders for a specific student
      * @param studentlogin
      * @return map of asgn to ta
+     * @throws SQLException
+     * @throws CakeHatDBIOException if a TA login in the database does not correspond
+     *                              to a TA in the config file
      */
-    public Map<DistributablePart, TA> getGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException;
+    public Map<DistributablePart, TA> getGradersForStudent(Student student) throws SQLException, CakeHatDBIOException;
 
     /**
      * For the given Handin and Group the HandinStatus is stored in the DB.
@@ -445,5 +422,10 @@ public interface Database {
      * file exists or is empty then it will be set to the initial configuration.
      */
     public void resetDatabase() throws SQLException;
+    
+    /**
+     * FOR TESTING ONLY!
+     */
+    public void addStudent(int id, String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
 
 }

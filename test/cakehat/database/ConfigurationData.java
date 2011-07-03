@@ -1,5 +1,6 @@
 package cakehat.database;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
 import cakehat.config.NonHandinPart;
@@ -30,6 +31,45 @@ public class ConfigurationData
         replay(ta);
 
         return ta;
+    }
+
+    
+    private static AtomicInteger _idGenerator = new AtomicInteger(1);
+    
+    public static Student generateRandomStudent()
+    {
+        Student student = createMock(Student.class);
+        String login = generateRandomString();
+        String firstName = generateRandomString();
+        String lastName = generateRandomString();
+        String emailAddress = login + "@cs.brown.edu";
+
+        expect(student.getDbId()).andReturn(_idGenerator.getAndIncrement()).anyTimes();
+        expect(student.getLogin()).andReturn(login).anyTimes();
+        expect(student.getFirstName()).andReturn(firstName).anyTimes();
+        expect(student.getLastName()).andReturn(lastName).anyTimes();
+        expect(student.getName()).andReturn(firstName + " " + lastName).anyTimes();
+        expect(student.getEmailAddress()).andReturn(emailAddress).anyTimes();
+        expect(student.isEnabled()).andReturn(true).anyTimes();
+        replay(student);
+
+        return student;
+    }
+
+    public static Student generateStudent(String login, String firstName,
+                                          String lastName, String email, boolean isEnabled) {
+        Student student = createMock(Student.class);
+        
+        expect(student.getDbId()).andReturn(_idGenerator.getAndIncrement()).anyTimes();
+        expect(student.getLogin()).andReturn(login).anyTimes();
+        expect(student.getFirstName()).andReturn(firstName).anyTimes();
+        expect(student.getLastName()).andReturn(lastName).anyTimes();
+        expect(student.getName()).andReturn(firstName + " " + lastName).anyTimes();
+        expect(student.getEmailAddress()).andReturn(email).anyTimes();
+        expect(student.isEnabled()).andReturn(isEnabled).anyTimes();
+        replay(student);
+
+        return student;
     }
 
     private static String generateRandomName()
@@ -183,11 +223,15 @@ public class ConfigurationData
     public static Group generateRandomGroup() {
         Random rand = new Random();
         int numMembers = rand.nextInt(5) + 1;
-        ArrayList<String> members = new ArrayList<String>();
+        ArrayList<Student> members = new ArrayList<Student>();
         for (int i = 0; i < numMembers; i++) {
-            members.add(generateRandomString());
+            members.add(generateRandomStudent());
         }
         return new Group(generateRandomString(), members);
+    }
+
+    public static Group generateGroup(String name, Student... members) {
+        return new Group(name, members);
     }
 
 }

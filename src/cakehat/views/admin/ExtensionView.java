@@ -1,5 +1,6 @@
 package cakehat.views.admin;
 
+import cakehat.CakehatException;
 import support.ui.CalendarListener;
 import support.ui.CalendarView;
 import cakehat.config.Assignment;
@@ -495,9 +496,9 @@ class ExtensionView extends JFrame
         }
     }
 
-    public static void main(String args[])
+    public static void main(String args[]) throws CakehatException
     {
-        CakehatMain.applyLookAndFeel();
+        CakehatMain.initializeForTesting();
 
         Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().get(0);
         try

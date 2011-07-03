@@ -34,6 +34,7 @@ import cakehat.database.Group;
 import cakehat.database.HandinStatus;
 import cakehat.config.handin.Handin;
 import cakehat.database.DataServices.ValidityCheck;
+import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
@@ -142,15 +143,9 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException {
-        Map<TA, Collection<String>> blacklistMap = new HashMap<TA, Collection<String>>();
-        try {
-            blacklistMap.put(ta, Allocator.getDatabase().getTABlacklist(ta));
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not read blacklist for TA " + ta + " " +
-                                        "from the database.", ex);
-        }
+        Collection<Student> blacklist = Allocator.getDataServices().getTABlacklist(ta);
 
-        if (groupMemberOnTAsBlacklist(group, blacklistMap)) {
+        if (Allocator.getGeneralUtilities().containsAny(blacklist, group.getMembers())) {
             int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + group + " is on TA "
                                                     + ta.getLogin() + "'s blacklist.  Continue?",
                                                     "Distribute Blacklisted Student?",
@@ -162,9 +157,9 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public boolean groupMemberOnTAsBlacklist(Group group, Map<TA, Collection<String>> blacklists) throws ServicesException {
+    public boolean isSomeGroupMemberBlacklisted(Group group, Map<TA, Collection<Student>> blacklists) throws ServicesException {
         for (TA ta : blacklists.keySet()) {
-            Collection<String> blackList = blacklists.get(ta);
+            Collection<Student> blackList = blacklists.get(ta);
             if (Allocator.getGeneralUtilities().containsAny(blackList, group.getMembers())) {
                 return true;
             }
@@ -199,10 +194,7 @@ public class GradingServicesImpl implements GradingServices
 
             for (Group group : groups) {
                 validNames.add(group.getName());
-
-                for (String studentLogin : group.getMembers()) {
-                    validNames.add(studentLogin);
-                }
+                validNames.addAll(group.getMemberLogins());
             }
 
             for (String handinName : handinNames) {
@@ -229,23 +221,24 @@ public class GradingServicesImpl implements GradingServices
         //so check that the login corresponding to the name of each handin is
         //in the database and enabled
         else {
-            Collection<String> allStudents;
-            Collection<String> enabledStudents;
-            try {
-                allStudents = Allocator.getDatabase().getAllStudents().keySet();
-                enabledStudents = Allocator.getDatabase().getEnabledStudents().keySet();
-            } catch (SQLException e) {
-                throw new ServicesException("Students could not be retrieved from the database.", e);
+            Collection<String> allStudentLogins = new ArrayList<String>();
+            Collection<String> enabledStudentLogins = new ArrayList<String>();
+            Collection<Student> students = Allocator.getDataServices().getAllStudents();
+            for (Student student : students) {
+                allStudentLogins.add(student.getLogin());
+                if (student.isEnabled()) {
+                    enabledStudentLogins.add(student.getLogin());
+                }
             }
 
             Set<String> handinsNotInDB = new HashSet<String>();
             Set<String> handinsDisabled = new HashSet<String>();
 
             for (String handinLogin : handinNames) {
-                if (!allStudents.contains(handinLogin)) {
+                if (!allStudentLogins.contains(handinLogin)) {
                     handinsNotInDB.add(handinLogin);
                 }
-                else if (!enabledStudents.contains(handinLogin)) {
+                else if (!enabledStudentLogins.contains(handinLogin)) {
                     handinsDisabled.add(handinLogin);
                 }
             }
@@ -373,7 +366,7 @@ public class GradingServicesImpl implements GradingServices
                     if (notInDBPanel.isChangeSelected()) {
                         String studentLogin = notInDBPanel.getStudentLogin();
                         Allocator.getDataServices().addStudent(studentLogin, ValidityCheck.CHECK);
-                        groupsToAdd.add(new Group(studentLogin, studentLogin));
+                        groupsToAdd.add(new Group(studentLogin, Allocator.getDataServices().getStudentFromLogin(studentLogin)));
                         handinsNotInDB.remove(studentLogin);
                     }
                 }
@@ -382,9 +375,9 @@ public class GradingServicesImpl implements GradingServices
                     if (disabledPanel.isChangeSelected()) {
                         String studentLogin = disabledPanel.getStudentLogin();
                         try {
-                            Allocator.getDatabase().enableStudent(studentLogin);
+                            Allocator.getDataServices().setStudentEnabled(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
                             handinsDisabled.remove(studentLogin);
-                        } catch (SQLException e) {
+                        } catch (ServicesException e) {
                             new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
                         }
                     }
@@ -410,6 +403,7 @@ public class GradingServicesImpl implements GradingServices
         }
     }
 
+    @Override
     public Map<String, Group> getGroupsForHandins(Assignment asgn, Collection<String> handinsToIgnore) throws ServicesException {
         Collection<String> handinNames;
         try {
@@ -433,8 +427,8 @@ public class GradingServicesImpl implements GradingServices
         for (Group group : groups) {
             nameToGroup.put(group.getName(), group);
 
-            for (String member : group.getMembers()) {
-                loginToGroup.put(member, group);
+            for (Student member : group.getMembers()) {
+                loginToGroup.put(member.getLogin(), group);
             }
         }
 
@@ -455,7 +449,8 @@ public class GradingServicesImpl implements GradingServices
         return toReturn;
     }
 
-    public Map<String, Group> getGroupsForStudents(Assignment asgn) throws ServicesException {
+    @Override
+    public Map<Student, Group> getGroupsForStudents(Assignment asgn) throws ServicesException {
         Collection<Group> groups;
         try {
             groups = Allocator.getDatabase().getGroupsForAssignment(asgn);
@@ -464,17 +459,11 @@ public class GradingServicesImpl implements GradingServices
                     + "from the database.", ex);
         }
 
-        Collection<String> students;
-        try {
-            students = Allocator.getDatabase().getEnabledStudents().keySet();
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not get list of enabled students from the database.", ex);
-        }
-
-        Map<String, Group> loginToGroup = new HashMap<String, Group>();
+        Collection<Student> students = Allocator.getDataServices().getEnabledStudents();
+        Map<Student, Group> studentToGroup = new HashMap<Student, Group>();
         for (Group group : groups) {
-            for (String member : group.getMembers()) {
-                loginToGroup.put(member, group);
+            for (Student member : group.getMembers()) {
+                studentToGroup.put(member, group);
             }
         }
 
@@ -483,11 +472,11 @@ public class GradingServicesImpl implements GradingServices
         if (!asgn.hasGroups()) {
             Collection<Group> groupsToAdd = new LinkedList<Group>();
 
-            for (String student : students) {
-                if (!loginToGroup.containsKey(student)) {
-                    Group newGroup = new Group(student, student);
+            for (Student student : students) {
+                if (!studentToGroup.containsKey(student)) {
+                    Group newGroup = new Group(student.getLogin(), student);
                     groupsToAdd.add(newGroup);
-                    loginToGroup.put(student, newGroup);
+                    studentToGroup.put(student, newGroup);
                 }
             }
             try {
@@ -499,20 +488,20 @@ public class GradingServicesImpl implements GradingServices
             }
         }
 
-        return loginToGroup;
+        return studentToGroup;
     }
 
     @Override
     public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics) {
-        Map<String,String> attachments = new HashMap<String, String>();
+        Map<Student, File> attachments = new HashMap<Student, File>();
 
-        List<String> students = new ArrayList<String>(groups.size());
+        List<Student> students = new ArrayList<Student>(groups.size());
         for (Group group : groups) {
-            for (String student : group.getMembers()) {
-                students.add(student + "@" + Allocator.getConstants().getEmailDomain());
+            for (Student student : group.getMembers()) {
+                students.add(student);
 
                 if (emailRubrics) {
-                    attachments.put(student,Allocator.getPathServices().getGroupGRDFile(handin, group).getAbsolutePath());
+                    attachments.put(student, Allocator.getPathServices().getGroupGRDFile(handin, group));
                 }
             }
         }
@@ -529,17 +518,17 @@ public class GradingServicesImpl implements GradingServices
     @Override
     public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException
     {
-        String taLogin = Allocator.getUserUtilities().getUserLogin();
+        TA ta = Allocator.getUserServices().getUser();
         Vector<PrintRequest> requests = new Vector<PrintRequest>();
 
         for(Group group : groups)
         {
             File file = Allocator.getPathServices().getGroupGRDFile(handin, group);
-            for(String student : group.getMembers())
+            for(Student student : group.getMembers())
             {
                 try
                 {
-                    requests.add(new PrintRequest(file, taLogin, student));
+                    requests.add(new PrintRequest(file, ta, student));
                 }
                 catch (FileNotFoundException ex) {
                     throw new ServicesException("Could not print GRD files because a requested" +

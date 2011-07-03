@@ -1,5 +1,7 @@
 package cakehat.config;
 
+import cakehat.Allocator;
+
 /**
  *
  * @author jak2
@@ -35,6 +37,10 @@ public class TA implements Comparable<TA>
     public boolean isAdmin()
     {
         return _isAdmin;
+    }
+
+    public String getEmailAddress() {
+        return _login + "@" + Allocator.getConstants().getEmailDomain();
     }
 
     @Override

@@ -614,6 +614,11 @@ public class FrontendView extends JFrame implements RubricSaveListener
                             new ErrorView(e, "Unable to launch modify blacklist view");
                             showNormalContentInFrame();
                         }
+                        catch(ServicesException e)
+                        {
+                            new ErrorView(e, "Unable to launch modify blacklist view");
+                            showNormalContentInFrame();
+                        }
                     }
                 });
             }
@@ -1746,7 +1751,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
             //If not a group assignment, show name of student
             else if(!group.getMembers().isEmpty())
             {
-                text = group.getMembers().get(0);
+                text = group.getMembers().get(0).getLogin();
             }
             //A non-group assignment with no student, this situation should not arise
             else

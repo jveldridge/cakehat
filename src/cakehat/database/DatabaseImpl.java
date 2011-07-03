@@ -1,6 +1,8 @@
 package cakehat.database;
 
 import cakehat.Allocator;
+import cakehat.CakehatException;
+import cakehat.CakehatMain;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
 import cakehat.rubric.TimeStatus;
@@ -9,6 +11,9 @@ import com.google.common.collect.ArrayListMultimap;
 import cakehat.config.Assignment;
 import cakehat.config.Part;
 import cakehat.config.TA;
+import cakehat.services.ServicesException;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -37,7 +42,7 @@ public class DatabaseImpl implements Database {
      * sets DB path to regular location
      */
     public DatabaseImpl() {
-        _connProvider = new ConnectionProvider() {
+        this(new ConnectionProvider() {
 
             public Connection createConnection() throws SQLException {
                 Connection c = null;
@@ -45,8 +50,8 @@ public class DatabaseImpl implements Database {
                     Class.forName("org.sqlite.JDBC");
                     SQLiteConfig config = new SQLiteConfig();
                     config.enforceForeignKeys(true);
-                    c = DriverManager.getConnection("jdbc:sqlite:" +
-                            Allocator.getPathServices().getDatabaseFile().getAbsolutePath(),
+                    c = DriverManager.getConnection("jdbc:sqlite:"
+                            + Allocator.getPathServices().getDatabaseFile().getAbsolutePath(),
                             config.toProperties());
                 } catch (ClassNotFoundException e) {
                     new ErrorView(e, "Could not open a connection to the DB.");
@@ -62,7 +67,7 @@ public class DatabaseImpl implements Database {
                     c.close();
                 }
             }
-        };
+        });
     }
 
     /**
@@ -73,6 +78,72 @@ public class DatabaseImpl implements Database {
      */
     public DatabaseImpl(ConnectionProvider cp) {
         _connProvider = cp;
+        this.createDatabaseIfNecessary();
+    }
+
+    private void createDatabaseIfNecessary()
+    {
+        File databaseFile = Allocator.getPathServices().getDatabaseFile();
+        if(!databaseFile.exists())
+        {
+            try
+            {
+                Allocator.getFileSystemServices().makeDirectory(databaseFile.getParentFile());
+            }
+            catch(ServicesException ex)
+            {
+                System.err.println("cakehat is unable to create a database. " +
+                        "Underlying reason: ");
+                ex.printStackTrace();
+                System.exit(-1);
+            }
+
+            try
+            {
+                databaseFile.createNewFile();
+                Allocator.getFileSystemServices().sanitize(databaseFile);
+
+                this.resetDatabase();
+            }
+            catch(SQLException ex)
+            {
+                System.err.println("cakehat is unable to create a database. " +
+                        "Underlying reason: ");
+                ex.printStackTrace();
+                System.exit(-1);
+            }
+            catch(ServicesException ex)
+            {
+                System.err.println("cakehat is unable to create a database. " +
+                        "Underlying reason: ");
+                ex.printStackTrace();
+                System.exit(-1);
+            }
+            catch(IOException ex)
+            {
+                System.err.println("cakehat is unable to create a database. " +
+                        "Underlying reason: ");
+                ex.printStackTrace();
+                System.exit(-1);
+            }
+
+            // If this is test mode, create some test students
+            if(CakehatMain.isDeveloperMode())
+            {
+                try
+                {
+                    for(char letter = 'a'; letter <= 'z'; letter++)
+                    {
+                        this.addStudent(letter + "student", new Character(letter).toString().toUpperCase(), "Student");
+                    }
+                }
+                catch(SQLException ex)
+                {
+                    System.err.println("Unable to add test students to database.");
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -90,19 +161,20 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public Collection<String> getTABlacklist(TA ta) throws SQLException {
-        ArrayList<String> blackList = new ArrayList<String>();
+    public Collection<Integer> getTABlacklist(TA ta) throws SQLException {
+        ArrayList<Integer> blackList = new ArrayList<Integer>();
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT b.sid AS login"
+            PreparedStatement ps = conn.prepareStatement("SELECT b.sid AS sid"
                     + " FROM blacklist AS b"
                     + " WHERE b.tid == ?");
             ps.setString(1, ta.getLogin());
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                blackList.add(rs.getString("login"));
+                blackList.add(rs.getInt("sid"));
             }
+            ps.close();
 
             return blackList;
         } finally {
@@ -111,7 +183,7 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public boolean addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
+    public int addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO student"
@@ -120,13 +192,13 @@ public class DatabaseImpl implements Database {
             ps.setString(1, studentLogin);
             ps.setString(2, studentFirstName);
             ps.setString(3, studentLastName);
-            int numRowsInserted = ps.executeUpdate();
-
+            ps.executeUpdate();
+            
+            ResultSet rs = ps.getGeneratedKeys();
+            int id = rs.getInt(1);
+            
             ps.close();
-
-            //if the student was already in the database, the INSERT command
-            //will simply be ignored and no new rows will have been inserted
-            return numRowsInserted > 0;
+            return id;
         } finally {
             this.closeConnection(conn);
         }
@@ -137,12 +209,12 @@ public class DatabaseImpl implements Database {
      * @param studentLogin - String Student Login
      */
     @Override
-    public void disableStudent(String studentLogin) throws SQLException {
+    public void disableStudent(int studentID) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("UPDATE student "
-                    + "SET enabled = 0 WHERE login == ?");
-            ps.setString(1, studentLogin);
+                    + "SET enabled = 0 WHERE sid == ?");
+            ps.setInt(1, studentID);
 
             ps.executeUpdate();
         } finally {
@@ -155,12 +227,12 @@ public class DatabaseImpl implements Database {
      * @param studentLogin - String Student Login
      */
     @Override
-    public void enableStudent(String studentLogin) throws SQLException {
+    public void enableStudent(int studentID) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("UPDATE student "
-                    + "SET enabled = 1 WHERE login == ?");
-            ps.setString(1, studentLogin);
+                    + "SET enabled = 1 WHERE sid == ?");
+            ps.setInt(1, studentID);
 
             ps.executeUpdate();
         } finally {
@@ -169,22 +241,24 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public Collection<Student> getStudents() throws SQLException {
-        Collection<Student> result = new ArrayList<Student>();
+    public Collection<StudentRecord> getAllStudents() throws SQLException {
+        Collection<StudentRecord> result = new ArrayList<StudentRecord>();
 
         Connection conn = this.openConnection();
         try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin, "
+            ResultSet rs = conn.createStatement().executeQuery("SELECT s.sid AS sid, "
+                    + "s.login AS login, "
                     + "s.firstname AS fname, "
                     + "s.lastname AS lname, "
-                    + "s.enabled AS isenabled "
+                    + "s.enabled AS enabled "
                     + "FROM student AS s ");
 
             while (rs.next()) {
-                result.add(new Student(rs.getString("studlogin"),
-                                       rs.getString("fname"),
-                                       rs.getString("lname"),
-                                       rs.getBoolean("isenabled")));
+                result.add(new StudentRecord(rs.getInt("sid"),
+                                             rs.getString("login"),
+                                             rs.getString("fname"),
+                                             rs.getString("lname"),
+                                             rs.getBoolean("enabled")));
             }
 
             return Collections.unmodifiableCollection(result);
@@ -194,57 +268,14 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public Map<String, String> getAllStudents() throws SQLException {
-        HashMap<String, String> result = new HashMap<String, String>();
-        Connection conn = this.openConnection();
-
-        try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin, "
-                    + "s.firstname AS fname, "
-                    + "s.lastname AS lname "
-                    + "FROM student AS s ");
-
-            while (rs.next()) {
-                result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<String, String> getEnabledStudents() throws SQLException {
-        HashMap<String, String> result = new HashMap<String, String>();
-        Connection conn = this.openConnection();
-
-        try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT s.login AS studlogin, "
-                    + "s.firstname AS fname, "
-                    + "s.lastname AS lname "
-                    + "FROM student AS s "
-                    + "WHERE enabled == 1");
-
-            while (rs.next()) {
-                result.put(rs.getString("studlogin"), rs.getString("fname") + " " + rs.getString("lname"));
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void blacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException {
+    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO blacklist "
                     + "('sid', 'tid') VALUES (?, ?)");
 
-            for (String login : studentLogins) {
-                ps.setString(1, login);
+            for (Student student : students) {
+                ps.setInt(1, student.getDbId());
                 ps.setString(2, ta.getLogin());
                 ps.addBatch();
             }
@@ -258,14 +289,14 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public Collection<String> getBlacklistedStudents() throws SQLException {
+    public Collection<Integer> getBlacklistedStudents() throws SQLException {
         Connection conn = this.openConnection();
         try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT DISTINCT b.sid AS studlogin "
+            ResultSet rs = conn.createStatement().executeQuery("SELECT DISTINCT b.sid AS sid "
                     + "FROM blacklist AS b");
-            Collection<String> result = new ArrayList<String>();
+            Collection<Integer> result = new ArrayList<Integer>();
             while (rs.next()) {
-                result.add(rs.getString("studlogin"));
+                result.add(rs.getInt("sid"));
             }
             return result;
         } finally {
@@ -274,16 +305,16 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public void unBlacklistStudents(Collection<String> studentLogins, TA ta) throws SQLException {
+    public void unBlacklistStudents(Collection<Student> students, TA ta) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
                     + "WHERE tid == ? "
                     + "AND sid == ?");
 
-            for (String studentLogin : studentLogins) {
+            for (Student student : students) {
                 ps.setString(1, ta.getLogin());
-                ps.setString(2, studentLogin);
+                ps.setInt(2, student.getDbId());
                 ps.addBatch();
             }
 
@@ -295,26 +326,7 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public boolean isStudentEnabled(String studentLogin) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT s.enabled FROM student"
-                    + " AS s"
-                    + " WHERE"
-                    + " s.login == ?");
-            ps.setString(1, studentLogin);
-
-            ResultSet rs = ps.executeQuery();
-            int enabled = rs.getInt("enabled");
-
-            return (enabled == 1);
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<DistributablePart, TA> getGradersForStudent(String studentLogin) throws SQLException, CakeHatDBIOException {
+    public Map<DistributablePart, TA> getGradersForStudent(Student student) throws SQLException, CakeHatDBIOException {
         Connection conn = this.openConnection();
         Map<DistributablePart, TA> graders = new HashMap<DistributablePart, TA>();
         try {
@@ -323,7 +335,7 @@ public class DatabaseImpl implements Database {
                     + " INNER JOIN groupmember AS gm"
                     + " ON d.gpid == gm.gpid"
                     + " WHERE gm.sid == ?");
-            ps.setString(1, studentLogin);
+            ps.setInt(1, student.getDbId());
 
             ResultSet rs = ps.executeQuery();
 
@@ -334,7 +346,7 @@ public class DatabaseImpl implements Database {
                     TA ta = Allocator.getConfigurationInfo().getTA(taLogin);
                     if (ta == null) {
                         throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, "
-                                + "but is assigned to grade student " + studentLogin + " for "
+                                + "but is assigned to grade student " + student + " for "
                                 + "assignment " + Allocator.getConfigurationInfo().getDistributablePart(partID).getName() + ".");
                     }
                     graders.put(Allocator.getConfigurationInfo().getDistributablePart(partID), ta);
@@ -375,9 +387,9 @@ public class DatabaseImpl implements Database {
                     + "'aid' VARCHAR NOT NULL, "
                     + "CONSTRAINT 'nameaidunique' UNIQUE ('aid','name') ON CONFLICT FAIL);");
             conn.createStatement().executeUpdate("CREATE TABLE 'blacklist' ('tid' VARCHAR NOT NULL, "
-                    + "'sid' VARCHAR NOT NULL, "
+                    + "'sid' INTEGER NOT NULL, "
                     + "CONSTRAINT 'tidsidunique' UNIQUE ('tid','sid') ON CONFLICT IGNORE, "
-                    + "FOREIGN KEY(sid) REFERENCES student(login));");
+                    + "FOREIGN KEY(sid) REFERENCES student(sid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'distribution' ('gpid' INTEGER NOT NULL, "
                     + "'pid' VARCHAR NOT NULL, "
                     + "'tid' VARCHAR NOT NULL, "
@@ -396,14 +408,15 @@ public class DatabaseImpl implements Database {
                     + "'score' DOUBLE NOT NULL, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'groupmember' ('gpid' INTEGER NOT NULL, "
-                    + "'sid' VARCHAR NOT NULL, "
-                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid), "
-                    + "FOREIGN KEY(sid) REFERENCES student(login));");
+                    + "'sid' INTEGER NOT NULL, "
+                    + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE, "
+                    + "FOREIGN KEY(sid) REFERENCES student(sid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'handin' ('gpid' INTEGER NOT NULL, "
                     + "'status' VARCHAR NOT NULL, "
                     + "'late' INTEGER NOT NULL, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
-            conn.createStatement().executeUpdate("CREATE TABLE 'student' ('login' VARCHAR NOT NULL, "
+            conn.createStatement().executeUpdate("CREATE TABLE 'student' ('sid' INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + "'login' VARCHAR NOT NULL, "
                     + "'firstname' VARCHAR NOT NULL, "
                     + "'lastname' VARCHAR NOT NULL, "
                     + "'enabled' INTEGER NOT NULL DEFAULT 1, "
@@ -421,7 +434,7 @@ public class DatabaseImpl implements Database {
             conn.createStatement().executeUpdate("CREATE INDEX grade_pid ON grade (pid);");
             conn.createStatement().executeUpdate("CREATE INDEX grade_gpid ON grade (gpid);");
             conn.createStatement().executeUpdate("CREATE INDEX handin_gpid ON handin (gpid);");
-            conn.createStatement().executeUpdate("CREATE INDEX student_login ON student (login);");
+            conn.createStatement().executeUpdate("CREATE INDEX student_login ON student (sid);");
             conn.commit();
         } catch (SQLException e) {
             conn.rollback();
@@ -456,11 +469,10 @@ public class DatabaseImpl implements Database {
                     + "VALUES ((SELECT gpid FROM asgngroup WHERE name==? AND aid==?), ?)");
 
             for (Group group : groups) {
-
-                for (String student : group.getMembers()) {
+                for (Student student : group.getMembers()) {
                     psMember.setString(1, group.getName());
                     psMember.setString(2, asgn.getDBID());
-                    psMember.setString(3, student);
+                    psMember.setInt(3, student.getDbId());
                     psMember.addBatch();
                 }
             }
@@ -485,11 +497,11 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public Group getStudentsGroup(Assignment asgn, String student) throws SQLException {
+    public Group getStudentsGroup(Assignment asgn, Student student) throws SQLException {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS studLogin, gp.name as groupName"
+            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS sid, gp.name as groupName"
                     + " FROM groupmember AS gm"
                     + " INNER JOIN asgngroup AS gp"
                     + " ON gp.gpid == gm.gpid"
@@ -500,18 +512,18 @@ public class DatabaseImpl implements Database {
                     + " WHERE gp.aid == ?"
                     + " AND gm.sid == ?)");
             ps.setString(1, asgn.getDBID());
-            ps.setString(2, student);
+            ps.setInt(2, student.getDbId());
             ResultSet rs = ps.executeQuery();
 
-            Collection<String> loginsForGroup = new ArrayList(5);
+            Collection<Student> members = new ArrayList<Student>();
             String nameForGroup = null;
             while (rs.next()) {
-                loginsForGroup.add(rs.getString("studLogin"));
+                members.add(Allocator.getDataServices().getStudentFromID(rs.getInt("sid")));
                 nameForGroup = rs.getString("groupName");
             }
             Group group = null;
             if (nameForGroup != null) {
-                group = new Group(nameForGroup, loginsForGroup);
+                group = new Group(nameForGroup, members);
             }
 
             return group;
@@ -526,7 +538,7 @@ public class DatabaseImpl implements Database {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS studLogin, gp.name AS groupName"
+            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS sid, gp.name AS groupName"
                     + " FROM groupmember AS gm"
                     + " INNER JOIN asgngroup AS gp"
                     + " ON gp.gpid == gm.gpid"
@@ -540,25 +552,25 @@ public class DatabaseImpl implements Database {
             ps.setString(1, asgn.getDBID());
             ResultSet rs = ps.executeQuery();
 
-            Collection<String> loginsForGroup = new ArrayList<String>(5);
+            Collection<Student> members = new ArrayList<Student>(5);
             String nameForGroup = "";
             while (rs.next()) {
                 String groupName = rs.getString("groupName");
-                String studentLogin = rs.getString("studLogin");
+                int studentID = rs.getInt("sid");
                 if (nameForGroup.equals(groupName)) {
-                    loginsForGroup.add(studentLogin);
+                    members.add(Allocator.getDataServices().getStudentFromID(studentID));
                 }
                 else {
                     if (!nameForGroup.equals("")) {
-                        groups.add(new Group(nameForGroup, loginsForGroup));
+                        groups.add(new Group(nameForGroup, members));
                     }
-                    loginsForGroup = new ArrayList<String>(5);
+                    members = new ArrayList<Student>(5);
                     nameForGroup = groupName;
-                    loginsForGroup.add(studentLogin);
+                    members.add(Allocator.getDataServices().getStudentFromID(studentID));
                 }
             }
             if (!nameForGroup.equals("")) {
-                groups.add(new Group(nameForGroup, loginsForGroup));
+                groups.add(new Group(nameForGroup, members));
             }
 
             return groups;
@@ -650,7 +662,7 @@ public class DatabaseImpl implements Database {
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taLogin, gm.sid AS studLogin, gp.name AS groupName"
+            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taLogin, gm.sid AS sid, gp.name AS groupName"
                     + " FROM groupmember AS gm"
                     + " INNER JOIN distribution AS d"
                     + " ON d.gpid == gm.gpid"
@@ -661,36 +673,36 @@ public class DatabaseImpl implements Database {
             ps.setString(1, part.getDBID());
             ResultSet rs = ps.executeQuery();
 
-            Collection<String> loginsForGroup = new ArrayList<String>(5);
+            Collection<Student> members = new ArrayList<Student>(5);
             String currentNameForGroup = "";
             String taLogin = "";
             TA ta = null;
             while (rs.next()) { //while there are more records
                 String groupName = rs.getString("groupName");
-                String studentLogin = rs.getString("studLogin");
+                int studentID = rs.getInt("sid");
                 if (currentNameForGroup.equals(groupName)) { //if we are still populating the same group
-                    loginsForGroup.add(studentLogin);
+                    members.add(Allocator.getDataServices().getStudentFromID(studentID));
                 }
                 else { //if it is a new group
                     if (!currentNameForGroup.equals("")) { //if the old group was not the blank group with no name
                         if (ta == null) {
                             throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
                         }
-                        Group group = new Group(currentNameForGroup, loginsForGroup); //make a group from the logins and name we have
+                        Group group = new Group(currentNameForGroup, members); //make a group from the logins and name we have
                         groups.put(ta, group); //add the group to the dist
                     }
                     taLogin = rs.getString("taLogin");
                     ta = Allocator.getConfigurationInfo().getTA(taLogin);
-                    loginsForGroup = new ArrayList<String>(5); //make a new list of logins
+                    members = new ArrayList<Student>(5); //make a new list of students
                     currentNameForGroup = groupName; //update the current name
-                    loginsForGroup.add(studentLogin); //add the student to the list
+                    members.add(Allocator.getDataServices().getStudentFromID(studentID)); //add the student to the list
                 }
             }
             if (!currentNameForGroup.equals("")) { //we are done with all the records and there were some records
                 if (ta == null) {
                     throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
                 }
-                groups.put(Allocator.getConfigurationInfo().getTA(taLogin), new Group(currentNameForGroup, loginsForGroup)); //make and add a group
+                groups.put(Allocator.getConfigurationInfo().getTA(taLogin), new Group(currentNameForGroup, members)); //make and add a group
             }
 
             return groups.asMap();
@@ -927,7 +939,7 @@ public class DatabaseImpl implements Database {
                 Calendar cal = new GregorianCalendar();
                 cal.setTimeInMillis(rs.getInt("date") * 1000L);
 
-                PreparedStatement groupPS = conn.prepareStatement("SELECT gm.sid AS login, g.name AS name"
+                PreparedStatement groupPS = conn.prepareStatement("SELECT gm.sid AS sid, g.name AS name"
                         + " FROM groupmember AS gm"
                         + " INNER JOIN asgngroup AS g"
                         + " ON gm.gpid == g.gpid"
@@ -935,10 +947,10 @@ public class DatabaseImpl implements Database {
                 groupPS.setInt(1, rs.getInt("groupID"));
 
                 ResultSet groupRS = groupPS.executeQuery();
-                Collection<String> members = new ArrayList<String>(10);
+                Collection<Student> members = new ArrayList<Student>();
                 String name = "";
                 while (groupRS.next()) {
-                    members.add(groupRS.getString("login"));
+                    members.add(Allocator.getDataServices().getStudentFromID(groupRS.getInt("sid")));
                     name = groupRS.getString("name");
                 }
 
@@ -1402,6 +1414,23 @@ public class DatabaseImpl implements Database {
             }
 
             return rs.getInt("numStatuses") != 0;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void addStudent(int id, String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO student"
+                    + " ('sid', 'login', 'firstname', 'lastname')"
+                    + " VALUES (?, ?, ?, ?)");
+            ps.setInt(1, id);
+            ps.setString(2, studentLogin);
+            ps.setString(3, studentFirstName);
+            ps.setString(4, studentLastName);
+            ps.executeUpdate();
         } finally {
             this.closeConnection(conn);
         }

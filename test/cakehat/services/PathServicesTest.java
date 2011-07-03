@@ -6,6 +6,7 @@ import cakehat.config.Assignment;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
+import cakehat.database.ConfigurationData;
 import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class PathServicesTest
     public void setup()
     {
         //Mock group
-        _group = new Group(GROUP_NAME, "aunger", "jeldridg");
+        _group = ConfigurationData.generateGroup(GROUP_NAME);
 
         //Create mocked assignment, handin, and part objects
         _assignment = createMock(Assignment.class);

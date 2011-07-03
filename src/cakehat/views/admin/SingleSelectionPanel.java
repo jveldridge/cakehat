@@ -25,6 +25,7 @@ import cakehat.Allocator;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.database.Student;
 import cakehat.views.shared.ErrorView;
 import java.util.ArrayList;
 
@@ -39,7 +40,7 @@ class SingleSelectionPanel extends JPanel
     private static final Dimension PANEL_SIZE = AdminView.MULTI_PANEL_CARD_SIZE;
 
     //Student and assignment this is displaying
-    private String _studentLogin;
+    private Student _student;
     private Group _group;
     private Assignment _asgn;
 
@@ -110,7 +111,7 @@ class SingleSelectionPanel extends JPanel
                     try {
                         Allocator.getDatabase().enterGrade(_group, part, earned);
                     } catch (SQLException ex) {
-                        new ErrorView(ex, "Saving the grade for student " + _studentLogin + " " +
+                        new ErrorView(ex, "Saving the grade for student " + _student + " " +
                                           "on part " + part + " of assignment " +
                                           _asgn + " failed.");
                     }
@@ -387,7 +388,7 @@ class SingleSelectionPanel extends JPanel
             }
             catch (SQLException ex)
             {
-                new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                new ErrorView(ex, "Could not read score for student " + _student + " on " +
                                   "part " + part + " from the database.");
                 _nonHandinEarnedField.setUnknownScoreValue();
             }
@@ -417,13 +418,13 @@ class SingleSelectionPanel extends JPanel
         _handinScoreLabel.setText("0");
     }
 
-    public void updateView(String studentLogin, Group group, Assignment asgn)
+    public void updateView(Student student, Group group, Assignment asgn)
     {
         _suppressUpdateScores = true;
 
         boolean asgnChanged = (_asgn != asgn);
         
-        _studentLogin = studentLogin;
+        _student = student;
         _group = group;
         _asgn = asgn;
 
@@ -469,7 +470,7 @@ class SingleSelectionPanel extends JPanel
                     }
                 }
             } catch (SQLException ex) {
-                new ErrorView(ex, "Could not read scores for student " + studentLogin + " on " +
+                new ErrorView(ex, "Could not read scores for student " + student + " on " +
                                   "distributable parts for assignment " + asgn + " from the database.");
                 _nonHandinEarnedField.setUnknownScoreValue();
             }
@@ -484,7 +485,7 @@ class SingleSelectionPanel extends JPanel
                     }
                 } catch (RubricException ex) {
                     new ErrorView(ex, "Could not determine early/late handin penalty/bonus for student " +
-                                      studentLogin + "'s group on assignment " + asgn + ".");
+                                      student + "'s group on assignment " + asgn + ".");
                     _handinEarnedField.setUnknownScoreValue();
                 }
             }
@@ -623,7 +624,7 @@ class SingleSelectionPanel extends JPanel
                     try {
                         partScore = Allocator.getDatabase().getGroupScore(_group, part);
                     } catch (SQLException ex) {
-                        new ErrorView(ex, "Could not read score for student " + _studentLogin + " on " +
+                        new ErrorView(ex, "Could not read score for student " + _student + " on " +
                                           "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
                                           "ASSUMED for displaying the student's overall assignment score.");
                     }

@@ -7,13 +7,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Scanner;
-import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import cakehat.Allocator;
 import cakehat.config.Assignment;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -109,7 +109,6 @@ class GroupsView extends javax.swing.JFrame {
             }
         }
 
-
         JFileChooser fc = new JFileChooser();
         fc.setApproveButtonText("Import Groups File");
         fc.setFileFilter(_groupFilter);
@@ -117,19 +116,8 @@ class GroupsView extends javax.swing.JFrame {
         fc.setMultiSelectionEnabled(false);
         int selection = fc.showOpenDialog(this);
 
-        Set<String> studLogins;
-        try {
-            studLogins = Allocator.getDatabase().getAllStudents().keySet();
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Students could not be retrieved from the database; " +
-                              "groups info. cannot be imported.  If this problem persists, " +
-                              "please send an error report.");
-            return;
-        }
-
         if (selection == JFileChooser.APPROVE_OPTION) {
-
-            Multimap<String, String> namesAndGroups = ArrayListMultimap.create();
+            Collection<Group> groupsToAdd = new LinkedList<Group>();
 
             File groupFile = fc.getSelectedFile();
             Scanner gScanner = null;
@@ -140,28 +128,27 @@ class GroupsView extends javax.swing.JFrame {
                 return;
             }
             while (gScanner.hasNextLine()) {
-                String group = gScanner.nextLine();
-                group = group.replaceAll("\\s+", "");
-                String[] groupParts = group.split(":");
+                String groupString = gScanner.nextLine();
+                groupString = groupString.replaceAll("\\s+", "");
+                String[] groupParts = groupString.split(":");
                 String groupName = groupParts[0];
-                String[] groupMembers = groupParts[1].split(",");
-                for (int i = 0; i < groupMembers.length; i++) {
-                    if (!studLogins.contains(groupMembers[i])) {
-                        JOptionPane.showMessageDialog(this, groupMembers[i] + " is not a student in the DB. Please fix the groups file.");
-                        return;
+                String[] groupMemberLogin = groupParts[1].split(",");
+
+                Collection<Student> members = new LinkedList<Student>();
+                for (int i = 0; i < groupMemberLogin.length; i++) {
+                    if (Allocator.getDataServices().isStudentLoginInDatabase(groupMemberLogin[i])) {
+                        members.add(Allocator.getDataServices().getStudentFromLogin(groupMemberLogin[i]));
                     }
                     else {
-                        namesAndGroups.put(groupName, groupMembers[i]);
+                        JOptionPane.showMessageDialog(this, groupMemberLogin[i] + " is not a student in the DB. Please fix the groups file or add the student.");
+                        return;
                     }
                 }
+
+                groupsToAdd.add(new Group(groupName, members));
             }
             try {
-                Collection<Group> groups = new LinkedList<Group>();
-                Map<String, Collection<String>> groupsMap = namesAndGroups.asMap();
-                for (String groupName : groupsMap.keySet()) {
-                    groups.add(new Group(groupName,groupsMap.get(groupName)));
-                }
-                Allocator.getDatabase().setGroups(_asgn, groups);
+                Allocator.getDatabase().setGroups(_asgn, groupsToAdd);
             } catch (SQLException ex) {
                 new ErrorView(ex, "Saving groups info to the database failed.");
                 return;

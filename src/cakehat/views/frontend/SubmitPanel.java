@@ -2,8 +2,10 @@ package cakehat.views.frontend;
 
 import cakehat.Allocator;
 import cakehat.config.Assignment;
+import cakehat.config.TA;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
 import cakehat.rubric.RubricException;
 import cakehat.services.ServicesException;
@@ -625,16 +627,14 @@ class SubmitPanel extends AlphaJPanel
 
     private void sendEmails(String subject, String body, boolean attachGradingSheets)
     {
-        String taLogin = Allocator.getUserUtilities().getUserLogin();
-
         // Notify each student
-        String taEmailAddress = Allocator.getUserUtilities().getUserLogin() + "@" +
-                Allocator.getConstants().getEmailDomain();
+        TA user = Allocator.getUserServices().getUser();
+        String taEmailAddress = user.getEmailAddress();
         body = body.replace(System.getProperty("line.separator"), "<br/>");
 
         for(Group group : _submittedGroups)
         {
-            for(String student : group.getMembers())
+            for(Student student : group.getMembers())
             {
                 String attachmentPath = null;
                 if(attachGradingSheets)
@@ -643,27 +643,27 @@ class SubmitPanel extends AlphaJPanel
                 }
 
                 Allocator.getConfigurationInfo().getEmailAccount().sendMail(
-                        taEmailAddress,                // from
-                        Arrays.asList(student),        // to
-                        null,                          // cc
-                        null,                          // bcc
-                        subject,                       // subject
-                        body,                          // body
-                        Arrays.asList(attachmentPath));// attachments
+                        taEmailAddress,                           // from
+                        Arrays.asList(student.getEmailAddress()), // to
+                        null,                                     // cc
+                        null,                                     // bcc
+                        subject,                                  // subject
+                        body,                                     // body
+                        Arrays.asList(attachmentPath));           // attachments
             }
         }
 
         String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
-        String notificationMessage = "At " + now + ", " + taLogin +
+        String notificationMessage = "At " + now + ", " + user.getLogin() +
                 " submitted grading for assignment " +
                 _part.getAssignment().getName() +
                 " for the following students: <blockquote>";
 
         for(Group group : _submittedGroups)
         {
-            for(String student : group.getMembers())
+            for(Student student : group.getMembers())
             {
-                notificationMessage += student;
+                notificationMessage += student.getLogin();
                 if(attachGradingSheets)
                 {
                     notificationMessage += " [Grading Sheet Attached]";
