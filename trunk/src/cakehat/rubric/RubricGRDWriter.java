@@ -10,6 +10,7 @@ import cakehat.database.Group;
 import cakehat.database.HandinStatus;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
+import cakehat.database.Student;
 import cakehat.rubric.Rubric.*;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Responsible for writing a Rubric instance to a GRD text file.
@@ -72,27 +72,19 @@ class RubricGRDWriter {
 
         writeLine(ASSIGNMENT_LBL + asgn.getNumber() + GRADER_SHEET_LBL + asgn.getName() + '\n', output);
 
-        Map<String, String> students;
-        try {
-            students = Allocator.getDatabase().getAllStudents();
-        } catch (SQLException ex) {
-            throw new RubricException("Could not read student names from database. " +
-                                      "Rubrics cannot be generated.", ex);
-        }
-
-        Iterator<String> members = group.getMembers().iterator();
-        if (group.getMembers().size() == 1) {
-            String studentLogin = members.next();
-            writeLine("STUDENT: " + students.get(studentLogin) + " (" + studentLogin + ")", output);
+        Iterator<Student> members = group.getMembers().iterator();
+        if (group.size() == 1) {
+            Student student = members.next();
+            writeLine("STUDENT: " + student.getName() + " (" + student.getLogin() + ")", output);
         }
         else {
             writeLine("GROUP: " + group.getName(), output);
-            String member = members.next();
-            writeLine("MEMBERS: " + students.get(member) + " (" + member + ")", output);
+            Student member = members.next();
+            writeLine("MEMBERS: " + member.getName() + " (" + member.getLogin() + ")", output);
             while (members.hasNext()) {
                 member = members.next();
                 printSpaces(9, output);
-                writeLine(students.get(member) + " (" + member + ")", output);
+                writeLine(member.getName() + " (" + member.getLogin() + ")", output);
             }
         }
 
@@ -381,7 +373,7 @@ class RubricGRDWriter {
             msg += ")";
         }
 
-        printWithinBounds(0, SECTION_TEXT_WIDTH, "Handin Status: " + msg, output);
+        printWithinBounds(0, SECTION_TEXT_WIDTH, HANDIN_STATUS_LBL + msg, output);
         printEndPlusMinus(handinPenalty, handinPenalty, output);
         printDivider(output);
     }

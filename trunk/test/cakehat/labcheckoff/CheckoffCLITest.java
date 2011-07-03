@@ -6,14 +6,15 @@ import cakehat.config.Assignment;
 import cakehat.config.ConfigurationException;
 import cakehat.config.LabConfigurationParser;
 import cakehat.config.LabPart;
+import cakehat.database.ConfigurationData;
+import cakehat.database.DataServices;
 import cakehat.database.Database;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.labcheckoff.CheckoffCLI.CheckoffException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.Test;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -33,9 +34,9 @@ public class CheckoffCLITest
     public void testAbortOverwrite() throws ConfigurationException, SQLException, CheckoffException
     {
         final int labNumber = 1;
-        final String studentLogin = "jak2";
+        final Student student = ConfigurationData.generateStudent("jak2", "Joshua", "Kaplan", "jak2@cs.brown.edu", true);
+        final Group group = new Group(student.getLogin(), student);
         final double pointsGiven = 12;
-        final Group group = new Group(studentLogin, studentLogin);
 
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.hasGroups()).andReturn(false).atLeastOnce();
@@ -51,12 +52,13 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
+        final DataServices ds = createMock(DataServices.class);
+        expect(ds.isStudentLoginInDatabase(student.getLogin())).andReturn(true);
+        expect(ds.getStudentFromLogin(student.getLogin())).andReturn(student);
+        replay(ds);
+
         final Database dbio = createMock(Database.class);
-        Map<String, String> allStudents = new HashMap<String, String>();
-        allStudents.put(studentLogin, "Joshua Kaplan");
-        expect(dbio.getAllStudents()).andReturn(allStudents);
-        expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
-        expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(group);
+        expect(dbio.getStudentsGroup(asgn, student)).andReturn(group);
         expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(11.2);
         replay(dbio);
 
@@ -65,7 +67,12 @@ public class CheckoffCLITest
             {
                 public Database allocate() { return dbio; };
             };
-        new Allocator.Customizer().setDatabase(dbioAlloc).customize();
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
+            {
+                public DataServices allocate() { return ds; };
+            };
+        new Allocator.Customizer().setDatabase(dbioAlloc).setDataServices(dsAlloc).customize();
 
 
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
@@ -76,7 +83,7 @@ public class CheckoffCLITest
         };
 
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
-            studentLogin, Double.toString(pointsGiven) });
+            student.getLogin(), Double.toString(pointsGiven) });
 
         CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
         assertEquals(CheckoffCLI.CheckoffResult.ABORTED, result);
@@ -92,9 +99,12 @@ public class CheckoffCLITest
     public void testGroupCheckoff() throws ConfigurationException, SQLException, CheckoffException
     {
         final int labNumber = 1;
-        final String studentLogin = "jak2";
+        final Student josh = ConfigurationData.generateStudent("jak2", "Joshua", "Kaplan", "jak2@cs.brown.edu", true);
+        final Student jonathan = ConfigurationData.generateStudent("jeldridg", "Jonathan", "Eldridge", "jeldridg@cs.brown.edu", true);
+        final Student alex = ConfigurationData.generateStudent("aunger", "Alex", "Unger", "aunger@cs.brown.edu", true);
+        final Student hannah = ConfigurationData.generateStudent("hdrosen", "Hannah", "Rosen", "hdrosen@cs.brown.edu", true);
+        final Group group = ConfigurationData.generateGroup("test_group", josh, jonathan, alex, hannah);
         final double pointsGiven = 12;
-        final Group group = new Group("test_group", studentLogin, "jeldridg", "aunger", "hdrosen");
 
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.hasGroups()).andReturn(true).atLeastOnce();
@@ -110,12 +120,13 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
+        final DataServices ds = createMock(DataServices.class);
+        expect(ds.isStudentLoginInDatabase(josh.getLogin())).andReturn(true);
+        expect(ds.getStudentFromLogin(josh.getLogin())).andReturn(josh);
+        replay(ds);
+
         final Database dbio = createMock(Database.class);
-        Map<String, String> allStudents = new HashMap<String, String>();
-        allStudents.put(studentLogin, "Joshua Kaplan");
-        expect(dbio.getAllStudents()).andReturn(allStudents);
-        expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
-        expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(group);
+        expect(dbio.getStudentsGroup(asgn, josh)).andReturn(group);
         expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(null);
         dbio.enterGrade(group, lab, pointsGiven);
         expectLastCall();
@@ -126,9 +137,14 @@ public class CheckoffCLITest
             {
                 public Database allocate() { return dbio; };
             };
-        new Allocator.Customizer().setDatabase(dbioAlloc).customize();
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
+            {
+                public DataServices allocate() { return ds; };
+            };
+        new Allocator.Customizer().setDatabase(dbioAlloc).setDataServices(dsAlloc).customize();
 
-    
+
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
         {
             public boolean shouldOverwriteScore() { return false; }
@@ -137,7 +153,7 @@ public class CheckoffCLITest
         };
 
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
-            studentLogin, Double.toString(pointsGiven) });
+            josh.getLogin(), Double.toString(pointsGiven) });
 
         CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
         assertEquals(CheckoffCLI.CheckoffResult.SUCCEEDED, result);
@@ -154,9 +170,9 @@ public class CheckoffCLITest
     public void testIndividualCheckoff_ExistingGroup() throws ConfigurationException, SQLException, CheckoffException
     {
         final int labNumber = 1;
-        final String studentLogin = "jak2";
+        final Student student = ConfigurationData.generateStudent("jak2", "Joshua", "Kaplan", "jak2@cs.brown.edu",true);
+        final Group group = new Group(student.getLogin(), student);
         final double pointsGiven = 12;
-        final Group group = new Group(studentLogin, studentLogin);
 
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.hasGroups()).andReturn(false).atLeastOnce();
@@ -172,12 +188,13 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
+        final DataServices ds = createMock(DataServices.class);
+        expect(ds.isStudentLoginInDatabase(student.getLogin())).andReturn(true);
+        expect(ds.getStudentFromLogin(student.getLogin())).andReturn(student);
+        replay(ds);
+
         final Database dbio = createMock(Database.class);
-        Map<String, String> allStudents = new HashMap<String, String>();
-        allStudents.put(studentLogin, "Joshua Kaplan");
-        expect(dbio.getAllStudents()).andReturn(allStudents);
-        expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
-        expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(group);
+        expect(dbio.getStudentsGroup(asgn, student)).andReturn(group);
         expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(null);
         dbio.enterGrade(group, lab, pointsGiven);
         expectLastCall();
@@ -188,8 +205,12 @@ public class CheckoffCLITest
             {
                 public Database allocate() { return dbio; };
             };
-        new Allocator.Customizer().setDatabase(dbioAlloc).customize();
-
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
+            {
+                public DataServices allocate() { return ds; };
+            };
+        new Allocator.Customizer().setDatabase(dbioAlloc).setDataServices(dsAlloc).customize();
 
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
         {
@@ -199,8 +220,8 @@ public class CheckoffCLITest
         };
 
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
-            studentLogin, Double.toString(pointsGiven) });
-        
+            student.getLogin(), Double.toString(pointsGiven) });
+
         CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
         assertEquals(CheckoffCLI.CheckoffResult.SUCCEEDED, result);
 
@@ -214,9 +235,8 @@ public class CheckoffCLITest
     public void testIndividualCheckoff_NoExistingGroup() throws ConfigurationException, SQLException, CheckoffException
     {
         final int labNumber = 1;
-        final String studentLogin = "jak2";
-        final double pointsGiven = 12;
-        final Group group = new Group(studentLogin, studentLogin)
+        final Student student = ConfigurationData.generateStudent("jak2", "Joshua", "Kaplan", "jak2@cs.brown.edu" ,true);
+        final Group group = new Group(student.getLogin(), student)
         {
             @Override
             public boolean equals(Object obj)
@@ -234,6 +254,7 @@ public class CheckoffCLITest
                 return false;
             }
         };
+        final double pointsGiven = 12;
 
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.hasGroups()).andReturn(false).atLeastOnce();
@@ -249,12 +270,13 @@ public class CheckoffCLITest
         expect(parser.getLabPart(1)).andReturn(lab);
         replay(parser);
 
+        final DataServices ds = createMock(DataServices.class);
+        expect(ds.isStudentLoginInDatabase(student.getLogin())).andReturn(true);
+        expect(ds.getStudentFromLogin(student.getLogin())).andReturn(student);
+        replay(ds);
+
         final Database dbio = createMock(Database.class);
-        Map<String, String> allStudents = new HashMap<String, String>();
-        allStudents.put(studentLogin, "Joshua Kaplan");
-        expect(dbio.getAllStudents()).andReturn(allStudents);
-        expect(dbio.isStudentEnabled(studentLogin)).andReturn(true);
-        expect(dbio.getStudentsGroup(asgn, studentLogin)).andReturn(null);
+        expect(dbio.getStudentsGroup(asgn, student)).andReturn(null);
         dbio.setGroup(eq(asgn), eq(group));
         expectLastCall();
         expect(dbio.getGroupScore(eq(group), eq(lab))).andReturn(null);
@@ -267,7 +289,12 @@ public class CheckoffCLITest
             {
                 public Database allocate() { return dbio; };
             };
-        new Allocator.Customizer().setDatabase(dbioAlloc).customize();
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
+            {
+                public DataServices allocate() { return ds; };
+            };
+        new Allocator.Customizer().setDatabase(dbioAlloc).setDataServices(dsAlloc).customize();
 
 
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
@@ -278,7 +305,7 @@ public class CheckoffCLITest
         };
 
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
-            studentLogin, Double.toString(pointsGiven) });
+            student.getLogin(), Double.toString(pointsGiven) });
 
         CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
         assertEquals(CheckoffCLI.CheckoffResult.SUCCEEDED, result);

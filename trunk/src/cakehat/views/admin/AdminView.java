@@ -3,6 +3,7 @@ package cakehat.views.admin;
 import cakehat.export.ExportException;
 import cakehat.config.handin.ActionException;
 import cakehat.rubric.RubricException;
+import javax.swing.event.DocumentEvent;
 import support.ui.GenericJList;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
@@ -19,7 +20,6 @@ import java.awt.GridLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -57,6 +57,7 @@ import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.MissingHandinException;
 import cakehat.database.DataServices.ValidityCheck;
+import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
@@ -69,6 +70,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import support.utils.FileCopyingException;
@@ -163,10 +165,10 @@ public class AdminView extends JFrame
     private SelectedLabel _selectedAssignmentLabel, _selectedStudentLabel;
     private JLabel _messageLabel;
     private AssignmentTree _assignmentTree;
-    private GenericJList<String> _studentList;
+    private GenericJList<Student> _studentList;
     private JTextField _filterField;
     private JPanel _cardPanel = new JPanel();
-    private List<String> _studentLogins;
+    private List<Student> _students;
     private final static String WELCOME_PANEL_TAG = "Welcome panel",
                                 MULTI_SELECT_PANEL_TAG = "Multiple selected students panel",
                                 SINGLE_PART_PANEL_TAG = "Single part selected panel",
@@ -174,7 +176,7 @@ public class AdminView extends JFrame
     private CardLayout _cardLayout;
     private SinglePartPanel _singlePartPanel;
     private SingleSelectionPanel _singleSelectionPanel;
-    private Map<Assignment, Map<String, Group>> _groupsCache = new HashMap<Assignment, Map<String, Group>>();
+    private Map<Assignment, Map<Student, Group>> _groupsCache = new HashMap<Assignment, Map<Student, Group>>();
 
     private AdminView(boolean isSSH)
     {
@@ -182,18 +184,8 @@ public class AdminView extends JFrame
         
         _isSSH = isSSH;
         
-        try {
-            //student logins
-            _studentLogins = new LinkedList(Allocator.getDatabase().getAllStudents().keySet());
-            Collections.sort(_studentLogins);
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get students from database; " +
-                             "functionality will be significantly impaired.  " +
-                             "You are advised to restart cakehat and to send an " +
-                             "error report if the problem persists.");
-            //initialize _studentLogins to avoid NullPointerExceptions
-            _studentLogins = new LinkedList();
-        }
+        _students = new LinkedList<Student>(Allocator.getDataServices().getAllStudents());
+        Collections.sort(_students);
 
         try {
             //make the user's temporary grading directory
@@ -302,7 +294,7 @@ public class AdminView extends JFrame
                     if(_studentList.hasListData())
                     {
                         _studentList.selectFirst();
-                        _filterField.setText(_studentList.getSelectedValue());
+                        _filterField.setText(_studentList.getSelectedValue().getLogin());
                     }
                 }
 
@@ -566,7 +558,7 @@ public class AdminView extends JFrame
             public void actionPerformed(ActionEvent ae)
             {
                 _studentList.clearSelection();
-                _studentList.setListData(_studentLogins);
+                _studentList.setListData(_students);
                 _filterField.setText("");
                 _filterField.requestFocus();
             }
@@ -579,36 +571,17 @@ public class AdminView extends JFrame
         //Student filter
         _filterField = new JTextField();
         _filterField.setPreferredSize(LIST_SELECTOR_SIZE);
-        _filterField.addKeyListener(new KeyAdapter()
-        {
-            @Override
-            public void keyReleased(KeyEvent ke)
-            {
-                //term to filter against
-                String filterTerm = _filterField.getText();
+        _filterField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                applyFilterField();
+            }
 
-                List<String> matchingLogins;
-                //if no filter term, include all logins
-                if(filterTerm.isEmpty())
-                {
-                    matchingLogins = _studentLogins;
-                }
-                //otherwise compared against beginning of each login
-                else
-                {
-                    matchingLogins = new Vector<String>();
-                    for(String login : _studentLogins)
-                    {
-                        if(login.startsWith(filterTerm))
-                        {
-                            matchingLogins.add(login);
-                        }
-                    }
-                }
+            public void removeUpdate(DocumentEvent e) {
+                applyFilterField();
+            }
 
-                //display matching logins
-                _studentList.setListData(matchingLogins);
-                _studentList.selectFirst();
+            public void changedUpdate(DocumentEvent e) {
+                applyFilterField();
             }
         });
         controlPanel.add(_filterField, BorderLayout.SOUTH);
@@ -617,7 +590,7 @@ public class AdminView extends JFrame
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //List
-        _studentList = new GenericJList<String>(_studentLogins);
+        _studentList = new GenericJList<Student>(_students);
         _studentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -632,6 +605,29 @@ public class AdminView extends JFrame
         JScrollPane studentPane = new JScrollPane(_studentList);
         studentPane.setPreferredSize(LIST_LIST_PANE_SIZE);
         panel.add(studentPane);
+    }
+
+    private void applyFilterField() {
+        //term to filter against
+        String filterTerm = _filterField.getText();
+
+        List<Student> matchingStudents;
+        //if no filter term, include all logins
+        if (filterTerm.isEmpty()) {
+            matchingStudents = _students;
+        } //otherwise compared against beginning of each login
+        else {
+            matchingStudents = new ArrayList<Student>();
+            for (Student student : _students) {
+                if (student.getLogin().startsWith(filterTerm)) {
+                    matchingStudents.add(student);
+                }
+            }
+        }
+
+        //display matching logins
+        _studentList.setListData(matchingStudents);
+        _studentList.selectFirst();
     }
 
     private void initAssignmentListPanel(JPanel panel)
@@ -1050,15 +1046,15 @@ public class AdminView extends JFrame
      */
     private void updateGUI(Map<Assignment, List<Part>> selection)
     {
-        Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
+        Collection<Student> selectedStudents = new ArrayList<Student>(_studentList.getGenericSelectedValues());
         
-        //map a student login to Groups for that student for the selected assignments
-        Map<String, Map<Assignment, Group>> studentToGroups = new HashMap<String, Map<Assignment, Group>>();
+        //map a Student to Groups for that student for the selected assignments
+        Map<Student, Map<Assignment, Group>> studentToGroups = new HashMap<Student, Map<Assignment, Group>>();
         StringBuilder errMsgBuilder = new StringBuilder("The following students do not have groups for the assignments listed.\n\n");
         
         boolean someGroupMissing = false;
         
-        for (String student : selectedStudents) {
+        for (Student student : selectedStudents) {
             studentToGroups.put(student, new HashMap<Assignment, Group>());
             List<Assignment> missing = new ArrayList<Assignment>(selection.size());
             
@@ -1104,15 +1100,9 @@ public class AdminView extends JFrame
         //If one student selected
         if(selectedStudents.size() == 1)
         {
-            String studentLogin = _studentList.getSelectedValue();
-            try {
-                this.updateDisableEnableButton(Allocator.getDatabase().isStudentEnabled(studentLogin));
-                _disableStudentButton.setEnabled(true);
-            } catch (SQLException ex) {
-                new ErrorView(ex, "WARNING: Could not determine whether or not " +
-                                  "student " + studentLogin + " is enabled.  Enabling or " +
-                                  "disabling the student is disabled.");
-            }
+            Student student = _studentList.getSelectedValue();
+            this.updateDisableEnableButton(student.isEnabled());
+            _disableStudentButton.setEnabled(true);
 
             //If one or more assignments
             if(selection.size() >= 1)
@@ -1124,7 +1114,7 @@ public class AdminView extends JFrame
             if(selection.size() == 1)
             {
                 Assignment selectedAsgn = this.getSingleSelectedAssignment(selection);
-                Group group = studentToGroups.get(studentLogin).get(selectedAsgn);
+                Group group = studentToGroups.get(student).get(selectedAsgn);
                 
                 if (group != null) {
                     if (selection.get(selectedAsgn).isEmpty()) {
@@ -1209,7 +1199,7 @@ public class AdminView extends JFrame
 
                 //determine which selected students have groups for the selected Assignment
                 Collection<Group> selectedGroups = new ArrayList<Group>(selectedStudents.size());
-                for (String student : studentToGroups.keySet()) {
+                for (Student student : studentToGroups.keySet()) {
                     if (studentToGroups.get(student).containsKey(selectedAsgn)) {
                         selectedGroups.add(studentToGroups.get(student).get(selectedAsgn));
                     }
@@ -1302,11 +1292,11 @@ public class AdminView extends JFrame
         //If one assignment and one student selected
         if (selection.size() == 1 && selectedStudents.size() == 1) {
             Assignment asgn = this.getSingleSelectedAssignment(selection);
-            String studentLogin = _studentList.getSelectedValue();
+            Student student = _studentList.getSelectedValue();
             
-            Group group = studentToGroups.get(studentLogin).get(asgn);
+            Group group = studentToGroups.get(student).get(asgn);
             if (group != null) {
-                _singleSelectionPanel.updateView(studentLogin, group, asgn);
+                _singleSelectionPanel.updateView(student, group, asgn);
 
                 if (selection.get(asgn).size() == 1 && getSingleSelectedDP(selection) == null) {
                     _singleSelectionPanel.selectPart(selection.get(asgn).get(0));
@@ -1506,18 +1496,11 @@ public class AdminView extends JFrame
 
     private void emailReportsButtonActionPerformed()
     {
-        Set<String> enabledStudents;
-        try {
-            enabledStudents = Allocator.getDatabase().getEnabledStudents().keySet();
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Could not read enabled students from the database. " +
-                              "Grade reports cannot be sent.");
-            return;
-        }
+        Collection<Student> enabledStudents = Allocator.getDataServices().getEnabledStudents();
 
-        Collection<String> selectedStudents = new ArrayList<String>(_studentList.getGenericSelectedValues());
-        Collection<String> selectedButDisabled = new ArrayList<String>();
-        for (String student : selectedStudents) {
+        Collection<Student> selectedStudents = new ArrayList<Student>(_studentList.getGenericSelectedValues());
+        Collection<Student> selectedButDisabled = new ArrayList<Student>();
+        for (Student student : selectedStudents) {
             if (!enabledStudents.contains(student)) {
                 selectedButDisabled.add(student);
             }
@@ -1544,7 +1527,7 @@ public class AdminView extends JFrame
     }
 
     private void extensionsButtonActionPerformed() {
-        String student = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
 
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
@@ -1565,7 +1548,7 @@ public class AdminView extends JFrame
     private void exemptionsButtonActionPerformed() {
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
-        String selectedStudent = _studentList.getSelectedValue();
+        Student selectedStudent = _studentList.getSelectedValue();
         Group group = null;
         if (selectedStudent!=null){
             try {
@@ -1580,7 +1563,7 @@ public class AdminView extends JFrame
     }
 
     private void openCodeButtonActionPerformed() {
-        String student = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
 
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
@@ -1604,7 +1587,7 @@ public class AdminView extends JFrame
     }
 
     private void runCodeButtonActionPerformed() {
-        String student = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
 
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
@@ -1628,7 +1611,7 @@ public class AdminView extends JFrame
     }
 
     private void testCodeButtonActionPerformed() {
-        String student = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
 
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
@@ -1661,7 +1644,7 @@ public class AdminView extends JFrame
         Collection<Group> groupsWithoutCode = new LinkedList<Group>();
 
         try {
-            for (String student : _studentList.getGenericSelectedValues()) {
+            for (Student student : _studentList.getGenericSelectedValues()) {
                 Group group = this.getGroup(asgn, student);
                 
                 File handin = null;
@@ -1706,7 +1689,7 @@ public class AdminView extends JFrame
     }
 
     private void viewReadmeButtonActionPerformed() {
-        String student = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
 
         DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
         Group group;
@@ -1727,7 +1710,7 @@ public class AdminView extends JFrame
     }
 
     private void viewRubricButtonActionPerformed() {
-        String student = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
 
         Map<Assignment, List<Part>> selection = _assignmentTree.getSelection();
         Assignment asgn = this.getSingleSelectedAssignment(selection);
@@ -1746,7 +1729,7 @@ public class AdminView extends JFrame
 
     private void printRubricButtonActionPerformed() {
         Assignment asgn = this.getSingleSelectedAssignment(_assignmentTree.getSelection());
-        List<String> students = new ArrayList<String>(_studentList.getGenericSelectedValues());
+        List<Student> students = new ArrayList<Student>(_studentList.getGenericSelectedValues());
 
         Collection<Group> groupsToPrint = this.getGroupsToConvertToGRD(asgn, students);
 
@@ -1764,7 +1747,7 @@ public class AdminView extends JFrame
 
     private void emailRubricButtonActionPerformed() {
         Assignment asgn = this.getSingleSelectedAssignment(_assignmentTree.getSelection());
-        List<String> students = new ArrayList<String>(_studentList.getGenericSelectedValues());
+        List<Student> students = new ArrayList<Student>(_studentList.getGenericSelectedValues());
 
         Collection<Group> groupsToEmail = this.getGroupsToConvertToGRD(asgn, students);
 
@@ -1776,12 +1759,12 @@ public class AdminView extends JFrame
         Allocator.getGradingServices().notifyStudents(asgn.getHandin(), groupsToEmail, true);
     }
 
-    private Collection<Group> getGroupsToConvertToGRD(Assignment asgn, List<String> students) {
+    private Collection<Group> getGroupsToConvertToGRD(Assignment asgn, List<Student> students) {
         List<Group> groupsConverted = new ArrayList<Group>(_studentList.getGenericSelectedValues().size());
-        Collection<String> studentsWithoutGroups = new LinkedList<String>();
+        Collection<Student> studentsWithoutGroups = new LinkedList<Student>();
         Map<Group, Collection<DistributablePart>> partsMissingRubrics = new HashMap<Group, Collection<DistributablePart>>();
 
-        for (String student : students) {
+        for (Student student : students) {
             Group group;
             try {
                 group = this.getGroup(asgn, student);
@@ -1836,19 +1819,19 @@ public class AdminView extends JFrame
     }
 
     private void disableStudentButtonActionPerformed() {
-        String studentLogin = _studentList.getSelectedValue();
+        Student student = _studentList.getSelectedValue();
         
         try {
-            if (Allocator.getDatabase().isStudentEnabled(studentLogin)) {
-                Allocator.getDatabase().disableStudent(studentLogin);
+            if (student.isEnabled()) {
+                Allocator.getDataServices().setStudentEnabled(student, false);
                 this.updateDisableEnableButton(false);
             }
             else {
-                Allocator.getDatabase().enableStudent(studentLogin);
+                Allocator.getDataServices().setStudentEnabled(student, true);
                 this.updateDisableEnableButton(true);
             }
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Enabling/disabling student " + studentLogin + " failed.");
+        } catch (ServicesException ex) {
+            new ErrorView(ex, "Enabling/disabling student " + student + " failed.");
         }
     }
 
@@ -1910,8 +1893,8 @@ public class AdminView extends JFrame
 
     void updateGroupsCache(Assignment asgn) {
         try {
-             Map<String, Group> loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
-             _groupsCache.put(asgn, loginsToGroups);
+             Map<Student, Group> studentsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
+             _groupsCache.put(asgn, studentsToGroups);
         } catch (ServicesException ex) {
             new ErrorView(ex, "Could not update groups cache for assignment " + asgn + ".");
         }
@@ -1926,7 +1909,7 @@ public class AdminView extends JFrame
         //get Group objects
         for (Assignment asgn : selection.keySet()) {
             if (!_groupsCache.containsKey(asgn)) {
-                Map<String, Group> loginsToGroups = Collections.emptyMap();
+                Map<Student, Group> loginsToGroups = Collections.emptyMap();
                 try {
                     loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
                 } catch (ServicesException ex) {
@@ -1977,30 +1960,30 @@ public class AdminView extends JFrame
         }
     }
 
-    private Group getGroup(Assignment asgn, String studentLogin) throws CakehatException {
-        if (!_groupsCache.get(asgn).containsKey(studentLogin) && !asgn.hasGroups()) {
-            Group newGroup = new Group(studentLogin, studentLogin);
+    private Group getGroup(Assignment asgn, Student student) throws CakehatException {
+        if (!_groupsCache.get(asgn).containsKey(student) && !asgn.hasGroups()) {
+            Group newGroup = new Group(student.getLogin(), student);
 
             try {
                 Allocator.getDatabase().setGroup(asgn, newGroup);
-                _groupsCache.get(asgn).put(studentLogin, newGroup);
+                _groupsCache.get(asgn).put(student, newGroup);
             } catch (SQLException ex) {
                 throw new CakehatException("Could not create group of one for " +
-                                           "student " + studentLogin + " on " +
+                                           "student " + student + " on " +
                                            "assignment " + asgn + ".", ex);
             }
         }
 
-        if (!_groupsCache.get(asgn).containsKey(studentLogin)) {
+        if (!_groupsCache.get(asgn).containsKey(student)) {
             throw new MissingUserActionException("Could not retrieve group for student " +
-                                       studentLogin + " on assignment " + asgn + ". " +
+                                       student + " on assignment " + asgn + ". " +
                                        "Check to make sure that the student has been " +
                                        "assigned to a group.");
         }
-        return _groupsCache.get(asgn).get(studentLogin);
+        return _groupsCache.get(asgn).get(student);
     }
 
-    private void dieNoGroup(Exception ex, String student, Assignment asgn) {
+    private void dieNoGroup(Exception ex, Student student, Assignment asgn) {
         new ErrorView(ex, "Could not get the group for student " + student + " on " +
                           "assignment " + asgn + ".");
     }

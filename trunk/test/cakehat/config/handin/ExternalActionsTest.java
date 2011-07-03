@@ -3,11 +3,14 @@ package cakehat.config.handin;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.config.Assignment;
+import cakehat.database.ConfigurationData;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.services.PathServices;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import org.easymock.EasyMock;
 import org.junit.Test;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -23,7 +26,9 @@ public class ExternalActionsTest
     public void testReplaceHandinSequences_StudentLogins()
     {
         //Setup
-        Group group = new Group("the group", "member_1", "member_2");
+        Student member1 = ConfigurationData.generateStudent("member_1", "m1f", "m1l", "m1e", true);
+        Student member2 = ConfigurationData.generateStudent("member_2", "m2f", "m2l", "m2e", true);
+        Group group = new Group("the group", member1, member2);
 
         //Assertions
         String command, modifiedCmd;
@@ -45,7 +50,9 @@ public class ExternalActionsTest
     public void testReplaceHandinSequences_Groups()
     {
         //Setup
-        Group group = new Group("the group", "member_1", "member_2");
+        Student member1 = ConfigurationData.generateStudent("member_1", "m1f", "m1l", "m1e", true);
+        Student member2 = ConfigurationData.generateStudent("member_2", "m2f", "m2l", "m2e", true);
+        Group group = ConfigurationData.generateGroup("the group", member1, member2);
 
         //Assertions
         String command, modifiedCmd;
@@ -67,7 +74,9 @@ public class ExternalActionsTest
     public void testReplaceHandinSequences_UnarchiveDir()
     {
         //Setup
-        Group group = new Group("the group", "member_1", "member_2");
+        Student member1 = ConfigurationData.generateStudent("member_1", "m1f", "m1l", "m1e", true);
+        Student member2 = ConfigurationData.generateStudent("member_2", "m2f", "m2l", "m2e", true);
+        Group group = ConfigurationData.generateGroup("the group", member1, member2);
         File unarchiveDir = new File("/root/other/the group");
 
         //Mock up a path services that will return dummy unarchive directories
@@ -176,8 +185,14 @@ public class ExternalActionsTest
     public void testReplaceGroupInfoSequences()
     {
         //Setup
-        Group groupA = new Group("group A", "member_1a", "member_2a");
-        Group groupB = new Group("group B", "member_1b", "member_2b");
+        Student member1a = ConfigurationData.generateStudent("member_1a", "m1af", "m1al", "m1ae", true);
+        Student member2a = ConfigurationData.generateStudent("member_2a", "m2af", "m2al", "m2ae", true);
+        Group groupA = new Group("group A", member1a, member2a);
+
+        Student member1b = ConfigurationData.generateStudent("member_1b", "m1bf", "m1bl", "m1be",true);
+        Student member2b = ConfigurationData.generateStudent("member_2b", "m2bf", "m2bl", "m2be",true);
+        Group groupB = new Group("group B", member1b, member2b);
+
         List<Group> groups = Arrays.asList(new Group[] { groupA, groupB });
         File dirA = new File("/root/other/group A");
         File dirB = new File("/root/other/group B");

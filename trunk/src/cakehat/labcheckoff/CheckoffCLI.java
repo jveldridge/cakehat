@@ -5,10 +5,11 @@ import cakehat.config.ConfigurationException;
 import cakehat.config.LabConfigurationParser;
 import cakehat.config.LabPart;
 import cakehat.database.Group;
+import cakehat.database.Student;
+import cakehat.services.ServicesException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 
 /**
  * The command line interface for checking off labs.
@@ -104,7 +105,7 @@ public class CheckoffCLI
             CheckoffInteractor interactor, LabConfigurationParser parser) throws CheckoffException
     {
         //Verify student login
-        verifyStudentLogin(studentLogin);
+        Student student = getStudent(studentLogin);
 
         //Load lab
         LabPart lab = getLabPart(labString, parser);
@@ -113,12 +114,12 @@ public class CheckoffCLI
         double pointsNum = getPoints(pointsStr, lab);
 
         //Get the student's group
-        Group group = getStudentsGroup(studentLogin, lab);
+        Group group = getStudentsGroup(student, lab);
 
         //If no group exists for this student and assignment pairing
         if(group == null)
         {
-            group = resolveMissingGroup(lab, studentLogin);
+            group = resolveMissingGroup(lab, student);
         }
 
         //Enter grade, but first confirm that there is either no pre-existing
@@ -144,7 +145,7 @@ public class CheckoffCLI
             else
             {
                 interactor.println("Checked off student for lab number " + lab.getLabNumber());
-                interactor.println("Student login: " + studentLogin);
+                interactor.println("Student login: " + student.getLogin());
             }
 
             //If the number of points was specified, confirm number of points they
@@ -169,11 +170,11 @@ public class CheckoffCLI
      * a group assignment, a group for just that student will be made.
      *
      * @param lab
-     * @param studentLogin
+     * @param student
      * @return
      * @throws CheckoffException
      */
-    private static Group resolveMissingGroup(LabPart lab, String studentLogin) throws CheckoffException
+    private static Group resolveMissingGroup(LabPart lab, Student student) throws CheckoffException
     {
         Group group;
 
@@ -182,7 +183,7 @@ public class CheckoffCLI
         {
             throw new CheckoffException("This lab belongs to an assignment " +
                     "that requires groups",
-                    "The provided student login [" + studentLogin +
+                    "The provided student login [" + student.getLogin() +
                     "] has no group for this assignment [" +
                     lab.getAssignment().getName() + "]");
         }
@@ -190,7 +191,7 @@ public class CheckoffCLI
         //be created
         else
         {
-            group = new Group(studentLogin, studentLogin);
+            group = new Group(student.getLogin(), student);
             try
             {
                 Allocator.getDatabase().setGroup(lab.getAssignment(), group);
@@ -206,41 +207,27 @@ public class CheckoffCLI
     }
 
     /**
-     * Verifies that the student login exists and is enabled.
+     * Returns the Student object coresponding to the student login, throws a
+     * CheckoffException if the student doesn't exist or is not enabled.
      *
      * @param studentLogin
+     * @return
      * @throws CheckoffException
      */
-    private static void verifyStudentLogin(String studentLogin) throws CheckoffException
+    private static Student getStudent(String studentLogin) throws CheckoffException
     {
-        try
-        {
-            Set<String> allStudentLogins = Allocator.getDatabase().getAllStudents().keySet();
-            if(!allStudentLogins.contains(studentLogin))
-            {
-                throw new CheckoffException("Provided student login [" + 
-                        studentLogin + "] is not in the database");
-            }
-        }
-        catch(SQLException e)
-        {
-            throw new CheckoffException(e,
-                    "Unable to determine if student login is in database");
+        if (!Allocator.getDataServices().isStudentLoginInDatabase(studentLogin)) {
+            throw new CheckoffException("No such student [" + studentLogin + "].");
         }
 
-        try
-        {
-            if(!Allocator.getDatabase().isStudentEnabled(studentLogin))
-            {
-                throw new CheckoffException("Provided student login [" + studentLogin +
+        Student student = Allocator.getDataServices().getStudentFromLogin(studentLogin);
+
+        if (!student.isEnabled()) {
+            throw new CheckoffException("Provided student login [" + studentLogin +
                         "] is not enabled. A cakehat admin may re-enable the student");
-            }
         }
-        catch(SQLException e)
-        {
-            throw new CheckoffException(e,
-                    "Unable to determine if student is enabled");
-        }
+        
+        return student;
     }
 
     /**
@@ -324,17 +311,17 @@ public class CheckoffCLI
     /**
      * Retrieves the student's group for the assignment the lab belongs to.
      * 
-     * @param studentLogin
+     * @param student
      * @param lab
      * @return
      * @throws CheckoffException
      */
-    private static Group getStudentsGroup(String studentLogin, LabPart lab) throws CheckoffException
+    private static Group getStudentsGroup(Student student, LabPart lab) throws CheckoffException
     {
         Group group = null;
         try
         {
-            group = Allocator.getDatabase().getStudentsGroup(lab.getAssignment(), studentLogin);
+            group = Allocator.getDatabase().getStudentsGroup(lab.getAssignment(), student);
 
         }
         catch(SQLException e)

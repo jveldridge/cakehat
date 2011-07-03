@@ -14,15 +14,22 @@ import java.util.List;
 public class Group implements Comparable<Group>
 {
     private final String _name;
-    private final List<String> _members;
+    private final List<Student> _members;
+    private final List<String> _memberLogins;
 
-    public Group(String name, Collection<String> members)
+    public Group(String name, Collection<Student> members)
     {
         _name = name;
         _members = ImmutableList.copyOf(members);
+        
+        ImmutableList.Builder<String> loginsBuilder = ImmutableList.builder();
+        for (Student member : _members) {
+            loginsBuilder.add(member.getLogin());
+        }
+        _memberLogins = loginsBuilder.build();
     }
 
-    public Group(String name, String... members)
+    public Group(String name, Student... members)
     {
         this(name, Arrays.asList(members));
     }
@@ -32,9 +39,17 @@ public class Group implements Comparable<Group>
         return _name;
     }
 
-    public List<String> getMembers()
+    public List<Student> getMembers()
     {
         return _members;
+    }
+    
+    public List<String> getMemberLogins() {
+        return _memberLogins;
+    }
+
+    public int size() {
+        return _members.size();
     }
 
     @Override

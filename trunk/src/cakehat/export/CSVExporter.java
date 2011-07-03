@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -15,8 +14,10 @@ import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.HandinStatus;
+import cakehat.database.Student;
 import java.util.ArrayList;
 import cakehat.views.shared.ErrorView;
+import java.util.Comparator;
 
 /**
  * Exports grades and handin status (on time, late, etc. and number of days
@@ -74,20 +75,10 @@ public class CSVExporter implements Exporter
 
         for(Assignment asgn : Allocator.getConfigurationInfo().getAssignments())
         {
-            for(Part part : asgn.getParts())
-            {
-                numParts++;
-            }
+            numParts += asgn.getParts().size();
         }
 
-        int numStudents;
-        try {
-            numStudents = Allocator.getDatabase().getEnabledStudents().size();
-        } catch (SQLException ex) {
-            throw new ExportException("Export failed; enabled students could not be " +
-                                      "retrieved from the database.", ex);
-        }
-
+        int numStudents = Allocator.getDataServices().getEnabledStudents().size();
         return numParts * numStudents;
     }
 
@@ -164,18 +155,16 @@ public class CSVExporter implements Exporter
 
         private void writeStudentGrades(PrintWriter printer, ProgressView pView) throws ExportException
         {
-            List<String> students = this.sortStudents();
+            List<Student> students = new ArrayList(Allocator.getDataServices().getEnabledStudents());
+            Collections.sort(students, Student.NAME_COMPARATOR);
 
             int currStep = 0;
 
-            for(String student : students)
+            for(Student student : students)
             {
-                String[] studentParts = student.split(",");
-
-                String login = studentParts[studentParts.length - 1];
-
-                printer.append(student);
-                printer.append(",");
+                printer.append(student.getLastName() + ",");
+                printer.append(student.getFirstName() + ",");
+                printer.append(student.getLogin() + ",");
 
                 for(Assignment asgn : Allocator.getConfigurationInfo().getAssignments())
                 {
@@ -183,7 +172,7 @@ public class CSVExporter implements Exporter
                     if(!_attemptCancel)
                     {
                         try {
-                            Group studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, login);
+                            Group studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, student);
                             double total = 0;
 
                             for(Part part : asgn.getParts())
@@ -193,7 +182,7 @@ public class CSVExporter implements Exporter
                                     if (part instanceof DistributablePart) {
                                        printer.append("(unknown handin status),");
                                     }
-                                    pView.updateProgress(login, asgn, part, ++currStep);
+                                    pView.updateProgress(student, asgn, part, ++currStep);
                                     continue;
                                 }
 
@@ -221,7 +210,7 @@ public class CSVExporter implements Exporter
                                         printer.append("(unknown handin status),");
                                     }
                                 }
-                                pView.updateProgress(login, asgn, part, ++currStep);
+                                pView.updateProgress(student, asgn, part, ++currStep);
                             
                             }
                             printer.append(total + ",");
@@ -244,57 +233,6 @@ public class CSVExporter implements Exporter
             }
 
         }
-
-        /**
-         * Returns the students sorted by last name in the format:
-         *
-         * <last name>,<beginning of name>,<student login>
-         *
-         * @return
-         */
-        private List<String> sortStudents() throws ExportException
-        {
-            Map<String, String> students;
-            try {
-                students = Allocator.getDatabase().getEnabledStudents();
-            } catch (SQLException ex) {
-                throw new ExportException("Export failed; enabled students could not be " +
-                                          "retrieved from the database.", ex);
-            }
-
-            List<String> descriptors = new ArrayList<String>();
-
-            for(String studentLogin : students.keySet())
-            {
-                String name = students.get(studentLogin);
-                String[] nameParts = name.split(" ");
-
-                //Take the last part as the last name
-                String lastName = nameParts[nameParts.length-1];
-
-                //Rest of the name
-                String beginName = "";
-                for(int i = 0; i < nameParts.length - 1; i++)
-                {
-                    beginName += nameParts[i];
-                    //If not the last word to be appended, add a space
-                    if(i != nameParts.length - 2)
-                    {
-                        beginName += " ";
-                    }
-                }
-
-                //Build string that is: <last name>, <beginning of name>, <student login>
-                String descriptor = lastName + "," + beginName + "," + studentLogin;
-
-                //Add descriptor
-                descriptors.add(descriptor);
-            }
-
-            //Sort descriptors
-            Collections.sort(descriptors);
-
-            return descriptors;
-        }
     }
+
 }

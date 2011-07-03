@@ -24,6 +24,7 @@ import org.jfree.data.statistics.Statistics;
 import org.jfree.data.xy.DefaultXYDataset;
 import cakehat.Allocator;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.views.shared.ErrorView;
 import java.awt.Dimension;
 import java.util.HashMap;
@@ -44,7 +45,7 @@ public class StudentChartPanel extends JPanel {
         this.setPreferredSize(new Dimension(637, 309));
     }
 
-    public void updateChart(String studLogin, Assignment[] assignments) {
+    public void updateChart(Student student, Assignment[] assignments) {
         DefaultXYDataset dataset = new DefaultXYDataset();
         double[][] data = new double[2][assignments.length];
         double[][] avgData = new double[2][assignments.length];
@@ -55,10 +56,10 @@ public class StudentChartPanel extends JPanel {
             Assignment asgn = assignments[i];
             Group studentsGroup;
             try {
-                studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, studLogin);
+                studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, student);
             } catch (SQLException ex) {
-                new ErrorView("Could read group for student " + studLogin + " for assignment " +
-                              asgn + " from the database.");
+                new ErrorView("Could read group for student " + student + 
+                                 " for assignment " + asgn + " from the database.");
                 continue;
             }
             if (studentsGroup == null) {
@@ -71,7 +72,7 @@ public class StudentChartPanel extends JPanel {
                     Double rawScore = Allocator.getDatabase().getGroupScore(studentsGroup, p);
                     partScore = (rawScore == null ? 0 : rawScore);
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not read the score for student " + studLogin + " " +
+                    new ErrorView(ex, "Could not read the score for student " + student + " " +
                                       "on part " + p + ".  FOR THESE CHARTS AND STATISTICS, THE " +
                                       "SCORE WILL BE TREATED AS A 0.");
                 }
@@ -98,7 +99,7 @@ public class StudentChartPanel extends JPanel {
             avgData[1][i] = (Statistics.calculateMean(scores) / assignments[i].getTotalPoints()) * 100;
         }
 
-        dataset.addSeries(studLogin + "'s Scores", data);
+        dataset.addSeries(student.getLogin() + "'s Scores", data);
         dataset.addSeries("Class Average", avgData);
         ValueAxis yAxis = new NumberAxis("Score (%)");
         yAxis.setRange(0.0, 110.0);
@@ -119,7 +120,7 @@ public class StudentChartPanel extends JPanel {
         renderer.setSeriesItemLabelsVisible(1, Boolean.TRUE);
         renderer.setBaseItemLabelsVisible(true);
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-        _chart = new JFreeChart(studLogin + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
+        _chart = new JFreeChart(student.getLogin() + "'s Grade History", new Font("Sans-Serif", Font.BOLD, 14), plot, true);
         _chart.setBackgroundPaint(Color.white);
         this.repaint();
     }

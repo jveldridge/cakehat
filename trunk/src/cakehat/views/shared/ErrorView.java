@@ -1,5 +1,6 @@
 package cakehat.views.shared;
 
+import cakehat.CakehatException;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -19,8 +20,6 @@ import javax.swing.KeyStroke;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
 import java.awt.Color;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 
 /**
  * Displays an error that occurs during runtime. Allows for sending reporting
@@ -222,8 +221,7 @@ public class ErrorView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                String from = Allocator.getUserUtilities().getUserLogin() + "@" +
-                              Allocator.getConstants().getEmailDomain();
+                String from = Allocator.getUserServices().getUser().getEmailAddress();
                 String[] to = new String[] { Allocator.getConstants().getCakehatEmailAddress() };
                 String subject = "[cakehat] Error Report";
 
@@ -259,9 +257,9 @@ public class ErrorView extends JFrame
     }
 
     //For testing
-    public static void main(String args[])
+    public static void main(String args[]) throws CakehatException
     {
-        CakehatMain.applyLookAndFeel();
+        CakehatMain.initializeForTesting();
 
         try
         {

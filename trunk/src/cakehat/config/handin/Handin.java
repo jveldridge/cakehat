@@ -5,6 +5,7 @@ import cakehat.Allocator;
 import cakehat.config.Assignment;
 import cakehat.config.TimeInformation;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -96,8 +97,8 @@ public class Handin
      */
     public File getHandin(Group group) throws IOException
     {
-        //Valid names are the name of any group member or the login of any member
-        ArrayList<String> validHandinNames = new ArrayList<String>(group.getMembers());
+        //Valid names are the login of any group member or the group name
+        ArrayList<String> validHandinNames = new ArrayList<String>(group.getMemberLogins());
         validHandinNames.add(group.getName());
 
         //Get all handins for the group

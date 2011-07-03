@@ -1,9 +1,11 @@
 package cakehat.services;
 
 import cakehat.config.Assignment;
+import cakehat.config.ConfigurationInfo;
 import cakehat.config.TA;
 import cakehat.database.Group;
 import cakehat.config.handin.Handin;
+import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
 import java.util.Collection;
 import java.util.List;
@@ -110,14 +112,14 @@ public interface GradingServices
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException;
 
     /**
-     * Returns whether or not some member of the given student's group
+     * Returns whether or not some member of the given group
      * is on any of the given TAs' blacklists.
      *
-     * @param studentLogin
-     * @param tas
+     * @param group
+     * @param blacklists
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
-    public boolean groupMemberOnTAsBlacklist(Group group, Map<TA, Collection<String>> blacklists) throws ServicesException;
+    public boolean isSomeGroupMemberBlacklisted(Group group, Map<TA, Collection<Student>> blacklists) throws ServicesException;
 
 
     /**
@@ -134,7 +136,7 @@ public interface GradingServices
                                                   Collection<String> handinsToIgnore) throws ServicesException;
 
     /**
-     * Return value maps a student's login to the Group object for that student on
+     * Return value maps a Student object to the Group object for that student on
      * the given Assignment for each enabled student.  If the assignment is not a
      * group assignment, this method guarantees that a group of one will have been
      * created in the database for each enabled student and that the corresponding
@@ -147,7 +149,7 @@ public interface GradingServices
      * @return
      * @throws ServicesException
      */
-    public Map<String, Group> getGroupsForStudents(Assignment asgn) throws ServicesException;
+    public Map<Student, Group> getGroupsForStudents(Assignment asgn) throws ServicesException;
 
     /**
      * Checks that all handins for the given Assignment belong to a valid student or Group.

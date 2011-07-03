@@ -1,11 +1,13 @@
 package cakehat.views.admin.stathist;
 
+import cakehat.CakehatException;
 import cakehat.config.Assignment;
 import cakehat.config.Part;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
@@ -48,9 +50,9 @@ public class StatHistView extends JFrame {
     private final Map<Assignment, Component> _asgnPaddingMap;
     private final Map<Part, AssignmentChartPanel> _partChartMap;
     private final Map<Part, Component> _partPaddingMap;
-    private final Map<String, StudentChartPanel> _studChartMap;
-    private final Map<String, Component> _studPaddingMap;
-    private final Collection<String> _enabledStudents;
+    private final Map<Student, StudentChartPanel> _studChartMap;
+    private final Map<Student, Component> _studPaddingMap;
+    private final Collection<Student> _enabledStudents;
     private final List<Assignment> _assignments;
     private final Collection<Part> _parts;
 
@@ -66,19 +68,12 @@ public class StatHistView extends JFrame {
 
         _asgnChartMap = new HashMap<Assignment, AssignmentChartPanel>();
         _partChartMap = new HashMap<Part, AssignmentChartPanel>();
-        _studChartMap = new HashMap<String, StudentChartPanel>();
+        _studChartMap = new HashMap<Student, StudentChartPanel>();
         _asgnPaddingMap = new HashMap<Assignment, Component>();
         _partPaddingMap = new HashMap<Part, Component>();
-        _studPaddingMap = new HashMap<String, Component>();
+        _studPaddingMap = new HashMap<Student, Component>();
 
-        Collection<String> enabledStudents;
-        try {
-            enabledStudents = Allocator.getDatabase().getEnabledStudents().keySet();
-        } catch (SQLException ex) {
-            new ErrorView(ex, "Could not retrieve enabled students from the database.");
-            enabledStudents = Collections.emptyList();
-        }
-        _enabledStudents = enabledStudents;
+        _enabledStudents = Allocator.getDataServices().getEnabledStudents();
 
         this.initComponents();
         this.updateCharts();
@@ -130,16 +125,16 @@ public class StatHistView extends JFrame {
         }
 
         //Create StudentChartPanels for each student
-        List<String> sortedStudents = new ArrayList(_enabledStudents);
+        List<Student> sortedStudents = new ArrayList<Student>(_enabledStudents);
         Collections.sort(sortedStudents);
-        for (String studentLogin : sortedStudents) {
+        for (Student student : sortedStudents) {
             StudentChartPanel studentPanel = new StudentChartPanel();
             _chartPanel.add(studentPanel);
-            _studChartMap.put(studentLogin, studentPanel);
+            _studChartMap.put(student, studentPanel);
 
             Component studentPadding = Box.createVerticalStrut(10);
             _chartPanel.add(studentPadding);
-            _studPaddingMap.put(studentLogin, studentPadding);
+            _studPaddingMap.put(student, studentPadding);
         }
      }
 
@@ -147,9 +142,9 @@ public class StatHistView extends JFrame {
         //assignment histograms
         if (_selectViewBox.getSelectedItem().equals(BY_ASSIGNMENT) ||
             _selectViewBox.getSelectedItem().equals(BY_ASSIGNMENT_PART)) {
-            for (String studentLogin : _enabledStudents) {
-                _studChartMap.get(studentLogin).setVisible(false);
-                _studPaddingMap.get(studentLogin).setVisible(false);
+            for (Student student : _enabledStudents) {
+                _studChartMap.get(student).setVisible(false);
+                _studPaddingMap.get(student).setVisible(false);
             }
         }
 
@@ -208,7 +203,7 @@ public class StatHistView extends JFrame {
                 _partPaddingMap.get(p).setVisible(false);
             }
 
-            for (String student : _enabledStudents) {
+            for (Student student : _enabledStudents) {
                 StudentChartPanel chart = _studChartMap.get(student);
                 chart.updateChart(student, _assignments.toArray(new Assignment[0]));
                 chart.setVisible(true);
@@ -218,8 +213,8 @@ public class StatHistView extends JFrame {
         }
     }
 
-    public static void main(String args[]) {
-        CakehatMain.applyLookAndFeel();
+    public static void main(String args[]) throws CakehatException {
+        CakehatMain.initializeForTesting();
         
         StatHistView view = new StatHistView(Allocator.getConfigurationInfo().getHandinAssignments());
         view.setLocationRelativeTo(null);

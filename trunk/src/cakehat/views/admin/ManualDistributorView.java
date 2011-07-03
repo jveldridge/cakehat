@@ -1,5 +1,6 @@
 package cakehat.views.admin;
 
+import cakehat.CakehatException;
 import support.ui.GenericJList;
 import cakehat.config.Assignment;
 import cakehat.config.TA;
@@ -44,6 +45,7 @@ import support.ui.GenericJComboBox;
 import support.ui.StringConverter;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.rubric.DistributionRequester;
 import cakehat.views.shared.ErrorView;
@@ -757,11 +759,9 @@ class ManualDistributorView extends JFrame {
                 if (numGroupsAssignedSoFar == numStudentsToAssign) {
                     break;
                 }
-
-                Map<TA, Collection<String>> blacklistMap = new HashMap<TA, Collection<String>>();
-                blacklistMap.put(toTA, Allocator.getDatabase().getTABlacklist(toTA));
-
-                if (toTA != null && !Allocator.getGradingServices().groupMemberOnTAsBlacklist(group, blacklistMap)) {
+                
+                Collection<Student> blacklisted = Allocator.getDataServices().getTABlacklist(toTA);
+                if (!Allocator.getGeneralUtilities().containsAny(blacklisted, group.getMembers())) {
                     groupsToAssign.add(group);
                     numGroupsAssignedSoFar++;
                 }
@@ -920,8 +920,8 @@ class ManualDistributorView extends JFrame {
         }
     }
 
-    public static void main(String[] argv) {
-        CakehatMain.applyLookAndFeel();
+    public static void main(String[] argv) throws CakehatException {
+        CakehatMain.initializeForTesting();
         
         List<Assignment> assignments = Allocator.getConfigurationInfo().getHandinAssignments();
         if(assignments.size() > 0) {

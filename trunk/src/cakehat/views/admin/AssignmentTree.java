@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatException;
 import cakehat.CakehatMain;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
@@ -175,8 +176,8 @@ class AssignmentTree extends JScrollPane {
 
     }
 
-    public static void main(String[] argv) {
-        CakehatMain.applyLookAndFeel();
+    public static void main(String[] argv) throws CakehatException {
+        CakehatMain.initializeForTesting();
 
         JFrame frame = new JFrame("Tree Test");
 

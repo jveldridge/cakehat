@@ -31,8 +31,8 @@ public class EnscriptPrintingService extends PrintingService
             File tmpFile = convertRequest(request);
 
             //Build command
-            String cmd = String.format("enscript %s --header='student: %s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
-                    dontPrintCoverSheet, request.getStudentLogin(), request.getTALogin(), PAGE_NUMBER_FORMATTING, printer.getPrinterName(), tmpFile.getAbsolutePath());
+            String cmd = String.format("enscript %s --header='%s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
+                    dontPrintCoverSheet, request.getHeaderString(), request.getTA(), PAGE_NUMBER_FORMATTING, printer.getPrinterName(), tmpFile.getAbsolutePath());
 
             //Execute command
             fullCommand = fullCommand + cmd;
@@ -86,7 +86,7 @@ public class EnscriptPrintingService extends PrintingService
 
         for(File file : request.getFiles())
         {
-            text += getHeader(file, request.getStudentLogin());
+            text += getHeader(file, request.getHeaderString());
             text += "\n";
             text += "\n";
 

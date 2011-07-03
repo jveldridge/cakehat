@@ -1,5 +1,6 @@
 package cakehat.views.admin;
 
+import cakehat.CakehatException;
 import support.ui.IntegerField;
 import cakehat.config.Assignment;
 import cakehat.config.TA;
@@ -32,6 +33,7 @@ import cakehat.CakehatMain;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
@@ -468,9 +470,9 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
                                                      Collection<String> handinNames,
                                                      Map<String, Group> groups) throws ServicesException, SQLException {
         //get TA blacklists
-        Map<TA, Collection<String>> taBlacklists = new HashMap<TA, Collection<String>>();
+        Map<TA, Collection<Student>> taBlacklists = new HashMap<TA, Collection<Student>>();
         for (TA grader : graders) {
-            Collection<String> taBlacklist = Allocator.getDatabase().getTABlacklist(grader);
+            Collection<Student> taBlacklist = Allocator.getDataServices().getTABlacklist(grader);
             taBlacklists.put(grader, taBlacklist);
         }
 
@@ -482,7 +484,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
         for (String handinName : handinNames) {
             Group group = groups.get(handinName);
 
-            if (Allocator.getGradingServices().groupMemberOnTAsBlacklist(group, taBlacklists)) {
+            if (Allocator.getGradingServices().isSomeGroupMemberBlacklisted(group, taBlacklists)) {
                 blacklistedGroups.add(group);
             }
         }
@@ -546,7 +548,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
     private DistributionResponse assignBlacklistedGroups(Collection<Group> groups,
                                          Map<TA, Integer> numStudsNeeded,
-                                         Map<TA, Collection<String>> graderBlacklists) {
+                                         Map<TA, Collection<Student>> graderBlacklists) {
         List<TA> graders = new ArrayList<TA>(numStudsNeeded.keySet());
 
         Map<TA, Collection<Group>> distribution = new HashMap<TA, Collection<Group>>();
@@ -804,8 +806,8 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
     }
 
-    public static void main(String[] argv) {
-        CakehatMain.applyLookAndFeel();
+    public static void main(String[] argv) throws CakehatException {
+        CakehatMain.initializeForTesting();
 
         AutomaticDistributorView view = new AutomaticDistributorView(Allocator.getConfigurationInfo().getHandinAssignments().get(0));
         view.setLocationRelativeTo(null);
