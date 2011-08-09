@@ -1,17 +1,14 @@
 package cakehat.database;
 
 import cakehat.Allocator;
-import cakehat.CakehatException;
 import cakehat.CakehatMain;
-import cakehat.config.handin.DistributablePart;
-import cakehat.config.handin.Handin;
 import cakehat.rubric.TimeStatus;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
 import cakehat.config.Assignment;
 import cakehat.config.Part;
-import cakehat.config.TA;
 import cakehat.services.ServicesException;
+import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -20,19 +17,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.sqlite.SQLiteConfig;
 
 /**
- * all DB accessor and mutator methods for cakehat
- * @author alexku
+ * Implementation of {@link Database}.
+ * 
+ * @author aunger
+ * @author jeldridg
  */
 public class DatabaseImpl implements Database {
 
@@ -42,7 +44,11 @@ public class DatabaseImpl implements Database {
      * sets DB path to regular location
      */
     public DatabaseImpl() {
-        this(new ConnectionProvider() {
+        this(Allocator.getPathServices().getDatabaseFile());
+    }
+    
+    public DatabaseImpl(final File dbFile) {
+        _connProvider = new ConnectionProvider() {
 
             public Connection createConnection() throws SQLException {
                 Connection c = null;
@@ -51,7 +57,7 @@ public class DatabaseImpl implements Database {
                     SQLiteConfig config = new SQLiteConfig();
                     config.enforceForeignKeys(true);
                     c = DriverManager.getConnection("jdbc:sqlite:"
-                            + Allocator.getPathServices().getDatabaseFile().getAbsolutePath(),
+                            + dbFile.getAbsolutePath(),
                             config.toProperties());
                 } catch (ClassNotFoundException e) {
                     new ErrorView(e, "Could not open a connection to the DB.");
@@ -67,23 +73,13 @@ public class DatabaseImpl implements Database {
                     c.close();
                 }
             }
-        });
+        };
+        
+        this.createDatabaseIfNecessary(dbFile);
     }
 
-    /**
-     * takes in a connection provider so that a different DB connection (in memory)
-     * can be used.
-     * this constructor should only be used for testing the DBWrapper
-     * @param cp - a connection provider to connect to a DB
-     */
-    public DatabaseImpl(ConnectionProvider cp) {
-        _connProvider = cp;
-        this.createDatabaseIfNecessary();
-    }
-
-    private void createDatabaseIfNecessary()
+    private void createDatabaseIfNecessary(File databaseFile)
     {
-        File databaseFile = Allocator.getPathServices().getDatabaseFile();
         if(!databaseFile.exists())
         {
             try
@@ -159,29 +155,7 @@ public class DatabaseImpl implements Database {
     private void closeConnection(Connection c) throws SQLException {
         _connProvider.closeConnection(c);
     }
-
-    @Override
-    public Collection<Integer> getTABlacklist(TA ta) throws SQLException {
-        ArrayList<Integer> blackList = new ArrayList<Integer>();
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT b.sid AS sid"
-                    + " FROM blacklist AS b"
-                    + " WHERE b.tid == ?");
-            ps.setString(1, ta.getLogin());
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                blackList.add(rs.getInt("sid"));
-            }
-            ps.close();
-
-            return blackList;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
+    
     @Override
     public int addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
         Connection conn = this.openConnection();
@@ -204,10 +178,6 @@ public class DatabaseImpl implements Database {
         }
     }
 
-    /**
-     * Set enabled to 0 for student passed in
-     * @param studentLogin - String Student Login
-     */
     @Override
     public void disableStudent(int studentID) throws SQLException {
         Connection conn = this.openConnection();
@@ -221,11 +191,7 @@ public class DatabaseImpl implements Database {
             this.closeConnection(conn);
         }
     }
-
-    /**
-     * Set enabled to 1 for student passed in
-     * @param studentLogin - String Student Login
-     */
+    
     @Override
     public void enableStudent(int studentID) throws SQLException {
         Connection conn = this.openConnection();
@@ -242,10 +208,10 @@ public class DatabaseImpl implements Database {
 
     @Override
     public Collection<StudentRecord> getAllStudents() throws SQLException {
-        Collection<StudentRecord> result = new ArrayList<StudentRecord>();
-
         Connection conn = this.openConnection();
         try {
+            Collection<StudentRecord> result = new ArrayList<StudentRecord>();
+            
             ResultSet rs = conn.createStatement().executeQuery("SELECT s.sid AS sid, "
                     + "s.login AS login, "
                     + "s.firstname AS fname, "
@@ -268,21 +234,46 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException {
+    public void blacklistStudents(Collection<Integer> studentIDs, String taLogin) throws SQLException {
         Connection conn = this.openConnection();
         try {
+            conn.setAutoCommit(false);
             PreparedStatement ps = conn.prepareStatement("INSERT INTO blacklist "
                     + "('sid', 'tid') VALUES (?, ?)");
 
-            for (Student student : students) {
-                ps.setInt(1, student.getDbId());
-                ps.setString(2, ta.getLogin());
+            for (Integer studentID : studentIDs) {
+                ps.setInt(1, studentID);
+                ps.setString(2, taLogin);
                 ps.addBatch();
             }
 
             ps.executeBatch();
             ps.close();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void unBlacklistStudents(Collection<Integer> studentIDs, String taLogin) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
+                    + "WHERE tid == ? "
+                    + "AND sid == ?");
 
+            for (Integer studentID : studentIDs) {
+                ps.setString(1, taLogin);
+                ps.setInt(2, studentID);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
         } finally {
             this.closeConnection(conn);
         }
@@ -303,67 +294,849 @@ public class DatabaseImpl implements Database {
             this.closeConnection(conn);
         }
     }
-
+    
     @Override
-    public void unBlacklistStudents(Collection<Student> students, TA ta) throws SQLException {
+    public Collection<Integer> getBlacklist(String taLogin) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
-                    + "WHERE tid == ? "
-                    + "AND sid == ?");
+            ArrayList<Integer> blackList = new ArrayList<Integer>();
+            
+            PreparedStatement ps = conn.prepareStatement("SELECT b.sid AS sid"
+                    + " FROM blacklist AS b"
+                    + " WHERE b.tid == ?");
+            ps.setString(1, taLogin);
 
-            for (Student student : students) {
-                ps.setString(1, ta.getLogin());
-                ps.setInt(2, student.getDbId());
-                ps.addBatch();
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                blackList.add(rs.getInt("sid"));
+            }
+            ps.close();
+
+            return blackList;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public Collection<GroupRecord> getAllGroups() throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            Collection<GroupRecord> result = new ArrayList<GroupRecord>();
+            
+            PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid as gpid, gm.sid AS sid,"
+                    + " gp.name AS groupName, gp.aid AS aid"
+                    + " FROM groupmember AS gm"
+                    + " INNER JOIN asgngroup AS gp"
+                    + " ON gm.gpid == gp.gpid"
+                    + " ORDER BY gp.gpid");
+            
+            ResultSet rs = ps.executeQuery();
+
+            int prevGroupId = 0;
+            String groupAsgnId = null;
+            String groupName = null;
+            Collection<Integer> memberIDs = new ArrayList<Integer>();
+            while (rs.next()) { //while there are more records
+                int currGroupId = rs.getInt("gpid");
+                
+                if (currGroupId != prevGroupId) {   //current row represents the beginning of a new group
+                    if (prevGroupId != 0) {
+                        //create record for previous group
+                        result.add(new GroupRecord(prevGroupId, groupAsgnId, groupName, memberIDs));
+                    }
+                    
+                    memberIDs.clear();
+                    prevGroupId = currGroupId;
+                    groupAsgnId = rs.getString("aid");
+                    groupName = rs.getString("groupName");
+                    memberIDs.add(rs.getInt("sid"));
+                }
+                else {                              //current row represents an additional member of the same group
+                    memberIDs.add(rs.getInt("sid"));
+                }
+            }
+            //create record for last group
+            if (prevGroupId != 0) {
+                result.add(new GroupRecord(prevGroupId, groupAsgnId, groupName, memberIDs));
+            }
+
+            return Collections.unmodifiableCollection(result);
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public GroupRecord addGroup(NewGroup group) throws SQLException, CakeHatDBIOException {
+        return Iterables.get(this.addGroups(Arrays.asList(group)), 0);
+    }
+
+    @Override
+    public Collection<GroupRecord> addGroups(Collection<NewGroup> groups) throws SQLException, CakeHatDBIOException {
+        Connection conn = this.openConnection();
+        try {
+            Collection<GroupRecord> result = new ArrayList<GroupRecord>(groups.size());
+            conn.setAutoCommit(false);
+            
+            // create new List of NewGroup objects to guarantee consistent iteration order
+            List<NewGroup> groupList = new ArrayList<NewGroup>(groups);
+            
+            // check that no students in the groups to be added already have groups
+            // for the assignment for which the group is being created
+            ArrayListMultimap<Assignment, Student> studentsToCheck = ArrayListMultimap.create();
+            for (NewGroup group : groupList) {
+                studentsToCheck.putAll(group.getAssignment(), group.getMembers());
+            }
+            
+            int numConflicts = 0;
+            for (Assignment asgn : studentsToCheck.keySet()) {
+                StringBuilder sids = new StringBuilder();
+                for (Student student : studentsToCheck.get(asgn)) {
+                    sids.append(", ").append(student.getDbId());
+                }
+                String sidString = sids.toString();
+                if (!sidString.isEmpty()) {
+                    sidString = sidString.substring(1);
+                }
+                
+                PreparedStatement ps = conn.prepareStatement("SELECT COUNT(gp.gpid) AS numConflicts"
+                        + " FROM asgngroup AS gp"
+                        + " INNER JOIN groupmember AS gm"
+                        + " ON gp.gpid == gm.gpid"
+                        + " WHERE gm.sid IN (" + sidString + ")"
+                        + " AND gp.aid == ?");
+                ps.setString(1, asgn.getDBID());
+                
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                numConflicts += rs.getInt("numConflicts");
+            }
+
+            if (numConflicts > 0) {
+                throw new CakeHatDBIOException("A student may not be in more than one group "
+                        + "for a given assignment.  No groups have been added.");
+            }
+            
+            // insert all the groups
+            PreparedStatement psGroup = conn.prepareStatement("INSERT INTO asgngroup"
+                    + " ('name', 'aid') VALUES (?, ?)");
+            for (NewGroup group : groupList) {
+                psGroup.setString(1, group.getName());
+                psGroup.setString(2, group.getAssignment().getDBID());
+                psGroup.addBatch();
+            }
+            psGroup.executeBatch();
+            
+            // get IDs of newly inserted groups
+            List<Integer> groupIDs = new ArrayList<Integer>(groupList.size());
+            
+            // only the last inserted key is returned
+            ResultSet rs = psGroup.getGeneratedKeys();
+            if (rs.next()) {
+                int lastID = rs.getInt(1);
+                for (int id = lastID - groupList.size() + 1; id <= lastID; id++) {
+                    groupIDs.add(id);
+                }
+            }
+            psGroup.close();
+
+            // add all the members to those groups
+            PreparedStatement psMember = conn.prepareStatement("INSERT INTO groupmember "
+                    + "('gpid', 'sid') "
+                    + "VALUES (?, ?)");
+
+            for (int i = 0; i < groupList.size(); i++) {
+                for (Student student : groupList.get(i).getMembers()) {
+                    psMember.setInt(1, groupIDs.get(i));
+                    psMember.setInt(2, student.getDbId());
+                    psMember.addBatch();
+                }
+            }
+            psMember.executeBatch();
+            psMember.close();
+
+            conn.commit();
+            
+            // create GroupRecord objects to return
+            for (int i = 0; i < groupList.size(); i++) {
+                NewGroup group = groupList.get(i);
+                Collection<Integer> memberIDs = new ArrayList<Integer>(group.size());
+                for (Student member : group.getMembers()) {
+                    memberIDs.add(member.getDbId());
+                }
+                
+                result.add(new GroupRecord(groupIDs.get(i),
+                                           group.getAssignment().getDBID(),
+                                           group.getName(),
+                                           memberIDs));
+            }
+            
+            return result;
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public int getGroup(String asgnID, int studentID) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid AS gpid"
+                    + " FROM asgngroup AS gp"
+                    + " INNER JOIN groupmember AS gm"
+                    + " ON gp.gpid == gm.gpid "
+                    + " WHERE gm.sid == ?"
+                    + " AND gp.aid == ?");
+            ps.setInt(1, studentID);
+            ps.setString(2, asgnID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("gpid");
+            }
+            return 0;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Collection<Integer> getGroups(String asgnID) throws SQLException {
+        Collection<Integer> groupIDs = new ArrayList<Integer>();
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid AS gpid"
+                    + " FROM asgngroup as gp"
+                    + " WHERE gp.aid == ?");
+            ps.setString(1, asgnID);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                groupIDs.add(rs.getInt("gpid"));
+            }
+
+            return groupIDs;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void removeGroup(int groupID) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            //only need to delete from asgngroup table;
+            //foreign key reference in groupmember table will cause cascading
+            //to delete groupmember entries as needed
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM asgngroup"
+                    + " WHERE gpid == ?");
+            ps.setInt(1, groupID);
+            
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void removeGroups(String asgnID) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            //only need to delete from asgngroup table--see comment above
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM asgngroup"
+                    + " WHERE aid == ?");
+            ps.setString(1, asgnID);
+            
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public boolean isDistEmpty(Iterable<String> partIDs) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.gpid) AS rowcount"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid IN (" + this.partIDsIterableToString(partIDs) + ")");
+
+            ResultSet rs = ps.executeQuery();
+            int rows = rs.getInt("rowcount");
+            ps.close();
+
+            return rows == 0;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Map<String, Collection<Integer>> getDistribution(String dpID) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            ArrayListMultimap<String, Integer> groups = ArrayListMultimap.create();
+
+            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taLogin, d.gpid AS gpid"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid == ?");
+            ps.setString(1, dpID);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                groups.put(rs.getString("taLogin"), rs.getInt("gpid"));
+            }
+            
+            return groups.asMap();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void setDistribution(Map<String, Map<String, Collection<Integer>>> distribution) throws SQLException {
+        Connection conn = this.openConnection();
+        
+        try {
+            conn.setAutoCommit(false);
+            
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid') VALUES (?, ?, ?)");
+            for (String partID : distribution.keySet()) {
+                for (String taLogin : distribution.get(partID).keySet()) {
+                    for (Integer groupID : distribution.get(partID).get(taLogin)) {
+                        ps.setString(1, partID);
+                        ps.setInt(2, groupID);
+                        ps.setString(3, taLogin);
+                        ps.addBatch();   
+                    }
+                }
             }
 
             ps.executeBatch();
             ps.close();
+
+            // commit all the inserts to the DB file
+            conn.commit();
+        } catch (SQLException e) {
+            // the exception is caught so that any old distribution is preserved
+            conn.rollback();
+
+            //then the exception is re-thrown to inform the client of the error
+            throw e;
         } finally {
             this.closeConnection(conn);
         }
     }
 
     @Override
-    public Map<DistributablePart, TA> getGradersForStudent(Student student) throws SQLException, CakeHatDBIOException {
+    public void assignGroup(int groupID, String partID, String taLogin) throws SQLException {
         Connection conn = this.openConnection();
-        Map<DistributablePart, TA> graders = new HashMap<DistributablePart, TA>();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS login, d.pid AS partID"
-                    + " FROM distribution AS d"
-                    + " INNER JOIN groupmember AS gm"
-                    + " ON d.gpid == gm.gpid"
-                    + " WHERE gm.sid == ?");
-            ps.setInt(1, student.getDbId());
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                String partID = rs.getString("partID");
-                if (Allocator.getConfigurationInfo().getDistributablePart(partID) != null) {
-                    String taLogin = rs.getString("login");
-                    TA ta = Allocator.getConfigurationInfo().getTA(taLogin);
-                    if (ta == null) {
-                        throw new CakeHatDBIOException("TA with login " + taLogin + " is not in the config file, "
-                                + "but is assigned to grade student " + student + " for "
-                                + "assignment " + Allocator.getConfigurationInfo().getDistributablePart(partID).getName() + ".");
-                    }
-                    graders.put(Allocator.getConfigurationInfo().getDistributablePart(partID), ta);
-                } else {
-                    throw new CakeHatDBIOException("The DistributablePart: "
-                            + Allocator.getConfigurationInfo().getDistributablePart(partID).getName()
-                            + " with ID: " + Allocator.getConfigurationInfo().getDistributablePart(partID).getDBID()
-                            + " exists in the Database but not in the config file.");
-                }
-            }
-
-            return graders;
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO distribution ('gpid', 'tid', 'pid')"
+                    + " VALUES (?, ?, ?)");
+            ps.setInt(1, groupID);
+            ps.setString(2, taLogin);
+            ps.setString(3, partID);
+            ps.executeUpdate();
         } finally {
             this.closeConnection(conn);
         }
     }
 
+    @Override
+    public void unassignGroup(int groupID, String partID, String taLogin) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
+                    + " WHERE pid == ?"
+                    + " AND gpid == ?"
+                    + " AND tid ==  ?");
+            ps.setString(1, partID);
+            ps.setInt(2, groupID);
+            ps.setString(3, taLogin);
+
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Collection<Integer> getAssignedGroups(String partID, String taLogin) throws SQLException {
+        Collection<Integer> fromDist = this.getDistribution(partID).get(taLogin);
+        if (fromDist != null) {
+            return fromDist;
+        }
+
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Collection<Integer> getAssignedGroups(String partID) throws SQLException {
+        ArrayList<Integer> groups = new ArrayList<Integer>();
+
+        for (Collection<Integer> groups4TA : this.getDistribution(partID).values()) {
+            groups.addAll(groups4TA);
+        }
+
+        return groups;
+    }
+    
+    @Override
+    public Set<String> getDPsWithAssignedGroups(String taLogin) throws SQLException {
+        Set<String> partIDs = new HashSet<String>();
+
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT d.pid AS partID"
+                    + " FROM distribution AS d"
+                    + " WHERE d.tid == ?");
+            ps.setString(1, taLogin);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String partID = rs.getString("partID");
+                partIDs.add(partID);
+            }
+
+            return partIDs;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public String getGrader(String partID, int groupID) throws SQLException {
+        Connection conn = this.openConnection();
+        
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taLogin"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid==? AND d.gpid==?");
+            ps.setString(1, partID);
+            ps.setInt(2, groupID);
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("taLogin");
+            }
+            return null;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void grantExtension(int groupID, String asgnID, Calendar newDate, String note) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            int ontime = (int) (newDate.getTimeInMillis() / 1000);
+
+            //database uniqueness constraint ensures that any existing exemption
+            //for this group will be replaced
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO extension ('gpid', 'aid', 'ontime', 'note')"
+                    + " VALUES (?, ?, ?, ?)");
+            ps.setInt(1, groupID);
+            ps.setString(2, asgnID);
+            ps.setInt(3, ontime);
+            ps.setString(4, note);
+            
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void removeExtension(int groupID) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
+                    + " WHERE extension.gpid == ?");
+            ps.setInt(1, groupID);
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public Calendar getExtension(int groupID) throws SQLException {
+        Calendar result = null;
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT x.ontime AS date"
+                    + " FROM extension AS x"
+                    + " WHERE x.gpid == ?");
+            ps.setInt(1, groupID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                result = new GregorianCalendar();
+                result.setTimeInMillis(rs.getInt("date") * 1000L);
+            }
+
+            return result;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Map<Integer, Calendar> getExtensions(String asgnID) throws SQLException {
+        HashMap<Integer, Calendar> result = new HashMap<Integer, Calendar>();
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT e.gpid AS groupID, e.ontime AS date"
+                    + " FROM extension AS e"
+                    + " WHERE e.aid == ?");
+            ps.setString(1, asgnID);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int groupID = rs.getInt("groupID");
+                Calendar cal = new GregorianCalendar();
+                cal.setTimeInMillis(rs.getInt("date") * 1000L);
+
+                result.put(groupID, cal);
+            }
+
+            return result;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public String getExtensionNote(int groupID) throws SQLException {
+        String result = null;
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT x.note AS extnote"
+                    + " FROM extension AS x"
+                    + " WHERE x.gpid == ?");
+            ps.setInt(1, groupID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                result = rs.getString("extnote");
+            }
+
+            return result;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void grantExemption(int groupID, String partID, String note) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            //database uniqueness constraint ensures that any existing exemption
+            //for this group will be replaced
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO exemption ('gpid', 'pid', 'note')"
+                    + " VALUES (?, ?, ?)");
+            ps.setInt(1, groupID);
+            ps.setString(2, partID);
+            ps.setString(3, note);
+            
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void removeExemption(int groupID, String partID) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
+                    + " WHERE gpid == ? AND pid == ?");
+            ps.setInt(1, groupID);
+            ps.setString(2, partID);
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public Set<Integer> getExemptions(String partID) throws SQLException {
+        Set<Integer> result = new HashSet<Integer>();
+        Connection conn = this.openConnection();
+        
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT e.gpid AS gpid"
+                    + " FROM exemption AS e"
+                    + " WHERE e.pid == ?");
+            ps.setString(1, partID);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                result.add(rs.getInt("gpid"));
+            }
+        } finally {
+            this.closeConnection(conn);
+        }
+        
+        return result;
+    }
+
+    @Override
+    public String getExemptionNote(int groupID, String partID) throws SQLException {
+        String result = null;
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT x.note AS exenote"
+                    + " FROM exemption AS x"
+                    + " WHERE x.gpid == ?"
+                    + " AND x.pid == ?");
+            ps.setInt(1, groupID);
+            ps.setString(2, partID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                result = rs.getString("exenote");
+            }
+
+            return result;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void enterGrade(int groupID, String partID, double score) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            //database uniqueness constraint ensures that any existing grade
+            //for this group will be replaced
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade ('gpid', 'pid', 'score')"
+                    + " VALUES (?, ?, ?)");
+            ps.setInt(1, groupID);
+            ps.setString(2, partID);
+            ps.setDouble(3, score);
+            
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Double getPartScore(int groupID, String partID) throws SQLException {
+        Double grade = null;
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore"
+                    + " FROM grade AS g"
+                    + " WHERE g.gpid == ?"
+                    + " AND g.pid == ?");
+            ps.setInt(1, groupID);
+            ps.setString(2, partID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                grade = rs.getDouble("partscore");
+            }
+
+            return grade;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Double getScore(int groupID, Iterable<String> partIDs) throws SQLException {
+        Double grade = null;
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore"
+                    + " FROM grade AS g"
+                    + " WHERE g.gpid == ?"
+                    + " AND g.pid IN (" + this.partIDsIterableToString(partIDs) + ")");
+            ps.setInt(1, groupID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                grade = rs.getDouble("asgnscore");
+            }
+
+            return grade;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Map<Integer, Double> getPartScores(String partID, Iterable<Integer> groupIDs) throws SQLException {
+        Map<Integer, Double> scores = new HashMap<Integer, Double>();
+
+        Connection conn = this.openConnection();
+
+        String groupIDString = "";
+        Iterator<Integer> groupIter = groupIDs.iterator();
+        while (groupIter.hasNext()) {
+            groupIDString += "'" + groupIter.next() + "'";
+            if (groupIter.hasNext()) {
+                groupIDString += ",";
+            }
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, g.gpid AS groupID"
+                    + " FROM grade AS g"
+                    + " WHERE g.gpid IN (" + groupIDString + ")"
+                    + " AND g.pid == '" + partID + "'");
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                scores.put(rs.getInt("groupID"), rs.getDouble("partscore"));
+            }
+
+            return scores;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Map<Integer, Double> getScores(Iterable<String> partIDs, Iterable<Integer> groupIDs) throws SQLException {
+        Map<Integer, Double> scores = new HashMap<Integer, Double>();
+
+        Connection conn = this.openConnection();
+
+        String groupIDString = "";
+        for (int groupID : groupIDs) {
+            groupIDString += ",'" + groupID + "'";
+        }
+        if (groupIDString.length() > 1) {
+            groupIDString = groupIDString.substring(1);
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore, g.gpid AS groupID"
+                    + " FROM grade AS g"
+                    + " WHERE g.gpid IN (" + groupIDString + ")"
+                    + " AND g.pid IN (" + this.partIDsIterableToString(partIDs)
+                    + ")"
+                    + " GROUP BY g.gpid");
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                scores.put(rs.getInt("groupID"), rs.getDouble("asgnscore"));
+            }
+
+            return scores;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public void setHandinStatus(int groupID, HandinStatus status) throws SQLException {
+        Map<Integer, HandinStatus> statuses = new HashMap<Integer, HandinStatus>();
+        statuses.put(groupID, status);
+        this.setHandinStatuses(statuses);
+    }
+
+    @Override
+    public void setHandinStatuses(Map<Integer, HandinStatus> statuses) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO handin ('gpid', 'status', 'late')"
+                    + " VALUES (?, ?, ?)");
+            for (int groupID : statuses.keySet()) {              
+                ps.setInt(1, groupID);
+                ps.setString(2, statuses.get(groupID).getTimeStatus().name());
+                ps.setInt(3, statuses.get(groupID).getDaysLate());
+                ps.addBatch();
+            }
+            
+            ps.executeBatch();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public boolean areHandinStatusesSet(String asgnID) throws SQLException, CakeHatDBIOException {
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS numStatuses" +
+                    " FROM handin AS h INNER JOIN asgngroup AS ag" +
+                    " ON h.gpid == ag.gpid WHERE ag.aid == ?;");
+            ps.setString(1, asgnID);
+            ResultSet rs = ps.executeQuery();
+
+            return rs.getInt("numStatuses") != 0;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public HandinStatus getHandinStatus(int groupID) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT h.status AS status, h.late AS late"
+                    + " FROM handin AS h"
+                    + " WHERE h.gpid == ?");
+            ps.setInt(1, groupID);
+            ResultSet rs = ps.executeQuery();
+
+            TimeStatus status = null;
+            Integer daysLate = null;
+            if (rs.next()) {
+                status = TimeStatus.valueOf(rs.getString("status"));
+                daysLate = rs.getInt("late");
+            }
+
+            if (status == null && daysLate == null) {
+                return null;
+            }
+            return new HandinStatus(status, daysLate);
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    private String partIDsIterableToString(Iterable<String> partIDs) {
+        StringBuilder builder = new StringBuilder();
+        Iterator<String> iterator = partIDs.iterator();
+        while (iterator.hasNext()) {
+            builder.append(iterator.next());
+            if (iterator.hasNext()) {
+                builder.append(',');
+            }
+        }
+        
+        return builder.toString();
+    }
+    
     @Override
     public void resetDatabase() throws SQLException {
         Connection conn = this.openConnection();
@@ -385,7 +1158,7 @@ public class DatabaseImpl implements Database {
             conn.createStatement().executeUpdate("CREATE TABLE 'asgngroup' ('gpid' INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + "'name' VARCHAR NOT NULL, "
                     + "'aid' VARCHAR NOT NULL, "
-                    + "CONSTRAINT 'nameaidunique' UNIQUE ('aid','name') ON CONFLICT FAIL);");
+                    + "CONSTRAINT 'nameaidunique' UNIQUE ('aid','name') ON CONFLICT ABORT);");
             conn.createStatement().executeUpdate("CREATE TABLE 'blacklist' ('tid' VARCHAR NOT NULL, "
                     + "'sid' INTEGER NOT NULL, "
                     + "CONSTRAINT 'tidsidunique' UNIQUE ('tid','sid') ON CONFLICT IGNORE, "
@@ -393,27 +1166,34 @@ public class DatabaseImpl implements Database {
             conn.createStatement().executeUpdate("CREATE TABLE 'distribution' ('gpid' INTEGER NOT NULL, "
                     + "'pid' VARCHAR NOT NULL, "
                     + "'tid' VARCHAR NOT NULL, "
+                    + "CONSTRAINT 'onegrader' UNIQUE ('gpid', 'pid') ON CONFLICT REPLACE, "
+                    + "CONSTRAINT 'rowsunique' UNIQUE ('gpid', 'pid', 'tid') ON CONFLICT IGNORE, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'exemption' ('gpid' INTEGER NOT NULL, "
                     + "'pid' VARCHAR NOT NULL, "
                     + "'note' TEXT, "
+                    + "CONSTRAINT 'gpidpidunique' UNIQUE ('gpid', 'pid') ON CONFLICT REPLACE, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'extension' ('gpid' INTEGER NOT NULL, "
                     + "'aid' VARCHAR NOT NULL, "
                     + "'ontime' INTEGER NOT NULL, "
                     + "'note' TEXT, "
+                    + "CONSTRAINT 'gpidaidunique' UNIQUE ('gpid', 'aid') ON CONFLICT REPLACE, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'grade' ('pid' VARCHAR NOT NULL, "
                     + "'gpid' INTEGER NOT NULL, "
                     + "'score' DOUBLE NOT NULL, "
+                    + "CONSTRAINT 'gpidpidunique' UNIQUE ('gpid', 'pid') ON CONFLICT REPLACE, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'groupmember' ('gpid' INTEGER NOT NULL, "
                     + "'sid' INTEGER NOT NULL, "
+                    + "CONSTRAINT 'gpidsidunique' UNIQUE ('gpid', 'sid') ON CONFLICT IGNORE, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE, "
                     + "FOREIGN KEY(sid) REFERENCES student(sid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'handin' ('gpid' INTEGER NOT NULL, "
                     + "'status' VARCHAR NOT NULL, "
                     + "'late' INTEGER NOT NULL, "
+                    + "CONSTRAINT 'gpidunique' UNIQUE ('gpid') ON CONFLICT REPLACE, "
                     + "FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE);");
             conn.createStatement().executeUpdate("CREATE TABLE 'student' ('sid' INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + "'login' VARCHAR NOT NULL, "
@@ -444,996 +1224,10 @@ public class DatabaseImpl implements Database {
             this.closeConnection(conn);
         }
     }
-
-    @Override
-    public void setGroups(Assignment asgn, Collection<Group> groups) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            conn.setAutoCommit(false);
-
-            // insert all the groups
-            PreparedStatement psGroup = conn.prepareStatement("INSERT INTO asgngroup"
-                    + " ('name', 'aid') VALUES (?, ?)");
-            for (Group group : groups) {
-                psGroup.setString(1, group.getName());
-                psGroup.setString(2, asgn.getDBID());
-                psGroup.addBatch();
-            }
-            psGroup.executeBatch();
-            psGroup.close();
-
-            // add all the members to those groups
-            PreparedStatement psMember = conn.prepareStatement("INSERT INTO groupmember "
-                    + "('gpid', 'sid') "
-                    + "VALUES ((SELECT gpid FROM asgngroup WHERE name==? AND aid==?), ?)");
-
-            for (Group group : groups) {
-                for (Student student : group.getMembers()) {
-                    psMember.setString(1, group.getName());
-                    psMember.setString(2, asgn.getDBID());
-                    psMember.setInt(3, student.getDbId());
-                    psMember.addBatch();
-                }
-            }
-            psMember.executeBatch();
-            psMember.close();
-
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void setGroup(Assignment asgn, Group group) throws SQLException {
-        Collection<Group> groups = new ArrayList<Group>(1);
-        groups.add(group);
-        this.setGroups(asgn, groups);
-    }
-
-    @Override
-    public Group getStudentsGroup(Assignment asgn, Student student) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS sid, gp.name as groupName"
-                    + " FROM groupmember AS gm"
-                    + " INNER JOIN asgngroup AS gp"
-                    + " ON gp.gpid == gm.gpid"
-                    + " WHERE gp.gpid IN (SELECT gp.gpid"
-                    + " FROM asgngroup AS gp"
-                    + " INNER JOIN groupmember as gm"
-                    + " ON gp.gpid == gm.gpid"
-                    + " WHERE gp.aid == ?"
-                    + " AND gm.sid == ?)");
-            ps.setString(1, asgn.getDBID());
-            ps.setInt(2, student.getDbId());
-            ResultSet rs = ps.executeQuery();
-
-            Collection<Student> members = new ArrayList<Student>();
-            String nameForGroup = null;
-            while (rs.next()) {
-                members.add(Allocator.getDataServices().getStudentFromID(rs.getInt("sid")));
-                nameForGroup = rs.getString("groupName");
-            }
-            Group group = null;
-            if (nameForGroup != null) {
-                group = new Group(nameForGroup, members);
-            }
-
-            return group;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Collection<Group> getGroupsForAssignment(Assignment asgn) throws SQLException {
-        Collection<Group> groups = new ArrayList<Group>();
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT gm.sid AS sid, gp.name AS groupName"
-                    + " FROM groupmember AS gm"
-                    + " INNER JOIN asgngroup AS gp"
-                    + " ON gp.gpid == gm.gpid"
-                    + " WHERE gp.aid == ?"
-                    + " ORDER BY gp.gpid DESC");
-            /* ORDER BY is required since the returned records are processed in
-             * the order returned. Students are split into groups when the groupName
-             * switches. It will switch at the correct point only if the records
-             * are sorted.
-             */
-            ps.setString(1, asgn.getDBID());
-            ResultSet rs = ps.executeQuery();
-
-            Collection<Student> members = new ArrayList<Student>(5);
-            String nameForGroup = "";
-            while (rs.next()) {
-                String groupName = rs.getString("groupName");
-                int studentID = rs.getInt("sid");
-                if (nameForGroup.equals(groupName)) {
-                    members.add(Allocator.getDataServices().getStudentFromID(studentID));
-                }
-                else {
-                    if (!nameForGroup.equals("")) {
-                        groups.add(new Group(nameForGroup, members));
-                    }
-                    members = new ArrayList<Student>(5);
-                    nameForGroup = groupName;
-                    members.add(Allocator.getDataServices().getStudentFromID(studentID));
-                }
-            }
-            if (!nameForGroup.equals("")) {
-                groups.add(new Group(nameForGroup, members));
-            }
-
-            return groups;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void removeGroup(Assignment asgn, Group group) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            conn.setAutoCommit(false);
-
-            int groupID = this.group2groupID(conn, asgn, group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM groupmember"
-                    + " WHERE gpid == ?");
-            ps.setInt(1, groupID);
-            ps.executeUpdate();
-
-            ps = conn.prepareStatement("DELETE FROM group"
-                    + " WHERE gpid == ?");
-            ps.setInt(1, groupID);
-            ps.executeUpdate();
-
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void removeGroupsForAssignment(Assignment asgn) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            conn.setAutoCommit(false);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM groupmember"
-                    + " WHERE gpid IN (SELECT gpid"
-                    + " FROM asgngroup"
-                    + " WHERE aid == ?)");
-            ps.setString(1, asgn.getDBID());
-            ps.executeUpdate();
-
-            ps = conn.prepareStatement("DELETE FROM asgngroup"
-                    + " WHERE aid == ?");
-            ps.setString(1, asgn.getDBID());
-            ps.executeUpdate();
-
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public boolean isDistEmpty(Assignment asgn) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.gpid) AS rowcount"
-                    + " FROM distribution AS d"
-                    + " WHERE d.pid IN (" + this.asgn2PartIDs(asgn) + ")");
-
-            ResultSet rs = ps.executeQuery();
-            int rows = rs.getInt("rowcount");
-            ps.close();
-
-            return rows == 0;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<TA, Collection<Group>> getDistribution(DistributablePart part) throws SQLException, CakeHatDBIOException {
-        ArrayListMultimap<TA, Group> groups = ArrayListMultimap.create();
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taLogin, gm.sid AS sid, gp.name AS groupName"
-                    + " FROM groupmember AS gm"
-                    + " INNER JOIN distribution AS d"
-                    + " ON d.gpid == gm.gpid"
-                    + " INNER JOIN asgngroup AS gp"
-                    + " ON gp.gpid == d.gpid"
-                    + " WHERE d.pid == ?"
-                    + " ORDER BY gm.gpid DESC");
-            ps.setString(1, part.getDBID());
-            ResultSet rs = ps.executeQuery();
-
-            Collection<Student> members = new ArrayList<Student>(5);
-            String currentNameForGroup = "";
-            String taLogin = "";
-            TA ta = null;
-            while (rs.next()) { //while there are more records
-                String groupName = rs.getString("groupName");
-                int studentID = rs.getInt("sid");
-                if (currentNameForGroup.equals(groupName)) { //if we are still populating the same group
-                    members.add(Allocator.getDataServices().getStudentFromID(studentID));
-                }
-                else { //if it is a new group
-                    if (!currentNameForGroup.equals("")) { //if the old group was not the blank group with no name
-                        if (ta == null) {
-                            throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
-                        }
-                        Group group = new Group(currentNameForGroup, members); //make a group from the logins and name we have
-                        groups.put(ta, group); //add the group to the dist
-                    }
-                    taLogin = rs.getString("taLogin");
-                    ta = Allocator.getConfigurationInfo().getTA(taLogin);
-                    members = new ArrayList<Student>(5); //make a new list of students
-                    currentNameForGroup = groupName; //update the current name
-                    members.add(Allocator.getDataServices().getStudentFromID(studentID)); //add the student to the list
-                }
-            }
-            if (!currentNameForGroup.equals("")) { //we are done with all the records and there were some records
-                if (ta == null) {
-                    throw new CakeHatDBIOException("The TA: " + taLogin + ", exists in the DB but not in the config file.");
-                }
-                groups.put(Allocator.getConfigurationInfo().getTA(taLogin), new Group(currentNameForGroup, members)); //make and add a group
-            }
-
-            return groups.asMap();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void assignGroupToGrader(Group group, DistributablePart part, TA ta) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-        try {
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.gpid) AS timesAssigned"
-                    + " FROM distribution AS d"
-                    + " WHERE d.gpid == ?"
-                    + " AND d.pid == ?");
-            ps.setInt(1, groupID);
-            ps.setString(2, part.getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            boolean isntAssigned = (rs.getInt("timesAssigned") == 0);
-
-            if (isntAssigned) {
-                ps = conn.prepareStatement("INSERT INTO distribution ('gpid', 'tid', 'pid')"
-                        + " VALUES (?, ?, ?)");
-                ps.setInt(1, groupID);
-                ps.setString(2, ta.getLogin());
-                ps.setString(3, part.getDBID());
-                ps.executeUpdate();
-            } else {
-                throw new CakeHatDBIOException("The group: " + group
-                        + " is already assigned to a TA. You can't assign them to"
-                        + " another TA without removing them from the other TA's"
-                        + " dist.");
-            }
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void unassignGroupFromGrader(Group group, DistributablePart part, TA ta) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
-                    + " WHERE pid == ?"
-                    + " AND gpid == ?"
-                    + " AND tid ==  ?");
-            ps.setString(1, part.getDBID());
-            ps.setInt(2, groupID);
-            ps.setString(3, ta.getLogin());
-
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Collection<Group> getGroupsAssigned(DistributablePart part, TA ta) throws SQLException, CakeHatDBIOException {
-        Collection<Group> fromDist = this.getDistribution(part).get(ta);
-        if (fromDist != null) {
-            return fromDist;
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<Group> getAllAssignedGroups(DistributablePart part) throws SQLException, CakeHatDBIOException {
-        ArrayList<Group> groups = new ArrayList<Group>();
-
-        for (Collection<Group> groups4TA : this.getDistribution(part).values()) {
-            groups.addAll(groups4TA);
-        }
-
-        return groups;
-    }
-
-    @Override
-    public void grantExtension(Group group, Handin handin, Calendar newDate, String note) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            conn.setAutoCommit(false);
-
-            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
-                    + " WHERE aid == ?"
-                    + " AND gpid == ?");
-            ps.setString(1, handin.getAssignment().getDBID());
-            ps.setInt(2, groupID);
-            ps.executeUpdate();
-
-            int ontime = (int) (newDate.getTimeInMillis() / 1000);
-
-            ps = conn.prepareStatement("INSERT INTO extension ('gpid', 'aid', 'ontime', 'note')"
-                    + " VALUES (?, ?, ?, ?)");
-            ps.setInt(1, groupID);
-            ps.setString(2, handin.getAssignment().getDBID());
-            ps.setInt(3, ontime);
-            ps.setString(4, note);
-            ps.executeUpdate();
-
-            conn.commit();
-
-        } catch (SQLException e) {
-            // the exception is caught so any old extension is preserved
-            conn.rollback();
-
-            // then the exception is re-thrown to inform the client of the error
-            throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void removeExtension(Group group, Handin handin) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM extension"
-                    + " WHERE aid == ?"
-                    + " AND gpid == ?");
-            ps.setString(1, handin.getAssignment().getDBID());
-            ps.setInt(2, groupID);
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void grantExemption(Group group, Part part, String note) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            conn.setAutoCommit(false);
-
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
-                    + " WHERE pid == ?"
-                    + " AND gpid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setInt(2, groupID);
-            ps.executeUpdate();
-
-            ps = conn.prepareStatement("INSERT INTO exemption ('gpid', 'pid', 'note')"
-                    + " VALUES (?, ?, ?)");
-            ps.setInt(1, groupID);
-            ps.setString(2, part.getDBID());
-            ps.setString(3, note);
-            ps.executeUpdate();
-
-            conn.commit();
-
-        } catch (SQLException e) {
-            // the exception is caught so any old exemption is preserved
-            conn.rollback();
-
-            // then the exception is re-thrown to inform the client of the error
-            throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void removeExemption(Group group, Part part) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM exemption"
-                    + " WHERE pid == ?"
-                    + " AND gpid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setInt(2, groupID);
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Calendar getExtension(Group group, Handin handin) throws SQLException {
-        Calendar result = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT x.ontime AS date"
-                    + " FROM extension AS x"
-                    + " INNER JOIN asgngroup AS g"
-                    + " ON g.gpid == x.gpid"
-                    + " WHERE x.aid == ?"
-                    + " AND g.name == ?"
-                    + " AND g.aid == ?");
-            ps.setString(1, handin.getAssignment().getDBID());
-            ps.setString(2, group.getName());
-            ps.setString(3, handin.getAssignment().getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result = new GregorianCalendar();
-                result.setTimeInMillis(rs.getInt("date") * 1000L);
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<Group, Calendar> getAllExtensions(Handin handin) throws SQLException {
-        HashMap<Group, Calendar> result = new HashMap<Group, Calendar>();
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT e.gpid AS groupID, e.ontime AS date"
-                    + " FROM extension AS e"
-                    + " WHERE e.aid == ?");
-            ps.setString(1, handin.getAssignment().getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Calendar cal = new GregorianCalendar();
-                cal.setTimeInMillis(rs.getInt("date") * 1000L);
-
-                PreparedStatement groupPS = conn.prepareStatement("SELECT gm.sid AS sid, g.name AS name"
-                        + " FROM groupmember AS gm"
-                        + " INNER JOIN asgngroup AS g"
-                        + " ON gm.gpid == g.gpid"
-                        + " WHERE gm.gpid == ?");
-                groupPS.setInt(1, rs.getInt("groupID"));
-
-                ResultSet groupRS = groupPS.executeQuery();
-                Collection<Student> members = new ArrayList<Student>();
-                String name = "";
-                while (groupRS.next()) {
-                    members.add(Allocator.getDataServices().getStudentFromID(groupRS.getInt("sid")));
-                    name = groupRS.getString("name");
-                }
-
-                result.put(new Group(name, members), cal);
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public String getExtensionNote(Group group, Handin handin) throws SQLException {
-        String result = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT x.note AS extnote"
-                    + " FROM extension AS x"
-                    + " INNER JOIN asgngroup AS g"
-                    + " ON g.gpid == x.gpid"
-                    + " WHERE x.aid == ?"
-                    + " AND g.name == ?"
-                    + " AND g.aid == ?");
-            ps.setString(1, handin.getAssignment().getDBID());
-            ps.setString(2, group.getName());
-            ps.setString(3, handin.getAssignment().getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result = rs.getString("extnote");
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    /**
-     * this is a bad implementation.
-     */
-    public Map<Part, Collection<Group>> getAllExemptions(Assignment a) throws SQLException{
-        HashMap<Part, Collection<Group>> result = new HashMap<Part, Collection<Group>>();
-
-        Collection<Group> groups = null;
-        try{
-            groups = Allocator.getDatabase().getGroupsForAssignment(a);
-        } catch (SQLException ex) {
-            new ErrorView(ex);
-        }
-
-        for (Part p : a.getParts()){
-            for (Group g : groups){
-                String note = this.getExemptionNote(g, p);
-                if (note != null){
-                    if (result.containsKey(p)){
-                        result.get(p).add(g);
-                    }
-                    else{
-                        ArrayList<Group> groupList = new ArrayList<Group>();
-                        groupList.add(g);
-                        result.put(p, groupList);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public String getExemptionNote(Group group, Part part) throws SQLException {
-        String result = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT x.note AS exenote"
-                    + " FROM exemption AS x"
-                    + " INNER JOIN asgngroup AS g"
-                    + " ON g.gpid == x.gpid"
-                    + " WHERE x.pid == ?"
-                    + " AND g.name == ?"
-                    + " AND g.aid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setString(2, group.getName());
-            ps.setString(3, part.getAssignment().getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result = rs.getString("exenote");
-            }
-
-            return result;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void enterGrade(Group group, Part part, double score) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            conn.setAutoCommit(false);
-
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM grade"
-                    + " WHERE pid == ?"
-                    + " AND gpid == ?");
-            ps.setString(1, part.getDBID());
-            ps.setInt(2, groupID);
-            ps.executeUpdate();
-
-            ps = conn.prepareStatement("INSERT INTO grade ('gpid', 'pid', 'score')"
-                    + " VALUES (?, ?, ?)");
-            ps.setInt(1, groupID);
-            ps.setString(2, part.getDBID());
-            ps.setDouble(3, score);
-            ps.executeUpdate();
-
-            conn.commit();
-        } catch (SQLException e) {
-            //if there was an error, rollback to preserve the old grade
-            conn.rollback();
-
-            //then rethrow exception to inform user of the error
-            throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Double getGroupScore(Group group, Part part) throws SQLException {
-        Double grade = null;
-        Connection conn = this.openConnection();
-
-        try {
-            int groupID = this.group2groupID(conn, part.getAssignment(), group);
-
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore"
-                    + " FROM grade AS g"
-                    + " WHERE g.gpid == ?"
-                    + " AND g.pid == ?");
-            ps.setInt(1, groupID);
-            ps.setString(2, part.getDBID());
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                grade = rs.getDouble("partscore");
-            }
-
-            return grade;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void setDistributablePartDist(Map<DistributablePart, Map<TA, Collection<Group>>> distribution) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-        try {
-
-            Map<String, Integer> names2IDs = new HashMap<String, Integer>();
-
-            if (!distribution.isEmpty()) {
-                // lookup all group names and their gpids
-                PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid AS groupID, gp.name AS groupName"
-                        + " FROM asgngroup AS gp"
-                        + " WHERE gp.aid == ?");
-                ps.setString(1, distribution.keySet().iterator().next().getAssignment().getDBID());
-                ResultSet rs = ps.executeQuery();
-
-                while (rs.next()) {
-                    names2IDs.put(rs.getString("groupName"), rs.getInt("groupID"));
-                }
-                ps.close();
-            } else {
-                // if the dist is empty then no reason to do anything
-                return;
-            }
-
-            // stop committing so that all inserts happen in one FileIO
-            conn.setAutoCommit(false);
-
-            PreparedStatement psD = conn.prepareStatement("DELETE FROM distribution WHERE pid == ?");
-            for (DistributablePart part : distribution.keySet()) {
-                psD.setString(1, part.getDBID());
-                psD.addBatch();
-            }
-            psD.executeBatch();
-            psD.close();
-
-            PreparedStatement psI = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid') VALUES (?, ?, ?)");
-            for (DistributablePart part : distribution.keySet()) {
-                //add the distribution to the DB
-                for (TA ta : distribution.get(part).keySet()) {
-                    Collection<Group> distributedGroups = distribution.get(part).get(ta);
-
-                    for (Group group : distributedGroups) {
-                        psI.setString(1, part.getDBID());
-                        //make sure that if a group's gpid can't be looked up that an exception is thrown
-                        if (!names2IDs.containsKey(group.getName())) {
-                            psD.close();
-                            psI.close();
-                            conn.rollback();
-                            throw new CakeHatDBIOException("could not find the groupID in the database for the group: " + group);
-                        }
-                        psI.setInt(2, names2IDs.get(group.getName()));
-                        psI.setString(3, ta.getLogin());
-                        psI.addBatch();
-                    }
-                }
-            }
-            psI.executeBatch();
-            psI.close();
-
-            // commit all the inserts to the DB file
-            conn.commit();
-        } catch (SQLException e) {
-            // the exception is caught so that any old distribution is preserved
-            conn.rollback();
-
-            //then the exception is re-thrown to inform the client of the error
-            throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    private int group2groupID(Connection conn, Assignment asgn, Group group) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT gp.gpid AS groupID"
-                + " FROM asgngroup AS gp"
-                + " WHERE gp.name == ?"
-                + " AND gp.aid == ?");
-        ps.setString(1, group.getName());
-        ps.setString(2, asgn.getDBID());
-        ResultSet rs = ps.executeQuery();
-        int groupID = rs.getInt("groupID");
-        ps.close();
-        return groupID;
-    }
-
-    @Override
-    public Double getGroupAsgnScore(Group group, Assignment asgn) throws SQLException {
-        Double grade = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore"
-                    + " FROM grade AS g"
-                    + " WHERE g.gpid == ?"
-                    + " AND g.pid IN (" + this.asgn2PartIDs(asgn) + ")");
-            ps.setInt(1, this.group2groupID(conn, asgn, group));
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                grade = rs.getDouble("asgnscore");
-            }
-
-            return grade;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<Group, Double> getPartScoresForGroups(Part part, Iterable<Group> groups) throws SQLException {
-        Map<Group, Double> scores = new HashMap<Group, Double>();
-
-        Connection conn = this.openConnection();
-
-        Map<Integer, Group> gpid2Group = new HashMap<Integer, Group>();
-        String groupIDs = "";
-        for (Group group : groups) {
-            Integer gpid = this.group2groupID(conn, part.getAssignment(), group);
-            groupIDs += ",'" + gpid + "'";
-            gpid2Group.put(gpid, group);
-        }
-        if (groupIDs.length() > 1) {
-            groupIDs = groupIDs.substring(1);
-        }
-
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT g.score AS partscore, g.gpid AS groupID"
-                    + " FROM grade AS g"
-                    + " WHERE g.gpid IN (" + groupIDs + ")"
-                    + " AND g.pid == '" + part.getDBID() + "'");
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                scores.put(gpid2Group.get(rs.getInt("groupID")), rs.getDouble("partscore"));
-            }
-
-            return scores;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<Group, Double> getAssignmentScoresForGroups(Assignment asgn, Iterable<Group> groups) throws SQLException {
-        Map<Group, Double> scores = new HashMap<Group, Double>();
-
-        Connection conn = this.openConnection();
-
-        Map<Integer, Group> gpid2Group = new HashMap<Integer, Group>();
-        String groupIDs = "";
-        for (Group group : groups) {
-            Integer gpid = this.group2groupID(conn, asgn, group);
-            groupIDs += ",'" + gpid + "'";
-            gpid2Group.put(gpid, group);
-        }
-        if (groupIDs.length() > 1) {
-            groupIDs = groupIDs.substring(1);
-        }
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT SUM(g.score) AS asgnscore, g.gpid AS groupID"
-                    + " FROM grade AS g"
-                    + " WHERE g.gpid IN (" + groupIDs + ")"
-                    + " AND g.pid IN (" + this.asgn2PartIDs(asgn) + ")"
-                    + " GROUP BY g.gpid");
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                int groupID = rs.getInt("groupID");
-                Double score = rs.getDouble("asgnscore");
-                scores.put(gpid2Group.get(groupID), score);
-            }
-
-            return scores;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Set<DistributablePart> getDPsWithAssignedStudents(TA ta) throws SQLException {
-        Set<DistributablePart> parts = new HashSet<DistributablePart>();
-
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.pid AS partID"
-                    + " FROM distribution AS d"
-                    + " WHERE d.tid == ?");
-            ps.setString(1, ta.getLogin());
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                String partID = rs.getString("partID");
-                parts.add(Allocator.getConfigurationInfo().getDistributablePart(partID));
-            }
-
-            return parts;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    public TA getGraderForGroup(DistributablePart part, Group group) throws SQLException, CakeHatDBIOException {
-        return this.getGradersForStudent(group.getMembers().iterator().next()).get(part);
-    }
-
-    @Override
-    public HandinStatus getHandinStatus(Handin handin, Group group) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            int groupID = this.group2groupID(conn, handin.getAssignment(), group);
-            PreparedStatement ps = conn.prepareStatement("SELECT h.status AS status, h.late AS late"
-                    + " FROM handin AS h"
-                    + " WHERE h.gpid == ?");
-            ps.setInt(1, groupID);
-            ResultSet rs = ps.executeQuery();
-
-            TimeStatus status = null;
-            Integer daysLate = null;
-            if (rs.next()) {
-                status = TimeStatus.valueOf(rs.getString("status"));
-                daysLate = rs.getInt("late");
-            }
-
-            if (status == null && daysLate == null) {
-                return null;
-            }
-            return new HandinStatus(status, daysLate);
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    private String asgn2PartIDs(Assignment asgn) {
-        //make a list of all the parts for the assignment so that the sum can be made.
-        //  grade only containts part IDs not asgn IDs
-        String parts = "";
-        for (Part p : asgn.getParts()) {
-            parts += ",'" + p.getDBID() + "'";
-        }
-        if (parts.length() > 1) {
-            parts = parts.substring(1);
-        }
-        return parts;
-    }
-
-    public void setHandinStatus(Handin handin, Group group, HandinStatus status) throws SQLException {
-        Map<Group, HandinStatus> statuses = new HashMap<Group, HandinStatus>();
-        statuses.put(group, status);
-        this.setHandinStatuses(handin, statuses);
-    }
-
-    public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException {
-        Connection conn = this.openConnection();
-
-        try {
-            conn.setAutoCommit(false);
-
-            PreparedStatement psDelete = conn.prepareStatement("DELETE FROM handin"
-                    + " WHERE gpid == ?");
-            PreparedStatement psInsert = conn.prepareStatement("INSERT INTO handin ('gpid', 'status', 'late')"
-                    + " VALUES (?, ?, ?)");
-            for (Group group : statuses.keySet()) {
-                int groupID = this.group2groupID(conn, handin.getAssignment(), group);
-                
-                psDelete.setInt(1, groupID);
-                psDelete.addBatch();
-
-                psInsert.setInt(1, groupID);
-                psInsert.setString(2, statuses.get(group).getTimeStatus().name());
-                psInsert.setInt(3, statuses.get(group).getDaysLate());
-                psInsert.addBatch();
-            }
-            psDelete.executeBatch();
-            psInsert.executeBatch();
-
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    public boolean areHandinStatusesSet(Handin handin) throws SQLException, CakeHatDBIOException {
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS numStatuses" +
-                    " FROM handin AS h INNER JOIN asgngroup AS ag" +
-                    " ON h.gpid == ag.gpid WHERE ag.aid == ?;");
-            ps.setString(1, handin.getAssignment().getDBID());
-            ResultSet rs = ps.executeQuery();
-
-            if (!rs.next()) {
-                throw new CakeHatDBIOException("Could not read number of statuses for assignment " +
-                                               handin.getAssignment() + " from the database.");
-            }
-
-            return rs.getInt("numStatuses") != 0;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void addStudent(int id, String studentLogin, String studentFirstName, String studentLastName) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO student"
-                    + " ('sid', 'login', 'firstname', 'lastname')"
-                    + " VALUES (?, ?, ?, ?)");
-            ps.setInt(1, id);
-            ps.setString(2, studentLogin);
-            ps.setString(3, studentFirstName);
-            ps.setString(4, studentLastName);
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
     
+    public static void main(String[] argv) throws SQLException {
+        Database db = new DatabaseImpl();
+        db.resetDatabase();
+    }
+
 }

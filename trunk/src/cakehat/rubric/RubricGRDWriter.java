@@ -5,18 +5,17 @@ import cakehat.config.Assignment;
 import cakehat.config.GradeUnits;
 import cakehat.config.LatePolicy;
 import cakehat.config.TA;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.database.HandinStatus;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
 import cakehat.database.Student;
 import cakehat.rubric.Rubric.*;
+import cakehat.services.ServicesException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
@@ -112,13 +111,10 @@ class RubricGRDWriter {
 
         TA grader;
         try {
-            grader = Allocator.getDatabase().getGraderForGroup(dp, group);
-        } catch (SQLException ex) {
+            grader = Allocator.getDataServices().getGrader(dp, group);
+        } catch (ServicesException ex) {
             throw new RubricException("Could not read grader for group " + group + " on " +
                                       "part " + dp + " of assignment " + handin.getAssignment() + ". ", ex);
-        } catch (CakeHatDBIOException ex) {
-            throw new RubricException("Could not read grader for group " + group + " on " +
-                                      "part " + dp + " of assignment " + handin.getAssignment() + ".", ex);
         }
         String line2 = GRADER_LBL;
         if (grader != null) {
@@ -294,8 +290,8 @@ class RubricGRDWriter {
     private static void writeFinalScore(Handin handin, Group group, Score totalScore, BufferedWriter output) throws RubricException {
         HandinStatus status;
         try {
-            status = Allocator.getDatabase().getHandinStatus(handin, group);
-        } catch (SQLException ex) {
+            status = Allocator.getDataServices().getHandinStatus(group);
+        } catch (ServicesException ex) {
             throw new RubricException("Could not get handin status for " +
                                       "group " + group + " on assignment " + handin.getAssignment() + ".", ex);
         }

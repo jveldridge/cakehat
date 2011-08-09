@@ -8,7 +8,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Vector;
@@ -25,6 +24,7 @@ import org.jfree.data.xy.DefaultXYDataset;
 import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.Dimension;
 import java.util.HashMap;
@@ -56,10 +56,9 @@ public class StudentChartPanel extends JPanel {
             Assignment asgn = assignments[i];
             Group studentsGroup;
             try {
-                studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, student);
-            } catch (SQLException ex) {
-                new ErrorView("Could read group for student " + student + 
-                                 " for assignment " + asgn + " from the database.");
+                studentsGroup = Allocator.getDataServices().getGroup(asgn, student);
+            } catch (ServicesException ex) {
+                new ErrorView(ex);
                 continue;
             }
             if (studentsGroup == null) {
@@ -69,9 +68,9 @@ public class StudentChartPanel extends JPanel {
 
                 double partScore = 0;
                 try {
-                    Double rawScore = Allocator.getDatabase().getGroupScore(studentsGroup, p);
+                    Double rawScore = Allocator.getDataServices().getScore(studentsGroup, p);
                     partScore = (rawScore == null ? 0 : rawScore);
-                } catch (SQLException ex) {
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "Could not read the score for student " + student + " " +
                                       "on part " + p + ".  FOR THESE CHARTS AND STATISTICS, THE " +
                                       "SCORE WILL BE TREATED AS A 0.");
@@ -85,8 +84,8 @@ public class StudentChartPanel extends JPanel {
             Vector<Double> scores = new Vector<Double>();
             Map<Group, Double> scoreMap;
             try {
-                scoreMap = Allocator.getDatabase().getAssignmentScoresForGroups(asgn, Allocator.getDatabase().getGroupsForAssignment(asgn));
-            } catch (SQLException ex) {
+                scoreMap = Allocator.getDataServices().getScores(asgn, Allocator.getDataServices().getGroups(asgn));
+            } catch (ServicesException ex) {
                 new ErrorView(ex, "Could not get scores for assignment " + assignments[i] + ".");
                 scoreMap = new HashMap<Group, Double>();
             }

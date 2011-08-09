@@ -5,9 +5,9 @@ import cakehat.config.ConfigurationException;
 import cakehat.config.LabConfigurationParser;
 import cakehat.config.LabPart;
 import cakehat.database.Group;
+import cakehat.database.NewGroup;
 import cakehat.database.Student;
 import cakehat.services.ServicesException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -128,9 +128,9 @@ public class CheckoffCLI
         {
             try
             {
-                Allocator.getDatabase().enterGrade(group, lab, pointsNum);
+                Allocator.getDataServices().enterGrade(group, lab, pointsNum);
             }
-            catch(SQLException e)
+            catch(ServicesException e)
             {
                 throw new CheckoffException(e, "Internal database error occurred (unable to enter grade)");
             }
@@ -176,7 +176,7 @@ public class CheckoffCLI
      */
     private static Group resolveMissingGroup(LabPart lab, Student student) throws CheckoffException
     {
-        Group group;
+        Group group = null;
 
         //There must be group if the assignment has groups
         if(lab.getAssignment().hasGroups())
@@ -191,12 +191,12 @@ public class CheckoffCLI
         //be created
         else
         {
-            group = new Group(student.getLogin(), student);
             try
             {
-                Allocator.getDatabase().setGroup(lab.getAssignment(), group);
+                Allocator.getDataServices().addGroup(new NewGroup(lab.getAssignment(), student));
+                group = Allocator.getDataServices().getGroup(lab.getAssignment(), student);
             }
-            catch(SQLException e)
+            catch(ServicesException e)
             {
                 throw new CheckoffException(e, "Internal database error " +
                         "occurred (unable to set group abstraction)");
@@ -216,18 +216,22 @@ public class CheckoffCLI
      */
     private static Student getStudent(String studentLogin) throws CheckoffException
     {
-        if (!Allocator.getDataServices().isStudentLoginInDatabase(studentLogin)) {
-            throw new CheckoffException("No such student [" + studentLogin + "].");
-        }
+        try {
+            if (!Allocator.getDataServices().isStudentLoginInDatabase(studentLogin)) {
+                throw new CheckoffException("No such student [" + studentLogin + "].");
+            }
 
-        Student student = Allocator.getDataServices().getStudentFromLogin(studentLogin);
+            Student student = Allocator.getDataServices().getStudentFromLogin(studentLogin);
 
-        if (!student.isEnabled()) {
-            throw new CheckoffException("Provided student login [" + studentLogin +
-                        "] is not enabled. A cakehat admin may re-enable the student");
+            if (!student.isEnabled()) {
+                throw new CheckoffException("Provided student login [" + studentLogin +
+                            "] is not enabled. A cakehat admin may re-enable the student");
+            }
+
+            return student;
+        } catch (ServicesException ex) {
+            throw new CheckoffException(ex, "Could not retrieve Student object abstraction.");
         }
-        
-        return student;
     }
 
     /**
@@ -319,22 +323,11 @@ public class CheckoffCLI
     private static Group getStudentsGroup(Student student, LabPart lab) throws CheckoffException
     {
         Group group = null;
-        try
-        {
-            group = Allocator.getDatabase().getStudentsGroup(lab.getAssignment(), student);
+        try {
+            group = Allocator.getDataServices().getGroup(lab.getAssignment(), student);
 
-        }
-        catch(SQLException e)
-        {
-            if(lab.getAssignment().hasGroups())
-            {
-                throw new CheckoffException(e, "Cannot retrieve student's group");
-            }
-            else
-            {
-                throw new CheckoffException(e, "Internal database error occurred " +
-                        "(unable to load group abstraction)");
-            }
+        } catch (ServicesException e) {
+            throw new CheckoffException(e, "Cannot retrieve student's group");
         }
 
         return group;
@@ -358,7 +351,7 @@ public class CheckoffCLI
 
         try
         {
-            Double score = Allocator.getDatabase().getGroupScore(group, lab);
+            Double score = Allocator.getDataServices().getScore(group, lab);
 
             //If there is an existing group
             if(score != null)
@@ -385,7 +378,7 @@ public class CheckoffCLI
                 }
             }
         }
-        catch(SQLException e)
+        catch(ServicesException e)
         {
             throw new CheckoffException(e, "Unable to determine if pre-existing grade exists");
         }

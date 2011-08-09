@@ -1,13 +1,13 @@
 package cakehat.rubric;
 
 import cakehat.config.Part;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.services.ServicesException;
 
 /**
  * An object representation of a GML file. Used internally within the the rubric
@@ -335,9 +335,9 @@ class Rubric
             if(Rubric.this.getGroup() != null) {
                 Group group = Rubric.this.getGroup();
                 try {
-                    Double score = Allocator.getDatabase().getGroupScore(group, sourcePart);
+                    Double score = Allocator.getDataServices().getScore(group, sourcePart);
                     _score = (score == null ? 0 : score);
-                } catch (SQLException ex) {
+                } catch (ServicesException ex) {
                     throw new RubricException("The grade for part " + sourcePart + " could not be " +
                                               "loaded from the database.", ex);
                 }

@@ -1,16 +1,25 @@
 package cakehat.config.handin;
 
+import cakehat.services.PathServices;
+import java.util.Arrays;
+import java.util.List;
+import cakehat.database.DataServices.ValidityCheck;
+import cakehat.database.Group;
+import cakehat.database.NewGroup;
+import cakehat.database.Student;
+import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableList;
+import cakehat.database.Database;
+import cakehat.database.DatabaseImpl;
+import java.io.IOException;
+import java.sql.SQLException;
+import org.junit.Before;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.config.Assignment;
+import cakehat.config.ConfigurationInfo;
 import cakehat.database.ConfigurationData;
-import cakehat.database.Group;
-import cakehat.database.Student;
-import cakehat.services.PathServices;
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import org.easymock.EasyMock;
 import org.junit.Test;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -22,14 +31,39 @@ import static org.junit.Assert.*;
  */
 public class ExternalActionsTest
 {
+    private Assignment _testAsgn = ConfigurationData.generateRandomAssignment();
+    
+    @Before
+    public void setUp() throws IOException, SQLException {
+        final Database db = new DatabaseImpl(Allocator.getFileSystemUtilities().createTempFile("tempDB", "db"));
+        SingletonAllocation<Database> dbioAlloc =
+            new SingletonAllocation<Database>()
+            {
+                public Database allocate() { return db; };
+            };
+        db.resetDatabase(); 
+        
+        final ConfigurationInfo ci = createMock(ConfigurationInfo.class);
+        expect(ci.getAssignments()).andReturn(ImmutableList.of(_testAsgn)).anyTimes();
+        expect(ci.getAssignment(_testAsgn.getDBID())).andReturn(_testAsgn).anyTimes();
+        replay(ci);
+        SingletonAllocation<ConfigurationInfo> ciAlloc =
+            new SingletonAllocation<ConfigurationInfo>()
+            {
+                public ConfigurationInfo allocate() { return ci; };
+            };
+        
+        new Allocator.Customizer().setConfigurationInfo(ciAlloc).setDatabase(dbioAlloc).customize(); 
+    }
+    
     @Test
-    public void testReplaceHandinSequences_StudentLogins()
+    public void testReplaceHandinSequences_StudentLogins() throws ServicesException
     {
         //Setup
-        Student member1 = ConfigurationData.generateStudent("member_1", "m1f", "m1l", "m1e", true);
-        Student member2 = ConfigurationData.generateStudent("member_2", "m2f", "m2l", "m2e", true);
-        Group group = new Group("the group", member1, member2);
-
+        Student member1 = ConfigurationData.generateStudent(1, "member_1", "m1f", "m1l", "m1e", true);
+        Student member2 = ConfigurationData.generateStudent(2, "member_2", "m2f", "m2l", "m2e", true);
+        Group group = ConfigurationData.generateGroup(1, _testAsgn, "the group", member1, member2);
+        
         //Assertions
         String command, modifiedCmd;
 
@@ -47,12 +81,12 @@ public class ExternalActionsTest
     }
 
     @Test
-    public void testReplaceHandinSequences_Groups()
+    public void testReplaceHandinSequences_Groups() throws ServicesException
     {
         //Setup
-        Student member1 = ConfigurationData.generateStudent("member_1", "m1f", "m1l", "m1e", true);
-        Student member2 = ConfigurationData.generateStudent("member_2", "m2f", "m2l", "m2e", true);
-        Group group = ConfigurationData.generateGroup("the group", member1, member2);
+        Student member1 = ConfigurationData.generateStudent(1, "member_1", "m1f", "m1l", "m1e", true);
+        Student member2 = ConfigurationData.generateStudent(2, "member_2", "m2f", "m2l", "m2e", true);
+        Group group = ConfigurationData.generateGroup(1, _testAsgn, "the group", member1, member2);
 
         //Assertions
         String command, modifiedCmd;
@@ -71,12 +105,13 @@ public class ExternalActionsTest
     }
 
     @Test
-    public void testReplaceHandinSequences_UnarchiveDir()
+    public void testReplaceHandinSequences_UnarchiveDir() throws ServicesException
     {
         //Setup
-        Student member1 = ConfigurationData.generateStudent("member_1", "m1f", "m1l", "m1e", true);
-        Student member2 = ConfigurationData.generateStudent("member_2", "m2f", "m2l", "m2e", true);
-        Group group = ConfigurationData.generateGroup("the group", member1, member2);
+        Student member1 = ConfigurationData.generateStudent(1, "member_1", "m1f", "m1l", "m1e", true);
+        Student member2 = ConfigurationData.generateStudent(2, "member_2", "m2f", "m2l", "m2e", true);
+        
+        Group group = ConfigurationData.generateGroup(1, _testAsgn, "the group", member1, member2);
         File unarchiveDir = new File("/root/other/the group");
 
         //Mock up a path services that will return dummy unarchive directories
@@ -182,16 +217,16 @@ public class ExternalActionsTest
     }
 
     @Test
-    public void testReplaceGroupInfoSequences()
+    public void testReplaceGroupInfoSequences() throws ServicesException
     {
-        //Setup
-        Student member1a = ConfigurationData.generateStudent("member_1a", "m1af", "m1al", "m1ae", true);
-        Student member2a = ConfigurationData.generateStudent("member_2a", "m2af", "m2al", "m2ae", true);
-        Group groupA = new Group("group A", member1a, member2a);
+        //Setup        
+        Student member1a = ConfigurationData.generateStudent(1, "member_1a", "m1af", "m1al", "m1ae", true);
+        Student member2a = ConfigurationData.generateStudent(2, "member_2a", "m2af", "m2al", "m2ae", true);
+        Group groupA = ConfigurationData.generateGroup(1, _testAsgn, "group A", member1a, member2a);
 
-        Student member1b = ConfigurationData.generateStudent("member_1b", "m1bf", "m1bl", "m1be",true);
-        Student member2b = ConfigurationData.generateStudent("member_2b", "m2bf", "m2bl", "m2be",true);
-        Group groupB = new Group("group B", member1b, member2b);
+        Student member1b = ConfigurationData.generateStudent(3, "member_1b", "m1bf", "m1bl", "m1be", true);
+        Student member2b = ConfigurationData.generateStudent(4, "member_2b", "m2bf", "m2bl", "m2be", true);
+        Group groupB = ConfigurationData.generateGroup(2, _testAsgn, "group B", member1b, member2b);
 
         List<Group> groups = Arrays.asList(new Group[] { groupA, groupB });
         File dirA = new File("/root/other/group A");

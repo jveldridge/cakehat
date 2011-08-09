@@ -183,7 +183,21 @@ public class ConfigurationInfoImpl implements ConfigurationInfo
 
         return _taMap.get(taLogin);
     }
+    
+    private Map<String, Assignment> _assignmentMap;
+    public Assignment getAssignment(String asgnID) {
+        if (_assignmentMap == null) {
+            ImmutableMap.Builder<String, Assignment> builder = ImmutableMap.builder();
+            for (Assignment asgn : getAssignments()) {
+                builder.put(asgn.getDBID(), asgn);
+            }
 
+            _assignmentMap = builder.build();
+        }
+
+        return _assignmentMap.get(asgnID);
+    }
+    
     private Map<String, DistributablePart> _distributablePartMap;
     public DistributablePart getDistributablePart(String partID)
     {

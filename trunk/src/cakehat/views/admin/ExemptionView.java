@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import cakehat.Allocator;
 import support.ui.GenericJComboBox;
 import cakehat.database.Group;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.EmailView;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
@@ -24,6 +25,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -92,8 +94,8 @@ class ExemptionView extends javax.swing.JFrame {
 
         Collection<Group> groups = Collections.emptyList();
         try {
-            groups = Allocator.getDatabase().getGroupsForAssignment(asgnMenu.getSelectedItem());
-        } catch (SQLException ex) {
+            groups = Allocator.getDataServices().getGroups(asgnMenu.getSelectedItem());
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Could not get groups for assignment " + asgnMenu.getSelectedItem());
         }
         _groupMenu.setItems(groups);
@@ -234,10 +236,12 @@ class ExemptionView extends javax.swing.JFrame {
         ParallelGroup pg = asgnLayout.createParallelGroup(GroupLayout.Alignment.LEADING);
         SequentialGroup sg = asgnLayout.createSequentialGroup();
 
-        Map<Part, Collection<Group>> exemptions = null;
+        Map<Part, Collection<Group>> exemptions = new HashMap<Part, Collection<Group>>();
         try {
-            exemptions = Allocator.getDatabase().getAllExemptions(_assignment);
-        } catch (SQLException ex) {
+            for (Part p : _assignment.getParts()) {
+                exemptions.put(p, Allocator.getDataServices().getExemptions(p));
+            }
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Could not get exemptions for assignment " + _assignment);
         }
 	for (final Part part : _assignment.getParts()) {
@@ -250,8 +254,8 @@ class ExemptionView extends javax.swing.JFrame {
                 for (final Group group : exemptions.get(part)) {
                     String note = null;
                     try {
-                        note = Allocator.getDatabase().getExemptionNote(group, part);
-                    } catch (SQLException ex) {
+                        note = Allocator.getDataServices().getExemptionNote(group, part);
+                    } catch (ServicesException ex) {
                         new ErrorView(ex, "Could not get exemption note for group "
                                         + group + " on part " + part + ".");
                     }
@@ -267,8 +271,8 @@ class ExemptionView extends javax.swing.JFrame {
                                 return;
                             }
                             try {
-                                Allocator.getDatabase().removeExemption(group, part);
-                            } catch (SQLException ex) {
+                                Allocator.getDataServices().removeExemption(group, part);
+                            } catch (ServicesException ex) {
                                 new ErrorView(ex, "Could not remove exemption for group "
                                         + group + " on part " + part + ".");
                             }
@@ -300,8 +304,8 @@ class ExemptionView extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             Collection<Group> groups = Collections.emptyList();
             try {
-                groups = Allocator.getDatabase().getGroupsForAssignment(_asgnMenu.getSelectedItem());
-            } catch (SQLException ex) {
+                groups = Allocator.getDataServices().getGroups(_asgnMenu.getSelectedItem());
+            } catch (ServicesException ex) {
                 new ErrorView(ex, "Could not get groups for assignment " + _asgnMenu.getSelectedItem());
             }
 
@@ -383,8 +387,8 @@ class ExemptionView extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent arg0) {
                 for (Part p : _selectedParts) {
                     try {
-                        Allocator.getDatabase().grantExemption(_group, p, _notes);
-                    } catch (SQLException ex) {
+                        Allocator.getDataServices().grantExemption(_group, p, _notes);
+                    } catch (ServicesException ex) {
                         new ErrorView(ex, "Could not grant exemption for group "
                                         + _group + " on part " + p + ".");
                     }

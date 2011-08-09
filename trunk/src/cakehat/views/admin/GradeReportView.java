@@ -7,7 +7,6 @@ import cakehat.config.Assignment;
 import cakehat.config.Part;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -22,6 +21,7 @@ import cakehat.Allocator;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.util.ArrayList;
 import java.util.List;
@@ -141,10 +141,9 @@ class GradeReportView extends javax.swing.JFrame {
         for (Assignment a : _sortedAssignments) {
             Group group;
             try {
-                group = Allocator.getDatabase().getStudentsGroup(a, student);
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Could not get group for student " + student + " on "
-                        + "assignment " + a + ".");
+                group = Allocator.getDataServices().getGroup(a, student);
+            } catch (ServicesException ex) {
+                new ErrorView(ex);
                 return null;
             }
 
@@ -163,8 +162,8 @@ class GradeReportView extends javax.swing.JFrame {
             Calendar extension = null;
             if (a.hasHandin()) {
                 try {
-                    extension = Allocator.getDatabase().getExtension(group, a.getHandin());
-                } catch (SQLException e) {
+                    extension = Allocator.getDataServices().getExtension(group);
+                } catch (ServicesException e) {
                     new ErrorView(e, "Could not determine if student " + student + " has "
                             + "an extension for assignment " + a + ".  It will be assumed that "
                             + "the student does not have an extension.");
@@ -174,8 +173,8 @@ class GradeReportView extends javax.swing.JFrame {
             for (Part p : _asgnParts.get(a)) {
                 String exemptionNote = null;
                 try {
-                    exemptionNote = Allocator.getDatabase().getExemptionNote(group, p);
-                } catch (SQLException e) {
+                    exemptionNote = Allocator.getDataServices().getExemptionNote(group, p);
+                } catch (ServicesException e) {
                     new ErrorView(e, "Could not determine if student " + student + " has "
                             + "an exemption for part " + p + ".  It will be assumed that "
                             + "the student does not have an exemption.");
@@ -184,8 +183,8 @@ class GradeReportView extends javax.swing.JFrame {
                 Double studentScore = null;
                 String scoreString;
                 try {
-                    studentScore = Allocator.getDatabase().getGroupScore(group, p);
-                } catch (SQLException e) {
+                    studentScore = Allocator.getDataServices().getScore(group, p);
+                } catch (ServicesException e) {
                     new ErrorView(e, "Could not retrieve the score for student " + student
                             + "on part " + p + ".  The student's score will be displayed "
                             + "as \"UNKNOWN\".");
@@ -449,8 +448,8 @@ class GradeReportView extends javax.swing.JFrame {
             for (Assignment a : _sortedAssignments) {
                 Collection<Group> groups;
                 try {
-                    groups = Allocator.getDatabase().getGroupsForAssignment(a);
-                } catch (SQLException ex) {
+                    groups = Allocator.getDataServices().getGroups(a);
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "Could not get read groups from database for assignment " + a + "." +
                                       "Charts for this assignment will not be included.");
                     continue;

@@ -19,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +90,7 @@ class SubmitPanel extends AlphaJPanel
 
 
     public SubmitPanel(Dimension size, Color backgroundColor, FrontendView frontend,
-            DistributablePart part, List<Group> groups) throws SQLException
+            DistributablePart part, List<Group> groups) throws ServicesException
     {
         this.setPreferredSize(size);
         this.setBackground(backgroundColor);
@@ -109,9 +108,9 @@ class SubmitPanel extends AlphaJPanel
         this.initUI();
     }
 
-    private void sortGroupsIntoCategories(List<Group> groups) throws SQLException
+    private void sortGroupsIntoCategories(List<Group> groups) throws ServicesException
     {
-        Map<Group, Double> submittedScores = Allocator.getDatabase().getPartScoresForGroups(_part, groups);
+        Map<Group, Double> submittedScores = Allocator.getDataServices().getScores(_part, groups);
 
         List<Group> sortedGroups = new ArrayList<Group>(groups);
         Collections.sort(sortedGroups);
@@ -294,9 +293,9 @@ class SubmitPanel extends AlphaJPanel
                 {
                     try
                     {
-                        Allocator.getDatabase().enterGrade(group, _part, _rubricScores.get(group));
+                        Allocator.getDataServices().enterGrade(group, _part, _rubricScores.get(group));
                     }
-                    catch(SQLException ex)
+                    catch(ServicesException ex)
                     {
                         new ErrorView(ex, "Unable to submit grade for group [" +
                                 group + "] for part [" + _part.getAssignment() +

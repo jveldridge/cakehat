@@ -1,10 +1,6 @@
 package cakehat.database;
 
 import cakehat.config.Assignment;
-import cakehat.config.Part;
-import cakehat.config.TA;
-import cakehat.config.handin.DistributablePart;
-import cakehat.config.handin.Handin;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Collection;
@@ -14,16 +10,20 @@ import java.util.Set;
 /**
  * Interface to be implemented by classes providing database interaction; mandates
  * methods such classes must have.
+ * 
+ * These methods should be called <strong>only</strong> by implementations of
+ * the {@link DataServices} interface.
  *
  * @author jeldridg
  */
 public interface Database {
 
     /**
-     * Checks to see if the student already exists. If not, creates new entry
-     * in the database.  Newly added students are enabled by default.  The return
-     * value is the auto-generated ID for that student in the database.  This will
-     * be 0 if a student with that login is already in the database.
+     * Adds a student record with the given login and names to the database if
+     * no record with the given login already exists.  The newly added student
+     * is enabled by default.  The return value is the auto-generated ID
+     * corresponding to the newly added row in the database table. This will be
+     * 0 if a student with that login is already in the database.
      *
      * @param studentLogin
      * @param studentFirstName
@@ -32,18 +32,28 @@ public interface Database {
     public int addStudent(String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
 
     /**
-     * Marks the student as disabled; use instead of removing if a student has dropped
-     * the course.  Disabled students will not be sent grade reports or counted for statistics.
+     * Sets the "enabled" field of the database student table to 0 for the student
+     * record corresponding to the given student ID.  This denotes that the
+     * student has been disabled and will not be distributed for grading, sent
+     * grade reports, or counted for statistics.
+     * 
+     * If the given student ID does not correspond to a student record in the
+     * database, this method has no effect.
      *
-     * @param studentLogin
+     * @param studentID
      */
     public void disableStudent(int studentID) throws SQLException;
 
     /**
-     * "Undo" of disabling a student.  All active students must be enabled to
-     * receive grade reports and be counted for statistics.
+     * Sets the "enabled" field of the database student table to 1 for the student
+     * record corresponding to the given student ID.  This denotes that the
+     * student is enabled and can be distributed for grading, sent grade reports,
+     * and counted for statistics.
+     * 
+     * If the given student ID does not correspond to a student record in the
+     * database, this method has no effect.
      *
-     * @param studentLogin
+     * @param studentID
      */
     public void enableStudent(int studentID) throws SQLException;
 
@@ -53,379 +63,444 @@ public interface Database {
      * is returned.
      *
      * @return
-     * @throws SQLException
      */
     public Collection<StudentRecord> getAllStudents() throws SQLException;
 
     /**
-     * Adds all the students in students to the blacklist of the given TA, if
-     * not already blacklisted.  This ensures that this TA will not be distributed
-     * this student to grade. If the student was already blacklisted it is not added
-     * again. If there was an error a SQLException will be thrown.
+     * For each student ID in the given Collection, adds the corresponding student
+     * to the blacklist of the TA with the given login.  This ensures that the TA
+     * will not be distributed a group to grade that includes any of these students.
+     * If a student was already blacklisted by this TA, its entry in the blacklist
+     * table will not be duplicated.  If any of the IDs in the Collection do not
+     * correspond to student records in the database, a SQLException will be thrown
+     * and no students will have been added to the TA's blacklist.
      *
-     * @param students
+     * @param studentIDs
      * @param taLogin
      */
-    public void blacklistStudents(Collection<Student> students, TA ta) throws SQLException;
+    public void blacklistStudents(Collection<Integer> studentIDs, String taLogin) throws SQLException;
 
     /**
-     * Removes students in students from the blacklist of the given TA,
-     * if the student was on that TA's blacklist.  If the student was not on the
-     * TA's blacklist, this method has no effect.
+     * For each student ID in the given Collection, removes the corresponding
+     * student from the blacklist of the TA with the given login.  This has no
+     * effect for any student IDs that correspond to students not currently
+     * blacklisted by the TA or that do not correspond to student records in
+     * the database.
      *
-     * @param students
-     * @param ta
+     * @param studentIDs
+     * @param taLogin
      */
-    public void unBlacklistStudents(Collection<Student> students, TA ta) throws SQLException;
+    public void unBlacklistStudents(Collection<Integer> studentIDs, String taLogin) throws SQLException;
 
     /**
-     * Indicates whether the Assignment has a distribution.  Returns true if
-     * the Assignment currently has no distribution, and false if it does.
-     *
-     * @param asgn
-     * @return
-     */
-    public boolean isDistEmpty(Assignment asgn) throws SQLException;
-
-    /**
-     * Returns the IDs of all students who are on some TA's blacklist.
+     * Returns the IDs of all students who are on some TA's blacklist.  If no
+     * students have been blacklisted, an empty Collection will be returned.
      *
      * @return
      */
     public Collection<Integer> getBlacklistedStudents() throws SQLException;
 
     /**
-     * Returns the IDs of all students who are on this TA's blacklist
-     * @param ta
+     * Returns the IDs of all students who are on the blacklist of the TA with
+     * the given login.  If the TA has not blacklisted any students, an empty
+     * Collection will be returned.
+     * 
+     * @param taLogin
      * @return
      */
-    public Collection<Integer> getTABlacklist(TA ta) throws SQLException;
+    public Collection<Integer> getBlacklist(String taLogin) throws SQLException;
+    
+    /**
+     * Returns an immutable Collection containing a GroupRecord object for each group
+     * in the database.  If the database contains no groups, an empty Collection
+     * is returned.
+     *
+     * @return
+     */
+    public Collection<GroupRecord> getAllGroups() throws SQLException;
+    
+    /** 
+     * Adds a group to the database.  A SQLException will be thrown if the group
+     * to be added has the same name as a group that already exists for that
+     * assignment.  A CakehatDBIOException will be thrown if any member of the
+     * group is already in a group for that assignment.
+     * 
+     * @param group
+     */
+    public GroupRecord addGroup(NewGroup group) throws SQLException, CakeHatDBIOException;
+    
+    /**
+     * Adds a set of groups to the database.  A SQLException will be thrown if any
+     * group to be added has the same name as a group that already exists for that
+     * assignment.  A CakehatDBIOException will be thrown if any member of any
+     * group to be added is already in a group for that assignment.  In either case,
+     * no groups will have been added to the database.
+     * 
+     * @param groups
+     */
+    public Collection<GroupRecord> addGroups(Collection<NewGroup> groups) throws SQLException, CakeHatDBIOException;
 
     /**
-     * Assigns a Group group to the given TA to grade for
-     * DistributablePart part, if not assigned already.  This will enable the TA to
-     * open, run, grade, etc. the Group's code for the given DistributablePart.
+     * Returns the ID of the group for which the student with the given ID is a
+     * member for the assignment with the given ID. If no such group exists then
+     * <code>0</code> is returned.
+     *
+     * @param asgnID
+     * @param studentID
+     * @return
+     */
+    public int getGroup(String asgnID, int studentID) throws SQLException;
+
+    /**
+     * Returns the IDs of all groups that have been created for the assignment
+     * with the given ID.  If no groups have yet been created for the assignment,
+     * an empty Collection will be returned.
+     * 
+     * @param asgnID
+     * @return
+     */
+    public Collection<Integer> getGroups(String asgnID) throws SQLException;
+
+    /**
+     * Removes from the database the group with the given ID.  If no such group
+     * exists, this method has no effect.
+     * 
+     * @param groupID
+     */
+    public void removeGroup(int groupID) throws SQLException;
+
+    /**
+     * Removes from the database all groups that have been created for the assignment
+     * with the given ID.  If no groups have yet been created for the assignment,
+     * this method has no effect.
+     * 
+     * @param asgnID
+     */
+    public void removeGroups(String asgnID) throws SQLException;
+    
+    /**
+     * Indicates whether all Parts corresponding to the part IDs in the given
+     * Iterable have no distribution.  This is intended to be used to determine
+     * if an distribution has been set for any Parts of an Assignment; however,
+     * this does not need to be the case.
+     * 
+     * Returns true if the distribution is empty for all of the parts, and false
+     * if it is non-empty for at least one of them.
+     *
+     * @param partIDs
+     * @return
+     */
+    public boolean isDistEmpty(Iterable<String> partIDs) throws SQLException;
+    
+    /**
+     * Returns the distribution for the DistributablePart with the given ID.  The
+     * Map returned maps a TA's login to a Collection of group IDs representing the
+     * groups that TA has been assigned to grade for the DistributablePart. The 
+     * Map returned contains entries only for those TAs who have groups assigned to
+     * them.  If no distribution has yet been set, an empty Map is returned.
+     * 
+     * @param dpID
+     * @return
+     */
+    public Map<String, Collection<Integer>> getDistribution(String dpID) throws SQLException;
+    
+    /**
+     * Stores a distribution in the database.  The given Map maps the ID of a 
+     * DistributablePart to a Map that maps a TA's login to a Collection of group
+     * IDs representing groups that TA has been assigned to grade for that
+     * DistributablePart. Any existing distributions will be overwritten.  The
+     * distribution will either be set in its entirety or not at all; if the new
+     * distribution is not successfully set in its entirety, the database table
+     * will be in whatever state it was in before this method was called.
+     *
+     * @param distribution
+     */
+    public void setDistribution(Map<String, Map<String, Collection<Integer>>> distribution) throws SQLException;
+
+    /**
+     * Assigns the group corresponding to the given group ID to the TA with the
+     * given login to grade for the DistributablePart corresponding to the given
+     * part ID.  If the group is already assigned to the TA for the DistributablePart,
+     * this method has no effect.  The group will be unassigned from any TA to which
+     * it was previously assigned for this DistributablePart.
      *
      * NOTE: This method should not be used to create an initial distribution
      *       for a project; it should be used only to reassign grading.
      *       To create an initial distribution, use setAsgnDist(...), below.
      *
-     * @param group
-     * @param part
-     * @param ta
+     * @param groupID
+     * @param partID
+     * @param taLogin
      */
-    public void assignGroupToGrader(Group group, DistributablePart part, TA ta) throws SQLException, CakeHatDBIOException;
+    public void assignGroup(int groupID, String partID, String taLogin) throws SQLException;
 
     /**
-     * Unassigns Group group from the given TA for DistributablePart part.
+     * Unassigns the group with the given ID from the TA with the given login
+     * on the DistributablePart with the given part ID.
      *
-     * @param group
-     * @param part
-     * @param ta
+     * @param groupID
+     * @param partID
+     * @param taLogin
      */
-    public void unassignGroupFromGrader(Group group, DistributablePart part, TA ta) throws SQLException;
+    public void unassignGroup(int groupID, String partID, String taLogin) throws SQLException;
 
     /**
-     * Creates a distribution for each DistributablePart part, mapping TAs
-     * to Collections of Groups that TA is assigned to grade for each DistributablePart.
-     * Any existing distributions will be overwritten.
+     * Returns a Collection of IDs for the groups that the given TA has been
+     * assigned to grade for the DistributablePart with the given ID.  Returns
+     * an empty Collection if no groups are assigned to the TA for the
+     * DistributablePart or if there is no distribution for the DistributablePart
+     * in the database.
      *
-     * @param distribution
-     */
-    public void setDistributablePartDist(Map<DistributablePart, Map<TA, Collection<Group>>> distribution) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * Returns a Collection of Groups that the given TA
-     * is assigned to grade for the DistributablePart part.  Returns an empty Collection
-     * if no groups are assigned to the TA for the given DistributablePart or if there is no
-     * distribution for the DistributablePart in the database.
-     *
-     * @param part
-     * @param ta
+     * @param partID
+     * @param taLogin
      * @return
      */
-    public Collection<Group> getGroupsAssigned(DistributablePart part, TA ta) throws SQLException, CakeHatDBIOException;
+    public Collection<Integer> getAssignedGroups(String partID, String taLogin) throws SQLException;
 
     /**
-     * Returns a Collection of Groups containing the groups who
-     * have been assigned to any TA to grade for the given DistributablePart.  This can be
-     * used to find students who have not been assigned to any TA to grade.  If no
-     * distribution exists yet, an empty Collection will be returned.
+     * Returns a Collection of IDs for groups that have been assigned to any TA
+     * to grade for the given DistributablePart.  This can be used to find students
+     * who have not been assigned to any TA to grade.  If no distribution exists
+     * yet, an empty Collection will be returned.
      *
-     * @param part
+     * @param partID
      * @return
      */
-    public Collection<Group> getAllAssignedGroups(DistributablePart part) throws SQLException, CakeHatDBIOException;
+    public Collection<Integer> getAssignedGroups(String partID) throws SQLException;
 
     /**
-     * Returns a Collection of DistributableParts for which the TA has someone
-     * assigned to them.
+     * Returns a Collection of part IDs representing DistributableParts for which
+     * at least one group has been assigned to the TA with the given login for
+     * grading.  If the TA has not been assigned any groups to grade, an empty Set
+     * will be returned.
      *
-     * @param ta
+     * @param taLogin
      * @return
      */
-    public Set<DistributablePart> getDPsWithAssignedStudents(TA ta) throws SQLException;
-
-    //may add: public Map<TA, Collection<String>> getDistribution(String assignmentName);
+    public Set<String> getDPsWithAssignedGroups(String taLogin) throws SQLException;
+    
+    /**
+     * Returns the login of the TA who has been assigned to grade the group with
+     * the given ID for the DistributablePart with the given ID.  If no such TA
+     * exists, <code>null</code> will be returned.
+     * 
+     * @param partID
+     * @param groupID
+     * @return
+     * @throws SQLException
+     * @throws CakeHatDBIOException 
+     */
+    public String getGrader(String partID, int groupID) throws SQLException;
 
     /**
-     * Grants an extension for the Group group for the Handin
-     * handin.  The group's handin will now be due at the date/time represented by
-     * the calendar newDate.  String note can be used to store a message explaining why
-     * the extension was granted.
-     *
-     * @param group
-     * @param handin
+     * Grants an extension for the group with the given ID on the handin for the
+     * assignment with the given ID.  The group's handin will now be due at the
+     * date/time represented by the given calendar.  The given note String can be
+     * used to store a message explaining why the extension was granted; however,
+     * <code>null</code> is also permitted.  Any existing extension will be overwritten.
+   
+     * @param groupID
+     * @param asgnID
      * @param newDate
      * @param note
      */
-    public void grantExtension(Group group, Handin handin, Calendar newDate, String note) throws SQLException;
+    public void grantExtension(int groupID, String asgnID, Calendar newDate, String note) throws SQLException;
 
     /**
-     * Removes a previously granted extension for the given group for the given Handin.
+     * Removes a previously granted extension for the group with the given ID.
      * If the group did not previously have an extension, this method has no effect.
      *
-     * @param group
-     * @param handin
+     * @param groupID
      */
-    public void removeExtension(Group group, Handin handin) throws SQLException;
+    public void removeExtension(int groupID) throws SQLException;
+    
+    /**
+     * Returns a Calendar representing the date when the handin of the group with 
+     * the given group ID is due for the corresponding assignment, if an extension
+     * has been granted for that group.  Returns null if the group does not have
+     * an extension.
+     *
+     * @param groupID
+     * @return
+     */
+    public Calendar getExtension(int groupID) throws SQLException;
+    
+    /**
+     * Returns a Map that maps a group ID to a Calendar representing a granted
+     * extension for that group on the handin for the assignment with the given
+     * ID.  Only groups for which an extension has been granted will have an
+     * entry in the returned Map.  If no extensions have been granted for the
+     * assignment, an empty Map will be returned.
+     *
+     * @param asgnID
+     * @return
+     */
+    public Map<Integer, Calendar> getExtensions(String asgnID) throws SQLException;
 
     /**
-     * Grants an exemption for the Group group for the Part
-     * part.  The group's emailed grade report will indicate that the student
-     * has been exempted for this Part instead of showing a 0.  Additionally,
-     * this Part will not be taken into account in the calculation of final grades
-     * (if support for final grade calculation is added).
+     * Returns a string containing a message to indicate why the group with the
+     * given ID has been granted an extension on the handin for the corresponding
+     * assignment.  Returns null if the group does not have an extension, or if
+     * no note explaining the extension was stored in the database.
      *
-     * @param group
-     * @param part
+     * @param groupID
+     * @return
+     */
+    public String getExtensionNote(int groupID) throws SQLException;
+
+    /**
+     * Grants an exemption for the group with the given group ID for the Part
+     * with the given part ID.  The given note String can be used to store a
+     * message explaining why the exemption was granted; however, <code>null</code>
+     * is also permitted.  If the group had an exemption previously, any exiting
+     * exemption note will be overwritten.
+     *
+     * @param groupID
+     * @param partID
      * @param note
      */
-    public void grantExemption(Group group, Part part, String note) throws SQLException;
+    public void grantExemption(int groupID, String partID, String note) throws SQLException;
 
     /**
-     * Removes a previously granted exemption for the given group for the given Part.
-     * If the group did not previously have an exemption, this method has no effect.
+     * Removes a previously granted exemption for the group with the given group ID
+     * on the part with the given part ID. If the group did not previously have an
+     * exemption for the part, this method has no effect.
      *
-     * @param group
-     * @param part
+     * @param groupID
      */
-    public void removeExemption(Group group, Part part) throws SQLException;
+    public void removeExemption(int groupID, String partID) throws SQLException;
+    
+    /**
+     * Returns the group IDs of all groups that have an exemption for the part
+     * with the given ID.
+     * 
+     * @param partID
+     * @return
+     * @throws SQLException 
+     */
+    public Set<Integer> getExemptions(String partID) throws SQLException;
 
     /**
-     * Returns the Calendar representing the date when the Handin is due
-     * for Group group if that group has an extension.  Returns
-     * null if the group does not have an extension.
+     * Returns a String containing a message to indicate why the group with the
+     * given group ID has been granted an exemption on the part with the given 
+     * part ID.  Returns null if the group does not have an exemption, or if
+     * no note explaining the exemption was stored in the database.
      *
-     * @param group
-     * @param handin
+     * @param groupID
+     * @param partID
      * @return
      */
-    public Calendar getExtension(Group group, Handin handin) throws SQLException;
+    public String getExemptionNote(int groupID, String partID) throws SQLException;
 
     /**
-     * Returns the Map of Groups to extensions for a specific Handin.
+     * Assigns a grade of score to the group with the given group ID on the part
+     * with the given part ID.
      *
-     * @param handin
-     * @return
-     */
-    public Map<Group, Calendar> getAllExtensions(Handin handin) throws SQLException;
-
-    /**
-     * Returns a string containing a message to indicate why the Group group
-     * has been granted an extension on Handin handin.  Returns null
-     * if the group does not have an extension.
-     *
-     * @param group
-     * @param handin
-     * @return
-     */
-    public String getExtensionNote(Group group, Handin handin) throws SQLException;
-
-
-    /**
-     * Returns the Map of Part to groups for a specific Assignment a.
-     *
-     * @return a map of exemptions given for the given assignment
-     * @throws SQLException
-     */
-    public Map<Part, Collection<Group>> getAllExemptions(Assignment a) throws SQLException;
-
-    /**
-     * Returns a string containing a message to indicate why the Group group
-     * has been granted an exemption on Part part.
-     * Returns null if the group does not have an exemption.
-     *
-     * @param group
-     * @param part
-     * @return
-     */
-    public String getExemptionNote(Group group, Part part) throws SQLException;
-
-    /**
-     * Assigns a grade of score to Group group on Part part.
-     *
-     * @param group
-     * @param part
+     * @param groupID
+     * @param partID
      * @param score
      */
-    public void enterGrade(Group group, Part part, double score) throws SQLException;
+    public void enterGrade(int groupID, String partID, double score) throws SQLException;
 
     /**
-     * Returns the score of Group group on Part part.
+     * Returns the score of the group with the given group ID on the part
+     * with the given part ID, or null if no such score is stored in the database.
      *
-     * @param group
-     * @param part - part getting score for
+     * @param groupID
+     * @param partID
      * @return
      */
-    public Double getGroupScore(Group group, Part part) throws SQLException;
+    public Double getPartScore(int groupID, String partID) throws SQLException;
 
     /**
-     * Returns the score of Group group on an Assignment asgn.
+     * Returns the sum of scores for the group corresponding to the given groupIDs
+     * on the parts corresponding to the given part IDs.  The given Iterable of
+     * part IDs is intended to correspond to the part IDs that make up an Assignment;
+     * however, this is not enforced.  Any parts for which the group does not have
+     * a score will contribute nothing to the returned sum.  (This will be the case
+     * for all parts that do not belong to the assignment corresponding to the group).
+     * 
+     * Note that the returned score does not take into account any handin status points.
      *
-     * @param group
-     * @param asgn - assignment getting score for
+     * @param groupID
+     * @param partIDs
      * @return
      */
-    public Double getGroupAsgnScore(Group group, Assignment asgn) throws SQLException;
+    public Double getScore(int groupID, Iterable<String> partIDs) throws SQLException;
 
     /**
-     * Returns a map of all scores for the specified Groups for the
-     * specified Part with Groups as the keys and their scores as the values.
-     * Any Groups with no score stored in the database will not have an entry
-     * in the returned Map.
+     * Returns a Map that maps a group ID to the score for that group on the
+     * part corresponding to the given part ID for each group ID in the given
+     * Iterable. Any Groups with no score stored in the database will not have
+     * an entry in the returned Map.
      *
-     * @param part
-     * @param groups
+     * @param partID
+     * @param groupIDs
      * @return
      */
-    public Map<Group, Double> getPartScoresForGroups(Part part, Iterable<Group> groups) throws SQLException;
+    public Map<Integer, Double> getPartScores(String partID, Iterable<Integer> groupIDs) throws SQLException;
 
     /**
-     * Returns a map of all scores for the specified Groups for the
-     * specified Assignment with Groups as the keys and their
-     * scores as the values.
-     * @param asgn
-     * @param groups
-     * @return
-     */
-    public Map<Group, Double> getAssignmentScoresForGroups(Assignment asgn, Iterable<Group> groups) throws SQLException;
-
-    /**
-     * pulls the distribution for a DistributablePart from the DB
-     * @param handin
-     * @return
-     */
-    public Map<TA, Collection<Group>> getDistribution(DistributablePart handin) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * adds a set of groups for an Assignment
-     * @param asgn
-     * @param groupings
-     */
-    public void setGroups(Assignment asgn, Collection<Group> groups) throws SQLException;
-
-    /**
-     * adds a group for an Assignment
-     * @param asgn
-     * @param group
-     */
-    public void setGroup(Assignment asgn, Group group) throws SQLException;
-
-    /**
-     * Gets the group for a student for an Assignment. If no group exists then
-     * <code>null</code> is returned.
+     * Returns a Map that maps a groupID to the the sum of scores for the group
+     * on the parts corresponding to the given part IDs, for each groupID in the 
+     * given Iterable of groupIDs.  The given Iterable of part IDs is intended
+     * to correspond to the part IDs that make up an Assignment; however, this
+     * is not enforced.  Any parts for which the group does not have a score will
+     * contribute nothing to the returned sum.  (This will be the case for all parts
+     * that do not belong to the assignment corresponding to the group).
+     * 
+     * Any Groups with no score stored in the database for any of the Parts of
+     * the Assignment will not have an entry in the returned Map.  Note also 
+     * that the scores in the Map do not take into account any handin status points.
      *
-     * @param asgn
-     * @param student
+     * @param partIDs
+     * @param groupIDs
      * @return
      */
-    public Group getStudentsGroup(Assignment asgn, Student student) throws SQLException;
+    public Map<Integer, Double> getScores(Iterable<String> partIDs, Iterable<Integer> groupIDs) throws SQLException;
 
     /**
-     * return all the groups that have been created for an assignment
-     * @param handin
-     * @return
-     */
-    public Collection<Group> getGroupsForAssignment(Assignment asgn) throws SQLException;
-
-    /**
-     * removes a group for a specific Assignment
-     * @param asgn
-     * @param group
-     * @return
-     */
-    public void removeGroup(Assignment asgn, Group group) throws SQLException;
-
-    /**
-     * removes all groups for a specific Assignment
-     * @param asgn
-     * @return
-     */
-    public void removeGroupsForAssignment(Assignment asgn) throws SQLException;
-
-    public TA getGraderForGroup(DistributablePart part, Group group) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * returns all the graders for a specific student
-     * @param studentlogin
-     * @return map of asgn to ta
-     * @throws SQLException
-     * @throws CakeHatDBIOException if a TA login in the database does not correspond
-     *                              to a TA in the config file
-     */
-    public Map<DistributablePart, TA> getGradersForStudent(Student student) throws SQLException, CakeHatDBIOException;
-
-    /**
-     * For the given Handin and Group the HandinStatus is stored in the DB.
-     * In there is an existing record for that Handin and Group the currently stored value is removed.
+     * Stores the given HandinStatus in the database for the group with the
+     * given group ID.  Any existing handin status for the group will be overwritten.
      *
-     * @param handin
-     * @param group
+     * @param groupID
      * @param status
      */
-    public void setHandinStatus(Handin handin, Group group, HandinStatus status) throws SQLException;
+    public void setHandinStatus(int groupID, HandinStatus status) throws SQLException;
 
     /**
-     * For the given Handin and Groups the TimeStatus is stored in the DB.
-     * Statuses maps Groups to their associated HandinStatus.
-     * If there is an existing record for that Handin and Group then currently stored value is removed.
+     * For each group ID key in the given Map, stores the corresponding HandinStatus
+     * in the database for that group.  Any existing handin statuses for the groups
+     * will be overwritten.
      *
-     * @param handin
      * @param statuses
      */
-    public void setHandinStatuses(Handin handin, Map<Group, HandinStatus> statuses) throws SQLException;
+    public void setHandinStatuses(Map<Integer, HandinStatus> statuses) throws SQLException;
 
     /**
-     * The HandinStatus for the Handin and Group is returned. If no record in the DB exists,
-     * null will be returned
+     * Returns the HandinStatus for the group with the given group ID.  If no 
+     * record of the group's handin status exists in the database, null will be
+     * returned.
      *
-     * @param handin
-     * @param group
+     * @param groupID
      * @return
      */
-    public HandinStatus getHandinStatus(Handin handin, Group group) throws SQLException;
+    public HandinStatus getHandinStatus(int groupID) throws SQLException;
 
     /**
-     * Returns whether or not at least one group for the given Handin has had a
-     * handin status set.
+     * Returns whether or not at least one group for the handin corresponding to
+     * the Assignment with the given ID has had a handin status set.  Returns
+     * true if so, and false if not.
      * 
-     * @param handin
+     * @param asgnID
      * @return
-     * @throws SQLException
-     * @throws CakeHatDBIOException
      */
-    public boolean areHandinStatusesSet(Handin handin) throws SQLException, CakeHatDBIOException;
+    public boolean areHandinStatusesSet(String asgnID) throws SQLException, CakeHatDBIOException;
 
     /**
      * Removes all data from database tables and rebuilds the tables. If no DB
      * file exists or is empty then it will be set to the initial configuration.
      */
     public void resetDatabase() throws SQLException;
-    
-    /**
-     * FOR TESTING ONLY!
-     */
-    public void addStudent(int id, String studentLogin, String studentFirstName, String studentLastName) throws SQLException;
 
 }

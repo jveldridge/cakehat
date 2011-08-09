@@ -99,6 +99,7 @@ public class Student implements Comparable<Student> {
         return _login;
     }
 
+    @Override
     public int compareTo(Student t) {
         return _login.compareTo(t._login);
     }

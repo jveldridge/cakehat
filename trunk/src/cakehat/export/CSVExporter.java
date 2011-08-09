@@ -4,7 +4,6 @@ import cakehat.config.Assignment;
 import cakehat.config.Part;
 import java.io.File;
 import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -15,9 +14,9 @@ import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.HandinStatus;
 import cakehat.database.Student;
+import cakehat.services.ServicesException;
 import java.util.ArrayList;
 import cakehat.views.shared.ErrorView;
-import java.util.Comparator;
 
 /**
  * Exports grades and handin status (on time, late, etc. and number of days
@@ -172,7 +171,7 @@ public class CSVExporter implements Exporter
                     if(!_attemptCancel)
                     {
                         try {
-                            Group studentsGroup = Allocator.getDatabase().getStudentsGroup(asgn, student);
+                            Group studentsGroup = Allocator.getDataServices().getGroup(asgn, student);
                             double total = 0;
 
                             for(Part part : asgn.getParts())
@@ -187,8 +186,8 @@ public class CSVExporter implements Exporter
                                 }
 
                                 //If no exemption
-                                if (Allocator.getDatabase().getExemptionNote(studentsGroup, part) == null) {
-                                    Double score = Allocator.getDatabase().getGroupScore(studentsGroup, part);
+                                if (Allocator.getDataServices().getExemptionNote(studentsGroup, part) == null) {
+                                    Double score = Allocator.getDataServices().getScore(studentsGroup, part);
                                     
                                     if (score != null) {
                                         total += score;
@@ -202,7 +201,7 @@ public class CSVExporter implements Exporter
                                 }
                                 
                                 if (part instanceof DistributablePart) {
-                                    HandinStatus handinStatus = Allocator.getDatabase().getHandinStatus(part.getAssignment().getHandin(), studentsGroup);
+                                    HandinStatus handinStatus = Allocator.getDataServices().getHandinStatus(studentsGroup);
                                     if (handinStatus != null) {
                                         printer.append(handinStatus.getTimeStatus() + ",");
                                     }
@@ -214,7 +213,7 @@ public class CSVExporter implements Exporter
                             
                             }
                             printer.append(total + ",");
-                        } catch (SQLException ex) {
+                        } catch (ServicesException ex) {
                             _exportFile.delete();
                             throw new ExportException("Export failed; grades data could not be retrieved " +
                                                       "from the database.", ex);

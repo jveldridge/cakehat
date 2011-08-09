@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -277,17 +276,7 @@ class ManualDistributorView extends JFrame {
             public void valueChanged(ListSelectionEvent e) {
                 try {
                     updateFromList();
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "This view will now close.  If this problem "
-                            + "persists, please send an error report.");
-                    ManualDistributorView.this.dispose();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "This view will now close.  If this problem "
-                            + "persists, please send an error report.");
-                    ManualDistributorView.this.dispose();
-                } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
@@ -487,17 +476,7 @@ class ManualDistributorView extends JFrame {
             public void valueChanged(ListSelectionEvent e) {
                 try {
                     updateToList();
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "This view will now close.  If this problem "
-                            + "persists, please send an error report.");
-                    ManualDistributorView.this.dispose();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. "
-                            + "This view will now close.  If this problem "
-                            + "persists, please send an error report.");
-                    ManualDistributorView.this.dispose();
-                } catch (CakeHatDBIOException ex) {
                     new ErrorView(ex, "An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
                             + "persists, please send an error report.");
@@ -570,22 +549,18 @@ class ManualDistributorView extends JFrame {
         _toTAList.clearSelection();
         _toUnassigned.setSelectedIndex(0);
 
-        try {
-            this.updateFromList();
-            this.updateToList();
-            this.refreshTALists();
-        } catch (CakeHatDBIOException ex) {
-            ex.printStackTrace();
-        }
+        this.updateFromList();
+        this.updateToList();
+        this.refreshTALists();
     }
 
-    private void updateFromList() throws SQLException, ServicesException, CakeHatDBIOException {
+    private void updateFromList() throws ServicesException {
         List<Group> groupsToDisplay;
 
         //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
             _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgnComboBox.getSelectedItem(), _unresolvedHandins).values();
-            _unassignedGroups.removeAll(Allocator.getDatabase().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
+            _unassignedGroups.removeAll(Allocator.getDataServices().getAssignedGroups(_dpComboBox.getSelectedItem()));
             groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
 
             _assignButton.setEnabled(_unassignedGroups.size() > 0);
@@ -594,7 +569,7 @@ class ManualDistributorView extends JFrame {
             ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setValue(_unassignedGroups.size() == 0 ? 0 : 1);
         } else {
             TA fromTA = _fromTAList.getSelectedValue();
-            Collection<Group> studentsAssigned = Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA);
+            Collection<Group> studentsAssigned = Allocator.getDataServices().getAssignedGroups(_dpComboBox.getSelectedItem(), fromTA);
             groupsToDisplay = new LinkedList<Group>(studentsAssigned);
 
             _assignButton.setEnabled(studentsAssigned.size() > 0);
@@ -612,16 +587,16 @@ class ManualDistributorView extends JFrame {
         }
     }
 
-    private void updateToList() throws SQLException, ServicesException, CakeHatDBIOException {
+    private void updateToList() throws ServicesException {
         List<Group> groupsToDisplay;
 
         if (!_toUnassigned.isSelectionEmpty()) {
             _unassignedGroups = Allocator.getGradingServices().getGroupsForHandins(_asgnComboBox.getSelectedItem(), _unresolvedHandins).values();
-            _unassignedGroups.removeAll(Allocator.getDatabase().getAllAssignedGroups(_dpComboBox.getSelectedItem()));
+            _unassignedGroups.removeAll(Allocator.getDataServices().getAssignedGroups(_dpComboBox.getSelectedItem()));
             groupsToDisplay = new LinkedList<Group>(_unassignedGroups);
         } else if (!_toTAList.isSelectionEmpty()) {
             TA toTA = _toTAList.getSelectedValue();
-            groupsToDisplay = new LinkedList<Group>(Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), toTA));
+            groupsToDisplay = new LinkedList<Group>(Allocator.getDataServices().getAssignedGroups(_dpComboBox.getSelectedItem(), toTA));
         } else {
             groupsToDisplay = new LinkedList<Group>();
         }
@@ -639,7 +614,7 @@ class ManualDistributorView extends JFrame {
         this.refreshTALists();
     }
 
-    private void handleSelectedAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
+    private void handleSelectedAssignButtonClick() throws ServicesException, RubricException, CakeHatDBIOException {
         Collection<Group> groups = new ArrayList<Group>(_fromGroupList.getGenericSelectedValues());
 
         //assigning a student who was previously assigned to UNASSIGNED
@@ -657,13 +632,7 @@ class ManualDistributorView extends JFrame {
                         continue;
                     }
 
-                    try {
-                        Allocator.getDatabase().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), ta);
-                    } catch (CakeHatDBIOException ex) {
-                        new ErrorView(ex, "Reassigning failed because the student"
-                                + " was still in another TA's distribution even-though"
-                                + " they were listed as unassigned.");
-                    }
+                    Allocator.getDataServices().assignGroup(group, _dpComboBox.getSelectedItem(), ta);
                 }
 
                 //set handin status for any Group that doesn't already have one;
@@ -688,7 +657,7 @@ class ManualDistributorView extends JFrame {
 
                 for (Group group : groups) {
                     //modify the distribution
-                    Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
+                    Allocator.getDataServices().unassignGroup(group, _dpComboBox.getSelectedItem(), oldTA);
                 }
             }
 
@@ -703,16 +672,8 @@ class ManualDistributorView extends JFrame {
                     }
 
                     //modify the distribution
-                    Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), oldTA);
-
-                    try {
-                        Allocator.getDatabase().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), newTA);
-                    } catch (CakeHatDBIOException ex) {
-                        new ErrorView(ex, "Reassigning failed because the student"
-                                + " was still in another TA's distribution. There"
-                                + " must have been an issue removing them from the"
-                                + " old TAs distribution.");
-                    }
+                    Allocator.getDataServices().unassignGroup(group, _dpComboBox.getSelectedItem(), oldTA);
+                    Allocator.getDataServices().assignGroup(group, _dpComboBox.getSelectedItem(), newTA);
                 }
             }
         }
@@ -722,7 +683,7 @@ class ManualDistributorView extends JFrame {
         _studentFilterBox.requestFocus();
     }
 
-    private void handleRandomAssignButtonClick() throws SQLException, ServicesException, RubricException, CakeHatDBIOException {
+    private void handleRandomAssignButtonClick() throws ServicesException, RubricException, CakeHatDBIOException {
         TA toTA = _toTAList.getSelectedValue();
         TA fromTA = _fromTAList.getSelectedValue();
 
@@ -732,7 +693,7 @@ class ManualDistributorView extends JFrame {
         if (!_fromUnassigned.isSelectionEmpty()) {
             groupsToChoseFrom = new ArrayList<Group>(_unassignedGroups);
         } else {
-            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), fromTA));
+            groupsToChoseFrom = new ArrayList<Group>(Allocator.getDataServices().getAssignedGroups(_dpComboBox.getSelectedItem(), fromTA));
         }
         Collections.shuffle(groupsToChoseFrom);
 
@@ -760,7 +721,7 @@ class ManualDistributorView extends JFrame {
                     break;
                 }
                 
-                Collection<Student> blacklisted = Allocator.getDataServices().getTABlacklist(toTA);
+                Collection<Student> blacklisted = Allocator.getDataServices().getBlacklist(toTA);
                 if (!Allocator.getGeneralUtilities().containsAny(blacklisted, group.getMembers())) {
                     groupsToAssign.add(group);
                     numGroupsAssignedSoFar++;
@@ -788,9 +749,9 @@ class ManualDistributorView extends JFrame {
 
                 //update distribution
                 if (fromTA != null) {
-                    Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
+                    Allocator.getDataServices().unassignGroup(group, _dpComboBox.getSelectedItem(), fromTA);
                 }
-                Allocator.getDatabase().assignGroupToGrader(group, _dpComboBox.getSelectedItem(), toTA);
+                Allocator.getDataServices().assignGroup(group, _dpComboBox.getSelectedItem(), toTA);
 
             }
 
@@ -809,7 +770,7 @@ class ManualDistributorView extends JFrame {
         } //assigning to UNASSIGNED from a TA
         else if (fromTA != null) {
             for (Group group : groupsToAssign) {
-                Allocator.getDatabase().unassignGroupFromGrader(group, _dpComboBox.getSelectedItem(), fromTA);
+                Allocator.getDataServices().unassignGroup(group, _dpComboBox.getSelectedItem(), fromTA);
             }
         }
 
@@ -837,11 +798,8 @@ class ManualDistributorView extends JFrame {
             TA selectedTA = _fromTAList.getSelectedValue();
             Collection<Group> groups;
             try {
-                groups = Allocator.getDatabase().getGroupsAssigned(_dpComboBox.getSelectedItem(), selectedTA);
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Unable to filter student/group list");
-                return;
-            } catch (CakeHatDBIOException ex) {
+                groups = Allocator.getDataServices().getAssignedGroups(_dpComboBox.getSelectedItem(), selectedTA);
+            } catch (ServicesException ex) {
                 new ErrorView(ex, "Unable to filter student/group list");
                 return;
             }
@@ -887,12 +845,8 @@ class ManualDistributorView extends JFrame {
         public void updateData() {
             _distribution = null;
             try {
-                _distribution = Allocator.getDatabase().getDistribution(_dpComboBox.getSelectedItem());
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Unable to distribution data. The user " +
-                        "interface will be unable to display the number of" +
-                        "students/groups assigned to each TA.");
-            } catch (CakeHatDBIOException ex) {
+                _distribution = Allocator.getDataServices().getDistribution(_dpComboBox.getSelectedItem());
+            } catch (ServicesException ex) {
                 new ErrorView(ex, "Unable to distribution data. The user " +
                         "interface will be unable to display the number of" +
                         "students/groups assigned to each TA.");

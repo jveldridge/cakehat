@@ -99,6 +99,28 @@ public interface FileSystemUtilities
     }
 
     /**
+     * Creates an empty file in the default temporary-file directory, using the
+     * given prefix and suffix to generate its name.  Deletion of the file will
+     * be attempted on JVM shutdown.  This is accomplished via the built-in
+     * {@link File#createTempFile(java.lang.String, java.lang.String) } and
+     * {@link File#deleteOnExit() } methods.
+     * 
+     * @return 
+     */
+    public File createTempFile(String prefix, String suffix) throws IOException;
+    
+    /**
+     * Creates a new empty file in the specified directory, using the given 
+     * prefix and suffix strings to generate its name. Deletion of the file will
+     * be attempted on JVM shutdown.  This is accomplished via the built-in
+     * {@link File#createTempFile(java.lang.String, java.lang.String, java.io.File) } and
+     * {@link File#deleteOnExit() } methods.
+     * 
+     * @return 
+     */
+    public File createTempFile(String prefix, String suffix, File directory) throws IOException;
+    
+    /**
      * Returns a Calendar that represents the last modified date and time
      * of the file.
      *

@@ -515,7 +515,6 @@ public class Allocator
         public Customizer setConfigurationInfo(SingletonAllocation<ConfigurationInfo> configInfo)
         {
             _configInfo = configInfo;
-
             return this;
         }
 

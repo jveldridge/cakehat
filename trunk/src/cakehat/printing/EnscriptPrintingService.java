@@ -53,7 +53,9 @@ public class EnscriptPrintingService extends PrintingService
     private File convertRequest(PrintRequest request) throws IOException
     {
         //Create temp file that combines the entire request into one file
-        File tmpFile = File.createTempFile("request", null, Allocator.getPathServices().getUserWorkspaceDir());
+        File tmpFile = Allocator.getFileSystemUtilities().createTempFile("request",
+                                                                         null,
+                                                                         Allocator.getPathServices().getUserWorkspaceDir());
 
         //Confirm the temporary file was created
         if(tmpFile == null)
