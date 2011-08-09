@@ -1,24 +1,30 @@
 package cakehat.database;
 
 import com.google.common.collect.ImmutableList;
-import cakehat.Allocator;
+import cakehat.config.Assignment;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * A group of students.
+ * Represents a group of students working together on an assignment.
+ * Groups are compared and sorted based on Assignment and then group name.
  *
  * @author jak2
+ * @author jeldridg
  */
 public class Group implements Comparable<Group>
 {
-    private final String _name;
-    private final List<Student> _members;
-    private final List<String> _memberLogins;
+    private final int _dbId;
+    private final Assignment _assignment;
+    private String _name;
+    private List<Student> _members;
+    private List<String> _memberLogins;
 
-    public Group(String name, Collection<Student> members)
+    Group(int dbId, Assignment asgn, String name, Collection<Student> members)
     {
+        _dbId = dbId;
+        _assignment = asgn;
         _name = name;
         _members = ImmutableList.copyOf(members);
         
@@ -29,9 +35,17 @@ public class Group implements Comparable<Group>
         _memberLogins = loginsBuilder.build();
     }
 
-    public Group(String name, Student... members)
+    Group(int dbId, Assignment asgn, String name, Student... members)
     {
-        this(name, Arrays.asList(members));
+        this(dbId, asgn, name, Arrays.asList(members));
+    }
+    
+    int getDbId() {
+        return _dbId;
+    }
+    
+    public Assignment getAssignment() {
+        return _assignment;
     }
 
     public String getName()
@@ -51,6 +65,25 @@ public class Group implements Comparable<Group>
     public int size() {
         return _members.size();
     }
+    
+    /**
+     * Updates the fields of this Group object to have the given values.
+     * This method should be called only by {@link DataServices} to ensure
+     * consistency with the database.
+     * 
+     * @param name
+     * @param members
+     */
+    void update(String name, Collection<Student> members) {
+        _name = name;
+        _members = ImmutableList.copyOf(members);
+        
+        ImmutableList.Builder<String> loginsBuilder = ImmutableList.builder();
+        for (Student member : _members) {
+            loginsBuilder.add(member.getLogin());
+        }
+        _memberLogins = loginsBuilder.build();
+    }
 
     @Override
     public String toString()
@@ -59,23 +92,11 @@ public class Group implements Comparable<Group>
     }
 
     @Override
-    public int compareTo(Group t) {
-        return this.getName().compareTo(t.getName());
-    }
-
-    @Override
-    public int hashCode() {
-        return _name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Group) {
-            Group group = (Group) o;
-            return this.getName().equals(group.getName()) &&
-                    Allocator.getGeneralUtilities().containSameElements(this.getMembers(), group.getMembers());
+    public int compareTo(Group g) {
+        if (this.getAssignment().equals(g.getAssignment()))  {
+            return this.getName().compareTo(g.getName());
         }
-
-        return false;
+        return this.getAssignment().compareTo(g.getAssignment());
     }
+
 }

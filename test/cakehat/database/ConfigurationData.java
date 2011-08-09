@@ -1,6 +1,9 @@
 package cakehat.database;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
+import java.util.Random;
+import java.util.Collection;
 import cakehat.config.Assignment;
 import cakehat.config.LabPart;
 import cakehat.config.NonHandinPart;
@@ -10,7 +13,6 @@ import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.UUID;
 
 import static org.easymock.EasyMock.*;
@@ -34,42 +36,21 @@ public class ConfigurationData
     }
 
     
-    private static AtomicInteger _idGenerator = new AtomicInteger(1);
+    private static AtomicInteger _studentIdGenerator = new AtomicInteger(1);
     
     public static Student generateRandomStudent()
     {
-        Student student = createMock(Student.class);
+        int dbID = _studentIdGenerator.getAndIncrement();
         String login = generateRandomString();
         String firstName = generateRandomString();
         String lastName = generateRandomString();
-        String emailAddress = login + "@cs.brown.edu";
 
-        expect(student.getDbId()).andReturn(_idGenerator.getAndIncrement()).anyTimes();
-        expect(student.getLogin()).andReturn(login).anyTimes();
-        expect(student.getFirstName()).andReturn(firstName).anyTimes();
-        expect(student.getLastName()).andReturn(lastName).anyTimes();
-        expect(student.getName()).andReturn(firstName + " " + lastName).anyTimes();
-        expect(student.getEmailAddress()).andReturn(emailAddress).anyTimes();
-        expect(student.isEnabled()).andReturn(true).anyTimes();
-        replay(student);
-
-        return student;
+        return new Student(dbID, login, firstName, lastName, true);
     }
-
-    public static Student generateStudent(String login, String firstName,
+    
+    public static Student generateStudent(int id, String login, String firstName,
                                           String lastName, String email, boolean isEnabled) {
-        Student student = createMock(Student.class);
-        
-        expect(student.getDbId()).andReturn(_idGenerator.getAndIncrement()).anyTimes();
-        expect(student.getLogin()).andReturn(login).anyTimes();
-        expect(student.getFirstName()).andReturn(firstName).anyTimes();
-        expect(student.getLastName()).andReturn(lastName).anyTimes();
-        expect(student.getName()).andReturn(firstName + " " + lastName).anyTimes();
-        expect(student.getEmailAddress()).andReturn(email).anyTimes();
-        expect(student.isEnabled()).andReturn(isEnabled).anyTimes();
-        replay(student);
-
-        return student;
+        return new Student(id, login, firstName, lastName, isEnabled);
     }
 
     private static String generateRandomName()
@@ -104,6 +85,18 @@ public class ConfigurationData
         replay(asgn);
 
         return handin;
+    }
+    
+    public static Assignment generateRandomAssignment() {
+        int choice = (int) Math.random() * 3;
+        switch (choice) {
+            case 0:
+                return generateAssignmentNotJustDistributableParts();
+            case 1:
+                return generateAssignmentWithMutuallyExclusive();
+            default:
+                return generateAssignmentWithTwoDistributableParts();
+        }          
     }
 
     public static Assignment generateAssignmentWithTwoDistributableParts()
@@ -220,18 +213,34 @@ public class ConfigurationData
         return asgn;
     }
 
-    public static Group generateRandomGroup() {
+    public static NewGroup generateNewGroup(Assignment asgn, Student student) {
+        return new NewGroup(asgn, student);
+    }
+    
+    public static NewGroup generateNewGroup(Assignment asgn, String name, Student... members) {
+        return new NewGroup(asgn, name, members);
+    }
+    
+    public static NewGroup generateNewGroup(Assignment asgn, String name, Collection<Student> members) {
+        return new NewGroup(asgn, name, members);
+    }
+    
+    public static Group generateGroup(int dbID, Assignment asgn, String name, Student... members) {
+        return new Group(dbID, asgn, name, members);
+    }
+    
+    public static NewGroup generateRandomGroup() {
         Random rand = new Random();
         int numMembers = rand.nextInt(5) + 1;
-        ArrayList<Student> members = new ArrayList<Student>();
+        List<Student> members = new ArrayList<Student>(numMembers);
         for (int i = 0; i < numMembers; i++) {
             members.add(generateRandomStudent());
         }
-        return new Group(generateRandomString(), members);
-    }
-
-    public static Group generateGroup(String name, Student... members) {
-        return new Group(name, members);
+        
+        Assignment asgn = generateRandomAssignment();
+        String name = generateRandomString();
+        
+        return new NewGroup(asgn, name, members);
     }
 
 }

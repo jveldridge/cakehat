@@ -50,9 +50,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import cakehat.Allocator;
-import cakehat.CakehatException;
 import cakehat.CakehatMain;
-import cakehat.MissingUserActionException;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.MissingHandinException;
@@ -176,7 +174,6 @@ public class AdminView extends JFrame
     private CardLayout _cardLayout;
     private SinglePartPanel _singlePartPanel;
     private SingleSelectionPanel _singleSelectionPanel;
-    private Map<Assignment, Map<Student, Group>> _groupsCache = new HashMap<Assignment, Map<Student, Group>>();
 
     private AdminView(boolean isSSH)
     {
@@ -1060,11 +1057,9 @@ public class AdminView extends JFrame
             
             for (Assignment asgn : selection.keySet()) {
                 try {
-                    studentToGroups.get(student).put(asgn, this.getGroup(asgn, student));
-                } catch (MissingUserActionException ex) {
-                    missing.add(asgn);
-                }  catch (CakehatException ex) {
-                   new ErrorView(ex);
+                    studentToGroups.get(student).put(asgn, Allocator.getDataServices().getGroup(asgn, student));
+                } catch (ServicesException ex) {
+                   missing.add(asgn);
                 }
             }
 
@@ -1534,8 +1529,8 @@ public class AdminView extends JFrame
 
         Group group;
         try {
-            group = this.getGroup(asgn, student);
-        } catch (CakehatException ex) {
+            group = Allocator.getDataServices().getGroup(asgn, student);
+        } catch (ServicesException ex) {
             new ErrorView(ex);
             return;
         }
@@ -1550,10 +1545,10 @@ public class AdminView extends JFrame
         Assignment asgn = this.getSingleSelectedAssignment(selection);
         Student selectedStudent = _studentList.getSelectedValue();
         Group group = null;
-        if (selectedStudent!=null){
+        if (selectedStudent != null) {
             try {
-                group = this.getGroup(asgn, selectedStudent);
-            } catch (CakehatException ex) {
+                group = Allocator.getDataServices().getGroup(asgn, selectedStudent);
+            } catch (ServicesException ex) {
                 new ErrorView(ex);
                 return;
             }
@@ -1570,8 +1565,8 @@ public class AdminView extends JFrame
 
         Group group;
         try {
-            group = this.getGroup(asgn, student);
-        } catch (CakehatException ex) {
+            group = Allocator.getDataServices().getGroup(asgn, student);
+        } catch (ServicesException ex) {
             new ErrorView(ex);
             return;
         }
@@ -1594,8 +1589,8 @@ public class AdminView extends JFrame
 
         Group group;
         try {
-            group = this.getGroup(asgn, student);
-        } catch (CakehatException ex) {
+            group = Allocator.getDataServices().getGroup(asgn, student);
+        } catch (ServicesException ex) {
             new ErrorView(ex);
             return;
         }
@@ -1618,8 +1613,8 @@ public class AdminView extends JFrame
 
         Group group;
         try {
-            group = this.getGroup(asgn, student);
-        } catch (CakehatException ex) {
+            group = Allocator.getDataServices().getGroup(asgn, student);
+        } catch (ServicesException ex) {
             new ErrorView(ex);
             return;
         }
@@ -1645,7 +1640,7 @@ public class AdminView extends JFrame
 
         try {
             for (Student student : _studentList.getGenericSelectedValues()) {
-                Group group = this.getGroup(asgn, student);
+                Group group = Allocator.getDataServices().getGroup(asgn, student);
                 
                 File handin = null;
                 try {
@@ -1660,8 +1655,9 @@ public class AdminView extends JFrame
                     groupsWithoutCode.add(group);
                 }
             }
-        } catch (CakehatException ex) {
-            new ErrorView(ex, "Could not print code.");
+        } catch (ServicesException ex) {
+            new ErrorView(ex);
+            return;
         }
 
         if (groupsWithoutCode.size() > 0) {
@@ -1694,9 +1690,9 @@ public class AdminView extends JFrame
         DistributablePart dp = this.getSingleSelectedDP(_assignmentTree.getSelection());
         Group group;
         try {
-            group = this.getGroup(dp.getAssignment(), student);
-        } catch (CakehatException ex) {
-            this.dieNoGroup(ex, student, dp.getAssignment());
+            group = Allocator.getDataServices().getGroup(dp.getAssignment(), student);
+        } catch (ServicesException ex) {
+            new ErrorView(ex);
             return;
         }
 
@@ -1717,8 +1713,8 @@ public class AdminView extends JFrame
 
         Group group;
         try {
-            group = this.getGroup(asgn, student);
-        } catch (CakehatException ex) {
+            group = Allocator.getDataServices().getGroup(asgn, student);
+        } catch (ServicesException ex) {
             new ErrorView(ex);
             return;
         }
@@ -1767,8 +1763,8 @@ public class AdminView extends JFrame
         for (Student student : students) {
             Group group;
             try {
-                group = this.getGroup(asgn, student);
-            } catch (CakehatException ex) {
+                group = Allocator.getDataServices().getGroup(asgn, student);
+            } catch (ServicesException ex) {
                 studentsWithoutGroups.add(student);
                 continue;
             }
@@ -1890,34 +1886,10 @@ public class AdminView extends JFrame
 
         return null;
     }
-
-    void updateGroupsCache(Assignment asgn) {
-        try {
-             Map<Student, Group> studentsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
-             _groupsCache.put(asgn, studentsToGroups);
-        } catch (ServicesException ex) {
-            new ErrorView(ex, "Could not update groups cache for assignment " + asgn + ".");
-        }
-
-        this.updateStudentListEnabledState();
-    }
     
     private void assignmentTreeValueChanged(Map<Assignment, List<Part>> selection) {
         _messageLabel.setText("");
         _studentList.setEnabled(true);
-
-        //get Group objects
-        for (Assignment asgn : selection.keySet()) {
-            if (!_groupsCache.containsKey(asgn)) {
-                Map<Student, Group> loginsToGroups = Collections.emptyMap();
-                try {
-                    loginsToGroups = Allocator.getGradingServices().getGroupsForStudents(asgn);
-                } catch (ServicesException ex) {
-                    new ErrorView(ex, "Could not get Group objects for assignment " + asgn + ".");
-                }
-                _groupsCache.put(asgn, loginsToGroups);
-            }
-        }
 
         DistributablePart dp = this.getSingleSelectedDP(selection);
         if (dp != null) {
@@ -1943,14 +1915,20 @@ public class AdminView extends JFrame
         //admin functionality works without groups set
         boolean needsToBeDisabled = false;
         for (Assignment asgn : _assignmentTree.getSelection().keySet()) {
-            if (asgn.hasGroups()
-                    && _groupsCache.get(asgn).isEmpty()) {
-                _studentList.clearSelection();
-                _studentList.setEnabled(false);
-                _messageLabel.setText("NOTE: No groups have yet been created for this assignment.");
+            Collection<Group> groups;
+            try {
+                groups = Allocator.getDataServices().getGroups(asgn);
 
-                needsToBeDisabled = true;
-                break;
+                if (asgn.hasGroups() && groups.isEmpty()) {
+                    _studentList.clearSelection();
+                    _studentList.setEnabled(false);
+                    _messageLabel.setText("NOTE: No groups have yet been created for this assignment.");
+
+                    needsToBeDisabled = true;
+                    break;
+                }
+            } catch (ServicesException ex) {
+                new ErrorView(ex);
             }
         }
 
@@ -1958,34 +1936,6 @@ public class AdminView extends JFrame
             _messageLabel.setText(null);
             _studentList.setEnabled(true);
         }
-    }
-
-    private Group getGroup(Assignment asgn, Student student) throws CakehatException {
-        if (!_groupsCache.get(asgn).containsKey(student) && !asgn.hasGroups()) {
-            Group newGroup = new Group(student.getLogin(), student);
-
-            try {
-                Allocator.getDatabase().setGroup(asgn, newGroup);
-                _groupsCache.get(asgn).put(student, newGroup);
-            } catch (SQLException ex) {
-                throw new CakehatException("Could not create group of one for " +
-                                           "student " + student + " on " +
-                                           "assignment " + asgn + ".", ex);
-            }
-        }
-
-        if (!_groupsCache.get(asgn).containsKey(student)) {
-            throw new MissingUserActionException("Could not retrieve group for student " +
-                                       student + " on assignment " + asgn + ". " +
-                                       "Check to make sure that the student has been " +
-                                       "assigned to a group.");
-        }
-        return _groupsCache.get(asgn).get(student);
-    }
-
-    private void dieNoGroup(Exception ex, Student student, Assignment asgn) {
-        new ErrorView(ex, "Could not get the group for student " + student + " on " +
-                          "assignment " + asgn + ".");
     }
 
     private void studentListValueChanged()

@@ -84,6 +84,15 @@ public interface ConfigurationInfo
      * @return
      */
     public TA getTA(String taLogin);
+    
+    /**
+     * Returns the Assignment object representing the assignment with the given
+     * database ID.  Returns null if no such Assignment exists.
+     * 
+     * @param asgnID
+     * @return 
+     */
+    public Assignment getAssignment(String asgnID);
 
     /**
      * Returns an immutable list of all assignments that have a handin.

@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import javax.swing.Box;
@@ -25,7 +24,6 @@ import cakehat.Allocator;
 import cakehat.CakehatMain;
 import cakehat.config.TimeInformation;
 import cakehat.config.handin.DistributablePart;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
@@ -67,9 +65,9 @@ class ExtensionView extends JFrame
         try
         {
             //Get extension, if none available default to on time date
-            _extensionDate = Allocator.getDatabase().getExtension(group, asgn.getHandin());
+            _extensionDate = Allocator.getDataServices().getExtension(group);
         }
-        catch (SQLException ex)
+        catch (ServicesException ex)
         {
             new ErrorView(ex, "Could not retrieve extension information for student " +
                                group + " for assignment " + asgn + ".  Assuming that the " +
@@ -164,9 +162,9 @@ class ExtensionView extends JFrame
         String comment = null;
         try
         {
-            comment = Allocator.getDatabase().getExtensionNote(_group, _asgn.getHandin());
+            comment = Allocator.getDataServices().getExtensionNote(_group);
         }
-        catch (SQLException ex)
+        catch (ServicesException ex)
         {
             new ErrorView(ex, "Could not retrieve the extension note for student " +
                               _group + " " + "on assignment " + _asgn + ".");
@@ -212,10 +210,10 @@ class ExtensionView extends JFrame
                 //Call to remove extension
                 try
                 {
-                    Allocator.getDatabase().removeExtension(_group, _asgn.getHandin());
+                    Allocator.getDataServices().removeExtension(_group);
                     JOptionPane.showMessageDialog(ExtensionView.this, "Extension removed successfully.");
                 }
-                catch (SQLException ex)
+                catch (ServicesException ex)
                 {
                     new ErrorView(ex, "Removing the extension for group " + _group + " " +
                                       "on assignment " + _asgn + " failed.");
@@ -237,7 +235,7 @@ class ExtensionView extends JFrame
                 Calendar cal = getCalendar();
                 try
                 {
-                    Allocator.getDatabase().grantExtension(_group, _asgn.getHandin(), cal, text);
+                    Allocator.getDataServices().grantExtension(_group, cal, text);
                     
                     String successMessage = "Extension added successfully.";
 
@@ -263,7 +261,7 @@ class ExtensionView extends JFrame
                     
                     JOptionPane.showMessageDialog(ExtensionView.this, successMessage);
                 } 
-                catch (SQLException ex)
+                catch (ServicesException ex)
                 {
                     new ErrorView(ex, "Granting the extension for group " + _group + " " +
                                       "on assignment " + _asgn + " failed.");
@@ -430,18 +428,13 @@ class ExtensionView extends JFrame
         {
             try
             {
-                if(Allocator.getDatabase().getAllAssignedGroups(part).contains(_group))
+                if(Allocator.getDataServices().getAssignedGroups(part).contains(_group))
                 {
                     alreadyDistributed = true;
                     break;
                 }
             }
-            catch(SQLException e)
-            {
-                new ErrorView(e, "Unable to determine if " + _group + " has " +
-                        "been assigned to a TA for assignment part " + part);
-            }
-            catch(CakeHatDBIOException e)
+            catch(ServicesException e)
             {
                 new ErrorView(e, "Unable to determine if " + _group + " has " +
                         "been assigned to a TA for assignment part " + part);
@@ -503,13 +496,13 @@ class ExtensionView extends JFrame
         Assignment asgn = Allocator.getConfigurationInfo().getHandinAssignments().get(0);
         try
         {
-            Group group = Allocator.getDatabase().getGroupsForAssignment(asgn).iterator().next();
+            Group group = Allocator.getDataServices().getGroups(asgn).iterator().next();
 
             ExtensionView view = new ExtensionView(asgn, group);
             view.setLocationRelativeTo(null);
             view.setVisible(true);
         }
-        catch (SQLException ex)
+        catch (ServicesException ex)
         {
             ex.printStackTrace();
         }

@@ -204,6 +204,23 @@ public class Assignment implements Comparable<Assignment>
 
         return _allParts;
     }
+    
+    private List<String> _allPartIDs;
+    public List<String> getPartIDs() {
+        //If this has not been created yet, build it
+        if(_allPartIDs == null)
+        {
+            ImmutableList.Builder<String> builder = ImmutableList.builder();
+
+            for (Part p : getParts()) {
+                builder.add(p.getDBID());
+            }
+
+            _allPartIDs = builder.build();
+        }
+
+        return _allPartIDs;
+    }
 
     public Multimap<Integer, Part> _allPartsMultimap;
     /**

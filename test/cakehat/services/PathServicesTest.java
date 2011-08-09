@@ -6,8 +6,9 @@ import cakehat.config.Assignment;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
-import cakehat.database.ConfigurationData;
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 import support.utils.CalendarUtilities;
@@ -38,14 +39,17 @@ public class PathServicesTest
     private PathServices _service;
 
     @Before
-    public void setup()
+    public void setup() throws ServicesException, IOException, SQLException
     {
         //Mock group
-        _group = ConfigurationData.generateGroup(GROUP_NAME);
+        _group = createMock(Group.class);
+        expect(_group.getName()).andReturn(GROUP_NAME).anyTimes();
+        replay(_group);
 
         //Create mocked assignment, handin, and part objects
         _assignment = createMock(Assignment.class);
         expect(_assignment.getName()).andReturn(ASSIGNMENT_NAME).anyTimes();
+        expect(_assignment.getDBID()).andReturn(ASSIGNMENT_NAME).anyTimes();
 
         _handin = createMock(Handin.class);
         expect(_handin.getAssignment()).andReturn(_assignment).anyTimes();
@@ -59,7 +63,7 @@ public class PathServicesTest
         replay(_assignment);
         replay(_handin);
         replay(_part);
-
+        
         //Mock out course information
         final CourseInfo courseInfo = createMock(CourseInfo.class);
         expect(courseInfo.getCourse()).andReturn(COURSE).anyTimes();
@@ -89,7 +93,8 @@ public class PathServicesTest
             {
                 public UserUtilities allocate() { return userUtil; };
             };
-
+        
+        
         new Allocator.Customizer()
                 .setCourseInfo(courseInfoAlloc)
                 .setCalendarUtils(calendarUtilAlloc)
@@ -98,7 +103,6 @@ public class PathServicesTest
 
         _service = Allocator.getPathServices();
     }
-
 
     @Test
     public void testGetCourseDir()

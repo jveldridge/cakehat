@@ -1,6 +1,5 @@
 package cakehat.rubric;
 
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.HandinStatus;
 import cakehat.services.ServicesException;
 import java.awt.Color;
@@ -10,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.Calendar;
-import java.util.Map;
 import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -35,10 +33,8 @@ import cakehat.database.Student;
 import cakehat.views.shared.ErrorView;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -81,8 +77,8 @@ class RubricPanel extends JPanel
         //if _stateManager is null, template rubric; no student or grader
         if (_stateManager != null) {
             try {
-                _status = Allocator.getDatabase().getHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup());
-            } catch (SQLException ex) {
+                _status = Allocator.getDataServices().getHandinStatus(_rubric.getGroup());
+            } catch (ServicesException ex) {
                 new ErrorView(ex, "Could not get handin status.  On-time status will be assumed.");
                 _status = new HandinStatus(TimeStatus.ON_TIME, 0);
             }
@@ -542,10 +538,8 @@ class RubricPanel extends JPanel
 
         TA grader = null;
         try {
-            grader = Allocator.getDatabase().getGraderForGroup(_rubric.getDistributablePart(), _rubric.getGroup());
-        } catch (SQLException e) {
-            new ErrorView(e, "Could not get the grading TA.");
-        } catch (CakeHatDBIOException e) {
+            grader = Allocator.getDataServices().getGrader(_rubric.getDistributablePart(), _rubric.getGroup());
+        } catch (ServicesException e) {
             new ErrorView(e, "Could not get the grading TA.");
         }
 
@@ -688,8 +682,8 @@ class RubricPanel extends JPanel
 
         //Status
         try {
-            _status = Allocator.getDatabase().getHandinStatus(_rubric.getDistributablePart().getHandin(), _rubric.getGroup());
-        } catch (SQLException ex) {
+            _status = Allocator.getDataServices().getHandinStatus(_rubric.getGroup());
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Could not get time status; assuming on-time handin.");
             _status = new HandinStatus(TimeStatus.ON_TIME, 0);
         }

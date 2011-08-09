@@ -6,7 +6,6 @@ import cakehat.config.TA;
 import cakehat.config.handin.ActionException;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.MissingHandinException;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
@@ -1168,7 +1167,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                             _groupList.getListData());
                     disablePanel.add(submitPanel);
                 }
-                catch(SQLException e)
+                catch(ServicesException e)
                 {
                     showNormalContentInFrame();
                     new ErrorView(e, "Unable to show submit grading view due to database issues");
@@ -1333,14 +1332,14 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         new HashMap<DistributablePart, List<GroupStatus>>();
                 try
                 {
-                    Set<DistributablePart> parts = Allocator.getDatabase().getDPsWithAssignedStudents(USER);
+                    Set<DistributablePart> parts = Allocator.getDataServices().getDPsWithAssignedGroups(USER);
                     for(DistributablePart part : parts)
                     {
                         part.getHandin().clearHandinCache();
 
-                        Collection<Group> groups = Allocator.getDatabase().getGroupsAssigned(part, USER);
-                        Map<Group, Double> submittedScores = Allocator.getDatabase()
-                                .getPartScoresForGroups(part, groups);
+                        Collection<Group> groups = Allocator.getDataServices().getAssignedGroups(part, USER);
+                        Map<Group, Double> submittedScores = Allocator.getDataServices()
+                                .getScores(part, groups);
                         Map<Group, Double> rubricScores = Allocator.getRubricManager()
                                 .getPartScores(part, groups);
 
@@ -1368,13 +1367,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         }
                     }
                 }
-                catch (CakeHatDBIOException ex)
-                {
-                    new ErrorView(ex, "Unable to retrieve information on who you have " +
-                            "been assigned to grade");
-                    return;
-                }
-                catch (SQLException ex)
+                catch (ServicesException ex)
                 {
                     new ErrorView(ex, "Unable to retrieve information on who you have " +
                             "been assigned to grade");

@@ -11,6 +11,7 @@ import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -157,8 +158,8 @@ public class StatHistView extends JFrame {
             for (Assignment a : _assignments) {
                 Collection<Group> groups;
                 try {
-                    groups = Allocator.getDatabase().getGroupsForAssignment(a);
-                } catch (SQLException ex) {
+                    groups = Allocator.getDataServices().getGroups(a);
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "Could not get groups for assignment " + a + ".");
                     groups = Collections.emptyList();
                 }
@@ -179,8 +180,8 @@ public class StatHistView extends JFrame {
             for (Part p : _parts) {
                 Collection<Group> groups;
                 try {
-                    groups = Allocator.getDatabase().getGroupsForAssignment(p.getAssignment());
-                } catch (SQLException ex) {
+                    groups = Allocator.getDataServices().getGroups(p.getAssignment());
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "Could not get groups for assignment " + p.getAssignment() + ".");
                     groups = Collections.emptyList();
                 }

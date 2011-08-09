@@ -1,11 +1,8 @@
 package cakehat.views.admin;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.sql.SQLException;
 import java.util.Scanner;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -13,13 +10,14 @@ import javax.swing.filechooser.FileFilter;
 import cakehat.Allocator;
 import cakehat.config.Assignment;
 import cakehat.database.Group;
+import cakehat.database.NewGroup;
 import cakehat.database.Student;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -83,8 +81,8 @@ class GroupsView extends javax.swing.JFrame {
     private void selectGroupsFileActionPerformed() {
         Collection<Group> groupAlready = null;
         try {
-            groupAlready = Allocator.getDatabase().getGroupsForAssignment(_asgn);
-        } catch (SQLException ex) {
+            groupAlready = Allocator.getDataServices().getGroups(_asgn);
+        } catch (ServicesException ex) {
             new ErrorView(ex,"Groups could not be retrieved from the DB. We therefore can't determine if groups already exist.");
         }
 
@@ -102,8 +100,8 @@ class GroupsView extends javax.swing.JFrame {
                 return;
             }
             try {
-                Allocator.getDatabase().removeGroupsForAssignment(_asgn);
-            } catch (SQLException ex) {
+                Allocator.getDataServices().removeGroups(_asgn);
+            } catch (ServicesException ex) {
                new ErrorView(ex, "Groups could not be removed from the database.");
                return;
             }
@@ -117,7 +115,7 @@ class GroupsView extends javax.swing.JFrame {
         int selection = fc.showOpenDialog(this);
 
         if (selection == JFileChooser.APPROVE_OPTION) {
-            Collection<Group> groupsToAdd = new LinkedList<Group>();
+            Collection<NewGroup> groupsToAdd = new LinkedList<NewGroup>();
 
             File groupFile = fc.getSelectedFile();
             Scanner gScanner = null;
@@ -136,43 +134,46 @@ class GroupsView extends javax.swing.JFrame {
 
                 Collection<Student> members = new LinkedList<Student>();
                 for (int i = 0; i < groupMemberLogin.length; i++) {
-                    if (Allocator.getDataServices().isStudentLoginInDatabase(groupMemberLogin[i])) {
-                        members.add(Allocator.getDataServices().getStudentFromLogin(groupMemberLogin[i]));
-                    }
-                    else {
-                        JOptionPane.showMessageDialog(this, groupMemberLogin[i] + " is not a student in the DB. Please fix the groups file or add the student.");
-                        return;
+                    try {
+                        if (Allocator.getDataServices().isStudentLoginInDatabase(groupMemberLogin[i])) {
+                            members.add(Allocator.getDataServices().getStudentFromLogin(groupMemberLogin[i]));
+                        }
+                        else {
+                            JOptionPane.showMessageDialog(this, groupMemberLogin[i] + " is not a student in the DB. Please fix the groups file or add the student.");
+                            return;
+                        }
+                    } catch (ServicesException ex) {
+                        new ErrorView(ex, "Could not determine if login [" + groupMemberLogin[i] + "] "
+                                + "represents a student in the database.");
                     }
                 }
 
-                groupsToAdd.add(new Group(groupName, members));
+                groupsToAdd.add(new NewGroup(_asgn, groupName, members));
             }
             try {
-                Allocator.getDatabase().setGroups(_asgn, groupsToAdd);
-            } catch (SQLException ex) {
-                new ErrorView(ex, "Saving groups info to the database failed.");
+                Allocator.getDataServices().addGroups(groupsToAdd);
+            } catch (ServicesException ex) {
+                new ErrorView(ex);
                 return;
             }
 
             JOptionPane.showMessageDialog(this, "Group Import Successful!");
-            _admin.updateGroupsCache(_asgn);
         }
     }
 
     private void removeGroupsActionPerformed() {
-        try {
-            int doRemove = JOptionPane.showConfirmDialog(this, "<html><p>Are you sure you want to remove all the groups for assignment: " + _asgn.getName() + "?</p>" +
-                                                               "<p>Note: this will removed all information associated with that group, including grades.</p></html>",
-                    "Confirm Remove",
-                    JOptionPane.YES_NO_OPTION);
-            if (doRemove != JOptionPane.YES_OPTION) {
-                return;
-            }
-            Allocator.getDatabase().removeGroupsForAssignment(_asgn);
+        int doRemove = JOptionPane.showConfirmDialog(this, "<html><p>Are you sure you want to remove all the groups for assignment: " + _asgn.getName() + "?</p>"
+                + "<p>Note: this will removed all information associated with that group, including grades.</p></html>",
+                                                     "Confirm Remove",
+                                                     JOptionPane.YES_NO_OPTION);
+        if (doRemove != JOptionPane.YES_OPTION) {
+            return;
+        }
 
+        try {
+            Allocator.getDataServices().removeGroups(_asgn);
             JOptionPane.showMessageDialog(this, "Groups removed successfully.");
-            _admin.updateGroupsCache(_asgn);
-        } catch (SQLException ex) {
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Groups could not be removed from the database.");
         }
     }

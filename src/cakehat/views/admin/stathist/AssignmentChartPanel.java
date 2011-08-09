@@ -3,13 +3,13 @@ package cakehat.views.admin.stathist;
 import cakehat.config.Assignment;
 import cakehat.config.Part;
 import java.awt.image.BufferedImage;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.jfree.data.statistics.Statistics;
 import cakehat.Allocator;
 import cakehat.database.Group;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -83,8 +83,8 @@ public class AssignmentChartPanel extends JPanel {
     public void updateChartData(Assignment asgn, Collection<Group> groups) {
         Map<Group, Double> scoreMap;
         try {
-            scoreMap = Allocator.getDatabase().getAssignmentScoresForGroups(asgn, groups);
-        } catch (SQLException ex) {
+            scoreMap = Allocator.getDataServices().getScores(asgn, groups);
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Could not retrieve scores on assignment " + asgn + " " +
                               "for groups " + groups + ".");
             scoreMap = new HashMap<Group, Double>();
@@ -101,11 +101,11 @@ public class AssignmentChartPanel extends JPanel {
         this.updateChartData(asgn.getName(), scores);
     }
 
-    public void updateChartData(Part part, Iterable<Group> groups) {
+    public void updateChartData(Part part, Collection<Group> groups) {
         Map<Group, Double> scoreMap;
         try {
-            scoreMap = Allocator.getDatabase().getPartScoresForGroups(part, groups);
-        } catch (SQLException ex) {
+            scoreMap = Allocator.getDataServices().getScores(part, groups);
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Could not get scores on part " + part + " " +
                               "for groups " + groups + ".");
             scoreMap = new HashMap<Group, Double>();

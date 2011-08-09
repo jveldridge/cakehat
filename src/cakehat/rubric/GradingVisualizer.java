@@ -2,12 +2,12 @@ package cakehat.rubric;
 
 import cakehat.Allocator;
 import cakehat.config.TA;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -22,7 +22,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashSet;
 import javax.swing.JFrame;
 import java.util.Set;
@@ -214,9 +213,9 @@ class GradingVisualizer extends JFrame
 
             if (!_stateManager.isRubricSaved()) {
                 try {
-                    Allocator.getDatabase().enterGrade(_group, _distPart, score);
+                    Allocator.getDataServices().enterGrade(_group, _distPart, score);
                     _stateManager.rubricSaved();
-                } catch (SQLException ex) {
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "The new grade for group " + _group + " on part "
                             + _distPart + " of assignment " + _distPart.getAssignment() + " could not be "
                             + "stored in the database.");
@@ -225,9 +224,9 @@ class GradingVisualizer extends JFrame
 
             if (!_stateManager.isStatusSaved()) {
                 try {
-                    Allocator.getDatabase().setHandinStatus(_distPart.getHandin(), _group, _stateManager.getHandinStatus());
+                    Allocator.getDataServices().setHandinStatus(_group, _stateManager.getHandinStatus());
                     _stateManager.statusSaved();
-                } catch (SQLException ex) {
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "The new handin status for group " + _group + " on "
                             + "assignment " + _distPart.getAssignment() + " could not be stored in the database.");
                 }
@@ -236,21 +235,18 @@ class GradingVisualizer extends JFrame
             if (!_stateManager.isGraderSaved()) {
                 try {
                     //either the old or new grader can be null, which indicates UNASSIGNED
-                    TA oldGrader = Allocator.getDatabase().getGraderForGroup(_distPart, _group);
+                    TA oldGrader = Allocator.getDataServices().getGrader(_distPart, _group);
                     if (oldGrader != null) {
-                        Allocator.getDatabase().unassignGroupFromGrader(_group, _distPart, oldGrader);
+                        Allocator.getDataServices().unassignGroup(_group, _distPart, oldGrader);
                     }
                     
                     TA newGrader = _stateManager.getGrader();
                     if (newGrader != null) {
-                        Allocator.getDatabase().assignGroupToGrader(_group, _distPart, newGrader);
+                        Allocator.getDataServices().assignGroup(_group, _distPart, newGrader);
                     }
 
                     _stateManager.graderSaved();
-                } catch (SQLException ex) {
-                    new ErrorView(ex, "Could not change grader for group " + _group + " on " +
-                                      "asignment " + _distPart.getAssignment() + ".");
-                } catch (CakeHatDBIOException ex) {
+                } catch (ServicesException ex) {
                     new ErrorView(ex, "Could not change grader for group " + _group + " on " +
                                       "asignment " + _distPart.getAssignment() + ".");
                 }

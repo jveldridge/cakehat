@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.sql.SQLException;
 import java.text.NumberFormat;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -26,6 +25,7 @@ import support.ui.GenericJComboBox;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.Student;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.util.ArrayList;
 
@@ -109,8 +109,8 @@ class SingleSelectionPanel extends JPanel
                     double earned = _nonHandinEarnedField.getNumberValue();
                     Part part = _nonHandinBox.getSelectedItem();
                     try {
-                        Allocator.getDatabase().enterGrade(_group, part, earned);
-                    } catch (SQLException ex) {
+                        Allocator.getDataServices().enterGrade(_group, part, earned);
+                    } catch (ServicesException ex) {
                         new ErrorView(ex, "Saving the grade for student " + _student + " " +
                                           "on part " + part + " of assignment " +
                                           _asgn + " failed.");
@@ -384,9 +384,9 @@ class SingleSelectionPanel extends JPanel
             Double earned = null;
             try
             {
-                earned = Allocator.getDatabase().getGroupScore(_group, part);
+                earned = Allocator.getDataServices().getScore(_group, part);
             }
-            catch (SQLException ex)
+            catch (ServicesException ex)
             {
                 new ErrorView(ex, "Could not read score for student " + _student + " on " +
                                   "part " + part + " from the database.");
@@ -457,7 +457,7 @@ class SingleSelectionPanel extends JPanel
             Double handinEarned = null;
             try {
                 for (DistributablePart dp : asgn.getDistributableParts()) {
-                    Double dpScore = Allocator.getDatabase().getGroupScore(group, dp);
+                    Double dpScore = Allocator.getDataServices().getScore(group, dp);
                     if (handinEarned == null) {
                         handinEarned = dpScore;
                     }
@@ -469,7 +469,7 @@ class SingleSelectionPanel extends JPanel
                         hasRubrics = true;
                     }
                 }
-            } catch (SQLException ex) {
+            } catch (ServicesException ex) {
                 new ErrorView(ex, "Could not read scores for student " + student + " on " +
                                   "distributable parts for assignment " + asgn + " from the database.");
                 _nonHandinEarnedField.setUnknownScoreValue();
@@ -622,8 +622,8 @@ class SingleSelectionPanel extends JPanel
                 {
                     Double partScore = null;
                     try {
-                        partScore = Allocator.getDatabase().getGroupScore(_group, part);
-                    } catch (SQLException ex) {
+                        partScore = Allocator.getDataServices().getScore(_group, part);
+                    } catch (ServicesException ex) {
                         new ErrorView(ex, "Could not read score for student " + _student + " on " +
                                           "part " + part + " from the database.  A SCORE OF 0 WILL BE " +
                                           "ASSUMED for displaying the student's overall assignment score.");

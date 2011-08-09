@@ -17,8 +17,8 @@ import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
 import cakehat.rubric.Rubric.Section;
 import cakehat.rubric.Rubric.Subsection;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import support.utils.FileCopyingException;
@@ -144,8 +144,8 @@ public class RubricManagerImpl implements RubricManager {
 
         HandinStatus status;
         try {
-            status = Allocator.getDatabase().getHandinStatus(handin, group);
-        } catch (SQLException ex) {
+            status = Allocator.getDataServices().getHandinStatus(group);
+        } catch (ServicesException ex) {
             throw new RubricException("Could not get handin status for group " +
                                         group + " on assignment " + asgn + ".", ex);
         }
@@ -251,8 +251,8 @@ public class RubricManagerImpl implements RubricManager {
     public void convertToGRD(Handin handin, Group group) throws RubricException {
         HandinStatus status;
         try {
-            status = Allocator.getDatabase().getHandinStatus(handin, group);
-        } catch (SQLException ex) {
+            status = Allocator.getDataServices().getHandinStatus(group);
+        } catch (ServicesException ex) {
             throw new RubricException("Could not read handin status for group " + group + " " +
                                          "on assignment " + handin.getAssignment() + " from the database.", ex);
         }
@@ -320,8 +320,8 @@ public class RubricManagerImpl implements RubricManager {
     public boolean areRubricsDistributed(Handin handin) throws RubricException {
         Collection<Group> groups;
         try {
-            groups = Allocator.getDatabase().getGroupsForAssignment(handin.getAssignment());
-        } catch (SQLException ex) {
+            groups = Allocator.getDataServices().getGroups(handin.getAssignment());
+        } catch (ServicesException ex) {
             throw new RubricException("Could not determine if rubrics have been distributed " +
                                       "for assignment " + handin.getAssignment() + ".", ex);
         }

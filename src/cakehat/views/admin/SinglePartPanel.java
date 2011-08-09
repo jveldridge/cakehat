@@ -3,9 +3,9 @@ package cakehat.views.admin;
 import cakehat.Allocator;
 import cakehat.config.Part;
 import cakehat.config.TA;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -13,7 +13,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,9 +90,9 @@ class SinglePartPanel extends JPanel {
         _partLabel.updateValue(p.getAssignment().getName() + " - " + p.getName());
 
         try {
-            Collection<Group> groupsForAssignment = Allocator.getDatabase().getGroupsForAssignment(p.getAssignment());
-            _numSubmittedGradesLabel.updateValue(Allocator.getDatabase().getPartScoresForGroups(p, groupsForAssignment).size());
-        } catch (SQLException ex) {
+            Collection<Group> groupsForAssignment = Allocator.getDataServices().getGroups(p.getAssignment());
+            _numSubmittedGradesLabel.updateValue(Allocator.getDataServices().getScores(p, groupsForAssignment).size());
+        } catch (ServicesException ex) {
             _numSubmittedGradesLabel.setUnknownValue();
             new ErrorView(ex, "Could not determine the number of groups with grades for" +
                               "part " + p.getName() + " of assignment " + p.getAssignment().getName() + ".");
@@ -115,12 +114,8 @@ class SinglePartPanel extends JPanel {
             }
 
             try {
-                _numDistributedLabel.updateValue(Allocator.getDatabase().getAllAssignedGroups(dp).size());
-            } catch (SQLException ex) {
-                _numDistributedLabel.setUnknownValue();
-                new ErrorView(ex, "Could not determine the number of distributed groups for" +
-                              "part " + p.getName() + " of assignment " + p.getAssignment().getName() + ".");
-            } catch (CakeHatDBIOException ex) {
+                _numDistributedLabel.updateValue(Allocator.getDataServices().getAssignedGroups(dp).size());
+            } catch (ServicesException ex) {
                 _numDistributedLabel.setUnknownValue();
                 new ErrorView(ex, "Could not determine the number of distributed groups for" +
                               "part " + p.getName() + " of assignment " + p.getAssignment().getName() + ".");
@@ -142,7 +137,7 @@ class SinglePartPanel extends JPanel {
     private void updateNonzeroRubricScoreCount(DistributablePart dp) {
         List<Group> distributedGroups = new ArrayList<Group>();
         try {
-            Map<TA, Collection<Group>> dist = Allocator.getDatabase().getDistribution(dp);
+            Map<TA, Collection<Group>> dist = Allocator.getDataServices().getDistribution(dp);
             for (TA ta : dist.keySet()) {
                 distributedGroups.addAll(dist.get(ta));
             }
@@ -155,10 +150,7 @@ class SinglePartPanel extends JPanel {
                 }
             }
             _numNonZeroRubricsLabel.updateValue(numNonZero);
-        } catch (SQLException ex) {
-            _numNonZeroRubricsLabel.setUnknownValue();
-            new ErrorView(ex, "Could not determine groups with rubrics.");
-        } catch (CakeHatDBIOException ex) {
+        } catch (ServicesException ex) {
             _numNonZeroRubricsLabel.setUnknownValue();
             new ErrorView(ex, "Could not determine groups with rubrics.");
         }

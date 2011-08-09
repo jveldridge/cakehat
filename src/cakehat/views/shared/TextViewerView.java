@@ -516,7 +516,7 @@ public class TextViewerView extends JFrame
         PrintRequest request = null;
         try
         {
-            File tmpFile = File.createTempFile(".tvv", ".tmp",
+            File tmpFile = Allocator.getFileSystemUtilities().createTempFile(".tvv", ".tmp",
                     Allocator.getPathServices().getUserWorkspaceDir());
             PrintWriter writer = new PrintWriter(tmpFile);
             writer.print(_textArea.getText());

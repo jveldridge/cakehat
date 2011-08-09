@@ -62,7 +62,7 @@ class BlacklistPanel extends AlphaJPanel
 
         _filterField = new ShadowJTextField("Filter List");
 
-        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServices().getTABlacklist(_user));
+        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServices().getBlacklist(_user));
         Collections.sort(blacklist);
 
         _nonblacklistedStudents = new ArrayList<Student>();
@@ -149,7 +149,7 @@ class BlacklistPanel extends AlphaJPanel
                 try
                 {
                     //Perform black list
-                    Allocator.getDatabase().blacklistStudents(toBlacklist, _user);
+                    Allocator.getDataServices().blacklistStudents(toBlacklist, _user);
 
                     //Update black list
                     List<Student> allBlacklisted = new ArrayList<Student>();
@@ -166,7 +166,7 @@ class BlacklistPanel extends AlphaJPanel
                     _nonblacklistJList.setListData(_nonblacklistedStudents);
                     applyFilterField();
                 }
-                catch(SQLException ex)
+                catch(ServicesException ex)
                 {
                     new ErrorView(ex, "Unable to blacklist students");
                 }
@@ -186,7 +186,7 @@ class BlacklistPanel extends AlphaJPanel
 
                 try
                 {
-                    Allocator.getDatabase().unBlacklistStudents(toUnblacklist, _user);
+                    Allocator.getDataServices().unBlacklistStudents(toUnblacklist, _user);
 
                     //Update black list
                     List<Student> blacklisted = new ArrayList<Student>(_blacklistJList.getListData());
@@ -201,7 +201,7 @@ class BlacklistPanel extends AlphaJPanel
                     _nonblacklistJList.setSelectedValues(selected);
                     applyFilterField();
                 }
-                catch(SQLException ex)
+                catch(ServicesException ex)
                 {
                     new ErrorView(ex, "Unable to unblacklist students");
                 }

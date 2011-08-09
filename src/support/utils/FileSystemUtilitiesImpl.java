@@ -36,6 +36,23 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         Permission.GROUP_READ, Permission.GROUP_WRITE, Permission.GROUP_EXECUTE
     };
 
+    @Override
+    public File createTempFile(String prefix, String suffix) throws IOException {
+        File tmpFile = File.createTempFile(prefix, suffix);
+        tmpFile.deleteOnExit();
+        
+        return tmpFile;
+    }
+    
+    @Override
+    public File createTempFile(String prefix, String suffix, File directory) throws IOException {
+        File tmpFile = File.createTempFile(prefix, suffix, directory);
+        tmpFile.deleteOnExit();
+        
+        return tmpFile;
+    }
+    
+    @Override
     public Calendar getModifiedDate(File file)
     {
         GregorianCalendar calendar = new GregorianCalendar();
@@ -44,6 +61,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return calendar;
     }
     
+    @Override
     public List<File> copy(File src, File dst, OverwriteMode overwrite,
             boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException
@@ -215,6 +233,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
+    @Override
     public void deleteFileOnExit(File file)
     {
         if(file.isDirectory())
@@ -232,6 +251,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
+    @Override
     public void deleteFiles(Iterable<File> files) throws IOException
     {
         List<File> failedToDelete = deleteFilesHelper(files);
@@ -315,6 +335,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return failedToDelete;
     }
 
+    @Override
     public List<File> makeDirectory(File dir, String groupOwner) throws IOException
     {
         ArrayList<File> dirsCreated = new ArrayList<File>();
@@ -551,6 +572,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return created;
     }
 
+    @Override
     public String readFile(File file) throws FileNotFoundException, IOException
     {
         StringBuilder text = new StringBuilder();
@@ -572,6 +594,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return text.toString();
     }
 
+    @Override
     public void chmod(File file, boolean recursive, Permission... mode) throws NativeException
     {
         int modeValue = 0;
@@ -583,6 +606,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         this.chmod(file, recursive, modeValue);
     }
 
+    @Override
     public void chmodDefault(File file, boolean recursive) throws NativeException
     {
         if(file.isDirectory())
@@ -625,6 +649,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
+    @Override
     public void changeGroup(File file, String group, boolean recursive) throws NativeException
     {
         NATIVE_FUNCTIONS.changeGroup(file, group);
@@ -638,6 +663,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
     }
 
+    @Override
     public List<File> getFiles(File file, FileFilter filter) throws IOException
     {
         ArrayList<File> acceptedFiles = new ArrayList<File>();
@@ -667,6 +693,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return acceptedFiles;
     }
 
+    @Override
     public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException
     {
         List<File> files = this.getFiles(file, filter);
