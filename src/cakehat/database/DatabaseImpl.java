@@ -1128,7 +1128,7 @@ public class DatabaseImpl implements Database {
         StringBuilder builder = new StringBuilder();
         Iterator<String> iterator = partIDs.iterator();
         while (iterator.hasNext()) {
-            builder.append(iterator.next());
+            builder.append('\'').append(iterator.next()).append('\'');
             if (iterator.hasNext()) {
                 builder.append(',');
             }
