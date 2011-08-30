@@ -5,6 +5,7 @@ import cakehat.config.Part;
 import cakehat.config.TA;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
+import cakehat.rubric.RubricException;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
@@ -151,6 +152,9 @@ class SinglePartPanel extends JPanel {
             }
             _numNonZeroRubricsLabel.updateValue(numNonZero);
         } catch (ServicesException ex) {
+            _numNonZeroRubricsLabel.setUnknownValue();
+            new ErrorView(ex, "Could not determine groups with rubrics.");
+        } catch (RubricException ex) {
             _numNonZeroRubricsLabel.setUnknownValue();
             new ErrorView(ex, "Could not determine groups with rubrics.");
         }

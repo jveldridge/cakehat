@@ -49,8 +49,10 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.Icon;
+import support.utils.FileCopyingException;
+import support.utils.FileSystemUtilities.FileCopyPermissions;
+import support.utils.FileSystemUtilities.OverwriteMode;
 
 public class GradingServicesImpl implements GradingServices
 {
@@ -82,16 +84,33 @@ public class GradingServicesImpl implements GradingServices
             throw new ServicesException("Unable to create user's workspace: " +
                     workspace.getAbsolutePath(), e);
         }
-    }
-
-    @Override
-    public void removeUserWorkspace()
-    {
+        
         //Due to NFS (networked file system) behavior, the workspace might not
         //always be succesfully deleted - there is NOTHING that can be done
         //about this, even 'rm -rf' will fail in these situations
-        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
         Allocator.getFileSystemUtilities().deleteFileOnExit(workspace);
+    }
+    
+    @Override
+    public void makeDatabaseBackup() throws ServicesException {
+        String backupFileName = Allocator.getCourseInfo().getCourse() +
+                            "db_bk_" +
+                            Allocator.getCalendarUtilities()
+                            .getCalendarAsString(Calendar.getInstance())
+                            .replaceAll("(\\s|:)", "_");
+                    File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(),
+                            backupFileName);
+        try
+        {
+            Allocator.getFileSystemServices()
+                .copy(Allocator.getPathServices().getDatabaseFile(),
+                backupFile, OverwriteMode.FAIL_ON_EXISTING,
+                false, FileCopyPermissions.READ_WRITE);
+        }
+        catch(FileCopyingException ex)
+        {
+            throw new ServicesException("Unable to make database backup.", ex);
+        }
     }
 
     private static final List<CITPrinter> NORMALLY_ALLOWED_PRINTERS =
@@ -180,7 +199,6 @@ public class GradingServicesImpl implements GradingServices
         //the name of some group or the login of a member of some group
         if (asgn.hasGroups()) {
             Set<String> validNames = new HashSet<String>();
-            Collection<String> badHandins = new LinkedList<String>();
 
             Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
             for (Group group : groups) {
@@ -188,6 +206,7 @@ public class GradingServicesImpl implements GradingServices
                 validNames.addAll(group.getMemberLogins());
             }
 
+            Collection<String> badHandins = new LinkedList<String>();
             for (String handinName : handinNames) {
                 if (!validNames.contains(handinName)) {
                     badHandins.add(handinName);
@@ -462,7 +481,7 @@ public class GradingServicesImpl implements GradingServices
     public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException
     {
         TA ta = Allocator.getUserServices().getUser();
-        Vector<PrintRequest> requests = new Vector<PrintRequest>();
+        List<PrintRequest> requests = new ArrayList<PrintRequest>();
 
         for(Group group : groups)
         {

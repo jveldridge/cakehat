@@ -40,6 +40,7 @@ public class EmailAccount
         _certPath = certPath;
         _certPassword = certPassword;
     }
+    
     /**
      * Properties needed for email.
      *

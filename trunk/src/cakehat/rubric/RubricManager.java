@@ -18,7 +18,7 @@ public interface RubricManager
 {
     public void viewTemplate(DistributablePart dp) throws RubricException;
 
-    public void view(DistributablePart part, Group group, boolean isAdmin);
+    public void view(DistributablePart part, Group group, boolean isAdmin) throws RubricException;
 
     /**
      * View the rubric for a group for the given distributable part.
@@ -28,8 +28,9 @@ public interface RubricManager
      * @param group
      * @param isAdmin
      * @param listener
+     * @throws RubricException
      */
-    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener);
+    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener) throws RubricException;
 
     /**
      * Returns whether or not a rubric exists for the given Group for the given
@@ -58,16 +59,18 @@ public interface RubricManager
      * @param part
      * @param group
      * @return
+     * @throws RubricException
      */
-    public double getPartScore(DistributablePart part, Group group);
+    public double getPartScore(DistributablePart part, Group group) throws RubricException;
 
     /**
      * Read the total score from the rubric for each Group on the given DistributablePart.
      *
      * @param group
      * @return map from group to score
+     * @throws RubricException
      */
-    public Map<Group, Double> getPartScores(DistributablePart part, Iterable<Group> groups);
+    public Map<Group, Double> getPartScores(DistributablePart part, Iterable<Group> groups) throws RubricException;
 
     /**
      * Calculates the appropriate deduction or bonus based on the TimeStatus of,

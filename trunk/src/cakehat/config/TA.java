@@ -54,17 +54,4 @@ public class TA implements Comparable<TA>
         return this.getLogin().compareTo(other.getLogin());
     }
 
-    @Override
-    public int hashCode() {
-        return _login.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-       if (!(o instanceof TA)) {
-           return false;
-       }
-
-       return this._login.equals(((TA) o).getLogin());
-    }
 }

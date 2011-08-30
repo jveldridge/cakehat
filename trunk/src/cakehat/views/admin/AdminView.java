@@ -146,7 +146,6 @@ public class AdminView extends JFrame
         }
     }
 
-    private final boolean _isSSH;
     private JButton //Assignment wide buttons
                     _manageGroupsButton, _autoDistributorButton, _manualDistributorButton,
                     _previewRubricButton, _viewGradingGuideButton, _runDemoButton,
@@ -179,8 +178,6 @@ public class AdminView extends JFrame
     {
         super("cakehat (admin)" + (isSSH ? " [ssh]" : ""));
         
-        _isSSH = isSSH;
-        
         _students = new LinkedList<Student>(Allocator.getDataServices().getAllStudents());
         Collections.sort(_students);
 
@@ -200,28 +197,13 @@ public class AdminView extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                Allocator.getGradingServices().removeUserWorkspace();
-
                 //If in not developing cakehat, backup the database on close
                 if(!CakehatMain.isDeveloperMode())
                 {
-                    String backupFileName = Allocator.getCourseInfo().getCourse() +
-                            "db_bk_" +
-                            Allocator.getCalendarUtilities()
-                            .getCalendarAsString(Calendar.getInstance())
-                            .replaceAll("(\\s|:)", "_");
-                    File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(),
-                            backupFileName);
-                    try
-                    {
-                        Allocator.getFileSystemServices()
-                            .copy(Allocator.getPathServices().getDatabaseFile(),
-                            backupFile, OverwriteMode.FAIL_ON_EXISTING,
-                            false, FileCopyPermissions.READ_WRITE);
-                    }
-                    catch(FileCopyingException ex)
-                    {
-                        new ErrorView(ex, "Unable to backup database.");
+                    try {
+                        Allocator.getGradingServices().makeDatabaseBackup();
+                    } catch (ServicesException ex) {
+                        new ErrorView(ex);
                     }
                 }
             }
@@ -1112,11 +1094,10 @@ public class AdminView extends JFrame
                 Group group = studentToGroups.get(student).get(selectedAsgn);
                 
                 if (group != null) {
+                    //if no part is selected
                     if (selection.get(selectedAsgn).isEmpty()) {
                         _exemptionsButton.setEnabled(true);
-                    }
-
-                    if (this.getSingleSelectedPart(selection) == null) {
+                        
                         if (selectedAsgn.hasHandin()) {
                             _extensionsButton.setEnabled(true);
                         }
@@ -1720,7 +1701,12 @@ public class AdminView extends JFrame
         }
 
         DistributablePart part = this.getSingleSelectedDP(_assignmentTree.getSelection());
-        Allocator.getRubricManager().view(part, group, true);
+        try {
+            Allocator.getRubricManager().view(part, group, true);
+        } catch (RubricException ex) {
+            new ErrorView(ex, "Could not view rubric for group [" + group + "] on "
+                    + "part [" + part + "].");
+        }
     }
 
     private void printRubricButtonActionPerformed() {

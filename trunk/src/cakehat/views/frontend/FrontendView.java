@@ -10,6 +10,7 @@ import cakehat.database.Group;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.rubric.RubricException;
 import cakehat.rubric.RubricSaveListener;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
@@ -30,8 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -155,7 +154,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         this.createButtonGroups();
 
         //Set up close property
-        this.initializeWindowCloseProperty();
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         //Update button states
         this.updateButtonStates();
@@ -185,24 +184,6 @@ public class FrontendView extends JFrame implements RubricSaveListener
                                         _printButton, _testButton,
                                         _runButton, _gradeButton
                                       };
-    }
-
-    /**
-     * Ensures when the window closes the program terminates and that the
-     * user's grading directory is removed.
-     */
-    private void initializeWindowCloseProperty()
-    {
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        this.addWindowListener(new WindowAdapter()
-        {
-            @Override
-            public void windowClosing(WindowEvent e)
-            {
-                Allocator.getGradingServices().removeUserWorkspace();
-            }
-        });
     }
 
     /**
@@ -631,7 +612,11 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                Allocator.getGradingServices().removeUserWorkspace();
+                try {
+                    Allocator.getGradingServices().makeDatabaseBackup();
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Could not make database backup.");
+                }
                 System.exit(0);
             }
         });
@@ -999,7 +984,12 @@ public class FrontendView extends JFrame implements RubricSaveListener
     {
         DistributablePart dp = _dpList.getSelectedValue();
         Group group = _groupList.getSelectedValue();
-        Allocator.getRubricManager().view(dp, group, false, this);
+        try {
+            Allocator.getRubricManager().view(dp, group, false, this);
+        } catch (RubricException ex) {
+            new ErrorView(ex, "Could not view rubric for group [" + group + "] on "
+                    + "part [" + dp + "].");
+        }
     }
 
     /**
@@ -1172,6 +1162,11 @@ public class FrontendView extends JFrame implements RubricSaveListener
                     showNormalContentInFrame();
                     new ErrorView(e, "Unable to show submit grading view due to database issues");
                 }
+                catch(RubricException e)
+                {
+                    showNormalContentInFrame();
+                    new ErrorView(e, "Unable to show submit grading view due to database issues");
+                }
             }
         });
     }
@@ -1252,9 +1247,15 @@ public class FrontendView extends JFrame implements RubricSaveListener
     @Override
     public void rubricSaved(DistributablePart savedPart, Group savedGroup)
     {
-        Double score = Allocator.getRubricManager().getPartScore(savedPart, savedGroup);
-        boolean hasRubricScore = (score != 0);
-
+        boolean hasRubricScore = false;
+        try {
+            Double score = Allocator.getRubricManager().getPartScore(savedPart, savedGroup);
+            hasRubricScore = (score != 0);
+        } catch (RubricException ex) {
+            new ErrorView(ex, "Could not read rubric to determine whether group [" + savedGroup + "] "
+                    + "has a score on part [" + savedPart + "].  The group's status may be inaccurate.");
+        }
+        
         //Build a new map that is identical to the map currently referenced by
         //_assignedGroups except that it will reflect whether or not the saved
         //rubric has a score
@@ -1327,7 +1328,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         Runnable loadRunnable = new Runnable()
         {
             public void run()
-            {
+            {              
                 Map<DistributablePart, List<GroupStatus>> newMap =
                         new HashMap<DistributablePart, List<GroupStatus>>();
                 try
@@ -1340,8 +1341,14 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         Collection<Group> groups = Allocator.getDataServices().getAssignedGroups(part, USER);
                         Map<Group, Double> submittedScores = Allocator.getDataServices()
                                 .getScores(part, groups);
-                        Map<Group, Double> rubricScores = Allocator.getRubricManager()
-                                .getPartScores(part, groups);
+                        Map<Group, Double> rubricScores;
+                        try {
+                            rubricScores = Allocator.getRubricManager().getPartScores(part, groups);
+                        } catch (RubricException ex) {
+                            new ErrorView(ex, "Could not read rubric part scores for part [" + part + ". "
+                                    + "Grading status information cannot be updated for this part.");
+                            continue;
+                        }
 
                         List<GroupStatus> statuses = new ArrayList<GroupStatus>();
                         newMap.put(part, statuses);
@@ -1355,7 +1362,8 @@ public class FrontendView extends JFrame implements RubricSaveListener
                             }
                             catch(IOException e)
                             {
-                                new ErrorView(e, "Unable to determine if " + group + " has a handin");
+                                new ErrorView(e, "Unable to determine if group [" + group + "] "
+                                        + "has a handin for part [" + part + "].");
                             }
 
                             GroupStatus status = new GroupStatus(group,
