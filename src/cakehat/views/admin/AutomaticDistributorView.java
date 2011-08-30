@@ -324,7 +324,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
             }
         }
 
-        boolean success = generateDistribution(false);
+        boolean success = generateDistribution();
 
         Set<Group> distributedGroups = new HashSet<Group>();
         for (DistributablePart dp : _asgn.getDistributableParts()) {
@@ -362,7 +362,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
      * @throws CakeHatDBIOException
      * @throws IOException
      */
-    private boolean generateDistribution(boolean requireConfirmation) throws ServicesException, SQLException, CakeHatDBIOException, IOException {
+    private boolean generateDistribution() throws ServicesException, SQLException, CakeHatDBIOException, IOException {
         //figure out which DistributableParts are being graded by which TAs
         Map<DistributablePart, Collection<TA>> graderMap = new HashMap<DistributablePart, Collection<TA>>();
         for (TA grader : _gradingTAs) {
@@ -388,29 +388,6 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
                                                 "Students cannot be distributed.",
                                                 "Distribution Error", JOptionPane.ERROR_MESSAGE);
             return false;
-        }
-
-        if (requireConfirmation) {
-            try {
-                if (!Allocator.getDatabase().isDistEmpty(_asgn.getPartIDs())) {
-                    int n = JOptionPane.showConfirmDialog(this, "A distribution already exists for " + _asgn.getName() +
-                                                                 ".\nAre you sure you want to overwrite the existing distribution?",
-                                                                 "Confirm Overwrite",
-                                                                 JOptionPane.YES_NO_OPTION);
-                    if (n != JOptionPane.YES_OPTION) {
-                        return false;
-                    }
-                }
-            } catch (SQLException ex) {
-                int n = JOptionPane.showConfirmDialog(this, "Could not determine whether a distribution already exists " +
-                                                            "for assignment " + _asgn.getName() + ".\nDo you wish to proceed?  " +
-                                                            "Doing so will overwrite any existing distribution.",
-                                                            "Proceed?",
-                                                            JOptionPane.YES_NO_OPTION);
-                    if (n == JOptionPane.YES_OPTION) {
-                        return false;
-                    }
-            }
         }
 
         List<String> handinNames = _asgn.getHandin().getHandinNames();

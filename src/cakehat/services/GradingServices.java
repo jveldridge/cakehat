@@ -24,19 +24,22 @@ public interface GradingServices
      * {@link PathServices#getUserWorkspace()}. If the workspace already exists,
      * it will attempt to delete it, but if it does not succeed at this it will
      * fail silently.
+     * 
+     * An attempt will be made to remove the user's workspace upon JVM shutdown;
+     * however, this may fail silently if there are issues with NFS.
      *
      * @throws ServicesException if unable to create directory
      */
     public void makeUserWorkspace() throws ServicesException;
-
+    
     /**
-     * Removes the user's workspace as specified by
-     * {@link PathServices#getUserWorkspace()}. This may silently fail if there
-     * are issues with NFS (network file system).
-     *
-     * @throws ServicesException
+     * Attempts to make a backup of the database.  The backup will be created in
+     * the directory returned by {@link PathServices#getDatabaseBackupDir()}.
+     * It will be named "csXXXdb_bk_<date>".
+     * 
+     * @throws ServicesException 
      */
-    public void removeUserWorkspace();
+    public void makeDatabaseBackup() throws ServicesException;
 
     /**
      * Returns an immutable list of the printers in the CIT that the user is

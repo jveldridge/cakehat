@@ -18,7 +18,6 @@ import cakehat.config.handin.Handin;
 import cakehat.rubric.Rubric.Section;
 import cakehat.rubric.Rubric.Subsection;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import java.util.LinkedList;
 import java.util.List;
 import support.utils.FileCopyingException;
@@ -37,45 +36,39 @@ public class RubricManagerImpl implements RubricManager {
     private HashMap<String, GradingVisualizer> _openRubrics = new HashMap<String, GradingVisualizer>();
 
     @Override
-    public void view(DistributablePart part, Group group, boolean isAdmin)
+    public void view(DistributablePart part, Group group, boolean isAdmin) throws RubricException
     {
         this.view(part, group, isAdmin, null);
     }
 
     @Override
-    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener)
+    public void view(DistributablePart part, Group group, boolean isAdmin, RubricSaveListener listener) throws RubricException
     {
         //Determine if it has been opened
         final String uniqueID = part.getDBID() + "::" + group.getName();
+        
         //If it hasn't been opened
         if(!_openRubrics.containsKey(uniqueID))
         {
-            try
-            {
-                File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
-                Rubric rubric = RubricGMLParser.parse(gmlFile, part, group);
-                GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
+            File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
+            Rubric rubric = RubricGMLParser.parse(gmlFile, part, group);
+            GradingVisualizer visualizer = new GradingVisualizer(rubric, isAdmin);
 
-                if(listener != null)
+            if(listener != null)
+            {
+                visualizer.addSaveListener(listener);
+            }
+
+            visualizer.addWindowListener(new WindowAdapter()
+            {
+                @Override
+                public void windowClosed(WindowEvent e)
                 {
-                    visualizer.addSaveListener(listener);
+                    _openRubrics.remove(uniqueID);
                 }
+            });
 
-                visualizer.addWindowListener(new WindowAdapter()
-                {
-                    @Override
-                    public void windowClosed(WindowEvent e)
-                    {
-                        _openRubrics.remove(uniqueID);
-                    }
-                });
-
-                _openRubrics.put(uniqueID, visualizer);
-            }
-            catch (RubricException ex)
-            {
-                new ErrorView(ex);
-            }
+            _openRubrics.put(uniqueID, visualizer);
         }
         //If it has, bring it to front and center it on screen
         else
@@ -111,30 +104,20 @@ public class RubricManagerImpl implements RubricManager {
     }
 
     @Override
-    public Map<Group, Double> getPartScores(DistributablePart part, Iterable<Group> groups) {
+    public Map<Group, Double> getPartScores(DistributablePart part, Iterable<Group> groups) throws RubricException {
         HashMap<Group, Double> totals = new HashMap<Group, Double>();
 
         for(Group group : groups) {
             totals.put(group, getPartScore(part, group));
         }
-
         return totals;
     }
 
     @Override
-    public double getPartScore(DistributablePart part, Group group)
+    public double getPartScore(DistributablePart part, Group group) throws RubricException
     {
-        try
-        {
-            Rubric rubric = RubricGMLParser.parse(Allocator.getPathServices().getGroupGMLFile(part, group), part, group);
-            return rubric.getTotalDistPartScore();
-        }
-        catch(RubricException e)
-        {
-            new ErrorView(e);
-        }
-
-        return 0;
+        Rubric rubric = RubricGMLParser.parse(Allocator.getPathServices().getGroupGMLFile(part, group), part, group);
+        return rubric.getTotalDistPartScore();
     }
 
     @Override
@@ -267,9 +250,8 @@ public class RubricManagerImpl implements RubricManager {
                 grdFile.delete();
             }
 
-            //display the error to the user
-            new ErrorView(e, "The rubric could not be written.  "
-                    + "No GRD file has been created.");
+            throw new RubricException("The rubric could not be written.  "
+                    + "No GRD file has been created.", e);
         }
     }
 

@@ -6,7 +6,6 @@ import cakehat.rubric.TimeStatus;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ArrayListMultimap;
 import cakehat.config.Assignment;
-import cakehat.config.Part;
 import cakehat.services.ServicesException;
 import com.google.common.collect.Iterables;
 import java.io.File;

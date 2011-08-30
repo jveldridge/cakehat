@@ -90,7 +90,7 @@ class SubmitPanel extends AlphaJPanel
 
 
     public SubmitPanel(Dimension size, Color backgroundColor, FrontendView frontend,
-            DistributablePart part, List<Group> groups) throws ServicesException
+            DistributablePart part, List<Group> groups) throws ServicesException, RubricException
     {
         this.setPreferredSize(size);
         this.setBackground(backgroundColor);

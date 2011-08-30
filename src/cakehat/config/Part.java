@@ -58,6 +58,7 @@ public abstract class Part implements Comparable<Part>
      * @param p
      * @return
      */
+    @Override
     public int compareTo(Part p)
     {
         int comparison = this.getAssignment().compareTo(p.getAssignment());

@@ -624,7 +624,7 @@ class RubricPanel extends JPanel
         this.addPanelBelow(panel);
     }
 
-    private Vector<RubricHandinStatusPair> makeHandinStatusPairs(TimeStatus[] timeStatuses, DistributablePart distPart) {
+    private Vector<RubricHandinStatusPair> makeHandinStatusPairs(Iterable<TimeStatus> timeStatuses, DistributablePart distPart) {
         Vector<RubricHandinStatusPair> pairs = new Vector<RubricHandinStatusPair>();
         Handin handin = distPart.getHandin();
 
@@ -689,7 +689,7 @@ class RubricPanel extends JPanel
         }
 
         //If admin, display a drop down list
-        List<RubricHandinStatusPair> possibleStatuses = this.makeHandinStatusPairs(_status.getTimeStatus().getAvailableStatuses(_rubric.getDistributablePart().getHandin().getTimeInformation().getLatePolicy()), _rubric.getDistributablePart());
+        List<RubricHandinStatusPair> possibleStatuses = this.makeHandinStatusPairs(_rubric.getDistributablePart().getHandin().getTimeInformation().getLatePolicy().getAvailableStatuses(), _rubric.getDistributablePart());
         //Displays status
         final GenericJComboBox<RubricHandinStatusPair> statusBox = new GenericJComboBox<RubricHandinStatusPair>(possibleStatuses);
 
