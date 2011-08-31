@@ -1157,7 +1157,7 @@ public class DatabaseImpl implements Database {
             conn.createStatement().executeUpdate("CREATE TABLE 'asgngroup' ('gpid' INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + "'name' VARCHAR NOT NULL, "
                     + "'aid' VARCHAR NOT NULL, "
-                    + "CONSTRAINT 'nameaidunique' UNIQUE ('aid','name') ON CONFLICT ABORT);");
+                    + "CONSTRAINT 'nameaidunique' UNIQUE ('aid','name') ON CONFLICT ROLLBACK);");
             conn.createStatement().executeUpdate("CREATE TABLE 'blacklist' ('tid' VARCHAR NOT NULL, "
                     + "'sid' INTEGER NOT NULL, "
                     + "CONSTRAINT 'tidsidunique' UNIQUE ('tid','sid') ON CONFLICT IGNORE, "
