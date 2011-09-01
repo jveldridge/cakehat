@@ -144,9 +144,6 @@ public class FrontendView extends JFrame implements RubricSaveListener
         //Initialize GUI components necessary to show database information
         this.initializeComponents();
 
-        //Retrieve the database information in a separate thread
-        this.loadAssignedGrading(true);
-
         //Initialize more GUI components
         this.initializeMenuBar();
 
@@ -155,6 +152,9 @@ public class FrontendView extends JFrame implements RubricSaveListener
 
         //Set up close property
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        
+        //Retrieve the database information in a separate thread
+        this.loadAssignedGrading(true);
 
         //Update button states
         this.updateButtonStates();
