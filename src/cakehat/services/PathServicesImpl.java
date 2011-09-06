@@ -90,7 +90,7 @@ public class PathServicesImpl implements PathServices
         File workspace;
 
         CakehatRunMode mode = CakehatMain.getRunMode();
-        if(mode == CakehatRunMode.FRONTEND)
+        if(mode == CakehatRunMode.GRADER)
         {
             workspace = new File(parent,
                     Allocator.getUserUtilities().getUserLogin());

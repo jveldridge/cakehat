@@ -1,7 +1,7 @@
 package cakehat;
 
 import cakehat.views.admin.AdminView;
-import cakehat.views.frontend.FrontendView;
+import cakehat.views.grader.GraderView;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -17,7 +17,7 @@ import javax.swing.KeyStroke;
 
 /**
  * Window shown when running in developer mode that allows for selecting either
- * the frontend or admin view.
+ * the grader or admin view.
  *
  * @author jak2
  */
@@ -67,18 +67,18 @@ class DeveloperModeView extends JFrame
         panel.setPreferredSize(new Dimension(300, 80));
         this.add(panel);
 
-        // Frontend
-        JButton frontendButton = new JButton("Frontend");
-        frontendButton.addActionListener(new ActionListener()
+        // Grader
+        JButton graderButton = new JButton("Grader");
+        graderButton.addActionListener(new ActionListener()
         {
            public void actionPerformed(ActionEvent e)
            {
-               CakehatMain.setRunMode(CakehatRunMode.FRONTEND);
-               FrontendView.launch();
+               CakehatMain.setRunMode(CakehatRunMode.GRADER);
+               GraderView.launch();
                DeveloperModeView.this.dispose();
            }
         });
-        panel.add(frontendButton);
+        panel.add(graderButton);
 
         // Admin
         JButton adminButton = new JButton("Admin");

@@ -3,7 +3,7 @@ package cakehat;
 import cakehat.labcheckoff.CheckoffCLI;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AdminView;
-import cakehat.views.frontend.FrontendView;
+import cakehat.views.grader.GraderView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.UIManager;
@@ -23,7 +23,7 @@ public class CakehatMain
 
     /**
      * If the application was run in developer mode, meaning the developer was
-     * able to select either the frontend or admin.
+     * able to select either the grader or admin view.
      *
      * @return
      */
@@ -56,7 +56,7 @@ public class CakehatMain
     /**
      * Sets the mode that cakehat is running in. This is to be used
      * <strong>exclusively</strong> by {@link DeveloperModeView} after the
-     * developer has selected whether to launch the frontend or admin.
+     * developer has selected whether to launch the grader or admin view.
      *
      * @param mode
      */
@@ -85,12 +85,12 @@ public class CakehatMain
                 applyLookAndFeel();
                 adjustIfRemote();
                 DeveloperModeView.launch();
-            } else if (args[0].equalsIgnoreCase(CakehatRunMode.FRONTEND.getTerminalFlag())) {
-                _runMode = CakehatRunMode.FRONTEND;
+            } else if (args[0].equalsIgnoreCase(CakehatRunMode.GRADER.getTerminalFlag())) {
+                _runMode = CakehatRunMode.GRADER;
                 loadDataCache();
                 applyLookAndFeel();
                 adjustIfRemote();
-                FrontendView.launch();
+                GraderView.launch();
             } else if (args[0].equalsIgnoreCase(CakehatRunMode.ADMIN.getTerminalFlag())) {
                 _runMode = CakehatRunMode.ADMIN;
                 loadDataCache();

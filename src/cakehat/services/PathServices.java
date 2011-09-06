@@ -124,7 +124,7 @@ public interface PathServices
     /**
      * The temporary directory that the user uses while running cakehat.
      * <br/><br/>
-     * If cakehat is running from the frontend:
+     * If cakehat is running from the grader view:
      * <pre>
      * {@code
      * /course/<course>/.cakehat/workspaces/<ta login>/
@@ -147,7 +147,7 @@ public interface PathServices
      * </pre>
      *
      * Any other state (such as during lab checkoff) will result in a runtime
-     * exception being thrown. If cakehat is not using the frontend, admin,
+     * exception being thrown. If cakehat is not using the grader, admin,
      * or testing then the user workspace directory should not need be needed.
      * <br/><br/>
      * All other path methods that reference {@code <ta login>} in their path

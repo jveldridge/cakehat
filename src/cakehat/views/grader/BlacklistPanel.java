@@ -1,4 +1,4 @@
-package cakehat.views.frontend;
+package cakehat.views.grader;
 
 import cakehat.Allocator;
 import cakehat.config.TA;
@@ -49,7 +49,6 @@ class BlacklistPanel extends AlphaJPanel
      *
      * @param size
      * @param background
-     * @param frontend
      * @throws SQLException if the data needed for the initial state cannot
      * be retrieved from the database
      */
