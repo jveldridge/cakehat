@@ -46,7 +46,7 @@ public class EmailView extends javax.swing.JFrame {
             attachmentMessage.setText("No attachments will be sent with this message.");
         }
         else {
-            attachmentMessage.setText("Each student's .GRD file will be sent to that student as an attachment.");
+            attachmentMessage.setText("Each student's rubric will be sent to that student as an attachment.");
         }
             
         _attachments = attachments;
