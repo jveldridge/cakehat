@@ -1,4 +1,4 @@
-package cakehat.views.frontend;
+package cakehat.views.grader;
 
 import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
@@ -67,7 +67,7 @@ import support.ui.StringConverter;
 import support.utils.posix.NativeException;
 
 /**
- * A frontend view to be used by TAs that are grading.
+ * A grader view to be used by TAs that are grading.
  * <br/><br/>
  * In order to have a very responsive user interface, this class uses a non-UI
  * thread to load information. Whenever these changes lead to UI changes, the
@@ -77,7 +77,7 @@ import support.utils.posix.NativeException;
  *
  * @author jak2
  */
-public class FrontendView extends JFrame implements RubricSaveListener
+public class GraderView extends JFrame implements RubricSaveListener
 {
     private final TA USER = Allocator.getUserServices().getUser();
 
@@ -95,7 +95,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
     private Map<DistributablePart, List<GroupStatus>> _assignedGroups;
 
     /**
-     * Launches a visible instance of the <code>FrontendView</code> if the user
+     * Launches a visible instance of the <code>GraderView</code> if the user
      * is a TA as specified by the cakehat configuration. Otherwise the user
      * will be informed they are not an authorized user.
      */
@@ -110,7 +110,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
             }
             catch(NativeException e){}
 
-            new FrontendView(isSSH);
+            new GraderView(isSSH);
         }
         else
         {
@@ -121,7 +121,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         }
     }
 
-    private FrontendView(boolean isSSH)
+    private GraderView(boolean isSSH)
     {
         //Frame title
         super("cakehat" + (isSSH ? " [ssh]" : ""));
@@ -435,7 +435,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                         }
                         if(!hasHandin)
                         {
-                            JOptionPane.showMessageDialog(FrontendView.this,
+                            JOptionPane.showMessageDialog(GraderView.this,
                                     "The handin for " + selectedGroup.getName() + " is missing.",
                                     "Handin Missing", JOptionPane.WARNING_MESSAGE);
                         }
@@ -632,7 +632,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
         {
             public void actionPerformed(ActionEvent ae)
             {
-                CakehatAboutBox.displayRelativeTo(FrontendView.this);
+                CakehatAboutBox.displayRelativeTo(GraderView.this);
             }
         });
         helpMenu.add(aboutItem);
@@ -766,7 +766,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                FrontendView.this.showNormalContentInFrame();
+                GraderView.this.showNormalContentInFrame();
             }
         });
         closeButton.setPreferredSize(new Dimension(closeButtonWidth, closeButtonHeight));
@@ -1152,7 +1152,7 @@ public class FrontendView extends JFrame implements RubricSaveListener
                 {
                     SubmitPanel submitPanel = new SubmitPanel(disablePanel.getPreferredSize(),
                             disablePanel.getBackground(),
-                            FrontendView.this,
+                            GraderView.this,
                             _dpList.getSelectedValue(),
                             _groupList.getListData());
                     disablePanel.add(submitPanel);

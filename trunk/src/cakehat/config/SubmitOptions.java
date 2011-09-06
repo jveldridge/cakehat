@@ -7,7 +7,7 @@ package cakehat.config;
  * <SUBMIT-OPTIONS SUBMIT="TRUE" NOTIFY="TRUE" EMAIL-GRD="FALSE" PRINT-GRD="TRUE"/>
  * }
  * </pre>
- * This code is used by the {@link gradesystem.views.frontend.SubmitDialog} for
+ * This code is used by the {@link gradesystem.views.grader.SubmitDialog} for
  * determining the default state of the checkboxes for:
  * <ul>
  * <li>Submit grades</li>

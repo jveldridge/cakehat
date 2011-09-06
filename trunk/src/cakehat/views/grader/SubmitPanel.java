@@ -1,4 +1,4 @@
-package cakehat.views.frontend;
+package cakehat.views.grader;
 
 import cakehat.Allocator;
 import cakehat.config.Assignment;
@@ -41,7 +41,7 @@ import support.ui.GenericJCheckBox;
 import support.ui.GenericJComboBox;
 
 /**
- * A panel hosted inside of {@link FrontendView}'s frame. The view is shown
+ * A panel hosted inside of {@link GraderView}'s frame. The view is shown
  * for a specific {@link DistributablePart} and a list of {@link Group}s. If the
  * <code>DistributablePart</code> being shown by this view is the only
  * <code>DistributablePart</code> for the {@link Assignment}, then the user may
@@ -54,7 +54,7 @@ import support.ui.GenericJComboBox;
  */
 class SubmitPanel extends AlphaJPanel
 {
-    private final FrontendView _frontend;
+    private final GraderView _graderView;
 
     /** The part having grades submitted */
     private final DistributablePart _part;
@@ -89,13 +89,13 @@ class SubmitPanel extends AlphaJPanel
     private JButton _submitButton, _printButton, _emailButton;
 
 
-    public SubmitPanel(Dimension size, Color backgroundColor, FrontendView frontend,
+    public SubmitPanel(Dimension size, Color backgroundColor, GraderView graderView,
             DistributablePart part, List<Group> groups) throws ServicesException, RubricException
     {
         this.setPreferredSize(size);
         this.setBackground(backgroundColor);
 
-        _frontend = frontend;
+        _graderView = graderView;
         _part = part;
         _onlyDistributablePart = _part.getAssignment().getDistributableParts().size() == 1;
 
@@ -305,9 +305,9 @@ class SubmitPanel extends AlphaJPanel
                 }
                 _submittedGroups.addAll(groupsToSubmit);
 
-                // Tell the frontend to reload its data to reflect that these
+                // Tell the grader view to reload its data to reflect that these
                 // grades have been submitted
-                _frontend.loadAssignedGrading(true);
+                _graderView.loadAssignedGrading(true);
 
                 // Visually update list
                 Component[] components = boxesPanel.getComponents();

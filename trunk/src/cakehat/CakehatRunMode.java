@@ -10,7 +10,7 @@ package cakehat;
  */
 public enum CakehatRunMode
 {
-    FRONTEND("frontend"), ADMIN("admin"), LAB("lab"), UNKNOWN(null);
+    GRADER("grader"), ADMIN("admin"), LAB("lab"), UNKNOWN(null);
 
     private final String _terminalFlag;
 
