@@ -7,8 +7,8 @@ import cakehat.config.TA;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.sun.tools.javac.util.List;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -204,7 +204,7 @@ public class DataServicesImpl implements DataServices {
     
     @Override
     public Group addGroup(NewGroup toAdd) throws ServicesException {
-        return Iterables.get(this.addGroups(List.of(toAdd)), 0);
+        return Iterables.get(this.addGroups(ImmutableList.of(toAdd)), 0);
     }
 
     @Override
