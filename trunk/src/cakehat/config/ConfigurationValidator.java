@@ -1,13 +1,12 @@
 package cakehat.config;
 
-import com.google.common.collect.Multimap;
 import cakehat.Allocator;
 import cakehat.config.handin.Handin;
 import java.io.StringWriter;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
+import java.util.Set;
 import support.utils.posix.NativeException;
 
 /**
@@ -192,9 +191,9 @@ class ConfigurationValidator
     {
         boolean valid = true;
 
-        HashSet<String> asgnNames = new HashSet<String>();
-        HashSet<Integer> asgnNumbers = new HashSet<Integer>();
-        HashSet<Integer> labNumbers = new HashSet<Integer>();
+        Set<String> asgnNames = new HashSet<String>();
+        Set<Integer> asgnNumbers = new HashSet<Integer>();
+        Set<Integer> labNumbers = new HashSet<Integer>();
 
         for(Assignment asgn : _config.getAssignments())
         {
@@ -216,17 +215,26 @@ class ConfigurationValidator
             }
             asgnNumbers.add(asgn.getNumber());
 
-            //Check each part name is unique
-            HashSet<String> partNames = new HashSet<String>();
+            //Check each part names and numbers are unique
+            Set<String> partNames = new HashSet<String>();
+            Set<Integer> partNums = new HashSet<Integer>();
             for(Part part : asgn.getParts())
             {
                 if(partNames.contains(part.getName()))
                 {
                     valid = false;
-                    writer.append(asgn.getName() + "'s " + part.getName() +
-                                  " is not a unique PART name.\n");
+                    writer.append("Part name '" + part.getName() + "' on assignment '" +
+                                  asgn.getName() + "' is not unique.\n");
                 }
                 partNames.add(part.getName());
+                
+                if(partNums.contains(part.getNumber()))
+                {
+                    valid = false;
+                    writer.append("Part number '" + part.getNumber() + "' on assignment '" +
+                                  asgn.getName() + "' is not unique.\n");
+                }
+                partNums.add(part.getNumber());
             }
 
             //Check that each lab number is unique
@@ -241,30 +249,7 @@ class ConfigurationValidator
                 }
                 labNumbers.add(lab.getLabNumber());
             }
-
-            //Check that for mutually exclusive parts (those with the same
-            //number) for a given assignment have the same point value
-            Multimap<Integer, Part> partsMap = asgn.getPartsMultimap();
-            for(int partNum : partsMap.keySet())
-            {
-                HashSet<Integer> points = new HashSet<Integer>();
-
-                Collection<Part> parts = partsMap.get(partNum);
-                for(Part part : parts)
-                {
-                    points.add(part.getPoints());
-                }
-
-                //If there are multiple point values for mutually exclusive parts
-                if(points.size() != 1)
-                {
-                    valid = false;
-
-                    writer.append("ASSIGNMENT " + asgn.getName() + " has " +
-                            "differing POINTS values for PARTs: " + parts + "\n" +
-                            "PARTs with the same NUMBER must have the same POINTS values.\n");
-                }
-            }
+            
         }
 
         return valid;

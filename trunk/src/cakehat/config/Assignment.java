@@ -1,12 +1,8 @@
 package cakehat.config;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import cakehat.config.handin.DistributablePart;
 import cakehat.config.handin.Handin;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -91,14 +87,10 @@ public class Assignment implements Comparable<Assignment>
     {
         int points = 0;
 
-        Multimap<Integer, Part> multimap = this.getPartsMultimap();
-        for(int partNum : multimap.keySet())
-        {
-            Collection<Part> parts = multimap.get(partNum);
-            
-            points += Iterables.get(parts, 0).getPoints();
+        for (Part p : this.getParts()) {
+            points += p.getPoints();
         }
-
+        
         return points;
     }
 
@@ -220,30 +212,6 @@ public class Assignment implements Comparable<Assignment>
         }
 
         return _allPartIDs;
-    }
-
-    public Multimap<Integer, Part> _allPartsMultimap;
-    /**
-     * Returns all Parts of this Assignments as a multimap from
-     * {@link Part#getNumber()} to the Parts that have that number. Parts that
-     * have the same number are considered mututally exclusive.
-     *
-     * @return
-     */
-    public Multimap<Integer, Part> getPartsMultimap()
-    {
-        if(_allPartsMultimap == null)
-        {
-            ImmutableMultimap.Builder<Integer, Part> builder = ImmutableMultimap.builder();
-            for(Part part : getParts())
-            {
-                builder.put(part.getNumber(), part);
-            }
-
-            _allPartsMultimap = builder.build();
-        }
-
-        return _allPartsMultimap;
     }
     
     /**

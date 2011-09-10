@@ -68,11 +68,6 @@ public abstract class Part implements Comparable<Part>
             comparison = ((Integer) this.getNumber()).compareTo(p.getNumber());
         }
 
-        if(comparison == 0)
-        {
-            comparison = this.getName().compareTo(p.getName());
-        }
-
         return comparison;
     }
 }
