@@ -612,7 +612,16 @@ public class DatabaseImpl implements Database {
         try {
             conn.setAutoCommit(false);
             
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid') VALUES (?, ?, ?)");
+            
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
+                    + " WHERE distribution.pid == ?");
+            for (String partID : distribution.keySet()) {
+                ps.setString(1, partID);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            
+            ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid') VALUES (?, ?, ?)");
             for (String partID : distribution.keySet()) {
                 for (String taLogin : distribution.get(partID).keySet()) {
                     for (Integer groupID : distribution.get(partID).get(taLogin)) {

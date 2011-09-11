@@ -208,10 +208,11 @@ public interface Database {
      * Stores a distribution in the database.  The given Map maps the ID of a 
      * DistributablePart to a Map that maps a TA's login to a Collection of group
      * IDs representing groups that TA has been assigned to grade for that
-     * DistributablePart. Any existing distributions will be overwritten.  The
-     * distribution will either be set in its entirety or not at all; if the new
-     * distribution is not successfully set in its entirety, the database table
-     * will be in whatever state it was in before this method was called.
+     * DistributablePart. Any existing distribution for the DistributablePart will
+     * be overwritten.  The distribution will either be set in its entirety or
+     * not at all; if the new distribution is not successfully set in its entirety,
+     * the database table will be in whatever state it was in before this method
+     * was called.
      *
      * @param distribution
      */
