@@ -118,7 +118,12 @@ class ExemptionView extends javax.swing.JFrame {
 
         JPanel selected = new JPanel(new GridLayout(0,1));
         JPanel groupP = new JPanel();
-        groupP.add(new JLabel("Group:" ));
+        if (_assignment.hasGroups()) {
+            groupP.add(new JLabel("Group:" ));
+        }
+        else {
+            groupP.add(new JLabel("Student:" ));
+        }
         if (_group == null) {
             _group = _groupMenu.getItemAt(0);
         }
