@@ -91,6 +91,9 @@ public class GenericJComboBox<E> extends JComboBox implements StringConverterCel
     @Override
     public E getItemAt(int index)
     {
+        if (index < 0 || index >= _model.getSize()) {
+            return null;
+        }
         return _model.getElementAt(index);
     }
 

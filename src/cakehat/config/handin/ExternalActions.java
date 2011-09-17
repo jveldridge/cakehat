@@ -3,7 +3,6 @@ package cakehat.config.handin;
 import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;
 import cakehat.database.Group;
-import cakehat.database.Student;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
