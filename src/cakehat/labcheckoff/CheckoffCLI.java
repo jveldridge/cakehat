@@ -1,8 +1,7 @@
 package cakehat.labcheckoff;
 
 import cakehat.Allocator;
-import cakehat.config.ConfigurationException;
-import cakehat.config.LabConfigurationParser;
+import cakehat.config.Assignment;
 import cakehat.config.LabPart;
 import cakehat.database.Group;
 import cakehat.database.NewGroup;
@@ -39,7 +38,7 @@ public class CheckoffCLI
     {
         try
         {
-            performCheckoff(args, new DefaultInteractor(), new LabConfigurationParser());
+            performCheckoff(args, new DefaultInteractor());
         }
         catch(CheckoffException e)
         {
@@ -54,11 +53,10 @@ public class CheckoffCLI
      *
      * @param args
      * @param interactor
-     * @param parser
      * @throws gradesystem.labcheckoff.CheckoffCLI.CheckoffException
      */
     static CheckoffResult performCheckoff(List<String> args,
-            CheckoffInteractor interactor, LabConfigurationParser parser) throws CheckoffException
+            CheckoffInteractor interactor) throws CheckoffException
     {
         String labNumber = null;
         String studentLogin = null;
@@ -85,7 +83,7 @@ public class CheckoffCLI
                     "       cakehat_labCheckOff [lab number] [student login] [points earned]");
         }
 
-        return enterLabGrade(labNumber, studentLogin, pointsStr, interactor, parser);
+        return enterLabGrade(labNumber, studentLogin, pointsStr, interactor);
     }
 
     /**
@@ -102,13 +100,13 @@ public class CheckoffCLI
      */
     private static CheckoffResult enterLabGrade(String labString,
             String studentLogin, String pointsStr,
-            CheckoffInteractor interactor, LabConfigurationParser parser) throws CheckoffException
+            CheckoffInteractor interactor) throws CheckoffException
     {
         //Verify student login
         Student student = getStudent(studentLogin);
 
         //Load lab
-        LabPart lab = getLabPart(labString, parser);
+        LabPart lab = getLabPart(labString);
 
         //Determine the number of points to give the student's group
         double pointsNum = getPoints(pointsStr, lab);
@@ -239,12 +237,10 @@ public class CheckoffCLI
      * <code>labString</code>.
      *
      * @param labString
-     * @param parser
      * @return
      * @throws CheckoffException
      */
-    private static LabPart getLabPart(String labString,
-            LabConfigurationParser parser) throws CheckoffException
+    private static LabPart getLabPart(String labString) throws CheckoffException
     {
         int labNum;
         try
@@ -256,16 +252,7 @@ public class CheckoffCLI
             throw new CheckoffException("Lab number [" + labString + "] is not an integer");
         }
 
-        LabPart lab;
-        try
-        {
-            lab = parser.getLabPart(labNum);
-        }
-        catch(ConfigurationException e)
-        {
-            throw new CheckoffException(e,
-                    "Error encountered when parsing configuration file");
-        }
+        LabPart lab = Allocator.getConfigurationInfo().getLabPart(labNum);
         if(lab == null)
         {
             throw new CheckoffException("Provided lab number [" + labNum + "] is not a valid lab number");
