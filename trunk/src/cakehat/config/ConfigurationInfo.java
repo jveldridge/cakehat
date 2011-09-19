@@ -114,6 +114,15 @@ public interface ConfigurationInfo
      * @return
      */
     public List<Assignment> getLabAssignments();
+    
+    /**
+     * Returns the LabPart with the given lab number.  If there is no lab part
+     * with this lab number, null will be returned.
+     * 
+     * @param labNumber
+     * @return 
+     */
+    public LabPart getLabPart(int labNumber);
 
     /**
      * Returns an immutable list of the addresses that should be notified of

@@ -8,7 +8,6 @@ import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.config.Assignment;
 import cakehat.config.ConfigurationException;
-import cakehat.config.LabConfigurationParser;
 import cakehat.config.LabPart;
 import cakehat.database.ConfigurationData;
 import cakehat.database.DataServices;
@@ -75,24 +74,30 @@ public class CheckoffCLITest
         expect(lab.getPoints()).andReturn(15).atLeastOnce();
         replay(lab);
 
-        LabConfigurationParser parser = createMock(LabConfigurationParser.class);
-        expect(parser.getLabPart(1)).andReturn(lab);
-        replay(parser);
-
         final DataServices ds = createMock(DataServices.class);
         expect(ds.isStudentLoginInDatabase(student.getLogin())).andReturn(true);
         expect(ds.getStudentFromLogin(student.getLogin())).andReturn(student);
         expect(ds.getGroup(_testAsgn, student)).andReturn(group);
         expect(ds.getScore(eq(group), eq(lab))).andReturn(11.2);
         replay(ds);
+        
+        final ConfigurationInfo ci = createMock(ConfigurationInfo.class);
+        expect(ci.getAssignment(_testAsgn.getDBID())).andReturn(_testAsgn);
+        expect(ci.getAssignments()).andReturn(ImmutableList.of(_testAsgn));
+        expect(ci.getLabAssignments()).andReturn(ImmutableList.of(_testAsgn));
+        expect(ci.getLabPart(labNumber)).andReturn(lab);
+        replay(ci);
 
         SingletonAllocation<DataServices> dsAlloc =
             new SingletonAllocation<DataServices>()
             {
                 public DataServices allocate() { return ds; };
             };
-        new Allocator.Customizer().setDataServices(dsAlloc).customize();
-
+        SingletonAllocation<ConfigurationInfo> ciAlloc = 
+            new SingletonAllocation<ConfigurationInfo>() {
+                public ConfigurationInfo allocate() { return ci; };
+            };
+        new Allocator.Customizer().setDataServices(dsAlloc).setConfigurationInfo(ciAlloc).customize();
 
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
         {
@@ -104,12 +109,11 @@ public class CheckoffCLITest
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
             student.getLogin(), Double.toString(pointsGiven) });
 
-        CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
+        CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor);
         assertEquals(CheckoffCLI.CheckoffResult.ABORTED, result);
 
         verify(_testAsgn);
         verify(lab);
-        verify(parser);
     }
 
     //Tests checking off a student that is part of a group of multiple students
@@ -130,10 +134,6 @@ public class CheckoffCLITest
         expect(lab.getPoints()).andReturn(15).atLeastOnce();
         replay(lab);
 
-        LabConfigurationParser parser = createMock(LabConfigurationParser.class);
-        expect(parser.getLabPart(1)).andReturn(lab);
-        replay(parser);
-
         final DataServices ds = createMock(DataServices.class);
         expect(ds.isStudentLoginInDatabase(josh.getLogin())).andReturn(true);
         expect(ds.getStudentFromLogin(josh.getLogin())).andReturn(josh);
@@ -143,12 +143,23 @@ public class CheckoffCLITest
         expectLastCall();
         replay(ds);
 
+        final ConfigurationInfo ci = createMock(ConfigurationInfo.class);
+        expect(ci.getAssignment(_testAsgn.getDBID())).andReturn(_testAsgn);
+        expect(ci.getAssignments()).andReturn(ImmutableList.of(_testAsgn));
+        expect(ci.getLabAssignments()).andReturn(ImmutableList.of(_testAsgn));
+        expect(ci.getLabPart(labNumber)).andReturn(lab);
+        replay(ci);
+
         SingletonAllocation<DataServices> dsAlloc =
             new SingletonAllocation<DataServices>()
             {
                 public DataServices allocate() { return ds; };
             };
-        new Allocator.Customizer().setDataServices(dsAlloc).customize();
+        SingletonAllocation<ConfigurationInfo> ciAlloc = 
+            new SingletonAllocation<ConfigurationInfo>() {
+                public ConfigurationInfo allocate() { return ci; };
+            };
+        new Allocator.Customizer().setDataServices(dsAlloc).setConfigurationInfo(ciAlloc).customize();
 
 
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
@@ -161,12 +172,11 @@ public class CheckoffCLITest
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
             josh.getLogin(), Double.toString(pointsGiven) });
 
-        CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
+        CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor);
         assertEquals(CheckoffCLI.CheckoffResult.SUCCEEDED, result);
 
         verify(_testAsgn);
         verify(lab);
-        verify(parser);
     }
 
     //Tests checking off an individual
@@ -185,10 +195,6 @@ public class CheckoffCLITest
         expect(lab.getPoints()).andReturn(15).atLeastOnce();
         replay(lab);
 
-        LabConfigurationParser parser = createMock(LabConfigurationParser.class);
-        expect(parser.getLabPart(1)).andReturn(lab);
-        replay(parser);
-
         final DataServices ds = createMock(DataServices.class);
         expect(ds.isStudentLoginInDatabase(student.getLogin())).andReturn(true);
         expect(ds.getStudentFromLogin(student.getLogin())).andReturn(student);
@@ -198,12 +204,23 @@ public class CheckoffCLITest
         expectLastCall();
         replay(ds);
 
+        final ConfigurationInfo ci = createMock(ConfigurationInfo.class);
+        expect(ci.getAssignment(_testAsgn.getDBID())).andReturn(_testAsgn);
+        expect(ci.getAssignments()).andReturn(ImmutableList.of(_testAsgn));
+        expect(ci.getLabAssignments()).andReturn(ImmutableList.of(_testAsgn));
+        expect(ci.getLabPart(labNumber)).andReturn(lab);
+        replay(ci);
+
         SingletonAllocation<DataServices> dsAlloc =
             new SingletonAllocation<DataServices>()
             {
                 public DataServices allocate() { return ds; };
             };
-        new Allocator.Customizer().setDataServices(dsAlloc).customize();
+        SingletonAllocation<ConfigurationInfo> ciAlloc = 
+            new SingletonAllocation<ConfigurationInfo>() {
+                public ConfigurationInfo allocate() { return ci; };
+            };
+        new Allocator.Customizer().setDataServices(dsAlloc).setConfigurationInfo(ciAlloc).customize();
 
         CheckoffCLI.CheckoffInteractor interactor = new CheckoffCLI.CheckoffInteractor()
         {
@@ -215,12 +232,11 @@ public class CheckoffCLITest
         List<String> args = Arrays.asList(new String[] { Integer.toString(labNumber),
             student.getLogin(), Double.toString(pointsGiven) });
 
-        CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor, parser);
+        CheckoffCLI.CheckoffResult result = CheckoffCLI.performCheckoff(args, interactor);
         assertEquals(CheckoffCLI.CheckoffResult.SUCCEEDED, result);
 
         verify(_testAsgn);
         verify(lab);
-        verify(parser);
     }
 
 }

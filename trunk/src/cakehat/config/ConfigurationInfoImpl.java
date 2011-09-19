@@ -280,4 +280,21 @@ public class ConfigurationInfoImpl implements ConfigurationInfo
 
         return _labAssignments;
     }
+    
+    private Map<Integer, LabPart> _labPartMap;
+    public LabPart getLabPart(int labNumber) {
+        if (_labPartMap == null) {
+            ImmutableMap.Builder<Integer, LabPart> builder = ImmutableMap.builder();
+            for (Assignment asgn : getLabAssignments()) {
+                for (LabPart lp : asgn.getLabParts()) {
+                    builder.put(lp.getLabNumber(), lp);
+                }
+            }
+           
+            _labPartMap = builder.build();
+        }
+        
+        return _labPartMap.get(labNumber);
+    }
+
 }
