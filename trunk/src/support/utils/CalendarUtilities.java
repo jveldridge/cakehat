@@ -81,4 +81,14 @@ public interface CalendarUtilities
      * @return number of days
      */
     public int daysAfterDeadline(Calendar toCheck, Calendar deadline, int minutesOfLeniency);
+    
+    /**
+     * Returns true if the day, month, year, and minute of 2 calendars are the same and false 
+     * otherwise.
+     * 
+     * @param cal1
+     * @param cal2
+     * @return 
+     */
+    public boolean areCalendarsEqual(Calendar cal1, Calendar cal2);
 }

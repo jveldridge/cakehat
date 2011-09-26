@@ -154,4 +154,14 @@ public class CalendarUtilitiesImpl implements CalendarUtilities
 
         return daysLate;
     }
+    
+    public boolean areCalendarsEqual(Calendar cal1, Calendar cal2) {
+        if (cal1.YEAR == cal2.YEAR && cal1.MONTH == cal2.MONTH 
+                && cal1.DAY_OF_MONTH == cal2.DAY_OF_MONTH 
+                && cal1.HOUR_OF_DAY == cal2.HOUR_OF_DAY
+                && cal1.MINUTE == cal2.MINUTE) {
+            return true;
+        }
+        return false;
+    }
 }
