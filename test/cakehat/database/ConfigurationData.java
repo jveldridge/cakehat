@@ -98,6 +98,39 @@ public class ConfigurationData
                 return generateAssignmentWithTwoDistributableParts();
         }          
     }
+    
+    public static Assignment generateAssignmentWithNameWithTwoDPs(String name) {
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getName()).andReturn(name).anyTimes();
+        expect(asgn.getDBID()).andReturn(name).anyTimes();
+    
+        DistributablePart dp1 = createMock(DistributablePart.class);
+        expect(dp1.getAssignment()).andReturn(asgn).anyTimes();
+        expect(dp1.getName()).andReturn("Part 1").anyTimes();
+        expect(dp1.getDBID()).andReturn("Part 1").anyTimes();
+        expect(dp1.getNumber()).andReturn(1).anyTimes();
+        expect(dp1.getPoints()).andReturn(97).anyTimes();
+        replay(dp1);
+
+        DistributablePart dp2 = createMock(DistributablePart.class);
+        expect(dp2.getAssignment()).andReturn(asgn).anyTimes();
+        expect(dp2.getName()).andReturn("Part 2").anyTimes();
+        expect(dp2.getDBID()).andReturn("Part 2").anyTimes();
+        expect(dp2.getNumber()).andReturn(2).anyTimes();
+        expect(dp2.getPoints()).andReturn(10).anyTimes();
+        replay(dp2);
+
+        ArrayList<Part> parts = new ArrayList<Part>();
+        parts.add(dp1);
+        parts.add(dp2);
+        expect(asgn.getParts()).andReturn(parts).anyTimes();
+
+        expect(asgn.getDistributableParts()).andReturn(Arrays.asList(dp1, dp2)).anyTimes();
+
+        replay(asgn);
+
+        return asgn;
+    }
 
     public static Assignment generateAssignmentWithTwoDistributableParts()
     {
@@ -239,6 +272,17 @@ public class ConfigurationData
         
         Assignment asgn = generateRandomAssignment();
         String name = generateRandomString();
+        
+        return new NewGroup(asgn, name, members);
+    }
+    
+    public static NewGroup generateRandomNewGroupWithNameAndAssignment(String name, Assignment asgn) {
+        Random rand = new Random();
+        int numMembers = rand.nextInt(5) + 1;
+        List<Student> members = new ArrayList<Student>(numMembers);
+        for (int i = 0; i < numMembers; i++) {
+            members.add(generateRandomStudent());
+        }
         
         return new NewGroup(asgn, name, members);
     }

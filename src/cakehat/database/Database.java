@@ -142,8 +142,8 @@ public interface Database {
 
     /**
      * Returns the ID of the group for which the student with the given ID is a
-     * member for the assignment with the given ID. If no such group exists then
-     * <code>0</code> is returned.
+     * member for the assignment with the given ID. If no such group exists or 
+     * the assignment ID is invalid then <code>0</code> is returned.
      *
      * @param asgnID
      * @param studentID
@@ -153,8 +153,8 @@ public interface Database {
 
     /**
      * Returns the IDs of all groups that have been created for the assignment
-     * with the given ID.  If no groups have yet been created for the assignment,
-     * an empty Collection will be returned.
+     * with the given ID.  If no groups have yet been created for the assignment 
+     * or there is no assignment with the given asgnID, an empty Collection will be returned.
      * 
      * @param asgnID
      * @return
@@ -223,7 +223,8 @@ public interface Database {
      * given login to grade for the DistributablePart corresponding to the given
      * part ID.  If the group is already assigned to the TA for the DistributablePart,
      * this method has no effect.  The group will be unassigned from any TA to which
-     * it was previously assigned for this DistributablePart.
+     * it was previously assigned for this DistributablePart.  If the groupID is invalid,
+     * a SQLException will be thrown.
      *
      * NOTE: This method should not be used to create an initial distribution
      *       for a project; it should be used only to reassign grading.
@@ -250,7 +251,7 @@ public interface Database {
      * assigned to grade for the DistributablePart with the given ID.  Returns
      * an empty Collection if no groups are assigned to the TA for the
      * DistributablePart or if there is no distribution for the DistributablePart
-     * in the database.
+     * in the database. 
      *
      * @param partID
      * @param taLogin
@@ -283,7 +284,7 @@ public interface Database {
     /**
      * Returns the login of the TA who has been assigned to grade the group with
      * the given ID for the DistributablePart with the given ID.  If no such TA
-     * exists, <code>null</code> will be returned.
+     * exists, or the groupID is invalid, <code>null</code> will be returned.
      * 
      * @param partID
      * @param groupID
@@ -299,6 +300,7 @@ public interface Database {
      * date/time represented by the given calendar.  The given note String can be
      * used to store a message explaining why the extension was granted; however,
      * <code>null</code> is also permitted.  Any existing extension will be overwritten.
+     * If the group ID is invalid, a SQLException will be thrown.
    
      * @param groupID
      * @param asgnID
@@ -354,7 +356,8 @@ public interface Database {
      * with the given part ID.  The given note String can be used to store a
      * message explaining why the exemption was granted; however, <code>null</code>
      * is also permitted.  If the group had an exemption previously, any exiting
-     * exemption note will be overwritten.
+     * exemption note will be overwritten.  If the group ID is invalid, a SQLException
+     * is thrown.
      *
      * @param groupID
      * @param partID
@@ -395,7 +398,7 @@ public interface Database {
 
     /**
      * Assigns a grade of score to the group with the given group ID on the part
-     * with the given part ID.
+     * with the given part ID.  If the group ID is invalid then a SQLException is thrown.
      *
      * @param groupID
      * @param partID
@@ -433,7 +436,8 @@ public interface Database {
      * Returns a Map that maps a group ID to the score for that group on the
      * part corresponding to the given part ID for each group ID in the given
      * Iterable. Any Groups with no score stored in the database will not have
-     * an entry in the returned Map.
+     * an entry in the returned Map. Invalid groups will also not have an entry
+     * in the returned Map.
      *
      * @param partID
      * @param groupIDs
@@ -451,7 +455,8 @@ public interface Database {
      * that do not belong to the assignment corresponding to the group).
      * 
      * Any Groups with no score stored in the database for any of the Parts of
-     * the Assignment will not have an entry in the returned Map.  Note also 
+     * the Assignment will not have an entry in the returned Map.  Invalid groups
+     * will also not have an entry in the map returned.  Note also 
      * that the scores in the Map do not take into account any handin status points.
      *
      * @param partIDs
@@ -463,6 +468,7 @@ public interface Database {
     /**
      * Stores the given HandinStatus in the database for the group with the
      * given group ID.  Any existing handin status for the group will be overwritten.
+     * If the group ID is invalid, a SQLException will be thrown.
      *
      * @param groupID
      * @param status
@@ -472,7 +478,7 @@ public interface Database {
     /**
      * For each group ID key in the given Map, stores the corresponding HandinStatus
      * in the database for that group.  Any existing handin statuses for the groups
-     * will be overwritten.
+     * will be overwritten.  If one group ID is invalid a SQLException is thrown.
      *
      * @param statuses
      */
@@ -490,7 +496,7 @@ public interface Database {
 
     /**
      * Returns whether or not at least one group for the handin corresponding to
-     * the Assignment with the given ID has had a handin status set.  Returns
+         * the Assignment with the given ID has had a handin status set.  Returns
      * true if so, and false if not.
      * 
      * @param asgnID
