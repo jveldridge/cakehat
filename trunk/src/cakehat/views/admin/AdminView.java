@@ -68,6 +68,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import javax.swing.BoxLayout;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -616,46 +617,48 @@ public class AdminView extends JFrame
         //Top panel: Assignments label, select all / select none buttons, drop down list
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         controlPanel.setPreferredSize(LIST_CONTROL_PANEL_SIZE);
-        panel.add(controlPanel);
 
         //Label
         JLabel assignmentLabel = new JLabel("<html><b>Assignments</b></html>");
         assignmentLabel.setPreferredSize(LIST_LABEL_SIZE);
         controlPanel.add(assignmentLabel);
 
+        panel.add(controlPanel);
+
         //Gap space
         controlPanel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
-        /*
+
         //Button panel
-        JPanel buttonPanel = new JPanel(new GridLayout(1,2,5,5));
-        buttonPanel.setPreferredSize(LIST_BUTTON_PANEL_SIZE);
-        controlPanel.add(buttonPanel);
+        JPanel buttonPanel = new JPanel(new GridLayout(2,1,5,5));
+        Dimension buttonSize = new Dimension((int) LIST_BUTTON_PANEL_SIZE.getWidth(), (int) LIST_BUTTON_PANEL_SIZE.getHeight()*2);
+        buttonPanel.setPreferredSize(buttonSize);
+        controlPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        //Select all
-        JButton selectAllButton = new JButton("All");
-        selectAllButton.addActionListener(new ActionListener()
+        //Expand All
+        JButton expandAllButton = new JButton("Expand All");
+        expandAllButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                //_assignmentList.selectAll();
+                _assignmentTree.expandAll();
             }
         });
-        buttonPanel.add(selectAllButton);
-        selectAllButton.setVisible(false);
+        buttonPanel.add(expandAllButton);
+        expandAllButton.setVisible(true);
 
-        //Select none
-        JButton selectNoneButton = new JButton("None");
-        selectNoneButton.addActionListener(new ActionListener()
+        //Collapse All
+        JButton collapseAllButton = new JButton("Collapse All");
+        collapseAllButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent ae)
             {
-                //_assignmentList.clearSelection();
+                _assignmentTree.collapseAll();
             }
         });
-        buttonPanel.add(selectNoneButton);
-        selectNoneButton.setVisible(false);
-         */
+        buttonPanel.add(collapseAllButton);
+        collapseAllButton.setVisible(true);
+
 
         //Gap space
         controlPanel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
