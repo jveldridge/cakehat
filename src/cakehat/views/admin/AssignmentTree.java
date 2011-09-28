@@ -13,6 +13,7 @@ import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import java.awt.Color;
 import java.awt.Component;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -175,7 +176,37 @@ class AssignmentTree extends JScrollPane {
         }
 
     }
+    
+    public void expandAll() {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) _tree.getModel().getRoot();
+        expandCollapseAll(new TreePath(root), true);
+    }
+    
+    public void collapseAll() {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) _tree.getModel().getRoot();
+        expandCollapseAll(new TreePath(root), false);
+        _tree.expandPath(new TreePath(root));
+    }
+    
+    private void expandCollapseAll(TreePath parent, boolean expand) {
+        // Traverse children
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) parent.getLastPathComponent();
+        for (int i = 0; i < node.getChildCount(); i++) {
+                // Cast will always succeed because all of the nodes created in the assignment tree
+                // are DefaultMutableTreeNodes
+                DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+                TreePath path = parent.pathByAddingChild(child);
+                expandCollapseAll(path, expand);
+        }
 
+        if (expand) {
+            _tree.expandPath(parent);
+        } 
+        else {
+            _tree.collapsePath(parent);
+        }
+    }
+    
     public static void main(String[] argv) throws CakehatException {
         CakehatMain.initializeForTesting();
 
