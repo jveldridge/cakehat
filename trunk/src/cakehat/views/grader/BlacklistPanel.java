@@ -263,7 +263,8 @@ class BlacklistPanel extends AlphaJPanel
             {
                 if(student.getLogin().toLowerCase().startsWith(filterText) ||
                    student.getFirstName().toLowerCase().startsWith(filterText) ||
-                   student.getLastName().toLowerCase().startsWith(filterText))
+                   student.getLastName().toLowerCase().startsWith(filterText) ||
+                   student.getName().toLowerCase().startsWith(filterText))
                 {
                     filteredLogins.add(student);
                 }

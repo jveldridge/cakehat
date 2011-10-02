@@ -72,6 +72,7 @@ import javax.swing.BoxLayout;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import support.ui.StringConverter;
 import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
@@ -181,7 +182,7 @@ public class AdminView extends JFrame
         
         _students = new LinkedList<Student>(Allocator.getDataServices().getAllStudents());
         Collections.sort(_students);
-
+        
         try {
             //make the user's temporary grading directory
             Allocator.getGradingServices().makeUserWorkspace();
@@ -361,13 +362,13 @@ public class AdminView extends JFrame
     }
 
     private static final Dimension
-    MAIN_PANEL_SIZE = new Dimension(1150, 700),
-    LIST_PANEL_SIZE = new Dimension(185, MAIN_PANEL_SIZE.height),
+    MAIN_PANEL_SIZE = new Dimension(1200, 700),
+    LIST_PANEL_SIZE = new Dimension(250, MAIN_PANEL_SIZE.height),
     GENERAL_COMMANDS_PANEL_SIZE = new Dimension(195, MAIN_PANEL_SIZE.height),
     MIDDLE_PANEL_SIZE = new Dimension(MAIN_PANEL_SIZE.width - 2 * LIST_PANEL_SIZE.width -
                                       GENERAL_COMMANDS_PANEL_SIZE.width, MAIN_PANEL_SIZE.height),
     SELECTED_ASSIGNMENT_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width, 130),
-    STUDENT_BUTTON_PANEL_SIZE = new Dimension(200, MIDDLE_PANEL_SIZE.height -
+    STUDENT_BUTTON_PANEL_SIZE = new Dimension(185, MIDDLE_PANEL_SIZE.height -
                                               SELECTED_ASSIGNMENT_PANEL_SIZE.height),
     MULTI_PANEL_SIZE = new Dimension(MIDDLE_PANEL_SIZE.width - STUDENT_BUTTON_PANEL_SIZE.width,
                                      MIDDLE_PANEL_SIZE.height - SELECTED_ASSIGNMENT_PANEL_SIZE.height);
@@ -570,7 +571,8 @@ public class AdminView extends JFrame
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //List
-        _studentList = new GenericJList<Student>(_students);
+        StudentConverter converter = new StudentConverter();
+        _studentList = new GenericJList<Student>(_students, converter);
         _studentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -593,13 +595,18 @@ public class AdminView extends JFrame
 
         List<Student> matchingStudents;
         //if no filter term, include all logins
-        if (filterTerm.isEmpty()) {
+        if (filterTerm == null || filterTerm.isEmpty() ) {
             matchingStudents = _students;
         } //otherwise compared against beginning of each login
         else {
+            filterTerm = _filterField.getText().toLowerCase();
             matchingStudents = new ArrayList<Student>();
-            for (Student student : _students) {
-                if (student.getLogin().startsWith(filterTerm)) {
+            for(Student student : _students) {
+                if(student.getLogin().toLowerCase().startsWith(filterTerm) ||
+                   student.getFirstName().toLowerCase().startsWith(filterTerm) ||
+                   student.getLastName().toLowerCase().startsWith(filterTerm) ||
+                   student.getName().toLowerCase().startsWith(filterTerm))
+                {
                     matchingStudents.add(student);
                 }
             }
@@ -1938,5 +1945,16 @@ public class AdminView extends JFrame
             "The handin for " + ex.getGroup().getName() + " could not be found.",
             "Handin Missing",
             JOptionPane.OK_OPTION);
+    }
+    
+    /**
+     * Displays the login and name as <code>login (FirstName LastName)</code>
+     */
+    private class StudentConverter implements StringConverter<Student>
+    {
+        public String convertToString(Student student)
+        {
+            return student.getLogin() + " (" + student.getName() + ")";
+        }
     }
 }
