@@ -250,12 +250,11 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
         //if no distribution has been made, disable all buttons except set up grading
         try {
-            // get data services, not get database
-            if (Allocator.getDatabase().isDistEmpty(_asgn.getPartIDs())) {
+            if (Allocator.getDataServices().isDistEmpty(_asgn)) {
                 _makeNewRubricsButton.setEnabled(false);
                 _recalculateHandinStatusesButton.setEnabled(false);
             }
-        } catch (SQLException ex) {
+        } catch (ServicesException ex) {
             new ErrorView(ex, "Could note determine whether or not a distribution exists " +
                               "for assignment " + _asgn + ".  Clicking the \"Make New Rubrics\"" +
                               "or \"Recalculate Handin Statuses\" buttons could result in " +
