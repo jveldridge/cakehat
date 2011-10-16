@@ -168,16 +168,19 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
                     if (oneClickGradingSetup()) {
                         JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Success!");
                     }
+                    else {
+                        JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Grading setup failed.");
+                    }
                 } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "Grading setup failed.");
+                    new ErrorView(ex, "Grading setup failed because a CakeHatDBIOException was thrown.");
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "Grading setup failed.");
+                    new ErrorView(ex, "Grading setup failed because a SQLException was thrown.");
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "Grading setup failed.");
+                    new ErrorView(ex, "Grading setup failed because a ServicesException was thrown.");
                 } catch (IOException ex) {
-                    new ErrorView(ex, "Grading setup failed.");
+                    new ErrorView(ex, "Grading setup failed because an IOException was thrown.");
                 } catch (RubricException ex) {
-                    new ErrorView(ex, "Grading setup failed.");
+                    new ErrorView(ex, "Grading setup failed because a RubricException was thrown.");
                 }
             }
         });
@@ -247,6 +250,7 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
 
         //if no distribution has been made, disable all buttons except set up grading
         try {
+            // get data services, not get database
             if (Allocator.getDatabase().isDistEmpty(_asgn.getPartIDs())) {
                 _makeNewRubricsButton.setEnabled(false);
                 _recalculateHandinStatusesButton.setEnabled(false);
