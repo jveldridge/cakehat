@@ -13,7 +13,6 @@ import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import java.awt.Color;
 import java.awt.Component;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -159,7 +158,7 @@ class AssignmentTree extends JScrollPane {
 
         return selection;
     }
-
+    
     public void addSelectionListener(TreeSelectionListener tsl) {
         _tree.addTreeSelectionListener(tsl);
     }
