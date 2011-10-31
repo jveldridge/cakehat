@@ -529,15 +529,18 @@ public class TextViewerView extends JFrame
             return;
         }
 
+        //printer will be null if user cancels printing
         CITPrinter printer = Allocator.getGradingServices().getPrinter();
 
-        try
-        {
-            Allocator.getPortraitPrintingService().print(request, printer);
-        }
-        catch(IOException e)
-        {
-            new ErrorView(e, "Unable to print");
+        if (printer != null) {
+            try
+            {
+                Allocator.getPortraitPrintingService().print(request, printer);
+            }
+            catch(IOException e)
+            {
+                new ErrorView(e, "Unable to print");
+            }
         }
     }
 
