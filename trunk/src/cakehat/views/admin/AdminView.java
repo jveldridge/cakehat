@@ -26,7 +26,6 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -63,19 +62,16 @@ import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.stathist.StatHistView;
 import cakehat.views.shared.ErrorView;
+import cakehat.views.shared.StudentConverter;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import javax.swing.BoxLayout;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import support.ui.StringConverter;
-import support.utils.FileCopyingException;
-import support.utils.FileSystemUtilities.FileCopyPermissions;
-import support.utils.FileSystemUtilities.OverwriteMode;
 import support.utils.posix.NativeException;
 
 /**
@@ -571,8 +567,7 @@ public class AdminView extends JFrame
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //List
-        StudentConverter converter = new StudentConverter();
-        _studentList = new GenericJList<Student>(_students, converter);
+        _studentList = new GenericJList<Student>(_students, StudentConverter.INSTANCE);
         _studentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {
@@ -587,6 +582,12 @@ public class AdminView extends JFrame
         JScrollPane studentPane = new JScrollPane(_studentList);
         studentPane.setPreferredSize(LIST_LIST_PANE_SIZE);
         panel.add(studentPane);
+    }
+    
+    void updateStudentList() {
+        List<Student> students = new ArrayList<Student>(Allocator.getDataServices().getAllStudents());
+        Collections.sort(students);
+        _studentList.setListData(students);
     }
 
     private void applyFilterField() {
@@ -1348,7 +1349,7 @@ public class AdminView extends JFrame
 
     private void addStudentsButtonActionPerformed()
     {
-        AddStudentsView view = new AddStudentsView();
+        AddStudentsView view = new AddStudentsView(this);
         view.setLocationRelativeTo(this);
         view.setVisible(true);
     }
@@ -1947,14 +1948,4 @@ public class AdminView extends JFrame
             JOptionPane.OK_OPTION);
     }
     
-    /**
-     * Displays the login and name as <code>login (FirstName LastName)</code>
-     */
-    private class StudentConverter implements StringConverter<Student>
-    {
-        public String convertToString(Student student)
-        {
-            return student.getLogin() + " (" + student.getName() + ")";
-        }
-    }
 }

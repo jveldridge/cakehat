@@ -6,6 +6,7 @@ import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
+import cakehat.views.shared.StudentConverter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -69,9 +70,8 @@ class BlacklistPanel extends AlphaJPanel
         _nonblacklistedStudents.removeAll(blacklist);
         Collections.sort(_nonblacklistedStudents);
 
-        StudentConverter converter = new StudentConverter();
-        _blacklistJList = new GenericJList<Student>(blacklist, converter);
-        _nonblacklistJList = new GenericJList<Student>(_nonblacklistedStudents, converter);
+        _blacklistJList = new GenericJList<Student>(blacklist, StudentConverter.INSTANCE);
+        _nonblacklistJList = new GenericJList<Student>(_nonblacklistedStudents, StudentConverter.INSTANCE);
 
         this.initUI();
     }
@@ -233,17 +233,6 @@ class BlacklistPanel extends AlphaJPanel
         nonblacklistPanel.add(nonblacklistScrollPane);
         
         contentPanel.add(nonblacklistPanel, BorderLayout.EAST);
-    }
-
-    /**
-     * Displays the login and name as <code>login (FirstName LastName)</code>
-     */
-    private class StudentConverter implements StringConverter<Student>
-    {
-        public String convertToString(Student student)
-        {
-            return student.getLogin() + " (" + student.getName() + ")";
-        }
     }
 
     /**

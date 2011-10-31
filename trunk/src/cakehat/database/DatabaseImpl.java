@@ -408,7 +408,6 @@ public class DatabaseImpl implements Database {
                 ps.setString(1, asgn.getDBID());
                 
                 ResultSet rs = ps.executeQuery();
-                rs.next();
                 numConflicts += rs.getInt("numConflicts");
             }
 
