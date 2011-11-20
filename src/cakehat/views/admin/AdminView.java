@@ -71,7 +71,6 @@ import java.util.LinkedList;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import support.ui.StringConverter;
 import support.utils.posix.NativeException;
 
 /**
@@ -1023,7 +1022,11 @@ public class AdminView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                resetDatabaseButtonActionPerformed();
+                try {
+                    resetDatabaseButtonActionPerformed();
+                } catch (ServicesException ex) {
+                    new ErrorView(ex, "Could not reset database.");
+                }
             }
 
         });
@@ -1363,7 +1366,7 @@ public class AdminView extends JFrame
         }
     }
 
-    private void resetDatabaseButtonActionPerformed()
+    private void resetDatabaseButtonActionPerformed() throws ServicesException
     {
         //check that user performing reset is an administrator
         if(!Allocator.getUserServices().getUser().isAdmin()) {
@@ -1424,6 +1427,8 @@ public class AdminView extends JFrame
                         "because members of the student group could not be retrieved");
             }
         }
+        
+        Allocator.getDataServices().updateDataCache();
 
         JOptionPane.showMessageDialog(this, "Changes successful.  " +
                 "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
