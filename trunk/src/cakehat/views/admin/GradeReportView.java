@@ -409,35 +409,27 @@ class GradeReportView extends javax.swing.JFrame {
     }//GEN-LAST:event__messageTextKeyReleased
 
     private void sendToStudsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToStudsButtonActionPerformed
-        //creates map of emails for students
-        Map<Student, String> emailMap = new HashMap<Student, String>();
-        for (Student student : _students) {
-               emailMap.put(student, student.getEmailAddress());
-         }
-        this.sendGradeEmail(emailMap);
+        
+        this.sendGradeEmail(null);
+        this.dispose();
     }//GEN-LAST:event_sendToStudsButtonActionPerformed
 
     private void sendToOtherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToOtherButtonActionPerformed
         JTextField addressBox = new JTextField();
         int res = JOptionPane.showConfirmDialog(this, addressBox, "Enter email address", JOptionPane.OK_CANCEL_OPTION);
         if (res == JOptionPane.OK_OPTION) {
-            //creates the email map
-            Map<Student, String> emailMap = new HashMap<Student, String>();
-            for (Student student : _students) {
-                emailMap.put(student, addressBox.getText());
-            }
-            this.sendGradeEmail(emailMap);
+            this.sendGradeEmail(addressBox.getText());
+            this.dispose();
         }
     }//GEN-LAST:event_sendToOtherButtonActionPerformed
 
 
     /**
-    * Helper method that sends grade reports to a list of emails that it takes
-    * as a parameter
-    * @param emailList
-    *
+    * Helper method that sends grade reports
+     * 
+    * @param alternateEmailAddress if not {@code null}, emails will be sent to this address instead of the student's
     */
-    private void sendGradeEmail(Map<Student, String> emailMap){
+    private void sendGradeEmail(String alternateEmailAddress){
 
 	final int imageWidth = 600;
         final int imageHeight = 250;
@@ -467,37 +459,56 @@ class GradeReportView extends javax.swing.JFrame {
                 }
             }
         }
-
-
-        //send email to each student
-        StudentChartPanel scp = new StudentChartPanel();
-        for (Student student : _students) {
-            //creates individual attachments list for each student
-            ArrayList<String> attachments = new ArrayList<String>(asgnChartAttachments);
-
-            //create student score chart
-            if (attachScoreGraphButton.isSelected()) {
-                try {
-                    Assignment[] asgns = _asgnParts.keySet().toArray(new Assignment[0]);
-                    Arrays.sort(asgns);
-                    scp.updateChart(student, asgns);
-                    File tmp = new File(Allocator.getPathServices().getUserWorkspaceDir(), student + ".png");
-                    ImageIO.write(scp.getImage(imageWidth, imageHeight), "png", tmp);
-                    attachments.add(tmp.getAbsolutePath());
-                } catch (IOException ex) {
-                    new ErrorView(ex, "Could not generate graph for student " + student + ".");
+        
+        //Create charts if requested
+        Map<Student, File> studentChartLocations = new HashMap<Student, File>();
+        if(attachScoreGraphButton.isSelected())
+        {
+            try
+            {
+                Map<Assignment, Map<Student, Double>> allScores = Allocator.getGradingServices()
+                        .getScores(_asgnParts.keySet(),Allocator.getDataServices().getEnabledStudents());
+            
+                StudentChartPanel studentChartPanel = new StudentChartPanel();
+                for(Student student : _students)
+                {
+                    try
+                    {
+                        studentChartPanel.updateChart(student, allScores);
+                        File tmp = new File(Allocator.getPathServices().getUserWorkspaceDir(), student + ".png");
+                        ImageIO.write(studentChartPanel.getAsImage(imageWidth, imageHeight), "png", tmp);
+                        studentChartLocations.put(student, tmp);
+                    }
+                    catch (IOException ex)
+                    {
+                        new ErrorView(ex, "Could not generate a chart for student " + student);
+                    }
                 }
             }
-            Allocator.getConfigurationInfo().getEmailAccount().sendMail(Allocator.getCourseInfo().getCourse()
-                    + "headtas@cs.brown.edu",
-                    Arrays.asList(emailMap.get(student)),
-                    null, null,
-                    "[" + Allocator.getCourseInfo().getCourse()
-                    + "] Grade Report", htmlBuilder(student),
-                    attachments);
-            this.dispose();
+            catch(ServicesException e)
+            {
+                new ErrorView(e, "Could not retrieve data for student charts; they will not be attached");
+            }
         }
-
+        
+        //Send email to each student
+        for(Student student : _students)
+        {
+            //Create individual attachments list for each student
+            ArrayList<String> attachments = new ArrayList<String>(asgnChartAttachments);
+            if(studentChartLocations.containsKey(student))
+            {
+                attachments.add(studentChartLocations.get(student).getAbsolutePath());
+            }
+            
+            Allocator.getConfigurationInfo().getEmailAccount().sendMail(
+                    Allocator.getCourseInfo().getCourse() + "headtas@cs.brown.edu",
+                    Arrays.asList(alternateEmailAddress == null ? student.getEmailAddress() : alternateEmailAddress),
+                    null, null,
+                    "[" + Allocator.getCourseInfo().getCourse() + "] Grade Report",
+                    htmlBuilder(student),
+                    attachments);
+        }
     }
 
 

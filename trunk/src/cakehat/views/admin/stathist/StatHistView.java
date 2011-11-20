@@ -13,7 +13,6 @@ import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -193,23 +192,38 @@ public class StatHistView extends JFrame {
                 _partPaddingMap.get(p).setVisible(true);
             }
         }
-        //see student performance
-        else if (_selectViewBox.getSelectedItem().equals(BY_STUDENT)) {
-            for (Assignment a : _assignments) {
+        //Per student chart
+        else if(_selectViewBox.getSelectedItem().equals(BY_STUDENT))
+        {
+            for(Assignment a : _assignments)
+            {
                 _asgnChartMap.get(a).setVisible(false);
                 _asgnPaddingMap.get(a).setVisible(false);
             }
-            for (Part p : _parts) {
+            for(Part p : _parts)
+            {
                 _partChartMap.get(p).setVisible(false);
                 _partPaddingMap.get(p).setVisible(false);
             }
 
-            for (Student student : _enabledStudents) {
-                StudentChartPanel chart = _studChartMap.get(student);
-                chart.updateChart(student, _assignments.toArray(new Assignment[0]));
-                chart.setVisible(true);
-
-                _studPaddingMap.get(student).setVisible(true);
+            try
+            {
+                //Retrieve the data necessary to show the charts in a batch method to reduce database calls
+                Map<Assignment, Map<Student, Double>> allScores =
+                        Allocator.getGradingServices().getScores(_assignments, _enabledStudents);
+                
+                //Show and update charts
+                for(Student student : _enabledStudents)
+                {
+                    StudentChartPanel chart = _studChartMap.get(student);
+                    chart.updateChart(student, allScores);
+                    chart.setVisible(true);
+                    _studPaddingMap.get(student).setVisible(true);
+                }
+            }
+            catch(ServicesException e)
+            {
+                new ErrorView(e, "Unable to retrieve grade information from the database");
             }
         }
     }
