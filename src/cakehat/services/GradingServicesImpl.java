@@ -676,4 +676,43 @@ public class GradingServicesImpl implements GradingServices
             return _studentLogin;
         }
     }
+    
+    @Override
+    public Map<Assignment, Map<Student, Double>> getScores(Collection<Assignment> asgns,
+            Collection<Student> studentsToInclude) throws ServicesException
+    {
+        HashSet<Student> studentsToIncludeHashed = new HashSet<Student>(studentsToInclude);
+        
+        Map<Assignment, Map<Student, Double>> allScores = new HashMap<Assignment, Map<Student, Double>>();
+        for(Assignment asgn : asgns)
+        {
+            //Pull from database
+            Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
+            Map<Group, Double> groupScores = Allocator.getDataServices().getScores(asgn, groups);
+
+            //Build a mapping from included students to their scores for the assignment
+            Map<Student, Double> studentScores = new HashMap<Student, Double>();
+            allScores.put(asgn, studentScores);
+            for(Group group : groups)
+            {
+                for(Student student : group.getMembers())
+                {
+                    if(studentsToIncludeHashed.contains(student))
+                    {
+                        Double score = groupScores.get(group);
+                        studentScores.put(student, (score == null ? 0 : score));
+                    }
+                }
+            }
+            for(Student student : studentsToInclude)
+            {
+                if(!studentScores.containsKey(student))
+                {
+                    studentScores.put(student, 0D);
+                }
+            }
+        }
+        
+        return allScores;
+    }
 }

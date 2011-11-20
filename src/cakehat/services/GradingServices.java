@@ -187,4 +187,17 @@ public interface GradingServices
      */
     public void storeHandinStatuses(Handin handin, Collection<Group> groups,
                                     int minsLeniency, boolean overwrite) throws ServicesException;
+    
+    /**
+     * Builds a mapping from assignment to student to score for a given assignment. A given mapping will never be null;
+     * if no score exists for a student, the score will be set to 0. This is the raw score from the database and does
+     * not take into account handin bonus or penalty - see bug 309.
+     * 
+     * @param asgns assignments to include in the map
+     * @param studentsToInclude students to include in the map
+     * @return
+     * @throws ServicesException 
+     */
+    public Map<Assignment, Map<Student, Double>> getScores(Collection<Assignment> asgns,
+            Collection<Student> studentsToInclude) throws ServicesException;
 }
