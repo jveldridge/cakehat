@@ -42,8 +42,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import support.ui.GenericJComboBox;
-import support.ui.ShadowJTextField;
-import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilities.TerminalStringValidity;
 import support.utils.FileCopyingException;
 import support.utils.FileExistsException;
@@ -261,6 +259,11 @@ class JavaActions implements ActionProvider
             "If a terminal is shown the value of this property will " +
             "be displayed as the title of the terminal. If this value " +
             "is not set the terminal's title will be '[Assignment Name] Demo'", false);
+        protected final DistributableActionProperty RUN_ARGS_PROPERTY =
+             new DistributableActionProperty("provide-args",
+             "By default the demo will be run without any arguments. " +
+             "Set this property to TRUE to allow for the grader to provide run " +
+             "arguments to the Java program.", false);
 
         public ActionProvider getProvider()
         {
@@ -354,7 +357,8 @@ class JavaActions implements ActionProvider
         public List<DistributableActionProperty> getProperties()
         {
             return ImmutableList.of(LOCATION_PROPERTY, SHOW_TERMINAL_PROPERTY,
-                    TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
+                    TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY,
+                    RUN_ARGS_PROPERTY);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -364,7 +368,21 @@ class JavaActions implements ActionProvider
                 public void performAction(DistributablePart part, Group group) throws ActionException
                 {
                     String cmdEnd = " -jar " + properties.get(LOCATION_PROPERTY);
-                    runDemo(properties, properties.get(CLASS_PATH_PROPERTY), part, cmdEnd);
+                    
+                    //run information
+                    boolean shouldRun = true;
+                    
+                    //get run arguments, if applicable
+                    boolean provideArgs = "TRUE".equalsIgnoreCase(properties.get(RUN_ARGS_PROPERTY));
+                    if (provideArgs) {
+                        ExecuteDialog dialog = new ExecuteDialog();
+                        shouldRun = dialog.shouldRun();
+                        cmdEnd += " " + dialog.getRunArguments();
+                    }
+                    
+                    if (shouldRun) {
+                        runDemo(properties, properties.get(CLASS_PATH_PROPERTY), part, cmdEnd);
+                    }
                 }
             };
 
@@ -395,7 +413,8 @@ class JavaActions implements ActionProvider
         public List<DistributableActionProperty> getProperties()
         {
             return ImmutableList.of(LOCATION_PROPERTY, MAIN_PROPERTY, SHOW_TERMINAL_PROPERTY,
-              TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
+              TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY,
+              RUN_ARGS_PROPERTY);
         }
 
         public DistributableAction getAction(final Map<DistributableActionProperty, String> properties)
@@ -411,8 +430,21 @@ class JavaActions implements ActionProvider
                     }
                     
                     String cmdEnd = " " + properties.get(MAIN_PROPERTY);
-
-                    runDemo(properties, classpath, part, cmdEnd);
+                    
+                    //run information
+                    boolean shouldRun = true;
+                    
+                    //get run arguments, if applicable
+                    boolean provideArgs = "TRUE".equalsIgnoreCase(properties.get(RUN_ARGS_PROPERTY));
+                    if (provideArgs) {
+                        ExecuteDialog dialog = new ExecuteDialog();
+                        shouldRun = dialog.shouldRun();
+                        cmdEnd += " " + dialog.getRunArguments();
+                    }
+                    
+                    if (shouldRun) {
+                        runDemo(properties, classpath, part, cmdEnd);
+                    }
                 }
             };
 
@@ -481,7 +513,7 @@ class JavaActions implements ActionProvider
                     {
                         List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
 
-                        if(mainClasses.size() == 0)
+                        if(mainClasses.isEmpty())
                         {
                             JOptionPane.showMessageDialog(null, "No main class is available to run.");
                         }
@@ -505,7 +537,7 @@ class JavaActions implements ActionProvider
                             // Prompt user for the main class and run arguments
                             else
                             {
-                                CompileAndRunDialog dialog = new CompileAndRunDialog(mainClasses, provideArgs);
+                                ExecuteDialog dialog = new ExecuteDialog(mainClasses, provideArgs);
                                 shouldRun = dialog.shouldRun();
                                 mainToRun = dialog.getSelectedMain();
                                 runArgs = dialog.getRunArguments();
@@ -749,9 +781,10 @@ class JavaActions implements ActionProvider
     }
 
     /**
-     * A dialog for selecting the main class, and potentially the run arguments.
+     * A dialog for selecting the main class, if applicable, and the run arguments,
+     * if applicable, for either a JAR or a class file to be run.
      */
-    private static class CompileAndRunDialog extends JDialog
+    private static class ExecuteDialog extends JDialog
     {
         private GenericJComboBox<ClassInfo> _mainClassesBox;
         private JTextField _runArgsField;
@@ -763,8 +796,22 @@ class JavaActions implements ActionProvider
         private static final int TOTAL_WIDTH = 450;
         private static final int ELEMENT_HEIGHT = 30;
         private static final int PADDING = 10;
-
-        public CompileAndRunDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
+        
+        /**
+         * Constructor for creating an ExecuteDialog that only allows providing run
+         * arguments, not selecting a main class.
+         */
+        public ExecuteDialog() {
+            this(null, true);
+        }
+        
+        /**
+         * @param mainClasses- if not null, the dialog will include a drop-down to
+         *                     select the main class that should be run
+         * @param provideRunArgs- if true, the dialog will include a text field for
+         *                        entering run arguments
+         */
+        public ExecuteDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
         {
             this.setTitle("Run Options");
             this.getContentPane().setLayout(new BorderLayout(0, 0));
@@ -777,7 +824,7 @@ class JavaActions implements ActionProvider
             }
             if(provideRunArgs)
             {
-                numElements += 2;
+                numElements += 3;
             }
             int totalElementHeight = numElements * ELEMENT_HEIGHT;
             int totalHeight = totalElementHeight + 2 * PADDING;
@@ -797,7 +844,7 @@ class JavaActions implements ActionProvider
 
             if(mainClasses != null)
             {
-                contentPanel.add(new JLabel("Choose the class containing the mainline to be run"));
+                contentPanel.add(new JLabel("Choose the class containing the mainline to be run:"));
 
                 _mainClassesBox = new GenericJComboBox<ClassInfo>(mainClasses);
                 contentPanel.add(_mainClassesBox);
@@ -805,8 +852,9 @@ class JavaActions implements ActionProvider
 
             if(provideRunArgs)
             {
-                _runArgsField = new ShadowJTextField("Run arguments");
-
+                contentPanel.add(new JLabel("Run arguments:"));
+                _runArgsField = new JTextField();
+                
                 //Validate input
                 _runArgsField.getDocument().addDocumentListener(new DocumentListener()
                 {
@@ -814,7 +862,7 @@ class JavaActions implements ActionProvider
                     public void removeUpdate(DocumentEvent de) { validateInput(); }
                     public void changedUpdate(DocumentEvent de){ validateInput(); }
                 });
-                //If enter key is pressed, close window is argument is valid
+                //If enter key is pressed, close window if argument is valid
                 _runArgsField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "newline");
                 _runArgsField.getActionMap().put("newline", new AbstractAction()
                 {
@@ -824,12 +872,12 @@ class JavaActions implements ActionProvider
                         if(_runButton.isEnabled())
                         {
                             _shouldRun = true;
-                            CompileAndRunDialog.this.dispose();
+                            ExecuteDialog.this.dispose();
                         }
                     }
                 });
 
-                _runArgsField.setColumns(30);
+                _runArgsField.setColumns(30);    
                 contentPanel.add(_runArgsField);
 
                 _argsValidationLabel = new JLabel();
@@ -839,7 +887,7 @@ class JavaActions implements ActionProvider
 
             JPanel buttonPanel = new JPanel();
             contentPanel.add(buttonPanel);
-
+            
             _runButton = new JButton("Run");
             _runButton.addActionListener(new ActionListener()
             {
@@ -847,7 +895,7 @@ class JavaActions implements ActionProvider
                 public void actionPerformed(ActionEvent e)
                 {
                     _shouldRun = true;
-                    CompileAndRunDialog.this.dispose();
+                    ExecuteDialog.this.dispose();
                 }
             });
             buttonPanel.add(_runButton);
@@ -858,11 +906,11 @@ class JavaActions implements ActionProvider
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    CompileAndRunDialog.this.dispose();
+                    ExecuteDialog.this.dispose();
                 }
             });
             buttonPanel.add(cancelButton);
-
+                        
             //Padding below the buttons
             this.getContentPane().add(Box.createRigidArea(new Dimension(TOTAL_WIDTH, PADDING)),
                     BorderLayout.SOUTH);
@@ -887,7 +935,7 @@ class JavaActions implements ActionProvider
 
         public String getRunArguments()
         {
-            return _runArgsField == null ? null : _runArgsField.getText();
+            return _runArgsField == null ? "" : _runArgsField.getText();
         }
 
         /**

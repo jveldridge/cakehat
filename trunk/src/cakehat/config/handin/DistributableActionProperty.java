@@ -48,4 +48,10 @@ public class DistributableActionProperty
     {
         return _required;
     }
+    
+    @Override
+    public String toString() {
+        return _name;
+    }
+    
 }
