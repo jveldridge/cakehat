@@ -18,8 +18,10 @@ import cakehat.config.handin.Handin;
 import cakehat.rubric.Rubric.Section;
 import cakehat.rubric.Rubric.Subsection;
 import cakehat.services.ServicesException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JOptionPane;
 import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
@@ -272,11 +274,28 @@ public class RubricManagerImpl implements RubricManager {
     }
 
     @Override
-    public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
+    public boolean distributeRubrics(Handin handin, Collection<Group> toDistribute,
                                   DistributionRequester requester, OverwriteMode overwrite) throws RubricException {
-        Collection<DistributablePart> distParts = handin.getAssignment().getDistributableParts();
+        List<DistributablePart> distParts = handin.getAssignment().getDistributableParts();
         int numToDistribute = toDistribute.size() * distParts.size();
         int numDistributedSoFar = 0;
+        
+        for (int i = 0; i < distParts.size(); i++) {
+                DistributablePart part = distParts.get(i);
+                File template = part.getRubricTemplate();
+                if (template == null || !template.isFile() || !template.exists()) {
+                    StringBuilder errMsg = new StringBuilder();
+                    errMsg.append("Distributable part ").append(part).append(" does not have a rubric template, ");
+                    errMsg.append("or the given template does not exist.\n\n");
+                    errMsg.append("Rubrics cannot be distributed for the following distributable parts:\n");
+                    for (int j = i; j < distParts.size(); j++) {
+                        errMsg.append("\t").append(distParts.get(j)).append("\n");
+                    }
+                    
+                    JOptionPane.showMessageDialog(null, errMsg, "Configuration Error", JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+        }
 
         try {
             for (DistributablePart part : distParts) {
@@ -292,6 +311,8 @@ public class RubricManagerImpl implements RubricManager {
                     requester.updatePercentDone((int) (fractionDone * 100));
                 }
             }
+            
+            return true;
         } catch (FileCopyingException ex) {
             throw new RubricException("Could not distribute rubrics for " +
                                       "assignment " + handin.getAssignment() + ".", ex);

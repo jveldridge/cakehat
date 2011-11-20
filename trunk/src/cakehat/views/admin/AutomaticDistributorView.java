@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.CakehatException;
+import java.util.concurrent.ExecutionException;
 import support.ui.IntegerField;
 import cakehat.config.Assignment;
 import cakehat.config.TA;
@@ -39,11 +40,15 @@ import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.rubric.DistributionRequester;
 import cakehat.views.shared.ErrorView;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JSeparator;
@@ -675,32 +680,49 @@ class AutomaticDistributorView extends JFrame implements DistributionRequester {
             }
         }
 
-        Thread distributionThread = new Thread() {
+        Callable<Boolean> distributionCalleable = new Callable<Boolean>() {
             @Override
-            public void run() {
+            public Boolean call() throws Exception {              
                 try {
-                    Allocator.getRubricManager().distributeRubrics(_asgn.getHandin(),
-                                                                   groups,
-                                                                   AutomaticDistributorView.this,
-                                                                   OverwriteMode.REPLACE_EXISTING);
+                    boolean success = Allocator.getRubricManager().distributeRubrics(_asgn.getHandin(),
+                                                                                       groups,
+                                                                                       AutomaticDistributorView.this,
+                                                                                       OverwriteMode.REPLACE_EXISTING);                    
                     
-                    _progressDialog.dispose();
-                } catch (RubricException ex) {
-                    new ErrorView(ex, "Distributing rubrics for asignment " + _asgn + " failed.");
+                    //if no RubricException was thrown, rubric creation was successful
+                    return success;
                 } finally {
                     //get rid of progress dialog
-                    _progressDialog.dispose();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            _progressDialog.dispose();
+                        }
+                    });
                 }
             }
         };
-
-        distributionThread.start();
+        
+        FutureTask<Boolean> distributionTask = new FutureTask<Boolean> (distributionCalleable);
+        Executors.newSingleThreadExecutor().submit(distributionTask);
 
         _progressDialog.pack();
         _progressDialog.setLocationRelativeTo(this);
         _progressDialog.setVisible(true);
-
-        return true;
+        
+        try {
+            //wait for rubric creation to finish
+            return distributionTask.get();
+        } catch (InterruptedException ex) {
+            throw new RubricException("Rubric creation failed because the creation thread was interupted.", ex);
+        } catch (ExecutionException ex) {
+            if (ex.getCause() instanceof RubricException) {
+                throw (RubricException) ex.getCause();
+            }
+            else {
+                throw new RubricException("Rubric creation failed unexpectedly.", ex);
+            }
+        }
     }
 
     public void updatePercentDone(int newPercentDone) {
