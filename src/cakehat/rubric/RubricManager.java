@@ -110,19 +110,23 @@ public interface RubricManager
     public void convertToGRD(Map<Handin, Iterable<Group>> toConvert) throws RubricException;
 
     /**
-     * Creates a rubric for each DistributablePart of the given Handin for each
-     * Group in the given Collection by creating an appropriately placed copy of the each
-     * DistributablePart's rubric template for each student. If the Group already
-     * has a rubric, the behavior of the copy operation will be determined based
-     * on the given OverwriteMode parameter.
+     * First checks whether all DistributableParts of the Handin have rubric
+     * templates specified in the configuration file that exist and are files;
+     * if not, returns false.  If so, returns true after creating a rubric for
+     * each DistributablePart of the given Handin for each Group in the given
+     * Collection by creating an appropriately placed copy of the each DistributablePart's
+     * rubric template for each student. If the Group already has a rubric, the
+     * behavior of the copy operation will be determined based on the given
+     * OverwriteMode parameter.
      *
      * @param handin
      * @param toDistribute
      * @param requester
      * @param overwrite
+     * @return
      * @throws RubricException
      */
-    public void distributeRubrics(Handin handin, Collection<Group> toDistribute,
+    public boolean distributeRubrics(Handin handin, Collection<Group> toDistribute,
                                   DistributionRequester requester, OverwriteMode overwrite) throws RubricException;
 
     /**
