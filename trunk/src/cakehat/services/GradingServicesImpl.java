@@ -40,6 +40,7 @@ import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.rubric.RubricException;
 import cakehat.rubric.TimeStatus;
 import cakehat.views.shared.EmailView;
 import java.io.FileNotFoundException;
@@ -689,7 +690,7 @@ public class GradingServicesImpl implements GradingServices
             //Pull from database
             Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
             Map<Group, Double> groupScores = Allocator.getDataServices().getScores(asgn, groups);
-
+            
             //Build a mapping from included students to their scores for the assignment
             Map<Student, Double> studentScores = new HashMap<Student, Double>();
             allScores.put(asgn, studentScores);
@@ -699,8 +700,20 @@ public class GradingServicesImpl implements GradingServices
                 {
                     if(studentsToIncludeHashed.contains(student))
                     {
-                        Double score = groupScores.get(group);
-                        studentScores.put(student, (score == null ? 0 : score));
+                        try
+                        {
+                            Double score = groupScores.get(group);
+                            double penaltyOrBonus = Allocator.getRubricManager()
+                                    .getHandinPenaltyOrBonus(asgn.getHandin(), group);
+                        
+                            double totalScore = (score == null ? 0 : score + penaltyOrBonus);
+                            studentScores.put(student, totalScore);
+                        }
+                        catch(RubricException ex)
+                        {
+                            throw new ServicesException("Unable to determine the handin bonus or penalty for " + 
+                                    student, ex);
+                        }
                     }
                 }
             }
