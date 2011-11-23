@@ -409,6 +409,7 @@ public class DatabaseImpl implements Database {
                 
                 ResultSet rs = ps.executeQuery();
                 numConflicts += rs.getInt("numConflicts");
+                rs.close();
             }
 
             if (numConflicts > 0) {
@@ -437,6 +438,7 @@ public class DatabaseImpl implements Database {
                     groupIDs.add(id);
                 }
             }
+            rs.close();
             psGroup.close();
 
             // add all the members to those groups
@@ -619,6 +621,7 @@ public class DatabaseImpl implements Database {
                 ps.addBatch();
             }
             ps.executeBatch();
+            ps.close();
             
             ps = conn.prepareStatement("INSERT INTO distribution ('pid', 'gpid', 'tid') VALUES (?, ?, ?)");
             for (String partID : distribution.keySet()) {
