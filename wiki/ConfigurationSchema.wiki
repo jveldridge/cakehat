@@ -1,6 +1,8 @@
 #summary Defines the XML schema for the configuration file.
 #labels Milestone-5.0
 
+
+{{{
 <!-- 1 CONFIG; VERSION attribute is required -->
 <CONFIG VERSION="5.0">
 
@@ -162,3 +164,5 @@
 	</ASSIGNMENTS>
 	
 </CONFIG>
+
+}}}
