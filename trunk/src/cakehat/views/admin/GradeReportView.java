@@ -1,5 +1,6 @@
 package cakehat.views.admin;
 
+import cakehat.rubric.RubricException;
 import cakehat.views.admin.stathist.AssignmentChartPanel;
 import cakehat.views.admin.stathist.StudentChartPanel;
 import com.google.common.collect.Iterables;
@@ -215,8 +216,18 @@ class GradeReportView extends javax.swing.JFrame {
                             + p.getPoints() + "</td></tr>");
                 }
             }
-
-            htmlString.append("</tr>");
+            
+            String penaltyOrBonusString;
+            try {
+                double penaltyOrBonus = Allocator.getRubricManager().getHandinPenaltyOrBonus(a.getHandin(), group);
+                penaltyOrBonusString = Double.toString(penaltyOrBonus);
+            } catch (RubricException ex) {
+                new ErrorView(ex, "Could not retrieve handin penalty or bonus.");
+                penaltyOrBonusString = "Unknown";
+            }
+            
+            htmlString.append("<tr style='background: #FFFFFF" + "'><td>").append("Handin Status Points</td>")
+                    .append(penaltyOrBonusString).append("</td><td>0</td></tr>");
         }
 
         htmlString.append("</table>");
