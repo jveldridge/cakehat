@@ -1,0 +1,164 @@
+#summary Defines the XML schema for the configuration file.
+#labels Milestone-5.0
+
+<!-- 1 CONFIG; VERSION attribute is required -->
+<CONFIG VERSION="5.0">
+
+	<!-- 0 or 1 DEFAULTS -->
+	<DEFAULTS>
+		<!-- 0 or 1 SUBMIT-OPTIONS; UI will allow grader to change this, but these are the defaults -->
+		<!-- 0 or 1 EMAIL-STUDENT attribute; defaults to TRUE -->
+		<!-- 0 or 1 ATTACH-GRADING-SHEET attribute; defaults to TRUE -->
+		<!-- 0 or 1 PRINT-GRADING-SHEET attribute; defaults to FALSE -->
+		<SUBMIT-OPTIONS EMAIL-STUDENT="TRUE" ATTACH-GRADING-SHEET="TRUE" PRINT-GRADING-SHEET="FALSE"/>
+	</DEFAULTS>
+	
+	<!-- 1 EMAIL -->
+	<EMAIL>
+		<!-- 1 NOTIFY -->
+    	<NOTIFY>
+    		<!-- 1 to N; does not need to be a Brown CS email address -->
+    		<ADDRESS>foo@bar.com</ADDRESS>
+    	</NOTIFY>
+    	<!-- 1 SEND-FROM -->
+    	<SEND-FROM>
+    	    <!-- 1 LOGIN -->
+    		<LOGIN>cs101000</LOGIN>
+    		<!-- 1 PASSWORD -->
+    		<PASSWORD>thePassword</PASSWORD>
+    		<!-- 1 CERT-PATH -->
+    		<CERT-PATH>/course/cs000/grading/smtp_certs/browncscerts.cert</CERT-PATH>
+    		<!-- 1 CERT-PASSWORD -->
+    		<CERT-PASSWORD>anotherPassword</CERT-PASSWORD>
+    	</SEND-FROM>
+	</EMAIL>
+	
+	<!-- 1 LAST-IDS; this is not user exposed, these values are used to generate unique ids for
+	     assignments, part blocks, and parts without using GUIDs that have performance issues -->
+    <!-- 1 ASSIGNMENT attribute; must be an integer _->
+    <!-- 1 PART-BLOCK attribute; must be an integer ->
+    <!-- 1 PART attribute; must be an integer -->
+	<LAST-IDS ASSIGNMENT="5" PART-BLOCK="11" PART="91"/>
+
+	<!-- 0 or 1 ASSIGNMENTS -->
+	<ASSIGNMENTS>
+	
+		<!-- 0 to N ASSIGNMENT -->
+		<!-- 1 NAME attribute; for human readable purposes -->
+		<!-- 1 ORDER attribute; for ordering assignments relative to one another -->
+		<!-- 1 ID attribute; internal implementation used to reference this assignment -->
+		<!-- 0 or 1 HAS-GROUPS attribute; defaults to FALSE -->
+		<ASSIGNMENT NAME="Awesome Assignment" ORDER="1" ID="3" HAS-GROUPS="TRUE"/>
+		
+			<!-- 0 to N PART-BLOCK -->
+			<!-- 1 NAME attribute; for human readable purposes -->
+			<!-- 1 ORDER attribute; for ordering part blocks relative to on another -->
+			<!-- 1 ID attribute; internal implementation used to reference this digital handin -->
+			<!-- 0 or 1 DIRECTORY attribute; this attribute is required if any PART in this PART-BLOCK
+			     specifies a INCLUDE-FILES, RUN, OPEN, PRINT, or TEST configuration; digital handins
+			     will look recursively in this directory for handins -->
+			<PART-BLOCK NAME="The Handin" ORDER="1" ID="2" DIRECTORY="/course/cs000/handin/awesome/">
+			
+				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME -->
+				<DEADLINES TYPE="VARIABLE">
+					<!-- 0 or 1 EARLY; DATE attribute optional; POINTS attribute required; RATE attribute required -->
+					<!-- Adds POINTS for each increment of RATE the handin was handed in before
+						 ONTIME's DATE such that an amount less than RATE is 1 increment. -->
+				    <!-- RATE's format is DAYS-HOURS:MINUTES. All values must be positive integers. -->
+					<!-- DATE, if specified, is a point at which before the RATE is not applied -->
+					<EARLY DATE="2011-11-18T23:59:59" POINTS="5" RATE="1-12:20"/>
+					
+					<!-- 1 ONTIME; DATE attribute required-->
+					<ONTIME DATE="2011-11-22T23:59:59"/>
+					
+					<!-- 0 or 1 LATE; DATE attribute optional; POINTS attribute required; RATE attribute required -->
+					<!-- Adds POINTS for each increment of RATE that has passed since ONTIME's DATE
+					     such that an amount less than RATE is 1 increment. -->
+				    <!-- RATE's format is DAYS-HOURS:MINUTES. All values must be positive integers. -->
+					<!-- DATE, if specified, is a point at which after the RATE is not applied -->
+					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" RATE="1-12:34"/>
+				</DEADLINES>
+				
+				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME  -->
+				<DEADLINES TYPE="FIXED">
+					<!-- 0 or 1 EARLY; DATE attribute required; POINTS attribute optional, defaults to 0 -->
+					<!-- Digital handins turned in before this time are recorded as EARLY and have
+					     POINTS added to their total score. -->
+					<EARLY DATE="2011-11-20T19:04:00" POINTS="10"/>
+					
+					<!-- TODO: NC-LATE definition -->
+					
+					<!-- 1 ONTIME; DATE attribute required -->
+					<!-- If EARLY is specified, digital handins turned in after EARLY, but before
+					     this time are recorded as ONTIME.
+					     If EARLY is not specified, digial handins turned in before this time are
+					     recorded as ONTIME. -->
+					<ONTIME DATE="2011-11-22T23:59:59"/>
+					
+					<!-- 0 or 1 LATE; DATE attribute required; POINTS attribute optional, defaults to 0 -->
+					<!-- Digital handins turned in before this time, but after ONTIME are recorded
+					     as LATE and have POINTS added to their total score. -->
+					<LATE DATE="2011-11-24T22:00:00" POINTS="-20"/>
+				</DEADLINES>	
+				
+				<!-- 0 to N PART -->
+				<!-- 1 NAME attribute; for human readable purposes -->
+				<!-- 1 ORDER attribute; for ordering parts relative to on another -->
+				<!-- 1 ID attribute; internal implementation used to reference this part -->
+				<PART NAME="The Digital Part" ORDER="1" ID="5">
+				
+					<!-- 1 GRADE-SOURCE; 1 GML-TEMPLATE attribute or 1 OUT-OF attribute, but not both -->
+					<GRADE-SOURCE GML-TEMPLATE="/course/cs000/grading/asgn1.gml"/>
+					<!-- 0 or 1 QUICK-NAME attribute if OUT-OF attribute is specified -->
+					<GRADE-SOURCE OUT-OF="11" QUICK-NAME="dpart" />
+					
+					<!-- 0 or 1 GRADING GUIDE; 1 PATH attribute -->
+					<GRADING-GUIDE PATH="/course/cs000/grading/asgn1-guide.txt"/>
+					
+					<!-- 0 or 1 INCLUDE-FILES -->
+					<INCLUDE-FILES>
+						<!-- 0 to N FILE; 1 PATH attribute -->
+						<FILE PATH=”hw1_1a.m” />
+						
+						<!-- 0 to N DIRECTORY; 1 PATH attribute-->
+						<DIRECTORY PATH=”problem_2/” />
+					</INCLUDE-FILES>
+					
+					<!-- 0 or 1 RUN; 1 MODE attribute -->
+					<RUN MODE="java:magic-run">
+						<!-- 0 to N PROPERTY; 1 KEY attribute; 1 VALUE attribute -->
+						<PROPERTY KEY="propName" VALUE="greaaaat"/>
+					</RUN>
+					
+					<!-- 0 or 1 DEMO; 1 MODE attribute -->
+					<DEMO MODE="awesome:intimidate-students">
+						<!-- 0 to N PROPERTY; 1 KEY attribute; 1 VALUE attribute -->
+						<PROPERTY KEY="propName" VALUE="greaaaat"/>
+					</DEMO>
+					
+					<!-- 0 or 1 TEST; 1 MODE attribute -->
+					<TEST MODE="amazing:fail-all">
+						<!-- 0 to N PROPERTY; 1 KEY attribute; 1 VALUE attribute -->
+						<PROPERTY KEY="propName" VALUE="greaaaat"/>
+					</TEST>
+					
+					<!-- 0 or 1 OPEN; 1 MODE attribute -->
+					<OPEN MODE="incredible:abracadabra">
+						<!-- 0 to N PROPERTY; 1 KEY attribute; 1 VALUE attribute -->
+						<PROPERTY KEY="propName" VALUE="greaaaat"/>
+					</OPEN>
+					
+					<!-- 0 or 1 PRINT; 1 MODE attribute -->
+					<PRINT MODE="external:command">
+						<!-- 0 to N PROPERTY; 1 KEY attribute; 1 VALUE attribute -->
+						<PROPERTY KEY="propName" VALUE="greaaaat"/>
+					</PRINT>
+					
+				</PART>
+				
+			</PART-BLOCK>
+		</ASSIGNMENT>
+		
+	</ASSIGNMENTS>
+	
+</CONFIG>
