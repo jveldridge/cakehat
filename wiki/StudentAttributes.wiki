@@ -1,4 +1,6 @@
+#summary Enabled/disabled behavior and collaboration contract
 #labels Milestone-5.0
+
 Cakehat stores two boolean attributes about each student: whether the student is enabled, and whether the student has submitted a signed collaboration policy.  This document describes the ways in which these attributes affect how cakehat handles students.
 
 1. Enabled Attribute
