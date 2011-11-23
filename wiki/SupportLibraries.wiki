@@ -1,0 +1,77 @@
+#summary external jars used by cakehat
+
+=Support Libraries=
+
+cakehat relies upon a number of external jars. These libraries have proven themselves reliable. Upgrading to the latest version of a library should be done carefully, not just automatically because it is available.
+
+==Javassist==
+http://www.csg.is.titech.ac.jp/~chiba/javassist/
+
+`javassist-3.14.0.jar` {NOT LATEST}
+
+Javassist reads Java class files and allows for determining information about them without actually turning them into Java objects. (This is very different from Java reflection.) This functionality is used to determine the directory containing all of the root packages and which classes have main lines.
+
+==Commons Compress==
+http://commons.apache.org/compress/
+
+`commons-compress-1.0.jar` {NOT LATEST}
+
+Commons Compress can extract and create tar and zip files. cakehat uses this library to extract digital file handins.
+
+==Google Collections Library==
+http://code.google.com/p/google-collections/
+
+`google-collection-1.0.jar` {NOT LATEST}
+
+Google Collections provides a large number of data structures not found in the standard Java library. cakehat makes use of the multimap, immutable list, and immutable map. A very important detail is that most of these data structures do not support storing null.
+
+Note: Google Collections has been merged into Guava (http://code.google.com/p/guava-libraries/) but cakehat uses a version of Google Collections from before this merge
+
+==JavaMail==
+http://www.oracle.com/technetwork/java/javamail/index.html
+
+`javamail-1.4.3.jar` {NOT LATEST}
+
+JavaMail allows for sending emails on behalf of the actual TA using cakehat.
+
+==JFreeChart==
+http://www.jfree.org/jfreechart/
+
+`jfreechart-1.0.13.jar`
+
+JFreeChart is used to create the charts and graphs used in cakehat.
+
+==JCommon==
+http://www.jfree.org/jcommon/
+
+`jcommon-1.0.16.jar`
+
+JCommon is a dependency of JFreeChart.
+
+==Java Native Access (JNA)==
+https://github.com/twall/jna
+
+`jna-3.2.7.jar` {NOT LATEST}
+
+JNA is used to access the POSIX functionality available on Linux that the Java standard libraries do not provide access to. This includes accessing group membership (for instance all users that belong to cs015student), the names of users, and changing file permissions.
+
+==JOrtho==
+http://jortho.sourceforge.net/
+
+`jortho-0.4.jar` {NOT LATEST}
+
+JOrtho provides spellchecking functionality. It is used exclusively in the message area of the email view. It has very poor performance.
+
+==matlabcontrol==
+http://code.google.com/p/matlabcontrol/
+
+`matlabcontrol-3.1.0.jar` {NOT LATEST}
+
+matlabcontrol allows cakehat to programmatically control a running instance of MATLAB.
+
+==SQLite==
+http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC
+
+`sqlite-jdbc-3.7.2.jar`
+
+SQLite is the database used by cakehat. SQLite is cross-platform C library, Xerial provides a Java wrapper.
