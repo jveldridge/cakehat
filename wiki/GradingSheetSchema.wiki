@@ -1,0 +1,105 @@
+#summary New XML schema for GML files
+#labels Milestone-5.0
+
+<!-- 1 top-level "GRADING-SHEET" node
+	The top-level node
+	Required attributes:
+		>GML-VERSION: the GML version in which this grading sheet is written; can be used to
+					  determine whether the grading sheet can be parsed by the version of
+					  cakehat being used
+		>TYPE: type of rubric; currently, the only supported type value is "ADDITIVE", but we
+			   may support "SUBTRACTIVE" or others at some point in the future
+		
+	Optional attributes:
+		>STATUS: indicates the grading status of this grading sheet.  Permissible values are:
+			>UNSUBMITTED-MODIFIED: score has not been recorded in the database, but the grading
+								   sheet has been modified since it was created from the
+								   template
+			>SUBMITTED-UNMODIFIED: the grading sheet has been submitted and the score recorded
+								   in the database at least once since the grading sheet was
+								   created, and no changes have been made since the grading
+								   was last submitted
+			>SUBMITTED-MODIFIED: the grading sheet has been submitted and the score recorded
+								 in the database at least once since the grading sheet was
+								 created, but the grading sheet has been modified since it was
+								 last submitted
+				If the "STATUS" attribute is not provided, it is assumed that the grading sheet is
+				unsubmitted and has not been modified since it was created.
+-->
+<GRADING-SHEET GML-VERSION="" TYPE="" STATUS="">
+
+	<!-- 1 to N "SECTION" nodes
+		Organizational units of SUBSECTIONs
+		Required attributes:
+			>NAME: the name of the section, displayed to TAs and students
+			
+		Optional attributes: none
+	-->
+	<SECTION NAME="">
+
+		<!-- 1 to N "SUBSECTION" nodes
+			Line item for which a student can be awarded points
+			Required attributes:
+				>NAME: description to be displayed to graders and students
+				>OUTOF: the number of points this section is worth; more points may be granted,
+						but any UIs should provide some kind of visual warning when this occurs
+				
+			Optional attributes:
+				>EARNED: the number of points the student earned; if not provided, should
+						 default to 0 in any UIs or generated files
+		-->
+		<SUBSECTION NAME="" OUTOF="" EARNED="">
+
+			<!-- 0 to N "DETAIL" nodes
+				Text comment shown on the grading sheet; each DETAIL is shown on a new line
+				
+				Required attributes: none
+				Optional attributes: none
+			-->
+			<DETAIL></DETAIL>
+			
+			<!-- 0 or 1 "COMMENTS" nodes
+				Stores free-text comments provided by TAs when grading.  This node is not valid
+				for templates. Grading UIs will automatically provide a comments area for each
+				SECTION, and, if any comments are included, will automatically add the COMMENTS
+				node
+				
+				Required attributes: none
+				Optional attributes: none
+			-->
+			<COMMENTS></COMMENTS>
+		
+		</SUBSECTION>
+		
+	</SECTION>
+
+</GRADING-SHEET>
+
+<!--Old nodes/attributes that are no longer valid
+	>RUBRIC: replaced by GRADING-SHEET
+	>NUMBER: now dictated by file path
+	>STATUS: now stored in database (the new STATUS node means something completely different)
+	>DAYS-LATE: now stored in database
+	>STUDENT: now read from database
+	>ACCT: now dictated by file path
+	>EXTRA-CREDIT: no longer special-cased; use a SECTION
+	>SCORE: replaced by EARNED
+	>SOURCE: no longer supported
+	>NOTES: no longer supported
+	>VALUE: DETAIL is now free-text and no longer supports attributes
+
+Talk to Josh about:
+TEXT_NODE, COMMENT_NODE
+
+??? Do we want to use any other libraries (dom4j?) for printing and parsing ???
+
+Note that these changes make the grading sheet / directory structure significantly less
+human-readable.
+
+0. objects
+1. gml parsing code
+2. gml generation code
+3. part visualization code
+4. assignment visualization code
+5. txt generation code
+-->
