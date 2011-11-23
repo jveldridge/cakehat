@@ -1,6 +1,7 @@
 #summary New XML schema for GML files
 #labels Milestone-5.0
 
+{{{
 <!-- 1 top-level "GRADING-SHEET" node
 	The top-level node
 	Required attributes:
@@ -87,19 +88,6 @@
 	>SOURCE: no longer supported
 	>NOTES: no longer supported
 	>VALUE: DETAIL is now free-text and no longer supports attributes
-
-Talk to Josh about:
-TEXT_NODE, COMMENT_NODE
-
-??? Do we want to use any other libraries (dom4j?) for printing and parsing ???
-
-Note that these changes make the grading sheet / directory structure significantly less
-human-readable.
-
-0. objects
-1. gml parsing code
-2. gml generation code
-3. part visualization code
-4. assignment visualization code
-5. txt generation code
 -->
+
+}}}
