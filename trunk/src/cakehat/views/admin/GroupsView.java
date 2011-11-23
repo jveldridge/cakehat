@@ -17,7 +17,9 @@ import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -116,7 +118,7 @@ class GroupsView extends javax.swing.JFrame {
 
         if (selection == JFileChooser.APPROVE_OPTION) {
             Collection<NewGroup> groupsToAdd = new LinkedList<NewGroup>();
-
+            Set<String> groupNames = new HashSet<String>();
             File groupFile = fc.getSelectedFile();
             Scanner gScanner = null;
             try {
@@ -147,7 +149,16 @@ class GroupsView extends javax.swing.JFrame {
                                 + "represents a student in the database.");
                     }
                 }
-
+                if (groupNames.contains(groupName)){ // if there is a duplicate group name
+                    new ErrorView("Group name, " + groupName + ", already exists in this file. " +
+                            "Duplicate group names are not allowed. Please remove the duplicates and " +
+                            "re-submit group file.");
+                    this.dispose();
+                    return;
+                }
+                else{ // otherwise add it to list
+                    groupNames.add(groupName);
+                }
                 groupsToAdd.add(new NewGroup(_asgn, groupName, members));
             }
             try {
