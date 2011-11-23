@@ -3,7 +3,7 @@
 
 
 {{{
-<!-- 1 CONFIG; VERSION attribute is required -->
+<!-- 1 CONFIG; 1 VERSION attribute -->
 <CONFIG VERSION="5.0">
 
 	<!-- 0 or 1 DEFAULTS -->
@@ -17,14 +17,14 @@
 	
 	<!-- 1 EMAIL -->
 	<EMAIL>
-		<!-- 1 NOTIFY -->
+	<!-- 1 NOTIFY -->
     	<NOTIFY>
     		<!-- 1 to N; does not need to be a Brown CS email address -->
     		<ADDRESS>foo@bar.com</ADDRESS>
     	</NOTIFY>
     	<!-- 1 SEND-FROM -->
     	<SEND-FROM>
-    	    <!-- 1 LOGIN -->
+		<!-- 1 LOGIN -->
     		<LOGIN>cs101000</LOGIN>
     		<!-- 1 PASSWORD -->
     		<PASSWORD>thePassword</PASSWORD>
