@@ -44,17 +44,17 @@ groupmember
 	* CONSTRAINT gpidpbidunique UNIQUE (pbid, gpid) ON CONFLICT REPLACE
 
 distribution
-	*pid INTEGER NOT NULL
-	*gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
-	*`*`tid INTEGER NOT NULL; FOREIGN KEY(taid) REFERENCES ta(taid) ON DELETE CASCADE
-	*CONSTRAINT onegrader UNIQUE (gpid, pid) ON CONFLICT REPLACE
-	*CONSTRAINT rowsunique UNIQUE (gpid, pid, tid) ON CONFLICT IGNORE
+	* pid INTEGER NOT NULL
+	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
+	* `*`tid INTEGER NOT NULL; FOREIGN KEY(taid) REFERENCES ta(taid) ON DELETE CASCADE
+	* CONSTRAINT onegrader UNIQUE (gpid, pid) ON CONFLICT REPLACE
+	* CONSTRAINT rowsunique UNIQUE (gpid, pid, tid) ON CONFLICT IGNORE
 	
 exemption
-	*`*`pbid INTEGER NOT NULL
-	*gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
-	*note TEXT
-	*CONSTRAINT gpidpbidunique UNIQUE (pbid, gpid) ON CONFLICT REPLACE
+	* `*`pbid INTEGER NOT NULL
+	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
+	* note TEXT
+	* CONSTRAINT gpidpbidunique UNIQUE (pbid, gpid) ON CONFLICT REPLACE
 
 extension
 	* `*`pbid INTEGER NOT NULL
