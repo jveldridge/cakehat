@@ -174,8 +174,10 @@ public interface DataServices {
     
     /**
      * Returns the Group for which the given Student is a member for the
-     * given Assignment. A ServicesException will be thrown if no such Group
-     * exists, or if a database error occurred.
+     * given Assignment. If the given Assignment is not a group assignment and
+     * the Student does not already have a group of one, a group of one will be
+     * created, stored in the database, and returned. A ServicesException will
+     * be thrown if no such Group exists, or if a database error occurred.
      *
      * @param asgn
      * @param student
@@ -189,7 +191,9 @@ public interface DataServices {
      * ServicesException will be thrown if an invalid group ID is present in the
      * database or if a database error occurred.  If the given Assignment is not
      * a group assignment, groups of one will be created and stored in the database
-     * for each student who does not already have a group of one.
+     * for each student who does not already have a group of one.  Returns an 
+     * empty Collection if the given Assignment is a group Assignment and no groups
+     * have yet been created for it.
      * 
      * @param asgn
      * @return

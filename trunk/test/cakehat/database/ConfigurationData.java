@@ -1,5 +1,7 @@
 package cakehat.database;
 
+import com.google.common.collect.ImmutableList;
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Random;
@@ -34,18 +36,22 @@ public class ConfigurationData
 
         return ta;
     }
-
     
-    private static AtomicInteger _studentIdGenerator = new AtomicInteger(1);
-    
-    public static Student generateRandomStudent()
+    /**
+     * Adds a random student to the given database and generates and returns the
+     * corresponding Student object.
+     * 
+     * @return 
+     */
+    public static Student generateRandomStudent(Database db) throws SQLException
     {
-        int dbID = _studentIdGenerator.getAndIncrement();
         String login = generateRandomString();
         String firstName = generateRandomString();
         String lastName = generateRandomString();
+        
+        int studentID = db.addStudent(login, firstName, lastName);
 
-        return new Student(dbID, login, firstName, lastName, true);
+        return new Student(studentID, login, firstName, lastName, true);
     }
     
     public static Student generateStudent(int id, String login, String firstName,
@@ -87,22 +93,55 @@ public class ConfigurationData
         return handin;
     }
     
-    public static Assignment generateRandomAssignment() {
+    public static Assignment generateNonGroupAssignment() {
+        Assignment asgn = createMock(Assignment.class);
+        final String name = "Some Assignment";
+        expect(asgn.getName()).andReturn(name).anyTimes();
+        expect(asgn.getDBID()).andReturn(name).anyTimes();
+        expect(asgn.hasGroups()).andReturn(false).anyTimes();
+
+        DistributablePart dp1 = createMock(DistributablePart.class);
+        expect(dp1.getAssignment()).andReturn(asgn).anyTimes();
+        expect(dp1.getName()).andReturn("The Hard Part").anyTimes();
+        expect(dp1.getDBID()).andReturn("Amazing Assignment - The Hard Part").anyTimes();
+        expect(dp1.getNumber()).andReturn(1).anyTimes();
+        expect(dp1.getPoints()).andReturn(97).anyTimes();
+        replay(dp1);
+
+        ArrayList<Part> parts = new ArrayList<Part>();
+        parts.add(dp1);
+        expect(asgn.getParts()).andReturn(parts).anyTimes();
+        expect(asgn.getPartIDs()).andReturn(ImmutableList.of(dp1.getDBID())).anyTimes();
+        expect(asgn.getDistributableParts()).andReturn(Arrays.asList(dp1)).anyTimes();
+        
+        Handin handin = createMock(Handin.class);
+        expect(handin.getAssignment()).andReturn(asgn).anyTimes();
+        replay(handin);
+
+        expect(asgn.getHandin()).andReturn(handin).anyTimes();
+
+        replay(asgn);
+
+        return asgn;
+    }
+    
+    public static Assignment generateRandomGroupAssignment() {
         int choice = (int) Math.random() * 3;
         switch (choice) {
             case 0:
-                return generateAssignmentNotJustDistributableParts();
+                return generateGroupAssignmentNotJustDistributableParts();
             case 1:
-                return generateAssignmentWithMutuallyExclusive();
+                return generateGroupAssignmentWithMutuallyExclusive();
             default:
-                return generateAssignmentWithTwoDistributableParts();
+                return generateGroupAssignmentWithTwoDistributableParts();
         }          
     }
     
-    public static Assignment generateAssignmentWithNameWithTwoDPs(String name) {
+    public static Assignment generateGroupAssignmentWithNameWithTwoDPs(String name) {
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
+        expect(asgn.hasGroups()).andReturn(true).anyTimes();
     
         DistributablePart dp1 = createMock(DistributablePart.class);
         expect(dp1.getAssignment()).andReturn(asgn).anyTimes();
@@ -124,7 +163,7 @@ public class ConfigurationData
         parts.add(dp1);
         parts.add(dp2);
         expect(asgn.getParts()).andReturn(parts).anyTimes();
-
+        expect(asgn.getPartIDs()).andReturn(ImmutableList.of(dp1.getDBID(), dp2.getDBID())).anyTimes();
         expect(asgn.getDistributableParts()).andReturn(Arrays.asList(dp1, dp2)).anyTimes();
 
         replay(asgn);
@@ -132,12 +171,13 @@ public class ConfigurationData
         return asgn;
     }
 
-    public static Assignment generateAssignmentWithTwoDistributableParts()
+    public static Assignment generateGroupAssignmentWithTwoDistributableParts()
     {
         Assignment asgn = createMock(Assignment.class);
         final String name = "Amazing Assignment";
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
+        expect(asgn.hasGroups()).andReturn(true).anyTimes();
 
         DistributablePart dp1 = createMock(DistributablePart.class);
         expect(dp1.getAssignment()).andReturn(asgn).anyTimes();
@@ -159,7 +199,7 @@ public class ConfigurationData
         parts.add(dp1);
         parts.add(dp2);
         expect(asgn.getParts()).andReturn(parts).anyTimes();
-
+        expect(asgn.getPartIDs()).andReturn(ImmutableList.of(dp1.getDBID(), dp2.getDBID())).anyTimes();
         expect(asgn.getDistributableParts()).andReturn(Arrays.asList(dp1, dp2)).anyTimes();
 
         replay(asgn);
@@ -167,12 +207,13 @@ public class ConfigurationData
         return asgn;
     }
 
-    public static Assignment generateAssignmentNotJustDistributableParts()
+    public static Assignment generateGroupAssignmentNotJustDistributableParts()
     {
         Assignment asgn = createMock(Assignment.class);
         final String name = "Mediocre Assignment";
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getDBID()).andReturn(name).anyTimes();
+        expect(asgn.hasGroups()).andReturn(true).anyTimes();
 
         DistributablePart dp = createMock(DistributablePart.class);
         expect(dp.getAssignment()).andReturn(asgn).anyTimes();
@@ -203,7 +244,7 @@ public class ConfigurationData
         parts.add(nonHandin);
         parts.add(lab);
         expect(asgn.getParts()).andReturn(parts).anyTimes();
-
+        expect(asgn.getPartIDs()).andReturn(ImmutableList.of(dp.getDBID(), nonHandin.getDBID(), lab.getDBID())).anyTimes();
         expect(asgn.getDistributableParts()).andReturn(Arrays.asList(dp)).anyTimes();
 
         replay(asgn);
@@ -211,7 +252,7 @@ public class ConfigurationData
         return asgn;
     }
 
-    public static Assignment generateAssignmentWithMutuallyExclusive()
+    public static Assignment generateGroupAssignmentWithMutuallyExclusive()
     {
         Assignment asgn = createMock(Assignment.class);
         final String name = "Boring Assignment";
@@ -262,26 +303,44 @@ public class ConfigurationData
         return new Group(dbID, asgn, name, members);
     }
     
-    public static NewGroup generateRandomGroup() {
+    /**
+     * Creates and returns a random NewGroup consisting of new random Students
+     * who have been added to the give Database.
+     * 
+     * @param db
+     * @return
+     * @throws SQLException 
+     */
+    public static NewGroup generateRandomGroup(Database db) throws SQLException {
         Random rand = new Random();
         int numMembers = rand.nextInt(5) + 1;
         List<Student> members = new ArrayList<Student>(numMembers);
         for (int i = 0; i < numMembers; i++) {
-            members.add(generateRandomStudent());
+            members.add(generateRandomStudent(db));
         }
         
-        Assignment asgn = generateRandomAssignment();
+        Assignment asgn = generateRandomGroupAssignment();
         String name = generateRandomString();
         
         return new NewGroup(asgn, name, members);
     }
     
-    public static NewGroup generateRandomNewGroupWithNameAndAssignment(String name, Assignment asgn) {
+    /**
+     * Creates and returns a NewGroup with the specified name and assignment consisting
+     * of new random Students who have been added to the given Database.
+     * 
+     * @param name
+     * @param asgn
+     * @param db
+     * @return
+     * @throws SQLException 
+     */
+    public static NewGroup generateRandomNewGroupWithNameAndAsgn(String name, Assignment asgn, Database db) throws SQLException {
         Random rand = new Random();
         int numMembers = rand.nextInt(5) + 1;
         List<Student> members = new ArrayList<Student>(numMembers);
         for (int i = 0; i < numMembers; i++) {
-            members.add(generateRandomStudent());
+            members.add(generateRandomStudent(db));
         }
         
         return new NewGroup(asgn, name, members);

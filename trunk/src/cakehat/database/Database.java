@@ -1,6 +1,5 @@
 package cakehat.database;
 
-import cakehat.config.Assignment;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Collection;
