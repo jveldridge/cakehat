@@ -141,6 +141,10 @@ class AssignmentTree extends JScrollPane {
             Object[] pathComponents = path.getPath();
 
             //first element of pathComponents is null, the invisible root
+           // if this is the only element of the path, it is not a real selected path
+           if (pathComponents.length == 1) {
+               continue;
+           }
 
             //second element is the node representing the Assignment
             Assignment asgn = ((GenericTreeNode<Assignment>) pathComponents[1]).getUserObject();
@@ -182,9 +186,20 @@ class AssignmentTree extends JScrollPane {
     }
     
     public void collapseAll() {
+        // we must reset selected paths after because collapsePath makes node unselected
+        TreePath[] selectedPaths = _tree.getSelectionPaths();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) _tree.getModel().getRoot();
         expandCollapseAll(new TreePath(root), false);
+        
         _tree.expandPath(new TreePath(root));
+        
+        // we must only add paths with assignments and not parts selected because
+        // otherwise the paths to selected parts would remain expanded
+        for (TreePath path : selectedPaths) {
+            if (path.getPathCount() == 2) {
+                _tree.getSelectionModel().addSelectionPaths(selectedPaths);
+            }
+        }
     }
     
     private void expandCollapseAll(TreePath parent, boolean expand) {
