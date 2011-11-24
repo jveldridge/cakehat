@@ -8,8 +8,8 @@ student
 	* login VARCHAR NOT NULL
 	* firstname VARCHAR NOT NULL
 	* lastname VARCHAR NOT NULL
-	* `*`enabled BOOLEAN NOT NULL DEFAULT TRUE
-	* `*`hascollab BOOLEAN NOT NULL DEFAULT FALSE
+	* `*`enabled INTEGER NOT NULL DEFAULT 1
+	* `*`hascollab INTEGER NOT NULL DEFAULT 0
 	* CONSTRAINT studentunique UNIQUE (login) ON CONFLICT IGNORE;
 	
 `*`ta
@@ -17,7 +17,7 @@ student
 	* login VARCHAR NOT NULL
 	* firstname VARCHAR NOT NULL
 	* lastname VARCHAR NOT NULL
-	* defaultgrader BOOLEAN NOT NULL DEFAULT TRUE
+	* defaultgrader INTEGER NOT NULL DEFAULT 1
 	* CONSTRAINT taunique UNIQUE (login) ON CONFLICT IGNORE;
 	
 blacklist
@@ -60,7 +60,7 @@ extension
 	* `*`pbid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
 	* ontime INTEGER NOT NULL
-	* `*`shiftdates BOOLEAN NOT NULL //shift early and late dates relative to new ontime date
+	* `*`shiftdates INTEGER NOT NULL //shift early and late dates relative to new ontime date
 	* note TEXT
 	* CONSTRAINT gpidaidunique UNIQUE (gpid, aid) ON CONFLICT REPLACE
 
