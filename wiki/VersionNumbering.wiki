@@ -1,0 +1,36 @@
+#summary Describes the version number system.
+
+=About Releasing=
+Make sure to update the information in CakehatReleaseInfo.java!
+
+=Release Types=
+There are three type of releases for cakehat:
+1. major (#.0.0)
+2. minor (#1.#2.0, with #2 not 0)
+3. minor-minor (#1.#2.#3, with #3 not 0)
+
+== Major Releases ==
+Major releases are *incompatible* with all previous versions of cakehat.  Any of the following may change for a major release:
+  * the database structure
+  * the .cakehat directory structure
+  * valid configuration settings
+  * GML structure
+  * run and lab checkoff scripts
+
+Major releases are expected to occur only at the beginning of a semester. 
+
+A release branch should be created for all major release branches.  A development branch may also be used.
+
+== Minor Releases ==
+Minor releases add new features, enhancements, and non-critical bug fixes.
+
+There could be several minor releases over the course of a semester, depending on the rate of development.  Courses will be encouraged but not required to update to the latest minor release.
+
+A release branch should be created for all minor release branches.
+
+== Minor-Minor Releases ==
+Minor-minor releases are used only for critical bug fixes.  They are not to add any new features.
+
+Minor-minor releases can occur at any point.  Since they will be made only for critical bug fixes, all courses will be required to update to the latest minor-minor release.
+
+For the time being, new release branches will not be created for minor-minor releases.  Instead, further critical fixes will be made in the corresponding minor release branch (which should be renamed).
