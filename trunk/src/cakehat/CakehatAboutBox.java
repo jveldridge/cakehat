@@ -51,7 +51,7 @@ public class CakehatAboutBox extends JFrame
                 "<h3>Developers</h3>" +
                 "Jonathan Eldridge, Yudi Fu, Joshua Kaplan," +
                 "<br/>Stephen Poletto, Hannah Rosen, Paul" +
-                "<br/>Sastrasinh, & Alex Unger" +
+                "<br/>Sastrasinh, Alex Unger, & Wil Yegelwel" +
                 "<br/><br/>" +
                 "<a href=http://cakehat.googlecode.com/>http://cakehat.googlecode.com</a>" +
                 "</html>";
