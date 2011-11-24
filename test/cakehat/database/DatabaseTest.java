@@ -5,14 +5,12 @@ import java.util.GregorianCalendar;
 import java.util.Calendar;
 import java.util.List;
 import cakehat.config.handin.DistributablePart;
-import java.util.Iterator;
 import java.util.Map;
 import cakehat.config.Assignment;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.rubric.TimeStatus;
 import com.google.common.collect.Iterables;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,7 +20,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import support.utils.CalendarUtilitiesImpl;
 /**
  *
  * @author aunger
@@ -49,7 +46,6 @@ public class DatabaseTest {
 
         _database.resetDatabase();
     }
-    
         
     @Test
     public void testAddStudentNotInDatabase() throws SQLException {
@@ -535,11 +531,138 @@ public class DatabaseTest {
         assertTrue(_database.getBlacklistedStudents().contains(student3ID)); 
     }
     
-    /**
-     * Tests that there are no groups in the database initially.
-     * 
-     * @throws SQLException 
-     */
+    @Test(expected=SQLException.class)
+    public void testGroupNamesUniqueForAssignment() throws SQLException, CakeHatDBIOException {
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
+        NewGroup goodGroup = new NewGroup(asgn, "group");
+        NewGroup badGroup = new NewGroup(asgn, "group");
+        
+        //adding group should succeed
+        boolean exception = false;
+        try {
+            _database.addGroup(goodGroup);
+        } catch (SQLException e) {
+            exception = true;
+        }
+        assertFalse(exception);
+        
+        //adding group with same name for same assignment should fail
+        _database.addGroup(badGroup);
+    }
+    
+    @Test(expected=CakeHatDBIOException.class)
+    public void testOneGroupPerStudentPerAssignment() throws SQLException, CakeHatDBIOException {
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
+        int studentID = 0;
+        boolean exception = false;
+        try {
+            studentID = _database.addStudent("student", "first", "last");
+        } catch (SQLException ex) {
+            exception = true;
+        }
+        assertFalse(exception);
+        
+        Student student = ConfigurationData.generateStudent(studentID, "student", "fist", "last", "email", true);
+        NewGroup goodGroup = new NewGroup(asgn, student);
+        
+        //adding group should succeed
+        _database.addGroup(goodGroup);
+        
+        NewGroup badGroup = new NewGroup(asgn, "badgroup", student);
+        _database.addGroup(badGroup);
+    }
+    
+    @Test
+    public void testDistributionFailureAtomicity() throws SQLException {
+        String dpID = "dpID";
+        String taLogin = "ta";
+        int badStudentID = -1;
+        int goodStudentID = _database.addStudent("student", "first", "last");
+        
+        Map<String, Map<String, Collection<Integer>>> distribution = new HashMap<String, Map<String, Collection<Integer>>>();
+        distribution.put(dpID, new HashMap<String, Collection<Integer>>());
+        distribution.get(dpID).put(taLogin, new ArrayList<Integer>(2));
+        distribution.get(dpID).get(taLogin).add(goodStudentID);
+        distribution.get(dpID).get(taLogin).add(badStudentID);
+        
+        //setting the distribution should fail b/c badStudentID is invalid
+        try {
+            _database.setDistribution(distribution);
+            fail();
+        } catch (SQLException ex) {}
+        
+        //since the distribution was previously empty, it still should be
+        int distSize =_database.getDistribution(dpID).size();        
+        assertEquals(0, distSize);
+    }
+    
+    @Test(expected=SQLException.class)
+    public void testDistributionFailurePreservation() throws SQLException {
+        String dpID = "dpID";
+        String taLogin = "ta";
+        int goodStudentID = _database.addStudent("student", "first", "last");
+        
+        Map<String, Map<String, Collection<Integer>>> distribution = new HashMap<String, Map<String, Collection<Integer>>>();
+        distribution.put(dpID, new HashMap<String, Collection<Integer>>());
+        distribution.get(dpID).put(taLogin, new ArrayList<Integer>(2));
+        distribution.get(dpID).get(taLogin).add(goodStudentID);
+        
+        //setting the distribution should succeed
+        _database.setDistribution(distribution);
+        
+        //adding an invalid student to the distribution and attempting to overwrite
+        //the one in the databse should fail
+        int badStudentID = -1;
+        distribution.get(dpID).get(taLogin).add(badStudentID);
+        
+        try {
+            _database.setDistribution(distribution);
+            fail();
+        } catch (SQLException ex) {}
+        
+        //but the distribution stored in the database should still match the
+        //one originally added
+        Map<String, Collection<Integer>> returnedDist = _database.getDistribution(dpID);       
+        assertEquals(1, returnedDist.size());
+        int distributedStudentID = Iterables.get(returnedDist.get(dpID), 0);
+        assertEquals(goodStudentID, distributedStudentID);
+    }
+            
+    @Test
+    public void testGroupAssignOverwrite() throws SQLException, CakeHatDBIOException {
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
+        int studentID = _database.addStudent("student", "first", "last");
+        Student student = ConfigurationData.generateStudent(studentID, "student", "first", "last", "email", true);
+        
+        NewGroup toAdd = new NewGroup(asgn, student);
+        GroupRecord added = _database.addGroup(toAdd);
+        
+        String partID = "part";
+        String ta1Login = "ta1";
+        _database.assignGroup(added.getDbId(), partID, ta1Login);
+        
+        //reassgning the group to a new TA should succeed
+        String ta2Login = "ta2";
+        _database.assignGroup(added.getDbId(), partID, ta2Login);
+        assertEquals(ta2Login, _database.getGrader(partID, added.getDbId()));
+    }
+    
+    @Test
+    public void testAddGroupWithSameNameForDifferentAssignment() throws SQLException, CakeHatDBIOException {
+        Assignment asgn1 = ConfigurationData.generateGroupAssignmentWithNameWithTwoDPs("asgn1");
+        Assignment asgn2 = ConfigurationData.generateGroupAssignmentWithNameWithTwoDPs("asgn2");
+        
+        NewGroup toAdd = ConfigurationData.generateRandomNewGroupWithNameAndAsgn("group", asgn1, _database);
+        _database.addGroup(toAdd);
+        
+        // create a random group with the same name as toAdd
+        NewGroup sameName = ConfigurationData.generateRandomNewGroupWithNameAndAsgn(toAdd.getName(), asgn2, _database);
+        this.addMembersToDatabase(sameName);
+        
+        // Should NOT throw a SQLException
+        _database.addGroup(sameName);
+    }  
+    
     @Test
     public void testNoGroupsInDatabaseInitially() throws SQLException {
         Collection<GroupRecord> groups = _database.getAllGroups();
@@ -548,8 +671,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetAllGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
-        NewGroup toAdd = ConfigurationData.generateRandomGroup();
-        this.addMembersToDatabase(toAdd);
+        NewGroup toAdd = ConfigurationData.generateRandomGroup(_database);
         GroupRecord record = _database.addGroup(toAdd);
         
         Collection<GroupRecord> groups = _database.getAllGroups();
@@ -568,7 +690,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetAllGroupsWithTwoGroups() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "student1", "first1", "last1", true);
         Student student2 = new Student(2, "student2", "first2", "last2", true);
         Student student3 = new Student(3, "student3", "first3", "last3", true);
@@ -612,7 +734,7 @@ public class DatabaseTest {
      */
     @Test
     public void testAddGroupNotInDatabase() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "student1", "first1", "last1", true);
         Student student2 = new Student(2, "student2", "first2", "last2", true);
         Student student3 = new Student(3, "student3", "first3", "last3", true);
@@ -633,7 +755,7 @@ public class DatabaseTest {
     
     @Test
     public void testAddGroupsNotInDatabase() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "student1", "first1", "last1", true);
         Student student2 = new Student(2, "student2", "first2", "last2", true);
         Student student3 = new Student(3, "student3", "first3", "last3", true);
@@ -667,78 +789,6 @@ public class DatabaseTest {
         assertTrue(actualRecord2.getMemberIDs().containsAll(record2.getMemberIDs()));
     }
     
-    @Test(expected=SQLException.class)
-    public void testGroupNamesUniqueForAssignment() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
-        NewGroup goodGroup = new NewGroup(asgn, "group");
-        NewGroup badGroup = new NewGroup(asgn, "group");
-        
-        //adding goodGroup should succeed
-        boolean exception = false;
-        try {
-            _database.addGroup(goodGroup);
-        } catch (SQLException e) {
-            exception = true;
-        }
-        assertFalse(exception);
-        
-        //adding badGroup with same name for same assignment should fail
-        _database.addGroup(badGroup);
-    }
-    
-    /**
-     * Tests that a SQLException is NOT thrown when you try to add a group1 
-     * with the same name as a group already in the database for a different assignment.
-     * 
-     * @throws SQLException
-     * @throws CakeHatDBIOException 
-     */
-    @Test
-    public void testAddGroupWithSameNameForDifferentAssignment() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
-        Student student1 = new Student(1, "student1", "first1", "last1", true);
-        Student student2 = new Student(2, "student2", "first2", "last2", true);
-        Student student3 = new Student(3, "student3", "first3", "last3", true);
-        NewGroup toAdd = ConfigurationData.generateNewGroup(asgn, "group", student1, student2, student3);
-        this.addMembersToDatabase(toAdd);
-        
-//         create a group with the same name as toAdd
-        Student student4 = new Student(4, "student4", "first4", "last4", true);
-        Student student5 = new Student(5, "student5", "first5", "last5", true);
-        NewGroup sameName = ConfigurationData.generateNewGroup(
-                ConfigurationData.generateAssignmentWithNameWithTwoDPs("weirdly named assignment"),
-                toAdd.getName(),
-                student4, student5);
-
-        this.addMembersToDatabase(sameName);
-        
-//         Should NOT throw a SQLException
-        _database.addGroup(sameName);
-    }
-
- 
-    @Test(expected=CakeHatDBIOException.class)
-    public void testOneGroupPerStudentPerAssignment() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
-        int studentID = 0;
-        boolean exception = false;
-        try {
-            studentID = _database.addStudent("student", "first", "last");
-        } catch (SQLException ex) {
-            exception = true;
-        }
-        assertFalse(exception);
-        
-        Student student = ConfigurationData.generateStudent(studentID, "student", "first", "last", "email", true);
-        NewGroup goodGroup = new NewGroup(asgn, student);
-        
-        //adding goodGroup should succeed
-        _database.addGroup(goodGroup);
-        
-        NewGroup badGroup = new NewGroup(asgn, "badgroup", student);
-        _database.addGroup(badGroup);
-    }
-    
     /**
      * Tests getGroup on students in a group with multiple students in it.
      * 
@@ -747,7 +797,7 @@ public class DatabaseTest {
      */
     @Test
     public void testGetGroupWithMultipleStudentGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         
@@ -796,7 +846,7 @@ public class DatabaseTest {
      */
     @Test
     public void testGetGroupWithFakeStudentID() throws SQLException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
 
         // should return 0 because 0 is not a valid student ID
         assertEquals(0, _database.getGroup(asgn.getDBID(), 0));
@@ -810,7 +860,7 @@ public class DatabaseTest {
      */
     @Test
     public void testGetGroupsOnAssignmentWithoutGroups() throws SQLException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         
         // make sure an empty collection is returned
         assertTrue(_database.getGroups(asgn.getDBID()).isEmpty());
@@ -818,7 +868,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetGroupsOnAssignmentWithTwoGroups() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         Student student3 = new Student(3, "login3", "first3", "last3", true);
@@ -843,7 +893,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetGroupsOnAssignmentWithOneGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         
@@ -872,32 +922,8 @@ public class DatabaseTest {
     }
     
     @Test
-    public void testDistributionFailureAtomicity() throws SQLException {
-        String dpID = "dpID";
-        String taLogin = "ta";
-        int badStudentID = -1;
-        int goodStudentID = _database.addStudent("student", "first", "last");
-        
-        Map<String, Map<String, Collection<Integer>>> distribution = new HashMap<String, Map<String, Collection<Integer>>>();
-        distribution.put(dpID, new HashMap<String, Collection<Integer>>());
-        distribution.get(dpID).put(taLogin, new ArrayList<Integer>(2));
-        distribution.get(dpID).get(taLogin).add(goodStudentID);
-        distribution.get(dpID).get(taLogin).add(badStudentID);
-        
-        //setting the distribution should fail b/c badStudentID is invalid
-        try {
-            _database.setDistribution(distribution);
-            fail();
-        } catch (SQLException ex) {}
-        
-        //since the distribution was previously empty, it still should be
-        int distSize =_database.getDistribution(dpID).size();        
-        assertEquals(0, distSize);
-    }
-    
-    @Test
     public void testRemoveGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         Student student3 = new Student(3, "login3", "first3", "last3", true);
@@ -924,7 +950,7 @@ public class DatabaseTest {
     
     @Test
     public void testRemoveFakeGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         Student student3 = new Student(3, "login3", "first3", "last3", true);
@@ -951,7 +977,7 @@ public class DatabaseTest {
     }
     
     public void testRemoveGroups() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         Student student3 = new Student(3, "login3", "first3", "last3", true);
@@ -974,7 +1000,7 @@ public class DatabaseTest {
     
     @Test
     public void testIsDistEmptyWithNoDistributionSet() throws SQLException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         ArrayList<String> partIDs = new ArrayList<String>();
         for (DistributablePart part : asgn.getDistributableParts()) {
             partIDs.add(part.getDBID());
@@ -986,7 +1012,7 @@ public class DatabaseTest {
     
     @Test
     public void testIsDistEmptyWithDistributionSet() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String dpID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String taLogin = "ta";
         int goodStudentID = _database.addStudent("student", "first", "last");
@@ -1020,7 +1046,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetDistribution() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String dpID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String taLogin = "ta";
         int goodStudentID = _database.addStudent("student", "first", "last");
@@ -1046,7 +1072,7 @@ public class DatabaseTest {
     
     @Test
     public void testDistributionOverwrite() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String dpID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String taLogin1 = "ta1";
         int goodStudentID = _database.addStudent("student", "first", "last");
@@ -1088,43 +1114,11 @@ public class DatabaseTest {
         assertEquals(1, _database.getDistribution(dpID).get(taLogin1).size());
         assertTrue(_database.getDistribution(dpID).get(taLogin1).contains(groupID));
         
-    } 
-    
-    @Test(expected=SQLException.class)
-    public void testDistributionFailurePreservation() throws SQLException {
-        String dpID = "dpID";
-        String taLogin = "ta";
-        int goodStudentID = _database.addStudent("student", "first", "last");
-        
-        Map<String, Map<String, Collection<Integer>>> distribution = new HashMap<String, Map<String, Collection<Integer>>>();
-        distribution.put(dpID, new HashMap<String, Collection<Integer>>());
-        distribution.get(dpID).put(taLogin, new ArrayList<Integer>(2));
-        distribution.get(dpID).get(taLogin).add(goodStudentID);
-        
-        //setting the distribution should succeed
-        _database.setDistribution(distribution);
-        
-        //adding an invalid student to the distribution and attempting to overwrite
-        //the one in the database should fail
-        int badStudentID = -1;
-        distribution.get(dpID).get(taLogin).add(badStudentID);
-        
-        try {
-            _database.setDistribution(distribution);
-            fail();
-        } catch (SQLException ex) {}
-        
-        //but the distribution stored in the database should still match the
-        //one originally added
-        Map<String, Collection<Integer>> returnedDist = _database.getDistribution(dpID);       
-        assertEquals(1, returnedDist.size());
-        int distributedStudentID = Iterables.get(returnedDist.get(dpID), 0);
-        assertEquals(goodStudentID, distributedStudentID);
     }
     
     @Test
     public void testAssignPreviouslyUnassignedGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         Student student3 = new Student(3, "login3", "first3", "last3", true);
@@ -1145,7 +1139,7 @@ public class DatabaseTest {
     
     @Test
     public void testAssignGroupAlreadyAssignedToSameTA() throws SQLException, CakeHatDBIOException{
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         Student student1 = new Student(1, "login1", "first1", "last1", true);
         Student student2 = new Student(2, "login2", "first2", "last2", true);
         Student student3 = new Student(3, "login3", "first3", "last3", true);
@@ -1177,7 +1171,7 @@ public class DatabaseTest {
      */
     @Test(expected=SQLException.class)
     public void testAssignGroupWithInvalidGroup() throws SQLException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String taLogin = "ta";
         int invalidGroup = -1;
@@ -1186,27 +1180,8 @@ public class DatabaseTest {
     }
     
     @Test
-    public void testGroupAssignOverwrite() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
-        int studentID = _database.addStudent("student", "first", "last");
-        Student student = ConfigurationData.generateStudent(studentID, "student", "first", "last", "email", true);
-        
-        NewGroup toAdd = new NewGroup(asgn, student);
-        GroupRecord added = _database.addGroup(toAdd);
-        
-        String partID = "part";
-        String ta1Login = "ta1";
-        _database.assignGroup(added.getDbId(), partID, ta1Login);
-        
-        //reassgning the group to a new TA should succeed
-        String ta2Login = "ta2";
-        _database.assignGroup(added.getDbId(), partID, ta2Login);
-        assertEquals(ta2Login, _database.getGrader(partID, added.getDbId()));
-    }
-    
-    @Test
     public void testUnassignGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int studentID = _database.addStudent("student", "first", "last");
         Student student = ConfigurationData.generateStudent(studentID, "student", "first", "last", "email", true);
         
@@ -1253,7 +1228,7 @@ public class DatabaseTest {
      */
     @Test
     public void testGetAssignedGroupsWhenNoGroupsAssignedToTA() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int studentID = _database.addStudent("student", "first", "last");
         Student student = ConfigurationData.generateStudent(studentID, "student", "first", "last", "email", true);
         
@@ -1271,7 +1246,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetAssignedGroupsWhenGroupsAssignedToTA() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -1308,7 +1283,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetAssignedGroupsForPartAssignedToOneTA() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -1337,7 +1312,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetAssignedGroupsForPartAssignedToMultipleTAs() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -1375,7 +1350,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetDPsWithAssignedGroupsWhenOneAssignedToTA() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
 //        
@@ -1395,7 +1370,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetDPsWithAssignedGroupsWhenMultipleAssignedToTA() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -1426,7 +1401,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetGraderWhenNoneAssigned() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1440,7 +1415,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetGraderWhenOneAssigned() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1466,7 +1441,7 @@ public class DatabaseTest {
     
     @Test
     public void testGrantExtension() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         NewGroup toAdd1 = new NewGroup(asgn, student1);
@@ -1484,7 +1459,7 @@ public class DatabaseTest {
     
     @Test
     public void testGrantExtensionOverride() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         NewGroup toAdd1 = new NewGroup(asgn, student1);
@@ -1507,7 +1482,7 @@ public class DatabaseTest {
     
     @Test(expected=SQLException.class)
     public void testGrantExtensionForInvalidGroup() throws SQLException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int badGroup = -1;
         
         Calendar extension = new GregorianCalendar();
@@ -1518,7 +1493,7 @@ public class DatabaseTest {
     
     @Test
     public void testRemoveExtensionOnGroupWithExtension() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         NewGroup toAdd1 = new NewGroup(asgn, student1);
@@ -1542,7 +1517,7 @@ public class DatabaseTest {
     
     @Test
     public void testRemoveExtensionOnGroupWithoutExtension() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         NewGroup toAdd1 = new NewGroup(asgn, student1);
@@ -1557,7 +1532,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExtensionWhenGroupDoesNotHaveExtension() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         NewGroup toAdd1 = new NewGroup(asgn, student1);
@@ -1568,7 +1543,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExtensionsWhenNoGroupHasExtension() throws SQLException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         
         // map returned should be empty
         assertTrue(_database.getExtensions(asgn.getDBID()).isEmpty());
@@ -1576,7 +1551,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExtensionsWhenOneGroupHasExtension() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -1605,7 +1580,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExtensionsWhenMultipleGroupsHaveExtensions() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -1640,7 +1615,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExtensionNoteWhenGroupDoesNotHaveExtension() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -1654,7 +1629,7 @@ public class DatabaseTest {
     
     @Test
     public void testGrantExemption() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1675,7 +1650,7 @@ public class DatabaseTest {
     
     @Test
     public void testGrantExemptionOverride() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1706,7 +1681,7 @@ public class DatabaseTest {
     
     @Test(expected=SQLException.class)
     public void testGrantExemptionForInvalidGroup() throws SQLException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         int invalidGroup = -1;
         
@@ -1715,7 +1690,7 @@ public class DatabaseTest {
     
     @Test
     public void testRemoveExemptionOnGroupWithoutExemption() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1733,7 +1708,7 @@ public class DatabaseTest {
     
     @Test
     public void testRemoveExemptionOnGroupWithExemption() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1760,7 +1735,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExemptionsWhenNoGroupsHaveExemptions() throws SQLException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         // make sure no groups have exemptions
@@ -1769,7 +1744,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExemptionsWhenOneGroupHasExemption() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1792,7 +1767,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExemptionsWhenMultipleGroupsHaveExemptions() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1827,7 +1802,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetExemptionNoteWhenGroupDoesNotHaveExemption() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = asgn.getDistributableParts().get(0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1842,7 +1817,7 @@ public class DatabaseTest {
     
     @Test
     public void testEnterGrade() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1859,7 +1834,7 @@ public class DatabaseTest {
     
     @Test(expected=SQLException.class)
     public void testEnterGradeWithFakeGroup() throws SQLException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int fakeGroup = -1;
@@ -1871,7 +1846,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetPartScoreWhenNoneEnteredForGroup() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -1895,7 +1870,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetPartScoreWhenNoneEnteredForPart() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -1914,7 +1889,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetScoreWhenOnePartDoesNotHaveScore() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -1940,7 +1915,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetScoreWhenAllPartsHaveScores() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -1967,7 +1942,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetScoreWhenNoPartsHaveScores() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -1989,7 +1964,7 @@ public class DatabaseTest {
     // maps group1 ID -> score
     @Test
     public void testGetPartScoresIncludingGroupWithoutScore() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -2024,7 +1999,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetPartScoresWhenAllGroupsHaveScores() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -2065,7 +2040,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetPartScoresNoGroupsHaveScores() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -2089,7 +2064,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetPartScoresWhenOneGroupIsInvalid() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String partID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
@@ -2134,7 +2109,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetScoresWhenNoGroupsHaveScores() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -2163,7 +2138,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetScoresWhenOneGroupDoesNotHaveScore() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -2206,7 +2181,7 @@ public class DatabaseTest {
 
     @Test
     public void testGetScoresWhenAllGroupsHaveScores() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -2253,7 +2228,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetScoresWhenOneGroupIsInvalid() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = Iterables.get(asgn.getDistributableParts(), 0).getDBID();
         String part2ID = Iterables.get(asgn.getDistributableParts(), 1).getDBID();
         
@@ -2307,7 +2282,7 @@ public class DatabaseTest {
     
     @Test
     public void testSetHandinStatus() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -2327,7 +2302,7 @@ public class DatabaseTest {
     
     @Test
     public void testSetHandinStatusOverwrite() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -2363,7 +2338,7 @@ public class DatabaseTest {
     
     @Test
     public void testSetHandinStatuses() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -2394,7 +2369,7 @@ public class DatabaseTest {
     
     @Test
     public void testSetHandinStatusesWhenOneGroupIsInvalid() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateRandomAssignment();
+        Assignment asgn = ConfigurationData.generateRandomGroupAssignment();
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
         int student2ID = _database.addStudent("student2", "first2", "last2");
@@ -2432,7 +2407,7 @@ public class DatabaseTest {
     
     @Test
     public void testHandinStatusesOverwrite() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -2467,7 +2442,7 @@ public class DatabaseTest {
     
     @Test
     public void testGetHandinStatusWhenNoStatusSet() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);        
@@ -2480,7 +2455,7 @@ public class DatabaseTest {
     
     @Test
     public void testAreHandinStatusesSetWhenNoneSet() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         
         // HandinStatuses should not be set
         assertFalse(_database.areHandinStatusesSet(asgn.getDBID()));
@@ -2488,7 +2463,7 @@ public class DatabaseTest {
     
     @Test
     public void testAreHandinStatusesSetWhenOneSet() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -2510,7 +2485,7 @@ public class DatabaseTest {
     
     @Test
     public void testAreHandinStatusesSetWhenAllSet() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         
         int student1ID = _database.addStudent("student1", "first1", "last1");
         Student student1 = ConfigurationData.generateStudent(student1ID, "student1", "first1", "last1", "email", true);
@@ -2534,7 +2509,7 @@ public class DatabaseTest {
     
     @Test
     public void testResetDatabase() throws SQLException, CakeHatDBIOException {
-        Assignment asgn = ConfigurationData.generateAssignmentWithTwoDistributableParts();
+        Assignment asgn = ConfigurationData.generateGroupAssignmentWithTwoDistributableParts();
         String part1ID = asgn.getDistributableParts().get(0).getDBID();
         String part2ID = asgn.getDistributableParts().get(1).getDBID();
         

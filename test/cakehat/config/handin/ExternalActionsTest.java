@@ -3,9 +3,7 @@ package cakehat.config.handin;
 import cakehat.services.PathServices;
 import java.util.Arrays;
 import java.util.List;
-import cakehat.database.DataServices.ValidityCheck;
 import cakehat.database.Group;
-import cakehat.database.NewGroup;
 import cakehat.database.Student;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableList;
@@ -31,7 +29,7 @@ import static org.junit.Assert.*;
  */
 public class ExternalActionsTest
 {
-    private Assignment _testAsgn = ConfigurationData.generateRandomAssignment();
+    private Assignment _testAsgn = ConfigurationData.generateRandomGroupAssignment();
     
     @Before
     public void setUp() throws IOException, SQLException {
