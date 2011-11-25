@@ -63,15 +63,15 @@
 			
 				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME -->
 				<DEADLINES TYPE="VARIABLE">
-					<!-- 1 ONTIME; DATE attribute required-->
+					<!-- 1 ONTIME; DATE attribute required. DATE 's format is the ISO8601 date time format. -->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
-					<!-- 0 or 1 LATE; DATE attribute optional; POINTS attribute required; RATE attribute required -->
-					<!-- Adds POINTS for each increment of RATE that has passed since ONTIME's DATE
-					     such that an amount less than RATE is 1 increment. -->
-				    	<!-- RATE's format is DAYS-HOURS:MINUTES. All values must be positive integers. -->
-					<!-- DATE, if specified, is a point at which after the RATE is not applied -->
-					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" RATE="1-12:34"/>
+					<!-- 0 or 1 LATE; DATE attribute optional; POINTS attribute required; PERIOD attribute required -->
+					<!-- Adds POINTS for each increment of PERIOD that has passed since ONTIME's DATE
+					     such that an amount less than PERIOD is 1 increment. -->
+				    	<!-- PERIOD's format is the ISO8601 duration format, P[n]Y[n]M[n]DT[n]H[n]M[n]S where [n] is a value. -->
+					<!-- DATE, if specified, is a point at which after the PERIOD is not applied -->
+					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" PERIOD="P1DT12H34M"/>
 				</DEADLINES>
 				
 				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ON TIME  -->
