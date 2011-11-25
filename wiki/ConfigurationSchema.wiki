@@ -37,9 +37,9 @@
 	
 	<!-- 1 LAST-IDS; this is not user exposed, these values are used to generate unique ids for
 	     assignments, part blocks, and parts without using GUIDs that have performance issues -->
-    <!-- 1 ASSIGNMENT attribute; must be an integer _->
-    <!-- 1 PART-BLOCK attribute; must be an integer ->
-    <!-- 1 PART attribute; must be an integer -->
+    	<!-- 1 ASSIGNMENT attribute; must be an integer _->
+    	<!-- 1 PART-BLOCK attribute; must be an integer ->
+    	<!-- 1 PART attribute; must be an integer -->
 	<LAST-IDS ASSIGNMENT="5" PART-BLOCK="11" PART="91"/>
 
 	<!-- 0 or 1 ASSIGNMENTS -->
@@ -63,43 +63,36 @@
 			
 				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME -->
 				<DEADLINES TYPE="VARIABLE">
-					<!-- 0 or 1 EARLY; DATE attribute optional; POINTS attribute required; RATE attribute required -->
-					<!-- Adds POINTS for each increment of RATE the handin was handed in before
-						 ONTIME's DATE such that an amount less than RATE is 1 increment. -->
-				    <!-- RATE's format is DAYS-HOURS:MINUTES. All values must be positive integers. -->
-					<!-- DATE, if specified, is a point at which before the RATE is not applied -->
-					<EARLY DATE="2011-11-18T23:59:59" POINTS="5" RATE="1-12:20"/>
-					
 					<!-- 1 ONTIME; DATE attribute required-->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
 					<!-- 0 or 1 LATE; DATE attribute optional; POINTS attribute required; RATE attribute required -->
 					<!-- Adds POINTS for each increment of RATE that has passed since ONTIME's DATE
 					     such that an amount less than RATE is 1 increment. -->
-				    <!-- RATE's format is DAYS-HOURS:MINUTES. All values must be positive integers. -->
+				    	<!-- RATE's format is DAYS-HOURS:MINUTES. All values must be positive integers. -->
 					<!-- DATE, if specified, is a point at which after the RATE is not applied -->
 					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" RATE="1-12:34"/>
 				</DEADLINES>
 				
-				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME  -->
+				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ON TIME  -->
 				<DEADLINES TYPE="FIXED">
 					<!-- 0 or 1 EARLY; DATE attribute required; POINTS attribute optional, defaults to 0 -->
 					<!-- Digital handins turned in before this time are recorded as EARLY and have
 					     POINTS added to their total score. -->
 					<EARLY DATE="2011-11-20T19:04:00" POINTS="10"/>
 					
-					<!-- TODO: NC-LATE definition -->
-					
 					<!-- 1 ONTIME; DATE attribute required -->
 					<!-- If EARLY is specified, digital handins turned in after EARLY, but before
-					     this time are recorded as ONTIME.
-					     If EARLY is not specified, digial handins turned in before this time are
-					     recorded as ONTIME. -->
+					     this time are recorded as ON TIME.
+					     If EARLY is not specified, digital handins turned in before this time are
+					     recorded as ONTIME.
+					     If LATE is not specified, digital handins turned in after this time are recorded as NC LATE.-->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
 					<!-- 0 or 1 LATE; DATE attribute required; POINTS attribute optional, defaults to 0 -->
 					<!-- Digital handins turned in before this time, but after ONTIME are recorded
-					     as LATE and have POINTS added to their total score. -->
+					     as LATE and have POINTS added to their total score.
+					     Digital handins turned in after this time are recoded as NC LATE. -->
 					<LATE DATE="2011-11-24T22:00:00" POINTS="-20"/>
 				</DEADLINES>	
 				
