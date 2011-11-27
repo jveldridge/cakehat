@@ -91,15 +91,15 @@
 					<!-- 1 ONTIME -->
 					<!-- 1 DATE attribute
 					     If EARLY is specified, digital handins turned in after EARLY, but before or at this attribute are ON TIME.
-					     If EARLY is not specified, digital handins turned in before or at this attribute as ONTIME.
+					     If EARLY is not specified, digital handins turned in before or at this attribute are ON TIME.
 					     If LATE is not specified, digital handins turned in after this attribute are NC LATE and have points subtracted from their part block earned such that the sum is 0.-->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
 					<!-- 0 or 1 LATE -->
 					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
 					<!-- 1 DATE attribute
-					     Digital handins turned in before or at this attribute, but after ONTIME are LATE and have POINTS added to their part block earned.
-					     Digital handins turned in after this 	      are recoded as NC LATE and have points subtracted from their part block earned such that the sum is 0. -->
+					     Digital handins turned in before or at this attribute, but after ONTIME'S DATE are LATE and have POINTS added to their part block earned.
+					     Digital handins turned in after this are recoded as NC LATE and have points subtracted from their part block earned such that the sum is 0. -->
 					<LATE DATE="2011-11-24T22:00:00" POINTS="-20"/>
 				</DEADLINES>	
 				
