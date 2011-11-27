@@ -71,7 +71,7 @@
 					
 					<!-- 0 or 1 LATE -->
 					<!-- 1 POINTS attribute; floating point value -->
-				    	<!-- 1 PERIOD attribute; format is the ISO8601 duration format, P[n]Y[n]M[n]DT[n]H[n]M[n]S where [n] is a positive integer -->
+				    	<!-- 1 PERIOD attribute; format is the ISO8601 duration format, P[n]Y[n]M[n]DT[n]H[n]M[n]S where [n] values are non-negative integers -->
 					<!-- 0 or 1 DATE attribute
 					     If DATE is not specified, digital handins turned in after ONTIME's DATE are LATE.
 					     If DATE is specified, digital handins turned in after ONTIME's DATE but before or at this time are LATE.
