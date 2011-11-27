@@ -62,37 +62,44 @@
 			<PART-BLOCK NAME="The Handin" ORDER="1" ID="2" DIRECTORY="/course/cs000/handin/awesome/">
 			
 				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME -->
+				<!-- All DATE attributes inside the following DEADLINES blocks use the IS08601 date time format without time zone specified. -->
 				<DEADLINES TYPE="VARIABLE">
-					<!-- 1 ONTIME; DATE attribute required. DATE 's format is the ISO8601 date time format. -->
+					<!-- 1 ONTIME -->
+					<!-- 1 DATE attribute
+					     Digital handins turned in before or at this attribute are ON TIME -->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
-					<!-- 0 or 1 LATE; DATE attribute optional; POINTS attribute required; PERIOD attribute required -->
-					<!-- Adds POINTS for each increment of PERIOD that has passed since ONTIME's DATE
-					     such that an amount less than PERIOD is 1 increment. -->
-				    	<!-- PERIOD's format is the ISO8601 duration format, P[n]Y[n]M[n]DT[n]H[n]M[n]S where [n] is a value. -->
-					<!-- DATE, if specified, is a point at which after the PERIOD is not applied -->
+					<!-- 0 or 1 LATE -->
+					<!-- 1 POINTS attribute; floating point value -->
+				    	<!-- 1 PERIOD attribute; format is the ISO8601 duration format, P[n]Y[n]M[n]DT[n]H[n]M[n]S where [n] is a positive integer -->
+					<!-- 0 or 1 DATE attribute
+					     If DATE is not specified, digital handins turned in after ONTIME's DATE are LATE.
+					     If DATE is specified, digital handins turned in after ONTIME's DATE but before or at this time are LATE.
+					     If DATE is specified, digital handins turned in after this time are NC LATE and have points subtracted from their part block earned such that the sum is 0. -->
+					<!-- If digital handin is LATE, adds POINTS for each increment of PERIOD that has passed since ONTIME's DATE such that an amount less than PERIOD is 1 increment. -->
 					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" PERIOD="P1DT12H34M"/>
 				</DEADLINES>
 				
 				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ON TIME  -->
 				<DEADLINES TYPE="FIXED">
-					<!-- 0 or 1 EARLY; DATE attribute required; POINTS attribute optional, defaults to 0 -->
-					<!-- Digital handins turned in before this time are recorded as EARLY and have
-					     POINTS added to their total score. -->
+					<!-- 0 or 1 EARLY -->
+					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
+					<!-- 1 DATE attribute
+					     Digital handins turned in before or at this attribute are EARLY and have POINTS added to their part block earned. -->
 					<EARLY DATE="2011-11-20T19:04:00" POINTS="10"/>
 					
-					<!-- 1 ONTIME; DATE attribute required -->
-					<!-- If EARLY is specified, digital handins turned in after EARLY, but before
-					     this time are recorded as ON TIME.
-					     If EARLY is not specified, digital handins turned in before this time are
-					     recorded as ONTIME.
-					     If LATE is not specified, digital handins turned in after this time are recorded as NC LATE.-->
+					<!-- 1 ONTIME -->
+					<!-- 1 DATE attribute
+					     If EARLY is specified, digital handins turned in after EARLY, but before or at this attribute are ON TIME.
+					     If EARLY is not specified, digital handins turned in before or at this attribute as ONTIME.
+					     If LATE is not specified, digital handins turned in after this attribute are NC LATE and have points subtracted from their part block earned such that the sum is 0.-->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
-					<!-- 0 or 1 LATE; DATE attribute required; POINTS attribute optional, defaults to 0 -->
-					<!-- Digital handins turned in before this time, but after ONTIME are recorded
-					     as LATE and have POINTS added to their total score.
-					     Digital handins turned in after this time are recoded as NC LATE. -->
+					<!-- 0 or 1 LATE -->
+					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
+					<!-- 1 DATE attribute
+					     Digital handins turned in before or at this attribute, but after ONTIME are LATE and have POINTS added to their part block earned.
+					     Digital handins turned in after this 	      are recoded as NC LATE and have points subtracted from their part block earned such that the sum is 0. -->
 					<LATE DATE="2011-11-24T22:00:00" POINTS="-20"/>
 				</DEADLINES>	
 				
