@@ -32,7 +32,6 @@
 			<CERT-PASSWORD>anotherPassword</CERT-PASSWORD>
 		</SEND-FROM>
 	</EMAIL>
-	
 
 	<!-- 0 or 1 ASSIGNMENTS -->
 	<!-- 1 LAST-ID attribute; used internally to generate unique ids for ASSIGNMENTs, PART-BLOCKs, and PARTs -->
@@ -148,14 +147,9 @@
 						<!-- 0 to N PROPERTY; 1 KEY attribute; 1 VALUE attribute -->
 						<PROPERTY KEY="propName" VALUE="greaaaat"/>
 					</PRINT>
-					
 				</PART>
-				
 			</PART-BLOCK>
 		</ASSIGNMENT>
-		
 	</ASSIGNMENTS>
-	
 </CONFIG>
-
 }}}
