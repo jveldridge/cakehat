@@ -9,10 +9,8 @@
 	<!-- 0 or 1 DEFAULTS -->
 	<DEFAULTS>
 		<!-- 0 or 1 SUBMIT-OPTIONS; UI will allow grader to change this, but these are the defaults -->
-		<!-- 0 or 1 EMAIL-STUDENT attribute; defaults to TRUE -->
 		<!-- 0 or 1 ATTACH-GRADING-SHEET attribute; defaults to TRUE -->
-		<!-- 0 or 1 PRINT-GRADING-SHEET attribute; defaults to FALSE -->
-		<SUBMIT-OPTIONS EMAIL-STUDENT="TRUE" ATTACH-GRADING-SHEET="TRUE" PRINT-GRADING-SHEET="FALSE"/>
+		<SUBMIT-OPTIONS ATTACH-GRADING-SHEET="TRUE"/>
 	</DEFAULTS>
 	
 	<!-- 1 EMAIL -->
