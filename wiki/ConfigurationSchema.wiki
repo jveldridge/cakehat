@@ -35,15 +35,10 @@
     	</SEND-FROM>
 	</EMAIL>
 	
-	<!-- 1 LAST-IDS; this is not user exposed, these values are used to generate unique ids for
-	     assignments, part blocks, and parts without using GUIDs that have performance issues -->
-    	<!-- 1 ASSIGNMENT attribute; must be an integer _->
-    	<!-- 1 PART-BLOCK attribute; must be an integer ->
-    	<!-- 1 PART attribute; must be an integer -->
-	<LAST-IDS ASSIGNMENT="5" PART-BLOCK="11" PART="91"/>
 
 	<!-- 0 or 1 ASSIGNMENTS -->
-	<ASSIGNMENTS>
+	<!-- 1 LAST-ID attribute; used internally to generate unique ids for ASSIGNMENTs, PART-BLOCKs, and PARTs -->
+	<ASSIGNMENTS LAST-ID="94">
 	
 		<!-- 0 to N ASSIGNMENT -->
 		<!-- 1 NAME attribute; for human readable purposes -->
@@ -56,9 +51,9 @@
 			<!-- 1 NAME attribute; for human readable purposes -->
 			<!-- 1 ORDER attribute; for ordering part blocks relative to on another -->
 			<!-- 1 ID attribute; internal implementation used to reference this digital handin -->
-			<!-- 0 or 1 DIRECTORY attribute; this attribute is required if any PART in this PART-BLOCK
-			     specifies a INCLUDE-FILES, RUN, OPEN, PRINT, or TEST configuration; digital handins
-			     will look recursively in this directory for handins -->
+			<!-- 0 or 1 DIRECTORY attribute;
+			     This attribute is required if any PART in this PART-BLOCK specifies a INCLUDE-FILES, RUN, OPEN, PRINT, or TEST configuration;
+			     This directory will be searched recursively for digital handins -->
 			<PART-BLOCK NAME="The Handin" ORDER="1" ID="2" DIRECTORY="/course/cs000/handin/awesome/">
 			
 				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME -->
