@@ -17,22 +17,22 @@
 	
 	<!-- 1 EMAIL -->
 	<EMAIL>
-	<!-- 1 NOTIFY -->
-    	<NOTIFY>
-    		<!-- 1 to N; does not need to be a Brown CS email address -->
-    		<ADDRESS>foo@bar.com</ADDRESS>
-    	</NOTIFY>
-    	<!-- 1 SEND-FROM -->
-    	<SEND-FROM>
-		<!-- 1 LOGIN -->
-    		<LOGIN>cs101000</LOGIN>
-    		<!-- 1 PASSWORD -->
-    		<PASSWORD>thePassword</PASSWORD>
-    		<!-- 1 CERT-PATH -->
-    		<CERT-PATH>/course/cs000/grading/smtp_certs/browncscerts.cert</CERT-PATH>
-    		<!-- 1 CERT-PASSWORD -->
-    		<CERT-PASSWORD>anotherPassword</CERT-PASSWORD>
-    	</SEND-FROM>
+		<!-- 1 NOTIFY -->
+		<NOTIFY>
+			<!-- 1 to N; does not need to be a Brown CS email address -->
+			<ADDRESS>foo@bar.com</ADDRESS>
+		</NOTIFY>
+		<!-- 1 SEND-FROM -->
+		<SEND-FROM>
+			<!-- 1 LOGIN -->
+			<LOGIN>cs101000</LOGIN>
+			<!-- 1 PASSWORD -->
+			<PASSWORD>thePassword</PASSWORD>
+ 			<!-- 1 CERT-PATH -->
+			<CERT-PATH>/course/cs000/grading/smtp_certs/browncscerts.cert</CERT-PATH>
+ 			<!-- 1 CERT-PASSWORD -->
+			<CERT-PASSWORD>anotherPassword</CERT-PASSWORD>
+		</SEND-FROM>
 	</EMAIL>
 	
 
