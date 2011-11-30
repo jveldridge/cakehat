@@ -217,10 +217,12 @@ class GradeReportView extends javax.swing.JFrame {
                 }
             }
             
-            String penaltyOrBonusString;
+            String penaltyOrBonusString = "";
             try {
-                double penaltyOrBonus = Allocator.getRubricManager().getHandinPenaltyOrBonus(a.getHandin(), group);
-                penaltyOrBonusString = Double.toString(penaltyOrBonus);
+                if (a.getHandin() != null) {
+                    double penaltyOrBonus = Allocator.getRubricManager().getHandinPenaltyOrBonus(a.getHandin(), group);
+                    penaltyOrBonusString = Double.toString(penaltyOrBonus);
+                }
             } catch (RubricException ex) {
                 new ErrorView(ex, "Could not retrieve handin penalty or bonus.");
                 penaltyOrBonusString = "Unknown";
