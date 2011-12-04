@@ -10,24 +10,9 @@
 					  cakehat being used
 		>TYPE: type of rubric; currently, the only supported type value is "ADDITIVE", but we
 			   may support "SUBTRACTIVE" or others at some point in the future
-		
-	Optional attributes:
-		>STATUS: indicates the grading status of this grading sheet.  Permissible values are:
-			>UNSUBMITTED-MODIFIED: score has not been recorded in the database, but the grading
-								   sheet has been modified since it was created from the
-								   template
-			>SUBMITTED-UNMODIFIED: the grading sheet has been submitted and the score recorded
-								   in the database at least once since the grading sheet was
-								   created, and no changes have been made since the grading
-								   was last submitted
-			>SUBMITTED-MODIFIED: the grading sheet has been submitted and the score recorded
-								 in the database at least once since the grading sheet was
-								 created, but the grading sheet has been modified since it was
-								 last submitted
-				If the "STATUS" attribute is not provided, it is assumed that the grading sheet is
-				unsubmitted and has not been modified since it was created.
+
 -->
-<GRADING-SHEET GML-VERSION="" TYPE="" STATUS="">
+<GRADING-SHEET GML-VERSION="" TYPE="">
 
 	<!-- 1 to N "SECTION" nodes
 		Organizational units of SUBSECTIONs
