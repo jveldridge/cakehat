@@ -67,7 +67,8 @@ extension
 grade
 	* `*`pid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
-	* score DOUBLE NOT NULL
+	* score DOUBLE
+        * insync INTEGER NOT NULL; 
 	* CONSTRAINT gpidpidunique UNIQUE (gpid, pid) ON CONFLICT REPLACE
 
 `*`flagged
