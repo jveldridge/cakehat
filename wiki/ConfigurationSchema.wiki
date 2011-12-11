@@ -44,18 +44,18 @@
 		<!-- 0 or 1 HAS-GROUPS attribute; defaults to FALSE -->
 		<ASSIGNMENT NAME="Awesome Assignment" ORDER="1" ID="3" HAS-GROUPS="TRUE"/>
 		
-			<!-- 0 to N PART-BLOCK -->
+			<!-- 0 to N GRADABLE-EVENT -->
 			<!-- 1 NAME attribute; for human readable purposes -->
-			<!-- 1 ORDER attribute; for ordering part blocks relative to on another -->
+			<!-- 1 ORDER attribute; for ordering gradable events relative to on another -->
 			<!-- 1 ID attribute; internal implementation used to reference this digital handin -->
 			<!-- 0 or 1 DIRECTORY attribute;
-			     This attribute is required if any PART in this PART-BLOCK specifies a INCLUDE-FILES, RUN, OPEN, PRINT, or TEST configuration;
+			     This attribute is required if any PART in this GRADABLE-EVENT specifies a INCLUDE-FILES, RUN, OPEN, PRINT, or TEST configuration;
 			     This directory will be searched recursively for digital handins -->
-			<PART-BLOCK NAME="The Handin" ORDER="1" ID="2" DIRECTORY="/course/cs000/handin/awesome/">
+			<GRADABLE-EVENT NAME="The Handin" ORDER="1" ID="2" DIRECTORY="/course/cs000/handin/awesome/">
 			
-				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ONTIME -->
-				<!-- All DATE attributes inside the following DEADLINES blocks use the IS08601 date time format without time zone specified. -->
-				<DEADLINES TYPE="VARIABLE">
+				<!-- 0 or 1 DEADLINE-INFO; defaults to everything recorded as ONTIME -->
+				<!-- All DATE attributes inside the following DEADLINE-INFO blocks use the IS08601 date time format without time zone specified. -->
+				<DEADLINE-INFO TYPE="VARIABLE">
 					<!-- 1 ONTIME -->
 					<!-- 1 DATE attribute
 					     Digital handins turned in before or at this attribute are ON TIME -->
@@ -67,33 +67,33 @@
 					<!-- 0 or 1 DATE attribute
 					     If DATE is not specified, digital handins turned in after ONTIME's DATE are LATE.
 					     If DATE is specified, digital handins turned in after ONTIME's DATE but before or at this time are LATE.
-					     If DATE is specified, digital handins turned in after this time are NC LATE and have points subtracted from their part block earned such that the sum is 0. -->
+					     If DATE is specified, digital handins turned in after this time are NC LATE and have points subtracted from their gradable event earned such that the sum is 0. -->
 					<!-- If digital handin is LATE, adds POINTS for each increment of PERIOD that has passed since ONTIME's DATE such that an amount less than PERIOD is 1 increment. -->
 					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" PERIOD="P1DT12H34M"/>
-				</DEADLINES>
+				</DEADLINE-INFO>
 				
-				<!-- 0 or 1 DEADLINES; defaults to everything recorded as ON TIME  -->
-				<DEADLINES TYPE="FIXED">
+				<!-- 0 or 1 DEADLINE-INFO; defaults to everything recorded as ON TIME  -->
+				<DEADLINE-INFO TYPE="FIXED">
 					<!-- 0 or 1 EARLY -->
 					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
 					<!-- 1 DATE attribute
-					     Digital handins turned in before or at this attribute are EARLY and have POINTS added to their part block earned. -->
+					     Digital handins turned in before or at this attribute are EARLY and have POINTS added to their gradable event earned. -->
 					<EARLY DATE="2011-11-20T19:04:00" POINTS="10"/>
 					
 					<!-- 1 ONTIME -->
 					<!-- 1 DATE attribute
 					     If EARLY is specified, digital handins turned in after EARLY, but before or at this attribute are ON TIME.
 					     If EARLY is not specified, digital handins turned in before or at this attribute are ON TIME.
-					     If LATE is not specified, digital handins turned in after this attribute are NC LATE and have points subtracted from their part block earned such that the sum is 0.-->
+					     If LATE is not specified, digital handins turned in after this attribute are NC LATE and have points subtracted from their gradable event earned such that the sum is 0.-->
 					<ONTIME DATE="2011-11-22T23:59:59"/>
 					
 					<!-- 0 or 1 LATE -->
 					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
 					<!-- 1 DATE attribute
-					     Digital handins turned in before or at this attribute, but after ONTIME'S DATE are LATE and have POINTS added to their part block earned.
-					     Digital handins turned in after this are recoded as NC LATE and have points subtracted from their part block earned such that the sum is 0. -->
+					     Digital handins turned in before or at this attribute, but after ONTIME'S DATE are LATE and have POINTS added to their gradable event earned.
+					     Digital handins turned in after this are recoded as NC LATE and have points subtracted from their gradable event earned such that the sum is 0. -->
 					<LATE DATE="2011-11-24T22:00:00" POINTS="-20"/>
-				</DEADLINES>	
+				</DEADLINE-INFO>	
 				
 				<!-- 0 to N PART -->
 				<!-- 1 NAME attribute; for human readable purposes -->
@@ -148,7 +148,7 @@
 						<PROPERTY KEY="propName" VALUE="greaaaat"/>
 					</PRINT>
 				</PART>
-			</PART-BLOCK>
+			</GRADABLE-EVENT>
 		</ASSIGNMENT>
 	</ASSIGNMENTS>
 </CONFIG>
