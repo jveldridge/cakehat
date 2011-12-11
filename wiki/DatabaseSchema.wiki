@@ -1,19 +1,17 @@
 #summary Defines the database schema
 #labels Milestone-5.0
 
-`*` indicates a table or field that is new or being modified in some way from V4 to V5.
-
 student
 	* sid INTEGER PRIMARY KEY AUTOINCREMENT
 	* login VARCHAR NOT NULL
 	* firstname VARCHAR NOT NULL
 	* lastname VARCHAR NOT NULL
-	* `*`enabled INTEGER NOT NULL DEFAULT 1
-	* `*`hascollab INTEGER NOT NULL DEFAULT 0
+	* enabled INTEGER NOT NULL DEFAULT 1
+	* hascollab INTEGER NOT NULL DEFAULT 0
 	* CONSTRAINT studentunique UNIQUE (login) ON CONFLICT IGNORE;
 	
-`*`ta
-	* taid INTEGER PRIMARY KEY AUTOINCREMENT
+ta
+	* tid INTEGER PRIMARY KEY AUTOINCREMENT
 	* login VARCHAR NOT NULL
 	* firstname VARCHAR NOT NULL
 	* lastname VARCHAR NOT NULL
@@ -21,7 +19,7 @@ student
 	* CONSTRAINT taunique UNIQUE (login) ON CONFLICT IGNORE;
 	
 blacklist
-	* `*`taid INTEGER NOT NULL; FOREIGN KEY(taid) REFERENCES ta(taid) ON DELETE CASCADE
+	* tid INTEGER NOT NULL; FOREIGN KEY(tid) REFERENCES ta(tid) ON DELETE CASCADE
 	* sid INTEGER NOT NULL; FOREIGN KEY(sid) REFERENCES student(sid) ON DELETE CASCADE
 	* CONSTRAINT tidsidunique UNIQUE (tid, sid) ON CONFLICT IGNORE
 	
@@ -36,42 +34,41 @@ groupmember
 	* sid INTEGER NOT NULL; FOREIGN KEY(sid) REFERENCES student(sid) ON DELETE CASCADE
 	* CONSTRAINT gpidsidunique UNIQUE (gpid, sid) ON CONFLICT IGNORE
 	
-`*`pbstatus
-	* `*`pbid INTEGER NOT NULL
+gestatus
+	* geid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
-	* `*`status VARCHAR //stored only if set explicitly
-	* `*`handintime INTEGER
-	* CONSTRAINT gpidpbidunique UNIQUE (pbid, gpid) ON CONFLICT REPLACE
+	* handintime INTEGER
+	* CONSTRAINT gpidgeidunique UNIQUE (geid, gpid) ON CONFLICT REPLACE
 
 distribution
 	* pid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
-	* `*`tid INTEGER NOT NULL; FOREIGN KEY(taid) REFERENCES ta(taid) ON DELETE CASCADE
+	* tid INTEGER NOT NULL; FOREIGN KEY(tid) REFERENCES ta(tid) ON DELETE CASCADE
 	* CONSTRAINT onegrader UNIQUE (gpid, pid) ON CONFLICT REPLACE
 	* CONSTRAINT rowsunique UNIQUE (gpid, pid, tid) ON CONFLICT IGNORE
 	
 exemption
-	* `*`pbid INTEGER NOT NULL
+	* geid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
 	* note TEXT
-	* CONSTRAINT gpidpbidunique UNIQUE (pbid, gpid) ON CONFLICT REPLACE
+	* CONSTRAINT gpidgeidunique UNIQUE (geid, gpid) ON CONFLICT REPLACE
 
 extension
-	* `*`pbid INTEGER NOT NULL
+	* geid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
 	* ontime INTEGER NOT NULL
-	* `*`shiftdates INTEGER NOT NULL //shift early and late dates relative to new ontime date
+	* shiftdates INTEGER NOT NULL //shift early and late dates relative to new ontime date
 	* note TEXT
 	* CONSTRAINT gpidaidunique UNIQUE (gpid, aid) ON CONFLICT REPLACE
 
 grade
-	* `*`pid INTEGER NOT NULL
+	* pid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
 	* score DOUBLE
         * insync INTEGER NOT NULL; 
 	* CONSTRAINT gpidpidunique UNIQUE (gpid, pid) ON CONFLICT REPLACE
 
-`*`flagged
+flagged
 	* pid INTEGER NOT NULL
 	* gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
 	* note TEXT
