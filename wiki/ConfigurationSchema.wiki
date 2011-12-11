@@ -51,22 +51,22 @@
 			     This directory will be searched recursively for digital handins -->
 			<GRADABLE-EVENT NAME="The Handin" ORDER="1" ID="2" DIRECTORY="/course/cs000/handin/awesome/">
 			
-				<!-- 0 or 1 DEADLINE-INFO; defaults to everything recorded as ONTIME -->
+				<!-- 0 or 1 DEADLINE-INFO; defaults to everything recorded as on time -->
 				<!-- All DATE attributes inside the following DEADLINE-INFO blocks use the IS08601 date time format without time zone specified. -->
 				<DEADLINE-INFO TYPE="VARIABLE">
-					<!-- 1 ONTIME -->
+					<!-- 1 ON-TIME -->
 					<!-- 1 DATE attribute
-					     Digital handins turned in before or at this attribute are ON TIME -->
-					<ONTIME DATE="2011-11-22T23:59:59"/>
+					     Digital handins turned in before or at this attribute are on time -->
+					<ON-TIME DATE="2011-11-22T23:59:59"/>
 					
 					<!-- 0 or 1 LATE -->
 					<!-- 1 POINTS attribute; floating point value -->
 				    	<!-- 1 PERIOD attribute; format is the ISO8601 duration format, P[n]Y[n]M[n]DT[n]H[n]M[n]S where [n] values are non-negative integers -->
 					<!-- 0 or 1 DATE attribute
-					     If DATE is not specified, digital handins turned in after ONTIME's DATE are LATE.
-					     If DATE is specified, digital handins turned in after ONTIME's DATE but before or at this time are LATE.
-					     If DATE is specified, digital handins turned in after this time are NC LATE and have points subtracted from their gradable event earned such that the sum is 0. -->
-					<!-- If digital handin is LATE, adds POINTS for each increment of PERIOD that has passed since ONTIME's DATE such that an amount less than PERIOD is 1 increment. -->
+					     If DATE is not specified, digital handins turned in after ONTIME's DATE are late.
+					     If DATE is specified, digital handins turned in after ONTIME's DATE but before or at this time are late.
+					     If DATE is specified, digital handins turned in after this time are NC late and have points subtracted from their gradable event earned such that the sum is 0. -->
+					<!-- If digital handin is LATE, adds POINTS for each increment of PERIOD that has passed since ON-TIME's DATE such that an amount less than PERIOD is 1 increment. -->
 					<LATE DATE="2011-11-30T23:59:59" POINTS="-10" PERIOD="P1DT12H34M"/>
 				</DEADLINE-INFO>
 				
@@ -75,21 +75,21 @@
 					<!-- 0 or 1 EARLY -->
 					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
 					<!-- 1 DATE attribute
-					     Digital handins turned in before or at this attribute are EARLY and have POINTS added to their gradable event earned. -->
+					     Digital handins turned in before or at this attribute are early and have POINTS added to their gradable event earned. -->
 					<EARLY DATE="2011-11-20T19:04:00" POINTS="10"/>
 					
-					<!-- 1 ONTIME -->
+					<!-- 1 ON-TIME -->
 					<!-- 1 DATE attribute
-					     If EARLY is specified, digital handins turned in after EARLY, but before or at this attribute are ON TIME.
-					     If EARLY is not specified, digital handins turned in before or at this attribute are ON TIME.
-					     If LATE is not specified, digital handins turned in after this attribute are NC LATE and have points subtracted from their gradable event earned such that the sum is 0.-->
-					<ONTIME DATE="2011-11-22T23:59:59"/>
+					     If EARLY is specified, digital handins turned in after EARLY, but before or at this attribute are on time.
+					     If EARLY is not specified, digital handins turned in before or at this attribute are on time.
+					     If LATE is not specified, digital handins turned in after this attribute are NC late and have points subtracted from their gradable event earned such that the sum is 0.-->
+					<ON-TIME DATE="2011-11-22T23:59:59"/>
 					
 					<!-- 0 or 1 LATE -->
 					<!-- 0 or 1 POINTS attribute; floating point value; defaults to 0 -->
 					<!-- 1 DATE attribute
-					     Digital handins turned in before or at this attribute, but after ONTIME'S DATE are LATE and have POINTS added to their gradable event earned.
-					     Digital handins turned in after this are recoded as NC LATE and have points subtracted from their gradable event earned such that the sum is 0. -->
+					     Digital handins turned in before or at this attribute, but after ONTIME'S DATE are late and have POINTS added to their gradable event earned.
+					     Digital handins turned in after this are recoded as NC late and have points subtracted from their gradable event earned such that the sum is 0. -->
 					<LATE DATE="2011-11-24T22:00:00" POINTS="-20"/>
 				</DEADLINE-INFO>	
 				
