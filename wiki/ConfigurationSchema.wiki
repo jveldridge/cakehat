@@ -15,22 +15,20 @@
 	
 	<!-- 1 EMAIL -->
 	<EMAIL>
+
 		<!-- 1 NOTIFY -->
 		<NOTIFY>
-			<!-- 1 to N; does not need to be a Brown CS email address -->
-			<ADDRESS>foo@bar.com</ADDRESS>
+			<!-- 1 to N ADDRESS; does not need to be a Brown CS email address -->
+			<!-- 1 ACCOUNT attribute -->
+			<ADDRESS ACCOUNT="foo@bar.com"/>
 		</NOTIFY>
+
 		<!-- 1 SEND-FROM -->
-		<SEND-FROM>
-			<!-- 1 LOGIN -->
-			<LOGIN>cs101000</LOGIN>
-			<!-- 1 PASSWORD -->
-			<PASSWORD>thePassword</PASSWORD>
- 			<!-- 1 CERT-PATH -->
-			<CERT-PATH>/course/cs000/grading/smtp_certs/browncscerts.cert</CERT-PATH>
- 			<!-- 1 CERT-PASSWORD -->
-			<CERT-PASSWORD>anotherPassword</CERT-PASSWORD>
-		</SEND-FROM>
+		<!-- 1 LOGIN attribute -->
+		<!-- 1 PASSWORD attribute -->
+		<!-- 1 CERT-PATH attribute -->
+		<!-- 1 CERT-PASSWORD attribute -->
+		<SEND-FROM LOGIN="cs101000" PASSWORD="thePassword" CERT-PATH="/course/cs000/grading/smtp_certs/browncscerts.cert" CERT-PASSWORD="anotherPassword"/>
 	</EMAIL>
 
 	<!-- 0 or 1 ASSIGNMENTS -->
