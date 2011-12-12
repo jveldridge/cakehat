@@ -703,9 +703,12 @@ public class GradingServicesImpl implements GradingServices
                         try
                         {
                             Double score = groupScores.get(group);
-                            double penaltyOrBonus = Allocator.getRubricManager()
-                                    .getHandinPenaltyOrBonus(asgn.getHandin(), group);
-                        
+                            Handin handin = asgn.getHandin();
+                            double penaltyOrBonus = 0;
+                            if (handin != null) {
+                                penaltyOrBonus = Allocator.getRubricManager()
+                                    .getHandinPenaltyOrBonus(handin, group);
+                            }
                             double totalScore = (score == null ? 0 : score + penaltyOrBonus);
                             studentScores.put(student, totalScore);
                         }
