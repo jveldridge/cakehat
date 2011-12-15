@@ -37,14 +37,14 @@ JavaMail allows for sending emails on behalf of the actual TA using cakehat.
 ==JFreeChart==
 http://www.jfree.org/jfreechart/
 
-`jfreechart-1.0.13.jar`
+`jfreechart-1.0.13.jar` {NOT LATEST}
 
 JFreeChart is used to create the charts and graphs used in cakehat.
 
 ==JCommon==
 http://www.jfree.org/jcommon/
 
-`jcommon-1.0.16.jar`
+`jcommon-1.0.16.jar` {NOT LATEST}
 
 JCommon is a dependency of JFreeChart.
 
