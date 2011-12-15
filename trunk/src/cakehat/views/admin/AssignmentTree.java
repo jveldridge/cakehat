@@ -196,11 +196,13 @@ class AssignmentTree extends JScrollPane {
 
         // we must only add paths with assignments and not parts selected because
 		// otherwise the paths to selected parts would remain expanded
-	    for (TreePath path : selectedPaths) {
-		    if (path.getPathCount() == 2) {
-	            _tree.getSelectionModel().addSelectionPaths(selectedPaths);
-	        }
-	    }
+            if (selectedPaths != null) {
+                for (TreePath path : selectedPaths) {
+                        if (path.getPathCount() == 2) {
+                        _tree.getSelectionModel().addSelectionPaths(selectedPaths);
+                    }
+                }
+            }
     }
     
     private void expandCollapseAll(TreePath parent, boolean expand) {
