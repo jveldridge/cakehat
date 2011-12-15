@@ -53,6 +53,8 @@ https://github.com/twall/jna
 
 `jna-3.2.7.jar` {NOT LATEST}
 
+*This library uses native code*
+
 JNA is used to access the POSIX functionality available on Linux that the Java standard libraries do not provide access to. This includes accessing group membership (for instance all users that belong to cs015student), the names of users, and changing file permissions.
 
 ==JOrtho==
@@ -73,5 +75,7 @@ matlabcontrol allows cakehat to programmatically control a running instance of M
 http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC
 
 `sqlite-jdbc-3.7.2.jar`
+
+*This library uses native code*
 
 SQLite is the database used by cakehat. SQLite is cross-platform C library, Xerial provides a Java wrapper.
