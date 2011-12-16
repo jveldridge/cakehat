@@ -7,6 +7,7 @@ package cakehat.config;
  * 
  * @author jak2
  */
+@Deprecated
 public class NonHandinPart extends Part
 {
     NonHandinPart(Assignment asgn, String name, int number, int points)

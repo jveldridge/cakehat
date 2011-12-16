@@ -10,6 +10,7 @@ import java.util.Arrays;
  *
  * @author jak2
  */
+@Deprecated
 public class AndFileFilter implements FileFilter
 {
     private final Iterable<FileFilter> _filters;

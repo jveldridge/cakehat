@@ -19,6 +19,7 @@ import java.util.List;
  *
  * @author jak2
  */
+@Deprecated
 public class Handin
 {
     private final Assignment _assignment;

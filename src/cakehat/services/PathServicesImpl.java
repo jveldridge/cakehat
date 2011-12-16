@@ -126,12 +126,24 @@ public class PathServicesImpl implements PathServices
     }
 
     @Override
+    @Deprecated
     public File getUnarchiveHandinDir(DistributablePart part, Group group)
     {
         return new File(new File(new File(
                 getUserWorkspaceDir(),
                 part.getAssignment().getName()),
                 part.getName()),
+                group.getName());
+    }
+    
+    @Override
+    public File getUnarchiveHandinDir(cakehat.assignment.Part part, Group group)
+    {
+        return new File(new File(new File(new File(
+                getUserWorkspaceDir(),
+                Integer.toString(part.getGradableEvent().getAssignment().getID())),
+                Integer.toString(part.getGradableEvent().getID())),
+                Integer.toString(part.getID())),
                 group.getName());
     }
 

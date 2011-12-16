@@ -48,6 +48,7 @@ import support.utils.posix.NativeException;
  *
  * @author jak2
  */
+@Deprecated
 class MatlabActions implements ActionProvider
 {
     public String getNamespace()

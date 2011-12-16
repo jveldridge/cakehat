@@ -14,6 +14,7 @@ import java.util.Map;
  *
  * @author jak2
  */
+@Deprecated
 public class ActionRepository
 {
     private final Map<String, DistributableActionDescription> _descriptions;

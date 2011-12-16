@@ -18,6 +18,7 @@ package cakehat.config;
  *
  * @author jak2
  */
+@Deprecated
 public class SubmitOptions
 {
     /**

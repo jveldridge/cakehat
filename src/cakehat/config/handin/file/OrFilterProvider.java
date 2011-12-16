@@ -13,6 +13,7 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
  *
  * @author jak2
  */
+@Deprecated
 public class OrFilterProvider implements FilterProvider
 {
     private final Iterable<FilterProvider> _providers;

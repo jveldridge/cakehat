@@ -7,6 +7,7 @@ import java.util.Calendar;
  *
  * @author jak2
  */
+@Deprecated
 public class TimeInformation
 {
     private final LatePolicy _latePolicy;

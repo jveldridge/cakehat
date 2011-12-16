@@ -9,6 +9,7 @@ import java.util.Map;
  *
  * @author jak2
  */
+@Deprecated
 public interface DistributableActionDescription
 {
     public static enum ActionMode

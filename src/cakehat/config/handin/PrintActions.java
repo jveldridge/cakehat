@@ -21,6 +21,7 @@ import java.util.Map;
  *
  * @author jak2
  */
+@Deprecated
 class PrintActions implements ActionProvider
 {
     public String getNamespace()

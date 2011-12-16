@@ -16,6 +16,7 @@ import java.util.Map;
  *
  * @author jak2
  */
+@Deprecated
 class ExternalActions implements ActionProvider
 {
     public String getNamespace()
