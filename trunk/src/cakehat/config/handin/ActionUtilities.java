@@ -12,6 +12,7 @@ import support.utils.NoFileExtensionFilter;
  *
  * @author jak2
  */
+@Deprecated
 class ActionUtilities
 {
     /**

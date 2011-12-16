@@ -5,6 +5,7 @@ package cakehat.config.handin;
  *
  * @author jak2
  */
+@Deprecated
 public class DistributableActionProperty
 {
     private final String _name;

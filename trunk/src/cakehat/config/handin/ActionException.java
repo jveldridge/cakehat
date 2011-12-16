@@ -7,6 +7,7 @@ package cakehat.config.handin;
  *
  * @author jak2
  */
+@Deprecated
 public class ActionException extends Exception
 {
     ActionException(String message, Throwable cause)

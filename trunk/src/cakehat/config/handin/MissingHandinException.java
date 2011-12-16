@@ -9,6 +9,7 @@ import cakehat.database.Group;
  *
  * @author jak2
  */
+@Deprecated
 public class MissingHandinException extends Exception
 {
     private final Group _group;

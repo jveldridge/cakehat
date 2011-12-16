@@ -9,6 +9,7 @@ import java.util.Collection;
  *
  * @author jak2
  */
+@Deprecated
 public interface DistributableAction
 {
     /**

@@ -5,6 +5,7 @@ package cakehat.config;
  *
  * @author jak2
  */
+@Deprecated
 public abstract class Part implements Comparable<Part>
 {
     private final String _name;

@@ -7,6 +7,7 @@ import java.util.List;
  *
  * @author jak2
  */
+@Deprecated
 interface ActionProvider
 {
     /**

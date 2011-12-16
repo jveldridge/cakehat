@@ -188,7 +188,20 @@ public interface PathServices
      * @param group
      * @return
      */
+    @Deprecated
     public File getUnarchiveHandinDir(DistributablePart part, Group group);
+    
+    /**
+     * The directory the handin is unarchived into for a given part. Even if two parts belong to the same part block,
+     * they will have different unarchive directories.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/workspaces/<ta login>/<assignment id>/<part block id>/<part id>/<group name>
+     * }
+     * </pre>
+     */
+    public File getUnarchiveHandinDir(cakehat.assignment.Part part, Group group);
 
     /**
      * A group's GRD file for a given Handin.

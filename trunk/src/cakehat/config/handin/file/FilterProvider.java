@@ -12,6 +12,7 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
  *
  * @author jak2
  */
+@Deprecated
 public interface FilterProvider
 {
     /**

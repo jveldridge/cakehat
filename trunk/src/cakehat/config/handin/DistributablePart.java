@@ -24,6 +24,7 @@ import cakehat.config.handin.file.AlwaysAcceptingFileFilter;
  *
  * @author jak2
  */
+@Deprecated
 public class DistributablePart extends Part
 {
     private final Handin _handin;

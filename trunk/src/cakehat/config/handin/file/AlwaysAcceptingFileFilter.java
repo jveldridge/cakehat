@@ -8,6 +8,7 @@ import java.io.FileFilter;
  *
  * @author jak2
  */
+@Deprecated
 public class AlwaysAcceptingFileFilter implements FileFilter
 {
     public boolean accept(File file)

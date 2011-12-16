@@ -12,6 +12,7 @@ import java.util.Collection;
  *
  * @author jak2
  */
+@Deprecated
 abstract class StandardDistributableAction implements DistributableAction
 {
     public void performAction(DistributablePart part, Collection<Group> groups) throws ActionException

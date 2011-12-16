@@ -6,6 +6,7 @@ package cakehat.config;
  *
  * @author jak2
  */
+@Deprecated
 public enum GradeUnits
 {
     PERCENTAGE, POINTS;

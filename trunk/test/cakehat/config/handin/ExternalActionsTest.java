@@ -114,7 +114,7 @@ public class ExternalActionsTest
 
         //Mock up a path services that will return dummy unarchive directories
         final PathServices pathServices = createMock(PathServices.class);
-        expect(pathServices.getUnarchiveHandinDir(null, group)).andReturn(unarchiveDir).times(2);
+        expect(pathServices.getUnarchiveHandinDir((DistributablePart)null, group)).andReturn(unarchiveDir).times(2);
         replay(pathServices);
 
         SingletonAllocation<PathServices> pathServicesAlloc =
@@ -232,8 +232,8 @@ public class ExternalActionsTest
 
         //Mock up a path services that will return dummy unarchive directories
         final PathServices pathServices = createMock(PathServices.class);
-        expect(pathServices.getUnarchiveHandinDir(null, groupA)).andReturn(dirA).times(2);
-        expect(pathServices.getUnarchiveHandinDir(null, groupB)).andReturn(dirB).times(2);
+        expect(pathServices.getUnarchiveHandinDir((DistributablePart)null, groupA)).andReturn(dirA).times(2);
+        expect(pathServices.getUnarchiveHandinDir((DistributablePart)null, groupB)).andReturn(dirB).times(2);
         replay(pathServices);
 
         SingletonAllocation<PathServices> pathServicesAlloc =

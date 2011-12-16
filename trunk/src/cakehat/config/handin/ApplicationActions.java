@@ -21,6 +21,7 @@ import support.utils.FileExtensionFilter;
  * 
  * @author jak2
  */
+@Deprecated
 class ApplicationActions implements ActionProvider
 {
     public String getNamespace()

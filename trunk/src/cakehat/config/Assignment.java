@@ -14,6 +14,7 @@ import java.util.List;
  *
  * @author jak2
  */
+@Deprecated
 public class Assignment implements Comparable<Assignment>
 {
     private final String _name;

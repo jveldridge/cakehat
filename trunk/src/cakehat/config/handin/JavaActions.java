@@ -57,6 +57,7 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  *
  * @author jak2
  */
+@Deprecated
 class JavaActions implements ActionProvider
 {
     public List<DistributableActionDescription> getActionDescriptions()

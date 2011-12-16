@@ -6,6 +6,7 @@ package cakehat.config;
  *
  * @author jak2
  */
+@Deprecated
 public class LabPart extends Part
 {
     private final int _labNumber;
