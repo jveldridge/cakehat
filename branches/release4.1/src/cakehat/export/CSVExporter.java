@@ -122,6 +122,10 @@ public class CSVExporter implements Exporter
 
         private void writeAssignmentHeaders(PrintWriter printer)
         {
+            //line1 = assignment names
+            //line2 = part names
+            //line3 = part out of points
+            //need to leave three columns empty in front for student last name, first name, and login
             String line1 = ",,,", line2 = ",,,", line3 = ",,,";
 
             //Write out the assignments
@@ -140,7 +144,7 @@ public class CSVExporter implements Exporter
                     {
                         line1 += ",";
                         line2 += ",";
-                        line3 += "Status,";
+                        line3 += "Status,Days Late,";
                     }
                 }
                 line2 += "Total,";
@@ -204,9 +208,11 @@ public class CSVExporter implements Exporter
                                     HandinStatus handinStatus = Allocator.getDataServices().getHandinStatus(studentsGroup);
                                     if (handinStatus != null) {
                                         printer.append(handinStatus.getTimeStatus() + ",");
+                                        printer.append(handinStatus.getDaysLate() + ",");
                                     }
                                     else {
                                         printer.append("(unknown handin status),");
+                                        printer.append("(unknown days late),");
                                     }
                                 }
                                 pView.updateProgress(student, asgn, part, ++currStep);
