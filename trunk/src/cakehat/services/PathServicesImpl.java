@@ -81,6 +81,15 @@ public class PathServicesImpl implements PathServices
                 "database"),
                 "backups");
     }
+    
+    @Override
+    public File getJavaKeyStoreFile()
+    {
+        return new File(new File(
+                getCakehatDir(),
+                "bin"),
+                "brown_cs_email.jks");
+    }
 
     @Override
     public File getUserWorkspaceDir()
