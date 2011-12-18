@@ -120,6 +120,19 @@ public interface PathServices
      * @return
      */
     public File getDatabaseBackupDir();
+    
+    /**
+     * The Java KeyStore file that is used by cakehat to authenticate the Brown CS email server.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/bin/brown_cs_email.jks
+     * }
+     * </pre>
+     *
+     * @return
+     */
+    public File getJavaKeyStoreFile();
 
     /**
      * The temporary directory that the user uses while running cakehat.
