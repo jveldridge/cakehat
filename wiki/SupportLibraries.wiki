@@ -30,7 +30,7 @@ Note: Google Collections has been merged into Guava (http://code.google.com/p/gu
 ==JavaMail==
 http://www.oracle.com/technetwork/java/javamail/index.html
 
-`javamail-1.4.3.jar` {NOT LATEST}
+`javamail-1.4.4.jar`
 
 JavaMail allows for sending emails on behalf of the actual TA using cakehat.
 
