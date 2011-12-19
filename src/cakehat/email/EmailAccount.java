@@ -1,13 +1,8 @@
 package cakehat.email;
 
-import cakehat.Allocator;
-import cakehat.services.PathServices;
-import cakehat.services.ServicesException;
+import com.sun.mail.util.MailSSLSocketFactory;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Properties;
 import javax.activation.DataHandler;
@@ -25,39 +20,8 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 /**
- * Sends email from a Brown CS account using LDAP over secure SMTP using a Java KeyStore.
- * <br/><br/>
- * LDAP credentials should be kept course confidential and should not be distributed in any form.
- * <br/><br/>
- * A Java KeyStore file is included in this package and will be extracted if not already present in the course's cakehat
- * installation. The file contains the Brown CS certificate. The Brown CS certificate is available at
- * <a href="http://www.cs.brown.edu/system/net_remote/certificates/browncs-ca.crt">
- * http://www.cs.brown.edu/system/net_remote/certificates/browncs-ca.crt</a> as of 12/16/2011. This certificate expires
- * on Friday, April 3, 2015 at 10:40:35AM EDT. A Java KeyStore is a file which contains trusted certificates meaning
- * that the Java application will trust secure communications with a server that has a certificate in the specified
- * keystore. It is not actually required by the Brown CS Email server, it is possible (although difficult and hacky) to
- * disable Java's authentication process.
- * <br/><br/>
- * All courses may use the same keystore that is included in cakehat. However, for completeness the process to create
- * this file is documented here.  The Java KeyStore is created by using the {@code keystore} command which comes as
- * part of a Java developer installation (it is on the department machines):
- * <pre>
- * {@code
- * keytool -genkey -keyalg RSA -keystore <KEYSTORE FILE PATH> -storepass <PASSWORD> -validity <DAYS> -dname "cn=cakehat, OU=Department of Computer Science, O=Brown University, L=Providence, ST=RI, C=US" -import -file <BROWN CS CERTIFICATE FILE PATH> 
- * }
- * </pre>
- * <pre>{@code <KEYSTORE FILE PATH>}</pre>
- * The path to the keystore file this command will generate. By convention this file is given a {@code jks} file
- * extension.
- * <br/><br/><pre>{@code <PASSWORD>}</pre>
- * The password that this keystore will have. This password will be needed at runtime to access the keystore. It is
- * also necessary in order to add more certificates, but cakehat only requires the Brown CS certificate.
- * <br/><br/><pre>{@code <DAYS>}</pre>
- * The number of days this keystore is valid for.
- * <br/><br/><pre>{@code <BROWN CS CERTIFICATE FILE PATH>}</pre>
- * The path to the location on disk where the Brown CS certificate was downloaded to.
- * <br/><br/>
- * When asked "Trust this certificate? [no]" type in yes and press return.
+ * Sends email from a Brown CS account using LDAP over secure SMTP. LDAP credentials should be kept course confidential
+ * and should not be distributed in any form.
  *
  * @author jak2
  */
@@ -72,27 +36,6 @@ public class EmailAccount
      * The port of the Brown CS SMTP server.
      */
     private static final String EMAIL_PORT = "465";
-    
-    /**
-     * The store pass for the Java KeyStore (JKS) file. This password is needed at runtime to access the keystore. It is
-     * also necessary in order to add more certificates, but cakehat only requires the Brown CS certificate. There is no
-     * significant security issue in having this password accessible. Anyone can create a similar Java KeyStore using
-     * the department's certificate file. The actual keystore file will be protected by file system permissions. If a
-     * person gained access to the keystore and modified it they would be able to cause cakehat to incorrectly determine
-     * whether they were actually talking to the Brown CS email server. This could potentially cause email sending to
-     * fail because cakehat would no longer be able to correctly identify the Brown CS email server. If there was a
-     * redirection or man in the middle attack and the requests to the Brown CS email server were being redirected this
-     * maliciously modified keystore could fool cakehat into thinking it was actually talking to the Brown CS email
-     * server. However, if the malicious user had access to the keystore they almost certainly would have access to the
-     * database.
-     */
-    private static final String JAVA_KEY_STORE_PASS = "neither_cake_nor_hat";
-    
-    /**
-     * The name of the file in this package. For consistency this is also the name of the file provided by
-     * {@link PathServices#getJavaKeyStoreFile()}.
-     */
-    private static final String JAVA_KEY_STORE_FILE_NAME = "brown_cs_email.jks";
 
     /**
      * A Brown CS login such as {@code jak2} or {@code cs015000}. A course is strongly encouraged to use a test account
@@ -127,11 +70,9 @@ public class EmailAccount
      * @param login a Brown CS login, may not be {@code null}
      * @param ldapPassword the LDAP password belong to the user specified by {@code login}, may not be {@code null}
      * 
-     * @throws IOException If there is an existing unreadable keystore file or if unable to extract the file and set the
-     * correct permissions and group ownership. This exception does not represent user error; it is either cakehat or
-     * file system error.
+     * @throws GeneralSecurityException if unable to construct the socket factory used for sending email
      */
-    EmailAccount(String login, String ldapPassword) throws IOException
+    EmailAccount(String login, String ldapPassword) throws GeneralSecurityException
     {
         //Validation
         if(login == null)
@@ -142,8 +83,6 @@ public class EmailAccount
         {
             throw new NullPointerException("ldapPassword may not be null");
         }
-        
-        ensureJavaKeyStoreFile();
         
         _login = login;
         _ldapPassword = ldapPassword;
@@ -233,110 +172,12 @@ public class EmailAccount
     }
     
     /**
-     * Ensures the Java KeyStore file exists by extracting it from the jar (or when developing from the directory) and
-     * writing it into the .cakehat directory.
-     * 
-     * @throws IOException If there is an existing unreadable keystore file or if unable to extract the file and set the
-     * correct permissions and group ownership. This exception does not represent user error; it is either cakehat or
-     * file system error.
-     */
-    private void ensureJavaKeyStoreFile() throws IOException
-    {
-        File keyStoreFile = Allocator.getPathServices().getJavaKeyStoreFile();
-        
-        //As this file is managed internally by cakehat the permissions should never be wrong, but check to be sure
-        if(keyStoreFile.exists() && !keyStoreFile.canRead())
-        {
-            throw new IOException("Unable to read Java KeyStore file needed for email. Location: " +
-                    keyStoreFile.getAbsolutePath());
-            
-        }
-        
-        //If the file does not exist, extract it from the cakehat jar into the .cakehat directory
-        if(!keyStoreFile.exists())
-        {
-            extractJavaKeyStoreFile(keyStoreFile);
-        }
-    }
-    
-    /**
-     * Extracts the Java KeyStore file to the location specified by {@code dstFile}. If the directory it is to be
-     * extracted into does not exist it will create it and all parent directories as necessary with correct permissions
-     * and group ownership. The file will be created with correct permissions and group ownership.
-     * 
-     * @param dstFile the location to the write the file to
-     * @throws IOException if unable to extract the file and set the correct permissions and group ownership
-     */
-    private void extractJavaKeyStoreFile(File dstFile) throws IOException
-    {
-        //Ensure directory exists where the file is going to be copied to
-        try
-        {
-            Allocator.getFileSystemServices().makeDirectory(dstFile.getParentFile());
-        }
-        catch(ServicesException e)
-        {
-            throw new IOException("Unable to create directory for: " + dstFile.getAbsolutePath(), e);
-        }
-        
-        //Copy        
-        FileOutputStream dstStream = new FileOutputStream(dstFile);
-        InputStream keyStoreStream = EmailAccount.class.getResourceAsStream(JAVA_KEY_STORE_FILE_NAME);
-        try
-        {
-            byte[] buffer = new byte[4096];
-            int n = 0;
-            while(-1 != (n = keyStoreStream.read(buffer)))
-            {
-                dstStream.write(buffer, 0, n);
-            }
-        }
-        catch(IOException e)
-        {
-            //If the file was created, attempt to delete it as something went wrong during the copy
-            if(dstFile.exists())
-            {
-                Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(dstFile));
-            }
-            
-            throw e;
-        }
-        finally
-        {
-            //Attempt to close the streams, but if it fails that does not actually mean anything went wrong with
-            //copying, so there is no need to do anything about it
-            try
-            {
-                keyStoreStream.close();
-                dstStream.close();
-            }
-            catch(IOException e) { }
-        }
-        
-        //Set the permissions and group ownership, if it fails then delete the file
-        try
-        {
-            Allocator.getFileSystemServices().sanitize(dstFile);
-        }
-        catch(ServicesException e)
-        {
-            Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(dstFile));
-            
-            throw new IOException("Unable to set the permissions correctly, the file was deleted", e);
-        }
-    }
-    
-    /**
-     * Properties needed for email.
+     * Properties which tell Java Mail how to talk to the Brown CS email server.
      *
      * @return
      */
-    private Properties buildProperties()
+    private Properties buildProperties() throws GeneralSecurityException
     {
-        //Set system properties
-        System.setProperty("javax.net.ssl.trustStore", Allocator.getPathServices().getJavaKeyStoreFile().getAbsolutePath());
-        System.setProperty("javax.net.ssl.trustStorePassword", JAVA_KEY_STORE_PASS);
-
         //Build properties
         Properties properties = new Properties();
         properties.put("mail.transport.protocol", "smtps");
@@ -348,9 +189,13 @@ public class EmailAccount
         properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.socketFactory.port", EMAIL_PORT);
-        properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         properties.put("mail.smtp.socketFactory.fallback", "false");
         //properties.put("mail.smtp.debug", "true"); //Leave this for debugging purposes
+        
+        //Use a socket factory which trust all of the hosts it connects to so that we do not need a Java KeyStore
+        MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
+        socketFactory.setTrustAllHosts(true);
+        properties.put("mail.smtp.ssl.socketFactory", socketFactory);
 
         return properties;
     }
