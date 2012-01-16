@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -18,7 +19,7 @@ import org.sqlite.SQLiteConfig;
  * @author jak2
  * @author jeldridg
  */
-public class DatabaseImpl implements Database
+public class DatabaseV5Impl implements DatabaseV5
 {
     
     private ConnectionProvider _connProvider;
@@ -26,11 +27,11 @@ public class DatabaseImpl implements Database
     /**
      * sets DB path to regular location
      */
-    public DatabaseImpl() {
+    public DatabaseV5Impl() {
         this(Allocator.getPathServices().getDatabaseFile());
     }
     
-    public DatabaseImpl(final File dbFile) {
+    public DatabaseV5Impl(final File dbFile) {
         _connProvider = new ConnectionProvider() {
 
             public Connection createConnection() throws SQLException {
@@ -129,32 +130,6 @@ public class DatabaseImpl implements Database
     }
     
     @Override
-    public void addActionProperty(DbActionProperty property) throws SQLException
-    {
-        Connection conn = this.openConnection();
-        PreparedStatement ps;
-        Integer id = property.getId();
-        if (property.getId() == null) {
-            ps = conn.prepareStatement("INSERT INTO actionproperty (paid, key, value)"
-                    + " VALUES (?, ?, ?)");
-            ps.setInt(1, property.getPartAction().getId());
-            ps.setString(2, property.getKey());
-            ps.setString(3, property.getValue());
-            ps.executeUpdate();
-
-            id = ps.getGeneratedKeys().getInt(1);
-        }
-        else {
-            ps = conn.prepareStatement("UPDATE actionproperty SET key = ?, value = ?"
-                    + " WHERE apid == ?");
-            ps.setString(1, property.getKey());
-            ps.setString(2, property.getValue());
-            ps.setInt(3, property.getId());
-            ps.executeUpdate();
-        }
-        property.setId(id);
-    }
-    
     public <T> DbPropertyValue<T> getPropertyValue(DbPropertyKey<T> key) throws SQLException
     {
         Connection conn = this.openConnection();
@@ -175,7 +150,8 @@ public class DatabaseImpl implements Database
         return propValue;
     }
     
-    public <T> void setPropertyValue(DbPropertyKey<T> key, DbPropertyValue<T> value) throws SQLException
+    @Override
+    public <T> void putPropertyValue(DbPropertyKey<T> key, DbPropertyValue<T> value) throws SQLException
     {
         Connection conn = this.openConnection();
         PreparedStatement ps;
@@ -197,6 +173,96 @@ public class DatabaseImpl implements Database
             ps.setInt(2, value.getId());
             ps.executeUpdate();
         }
+    }
+
+    @Override
+    public Set<DbNotifyAddress> getNotifyAddresses() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putNotifyAddresses(Set<DbNotifyAddress> notifyAddresses) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeNotifyAddresses(Set<DbNotifyAddress> notifyAddresses) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<DbTA> getTAs() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putTAs(Set<DbTA> tas) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<DbStudent> getStudents() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putStudents(Set<DbStudent> students) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<DbAssignment> getAssignments() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putAssignments(Set<DbAssignment> assignments) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeAssignments(Set<DbAssignment> assignments) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putGradableEvents(Set<DbGradableEvent> gradableEvents) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeGradableEvents(Set<DbGradableEvent> gradableEvents) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putParts(Set<DbPart> parts) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeParts(Set<DbPart> parts) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putPartActions(Set<DbPartAction> partActions) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePartActions(Set<DbPartAction> partActions) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void putInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     @Override
@@ -226,7 +292,7 @@ public class DatabaseImpl implements Database
     }
     
     public static void main(String[] argv) throws SQLException {
-        DatabaseImpl db = new DatabaseImpl();
+        DatabaseV5Impl db = new DatabaseV5Impl();
         db.resetDatabase();
     }
 }
