@@ -12,7 +12,12 @@ import java.util.Set;
  * @author jeldridg
  */
 public class DbPartAction extends DbDataItem
-{    
+{   
+    /**
+     * These enum constant names are used in the database; changing them breaks version 5.0 compatibility.
+     */
+    public static enum Type { DEMO, OPEN, RUN, TEST, PRINT };
+    
     private volatile DbPart _part;
     private volatile String _name;
     private final Set<DbActionProperty> _properties;

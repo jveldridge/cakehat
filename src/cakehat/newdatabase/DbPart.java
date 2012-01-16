@@ -1,8 +1,11 @@
 package cakehat.newdatabase;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,11 +23,7 @@ public class DbPart extends DbDataItem
     private volatile Double _outOf;
     private volatile String _quickName;
     private volatile File _gradingGuide;
-    private volatile DbPartAction _demoAction;
-    private volatile DbPartAction _openAction;
-    private volatile DbPartAction _printAction;
-    private volatile DbPartAction _runAction;
-    private volatile DbPartAction _testAction;
+    private final Map<DbPartAction.Type, DbPartAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
     
     /**
@@ -42,7 +41,7 @@ public class DbPart extends DbDataItem
         _name = name;
         _order = order;
         
-        
+        _actions = new EnumMap<DbPartAction.Type, DbPartAction>(DbPartAction.Type.class);
         _inclusionFilters = new HashSet<DbInclusionFilter>();
     }
     
@@ -65,8 +64,7 @@ public class DbPart extends DbDataItem
      * @param inclusionFilters 
      */
     DbPart(DbGradableEvent gradableEvent, int id, String name, int order, File gmlTemplate, Double outOf,
-           String quickName, File gradingGuide, DbPartAction demoAction, DbPartAction openAction,
-           DbPartAction printAction, DbPartAction runAction, DbPartAction testAction,
+           String quickName, File gradingGuide, Map<DbPartAction.Type, DbPartAction> actions,
            Set<DbInclusionFilter> inclusionFilters)
     {
         super(id);
@@ -78,11 +76,7 @@ public class DbPart extends DbDataItem
         _outOf = outOf;
         _quickName = quickName;
         _gradingGuide = gradingGuide;
-        _demoAction = demoAction;
-        _openAction = openAction;
-        _printAction = printAction;
-        _runAction = runAction;
-        _testAction = testAction;
+        _actions = new EnumMap<DbPartAction.Type, DbPartAction>(actions);
         _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
     }
     
@@ -146,54 +140,36 @@ public class DbPart extends DbDataItem
         return _gradingGuide;
     }
     
-    public void setDemoAction(DbPartAction demoAction)
+    public void getAction(DbPartAction.Type type)
     {
-        _demoAction = demoAction;
+        synchronized (_actions)
+        {
+            _actions.get(type);
+        }
     }
     
-    public DbPartAction getDemoAction()
+    public void putAction(DbPartAction.Type type, DbPartAction action)
     {
-        return _demoAction;
+        synchronized (_actions)
+        {
+            _actions.put(type, action);
+        }
     }
     
-    public void setOpenAction(DbPartAction openAction)
+    public void removeAction(DbPartAction.Type type)
     {
-        _openAction = openAction;
+        synchronized (_actions)
+        {
+            _actions.remove(type);
+        }
     }
     
-    public DbPartAction getOpenAction()
+    Map<DbPartAction.Type, DbPartAction> getActions()
     {
-        return _openAction;
-    }
-    
-    public void setPrintAction(DbPartAction printAction)
-    {
-        _printAction = printAction;
-    }
-    
-    public DbPartAction getPrintAction()
-    {
-        return _printAction;
-    }
-    
-    public void setRunAction(DbPartAction runAction)
-    {
-        _runAction = runAction;
-    }
-    
-    public DbPartAction getRunAction()
-    {
-        return _runAction;
-    }
-    
-    public void setTestAction(DbPartAction testAction)
-    {
-        _testAction = testAction;
-    }
-    
-    public DbPartAction getTestAction()
-    {
-        return _testAction;
+        synchronized (_actions)
+        {
+            return ImmutableMap.copyOf(_actions);
+        }
     }
     
     public void addInclusionFilter(DbInclusionFilter filter)
