@@ -1,8 +1,8 @@
 package cakehat.newdatabase;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a part action--to demo, open, print, run, or test a part--as it is represented in the database and
@@ -13,20 +13,22 @@ import java.util.List;
  */
 public class DbPartAction extends DbDataItem
 {    
-    private DbPart _part;
-    private String _mode;
-    private final List<DbActionProperty> _properties;
+    private volatile DbPart _part;
+    private volatile String _name;
+    private final Set<DbActionProperty> _properties;
     
     /**
      * Constructor to be used by the configuration manager to create a new part action for a part.
      * 
      * @param part
      */
-    public DbPartAction(DbPart part)
+    public DbPartAction(DbPart part, String name)
     {
-        super(true, null);
+        super(null);
+        
         _part = part;
-        _properties = new ArrayList<DbActionProperty>();
+        _name = name;
+        _properties = new HashSet<DbActionProperty>();
     }
 
     /**
@@ -34,58 +36,50 @@ public class DbPartAction extends DbDataItem
      * 
      * @param part
      * @param id
-     * @param mode
+     * @param name
      * @param properties 
      */
-    DbPartAction(DbPart part, int id, String mode, List<DbActionProperty> properties)
+    DbPartAction(DbPart part, int id, String name, Set<DbActionProperty> properties)
     {
-        super(true, id);
+        super(id);
+        
         _part = part;
-        _mode = mode;
+        _name = name;
         _properties = properties;
     }
     
-    public void setMode(final String mode)
+    public void setName(String name)
     {
-        updateUnderLock(new Runnable()
+        _name = name;
+    }
+    
+    public String getName()
+    {
+        return _name;
+    }
+    
+    public void addActionProperty(DbActionProperty property)
+    {
+        synchronized(_properties)
         {
-            public void run()
-            {
-                _mode = mode;
-            }
-        });
+            _properties.add(property);
+        }
     }
     
-    public String getMode()
+    public void removeActionProperty(DbActionProperty property)
     {
-        return _mode;
-    }
-    
-    public void addActionProperty(final DbActionProperty property)
-    {
-        updateUnderLock(new Runnable()
+        synchronized(_properties)
         {
-            public void run()
-            {
-                _properties.add(property);
-            }
-        });
+            _properties.remove(property);
+        }
     }
     
-    public void removeActionProperty(final DbActionProperty property)
+    public ImmutableSet<DbActionProperty> getActionProperties()
     {
-        updateUnderLock(new Runnable()
+        synchronized(_properties)
         {
-            public void run()
-            {
-                _properties.remove(property);
-            }
-        });
-    }
-    
-    public List<DbActionProperty> getActionProperties()
-    {
-        return Collections.unmodifiableList(_properties);
+            return ImmutableSet.copyOf(_properties);
+        }
     }
     
     DbPart getPart()

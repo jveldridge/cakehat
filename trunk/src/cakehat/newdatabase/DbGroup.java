@@ -11,20 +11,20 @@ import java.util.Set;
 public class DbGroup extends DbDataItem
 {
     private final int _asgnId;
-    private String _name;
+    private volatile String _name;
     private final Set<Integer> _studentIds;
     
     public DbGroup(Assignment asgn)
     {
-        super(false, null);
+        super(null);
         
-        _asgnId = asgn.getID();
+        _asgnId = asgn.getId();
         _studentIds = new HashSet<Integer>();
     }
     
     DbGroup(int asgnId, int id, String name, Set<Integer> studentIds)
     {
-        super(true, id);
+        super(id);
         
         _asgnId = asgnId;
         _name = name;
@@ -36,15 +36,9 @@ public class DbGroup extends DbDataItem
         return _asgnId;
     }
     
-    public void setName(final String name)
+    public void setName(String name)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _name = name;
-            }
-        });
+        _name = name;
     }
     
     public String getName()
@@ -52,26 +46,20 @@ public class DbGroup extends DbDataItem
         return _name;
     }
     
-    public void addStudent(final Student student)
+    public void addStudent(Student student)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_studentIds)
         {
-            public void run()
-            {
-                _studentIds.add(student.getId());
-            }
-        });
+            _studentIds.add(student.getId());
+        }
     }
     
-    public void removeStudent(final Student student)
+    public void removeStudent(Student student)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_studentIds)
         {
-            public void run()
-            {
-                _studentIds.remove(student.getId());
-            }
-        });
+            _studentIds.remove(student.getId());
+        }
     }
     
     //TODO: Figure out if the get students method should return student objects or ids

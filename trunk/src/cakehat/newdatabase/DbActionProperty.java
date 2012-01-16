@@ -9,8 +9,8 @@ package cakehat.newdatabase;
 public class DbActionProperty extends DbDataItem
 {   
     private final DbPartAction _partAction;
-    private String _key;
-    private String _value;
+    private volatile String _key;
+    private volatile String _value;
     
     /**
      * Constructor to be used by the configuration manager to create a new part action property for a part action.
@@ -19,7 +19,7 @@ public class DbActionProperty extends DbDataItem
      */
     public DbActionProperty(DbPartAction partAction)
     {
-        super(false, null);
+        super(null);
         
         _partAction = partAction;
     }
@@ -34,21 +34,15 @@ public class DbActionProperty extends DbDataItem
      */
     DbActionProperty(DbPartAction partAction, int id, String key, String value)
     {
-        super(true, null);
+        super(id);
         _partAction = partAction;
         _key = key;
         _value = value;
     }
     
-    public void setKey(final String key)
+    public void setKey(String key)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _key = key;
-            }
-        });
+        _key = key;
     }
     
     public String getKey()
@@ -56,15 +50,9 @@ public class DbActionProperty extends DbDataItem
         return _key;
     }
     
-    public void setValue(final String value)
+    public void setValue(String value)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _value = value;
-            }
-        });
+        _value = value;
     }
     
     public String getValue()

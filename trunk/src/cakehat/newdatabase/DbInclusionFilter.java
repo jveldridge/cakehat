@@ -1,7 +1,5 @@
 package cakehat.newdatabase;
 
-import java.io.File;
-
 /**
  * Represents an inclusion filter for a part as it is represented in the database and configuration manager.
  * 
@@ -13,8 +11,8 @@ public class DbInclusionFilter extends DbDataItem
     public static enum FilterType {FILE, DIRECTORY};
 
     private final DbPart _part;
-    private FilterType _type;
-    private File _path;
+    private volatile FilterType _type;
+    private volatile String _path;
     
     /**
      * Constructor to be used by the configuration manager to create a inclusion filter for a part.
@@ -23,7 +21,8 @@ public class DbInclusionFilter extends DbDataItem
      */
     public DbInclusionFilter(DbPart part)
     {
-        super(false, null);
+        super(null);
+        
         _part = part;
     }
 
@@ -35,23 +34,18 @@ public class DbInclusionFilter extends DbDataItem
      * @param type
      * @param path 
      */
-    DbInclusionFilter(DbPart part, int id, FilterType type, File path)
+    DbInclusionFilter(DbPart part, int id, FilterType type, String path)
     {
-        super(true, id);
+        super(id);
+        
         _part = part;
         _type = type;
         _path = path;
     }
     
-    public void setType(final FilterType type)
+    public void setType(FilterType type)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _type = type;
-            }
-        });
+        _type = type;
     }
     
     public FilterType getType()
@@ -59,18 +53,12 @@ public class DbInclusionFilter extends DbDataItem
         return _type;
     }
     
-    public void setPath(final File path)
+    public void setPath(String path)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _path = path;
-            }
-        });
+        _path = path;
     }
     
-    public File getPath()
+    public String getPath()
     {
         return _path;
     }

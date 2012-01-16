@@ -1,8 +1,9 @@
 package cakehat.newdatabase;
 
+import cakehat.assignment.DeadlineInfo;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -17,16 +18,16 @@ import org.joda.time.Period;
 public class DbGradableEvent extends DbDataItem
 {
     private final DbAssignment _asgn;
-    private String _name;
-    private int _order;
-    private File _directory;
-    private String _deadlineType; //TODO: Expose type as enum
-    private DateTime _earlyDate;
-    private Double _earlyPoints;
-    private DateTime _onTimeDate;
-    private DateTime _lateDate;
-    private Double _latePoints;
-    private Period _latePeriod;
+    private volatile String _name;
+    private volatile int _order;
+    private volatile File _directory;
+    private volatile DeadlineInfo.Type _deadlineType;
+    private volatile DateTime _earlyDate;
+    private volatile Double _earlyPoints;
+    private volatile DateTime _onTimeDate;
+    private volatile DateTime _lateDate;
+    private volatile Double _latePoints;
+    private volatile Period _latePeriod;
     private final List<DbPart> _parts;
     
     /**
@@ -35,10 +36,12 @@ public class DbGradableEvent extends DbDataItem
      * @param asgn
      * @param order 
      */
-    public DbGradableEvent(DbAssignment asgn, int order)
+    public DbGradableEvent(DbAssignment asgn, String name, int order)
     {
-        super(false, null);
+        super(null);
+        
         _asgn = asgn;
+        _name = name;
         _order = order;
         _parts = new ArrayList<DbPart>();
     }
@@ -60,11 +63,12 @@ public class DbGradableEvent extends DbDataItem
      * @param latePeriod
      * @param parts 
      */
-    DbGradableEvent(DbAssignment asgn, int id, String name, int order, File directory, String deadlineType,
+    DbGradableEvent(DbAssignment asgn, int id, String name, int order, File directory, DeadlineInfo.Type deadlineType,
                     DateTime earlyDate, Double earlyPoints, DateTime onTimeDate, DateTime lateDate, Double latePoints,
                     Period latePeriod, List<DbPart> parts)
     {
-        super(true, id);
+        super(id);
+        
         _asgn = asgn;
         _name = name;
         _order = order;
@@ -76,18 +80,12 @@ public class DbGradableEvent extends DbDataItem
         _lateDate = lateDate;
         _latePoints = latePoints;
         _latePeriod = latePeriod;
-        _parts = parts;
+        _parts = new ArrayList<DbPart>(parts);
     }
     
-    public void setName(final String name)
+    public void setName(String name)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _name = name;
-            }
-        });
+        _name = name;
     }
     
     public String getName()
@@ -95,15 +93,9 @@ public class DbGradableEvent extends DbDataItem
         return _name;
     }
     
-    public void setOrder(final int order)
+    public void setOrder(int order)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _order = order;
-            }
-        });
+        _order = order;
     }
     
     public Integer getOrder()
@@ -111,119 +103,68 @@ public class DbGradableEvent extends DbDataItem
         return _order;
     }
 
-    public void setDirectory(final File directory)
+    public void setDirectory(File directory)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _directory = directory;
-            }
-        });
+        _directory = directory;
     }
     
-    public void setDeadlineType(final String deadlineType)
+    public void setDeadlineType(DeadlineInfo.Type deadlineType)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _deadlineType = deadlineType;
-            }
-        });
+        _deadlineType = deadlineType;
     }
 
-    public void setEarlyDate(final DateTime earlyDate)
+    public void setEarlyDate(DateTime earlyDate)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _earlyDate = earlyDate;
-            }
-        });
+        _earlyDate = earlyDate;
     }
 
-    public void setEarlyPoints(final Double earlyPoints)
+    public void setEarlyPoints(Double earlyPoints)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _earlyPoints = earlyPoints;
-            }
-        });
+        _earlyPoints = earlyPoints;
     }
 
-    public void setOnTimeDate(final DateTime onTimeDate)
+    public void setOnTimeDate(DateTime onTimeDate)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _onTimeDate = onTimeDate;
-            }
-        });
+        _onTimeDate = onTimeDate;
     }
     
-    public void setLateDate(final DateTime lateDate)
+    public void setLateDate(DateTime lateDate)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _lateDate = lateDate;
-            }
-        });
+        _lateDate = lateDate;
     }
 
-    public void setLatePoints(final Double latePoints)
+    public void setLatePoints(Double latePoints)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _latePoints = latePoints;
-            }
-        });
+        _latePoints = latePoints;
     }
 
-    public void setLatePeriod(final Period latePeriod)
+    public void setLatePeriod(Period latePeriod)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _latePeriod = latePeriod;
-            }
-        });
+        _latePeriod = latePeriod;
     }
     
-    public void addPart(final DbPart part)
+    public void addPart(DbPart part)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_parts)
         {
-            public void run()
-            {
-                _parts.add(part);
-            }
-        });
+            _parts.add(part);
+        }
     }
     
-    public void removePart(final DbPart part)
+    public void removePart(DbPart part)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_parts)
         {
-            public void run()
-            {
-                _parts.remove(part);
-            }
-        });
+            _parts.remove(part);
+        }
     }
     
-    public List<DbPart> getParts()
+    public ImmutableList<DbPart> getParts()
     {
-        return Collections.unmodifiableList(_parts);
+        synchronized(_parts)
+        {
+            return ImmutableList.copyOf(_parts);
+        }
     }
     
     public File getDirectory()
@@ -231,7 +172,7 @@ public class DbGradableEvent extends DbDataItem
         return _directory;
     }
 
-    public String getDeadlineType()
+    public DeadlineInfo.Type getDeadlineType()
     {
         return _deadlineType;
     }
