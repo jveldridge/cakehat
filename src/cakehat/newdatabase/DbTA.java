@@ -7,20 +7,15 @@ package cakehat.newdatabase;
  */
 public class DbTA extends DbDataItem
 {
-    private String _login;
-    private String _firstName;
-    private String _lastName;
-    private boolean _isDefaultGrader;
-    private boolean _isAdmin;
+    private volatile String _login;
+    private volatile String _firstName;
+    private volatile String _lastName;
+    private volatile boolean _isDefaultGrader;
+    private volatile boolean _isAdmin;
     
-    public DbTA()
+    public DbTA(int uid, String login, String firstName, String lastName, boolean isDefaultGrader, boolean isAdmin)
     {
-        super(false, null);
-    }
-    
-    DbTA(int id, String login, String firstName, String lastName, boolean isDefaultGrader, boolean isAdmin)
-    {
-        super(true, id);
+        super(uid);
         
         _login = login;
         _firstName = firstName;
@@ -29,59 +24,29 @@ public class DbTA extends DbDataItem
         _isAdmin = isAdmin;
     }
     
-    public void setLogin(final String login)
+    public void setLogin(String login)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _login = login;
-            }
-        });
+        _login = login;
     }
     
-    public void setFirstName(final String firstName)
+    public void setFirstName(String firstName)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _firstName = firstName;
-            }
-        });
+        _firstName = firstName;
     }
     
-    public void setLastName(final String lastName)
+    public void setLastName(String lastName)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _lastName = lastName;
-            }
-        });
+        _lastName = lastName;
     }
     
-    public void setDefaultGrader(final boolean isDefaultGrader)
+    public void setDefaultGrader(boolean isDefaultGrader)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _isDefaultGrader = isDefaultGrader;
-            }
-        });
+        _isDefaultGrader = isDefaultGrader;
     }
     
-    public void setIsAdmin(final boolean isAdmin)
+    public void setIsAdmin(boolean isAdmin)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _isAdmin = isAdmin;
-            }
-        });
+        _isAdmin = isAdmin;
     }
 
     public String getLogin()

@@ -1,9 +1,9 @@
 package cakehat.newdatabase;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a part of a gradable event as it is represented in the database and configuration manager.
@@ -14,18 +14,18 @@ import java.util.List;
 public class DbPart extends DbDataItem
 {
     private final DbGradableEvent _gradableEvent;
-    private String _name;
-    private int _order;
-    private File _gmlTemplate;
-    private Double _outOf;
-    private String _quickName;
-    private File _gradingGuide;
-    private DbPartAction _demoAction;
-    private DbPartAction _openAction;
-    private DbPartAction _printAction;
-    private DbPartAction _runAction;
-    private DbPartAction _testAction;
-    private final List<DbInclusionFilter> _inclusionFilters;
+    private volatile String _name;
+    private volatile int _order;
+    private volatile File _gmlTemplate;
+    private volatile Double _outOf;
+    private volatile String _quickName;
+    private volatile File _gradingGuide;
+    private volatile DbPartAction _demoAction;
+    private volatile DbPartAction _openAction;
+    private volatile DbPartAction _printAction;
+    private volatile DbPartAction _runAction;
+    private volatile DbPartAction _testAction;
+    private final Set<DbInclusionFilter> _inclusionFilters;
     
     /**
      * Constructor to be used by the configuration manager to create a new part for a gradable event.
@@ -33,12 +33,17 @@ public class DbPart extends DbDataItem
      * @param gradableEvent 
      * @param order 
      */
-    public DbPart(DbGradableEvent gradableEvent, int order)
+    public DbPart(DbGradableEvent gradableEvent, String name, int order)
     {
-        super(false, null);
+        super(null);
+        
         _gradableEvent = gradableEvent;
+        
+        _name = name;
         _order = order;
-        _inclusionFilters = new ArrayList<DbInclusionFilter>();
+        
+        
+        _inclusionFilters = new HashSet<DbInclusionFilter>();
     }
     
     /**
@@ -62,9 +67,10 @@ public class DbPart extends DbDataItem
     DbPart(DbGradableEvent gradableEvent, int id, String name, int order, File gmlTemplate, Double outOf,
            String quickName, File gradingGuide, DbPartAction demoAction, DbPartAction openAction,
            DbPartAction printAction, DbPartAction runAction, DbPartAction testAction,
-           List<DbInclusionFilter> inclusionFilters)
+           Set<DbInclusionFilter> inclusionFilters)
     {
-        super(true, id);
+        super(id);
+        
         _gradableEvent = gradableEvent;
         _name = name;
         _order = order;
@@ -77,18 +83,12 @@ public class DbPart extends DbDataItem
         _printAction = printAction;
         _runAction = runAction;
         _testAction = testAction;
-        _inclusionFilters = inclusionFilters;
+        _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
     }
     
-    public void setName(final String name)
+    public void setName(String name)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _name = name;
-            }
-        });
+        _name = name;
     }
     
     public String getName()
@@ -96,31 +96,19 @@ public class DbPart extends DbDataItem
         return _name;
     }
     
-    public void setOrder(final int order)
+    public void setOrder(int order)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _order = order;
-            }
-        });
+        _order = order;
     }
     
-    public Integer getOrder()
+    public int getOrder()
     {
         return _order;
     }
 
-    public void setGmlTemplate(final File gmlTemplate)
+    public void setGmlTemplate(File gmlTemplate)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _gmlTemplate = gmlTemplate;
-            }
-        });
+        _gmlTemplate = gmlTemplate;
     }
     
     public File getGmlTemplate()
@@ -128,15 +116,9 @@ public class DbPart extends DbDataItem
         return _gmlTemplate;
     }
 
-    public void setOutOf(final Double outOf)
+    public void setOutOf(Double outOf)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _outOf = outOf;
-            }
-        });
+        _outOf = outOf;
     }
     
     public Double getOutOf()
@@ -144,15 +126,9 @@ public class DbPart extends DbDataItem
         return _outOf;
     }
 
-    public void setQuickName(final String quickName)
+    public void setQuickName(String quickName)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _quickName = quickName;
-            }
-        });
+        _quickName = quickName;
     }
     
     public String getQuickName()
@@ -160,15 +136,9 @@ public class DbPart extends DbDataItem
         return _quickName;
     }
 
-    public void setGradingGuide(final File gradingGuide)
+    public void setGradingGuide(File gradingGuide)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _gradingGuide = gradingGuide;
-            }
-        });
+        _gradingGuide = gradingGuide;
     }
     
     public File getGradingGuide()
@@ -176,15 +146,9 @@ public class DbPart extends DbDataItem
         return _gradingGuide;
     }
     
-    public void setDemoAction(final DbPartAction demoAction)
+    public void setDemoAction(DbPartAction demoAction)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _demoAction = demoAction;
-            }
-        });
+        _demoAction = demoAction;
     }
     
     public DbPartAction getDemoAction()
@@ -192,15 +156,9 @@ public class DbPart extends DbDataItem
         return _demoAction;
     }
     
-    public void setOpenAction(final DbPartAction openAction)
+    public void setOpenAction(DbPartAction openAction)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _openAction = openAction;
-            }
-        });
+        _openAction = openAction;
     }
     
     public DbPartAction getOpenAction()
@@ -208,15 +166,9 @@ public class DbPart extends DbDataItem
         return _openAction;
     }
     
-    public void setPrintAction(final DbPartAction printAction)
+    public void setPrintAction(DbPartAction printAction)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _printAction = printAction;
-            }
-        });
+        _printAction = printAction;
     }
     
     public DbPartAction getPrintAction()
@@ -224,15 +176,9 @@ public class DbPart extends DbDataItem
         return _printAction;
     }
     
-    public void setRunAction(final DbPartAction runAction)
+    public void setRunAction(DbPartAction runAction)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _runAction = runAction;
-            }
-        });
+        _runAction = runAction;
     }
     
     public DbPartAction getRunAction()
@@ -240,15 +186,9 @@ public class DbPart extends DbDataItem
         return _runAction;
     }
     
-    public void setTestAction(final DbPartAction testAction)
+    public void setTestAction(DbPartAction testAction)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _testAction = testAction;
-            }
-        });
+        _testAction = testAction;
     }
     
     public DbPartAction getTestAction()
@@ -256,31 +196,28 @@ public class DbPart extends DbDataItem
         return _testAction;
     }
     
-    public void addInclusionFilter(final DbInclusionFilter filter)
+    public void addInclusionFilter(DbInclusionFilter filter)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_inclusionFilters)
         {
-            public void run()
-            {
-                _inclusionFilters.add(filter);
-            }
-        });
+            _inclusionFilters.add(filter);
+        }
     }
     
-    public void removeInclusionFilter(final DbInclusionFilter filter)
+    public void removeInclusionFilter(DbInclusionFilter filter)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_inclusionFilters)
         {
-            public void run()
-            {
-                _inclusionFilters.remove(filter);
-            }
-        });
+            _inclusionFilters.remove(filter);
+        }
     }
     
-    public List<DbInclusionFilter> getInclusionFilters()
+    public ImmutableSet<DbInclusionFilter> getInclusionFilters()
     {
-        return Collections.unmodifiableList(_inclusionFilters);
+        synchronized(_inclusionFilters)
+        {
+            return ImmutableSet.copyOf(_inclusionFilters);
+        }
     }
     
     DbGradableEvent getGradableEvent()

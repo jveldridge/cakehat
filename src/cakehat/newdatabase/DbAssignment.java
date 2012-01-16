@@ -1,7 +1,7 @@
 package cakehat.newdatabase;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -12,21 +12,24 @@ import java.util.List;
  */
 public class DbAssignment extends DbDataItem
 {
-    private String _name;
-    private int _order;
-    private boolean _hasGroups = false;
+    private volatile String _name;
+    private volatile int _order;
+    private volatile boolean _hasGroups;
     
     private final List<DbGradableEvent> _gradableEvents;
     
     /**
      * Constructor to be used by the configuration manager to create a new assignment for the course.
      * 
+     * @param name
      * @param order 
      */
-    public DbAssignment(int order)
+    public DbAssignment(String name, int order)
     {
-        super(false, null);
+        super(null);
+        _name = name;
         _order = order;
+        _hasGroups = false;
         _gradableEvents = new ArrayList<DbGradableEvent>();
     }
     
@@ -41,22 +44,16 @@ public class DbAssignment extends DbDataItem
      */
     DbAssignment(int id, String name, int order, boolean hasGroups, List<DbGradableEvent> gradableEvents)
     {
-        super(true, id);
+        super(id);
         _name = name;
         _order = order;
         _hasGroups = hasGroups;
-        _gradableEvents = gradableEvents;
+        _gradableEvents = new ArrayList<DbGradableEvent>(gradableEvents);
     }
     
     public void setName(final String name)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _name = name;
-            }
-        });
+        _name = name;
     }
     
     public String getName()
@@ -64,15 +61,9 @@ public class DbAssignment extends DbDataItem
         return _name;
     }
     
-    public void setOrder(final int order)
+    public void setOrder(int order)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _order = order;
-            }
-        });
+        _order = order;
     }
     
     public Integer getOrder()
@@ -80,15 +71,9 @@ public class DbAssignment extends DbDataItem
         return _order;
     }
     
-    public void setHasGroups(final boolean hasGroups)
+    public void setHasGroups(boolean hasGroups)
     {
-        updateUnderLock(new Runnable()
-        {
-            public void run()
-            {
-                _hasGroups = hasGroups;
-            }
-        });
+        _hasGroups = hasGroups;
     }
     
     public boolean getHasGroups()
@@ -96,30 +81,27 @@ public class DbAssignment extends DbDataItem
         return _hasGroups;
     }
     
-    public void addGradableEvent(final DbGradableEvent gradableEvent)
+    public void addGradableEvent(DbGradableEvent gradableEvent)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_gradableEvents)
         {
-            public void run()
-            {
-                _gradableEvents.add(gradableEvent);
-            }
-        });
+            _gradableEvents.add(gradableEvent);
+        }
     }
     
-    public void removeGradableEvent(final DbGradableEvent gradableEvent)
+    public void removeGradableEvent(DbGradableEvent gradableEvent)
     {
-        updateUnderLock(new Runnable()
+        synchronized(_gradableEvents)
         {
-            public void run()
-            {
-                _gradableEvents.remove(gradableEvent);
-            }
-        });
+            _gradableEvents.remove(gradableEvent);
+        }
     }
     
-    public List<DbGradableEvent> getGradableEvents()
+    public ImmutableList<DbGradableEvent> getGradableEvents()
     {
-        return Collections.unmodifiableList(_gradableEvents);
+        synchronized(_gradableEvents)
+        {
+            return ImmutableList.copyOf(_gradableEvents);
+        }
     }
 }
