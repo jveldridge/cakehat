@@ -163,7 +163,7 @@ public class Part implements Comparable<Part>
      * A unique identifier for this part.
      * @return 
      */
-    public int getID()
+    public int getId()
     {
         return _id;
     }

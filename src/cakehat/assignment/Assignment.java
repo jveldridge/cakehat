@@ -62,7 +62,7 @@ public class Assignment implements Comparable<Assignment>, Iterable<GradableEven
      * 
      * @return
      */
-    public int getID()
+    public int getId()
     {
         return _id;
     }

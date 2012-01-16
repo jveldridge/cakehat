@@ -118,7 +118,7 @@ public class PartGrade
                 throw new IllegalStateException("database has no recorded grade earned, but database has recorded " +
                         "insync as true\n"+
                         "Group: " + group.getName() + " [" + group.getId() + "]\n" +
-                        "Part: " + part.getFullDisplayName() + " [" + part.getID() + "]");
+                        "Part: " + part.getFullDisplayName() + " [" + part.getId() + "]");
             }
             else
             {

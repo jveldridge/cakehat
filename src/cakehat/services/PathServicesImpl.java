@@ -150,9 +150,9 @@ public class PathServicesImpl implements PathServices
     {
         return new File(new File(new File(new File(
                 getUserWorkspaceDir(),
-                Integer.toString(part.getGradableEvent().getAssignment().getID())),
-                Integer.toString(part.getGradableEvent().getID())),
-                Integer.toString(part.getID())),
+                Integer.toString(part.getGradableEvent().getAssignment().getId())),
+                Integer.toString(part.getGradableEvent().getId())),
+                Integer.toString(part.getId())),
                 group.getName());
     }
 
