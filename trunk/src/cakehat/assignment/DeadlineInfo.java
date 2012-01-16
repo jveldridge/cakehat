@@ -11,7 +11,7 @@ import org.joda.time.Period;
  */
 public class DeadlineInfo
 {
-    private static enum Type
+    public static enum Type
     {
         NONE, FIXED, VARIABLE;
     }

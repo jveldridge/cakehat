@@ -113,7 +113,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      * 
      * @return
      */
-    public int getID()
+    public int getId()
     {
         return _id;
     }
