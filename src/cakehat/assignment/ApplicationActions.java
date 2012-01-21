@@ -1,19 +1,17 @@
 package cakehat.assignment;
 
-import com.google.common.collect.ImmutableList;
 import support.utils.AlphabeticFileComparator;
 import cakehat.Allocator;
-import cakehat.database.Group;
+import cakehat.newdatabase.Group;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import support.ui.ModalMessageDialog;
+import support.ui.ModalDialog;
 import support.utils.FileExtensionFilter;
 
 /**
@@ -28,12 +26,12 @@ class ApplicationActions implements ActionProvider
         return "applications";
     }
 
-    public List<PartActionDescription> getActionDescriptions()
+    public Set<? extends PartActionDescription> getActionDescriptions()
     {
-        return ImmutableList.of(new PDFViewer(), new TextEditor(), new Terminal());
+        return ImmutableSet.of(new PDFViewer(), new TextEditor(), new Terminal());
     }
 
-    private class PDFViewer implements PartActionDescription
+    private class PDFViewer extends PartActionDescription
     {
         private final String DEFAULT = "evince";
 
@@ -51,14 +49,9 @@ class ApplicationActions implements ActionProvider
             "used. Valid values for this property are: " + SUPPORTED,
             false);
 
-        public ActionProvider getProvider()
+        private PDFViewer()
         {
-            return ApplicationActions.this;
-        }
-
-        public String getName()
-        {
-            return "pdf-viewer";
+            super(ApplicationActions.this, "pdf-viewer");
         }
 
         public String getDescription()
@@ -68,19 +61,19 @@ class ApplicationActions implements ActionProvider
                     APPLICATION_PROPERTY.getName() + " property.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(APPLICATION_PROPERTY);
+            return ImmutableSet.of(APPLICATION_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.OPEN);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.OPEN, ActionMode.RUN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.OPEN, ActionType.RUN, ActionType.TEST);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -98,7 +91,7 @@ class ApplicationActions implements ActionProvider
 
                         if(!SUPPORTED.contains(application))
                         {
-                            ModalMessageDialog.show("Invalid PDF application",
+                            ModalDialog.showMessage("Invalid PDF application",
                                     "The PDF application specified in the configuration file is not supported: " +
                                     application + ".\n\n" +
                                     "Supported applications: " + SUPPORTED);
@@ -122,7 +115,7 @@ class ApplicationActions implements ActionProvider
 
                     if(pdfFiles.isEmpty())
                     {
-                        ModalMessageDialog.show("No PDF files", "There are no PDF files to open.");
+                        ModalDialog.showMessage("No PDF files", "There are no PDF files to open.");
                         return;
                     }
 
@@ -166,7 +159,7 @@ class ApplicationActions implements ActionProvider
         }
     }
 
-    private class TextEditor implements PartActionDescription
+    private class TextEditor extends PartActionDescription
     {
         private final String DEFAULT = "kate";
 
@@ -194,20 +187,15 @@ class ApplicationActions implements ActionProvider
 
         private final PartActionProperty EXTENSIONS_PROPERTY =
             new PartActionProperty("extensions",
-            "The extensions of the files in this distributable part that will be opened. To open files that do not " +
-            "have file extensions use an underscore. Regardless of extension, the files must be plain text files. " +
-            "List extensions in the following format (without quotation marks):\n" +
+            "The extensions of the files in this part that will be opened. To open files that do not have file " +
+            "extensions use an underscore. Regardless of extension, the files must be plain text files. List " +
+            "extensions in the following format (without quotation marks):\n" +
             "single extension - 'java' \n" +
             "multiple extensions - 'cpp, h'", true);
 
-        public ActionProvider getProvider()
+        private TextEditor()
         {
-            return ApplicationActions.this;
-        }
-
-        public String getName()
-        {
-            return "text-editor";
+            super(ApplicationActions.this, "text-editor");
         }
 
         public String getDescription()
@@ -216,19 +204,19 @@ class ApplicationActions implements ActionProvider
                    APPLICATION_PROPERTY.getName() + " property. By default, " + DEFAULT + "is used.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(APPLICATION_PROPERTY, ENV_PROPERTY, EXTENSIONS_PROPERTY);
+            return ImmutableSet.of(APPLICATION_PROPERTY, ENV_PROPERTY, EXTENSIONS_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.OPEN);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.OPEN, ActionMode.RUN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.OPEN, ActionType.RUN, ActionType.TEST);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -260,7 +248,7 @@ class ApplicationActions implements ActionProvider
 
                         if(!SUPPORTED.contains(application))
                         {
-                            ModalMessageDialog.show("Invalid PDF application",
+                            ModalDialog.showMessage("Invalid PDF application",
                                     "The text editor specified in the configuration file is not supported: " + 
                                     application + ".\n\n" +
                                     "Supported applications: " + SUPPORTED);
@@ -291,7 +279,7 @@ class ApplicationActions implements ActionProvider
 
                     if(textFiles.isEmpty())
                     {
-                        ModalMessageDialog.show("No text files",
+                        ModalDialog.showMessage("No text files",
                                 "There are no text files to open.\n\n" +
                                 "Extensions to open are: " + properties.get(EXTENSIONS_PROPERTY));
 
@@ -341,16 +329,11 @@ class ApplicationActions implements ActionProvider
         }
     }
 
-    private class Terminal implements PartActionDescription
+    private class Terminal extends PartActionDescription
     {
-        public ActionProvider getProvider()
+        private Terminal()
         {
-            return ApplicationActions.this;
-        }
-
-        public String getName()
-        {
-            return "terminal";
+            super(ApplicationActions.this, "terminal");
         }
 
         public String getDescription()
@@ -358,19 +341,19 @@ class ApplicationActions implements ActionProvider
             return "Opens a terminal that is in the root directory of the unarchived handin";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return Collections.emptyList();
+            return ImmutableSet.of();
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST);
         }
 
         public PartAction getAction(Map<PartActionProperty, String> properties)

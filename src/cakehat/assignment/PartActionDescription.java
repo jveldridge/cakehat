@@ -1,72 +1,75 @@
 package cakehat.assignment;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Describes an action that will be used for running, testing, demoing, opening, and printing.
  *
  * @author jak2
  */
-interface PartActionDescription
+public abstract class PartActionDescription
 {
-    public static enum ActionMode
+    public static enum ActionType
     {
         RUN, OPEN, TEST, DEMO, PRINT;
     }
-
+    
+    private final String _fullName;
+    
+    PartActionDescription(ActionProvider provider, String actionName)
+    {
+        _fullName = provider.getNamespace() + ":" + actionName;
+    }
+    
     /**
-     * The provider this action description belongs to.
+     * The fully qualified name of this action.
      * 
-     * @return
+     * @return 
      */
-    public ActionProvider getProvider();
+    public String getFullName()
+    {
+        return _fullName;
+    }
 
     /**
-     * The name of the action.
+     * A human readable description of the action. This description will be displayed to users in the cakehat
+     * configuration manager.
      *
      * @return
      */
-    public String getName();
-
-    /**
-     * A human readable description of the action. This description will be displayed to users of cakehat when setting
-     * up the configuration file.
-     *
-     * @return
-     */
-    public String getDescription();
+    public abstract String getDescription();
 
     /**
      * Returns the properties this action either requires or optionally allows.
      * 
      * @return
      */
-    public List<PartActionProperty> getProperties();
+    public abstract Set<PartActionProperty> getProperties();
 
     /**
-     * Modes are RUN, OPEN, TEST, DEMO & PRINT.
+     * Types are RUN, OPEN, TEST, DEMO & PRINT.
      * <br/><br/>
-     * Generally speaking actions may be used interchangeably. For instance a mode that opens files in Kate would have a
-     * suggested mode of OPEN, but could be configured to be the RUN mode. The modes returned by this method are only
+     * Generally speaking actions may be used interchangeably. For instance a type that opens files in Kate would have a
+     * suggested type of OPEN, but could be configured to be the RUN type. The types returned by this method are only
      * suggested uses.
      * <br/><br/>
-     * There are some fundamental limitations, so not all actions can be used for all modes. Consult
-     * {@link #getCompatibleModes()} for this.
+     * There are some fundamental limitations, so not all actions can be used for all types. Consult
+     * {@link #getCompatibleTypes()} for this.
      *
      * @return
      */
-    public List<ActionMode> getSuggestedModes();
+    public abstract Set<ActionType> getSuggestedTypes();
 
     /**
-     * Modes are RUN, OPEN, TEST, DEMO & PRINT.
+     * Types are RUN, OPEN, TEST, DEMO & PRINT.
      * <br/><br/>
      * Running, opening, and testing code works for one group at a time. Demos operate on no groups. Printing operates
-     * on any number of groups at once. Due to these differences not all {@link PartAction}s can be used for all modes.
+     * on any number of groups at once. Due to these differences not all {@link PartAction}s can be used for all types.
      *
      * @return
      */
-    public List<ActionMode> getCompatibleModes();
+    public abstract Set<ActionType> getCompatibleTypes();
 
     /**
      * Returns an implementation described by this action that has the property values provided.
@@ -74,5 +77,5 @@ interface PartActionDescription
      * @param properties
      * @return
      */
-    public PartAction getAction(Map<PartActionProperty, String> properties);
+    abstract PartAction getAction(Map<PartActionProperty, String> properties);
 }

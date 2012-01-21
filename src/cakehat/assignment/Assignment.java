@@ -26,7 +26,7 @@ public class Assignment implements Comparable<Assignment>, Iterable<GradableEven
     private final int _order;
     private final boolean _hasGroups;
     
-    private final List<GradableEvent> _gradableEvents;
+    private final ImmutableList<GradableEvent> _gradableEvents;
     
     /**
      * Constructs an Assignment.
@@ -123,8 +123,9 @@ public class Assignment implements Comparable<Assignment>, Iterable<GradableEven
         return ((Integer)this._order).compareTo(a._order);
     }
 
+    @Override
     public Iterator<GradableEvent> iterator()
     {
-        return getGradableEvents().iterator();
+        return this.getGradableEvents().iterator();
     }
 }

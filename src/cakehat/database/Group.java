@@ -13,6 +13,7 @@ import java.util.List;
  * @author jak2
  * @author jeldridg
  */
+@Deprecated
 public class Group implements Comparable<Group>
 {
     private final int _dbId;

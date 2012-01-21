@@ -1,8 +1,7 @@
 package cakehat.services;
 
-import cakehat.database.Group;
-import cakehat.config.handin.DistributablePart;
-import cakehat.config.handin.Handin;
+import cakehat.assignment.Part;
+import cakehat.newdatabase.Group;
 import java.io.File;
 
 /**
@@ -24,22 +23,7 @@ public interface PathServices
      * @return
      */
     public File getCourseDir();
-
-    /**
-     * The directory containing all of the handins for a handin. This directory
-     * does not belong to cakehat.
-     *
-     * <pre>
-     * {@code
-     * /course/<course>/handin/<asssignment name>/<current year>/
-     * }
-     * </pre>
-     *
-     * @param handin
-     * @return
-     */
-    public File getHandinDir(Handin handin);
-
+    
     /**
      * The directory where cakehat exists.
      *
@@ -53,48 +37,6 @@ public interface PathServices
      */
     public File getCakehatDir();
     
-    /**
-     * Configuration file.
-     *
-     * <pre>
-     * {@code
-     * /course/<course code>/.cakehat/<current year>/config/config.xml
-     * }
-     * </pre>
-     *
-     * @return
-     */
-    public File getConfigurationFile();
-
-    /**
-     * The directory containing the GML files for a given DistributablePart.
-     *
-     * <pre>
-     * {@code
-     * /course/<course>/.cakehat/<current year>/rubrics/<assignment name>/<distributablepart name>/
-     * }
-     * </pre>
-     *
-     * @param part
-     * @return
-     */
-    public File getGMLDir(DistributablePart part);
-
-    /**
-     * A group's GML file for a given DistributablePart.
-     *
-     * <pre>
-     * {@code
-     * /course/<course>/.cakehat/<current year>/rubrics/<assignment name>/<distributable part name>/<group name>.gml
-     * }
-     * </pre>
-     *
-     * @param part
-     * @param group
-     * @return
-     */
-    public File getGroupGMLFile(DistributablePart part, Group group);
-
     /**
      * The database file.
      *
@@ -122,17 +64,19 @@ public interface PathServices
     public File getDatabaseBackupDir();
     
     /**
-     * The Java KeyStore file that is used by cakehat to authenticate the Brown CS email server.
-     * 
+     * A group's GML file for a given Part.
+     *
      * <pre>
      * {@code
-     * /course/<course>/.cakehat/bin/brown_cs_email.jks
+     * /course/<course>/.cakehat/<current year>/gml/<assignment id>/<gradable event id>/<part id>/<group id>.gml
      * }
      * </pre>
      *
+     * @param part
+     * @param group
      * @return
      */
-    public File getJavaKeyStoreFile();
+    public File getGroupGMLFile(Part part, Group group);
 
     /**
      * The temporary directory that the user uses while running cakehat.
@@ -140,14 +84,14 @@ public interface PathServices
      * If cakehat is running from the grader view:
      * <pre>
      * {@code
-     * /course/<course>/.cakehat/workspaces/<ta login>/
+     * /course/<course>/.cakehat/workspaces/<ta id>/
      * }
      * </pre>
      * 
      * If cakehat is running from the admin view:
      * <pre>
      * {@code
-     * /course/<course>/.cakehat/workspaces/<ta login>-admin/
+     * /course/<course>/.cakehat/workspaces/<ta id>-admin/
      * }
      * </pre>
      * 
@@ -155,21 +99,128 @@ public interface PathServices
      * mode, which should only occur during a test:
      * <pre>
      * {@code
-     * /course/<course>/.cakehat/workspaces/<ta login>-test/
+     * /course/<course>/.cakehat/workspaces/<ta id>-test/
      * }
      * </pre>
      *
-     * Any other state (such as during lab checkoff) will result in a runtime
-     * exception being thrown. If cakehat is not using the grader, admin,
-     * or testing then the user workspace directory should not need be needed.
+     * Any other state (such as during lab checkoff) will result in a runtime exception being thrown. If cakehat is not
+     * using the grader, admin, or testing then the user workspace directory should not need be needed.
      * <br/><br/>
-     * All other path methods that reference {@code <ta login>} in their path
-     * build from this path and so follow the same pattern.
+     * All other path methods that reference {@code <ta id>} in their path build from this path and so follow the same
+     * pattern.
      *
      * @return
      */
     public File getUserWorkspaceDir();
+    
+    /**
+     * The path to the directory, inside the user's temporary workspace directory, which contains unarchived digital
+     * handins.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/workspaces/<ta id>/<assignment id>/<gradable event id>/<part id>/
+     * }
+     * </pre>
+     * 
+     * @param part
+     * @return 
+     */
+    public File getUserPartDir(Part part);
+    
+    /**
+     * The directory the handin is unarchived into for a given part. Even if two parts belong to the same part block,
+     * they will have different unarchive directories.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/workspaces/<ta id>/<assignment id>/<gradable event id>/<part id>/<group id>
+     * }
+     * </pre>
+     */
+    public File getUnarchiveHandinDir(Part part, Group group);
 
+    
+    // DEPRECATED METHODS
+    
+
+    /**
+     * The directory containing all of the handins for a handin. This directory
+     * does not belong to cakehat.
+     *
+     * <pre>
+     * {@code
+     * /course/<course>/handin/<asssignment name>/<current year>/
+     * }
+     * </pre>
+     *
+     * @param handin
+     * @return
+     */
+    @Deprecated
+    public File getHandinDir(cakehat.config.handin.Handin handin);
+    
+    /**
+     * A group's GRD file for a given Handin.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/workspaces/<ta login>/<assignment name>/<group name>.txt
+     * }
+     * </pre>
+     *
+     * @param handin
+     * @param group
+     * @return
+     */
+    @Deprecated
+    public File getGroupGRDFile(cakehat.config.handin.Handin handin, cakehat.database.Group group);
+    
+    /**
+     * Configuration file.
+     *
+     * <pre>
+     * {@code
+     * /course/<course code>/.cakehat/<current year>/config/config.xml
+     * }
+     * </pre>
+     *
+     * @return
+     */
+    @Deprecated
+    public File getConfigurationFile();
+
+    /**
+     * The directory containing the GML files for a given DistributablePart.
+     *
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/<current year>/rubrics/<assignment name>/<distributablepart name>/
+     * }
+     * </pre>
+     *
+     * @param part
+     * @return
+     */
+    @Deprecated
+    public File getGMLDir(cakehat.config.handin.DistributablePart part);
+
+    /**
+     * A group's GML file for a given DistributablePart.
+     *
+     * <pre>
+     * {@code
+     * /course/<course>/.cakehat/<current year>/rubrics/<assignment name>/<distributable part name>/<group name>.gml
+     * }
+     * </pre>
+     *
+     * @param part
+     * @param group
+     * @return
+     */
+    @Deprecated
+    public File getGroupGMLFile(cakehat.config.handin.DistributablePart part, cakehat.database.Group group);
+    
     /**
      * The path to the directory, inside the user's temporary workspace
      * directory, which contains unarchived handins and converted GRD files
@@ -184,7 +235,8 @@ public interface PathServices
      * @param part
      * @return
      */
-    public File getUserPartDir(DistributablePart part);
+    @Deprecated
+    public File getUserPartDir(cakehat.config.handin.DistributablePart part);
 
     /**
      * The directory the handin is unarchived into for a given distributable
@@ -202,32 +254,5 @@ public interface PathServices
      * @return
      */
     @Deprecated
-    public File getUnarchiveHandinDir(DistributablePart part, Group group);
-    
-    /**
-     * The directory the handin is unarchived into for a given part. Even if two parts belong to the same part block,
-     * they will have different unarchive directories.
-     * 
-     * <pre>
-     * {@code
-     * /course/<course>/.cakehat/workspaces/<ta login>/<assignment id>/<part block id>/<part id>/<group name>
-     * }
-     * </pre>
-     */
-    public File getUnarchiveHandinDir(cakehat.assignment.Part part, Group group);
-
-    /**
-     * A group's GRD file for a given Handin.
-     * 
-     * <pre>
-     * {@code
-     * /course/<course>/.cakehat/workspaces/<ta login>/<assignment name>/<group name>.txt
-     * }
-     * </pre>
-     *
-     * @param handin
-     * @param group
-     * @return
-     */
-    public File getGroupGRDFile(Handin handin, Group group);
+    public File getUnarchiveHandinDir(cakehat.config.handin.DistributablePart part, cakehat.database.Group group);
 }

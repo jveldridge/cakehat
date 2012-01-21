@@ -1,8 +1,8 @@
 package cakehat.assignment;
 
-import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;
-import cakehat.database.Group;
+import cakehat.newdatabase.Group;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -42,7 +43,8 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import support.ui.GenericJComboBox;
-import support.ui.ModalMessageDialog;
+import support.ui.ModalDialog;
+import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilities.TerminalStringValidity;
 import support.utils.FileCopyingException;
 import support.utils.FileExistsException;
@@ -59,17 +61,17 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  */
 class JavaActions implements ActionProvider
 {
-    public List<PartActionDescription> getActionDescriptions()
-    {
-        return ImmutableList.of(new RunMain(), new JarDemo(), new ClassDemo(), new CopyTest());
-    }
-
     public String getNamespace()
     {
         return "java";
     }
+    
+    public Set<? extends PartActionDescription> getActionDescriptions()
+    {
+        return ImmutableSet.of(new RunMain(), new JarDemo(), new ClassDemo(), new CopyTest());
+    }
 
-    private class CopyTest implements PartActionDescription
+    private class CopyTest extends PartActionDescription
     {
         private final PartActionProperty COPY_PATH_PROPERTY =
             new PartActionProperty("copy-path",
@@ -87,14 +89,9 @@ class JavaActions implements ActionProvider
             new PartActionProperty("librarypath",
             "The java.library.path property. This values replaces, not appends, the property.", false);
 
-        public ActionProvider getProvider()
+        private CopyTest()
         {
-            return JavaActions.this;
-        }
-
-        public String getName()
-        {
-            return "copy-compile-run";
+            super(JavaActions.this, "copy-compile-run");
         }
 
         public String getDescription()
@@ -105,19 +102,19 @@ class JavaActions implements ActionProvider
                    "with them.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(COPY_PATH_PROPERTY, MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
+            return ImmutableSet.of(COPY_PATH_PROPERTY, MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.TEST);
+            return ImmutableSet.of(ActionType.TEST);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN);
+            return ImmutableSet.of(ActionType.TEST, ActionType.OPEN, ActionType.RUN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -139,7 +136,7 @@ class JavaActions implements ActionProvider
                         //Validate
                         if(!source.exists())
                         {
-                            ModalMessageDialog.show("Does not exist",
+                            ModalDialog.showMessage("Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
                             return;
@@ -168,7 +165,7 @@ class JavaActions implements ActionProvider
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null)
                             {
-                                ModalMessageDialog.show("Cannot copy test file",
+                                ModalDialog.showMessage("Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in " +
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
@@ -204,7 +201,7 @@ class JavaActions implements ActionProvider
                         //If none was found, inform the grader
                         if(mainToRun == null)
                         {
-                            ModalMessageDialog.show("Main not present",
+                            ModalDialog.showMessage("Main not present",
                                     "The specified main class is not present.\n" +
                                     "Specified main: " + mainName);
                         }
@@ -227,7 +224,7 @@ class JavaActions implements ActionProvider
         }
     }
 
-    private abstract class Demo implements PartActionDescription
+    private abstract class Demo extends PartActionDescription
     {
         protected final PartActionProperty CLASS_PATH_PROPERTY =
             new PartActionProperty("classpath",
@@ -248,19 +245,19 @@ class JavaActions implements ActionProvider
              "By default the demo will be run without any arguments. Set this property to TRUE to allow for the " +
              "grader to provide run arguments to the Java program.", false);
 
-        public ActionProvider getProvider()
+        Demo(String actionName)
         {
-            return JavaActions.this;
+            super(JavaActions.this, actionName);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.DEMO);
+            return ImmutableSet.of(ActionType.DEMO);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.DEMO, ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.DEMO, ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         //cmdEnd must not be null
@@ -326,9 +323,9 @@ class JavaActions implements ActionProvider
             new PartActionProperty("location",
             "The absolute path to the jar file.", true);
 
-        public String getName()
+        private JarDemo()
         {
-            return "demo-jar";
+            super("demo-jar");
         }
 
         public String getDescription()
@@ -336,9 +333,9 @@ class JavaActions implements ActionProvider
             return "Runs a Java jar file.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(LOCATION_PROPERTY, SHOW_TERMINAL_PROPERTY,
+            return ImmutableSet.of(LOCATION_PROPERTY, SHOW_TERMINAL_PROPERTY,
                     TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY,
                     RUN_ARGS_PROPERTY);
         }
@@ -383,9 +380,9 @@ class JavaActions implements ActionProvider
             new PartActionProperty("main",
             "The full path to the main class including package: ex. cakehat.gui.Main", true);
 
-        public String getName()
+        private ClassDemo()
         {
-            return "demo-class";
+            super("demo-class");
         }
 
         public String getDescription()
@@ -393,9 +390,9 @@ class JavaActions implements ActionProvider
             return "Runs compiled Java class files.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(LOCATION_PROPERTY, MAIN_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY,
+            return ImmutableSet.of(LOCATION_PROPERTY, MAIN_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY,
                 CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY, RUN_ARGS_PROPERTY);
         }
 
@@ -436,7 +433,7 @@ class JavaActions implements ActionProvider
         }
     }
 
-    private class RunMain implements PartActionDescription
+    private class RunMain extends PartActionDescription
     {
         private final PartActionProperty CLASS_PATH_PROPERTY =
             new PartActionProperty("classpath",
@@ -449,14 +446,9 @@ class JavaActions implements ActionProvider
              "By default the main method will be run without any arguments.  Set this property to TRUE to allow for " +
              "the grader to provide run arguments to the Java program.", false);
 
-        public ActionProvider getProvider()
+        private RunMain()
         {
-            return JavaActions.this;
-        }
-
-        public String getName()
-        {
-            return "compile-and-run";
+            super(JavaActions.this, "compile-and-run");
         }
 
         public String getDescription()
@@ -464,19 +456,19 @@ class JavaActions implements ActionProvider
             return "Compiles and runs Java code using a visible terminal the grader can interact with.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY, RUN_ARGS_PROPERTY);
+            return ImmutableSet.of(CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY, RUN_ARGS_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.RUN);
+            return ImmutableSet.of(ActionType.RUN);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -671,7 +663,7 @@ class JavaActions implements ActionProvider
                     msg += "\n";
                 }
             }
-            ModalMessageDialog.show("Compilation Failed", msg);
+            ModalDialog.showMessage("Compilation Failed", msg);
         }
 
         try

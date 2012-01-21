@@ -5,7 +5,7 @@ package cakehat.assignment;
  *
  * @author jak2
  */
-class PartActionProperty
+public class PartActionProperty
 {
     private final String _name;
     private final String _description;
@@ -29,8 +29,8 @@ class PartActionProperty
     }
 
     /**
-     * A human readable description of the property. This description will be displayed to users of cakehat when setting
-     * up the configuration file.
+     * A human readable description of the property. This description will be displayed to users of cakehat when using
+     * the configuration manager.
      *
      * @return
      */

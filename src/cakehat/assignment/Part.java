@@ -3,7 +3,7 @@ package cakehat.assignment;
 import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;
 import support.utils.OrFileFilter;
-import cakehat.database.Group;
+import cakehat.newdatabase.Group;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.TextViewerView;
 import java.io.File;
@@ -17,7 +17,7 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
-import support.ui.ModalMessageDialog;
+import support.ui.ModalDialog;
 
 /**
  * A {@code Part} belongs to a {@link GradableEvent}. A {@code Part} is an arbitrary portion of a gradable event. For
@@ -529,7 +529,7 @@ public class Part implements Comparable<Part>
             //Otherwise, the type is not supported, inform the grader
             else
             {
-                ModalMessageDialog.show("Cannot open README", "Encountered README that cannot be opened by cakehat:\n" +
+                ModalDialog.showMessage("Cannot open README", "Encountered README that cannot be opened by cakehat:\n" +
                         readme.getAbsolutePath());
             }
         }
@@ -788,7 +788,7 @@ public class Part implements Comparable<Part>
                          "files and directories will now be included for this part so that you can find files that " +
                          "may be misnamed or placed in the wrong directory.\n\n" +
                          "The missing files and/or directories are:\n" + failureReasons;
-            ModalMessageDialog.show("Not Found", msg);
+            ModalDialog.showMessage("Not Found", msg);
         }
     }
     
@@ -798,6 +798,7 @@ public class Part implements Comparable<Part>
      * @param p
      * @return
      */
+    @Override
     public int compareTo(Part p)
     {
         return ((Integer)this._order).compareTo(p._order);

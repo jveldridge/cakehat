@@ -1,5 +1,6 @@
 package support.utils;
 
+import java.awt.Frame;
 import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -11,6 +12,8 @@ import javax.swing.JButton;
  */
 public interface GeneralUtilities
 {
+    public Frame getFocusedFrame();
+    
     /**
      * Takes a double and returns it as a String rounded to 2
      * decimal places.

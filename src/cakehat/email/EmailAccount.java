@@ -22,7 +22,10 @@ import javax.mail.internet.MimeMultipart;
 /**
  * Sends email from a Brown CS account using LDAP over secure SMTP. LDAP credentials should be kept course confidential
  * and should not be distributed in any form.
- *
+ * <br/><br/>
+ * This class is public so that it may be used for verification of email credentials when using the configuration
+ * manager. Otherwise, this class should be used indirectly via {@link EmailManager}.
+ * 
  * @author jak2
  */
 public class EmailAccount
@@ -66,13 +69,16 @@ public class EmailAccount
     /**
      * Constructs an {@code EmailAccount} that can send emails using the credentials passed to this constructor.
      * However, emails can be sent as if coming from anyone.
+     * <br/><br/>
+     * This constructor is public so that it may be used for verification of email credentials when using the
+     * configuration manager. Otherwise, this class should be used indirectly via {@link EmailManager}.
      * 
      * @param login a Brown CS login, may not be {@code null}
      * @param ldapPassword the LDAP password belong to the user specified by {@code login}, may not be {@code null}
      * 
      * @throws GeneralSecurityException if unable to construct the socket factory used for sending email
      */
-    EmailAccount(String login, String ldapPassword) throws GeneralSecurityException
+    public EmailAccount(String login, String ldapPassword) throws GeneralSecurityException
     {
         //Validation
         if(login == null)

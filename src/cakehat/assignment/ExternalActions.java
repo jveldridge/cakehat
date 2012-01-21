@@ -1,8 +1,9 @@
 package cakehat.assignment;
 
-import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;
-import cakehat.database.Group;
+import cakehat.newdatabase.Student;
+import cakehat.newdatabase.Group;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Actions that rely upon commands external to cakehat.
@@ -23,15 +25,9 @@ class ExternalActions implements ActionProvider
         return "external";
     }
 
-    public List<PartActionDescription> getActionDescriptions()
+    public Set<? extends PartActionDescription> getActionDescriptions()
     {
-        ImmutableList.Builder<PartActionDescription> builder = ImmutableList.builder();
-
-        builder.add(new DigitalHandinCommand());
-        builder.add(new DemoCommand());
-        builder.add(new PrintCommand());
-
-        return builder.build();
+        return ImmutableSet.of(new DigitalHandinCommand(), new DemoCommand(), new PrintCommand());
     }
 
     //Replacement sequences
@@ -64,9 +60,9 @@ class ExternalActions implements ActionProvider
             "\"unarchive_dir\":\"/course/cs000/.cakehat/workspaces/ta_login/asgn/gradable_event/part/the_group/\"}",
             true);
 
-        public String getName()
+        private PrintCommand()
         {
-            return "print-command";
+            super("print-command");
         }
 
         public String getDescription()
@@ -77,19 +73,19 @@ class ExternalActions implements ActionProvider
                    "executed in the grader's temporary grading directory.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
+            return ImmutableSet.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.PRINT);
+            return ImmutableSet.of(ActionType.PRINT);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.PRINT, ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.PRINT, ActionType.RUN, ActionType.OPEN, ActionType.TEST);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -135,9 +131,9 @@ class ExternalActions implements ActionProvider
             "Array: [\"jak2\",\"jeldridg\"]",
             true);
 
-        public String getName()
+        private DigitalHandinCommand()
         {
-            return "digital-handin-command";
+            super("digital-handin-command");
         }
 
         public String getDescription()
@@ -148,19 +144,19 @@ class ExternalActions implements ActionProvider
                    "contents of the digital handin that belong to this part.";
         }
         
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
+            return ImmutableSet.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.OPEN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -196,9 +192,9 @@ class ExternalActions implements ActionProvider
             "String value: \"An Assignment Name\" \n",
             true);
         
-        public String getName()
+        private DemoCommand()
         {
-            return "demo-command";
+            super("demo-command");
         }
 
         public String getDescription()
@@ -209,19 +205,19 @@ class ExternalActions implements ActionProvider
                    "directory.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
+            return ImmutableSet.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.DEMO);
+            return ImmutableSet.of(ActionType.DEMO);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.DEMO, ActionMode.OPEN, ActionMode.TEST);
+            return ImmutableSet.of(ActionType.RUN, ActionType.DEMO, ActionType.OPEN, ActionType.TEST);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -242,7 +238,7 @@ class ExternalActions implements ActionProvider
         }
     }
 
-    private abstract class Command implements PartActionDescription
+    private abstract class Command extends PartActionDescription
     {
         protected final PartActionProperty SHOW_TERMINAL_PROPERTY =
             new PartActionProperty("show-terminal",
@@ -257,9 +253,9 @@ class ExternalActions implements ActionProvider
             "[Part Name]'.",
             false);
 
-        public ActionProvider getProvider()
+        Command(String actionName)
         {
-            return ExternalActions.this;
+            super(ExternalActions.this, actionName);
         }
 
         protected void runCommand(String command, File directory, Part part,
@@ -308,7 +304,17 @@ class ExternalActions implements ActionProvider
     |*                                                Helper methods                                                  *|
     \******************************************************************************************************************/
 
-
+    private static List<String> getMemberLogins(Group group)
+    {
+        ArrayList<String> logins = new ArrayList<String>();
+        for(Student student : group)
+        {
+            logins.add(student.getLogin());
+        }
+        
+        return logins;
+    }
+    
     /**
      * Returns a string replacing the ^groups_info^ sequence in {@code command} with the names, members, and unarchive
      * directories for the groups provided.
@@ -347,7 +353,7 @@ class ExternalActions implements ActionProvider
     private static String buildJSONGroupMap(Part part, Group group)
     {
         String jsonInfo = "{" + quote("name") + ":" + quote(jsonEscape(group.getName())) + ",";
-        jsonInfo += quote("members") + ":" + buildJSONArray(group.getMemberLogins(), true) + ",";
+        jsonInfo += quote("members") + ":" + buildJSONArray(getMemberLogins(group), true) + ",";
 
         File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
         jsonInfo += quote("unarchive_dir") + ":" + quote(jsonEscape(unarchiveDir.getAbsolutePath())) + "}";
@@ -373,7 +379,7 @@ class ExternalActions implements ActionProvider
     {
         if(command.contains(STUDENT_LOGINS))
         {
-            command = replace(command, STUDENT_LOGINS, group.getMemberLogins());
+            command = replace(command, STUDENT_LOGINS, getMemberLogins(group));
         }
         if(command.contains(GROUP_NAME))
         {

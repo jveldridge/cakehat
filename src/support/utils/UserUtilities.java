@@ -19,11 +19,39 @@ public interface UserUtilities
     public List<String> getMembers(String group) throws NativeException;
 
     /**
+     * Returns the POSIX user id that corresponds with {@code login}. If the login does not exist then an exception will
+     * be thrown.
+     * 
+     * @param login
+     * @return user id
+     * @throws NativeException 
+     */
+    public int getUserId(String login) throws NativeException;
+    
+    /**
+     * Returns the POSIX user id of the user executing this code.
+     * 
+     * @return user id
+     */
+    public int getUserId();
+    
+    /**
      * Returns the user login.
      *
      * @return user login
      */
     public String getUserLogin();
+    
+    
+    /**
+     * Returns the login corresponding to the POSIX user id {@code uid}. If the {@code uid} does not exist then an
+     * exception will be thrown.
+     * 
+     * @param userId
+     * @return
+     * @throws NativeException 
+     */
+    public String getUserLogin(int userId) throws NativeException;
 
     /**
      * Returns a user's real name.

@@ -10,6 +10,7 @@ public class UserUtilitiesImpl implements UserUtilities
     private final NativeFunctions NATIVE_FUNCTIONS = new NativeFunctions();
     private final HashMap<String, List<String>> GROUP_MEMBERS = new HashMap<String, List<String>>();
     private final String USER_LOGIN = NATIVE_FUNCTIONS.getUserLogin();
+    private final int USER_ID = NATIVE_FUNCTIONS.getUserId();
 
     public List<String> getMembers(String group) throws NativeException
     {
@@ -23,7 +24,22 @@ public class UserUtilitiesImpl implements UserUtilities
 
         return members;
     }
-
+    
+    public int getUserId(String login) throws NativeException
+    {
+        return NATIVE_FUNCTIONS.getUserID(login);
+    }
+    
+    public int getUserId()
+    {
+        return USER_ID;
+    }
+    
+    public String getUserLogin(int userId) throws NativeException
+    {
+        return NATIVE_FUNCTIONS.getUserLogin(userId);
+    }
+    
     public String getUserLogin()
     {
         return USER_LOGIN;

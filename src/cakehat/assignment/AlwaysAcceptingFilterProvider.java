@@ -14,11 +14,13 @@ import support.utils.AlwaysAcceptingFileFilter;
  */
 class AlwaysAcceptingFilterProvider implements FilterProvider
 {
+    @Override
     public FileFilter getFileFilter(File unarchivedDir)
     {
         return new AlwaysAcceptingFileFilter();
     }
 
+    @Override
     public boolean areFilteredFilesPresent(Collection<ArchiveEntry> archiveContents, StringBuilder builder)
     {
         return true;

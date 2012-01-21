@@ -1,14 +1,14 @@
 package cakehat.assignment;
 
-import com.google.common.collect.ImmutableList;
 import support.utils.AlphabeticFileComparator;
 import cakehat.Allocator;
 import support.ui.GenericJComboBox;
 import support.ui.ShadowJTextField;
-import cakehat.database.Group;
+import cakehat.newdatabase.Group;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import com.google.common.collect.ImmutableSet;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,11 +16,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -33,7 +33,7 @@ import matlabcontrol.MatlabConnectionListener;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.RemoteMatlabProxy;
 import matlabcontrol.RemoteMatlabProxyFactory;
-import support.ui.ModalMessageDialog;
+import support.ui.ModalDialog;
 import support.utils.FileCopyingException;
 import support.utils.FileExistsException;
 import support.utils.FileExtensionFilter;
@@ -54,12 +54,12 @@ class MatlabActions implements ActionProvider
         return "matlab";
     }
 
-    public List<PartActionDescription> getActionDescriptions()
+    public Set<? extends PartActionDescription> getActionDescriptions()
     {
-        return ImmutableList.of(new CopyTest(), new DemoFile(), new OpenFiles(), new RunFile());
+        return ImmutableSet.of(new CopyTest(), new DemoFile(), new OpenFiles(), new RunFile());
     }
 
-    private class CopyTest implements PartActionDescription
+    private class CopyTest extends PartActionDescription
     {
         private final PartActionProperty COPY_PATH_PROPERTY =
             new PartActionProperty("copy-path",
@@ -74,14 +74,9 @@ class MatlabActions implements ActionProvider
             COPY_PATH_PROPERTY.getName() + " property.",
             false);
 
-        public ActionProvider getProvider()
+        private CopyTest()
         {
-            return MatlabActions.this;
-        }
-
-        public String getName()
-        {
-            return "copy-test";
+            super(MatlabActions.this, "copy-test");
         }
 
         public String getDescription()
@@ -91,19 +86,19 @@ class MatlabActions implements ActionProvider
                    "other actions may interact with the copied files.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(COPY_PATH_PROPERTY, TEST_FILE_PROPERTY);
+            return ImmutableSet.of(COPY_PATH_PROPERTY, TEST_FILE_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.TEST);
+            return ImmutableSet.of(ActionType.TEST);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.TEST, ActionMode.OPEN, ActionMode.RUN);
+            return ImmutableSet.of(ActionType.TEST, ActionType.OPEN, ActionType.RUN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -125,7 +120,7 @@ class MatlabActions implements ActionProvider
                         //Validate
                         if(!source.exists())
                         {
-                            ModalMessageDialog.show("Does not exist",
+                            ModalDialog.showMessage("Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
                             return;
@@ -135,7 +130,7 @@ class MatlabActions implements ActionProvider
                         {
                             if(!source.getName().endsWith(".m"))
                             {
-                                ModalMessageDialog.show("Test file not m-file",
+                                ModalDialog.showMessage("Test file not m-file",
                                         "Cannot perform test because the test file is not an m-file.\n\n" +
                                         "File: " + source.getAbsoluteFile());
                                 return;
@@ -147,7 +142,7 @@ class MatlabActions implements ActionProvider
 
                             if(relativePath == null)
                             {
-                                ModalMessageDialog.show("Property not set",
+                                ModalDialog.showMessage("Property not set",
                                         "Cannot perform test because the " + TEST_FILE_PROPERTY.getName() +
                                         " property was not set. It must be set when copying test files from a " +
                                         "directory.");
@@ -157,14 +152,14 @@ class MatlabActions implements ActionProvider
                             File testFile = new File(source, relativePath);
                             if(!testFile.exists())
                             {
-                                ModalMessageDialog.show("Test file does not exist",
+                                ModalDialog.showMessage("Test file does not exist",
                                         "Cannot perform test because the test file does not exist.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
                                 return;
                             }
                             if(!testFile.isFile() || !testFile.getName().endsWith(".m"))
                             {
-                                ModalMessageDialog.show("Test file not m-file",
+                                ModalDialog.showMessage("Test file not m-file",
                                         "Cannot perform test because the test file is not an m-file.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
                                 return;
@@ -194,7 +189,7 @@ class MatlabActions implements ActionProvider
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null)
                             {
-                                ModalMessageDialog.show("Cannot copy test file",
+                                ModalDialog.showMessage("Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in "+
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
@@ -258,7 +253,7 @@ class MatlabActions implements ActionProvider
         }
     }
 
-    private class DemoFile implements PartActionDescription
+    private class DemoFile extends PartActionDescription
     {
         private final PartActionProperty DIRECTORY_PATH_PROPERTY =
             new PartActionProperty("directory-path",
@@ -272,14 +267,9 @@ class MatlabActions implements ActionProvider
             "specified then the grader will be asked to select which file to run.",
             false);
 
-        public ActionProvider getProvider()
+        private DemoFile()
         {
-            return MatlabActions.this;
-        }
-
-        public String getName()
-        {
-            return "demo-file";
+            super(MatlabActions.this, "demo-file");
         }
 
         public String getDescription()
@@ -289,19 +279,19 @@ class MatlabActions implements ActionProvider
                    "is specified then only the file specified by that property.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(DIRECTORY_PATH_PROPERTY, FILE_PATH_PROPERTY);
+            return ImmutableSet.of(DIRECTORY_PATH_PROPERTY, FILE_PATH_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.DEMO);
+            return ImmutableSet.of(ActionType.DEMO);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.DEMO, ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.DEMO, ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -314,7 +304,7 @@ class MatlabActions implements ActionProvider
                     File demoDir = new File(properties.get(DIRECTORY_PATH_PROPERTY));
                     if(!demoDir.exists())
                     {
-                        ModalMessageDialog.show("Directory does not exist",
+                        ModalDialog.showMessage("Directory does not exist",
                                 "Directory specified by '" + DIRECTORY_PATH_PROPERTY.getName() + "' does not " +
                                 "exist.\n\n" +
                                 "Directory: " + demoDir.getAbsolutePath());
@@ -322,7 +312,7 @@ class MatlabActions implements ActionProvider
                     }
                     if(!demoDir.isDirectory())
                     {
-                        ModalMessageDialog.show("Not a directory",
+                        ModalDialog.showMessage("Not a directory",
                                 "Directory specified by '" + DIRECTORY_PATH_PROPERTY.getName() + "' is not a " +
                                 "directory.\n\n" +
                                 "Directory: " + demoDir.getAbsolutePath());
@@ -341,7 +331,7 @@ class MatlabActions implements ActionProvider
 
                         if(!absolutePath.exists())
                         {
-                            ModalMessageDialog.show("File does not exist",
+                            ModalDialog.showMessage("File does not exist",
                                     "File specified by '" + FILE_PATH_PROPERTY.getName() + "' does not exist.\n\n" +
                                     "File: " + absolutePath.getAbsolutePath());
                             return;
@@ -367,7 +357,7 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalMessageDialog.show("Unable to demo", "There are no m-files to demo.");
+                        ModalDialog.showMessage("Unable to demo", "There are no m-files to demo.");
                     }
                     else
                     {
@@ -380,7 +370,7 @@ class MatlabActions implements ActionProvider
         }
     }
 
-    private class RunFile implements PartActionDescription
+    private class RunFile extends PartActionDescription
     {
         private final PartActionProperty FILE_PATH_PROPERTY =
             new PartActionProperty("file-path",
@@ -388,14 +378,9 @@ class MatlabActions implements ActionProvider
             "file specified does not exist in the handin then the grader will be asked to select which  file to run.",
             false);
 
-        public ActionProvider getProvider()
+        private RunFile()
         {
-            return MatlabActions.this;
-        }
-
-        public String getName()
-        {
-            return "run-file";
+            super(MatlabActions.this, "run-file");
         }
 
         public String getDescription()
@@ -405,19 +390,19 @@ class MatlabActions implements ActionProvider
                    "grader will only be able to run the m-file specified by " + FILE_PATH_PROPERTY.getName() + ".";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(FILE_PATH_PROPERTY);
+            return ImmutableSet.of(FILE_PATH_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.RUN);
+            return ImmutableSet.of(ActionType.RUN);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -441,7 +426,7 @@ class MatlabActions implements ActionProvider
 
                         if(!absolutePath.exists())
                         {
-                            ModalMessageDialog.show("Specified File Unavailable",
+                            ModalDialog.showMessage("Specified File Unavailable",
                                     "Specified file to run does not exist.\n\n" +
                                     "Expected file: " + absolutePath.getAbsolutePath() + "\n\n" +
                                     "You will be asked to select from available m-files.");
@@ -477,7 +462,7 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalMessageDialog.show("Unable to run",
+                        ModalDialog.showMessage("Unable to run",
                                 "There are no m-files for this distributable part.");
                     }
                     else
@@ -491,7 +476,7 @@ class MatlabActions implements ActionProvider
         } 
     }
 
-    private class OpenFiles implements PartActionDescription
+    private class OpenFiles extends PartActionDescription
     {
         private final PartActionProperty EXTENSIONS_PROPERTY =
             new PartActionProperty("extensions",
@@ -502,14 +487,9 @@ class MatlabActions implements ActionProvider
             "single extension - 'm'\n" +
             "multiple extensions - 'm, csv'", false);
 
-        public ActionProvider getProvider()
+        private OpenFiles()
         {
-            return MatlabActions.this;
-        }
-
-        public String getName()
-        {
-            return "open";
+            super(MatlabActions.this, "open");
         }
 
         public String getDescription()
@@ -517,19 +497,19 @@ class MatlabActions implements ActionProvider
             return "Opens all files in the distributable part in MATLAB.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return Arrays.asList(new PartActionProperty[] { EXTENSIONS_PROPERTY });
+            return ImmutableSet.of(EXTENSIONS_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.OPEN });
+            return ImmutableSet.of(ActionType.OPEN);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return Arrays.asList(new ActionMode[] { ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN });
+            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)
@@ -718,7 +698,7 @@ class MatlabActions implements ActionProvider
                 }
                 catch(MatlabInvocationException e)
                 {
-                    ModalMessageDialog.show("Invalid MATLAB Command",
+                    ModalDialog.showMessage("Invalid MATLAB Command",
                             "Invalid MATLAB command, please see MATLAB for more information.");;
                 }
             }

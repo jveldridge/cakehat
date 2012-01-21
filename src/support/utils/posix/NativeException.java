@@ -9,7 +9,7 @@ import com.sun.jna.LastErrorException;
  */
 public class NativeException extends Exception
 {
-    NativeException(String msg)
+    public NativeException(String msg)
     {
         super(msg);
     }

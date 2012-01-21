@@ -93,7 +93,7 @@ public class DeadlineInfo
         }
         if(lateDate != null && latePeriod == null)
         {
-            throw new NullPointerException("laterPeriod may not be null when lateDate is specified");
+            throw new NullPointerException("latePeriod may not be null when lateDate is specified");
         }
         
         return new DeadlineInfo(Type.VARIABLE, null, null, ontimeDate, lateDate, latePoints, latePeriod);
