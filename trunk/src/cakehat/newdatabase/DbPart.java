@@ -1,5 +1,6 @@
 package cakehat.newdatabase;
 
+import cakehat.assignment.PartActionDescription;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
@@ -23,7 +24,7 @@ public class DbPart extends DbDataItem
     private volatile Double _outOf;
     private volatile String _quickName;
     private volatile File _gradingGuide;
-    private final Map<DbPartAction.Type, DbPartAction> _actions;
+    private final Map<PartActionDescription.ActionType, DbPartAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
     
     /**
@@ -41,7 +42,7 @@ public class DbPart extends DbDataItem
         _name = name;
         _order = order;
         
-        _actions = new EnumMap<DbPartAction.Type, DbPartAction>(DbPartAction.Type.class);
+        _actions = new EnumMap<PartActionDescription.ActionType, DbPartAction>(PartActionDescription.ActionType.class);
         _inclusionFilters = new HashSet<DbInclusionFilter>();
     }
     
@@ -64,7 +65,7 @@ public class DbPart extends DbDataItem
      * @param inclusionFilters 
      */
     DbPart(DbGradableEvent gradableEvent, int id, String name, int order, File gmlTemplate, Double outOf,
-           String quickName, File gradingGuide, Map<DbPartAction.Type, DbPartAction> actions,
+           String quickName, File gradingGuide, Map<PartActionDescription.ActionType, DbPartAction> actions,
            Set<DbInclusionFilter> inclusionFilters)
     {
         super(id);
@@ -76,7 +77,7 @@ public class DbPart extends DbDataItem
         _outOf = outOf;
         _quickName = quickName;
         _gradingGuide = gradingGuide;
-        _actions = new EnumMap<DbPartAction.Type, DbPartAction>(actions);
+        _actions = new EnumMap<PartActionDescription.ActionType, DbPartAction>(actions);
         _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
     }
     
@@ -140,15 +141,15 @@ public class DbPart extends DbDataItem
         return _gradingGuide;
     }
     
-    public void getAction(DbPartAction.Type type)
+    public DbPartAction getAction(PartActionDescription.ActionType type)
     {
         synchronized (_actions)
         {
-            _actions.get(type);
+            return _actions.get(type);
         }
     }
     
-    public void putAction(DbPartAction.Type type, DbPartAction action)
+    public void putAction(PartActionDescription.ActionType type, DbPartAction action)
     {
         synchronized (_actions)
         {
@@ -156,7 +157,7 @@ public class DbPart extends DbDataItem
         }
     }
     
-    public void removeAction(DbPartAction.Type type)
+    public void removeAction(PartActionDescription.ActionType type)
     {
         synchronized (_actions)
         {
@@ -164,7 +165,7 @@ public class DbPart extends DbDataItem
         }
     }
     
-    Map<DbPartAction.Type, DbPartAction> getActions()
+    Map<PartActionDescription.ActionType, DbPartAction> getActions()
     {
         synchronized (_actions)
         {

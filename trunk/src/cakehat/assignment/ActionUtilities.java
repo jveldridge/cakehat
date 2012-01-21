@@ -1,6 +1,7 @@
 package cakehat.assignment;
 
 import java.io.FileFilter;
+import java.util.Arrays;
 import java.util.HashSet;
 import support.utils.OrFileFilter;
 import support.utils.FileExtensionFilter;
@@ -15,7 +16,7 @@ class ActionUtilities
 {
     /**
      * Creates a FileFilter that parses a string containing a comma-separated list of file extensions. To represent a
-     * file that has no file extension, an underscore is to be used.
+     * file that has no file extension, an underscore {@code _} is to be used.
      * <br/><br/>
      * Examples:
      * <br/>
@@ -24,21 +25,17 @@ class ActionUtilities
      * {@code c, cpp, h, _}
      *
      * @param extensions
-     * @return
+     * @return file filter
      */
     public static FileFilter parseFileExtensions(String extensions)
     {
         //To allow for spaces not being used, remove spaces if they are present
         extensions = extensions.replace(" ", "");
 
-        //Determine if there is an underscore in the extensions
-        HashSet<String> extensionSet = new HashSet<String>();
-        String[] extensionArray = extensions.split(",");
-        for(String extension : extensionArray)
-        {
-            extensionSet.add(extension);
-        }
+        //Build a set of the extensions supplied
+        HashSet<String> extensionSet = new HashSet<String>(Arrays.asList(extensions.split(",")));
 
+        //If underscore is used, accept files without file extensions
         FileFilter filter;
         if(extensionSet.contains("_"))
         {

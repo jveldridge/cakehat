@@ -1,125 +1,154 @@
 package cakehat.assignment;
 
-import cakehat.assignment.PartActionDescription.ActionMode;
-import cakehat.config.ConfigurationException;
-import cakehat.views.shared.TextViewerView;
-import java.util.Arrays;
-import java.util.HashMap;
+import cakehat.assignment.PartActionDescription.ActionType;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Creates {@link PartAction}s while verifying the supplied properties contain all required properties.
+ * Provides {@link PartActionDescription}s that describe implementations of {@link PartAction}. Creates
+ * {@code PartAction}s in a package private manner.
  *
  * @author jak2
  */
-class ActionRepository
+public class ActionRepository
 {
-    private final Map<String, PartActionDescription> _descriptions;
-
-    public ActionRepository()
+    private static class ActionRepositoryException extends RuntimeException
     {
-        _descriptions = new HashMap<String, PartActionDescription>();
-
-        this.addActionDescriptions(new JavaActions());
-        this.addActionDescriptions(new MatlabActions());
-        this.addActionDescriptions(new PrintActions());
-        this.addActionDescriptions(new ApplicationActions());
-        this.addActionDescriptions(new ExternalActions());
-    }
-
-    /**
-     * Until the Configuration GUI is created, this method is a stopgap measure.
-     */
-    @Deprecated
-    private String getActionsInfo()
-    {
-        StringBuffer buffer = new StringBuffer();
-
-        for(String name : _descriptions.keySet())
+        ActionRepositoryException(String msg)
         {
-            PartActionDescription description = _descriptions.get(name);
-
-            buffer.append("\n");
-
-            buffer.append(name + "\n");
-            buffer.append(description.getDescription() + "\n");
-            buffer.append("\n");
-            buffer.append("Suggested Modes: ");
-            for(PartActionDescription.ActionMode mode : description.getSuggestedModes())
-            {
-                buffer.append(mode + " ");
-            }
-            if(!description.getProperties().isEmpty())
-            {
-                buffer.append("\n\n");
-                buffer.append("Properties:\n");
-                for(PartActionProperty property : description.getProperties())
-                {
-                    buffer.append(property.getName() + " (");
-                    if(property.isRequired())
-                    {
-                        buffer.append("REQUIRED)\n");
-                    }
-                    else
-                    {
-                        buffer.append("OPTIONAL)\n");
-                    }
-                    buffer.append(property.getDescription() + "\n\n");
-                }
-            }
-            else
-            {
-                buffer.append("\n\n");
-            }
-
-            buffer.append("--------------------------------------------------------------\n");
+            super(msg);
         }
-
-        return buffer.toString();
     }
-
-    @Deprecated
-    public void displayActionsInfo()
+    
+    private static final ActionRepository INSTANCE = new ActionRepository();
+    
+    public static ActionRepository get()
     {
-        new TextViewerView(getActionsInfo(), "Available Actions");
+        return INSTANCE;
     }
+    
+    private final ImmutableMap<String, PartActionDescription> _descriptions;
 
-    private void addActionDescriptions(ActionProvider provider)
+    private ActionRepository()
     {
-        String namespace = provider.getNamespace();
+        ImmutableMap.Builder<String, PartActionDescription> descriptionsBuilder = ImmutableMap.builder();
+        
+        this.addActionDescriptions(descriptionsBuilder, new JavaActions());
+        this.addActionDescriptions(descriptionsBuilder, new MatlabActions());
+        this.addActionDescriptions(descriptionsBuilder, new PrintActions());
+        this.addActionDescriptions(descriptionsBuilder, new ApplicationActions());
+        this.addActionDescriptions(descriptionsBuilder, new ExternalActions());
+        
+        _descriptions = descriptionsBuilder.build();
+    }
+    
+    private void addActionDescriptions(ImmutableMap.Builder<String, PartActionDescription> descriptionsBuilder,
+            ActionProvider provider)
+    {
         for(PartActionDescription description : provider.getActionDescriptions())
         {
-            _descriptions.put(namespace + ":" + description.getName(), description);
+            descriptionsBuilder.put(description.getFullName(), description);
         }
+    }
+    
+    /**
+     * Returns an immutable collection of all {@link PartActionDescription} implementations.
+     * 
+     * @return 
+     */
+    public Collection<PartActionDescription> getAllActionDescriptions()
+    {
+        return _descriptions.values();
+    }
+    
+    /**
+     * Returns an immutable list of {@link PartActionDescription} implementations with a suggested type of {@code type}.
+     * The list is sorted alphabetically by {@link PartActionDescription#getFullName()}.
+     * 
+     * @param type
+     * @return 
+     */
+    public List<PartActionDescription> getSuggestedActionDescriptions(ActionType type)
+    {
+        ArrayList<PartActionDescription> suggested = new ArrayList<PartActionDescription>();
+        for(PartActionDescription description : _descriptions.values())
+        {
+            if(description.getSuggestedTypes().contains(type))
+            {
+                suggested.add(description);
+            }
+        }
+        Collections.sort(suggested, new Comparator<PartActionDescription>()
+        {
+            @Override
+            public int compare(PartActionDescription d1, PartActionDescription d2)
+            {
+                return d1.getFullName().compareTo(d2.getFullName());
+            }
+        });
+        
+        return ImmutableList.copyOf(suggested);
+    }
+    
+    /**
+     * Returns an immutable list of {@link PartActionDescription} implementations with a compatible type of
+     * {@code type}. The list is sorted alphabetically by {@link PartActionDescription#getFullName()}.
+     * 
+     * @param type
+     * @return 
+     */
+    public List<PartActionDescription> getCompatibleActionDescriptions(ActionType type)
+    {
+        ArrayList<PartActionDescription> compatible = new ArrayList<PartActionDescription>();
+        for(PartActionDescription description : _descriptions.values())
+        {
+            if(description.getCompatibleTypes().contains(type))
+            {
+                compatible.add(description);
+            }
+        }
+        Collections.sort(compatible, new Comparator<PartActionDescription>()
+        {
+            @Override
+            public int compare(PartActionDescription d1, PartActionDescription d2)
+            {
+                return d1.getFullName().compareTo(d2.getFullName());
+            }
+        });
+        
+        return ImmutableList.copyOf(compatible);
     }
 
     /**
      * Returns the action specified by {@code actionName}.
      *
-     * @param intendendMode the mode this action will be used for
-     * @param actionName the full name, including the namespace
-     * @param parsedProperties map of KEY to VALUE as specified in configuration
+     * @param intendendType the type this action will be used for
+     * @param actionName the full name
+     * @param parsedProperties map of key to value as specified in database
      *
      * @return action
      *
-     * @throws ConfigurationException thrown if there is no action by the name of actionName, the action is incompatible
-     * with this mode, or if the properties map is lacking required properties or includes non-existent properties for
-     * the action
+     * @throws ActionRespositoryException thrown if there is no action by the name of {@code actionName}, the action is
+     * incompatible with {@code intendedType}, or if the properties map is lacking required properties or includes
+     * nonexistent properties for the action
      */
-    public PartAction getAction(ActionMode intendendMode, String actionName, Map<String, String> parsedProperties)
-            throws ConfigurationException
+    PartAction getAction(ActionType intendendType, String actionName, Map<String, String> parsedProperties)
     {
         if(_descriptions.containsKey(actionName))
         {
             PartActionDescription description = _descriptions.get(actionName);
 
-            if(!description.getCompatibleModes().contains(intendendMode))
+            if(!description.getCompatibleTypes().contains(intendendType))
             {
-                throw new ConfigurationException(getFullName(description) +
-                        " is not compatible with mode: " + intendendMode + "\n" +
-                        "Compatible modes: \n" +
-                        Arrays.toString(description.getCompatibleModes().toArray()));
+                throw new ActionRepositoryException(description.getFullName() + " is not compatible with type: " +
+                        intendendType + "\n" + "Compatible types: " + description.getCompatibleTypes());
             }
 
             PartAction action = description.getAction(this.convertProperties(description, parsedProperties));
@@ -128,27 +157,27 @@ class ActionRepository
         }
         else
         {
-            throw new ConfigurationException("[" + actionName + "] is not a valid mode.");
+            throw new ActionRepositoryException("Unknown part action name [" + actionName + "]");
         }
     }
 
     /**
-     * Takes in the properties as map of strings from property name to property value. A map is returned from the object
-     * representation of the property (PartActionProperty) instead of the just name to the value.
-     *
+     * Takes in the properties as map of strings from property name to property value. An immutable map is returned from
+     * the object representation of the property ({@link PartActionProperty}) instead of the just name to the value.
+     * <br/><br/>
      * Checks that all required properties of the {@code description} are present and that no properties are specified
      * which do not belong to the {@code description}.
      *
      * @param description
      * @param parsedProperties
-     *
-     * @throws ConfigurationException
+     * 
+     * @throws ActionRepositoryException if one of the checks fails
      */
     private Map<PartActionProperty, String> convertProperties(PartActionDescription description,
-            Map<String, String> parsedProperties) throws ConfigurationException
+            Map<String, String> parsedProperties)
     {
-        List<PartActionProperty> descriptionProperties = description.getProperties();
-        Map<PartActionProperty, String> convertedProperties = new HashMap<PartActionProperty, String>();
+        Set<PartActionProperty> descriptionProperties = description.getProperties();
+        ImmutableMap.Builder<PartActionProperty, String> convertedProperties = ImmutableMap.builder();
 
         //Check that each required property exists
         //"Converts" all properties from String to DistributableProperty representation
@@ -163,13 +192,12 @@ class ActionRepository
             //If not represented and it is required
             else if(actualProperty.isRequired())
             {
-                throw new ConfigurationException("Required property [" + actualProperty.getName() + "] for [" +
-                        getFullName(description) + "]" + " was not provided in configuration.");
+                throw new ActionRepositoryException("Required property [" + actualProperty.getName() + "] for [" +
+                        description.getFullName() + "]" + " was not provided in configuration");
             }
         }
 
-        //Check that each property specified in the configuration is a property
-        //that belongs to the description
+        //Check that each property specified in the configuration is a property that belongs to the description
         for(String parsedPropertyName : parsedProperties.keySet())
         {
             boolean propertyExists = false;
@@ -178,27 +206,17 @@ class ActionRepository
                 if(actualProperty.getName().equals(parsedPropertyName))
                 {
                     propertyExists = true;
+                    break;
                 }
             }
 
             if(!propertyExists)
             {
-                throw new ConfigurationException("Non-existent property [" + parsedPropertyName +
-                        "] was specified for [" + getFullName(description) + "] in the configuration.");
+                throw new ActionRepositoryException("Nonexistent property [" + parsedPropertyName +
+                        "] was specified for [" + description.getFullName() + "] in the configuration");
             }
         }
 
-        return convertedProperties;
-    }
-
-    /**
-     * Gets the full name (namespace:action-name) of the description.
-     *
-     * @param description
-     * @return
-     */
-    private String getFullName(PartActionDescription description)
-    {
-        return description.getProvider().getNamespace() + ":" + description.getName();
+        return convertedProperties.build();
     }
 }

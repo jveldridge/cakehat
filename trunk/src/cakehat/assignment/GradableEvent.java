@@ -1,7 +1,8 @@
 package cakehat.assignment;
 
 import cakehat.Allocator;
-import cakehat.database.Group;
+import cakehat.newdatabase.Group;
+import cakehat.newdatabase.Student;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.FileFilter;
@@ -33,7 +34,6 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     private final int _order;
     
     private final File _handinDirectory;
-    private final DeadlineInfo _deadlineInfo;
     
     /**
      * This value will be set after construction because the assignment object will not be constructed until after the
@@ -42,7 +42,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      */
     private volatile Assignment _assignment;
     
-    private final List<Part> _parts;
+    private final ImmutableList<Part> _parts;
     
     /**
      * Populated with the files representing the digital handins. It will be {@code null} until it is first requested
@@ -61,10 +61,9 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      * for that Assignment
      * @param handinDirectory directory containing digital handins for the parts that belong to this GradableEvent, does
      * not have to be a valid directory, may be {@code null}
-     * @param deadlineInfo the deadline information, may be {@code null}
      * @param parts may not be {@code null}
      */
-    GradableEvent(int id, String name, int order, File handinDirectory, DeadlineInfo deadlineInfo, List<Part> parts)
+    GradableEvent(int id, String name, int order, File handinDirectory, List<Part> parts)
     {
         //Validation
         if(name == null)
@@ -79,10 +78,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
         _id = id;
         _name = name;
         _order = order;
-        
-        _deadlineInfo = (deadlineInfo == null ? DeadlineInfo.newNoDeadlineInfo() : deadlineInfo);
         _handinDirectory = handinDirectory;
-        
         _parts = ImmutableList.copyOf(parts);
     }
     
@@ -142,16 +138,6 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     public String getName()
     {
         return _name;
-    }
-    
-    /**
-     * The deadline information for this GradableEvent.
-     * 
-     * @return 
-     */
-    public DeadlineInfo getDeadlineInfo()
-    {
-        return _deadlineInfo;
     }
     
     /**
@@ -230,7 +216,11 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     public File getDigitalHandin(Group group) throws IOException
     {
         //Valid names are the login of any group member or the group name
-        HashSet<String> validHandinNames = new HashSet<String>(group.getMemberLogins());
+        HashSet<String> validHandinNames = new HashSet<String>();
+        for(Student student : group)
+        {
+            validHandinNames.add(student.getLogin());
+        }
         validHandinNames.add(group.getName());
 
         //Get all handins for the group
@@ -315,13 +305,15 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      * @param ge
      * @return
      */
+    @Override
     public int compareTo(GradableEvent ge)
     {
         return ((Integer)this._order).compareTo(ge._order);
     }
 
+    @Override
     public Iterator<Part> iterator()
     {
-        return getParts().iterator();
+        return this.getParts().iterator();
     }
 }

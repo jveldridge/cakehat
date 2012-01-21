@@ -9,6 +9,7 @@ import java.util.Comparator;
  * 
  * @author jeldridg
  */
+@Deprecated
 public class Student implements Comparable<Student> {
 
     private final int _dbId;

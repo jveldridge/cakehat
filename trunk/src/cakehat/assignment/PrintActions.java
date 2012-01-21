@@ -1,10 +1,10 @@
 package cakehat.assignment;
 
-import com.google.common.collect.ImmutableList;
 import cakehat.Allocator;
-import cakehat.database.Group;
+import cakehat.newdatabase.Group;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Actions that print plain text files.
@@ -28,33 +29,24 @@ class PrintActions implements ActionProvider
         return "printing";
     }
 
-    public List<PartActionDescription> getActionDescriptions()
+    public Set<? extends PartActionDescription> getActionDescriptions()
     {
-        ImmutableList.Builder<PartActionDescription> builder = ImmutableList.builder();
-
-        builder.add(new Landscape());
-
-        return builder.build();
+        return ImmutableSet.of(new Landscape());
     }
 
-    private class Landscape implements PartActionDescription
+    private class Landscape extends PartActionDescription
     {
         private final PartActionProperty EXTENSIONS_PROPERTY =
             new PartActionProperty("extensions",
-            "The extensions of the files in this distributable part that will be printed.  To open files that do not " +
-            "have file extensions use an underscore. Regardless of extension, the files must be plain text files. " +
-            "List extensions in the following format (without quotation marks): \n" +
+            "The extensions of the files in this part that will be printed.  To open files that do not have file " +
+            "extensions use an underscore. Regardless of extension, the files must be plain text files. List " +
+            "extensions in the following format (without quotation marks): \n" +
             "single extension - 'java' \n" +
             "multiple extensions - 'cpp, h'", true);
 
-        public ActionProvider getProvider()
+        private Landscape()
         {
-            return PrintActions.this;
-        }
-
-        public String getName()
-        {
-            return "landscape";
+            super(PrintActions.this, "landscape");
         }
 
         public String getDescription()
@@ -62,19 +54,19 @@ class PrintActions implements ActionProvider
             return "Prints plain text files in a space-saving landscape orientation with two columns.";
         }
 
-        public List<PartActionProperty> getProperties()
+        public Set<PartActionProperty> getProperties()
         {
-            return ImmutableList.of(EXTENSIONS_PROPERTY);
+            return ImmutableSet.of(EXTENSIONS_PROPERTY);
         }
 
-        public List<ActionMode> getSuggestedModes()
+        public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableList.of(ActionMode.PRINT);
+            return ImmutableSet.of(ActionType.PRINT);
         }
 
-        public List<ActionMode> getCompatibleModes()
+        public Set<ActionType> getCompatibleTypes()
         {
-            return ImmutableList.of(ActionMode.PRINT, ActionMode.RUN, ActionMode.TEST, ActionMode.OPEN);
+            return ImmutableSet.of(ActionType.PRINT, ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         public PartAction getAction(final Map<PartActionProperty, String> properties)

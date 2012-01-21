@@ -222,7 +222,28 @@ public class DnDList<E> extends GenericJList<E>
 
                         //Add
                         int dstIndex = this.getDropIndex(support);
+                        //For each source index that came before the destination index, the destination index will need
+                        //to be decremented by one because the destination index reflects the state of the list at the
+                        //time of the drop - but this insertion occurs after the removal, so this will shift the
+                        //insertion index appropriately
+                        int decrementBy = 0;
+                        for(int srcIndex : srcIndices)
+                        {
+                            if(dstIndex > srcIndex)
+                            {
+                                decrementBy++;
+                            }
+                        }
+                        dstIndex -= decrementBy;
                         DnDList.this._model.insertElementsAt(selectedValues, dstIndex);
+                        
+                        //Select the indices that were just moved as they were selected before the move
+                        int[] dstIndices = new int[srcIndices.length];
+                        for(int i = 0; i < srcIndices.length; i++)
+                        {
+                            dstIndices[i] = dstIndex + i;
+                        }
+                        DnDList.this.setSelectedIndices(dstIndices);
 
                         //Notify, build immutable map of indices inserted at to values
                         Map<Integer, E> reorderedMap = new HashMap<Integer, E>();
@@ -321,12 +342,6 @@ public class DnDList<E> extends GenericJList<E>
             {
                 dstIndex = DnDList.this.locationToIndex(support.getDropLocation().getDropPoint());
             }
-
-            //If the source and the destination are the same, then the index
-            //might end up exceeding the size of the list as elements have been
-            //removed from it (and this does not immediately effect the UI), so
-            //cap the index at the current size of the list
-            dstIndex = Math.min(dstIndex, DnDList.this._model.getSize());
 
             return dstIndex;
         }
@@ -450,6 +465,12 @@ public class DnDList<E> extends GenericJList<E>
     {
         _model = new GenericMutableListModel<E>(values);
 
+        return _model;
+    }
+    
+    @Override
+    public GenericMutableListModel<E> getModel()
+    {
         return _model;
     }
 

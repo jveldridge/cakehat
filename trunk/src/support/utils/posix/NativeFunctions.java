@@ -19,14 +19,13 @@ public class NativeFunctions
     }
 
     /**
-     * Changes the permissions on a file or directory. The user
-     * <strong>must</strong> be the owner of the file or directory.
+     * Changes the permissions on a file or directory. The user <strong>must</strong> be the owner of the file or
+     * directory.
      *
      * @param file the file or directory
      * @param mode the <b>octal</b> form permission, such as 0770 or 0666
      *
-     * @throws NativeException thrown if the file/directory does not exist or
-     * the permissions cannot be changed
+     * @throws NativeException thrown if the file/directory does not exist or the permissions cannot be changed
      */
     public void chmod(File file, int mode) throws NativeException
     {
@@ -34,16 +33,14 @@ public class NativeFunctions
     }
 
     /**
-     * Changes the group of the file or directory to be the group passed in. In
-     * order to change the group, the user invoking this method must be the
-     * owner of the file.
+     * Changes the group of the file or directory to be the group passed in. In order to change the group, the user
+     * invoking this method must be the owner of the file.
      *
      * @param file
      * @param group
      *
-     * @throws NativeException thrown if unable to change the file to the
-     * specified group. Can occur for reasons including: file does not exist,
-     * group does not exist, or group is not owned by user.
+     * @throws NativeException thrown if unable to change the file to the specified group. Can occur for reasons
+     * including: file does not exist, group does not exist, or group is not owned by user.
      */
     public void changeGroup(File file, String group) throws NativeException
     {
@@ -69,13 +66,11 @@ public class NativeFunctions
     }
 
     /**
-     * Returns the real name (e.g. Joshua Kaplan) that corresponds with <code>
-     * login</code>. If the login does not exist then an exception will be
-     * thrown.
+     * Returns the real name (e.g. Joshua Kaplan) that corresponds with {@code login}. If the login does not exist then
+     * an exception will be thrown.
      * <br/><br/>
-     * <code>null</code> will be returned if the login exists but there is no
-     * real name associated with it. This should not occur on Brown CS
-     * Department machines, but it may when running cakehat locally.
+     * {@code null} will be returned if the login exists but there is no real name associated with it. This should not
+     * occur on Brown CS Department machines, but it may when running cakehat locally.
      *
      * @param login
      * @return the real name of the user specified by login
@@ -85,6 +80,32 @@ public class NativeFunctions
     public String getRealName(String login) throws NativeException
     {
         return _wrapper.getpwnam(login).getRealName();
+    }
+    
+    /**
+     * Returns the user id, {@code uid}, that corresponds with {@code login}. If the login does not exist then an
+     * exception will be thrown.
+     * 
+     * @param login
+     * @return uid
+     * @throws NativeException 
+     */
+    public int getUserID(String login) throws NativeException
+    {
+        return _wrapper.getpwnam(login).getUserId();
+    }
+    
+    /**
+     * Returns the login corresponding to the user id {@code uid}. If the {@code uid} does not exist then an exception
+     * will be thrown.
+     * 
+     * @param uid
+     * @return login
+     * @throws NativeException 
+     */
+    public String getUserLogin(int uid) throws NativeException
+    {
+        return _wrapper.getpwuid(uid).getUserName();
     }
 
     /**
@@ -105,6 +126,16 @@ public class NativeFunctions
 
         return exists;
     }
+    
+    /**
+     * Returns the user id, {@code uid}, of the user executing this code.
+     * 
+     * @return uid
+     */
+    public int getUserId()
+    {
+        return _wrapper.getuid();
+    }
 
     /**
      * Returns the login of the user executing this code.
@@ -115,8 +146,8 @@ public class NativeFunctions
     {
         //getuid is guaranteed to never fail
         //getpwuid should never fail for a valid uid
-        //Therefore, if an exception occurs, something is seriously wrong with
-        //native system calls, and there is no hope of handling it
+        //Therefore, if an exception occurs, something is seriously wrong with native system calls, and there is no hope
+        //of handling it
         try
         {
 
@@ -124,9 +155,8 @@ public class NativeFunctions
         }
         catch (NativeException ex)
         {
-            throw new RuntimeException("Unable to retrieve user's login. " +
-                    "This should never happen, something is very wrong with " +
-                    "native functionality.", ex);
+            throw new RuntimeException("Unable to retrieve user's login.  This should never happen, something is " +
+                    "very wrong with native functionality.", ex);
         }
     }
 
@@ -139,9 +169,8 @@ public class NativeFunctions
      */
     public boolean isUserRemotelyConnected() throws NativeException
     {
-        //If the code is not running on Linux, just assume the user is running
-        //locally because determining this information is not supported on
-        //non-Linux platforms
+        //If the code is not running on Linux, just assume the user is running locally because determining this
+        //information is not supported on non-Linux platforms
         if(!Platform.isLinux())
         {
             return false;

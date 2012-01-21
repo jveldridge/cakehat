@@ -26,6 +26,7 @@ class DirectoryFilterProvider implements FilterProvider
         _relativePath = relativePath;
     }
 
+    @Override
     public FileFilter getFileFilter(File unarchivedDir)
     {
         final String absolutePath = new File(unarchivedDir, _relativePath).getAbsolutePath();
@@ -41,6 +42,7 @@ class DirectoryFilterProvider implements FilterProvider
         return filter;
     }
 
+    @Override
     public boolean areFilteredFilesPresent(Collection<ArchiveEntry> archiveContents, StringBuilder builder)
     {
         boolean matches = false;

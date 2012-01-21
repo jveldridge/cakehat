@@ -1,6 +1,7 @@
 package support.utils;
 
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -13,6 +14,21 @@ import javax.swing.SwingConstants;
 
 public class GeneralUtilitiesImpl implements GeneralUtilities
 {
+    public Frame getFocusedFrame()
+    {
+        Frame focusedFrame = null;
+        for(Frame frame : Frame.getFrames())
+        {
+            if(frame.isFocused())
+            {
+                focusedFrame = frame;
+                break;
+            }
+        }
+        
+        return focusedFrame;
+    }
+    
     public String doubleToString(double value)
     {
         double roundedVal = round(value, 2);

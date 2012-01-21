@@ -28,7 +28,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
      * <code>archivePath</code>.
      * <br><br>
      * Supported extensions: zip, tar, tgz, tar.gz. Unsupported extensions will
-     * result in an extension being throw.
+     * result in an exception being throw.
      *
      * @param archivePath
      * @return

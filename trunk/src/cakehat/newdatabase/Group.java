@@ -78,6 +78,11 @@ public class Group implements Comparable<Group>, Iterable<Student>
         notifyListeners();
     }
     
+    public boolean isGroupOfOne()
+    {
+        return _members.size() == 1;
+    }
+    
     /**
      * If this group has exactly 1 member, that student will be returned. Otherwise an {@link IllegalStateException}
      * will be thrown.

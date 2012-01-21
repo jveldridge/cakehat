@@ -3,7 +3,6 @@ package cakehat.assignment;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import support.utils.OrFileFilter;
@@ -18,16 +17,12 @@ class OrFilterProvider implements FilterProvider
 {
     private final Iterable<FilterProvider> _providers;
 
-    public OrFilterProvider(FilterProvider... providers)
-    {
-        this(Arrays.asList(providers));
-    }
-
     public OrFilterProvider(Iterable<FilterProvider> providers)
     {
         _providers = providers;
     }
 
+    @Override
     public FileFilter getFileFilter(File unarchivedDir)
     {
         // Get all of the filters
@@ -40,6 +35,7 @@ class OrFilterProvider implements FilterProvider
         return new OrFileFilter(filters);
     }
 
+    @Override
     public boolean areFilteredFilesPresent(Collection<ArchiveEntry> archiveContents, StringBuilder builder)
     {
         boolean present = true;

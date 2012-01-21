@@ -1,6 +1,6 @@
 package cakehat.assignment;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * A provider of {@link PartActionDescription}s.
@@ -11,7 +11,7 @@ interface ActionProvider
 {
     /**
      * This name should describe the types of actions provided, such as "java" or "matlab". It will become the prefix
-     * for the names of the descriptions provided.
+     * for the names of the action descriptions provided.
      * 
      * @return
      */
@@ -22,5 +22,5 @@ interface ActionProvider
      *
      * @return
      */
-    public List<PartActionDescription> getActionDescriptions();
+    public Set<? extends PartActionDescription> getActionDescriptions();
 }
