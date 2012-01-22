@@ -12,7 +12,7 @@ student
   * CONSTRAINT loginunique UNIQUE (login) ON CONFLICT ROLLBACK
 
 ta
-  * tid INTEGER PRIMARY KEY AUTOINCREMENT
+  * tid INTEGER PRIMARY KEY NOT NULL //will be POSIX ID
   * login VARCHAR NOT NULL
   * firstname VARCHAR NOT NULL
   * lastname VARCHAR NOT NULL
