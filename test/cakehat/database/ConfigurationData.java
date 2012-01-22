@@ -38,6 +38,28 @@ public class ConfigurationData
     }
     
     /**
+     * This method is solely for the purpose of testing things where the attributes of the 
+     * group do not matter for example, the gml parser.
+     * 
+     * @return 
+     */
+    public static cakehat.newdatabase.Group generateGroupWithNoAttributes() {
+        cakehat.newdatabase.Group group = createMock(cakehat.newdatabase.Group.class);
+        return group;
+    }
+    
+    /**
+     * This method is solely for the purpose of testing things where the attributes of a 
+     * part don't matter.
+     * 
+     * @return 
+     */
+    public static cakehat.assignment.Part generatePartWithNoAttributes() {
+        cakehat.assignment.Part part = createMock(cakehat.assignment.Part.class);
+        return part;
+    }
+    
+    /**
      * Adds a random student to the given database and generates and returns the
      * corresponding Student object.
      * 
