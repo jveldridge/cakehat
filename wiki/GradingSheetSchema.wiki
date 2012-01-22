@@ -14,7 +14,7 @@
 -->
 <GRADING-SHEET GML-VERSION="" TYPE="">
 
-	<!-- 1 to N "SECTION" nodes
+	<!-- 0 to N "SECTION" nodes
 		Organizational units of SUBSECTIONs
 		Required attributes:
 			>NAME: the name of the section, displayed to TAs and students
@@ -23,7 +23,7 @@
 	-->
 	<SECTION NAME="">
 
-		<!-- 1 to N "SUBSECTION" nodes
+		<!-- 0 to N "SUBSECTION" nodes
 			Line item for which a student can be awarded points
 			Required attributes:
 				>NAME: description to be displayed to graders and students
@@ -43,19 +43,19 @@
 				Optional attributes: none
 			-->
 			<DETAIL></DETAIL>
-			
-			<!-- 0 or 1 "COMMENTS" nodes
-				Stores free-text comments provided by TAs when grading.  This node is not valid
-				for templates. Grading UIs will automatically provide a comments area for each
-				SECTION, and, if any comments are included, will automatically add the COMMENTS
-				node
-				
-				Required attributes: none
-				Optional attributes: none
-			-->
-			<COMMENTS></COMMENTS>
 		
 		</SUBSECTION>
+
+		<!-- 0 or 1 "COMMENTS" nodes
+			Stores free-text comments provided by TAs when grading.  This node is not valid
+			for templates. Grading UIs will automatically provide a comments area for each
+			SECTION, and, if any comments are included, will automatically add the COMMENTS
+			node
+				
+			Required attributes: none
+			Optional attributes: none
+		-->
+		<COMMENTS></COMMENTS>
 		
 	</SECTION>
 
