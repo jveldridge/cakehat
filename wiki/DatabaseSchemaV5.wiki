@@ -31,15 +31,15 @@ blacklist
 assignment
   * aid INTEGER PRIMARY KEY AUTOINCREMENT
   * name VARCHAR NOT NULL
-  * order INTEGER NOT NULL
+  * ordering INTEGER NOT NULL
   * hasgroups INTEGER NOT NULL DEFAULT 0
-  * CONSTRAINT orderunique UNIQUE (order) ON CONFLICT ROLLBACK
+  * CONSTRAINT orderunique UNIQUE (ordering) ON CONFLICT ROLLBACK
 
 gradableevent
   * geid INTEGER PRIMARY KEY AUTOINCREMENT
   * aid INTEGER NOT NULL
   * name VARCHAR NOT NULL
-  * order INTEGER NOT NULL
+  * ordering INTEGER NOT NULL
   * directory VARCHAR
   * deadlinetype VARCHAR
   * earlydate VARCHAR
@@ -49,19 +49,19 @@ gradableevent
   * latepoints DOUBLE
   * lateperiod VARCHAR
   * FOREIGN KEY (aid) REFERENCES assignment(aid) ON DELETE CASCADE
-  * CONSTRAINT orderunique UNIQUE (order) ON CONFLICT ROLLBACK
+  * CONSTRAINT orderunique UNIQUE (ordering) ON CONFLICT ROLLBACK
 
 part
   * pid INTEGER PRIMARY KEY AUTOINCREMENT
   * geid INTEGER NOT NULL
   * name VARCHAR NOT NULL
-  * order INTEGER NOT NULL
+  * ordering INTEGER NOT NULL
   * gmltemplate VARCHAR
   * outof DOUBLE
   * quickname VARCHAR
   * gradingguide VARCHAR
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
-  * CONSTRAINT orderunique UNIQUE (order) ON CONFLICT ROLLBACK
+  * CONSTRAINT orderunique UNIQUE (ordering) ON CONFLICT ROLLBACK
   * CONSTRAINT quicknameunique UNIQUE (quickname) ON CONFLICT ROLLBACK
 
 inclusionfilter
