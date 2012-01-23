@@ -1,13 +1,7 @@
 package cakehat.assignment;
 
 import cakehat.assignment.PartActionDescription.ActionType;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,71 +53,13 @@ public class ActionRepository
     }
     
     /**
-     * Returns an immutable collection of all {@link PartActionDescription} implementations.
+     * Returns an immutable map of all {@link PartActionDescription} from their names to their implementations.
      * 
      * @return 
      */
-    public Collection<PartActionDescription> getAllActionDescriptions()
+    public Map<String, PartActionDescription> getActionDescriptions()
     {
-        return _descriptions.values();
-    }
-    
-    /**
-     * Returns an immutable list of {@link PartActionDescription} implementations with a suggested type of {@code type}.
-     * The list is sorted alphabetically by {@link PartActionDescription#getFullName()}.
-     * 
-     * @param type
-     * @return 
-     */
-    public List<PartActionDescription> getSuggestedActionDescriptions(ActionType type)
-    {
-        ArrayList<PartActionDescription> suggested = new ArrayList<PartActionDescription>();
-        for(PartActionDescription description : _descriptions.values())
-        {
-            if(description.getSuggestedTypes().contains(type))
-            {
-                suggested.add(description);
-            }
-        }
-        Collections.sort(suggested, new Comparator<PartActionDescription>()
-        {
-            @Override
-            public int compare(PartActionDescription d1, PartActionDescription d2)
-            {
-                return d1.getFullName().compareTo(d2.getFullName());
-            }
-        });
-        
-        return ImmutableList.copyOf(suggested);
-    }
-    
-    /**
-     * Returns an immutable list of {@link PartActionDescription} implementations with a compatible type of
-     * {@code type}. The list is sorted alphabetically by {@link PartActionDescription#getFullName()}.
-     * 
-     * @param type
-     * @return 
-     */
-    public List<PartActionDescription> getCompatibleActionDescriptions(ActionType type)
-    {
-        ArrayList<PartActionDescription> compatible = new ArrayList<PartActionDescription>();
-        for(PartActionDescription description : _descriptions.values())
-        {
-            if(description.getCompatibleTypes().contains(type))
-            {
-                compatible.add(description);
-            }
-        }
-        Collections.sort(compatible, new Comparator<PartActionDescription>()
-        {
-            @Override
-            public int compare(PartActionDescription d1, PartActionDescription d2)
-            {
-                return d1.getFullName().compareTo(d2.getFullName());
-            }
-        });
-        
-        return ImmutableList.copyOf(compatible);
+        return _descriptions;
     }
 
     /**

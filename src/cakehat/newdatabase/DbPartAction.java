@@ -22,12 +22,11 @@ public class DbPartAction extends DbDataItem
      * 
      * @param part
      */
-    public DbPartAction(DbPart part, String name)
+    public DbPartAction(DbPart part)
     {
         super(null);
         
         _part = part;
-        _name = name;
         _properties = new HashSet<DbActionProperty>();
     }
 
@@ -71,6 +70,14 @@ public class DbPartAction extends DbDataItem
         synchronized(_properties)
         {
             _properties.remove(property);
+        }
+    }
+    
+    public void removeAllActionProperties()
+    {
+        synchronized(_properties)
+        {
+            _properties.clear();
         }
     }
     

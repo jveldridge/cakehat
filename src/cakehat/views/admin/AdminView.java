@@ -62,7 +62,7 @@ import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.stathist.StatHistView;
 import cakehat.views.shared.ErrorView;
-import cakehat.views.shared.StudentConverter;
+import cakehat.views.shared.StudentDescriptionProvider;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -566,7 +566,7 @@ public class AdminView extends JFrame
         panel.add(Box.createRigidArea(LIST_GAP_SPACE_SIZE));
 
         //List
-        _studentList = new GenericJList<Student>(_students, StudentConverter.INSTANCE);
+        _studentList = new GenericJList<Student>(_students, StudentDescriptionProvider.INSTANCE);
         _studentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         _studentList.addListSelectionListener(new ListSelectionListener()
         {

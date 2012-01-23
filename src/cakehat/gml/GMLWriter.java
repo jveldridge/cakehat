@@ -25,6 +25,8 @@ import static cakehat.gml.GMLConstants.*;
  */
 public class GMLWriter {
     
+    private GMLWriter() { }
+    
     public static void write(InMemoryGML gml, File gmlFile) throws GradingSheetException {
         Document document = createXMLDocument();
         

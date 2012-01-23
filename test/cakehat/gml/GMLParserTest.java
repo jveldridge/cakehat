@@ -28,7 +28,7 @@ public class GMLParserTest {
         InMemoryGML validGML = GMLParser.parse(new File("test/cakehat/gml/ValidGMLFile.gml"), part, group);
         
         assertEquals(group, validGML.getGroup());
-        assertEquals(part, validGML.getDistributablePart());
+        assertEquals(part, validGML.getPart());
         
         assertEquals("ADDITIVE", validGML.getType());
         assertEquals("5.0", validGML.getVersion());

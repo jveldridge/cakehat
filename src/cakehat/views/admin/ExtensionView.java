@@ -33,7 +33,7 @@ import java.util.HashMap;
 import javax.swing.JOptionPane;
 import support.ui.GenericJComboBox;
 import support.ui.IntegerField;
-import support.ui.StringConverter;
+import support.ui.PartialDescriptionProvider;
 
 /**
  * Allows for viewing, submitting, and removing extensions.
@@ -279,10 +279,10 @@ class ExtensionView extends JFrame
 
         //Months are zero based for Calendar
         _monthBox = new GenericJComboBox<Integer>(generateRange(0, 11),
-        new StringConverter<Integer>()
+        new PartialDescriptionProvider<Integer>()
         {
             @Override
-            public String convertToString(Integer numMonth)
+            public String getDisplayText(Integer numMonth)
             {
                 return MONTHS[numMonth];
             }

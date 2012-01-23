@@ -24,7 +24,6 @@ import cakehat.config.LatePolicy;
 import cakehat.rubric.Rubric.*;
 import cakehat.Allocator;
 import support.ui.GenericJComboBox;
-import support.ui.StringConverter;
 import cakehat.config.Assignment;
 import cakehat.config.TA;
 import cakehat.config.handin.DistributablePart;
@@ -36,6 +35,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import support.ui.DescriptionProvider;
+import support.ui.PartialDescriptionProvider;
 
 /**
  * A graphical view of a rubric.
@@ -552,10 +553,10 @@ class RubricPanel extends JPanel
             graderLabel.setPreferredSize(new Dimension(graderLabel.getPreferredSize().width, graderComponentHeight));
             panel.add(graderLabel);
 
-            //create StringConverter that will show TAs' names and logins and show null as "UNASSIGNED"
-            StringConverter<TA> graderConverter = new StringConverter<TA>() {
+            //create DescriptionProvider that will show TAs' names and logins and show null as "UNASSIGNED"
+            DescriptionProvider<TA> graderConverter = new PartialDescriptionProvider<TA>() {
                 @Override
-                public String convertToString(TA ta) {
+                public String getDisplayText(TA ta) {
                     if (ta == null) {
                         return "UNASSIGNED";
                     }

@@ -63,7 +63,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import support.ui.AlphaJPanel;
 import support.ui.GenericJList;
-import support.ui.StringConverter;
+import support.ui.PartialDescriptionProvider;
 import support.utils.posix.NativeException;
 
 /**
@@ -248,7 +248,7 @@ public class GraderView extends JFrame implements RubricSaveListener
         {
             groups.add(status.getGroup());
         }
-        _groupList.setStringConverter(new GroupConverter(selected));
+        _groupList.setDescriptionProvider(new GroupDescriptionProvider(selected));
         _groupList.setListData(groups, true);
         if(_groupList.isSelectionEmpty())
         {
@@ -372,7 +372,7 @@ public class GraderView extends JFrame implements RubricSaveListener
         JLabel dpLabel = new JLabel("<html><b>Assignment Part</b></html>");
         dpLabel.setPreferredSize(dpLabelSize);
 
-        _dpList = new GenericJList<DistributablePart>(Collections.EMPTY_LIST, new DPConverter());
+        _dpList = new GenericJList<DistributablePart>(Collections.EMPTY_LIST, new DPDescriptionProvider());
         _dpList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _dpList.usePlainFont();
         _dpList.addListSelectionListener(new ListSelectionListener()
@@ -1479,7 +1479,7 @@ public class GraderView extends JFrame implements RubricSaveListener
                         {
                             groups.add(status.getGroup());
                         }
-                        _groupList.setStringConverter(new GroupConverter(currPart));
+                        _groupList.setDescriptionProvider(new GroupDescriptionProvider(currPart));
                         _groupList.setListData(groups, true);
 
                         if(_groupList.isSelectionEmpty())
@@ -1618,16 +1618,16 @@ public class GraderView extends JFrame implements RubricSaveListener
         }
     }
 
-    private class GroupConverter implements StringConverter<Group>
+    private class GroupDescriptionProvider extends PartialDescriptionProvider<Group>
     {
         private final DistributablePart _part;
 
-        public GroupConverter(DistributablePart part)
+        public GroupDescriptionProvider(DistributablePart part)
         {
             _part = part;
         }
 
-        public String convertToString(Group group)
+        public String getDisplayText(Group group)
         {
             boolean hasRubricScore = false;
             boolean submitted = false;
@@ -1673,9 +1673,9 @@ public class GraderView extends JFrame implements RubricSaveListener
         }
     }
 
-    private class DPConverter implements StringConverter<DistributablePart>
+    private class DPDescriptionProvider extends PartialDescriptionProvider<DistributablePart>
     {
-        public String convertToString(DistributablePart part)
+        public String getDisplayText(DistributablePart part)
         {
             //Because all parts shown have at least one group, this will never
             //be vacuously true

@@ -1,5 +1,6 @@
 package cakehat.assignment;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,7 +13,19 @@ public abstract class PartActionDescription
 {
     public static enum ActionType
     {
-        RUN, OPEN, TEST, DEMO, PRINT;
+        RUN(true), OPEN(true), TEST(true), PRINT(true), DEMO(false);
+        
+        private final boolean _requiresDigitalHandin;
+        
+        private ActionType(boolean requiresDigitalHandin)
+        {
+            _requiresDigitalHandin = requiresDigitalHandin;
+        }
+        
+        public boolean requiresDigitalHandin()
+        {
+            return _requiresDigitalHandin;
+        }
     }
     
     private final String _fullName;
@@ -46,6 +59,44 @@ public abstract class PartActionDescription
      * @return
      */
     public abstract Set<PartActionProperty> getProperties();
+    
+    /**
+     * Returns the required properties of this action.
+     * 
+     * @return 
+     */
+    public Set<PartActionProperty> getRequiredProperties()
+    {
+        ImmutableSet.Builder<PartActionProperty> required = ImmutableSet.builder();
+        for(PartActionProperty prop : getProperties())
+        {
+            if(prop.isRequired())
+            {
+                required.add(prop);
+            }
+        }
+       
+        return required.build();
+    }
+    
+    /**
+     * Returns the optional properties of this action. 
+     * 
+     * @return 
+     */
+    public Set<PartActionProperty> getOptionalProperties()
+    {
+       ImmutableSet.Builder<PartActionProperty> optional = ImmutableSet.builder();
+        for(PartActionProperty prop : getProperties())
+        {
+            if(!prop.isRequired())
+            {
+                optional.add(prop);
+            }
+        }
+       
+        return optional.build(); 
+    }
 
     /**
      * Types are RUN, OPEN, TEST, DEMO & PRINT.

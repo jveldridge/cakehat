@@ -62,7 +62,7 @@ public class GMLWriterTest {
         // read back gml and check that everything is correct
         InMemoryGML read = GMLParser.parse(new File("test/cakehat/gml/output.gml"), part, group);
         
-        assertEquals(part, read.getDistributablePart());
+        assertEquals(part, read.getPart());
         assertEquals(group, read.getGroup());
         
         assertEquals(VERSION, read.getVersion());

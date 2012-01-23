@@ -1,11 +1,10 @@
-
 package cakehat.gml;
 
 /**
  *
  * @author Hannah
  */
-public class GMLConstants {
+class GMLConstants {
     public final static String
 
     COMMENTS = "COMMENTS",

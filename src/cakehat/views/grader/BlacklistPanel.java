@@ -6,7 +6,7 @@ import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
-import cakehat.views.shared.StudentConverter;
+import cakehat.views.shared.StudentDescriptionProvider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,7 +29,6 @@ import support.ui.AlphaJPanel;
 import support.ui.AlphaJScrollPane;
 import support.ui.GenericJList;
 import support.ui.ShadowJTextField;
-import support.ui.StringConverter;
 
 /**
  * Panel which allows for blacklisting and unblacklisting of students for the
@@ -70,8 +69,8 @@ class BlacklistPanel extends AlphaJPanel
         _nonblacklistedStudents.removeAll(blacklist);
         Collections.sort(_nonblacklistedStudents);
 
-        _blacklistJList = new GenericJList<Student>(blacklist, StudentConverter.INSTANCE);
-        _nonblacklistJList = new GenericJList<Student>(_nonblacklistedStudents, StudentConverter.INSTANCE);
+        _blacklistJList = new GenericJList<Student>(blacklist, StudentDescriptionProvider.INSTANCE);
+        _nonblacklistJList = new GenericJList<Student>(_nonblacklistedStudents, StudentDescriptionProvider.INSTANCE);
 
         this.initUI();
     }
