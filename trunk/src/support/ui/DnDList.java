@@ -76,11 +76,11 @@ public class DnDList<E> extends GenericJList<E>
         this(Arrays.asList(values));
     }
 
-    public DnDList(Iterable<E> values, StringConverter<E> converter)
+    public DnDList(Iterable<E> values, DescriptionProvider<E> descriptionProvider)
     {
         this(values);
 
-        this.setStringConverter(converter);
+        this.setDescriptionProvider(descriptionProvider);
     }
 
     public DnDList(Iterable<E> values)

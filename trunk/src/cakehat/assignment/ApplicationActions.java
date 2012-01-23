@@ -166,8 +166,7 @@ class ApplicationActions implements ActionProvider
         //Text editors with a GUI
         private final Set<String> GUI = ImmutableSet.of("kate","gedit","bluefish","nedit","emacs","kwrite");
         
-        //Text editors that have a CLI and therefore need to be run in a 
-        //visible terminal
+        //Text editors that have a CLI and therefore need to be run in a visible terminal
         private final Set<String> CLI = ImmutableSet.of("vi","vim","nano","pico");
 
         private final Set<String> SUPPORTED = new ImmutableSet.Builder<String>().addAll(GUI).addAll(CLI).build();
@@ -201,7 +200,7 @@ class ApplicationActions implements ActionProvider
         public String getDescription()
         {
             return "Opens plain text files in a text editor. This text editor may be specified by the " +
-                   APPLICATION_PROPERTY.getName() + " property. By default, " + DEFAULT + "is used.";
+                   APPLICATION_PROPERTY.getName() + " property. By default, " + DEFAULT + " is used.";
         }
 
         public Set<PartActionProperty> getProperties()
@@ -338,7 +337,7 @@ class ApplicationActions implements ActionProvider
 
         public String getDescription()
         {
-            return "Opens a terminal that is in the root directory of the unarchived handin";
+            return "Opens a terminal that is in the root directory of the unarchived handin.";
         }
 
         public Set<PartActionProperty> getProperties()

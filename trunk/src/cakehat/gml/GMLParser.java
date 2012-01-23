@@ -19,8 +19,10 @@ import static cakehat.gml.GMLConstants.*;
  */
 public class GMLParser {
     
-     /**
-     * Converts GML to a Rubric.
+    private GMLParser() { }
+    
+    /**
+     * Parses a GML file into its in memory representation - an {@link InMemoryGML} object.
      *
      * @param gmlFile the GML file
      * @param part the Part associated with this GML file
@@ -96,7 +98,6 @@ public class GMLParser {
                 throw new GMLException(GRADING_SHEET + " node must only have " + TYPE + " and " + GML_VERSION + " attributes.");
             }
         }
-
     }
     
     /**

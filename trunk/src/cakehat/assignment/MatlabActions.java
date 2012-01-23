@@ -386,8 +386,8 @@ class MatlabActions implements ActionProvider
         public String getDescription()
         {
             return "Runs a single m-file with grader provided arguments. The grader will either be allowed to select " +
-                   "which m-file to run from a list of all m-files that are part of this distributable part or the " +
-                   "grader will only be able to run the m-file specified by " + FILE_PATH_PROPERTY.getName() + ".";
+                   "which m-file to run from a list of all m-files that are part of this part or the grader will " +
+                   "only be able to run the m-file specified by " + FILE_PATH_PROPERTY.getName() + ".";
         }
 
         public Set<PartActionProperty> getProperties()
@@ -411,7 +411,7 @@ class MatlabActions implements ActionProvider
             {
                 public void performAction(Part part, Group group) throws ActionException
                 {
-                    //Retrieve the m-files belonging to this distributable part
+                    //Retrieve the m-files belonging to this part
                     File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
                     FileFilter mFilter = new FileExtensionFilter("m");
                     List<File> mFiles;
@@ -462,8 +462,7 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalDialog.showMessage("Unable to run",
-                                "There are no m-files for this distributable part.");
+                        ModalDialog.showMessage("Unable to run", "There are no m-files for this part.");
                     }
                     else
                     {
@@ -480,9 +479,8 @@ class MatlabActions implements ActionProvider
     {
         private final PartActionProperty EXTENSIONS_PROPERTY =
             new PartActionProperty("extensions",
-            "The extensions of the files in this distributable part that will be opened. To open files that do not " +
-            "have file extensions use an underscore. If this property is not specified then only m-files will be " +
-            "opened.\n" +
+            "The extensions of the files in this part that will be opened. To open files that do not have file " +
+            "extensions use an underscore. If this property is not specified then only m-files will be opened.\n" +
             "List extensions in the following format (without quotation marks):\n" +
             "single extension - 'm'\n" +
             "multiple extensions - 'm, csv'", false);
@@ -494,7 +492,7 @@ class MatlabActions implements ActionProvider
 
         public String getDescription()
         {
-            return "Opens all files in the distributable part in MATLAB.";
+            return "Opens all files in the part in MATLAB.";
         }
 
         public Set<PartActionProperty> getProperties()

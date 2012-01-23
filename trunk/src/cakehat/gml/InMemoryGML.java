@@ -36,7 +36,7 @@ public class InMemoryGML {
         return _type;
     }
     
-    public Part getDistributablePart() {
+    public Part getPart() {
         return _part;
     }
 
@@ -139,9 +139,6 @@ public class InMemoryGML {
 
         public ArrayList<String> getDetails() {
             return _details;
-        }
-        
-    }
-
-    
+        }   
+    }   
 }

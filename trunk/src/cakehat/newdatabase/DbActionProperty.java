@@ -9,7 +9,7 @@ package cakehat.newdatabase;
 public class DbActionProperty extends DbDataItem
 {   
     private final DbPartAction _partAction;
-    private volatile String _key;
+    private final String _key;
     private volatile String _value;
     
     /**
@@ -17,11 +17,12 @@ public class DbActionProperty extends DbDataItem
      * 
      * @param partAction 
      */
-    public DbActionProperty(DbPartAction partAction)
+    public DbActionProperty(DbPartAction partAction, String key)
     {
         super(null);
         
         _partAction = partAction;
+        _key = key;
     }
 
     /**
@@ -38,11 +39,6 @@ public class DbActionProperty extends DbDataItem
         _partAction = partAction;
         _key = key;
         _value = value;
-    }
-    
-    public void setKey(String key)
-    {
-        _key = key;
     }
     
     public String getKey()

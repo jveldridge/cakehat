@@ -8,17 +8,13 @@ import org.w3c.dom.Node;
  * @author Hannah
  */
 public class GMLException extends GradingSheetException {
-    /**
-     * Constructs an instance of <code>GradingSheetException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public GMLException(String msg)
+
+    GMLException(String msg)
     {
         super(msg);
     }
     
-    
-    public GMLException(String msg, Throwable cause) {
+    GMLException(String msg, Throwable cause) {
         super(msg, cause);
     }
 
@@ -36,5 +32,4 @@ public class GMLException extends GradingSheetException {
               Arrays.toString(supportedTags) +
               (supportedTags.length == 1 ? " is" : " are") + " supported.");
     }
-
 }

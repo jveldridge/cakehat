@@ -41,7 +41,6 @@ import javax.swing.event.ListSelectionListener;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
 import support.ui.GenericJComboBox;
-import support.ui.StringConverter;
 import cakehat.database.Group;
 import cakehat.config.handin.DistributablePart;
 import cakehat.database.Student;
@@ -56,6 +55,7 @@ import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.event.DocumentListener;
+import support.ui.PartialDescriptionProvider;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
@@ -82,8 +82,8 @@ class ManualDistributorView extends JFrame {
     private GenericJList<TA> _toTAList;
     private GenericJList<Group> _toGroupList;
     
-    private final TAStringConverter _taStringConverter;
-    private final UnassignedStringConverter _unassignedStringConverter;
+    private final TADescriptionProvider _taDescriptionProvider;
+    private final UnassignedDescriptionProvider _unassignedDescriptionProvider;
 
     private JButton _assignButton;
     private JTextField _studentFilterBox;
@@ -95,8 +95,8 @@ class ManualDistributorView extends JFrame {
     public ManualDistributorView(Assignment asgn, DistributablePart dp) {
         super("Manual Distributor");
 
-        _taStringConverter = new TAStringConverter();
-        _unassignedStringConverter = new UnassignedStringConverter();
+        _taDescriptionProvider = new TADescriptionProvider();
+        _unassignedDescriptionProvider = new UnassignedDescriptionProvider();
 
         _tas = new LinkedList<TA>(Allocator.getConfigurationInfo().getTAs());
         Collections.sort(_tas);
@@ -260,7 +260,7 @@ class ManualDistributorView extends JFrame {
         JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
         leftPanel.setBorder(BorderFactory.createTitledBorder("From"));
 
-        _fromUnassigned = new GenericJList<String>(Arrays.asList("UNASSIGNED"), _unassignedStringConverter);
+        _fromUnassigned = new GenericJList<String>(Arrays.asList("UNASSIGNED"), _unassignedDescriptionProvider);
         _fromUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _fromUnassigned.addFocusListener(new FocusAdapter() {
             @Override
@@ -269,7 +269,7 @@ class ManualDistributorView extends JFrame {
             }
         });
 
-        _fromTAList = new GenericJList<TA>(_tas, _taStringConverter);
+        _fromTAList = new GenericJList<TA>(_tas, _taDescriptionProvider);
         _fromTAList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _fromTAList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -459,7 +459,7 @@ class ManualDistributorView extends JFrame {
         rightPanel.setLayout(new BorderLayout(5, 5));
         rightPanel.setBorder(BorderFactory.createTitledBorder("To"));
 
-        _toUnassigned = new GenericJList<String>(Arrays.asList("UNASSIGNED"), _unassignedStringConverter);
+        _toUnassigned = new GenericJList<String>(Arrays.asList("UNASSIGNED"), _unassignedDescriptionProvider);
         _toUnassigned.setPreferredSize(new Dimension(LIST_WIDTH, TEXT_HEIGHT));
         _toUnassigned.addFocusListener(new FocusAdapter() {
             @Override
@@ -468,7 +468,7 @@ class ManualDistributorView extends JFrame {
             }
         });
 
-        _toTAList = new GenericJList<TA>(_tas, _taStringConverter);
+        _toTAList = new GenericJList<TA>(_tas, _taDescriptionProvider);
         _toTAList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _toTAList.setSelectedIndex(0);
         _toTAList.addListSelectionListener(new ListSelectionListener() {
@@ -816,7 +816,7 @@ class ManualDistributorView extends JFrame {
     }
 
     private void refreshTALists() {
-        _taStringConverter.updateData();
+        _taDescriptionProvider.updateData();
         _fromTAList.refreshList();
         _toTAList.refreshList();
         
@@ -824,8 +824,9 @@ class ManualDistributorView extends JFrame {
         _toUnassigned.refreshList();
     }
 
-    private class UnassignedStringConverter implements StringConverter<String> {
-        public String convertToString(String item) {
+    private class UnassignedDescriptionProvider extends PartialDescriptionProvider<String> {
+        @Override
+        public String getDisplayText(String item) {
             String numStudents;
 
             if(_unassignedGroups == null) {
@@ -839,7 +840,7 @@ class ManualDistributorView extends JFrame {
         }
     }
 
-    private class TAStringConverter implements StringConverter<TA> {
+    private class TADescriptionProvider extends PartialDescriptionProvider<TA> {
         private Map<TA, Collection<Group>> _distribution;
 
         public void updateData() {
@@ -854,7 +855,7 @@ class ManualDistributorView extends JFrame {
         }
 
         @Override
-        public String convertToString(TA ta) {
+        public String getDisplayText(TA ta) {
             String numStudents;
 
             if(_distribution == null) {

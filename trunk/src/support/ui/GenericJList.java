@@ -13,29 +13,28 @@ import javax.swing.JList;
 import javax.swing.ListModel;
 
 /**
- * A parameterized {@link JList}. By using a {@link StringConverter} the
- * value that is displayed in the list may be something other than the value
- * returned by <code>toString()</code>.
+ * A parameterized {@link JList}. By using a {@link StringConverter} the value that is displayed in the list may be
+ * something other than the value returned by {@link Object#toString()}.
  *
  * @author jak2
  *
  * @param <E>
  */
-public class GenericJList<E> extends JList implements StringConverterCellRenderer.ItemInfoProvider<E>
+public class GenericJList<E> extends JList implements DescriptionProviderCellRenderer.ItemInfoProvider<E>
 {
     private GenericListModel<E> _model;
-    private StringConverterCellRenderer _renderer;
+    private DescriptionProviderCellRenderer _renderer;
 
     public GenericJList(E... values)
     {
         this(Arrays.asList(values));
     }
 
-    public GenericJList(Iterable<E> values, StringConverter<E> converter)
+    public GenericJList(Iterable<E> values, DescriptionProvider<E> converter)
     {
         this(values);
 
-        this.setStringConverter(converter);
+        this.setDescriptionProvider(converter);
     }
 
     public GenericJList(Iterable<E> values)
@@ -44,14 +43,14 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     }
 
     /**
-     * Sets the StringConverter used to render all values in the list. This
-     * will cause the list to be refreshed, re-rendering all of its cells.
+     * Sets the DescriptionProvider used to render all values in the list. This will cause the list to be refreshed,
+     * re-rendering all of its cells.
      *
      * @param converter
      */
-    public void setStringConverter(StringConverter<E> converter)
+    public void setDescriptionProvider(DescriptionProvider<E> descriptionProvider)
     {
-        _renderer = new StringConverterCellRenderer(new DefaultListCellRenderer(), this, converter);
+        _renderer = new DescriptionProviderCellRenderer(new DefaultListCellRenderer(), this, descriptionProvider);
         this.setCellRenderer(_renderer);
         _model.notifyRefresh();
     }
@@ -227,8 +226,8 @@ public class GenericJList<E> extends JList implements StringConverterCellRendere
     }
 
     /**
-     * Visually updates the list. If a {@link StringConverter} is used it will
-     * recalculate the <code>String</code>s displayed.
+     * Visually updates the list. If a {@link DescriptionProvider} is used it will recalculate the {@code String}s
+     * displayed.
      */
     public void refreshList()
     {

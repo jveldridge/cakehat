@@ -7,33 +7,30 @@ import javax.swing.JComboBox;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 /**
- * A parameterized {@link JComboBox}. Does <strong>not</strong> support adding,
- * inserting, or removing specific items.
+ * A parameterized {@link JComboBox}. Does <strong>not</strong> support adding, inserting, or removing specific items.
  * <br/><br/>
- * Unlike the standard <code>JComboBox</code>, this class supports having an
- * item that is <code>null</code>. However, when <code>null</code> is stored
- * in this combo box, it is not possible to have no item in the combo box
- * selected.
+ * Unlike the standard {@code JComboBox}, this class supports having an item that is {@code null}. However, when
+ * {@code null} is stored in this combo box, it is not possible to have no item in the combo box selected.
  * <br/><br/>
  * Unexpected behavior may arise if not all entries are unique.
  * 
  * @author jak2
  */
-public class GenericJComboBox<E> extends JComboBox implements StringConverterCellRenderer.ItemInfoProvider<E>
+public class GenericJComboBox<E> extends JComboBox implements DescriptionProviderCellRenderer.ItemInfoProvider<E>
 {
     private GenericComboBoxModel<E> _model;
-    private StringConverterCellRenderer _renderer;
+    private DescriptionProviderCellRenderer _renderer;
 
     public GenericJComboBox(E... values)
     {
         this(Arrays.asList(values));
     }
 
-    public GenericJComboBox(Iterable<E> values, final StringConverter<E> converter)
+    public GenericJComboBox(Iterable<E> values, final DescriptionProvider<E> descriptionProvider)
     {
         this(values);
 
-        this.setStringConverter(converter);
+        this.setDescriptionProvider(descriptionProvider);
     }
     
     public GenericJComboBox(Iterable<E> items)
@@ -41,9 +38,9 @@ public class GenericJComboBox<E> extends JComboBox implements StringConverterCel
         this.setItems(items);
     }
 
-    public void setStringConverter(StringConverter<E> converter)
+    public void setDescriptionProvider(DescriptionProvider<E> descriptionProvider)
     {
-        _renderer = new StringConverterCellRenderer(new BasicComboBoxRenderer(), this, converter);
+        _renderer = new DescriptionProviderCellRenderer(new BasicComboBoxRenderer(), this, descriptionProvider);
         this.setRenderer(_renderer);
         _model.notifyRefresh();
     }
