@@ -100,10 +100,10 @@ groupmember
 
 distribution
   * pid INTEGER NOT NULL
-  * gpid INTEGER NOT NULL; FOREIGN KEY(gpid) REFERENCES asgngroup(gpid) ON DELETE CASCADE
+  * agid INTEGER NOT NULL; FOREIGN KEY(agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * tid INTEGER NOT NULL; FOREIGN KEY(tid) REFERENCES ta(tid) ON DELETE CASCADE
-  * CONSTRAINT onegrader UNIQUE (gpid, pid) ON CONFLICT REPLACE
-  * CONSTRAINT rowsunique UNIQUE (gpid, pid, tid) ON CONFLICT IGNORE
+  * CONSTRAINT onegrader UNIQUE (agid, pid) ON CONFLICT REPLACE
+  * CONSTRAINT rowsunique UNIQUE (agid, pid, tid) ON CONFLICT IGNORE
 
 grade
   * pid INTEGER NOT NULL
