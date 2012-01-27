@@ -146,11 +146,47 @@ public class DeadlineInfo
         return new DeadlineInfo(Type.FIXED, earlyDate, earlyPoints, ontimeDate, lateDate, latePoints, null);
     }
     
+    public Type getType()
+    {
+        return _type;
+    }
+    
+    public DateTime getEarlyDate()
+    {
+        return _earlyDate;
+    }
+    
+    public DateTime getOnTimeDate()
+    {
+        return _ontimeDate;
+    }
+    
+    public DateTime getLateDate()
+    {
+        return _lateDate;
+    }
+    
+    public Double getEarlyPoints()
+    {
+        return _earlyPoints;
+    }
+    
+    public Double getLatePoints()
+    {
+        return _latePoints;
+    }
+    
+    public Period getLatePeriod()
+    {
+        return _latePeriod;
+    }
+    
     /**
      * Determines the effect of this deadline info to the {@code handinTime}. An extension may be provided, and this
      * extension may shift any early or late dates that belong to this deadline.
      * 
-     * @param handinTime
+     * @param handinTime may be {@code null}, if {@code null} then a {@link DeadlineResolution} with a time status of
+     * {@link TimeStatus#NC_LATE} will be returned
      * @param ontimeExtension may be {@code null}
      * @param shiftDates will be ignored if {@code ontimeExtension} is {@code null}
      * @return 
@@ -158,7 +194,11 @@ public class DeadlineInfo
     public DeadlineResolution apply(DateTime handinTime, DateTime ontimeExtension, Boolean shiftDates)
     {
         DeadlineResolution effect;
-        if(_type == Type.NONE)
+        if(handinTime == null)
+        {
+            effect = new DeadlineResolution(TimeStatus.NC_LATE, Double.NaN);
+        }
+        else if(_type == Type.NONE)
         {
             effect = new DeadlineResolution(TimeStatus.ON_TIME, 0);
         }
