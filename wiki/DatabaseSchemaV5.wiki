@@ -88,6 +88,7 @@ actionproperty
 asgngroup
   * agid INTEGER PRIMARY KEY AUTOINCREMENT
   * aid INTEGER NOT NULL
+  * name VARCHAR NOT NULL
   * FOREIGN KEY (aid) REFERENCES assignment(aid) ON DELETE CASCADE
   * CONSTRAINT aidnameunique UNIQUE (aid, name) ON CONFLICT ROLLBACK
 
