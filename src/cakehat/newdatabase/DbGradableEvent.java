@@ -1,10 +1,10 @@
 package cakehat.newdatabase;
 
 import cakehat.assignment.DeadlineInfo;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
@@ -17,7 +17,7 @@ import org.joda.time.Period;
  */
 public class DbGradableEvent extends DbDataItem
 {
-    private final DbAssignment _asgn;
+    private volatile Integer _asgnId;
     private volatile String _name;
     private volatile int _order;
     private volatile File _directory;
@@ -28,7 +28,14 @@ public class DbGradableEvent extends DbDataItem
     private volatile DateTime _lateDate;
     private volatile Double _latePoints;
     private volatile Period _latePeriod;
-    private final List<DbPart> _parts;
+    private final Set<DbPart> _parts;
+    
+    public static DbGradableEvent buildGradableEvent(DbAssignment asgn, String name, int order) {
+        DbGradableEvent event = new DbGradableEvent(asgn, name, order);
+        asgn.addGradableEvent(event);
+        
+        return event;
+    }
     
     /**
      * Constructor to be used by the configuration manager to create a new gradable event for an assignment.
@@ -36,14 +43,14 @@ public class DbGradableEvent extends DbDataItem
      * @param asgn
      * @param order 
      */
-    public DbGradableEvent(DbAssignment asgn, String name, int order)
+    private DbGradableEvent(DbAssignment asgn, String name, int order)
     {
         super(null);
         
-        _asgn = asgn;
+        _asgnId = asgn.getId();
         _name = name;
         _order = order;
-        _parts = new ArrayList<DbPart>();
+        _parts = new HashSet<DbPart>();
     }
     
     /**
@@ -63,24 +70,24 @@ public class DbGradableEvent extends DbDataItem
      * @param latePeriod
      * @param parts 
      */
-    DbGradableEvent(DbAssignment asgn, int id, String name, int order, File directory, DeadlineInfo.Type deadlineType,
-                    DateTime earlyDate, Double earlyPoints, DateTime onTimeDate, DateTime lateDate, Double latePoints,
-                    Period latePeriod, List<DbPart> parts)
+    DbGradableEvent(int asgnId, int id, String name, int order, String directory, String deadlineType,
+                    String earlyDate, Double earlyPoints, String onTimeDate, String lateDate, Double latePoints,
+                    String latePeriod, Set<DbPart> parts)
     {
         super(id);
         
-        _asgn = asgn;
+        _asgnId = asgnId;
         _name = name;
         _order = order;
-        _directory = directory;
-        _deadlineType = deadlineType;
-        _earlyDate = earlyDate;
+        _directory = directory == null ? null : new File(directory);
+        _deadlineType = deadlineType == null ? null : DeadlineInfo.Type.valueOf(deadlineType);
+        _earlyDate = earlyDate == null ? null : new DateTime(earlyDate);
         _earlyPoints = earlyPoints;
-        _onTimeDate = onTimeDate;
-        _lateDate = lateDate;
+        _onTimeDate = onTimeDate == null ? null : new DateTime(onTimeDate);
+        _lateDate = lateDate == null ? null : new DateTime(lateDate);
         _latePoints = latePoints;
-        _latePeriod = latePeriod;
-        _parts = new ArrayList<DbPart>(parts);
+        _latePeriod = latePeriod == null ? null : new Period(latePeriod);
+        _parts = new HashSet<DbPart>(parts);
     }
     
     public void setName(String name)
@@ -159,11 +166,11 @@ public class DbGradableEvent extends DbDataItem
         }
     }
     
-    public ImmutableList<DbPart> getParts()
+    public ImmutableSet<DbPart> getParts()
     {
         synchronized(_parts)
         {
-            return ImmutableList.copyOf(_parts);
+            return ImmutableSet.copyOf(_parts);
         }
     }
     
@@ -207,8 +214,18 @@ public class DbGradableEvent extends DbDataItem
         return _latePeriod;
     }
     
-    DbAssignment getAssignment()
+    Integer getAssignmentId()
     {
-        return _asgn;
+        return _asgnId;
+    }
+
+    @Override
+    void setParentId(Integer id) {
+        _asgnId = id;
+    }
+    
+    @Override
+    Iterable<DbPart> getChildren() {
+        return this.getParts();
     }
 }

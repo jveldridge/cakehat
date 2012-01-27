@@ -8,20 +8,27 @@ package cakehat.newdatabase;
  */
 public class DbActionProperty extends DbDataItem
 {   
-    private final DbPartAction _partAction;
+    private volatile Integer _partActionId;
     private final String _key;
     private volatile String _value;
+    
+    public static DbActionProperty buildActionProperty(DbPartAction partAction, String key) {
+        DbActionProperty property = new DbActionProperty(partAction, key);
+        partAction.addActionProperty(property);
+        
+        return property;
+    }
     
     /**
      * Constructor to be used by the configuration manager to create a new part action property for a part action.
      * 
      * @param partAction 
      */
-    public DbActionProperty(DbPartAction partAction, String key)
+    private DbActionProperty(DbPartAction partAction, String key)
     {
         super(null);
         
-        _partAction = partAction;
+        _partActionId = partAction.getId();
         _key = key;
     }
 
@@ -33,10 +40,11 @@ public class DbActionProperty extends DbDataItem
      * @param key
      * @param value 
      */
-    DbActionProperty(DbPartAction partAction, int id, String key, String value)
+    DbActionProperty(int partActionId, int id, String key, String value)
     {
         super(id);
-        _partAction = partAction;
+        
+        _partActionId = partActionId;
         _key = key;
         _value = value;
     }
@@ -56,8 +64,12 @@ public class DbActionProperty extends DbDataItem
         return _value;
     }
     
-    DbPartAction getPartAction()
-    {
-        return _partAction;
+    Integer getPartActionId() {
+        return _partActionId;
+    }
+    
+    @Override
+    void setParentId(Integer id) {
+        _partActionId = id;
     }
 }

@@ -1,8 +1,8 @@
 package cakehat.newdatabase;
 
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a course assignment as it is represented in the database and configuration manager.
@@ -16,7 +16,7 @@ public class DbAssignment extends DbDataItem
     private volatile int _order;
     private volatile boolean _hasGroups;
     
-    private final List<DbGradableEvent> _gradableEvents;
+    private final Set<DbGradableEvent> _gradableEvents;
     
     /**
      * Constructor to be used by the configuration manager to create a new assignment for the course.
@@ -30,7 +30,7 @@ public class DbAssignment extends DbDataItem
         _name = name;
         _order = order;
         _hasGroups = false;
-        _gradableEvents = new ArrayList<DbGradableEvent>();
+        _gradableEvents = new HashSet<DbGradableEvent>();
     }
     
     /**
@@ -42,13 +42,13 @@ public class DbAssignment extends DbDataItem
      * @param hasGroups
      * @param gradableEvents 
      */
-    DbAssignment(int id, String name, int order, boolean hasGroups, List<DbGradableEvent> gradableEvents)
+    DbAssignment(int id, String name, int order, boolean hasGroups, Set<DbGradableEvent> gradableEvents)
     {
         super(id);
         _name = name;
         _order = order;
         _hasGroups = hasGroups;
-        _gradableEvents = new ArrayList<DbGradableEvent>(gradableEvents);
+        _gradableEvents = new HashSet<DbGradableEvent>(gradableEvents);
     }
     
     public void setName(final String name)
@@ -76,7 +76,7 @@ public class DbAssignment extends DbDataItem
         _hasGroups = hasGroups;
     }
     
-    public boolean getHasGroups()
+    public boolean hasGroups()
     {
         return _hasGroups;
     }
@@ -97,11 +97,16 @@ public class DbAssignment extends DbDataItem
         }
     }
     
-    public ImmutableList<DbGradableEvent> getGradableEvents()
+    public ImmutableSet<DbGradableEvent> getGradableEvents()
     {
         synchronized(_gradableEvents)
         {
-            return ImmutableList.copyOf(_gradableEvents);
+            return ImmutableSet.copyOf(_gradableEvents);
         }
+    }
+    
+    @Override
+    Iterable<DbGradableEvent> getChildren() {
+        return this.getGradableEvents();
     }
 }

@@ -1,12 +1,11 @@
 package cakehat.newdatabase;
 
 import cakehat.assignment.PartActionDescription;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
-import java.util.EnumMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,15 +16,22 @@ import java.util.Set;
  */
 public class DbPart extends DbDataItem
 {
-    private final DbGradableEvent _gradableEvent;
+    private volatile Integer _gradableEventId;
     private volatile String _name;
     private volatile int _order;
     private volatile File _gmlTemplate;
     private volatile Double _outOf;
     private volatile String _quickName;
     private volatile File _gradingGuide;
-    private final Map<PartActionDescription.ActionType, DbPartAction> _actions;
+    private final Set<DbPartAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
+    
+    public static DbPart buildPart(DbGradableEvent gradableEvent, String name, int order) {
+        DbPart part = new DbPart(gradableEvent, name, order);
+        gradableEvent.addPart(part);
+        
+        return part;
+    }
     
     /**
      * Constructor to be used by the configuration manager to create a new part for a gradable event.
@@ -33,16 +39,16 @@ public class DbPart extends DbDataItem
      * @param gradableEvent 
      * @param order 
      */
-    public DbPart(DbGradableEvent gradableEvent, String name, int order)
+    private DbPart(DbGradableEvent gradableEvent, String name, int order)
     {
         super(null);
         
-        _gradableEvent = gradableEvent;
+        _gradableEventId = gradableEvent.getId();
         
         _name = name;
         _order = order;
         
-        _actions = new EnumMap<PartActionDescription.ActionType, DbPartAction>(PartActionDescription.ActionType.class);
+        _actions = new HashSet<DbPartAction>();
         _inclusionFilters = new HashSet<DbInclusionFilter>();
     }
     
@@ -57,27 +63,22 @@ public class DbPart extends DbDataItem
      * @param outOf
      * @param quickName
      * @param gradingGuide
-     * @param demoAction
-     * @param openAction
-     * @param printAction
-     * @param runAction
-     * @param testAction
+     * @param actions
      * @param inclusionFilters 
      */
-    DbPart(DbGradableEvent gradableEvent, int id, String name, int order, File gmlTemplate, Double outOf,
-           String quickName, File gradingGuide, Map<PartActionDescription.ActionType, DbPartAction> actions,
-           Set<DbInclusionFilter> inclusionFilters)
+    DbPart(int gradableEventId, int id, String name, int order, String gmlTemplate, Double outOf, String quickName,
+           String gradingGuide, Set<DbPartAction> actions, Set<DbInclusionFilter> inclusionFilters)
     {
         super(id);
         
-        _gradableEvent = gradableEvent;
+        _gradableEventId = gradableEventId;
         _name = name;
         _order = order;
-        _gmlTemplate = gmlTemplate;
+        _gmlTemplate = gmlTemplate == null ? null : new File(gmlTemplate);
         _outOf = outOf;
         _quickName = quickName;
-        _gradingGuide = gradingGuide;
-        _actions = new EnumMap<PartActionDescription.ActionType, DbPartAction>(actions);
+        _gradingGuide = gradingGuide == null ? null : new File(gradingGuide);
+        _actions = new HashSet<DbPartAction>(actions);
         _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
     }
     
@@ -141,35 +142,41 @@ public class DbPart extends DbDataItem
         return _gradingGuide;
     }
     
+    public Set<DbPartAction> getActions()
+    {
+        synchronized (_actions)
+        {
+            return ImmutableSet.copyOf(_actions);
+        }
+    }
+    
+    @Deprecated
     public DbPartAction getAction(PartActionDescription.ActionType type)
     {
-        synchronized (_actions)
-        {
-            return _actions.get(type);
+        synchronized (_actions) {
+            for (DbPartAction action : _actions) {
+                if (action.getType() == type) {
+                    return action;
+                }
+            }
+            
+            return null;
         }
     }
     
-    public void putAction(PartActionDescription.ActionType type, DbPartAction action)
+    public void addAction(DbPartAction action)
     {
         synchronized (_actions)
         {
-            _actions.put(type, action);
+            _actions.add(action);
         }
     }
     
-    public void removeAction(PartActionDescription.ActionType type)
+    public void removeAction(DbPartAction action)
     {
         synchronized (_actions)
         {
-            _actions.remove(type);
-        }
-    }
-    
-    Map<PartActionDescription.ActionType, DbPartAction> getActions()
-    {
-        synchronized (_actions)
-        {
-            return ImmutableMap.copyOf(_actions);
+            _actions.remove(action);
         }
     }
     
@@ -197,8 +204,23 @@ public class DbPart extends DbDataItem
         }
     }
     
-    DbGradableEvent getGradableEvent()
+    Integer getGradableEventId()
     {
-        return _gradableEvent;
+        return _gradableEventId;
+    }
+
+    @Override
+    void setParentId(Integer id) {
+        _gradableEventId = id;
+    }
+    
+    @Override
+    Iterable<DbDataItem> getChildren() {
+        Collection<DbDataItem> children = new ArrayList<DbDataItem>();
+        
+        children.addAll(this.getActions());
+        children.addAll(this.getInclusionFilters());
+        
+        return children;
     }
 }

@@ -39,7 +39,7 @@ public class DbTA extends DbDataItem
         _lastName = lastName;
     }
     
-    public void setDefaultGrader(boolean isDefaultGrader)
+    public void setIsDefaultGrader(boolean isDefaultGrader)
     {
         _isDefaultGrader = isDefaultGrader;
     }
