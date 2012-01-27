@@ -142,6 +142,8 @@ handintime  //only use if non-digital
   * geid INTEGER NOT NULL
   * agid INTEGER NOT NULL
   * time VARCHAR NOT NULL
+  * daterecorded VARCHAR NOT NULL
+  * tid INTEGER NOT NULL
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
 
