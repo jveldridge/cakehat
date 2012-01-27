@@ -38,7 +38,7 @@ class AssignmentsBuilder
                     dbAssignment.getId(),
                     dbAssignment.getName(),
                     dbAssignment.getOrder(),
-                    dbAssignment.getHasGroups(),
+                    dbAssignment.hasGroups(),
                     gradableEvents);
             assignmentsBuilder.add(assignment);
             

@@ -1,5 +1,7 @@
 package cakehat.newdatabase;
 
+import java.util.Collections;
+
 /**
  * Represents a piece of data that is or will be stored in the database.
  * 
@@ -23,5 +25,13 @@ public abstract class DbDataItem
     public Integer getId()
     {
         return _id;
+    }
+    
+    void setParentId(Integer id) {
+        throw new UnsupportedOperationException("This data item type has no parent.");
+    }
+    
+    <T extends DbDataItem> Iterable<T> getChildren() {
+        return Collections.emptyList();
     }
 }

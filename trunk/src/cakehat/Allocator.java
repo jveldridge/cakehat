@@ -18,6 +18,8 @@ import cakehat.rubric.RubricManagerImpl;
 import cakehat.services.Constants;
 import cakehat.services.ConstantsImpl;
 import cakehat.database.DataServicesImpl;
+import cakehat.newdatabase.DatabaseV5;
+import cakehat.newdatabase.DatabaseV5Impl;
 import cakehat.newdatabase.DataServicesV5;
 import cakehat.newdatabase.DataServicesV5Impl;
 import cakehat.services.FileSystemServices;
@@ -130,6 +132,7 @@ public class Allocator
     private final SingletonAllocation<PrintingService> _portraitPrintingService;
     private final SingletonAllocation<Exporter> _csvExporter;
     private final SingletonAllocation<Database> _database;
+    private final SingletonAllocation<DatabaseV5> _databaseV5;
     private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
     private final SingletonAllocation<CalendarUtilities> _calendarUtils;
@@ -153,6 +156,7 @@ public class Allocator
      * @param fileSystemServices
      * @param constants
      * @param database
+     * @param databaseV5
      * @param landscapePrintingService
      * @param portraitPrintingService
      * @param csvExporter
@@ -174,6 +178,7 @@ public class Allocator
                       SingletonAllocation<StringManipulationServices> stringManipServices,
                       SingletonAllocation<Constants> constants,
                       SingletonAllocation<Database> database,
+                      SingletonAllocation<DatabaseV5> databaseV5,
                       SingletonAllocation<PrintingService> landscapePrintingService,
                       SingletonAllocation<PrintingService> portraitPrintingService,
                       SingletonAllocation<Exporter> csvExporter,
@@ -293,6 +298,16 @@ public class Allocator
         else
         {
             _database = database;
+        }
+        
+        if(databaseV5 == null)
+        {
+            _databaseV5 = new SingletonAllocation<DatabaseV5>()
+                            { public DatabaseV5 allocate() { return new DatabaseV5Impl(); } };
+        }
+        else
+        {
+            _databaseV5 = databaseV5;
         }
 
         if(landscapePrintingService == null)
@@ -450,6 +465,11 @@ public class Allocator
         return getInstance()._database.getInstance();
     }
     
+    public static DatabaseV5 getDatabaseV5()
+    {
+        return getInstance()._databaseV5.getInstance();
+    }
+
     public static DataServicesV5 getDataServicesV5() 
     {
         return getInstance()._dataServicesV5.getInstance();
@@ -520,6 +540,7 @@ public class Allocator
         private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
         private SingletonAllocation<Database> _database;
+        private SingletonAllocation<DatabaseV5> _databaseV5;
         private SingletonAllocation<PrintingService> _landscapePrintingService;
         private SingletonAllocation<PrintingService> _portraitPrintingService;
         private SingletonAllocation<Exporter> _csvExporter;
@@ -603,6 +624,13 @@ public class Allocator
         public Customizer setDatabase(SingletonAllocation<Database> database)
         {
             _database = database;
+
+            return this;
+        }
+        
+        public Customizer setDatabaseV5(SingletonAllocation<DatabaseV5> databaseV5)
+        {
+            _databaseV5 = databaseV5;
 
             return this;
         }
@@ -706,6 +734,7 @@ public class Allocator
                     _stringManipServices,
                     _constants,
                     _database,
+                    _databaseV5,
                     _landscapePrintingService,
                     _portraitPrintingService,
                     _csvExporter,

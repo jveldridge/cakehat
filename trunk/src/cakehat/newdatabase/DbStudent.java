@@ -94,7 +94,7 @@ public class DbStudent extends DbDataItem
         return _enabled;
     }
 
-    public boolean isHasCollabPolicy()
+    public boolean hasCollabPolicy()
     {
         return _hasCollabPolicy;
     }

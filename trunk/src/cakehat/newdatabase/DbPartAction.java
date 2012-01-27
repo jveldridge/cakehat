@@ -1,5 +1,6 @@
 package cakehat.newdatabase;
 
+import cakehat.assignment.PartActionDescription.ActionType;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,20 +14,29 @@ import java.util.Set;
  */
 public class DbPartAction extends DbDataItem
 {   
-    private volatile DbPart _part;
+    private volatile Integer _partId;
+    private final ActionType _type;
     private volatile String _name;
     private final Set<DbActionProperty> _properties;
+    
+    public static DbPartAction buildPartAction(DbPart part, ActionType type) {
+        DbPartAction action = new DbPartAction(part, type);
+        part.addAction(action);
+        
+        return action;
+    }
     
     /**
      * Constructor to be used by the configuration manager to create a new part action for a part.
      * 
      * @param part
      */
-    public DbPartAction(DbPart part)
+    private DbPartAction(DbPart part, ActionType type)
     {
         super(null);
         
-        _part = part;
+        _partId = part.getId();
+        _type = type;
         _properties = new HashSet<DbActionProperty>();
     }
 
@@ -38,13 +48,19 @@ public class DbPartAction extends DbDataItem
      * @param name
      * @param properties 
      */
-    DbPartAction(DbPart part, int id, String name, Set<DbActionProperty> properties)
+    DbPartAction(int partId, int id, String type, String name, Set<DbActionProperty> properties)
     {
         super(id);
         
-        _part = part;
+        _partId = partId;
+        _type = ActionType.valueOf(type);
         _name = name;
         _properties = properties;
+    }
+
+    public ActionType getType()
+    {
+        return _type;
     }
     
     public void setName(String name)
@@ -89,8 +105,17 @@ public class DbPartAction extends DbDataItem
         }
     }
     
-    DbPart getPart()
-    {
-        return _part;
+    Integer getPartId() {
+        return _partId;
+    }
+
+    @Override
+    void setParentId(Integer id) {
+        _partId = id;
+    }
+    
+    @Override
+    Iterable<DbActionProperty> getChildren() {
+        return this.getActionProperties();
     }
 }
