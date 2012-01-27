@@ -134,7 +134,7 @@ extension
   * shiftdates INTEGER NOT NULL DEFAULT 0
   * note TEXT
   * daterecorded VARCHAR NOT NULL
-  * recordedby INTEGER NOT NULL
+  * tid INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
 
@@ -158,6 +158,9 @@ adjustment
   * aid INTEGER NOT NULL
   * sid INTEGER NOT NULL
   * note TEXT
+  * points DOUBLE
+  * tid INTEGER NOT NULL
+  * daterecorded VARCHAR NOT NULL
   * FOREIGN KEY (aid) REFERENCES assignment(aid) ON DELETE CASCADE
   * FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE
 
