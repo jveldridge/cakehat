@@ -125,7 +125,7 @@ flag
   * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
 
 extension
-  * pid INTEGER NOT NULL
+  * geid INTEGER NOT NULL
   * agid INTEGER NOT NULL
   * ontime VARCHAR NOT NULL
   * shiftdates INTEGER NOT NULL DEFAULT 0
@@ -133,16 +133,23 @@ extension
   * daterecorded VARCHAR NOT NULL
   * recordedby INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
-  * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
+  * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
+
+handintime  //only use if non-digital
+  * geid INTEGER NOT NULL
+  * agid INTEGER NOT NULL
+  * time VARCHAR NOT NULL
+  * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
+  * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
 
 exemption
-  * pid INTEGER NOT NULL
+  * geid INTEGER NOT NULL
   * agid INTEGER NOT NULL
   * note TEXT
   * daterecorded VARCHAR NOT NULL
   * recordedby INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
-  * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
+  * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
 
 adjustment
   * aid INTEGER NOT NULL
@@ -155,7 +162,7 @@ courseproperties
   * cpid INTEGER PRIMARY KEY AUTOINCREMENT
   * key VARCHAR NOT NULL
   * value VARCHAR NOT NULL
- * CONSTRAINT keysunique UNIQUE (key) ON CONFLICT ROLLBACK
+  * CONSTRAINT keysunique UNIQUE (key) ON CONFLICT ROLLBACK
 
 notifyaddresses
  * naid INTEGER PRIMARY KEY AUTOINCREMENT
