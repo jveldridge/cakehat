@@ -5,6 +5,7 @@ import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
 import java.util.Set;
+import org.joda.time.DateTime;
 
 /**
  *
@@ -42,6 +43,18 @@ public class DataServicesV5Impl implements DataServicesV5 {
 
     @Override
     public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public HandinTime getHandinTime(GradableEvent gradableEvent, Part part) throws ServicesException
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setHandinTime(GradableEvent gradableEvent, Part part, DateTime handinTime) throws ServicesException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

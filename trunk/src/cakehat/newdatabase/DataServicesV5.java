@@ -5,6 +5,7 @@ import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
 import java.util.Set;
+import org.joda.time.DateTime;
 
 /**
  *
@@ -72,4 +73,25 @@ public interface DataServicesV5 {
      * @throws ServicesException 
      */
     public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException;
+    
+    /**
+     * Returns the handin time for the given gradable event and part.
+     * 
+     * @param gradableEvent
+     * @param part
+     * @return
+     * @throws ServicesException 
+     */
+    public HandinTime getHandinTime(GradableEvent gradableEvent, Part part) throws ServicesException;
+    
+    
+    /**
+     * Sets the handin time for the given gradable event and part.
+     * 
+     * @param gradableEvent
+     * @param part
+     * @param handinTime
+     * @throws ServicesException 
+     */
+    public void setHandinTime(GradableEvent gradableEvent, Part part, DateTime handinTime) throws ServicesException;
 }
