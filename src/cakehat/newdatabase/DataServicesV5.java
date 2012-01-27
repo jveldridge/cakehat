@@ -47,17 +47,17 @@ public interface DataServicesV5 {
     public Double getEarned(Group group, Part part) throws ServicesException;
     
     /**
-     * Sets the points eared for the given Group and Part.
+     * Sets the points earned and matches gml for the given Group and Part.
      * 
      * @param group
      * @param part
      * @param earned
+     * @param matchesGml
      * @return
      * @throws ServicesException 
      */
-    public Double setEarned(Group group, Part part, double earned) throws ServicesException;
+    public Double setEarned(Group group, Part part, double earned, boolean matchesGml) throws ServicesException;
     
- 
     /**
      * Returns an immutable set of all TAs.
      * 
