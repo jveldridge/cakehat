@@ -71,6 +71,26 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     {
         _model.setGenericSelectedItem(item);
     }
+    
+    /**
+     * Adds the selection listener.
+     * 
+     * @param listener 
+     */
+    public void addSelectionListener(SelectionListener<E> listener)    
+    {
+        _model.addSelectionListener(listener);
+    }
+    
+    /**
+     * Removes the selection listener.
+     * 
+     * @param listener 
+     */
+    public void removeSelectionListener(SelectionListener<E> listener)
+    {
+        _model.removeSelectionListener(listener);
+    }
 
     @Override
     public E getSelectedItem()
@@ -149,6 +169,11 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
      */
     private void setModel(GenericComboBoxModel<E> model)
     {
+        if(_model != null)
+        {
+            model.transferSelectionListeners(_model);
+        }
+        
         _model = model;
         super.setModel(model);
     }
@@ -237,5 +262,5 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     public void removeItemAt(int anIndex)
     {
         throw new UnsupportedOperationException("Mutation not supported");
-    }
+    }    
 }

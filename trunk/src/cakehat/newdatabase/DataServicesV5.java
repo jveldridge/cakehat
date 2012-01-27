@@ -1,7 +1,10 @@
 package cakehat.newdatabase;
 
+import cakehat.assignment.DeadlineInfo;
+import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
+import java.util.Set;
 
 /**
  *
@@ -9,6 +12,64 @@ import cakehat.services.ServicesException;
  */
 public interface DataServicesV5 {
     
+    /**
+     * Returns the TA who has been assigned to grade the given Group for the given Part. If no such TA exists,
+     * {@code null} will be returned.
+     * 
+     * @param part
+     * @param group
+     * @return
+     * @throws ServicesException
+     */
     public TA getGrader(Part part, Group group) throws ServicesException;
+ 
+    /**
+     * Sets the TA who has been assigned to grade the given Group and  Part. Pass {@code ta} as {@code null} to
+     * have the given group and part be unassigned.
+     * 
+     * @param part
+     * @param group
+     * @param ta
+     * @throws ServicesException 
+     */
+    public void setGrader(Part part, Group group, TA ta) throws ServicesException;
     
+    /**
+     * Returns the points earned for the given Group and Part. If no such value is stored in the database, {@code null}
+     * will be returned.
+     *
+     * @param group
+     * @param part
+     * @return
+     * @throws ServicesException
+     */
+    public Double getEarned(Group group, Part part) throws ServicesException;
+    
+    /**
+     * Sets the points eared for the given Group and Part.
+     * 
+     * @param group
+     * @param part
+     * @param earned
+     * @return
+     * @throws ServicesException 
+     */
+    public Double setEarned(Group group, Part part, double earned) throws ServicesException;
+    
+ 
+    /**
+     * Returns an immutable set of all TAs.
+     * 
+     * @return
+     */
+    public Set<TA> getTAs() throws ServicesException;
+    
+    /**
+     * Returns the deadline info for the given gradable event.
+     * 
+     * @param gradableEvent
+     * @return
+     * @throws ServicesException 
+     */
+    public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException;
 }
