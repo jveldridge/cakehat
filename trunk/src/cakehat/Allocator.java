@@ -18,6 +18,8 @@ import cakehat.rubric.RubricManagerImpl;
 import cakehat.services.Constants;
 import cakehat.services.ConstantsImpl;
 import cakehat.database.DataServicesImpl;
+import cakehat.newdatabase.DataServicesV5;
+import cakehat.newdatabase.DataServicesV5Impl;
 import cakehat.services.FileSystemServices;
 import cakehat.services.FileSystemServicesImpl;
 import cakehat.services.GradingServicesImpl;
@@ -134,6 +136,7 @@ public class Allocator
     private final SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
     private final SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
     private final SingletonAllocation<UserUtilities> _userUtils;
+    private final SingletonAllocation<DataServicesV5> _dataServicesV5;
 
     /**
      * Creates the underlying instance of the Allocator. Any of the parameters
@@ -179,7 +182,8 @@ public class Allocator
                       SingletonAllocation<CalendarUtilities> calendarUtils,
                       SingletonAllocation<ExternalProcessesUtilities> externalProcessesUtils,
                       SingletonAllocation<FileSystemUtilities> fileSystemUtils,
-                      SingletonAllocation<UserUtilities> userUtils)
+                      SingletonAllocation<UserUtilities> userUtils,
+                      SingletonAllocation<DataServicesV5> dataServicesV5)
     {
         if(configInfo == null)
         {
@@ -380,6 +384,15 @@ public class Allocator
         {
             _userUtils = userUtils;
         }
+        if(dataServicesV5 == null)
+        {
+            _dataServicesV5 = new SingletonAllocation<DataServicesV5>()
+                         { public DataServicesV5 allocate() { return new DataServicesV5Impl(); } };
+        }
+        else
+        {
+            _dataServicesV5 = dataServicesV5;
+        }
     }
 
     public static ConfigurationInfo getConfigurationInfo()
@@ -435,6 +448,11 @@ public class Allocator
     public static Database getDatabase()
     {
         return getInstance()._database.getInstance();
+    }
+    
+    public static DataServicesV5 getDataServicesV5() 
+    {
+        return getInstance()._dataServicesV5.getInstance();
     }
 
     public static PrintingService getLandscapePrintingService()
@@ -511,6 +529,7 @@ public class Allocator
         private SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
+        private SingletonAllocation<DataServicesV5> _dataServicesV5;
 
         public Customizer setConfigurationInfo(SingletonAllocation<ConfigurationInfo> configInfo)
         {
@@ -650,6 +669,13 @@ public class Allocator
 
             return this;
         }
+        
+        public Customizer setDataServicesV5(SingletonAllocation<DataServicesV5> dataServicesV5)
+        {
+            _dataServicesV5 = dataServicesV5;
+            
+            return this;
+        }
 
         /**
          * <b>WARNING: THIS METHOD IS FOR TESTING PURPOSES ONLY.</b>
@@ -688,7 +714,8 @@ public class Allocator
                     _calendarUtils,
                     _externalProcessesUtils,
                     _fileSystemUtils,
-                    _userUtils);
+                    _userUtils,
+                    _dataServicesV5);
         }
     }
 }
