@@ -1,9 +1,11 @@
 package cakehat.newdatabase;
 
 import cakehat.Allocator;
+import cakehat.assignment.Assignment;
 import cakehat.database.ConnectionProvider;
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
@@ -15,6 +17,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -803,7 +808,15 @@ public class DatabaseV5Impl implements DatabaseV5
             }
         }
     }
+
+
+
+
+
+
+
     
+
     @Override
     public Set<StudentRecord> getAllStudents() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -833,28 +846,215 @@ public class DatabaseV5Impl implements DatabaseV5
     
     @Override
     public Set<GroupRecord> getAllGroups() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        Connection conn = this.openConnection();
+        try {
+            Set<GroupRecord> result = new HashSet<GroupRecord>();
+
+            PreparedStatement ps = conn.prepareStatement("SELECT gp.agid as agid, gm.sid AS sid,"
+                    + " gp.name AS groupName, gp.aid AS aid"
+                    + " FROM groupmember AS gm"
+                    + " INNER JOIN asgngroup AS gp"
+                    + " ON gm.agid == gp.agid"
+                    + " ORDER BY gp.agid");
+
+            ResultSet rs = ps.executeQuery();
+
+            int prevGroupId = 0;
+            int groupAsgnId = 0;
+            String groupName = null;
+            Set<Integer> memberIDs = new HashSet<Integer>();
+            while (rs.next()) { //while there are more records
+                int currGroupId = rs.getInt("agid");
+
+                if (currGroupId != prevGroupId) {   //current row represents the beginning of a new group
+                    if (prevGroupId != 0) {
+                        //create record for previous group
+                        result.add(new GroupRecord(prevGroupId, groupAsgnId, groupName, memberIDs));
+                    }
+
+                    memberIDs.clear();
+                    prevGroupId = currGroupId;
+                    groupAsgnId = rs.getInt("aid");
+                    groupName = rs.getString("groupName");
+                    memberIDs.add(rs.getInt("sid"));
+                }
+                else {                              //current row represents an additional member of the same group
+                    memberIDs.add(rs.getInt("sid"));
+                }
+            }
+            //create record for last group
+            if (prevGroupId != 0) {
+                result.add(new GroupRecord(prevGroupId, groupAsgnId, groupName, memberIDs));
+            }
+
+            return ImmutableSet.copyOf(result);
+        } finally {
+            this.closeConnection(conn);
+        }
     }
     
     @Override
+    //TODO make this less verbose
     public GroupRecord addGroup(NewGroup group) throws SQLException, CakeHatDBIOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+         Iterator<GroupRecord> it = this.addGroups(ImmutableSet.of(group)).iterator();
+         if (it.hasNext()){
+             return it.next();
+         } else{
+             throw new CakeHatDBIOException("Could not add group '" + group + "' to database");
+         }
     }
 
     @Override
     public Set<GroupRecord> addGroups(Set<NewGroup> groups) 
                                     throws SQLException, CakeHatDBIOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+      Connection conn = this.openConnection();
+        try {
+            Set<GroupRecord> result = new HashSet<GroupRecord>(groups.size());
+            conn.setAutoCommit(false);
+
+            // create new List of NewGroup objects to guarantee consistent iteration order
+            List<NewGroup> groupList = new ArrayList<NewGroup>(groups);
+
+            // check that no students in the groups to be added already have groups
+            // for the assignment for which the group is being created
+            SetMultimap<Assignment, Student> studentsToCheck = HashMultimap.create();
+            for (NewGroup group : groupList) {
+                studentsToCheck.putAll(group.getAssignment(), group.getMembers());
+
+            }
+
+            //Creates string of student ids
+            int numConflicts = 0;
+            for (Assignment asgn : studentsToCheck.keySet()) {
+                StringBuilder sids = new StringBuilder();
+                for (Student student : studentsToCheck.get(asgn)) {
+                    sids.append(", ").append(student.getId());
+                }
+                //removes leading comma from first addition
+                String sidString = sids.toString();
+                if (!sidString.isEmpty()) {
+                    sidString = sidString.substring(1);
+                }
+
+                PreparedStatement ps = conn.prepareStatement("SELECT COUNT(gp.agid) AS numConflicts"
+                        + " FROM asgngroup AS gp"
+                        + " INNER JOIN groupmember AS gm"
+                        + " ON gp.agid == gm.agid"
+                        + " WHERE gm.sid IN (" + sidString + ")"
+                        + " AND gp.aid == ?");
+                ps.setInt(1, asgn.getId());
+
+                ResultSet rs = ps.executeQuery();
+                numConflicts += rs.getInt("numConflicts");
+                rs.close();
+            }
+
+            if (numConflicts > 0) {
+                throw new CakeHatDBIOException("A student may not be in more than one group "
+                        + "for a given assignment.  No groups have been added.");
+            }
+
+            // insert all the groups
+            PreparedStatement psGroup = conn.prepareStatement("INSERT INTO asgngroup"
+                    + " ('name', 'aid') VALUES (?, ?)");
+            for (NewGroup group : groupList) {
+                psGroup.setString(1, group.getName());
+                psGroup.setInt(2, group.getAssignment().getId());
+                psGroup.addBatch();
+            }
+            psGroup.executeBatch();
+
+            // get IDs of newly inserted groups
+            List<Integer> groupIDs = new ArrayList<Integer>(groupList.size());
+
+            // only the last inserted key is returned
+            ResultSet rs = psGroup.getGeneratedKeys();
+            int lastID = rs.getInt(1);
+            for (int id = lastID - groupList.size() + 1; id <= lastID; id++) {
+                groupIDs.add(id);
+            }
+            
+            rs.close();
+            psGroup.close();
+
+            // add all the members to those groups
+            PreparedStatement psMember = conn.prepareStatement("INSERT INTO groupmember "
+                    + "('agid', 'sid') "
+                    + "VALUES (?, ?)");
+
+            for (int i = 0; i < groupList.size(); i++) {
+                for (Student student : groupList.get(i).getMembers()) {
+                    psMember.setInt(1, groupIDs.get(i));
+                    psMember.setInt(2, student.getId());
+                    psMember.addBatch();
+                }
+            }
+            psMember.executeBatch();
+            psMember.close();
+
+            conn.commit();
+
+            // create GroupRecord objects to return
+            for (int i = 0; i < groupList.size(); i++) {
+                NewGroup group = groupList.get(i);
+                Set<Integer> memberIDs = new HashSet<Integer>(group.size());
+                for (Student member : group.getMembers()) {
+                    memberIDs.add(member.getId());
+                }
+
+                result.add(new GroupRecord(groupIDs.get(i),
+                                           group.getAssignment().getId(),
+                                           group.getName(),
+                                           memberIDs));
+            }
+
+            return result;
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public Set<Integer> getGroups(int asgnID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+
+        Set<Integer> groupIds = new HashSet<Integer>();
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT gp.agid AS agid"
+                    + " FROM asgngroup AS gp"
+                    + " INNER JOIN groupmember AS gm"
+                    + " ON gp.agid == gm.agid "
+                    + " WHERE gp.aid == ?");
+
+            ps.setInt(1, asgnID);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                groupIds.add(rs.getInt("agid"));
+            }
+            return groupIds;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public void removeGroups(int asgnID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM asgngroup"
+                    + " WHERE aid == ?");
+            ps.setInt(1, asgnID);
+
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
     }
     
     @Override
@@ -938,6 +1138,8 @@ public class DatabaseV5Impl implements DatabaseV5
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS partaction");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
 
             //CREATE all DB tables
             conn.createStatement().executeUpdate("CREATE TABLE courseproperties (cpid INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -1007,6 +1209,16 @@ public class DatabaseV5Impl implements DatabaseV5
                     + " path VARCHAR NOT NULL,"
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " CONSTRAINT pidpathunique UNIQUE (pid, path) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE asgngroup (agid INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " aid INTEGER NOT NULL,"
+                    + " name VARCHAR NOT NULL,"
+                    + " FOREIGN KEY (aid) REFERENCES assignment(aid) ON DELETE CASCADE,"
+                    + " CONSTRAINT aidnameunique UNIQUE (aid, name) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE groupmember (gmid INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " agid INTEGER NOT NULL,"
+                    + " sid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE)");
 
             conn.commit();
         } catch (SQLException ex) {

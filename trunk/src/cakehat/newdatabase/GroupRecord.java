@@ -14,11 +14,11 @@ import java.util.Set;
  class GroupRecord {
     
     private final int _dbId;
-    private final String _assignmentId;
+    private final int _assignmentId;
     private final String _name;
     private final Set<Integer> _memberIDs;
 
-    GroupRecord(int dbId, String asgnId, String name, Set<Integer> memberIDs)
+    GroupRecord(int dbId, int asgnId, String name, Set<Integer> memberIDs)
     {
         _dbId = dbId;
         _assignmentId = asgnId;
@@ -30,7 +30,7 @@ import java.util.Set;
         return _dbId;
     }
     
-    String getAssignmentID() {
+    int getAssignmentID() {
         return _assignmentId;
     }
 
