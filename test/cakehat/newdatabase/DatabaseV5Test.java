@@ -494,7 +494,7 @@ public class DatabaseV5Test {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         _database.putAssignments(SingleElementSet.of(asgn));
         
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         assertEquals(asgn.getId(), ge.getAssignmentId());
         
         _database.putGradableEvents(SingleElementSet.of(ge));
@@ -508,7 +508,7 @@ public class DatabaseV5Test {
     public void testAddGradableEventToAsgnNotInDatabase() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         assertEquals(asgn.getId(), ge.getAssignmentId());
         
         _database.putAssignments(SingleElementSet.of(asgn));
@@ -525,8 +525,8 @@ public class DatabaseV5Test {
     public void testAddMultipleGradableEvents() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         
-        DbGradableEvent ge1 = DbGradableEvent.buildGradableEvent(asgn, "ge1", 1);
-        DbGradableEvent ge2 = DbGradableEvent.buildGradableEvent(asgn, "ge2", 2);
+        DbGradableEvent ge1 = DbGradableEvent.build(asgn, "ge1", 1);
+        DbGradableEvent ge2 = DbGradableEvent.build(asgn, "ge2", 2);
         
         _database.putAssignments(SingleElementSet.of(asgn));
         _database.putGradableEvents(ImmutableSet.of(ge1, ge2));
@@ -536,8 +536,8 @@ public class DatabaseV5Test {
         assertEquals(asgn.getId(), ge1.getAssignmentId());
         assertEquals(asgn.getId(), ge2.getAssignmentId());
         
-        DbGradableEvent ge3 = DbGradableEvent.buildGradableEvent(asgn, "ge3", 3);
-        DbGradableEvent ge4 = DbGradableEvent.buildGradableEvent(asgn, "ge4", 4);
+        DbGradableEvent ge3 = DbGradableEvent.build(asgn, "ge3", 3);
+        DbGradableEvent ge4 = DbGradableEvent.build(asgn, "ge4", 4);
         _database.putGradableEvents(ImmutableSet.of(ge3, ge4));
         assertNotNull(ge3.getId());
         assertNotNull(ge4.getId());
@@ -556,10 +556,10 @@ public class DatabaseV5Test {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         _database.putAssignments(SingleElementSet.of(asgn));
         
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         _database.putGradableEvents(SingleElementSet.of(ge));
         
-        DbPart part = DbPart.buildPart(ge, "part", 1);
+        DbPart part = DbPart.build(ge, "part", 1);
         _database.putParts(SingleElementSet.of(part));
         assertNotNull(part.getId());
         assertEquals(ge.getId(), part.getGradableEventId());
@@ -573,10 +573,10 @@ public class DatabaseV5Test {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         _database.putAssignments(SingleElementSet.of(asgn));
         
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         _database.putGradableEvents(SingleElementSet.of(ge));
         
-        DbPart part = DbPart.buildPart(ge, "part", 1);
+        DbPart part = DbPart.build(ge, "part", 1);
         _database.putParts(SingleElementSet.of(part));
         assertNotNull(part.getId());
         assertEquals(ge.getId(), part.getGradableEventId());
@@ -594,22 +594,22 @@ public class DatabaseV5Test {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         _database.putAssignments(SingleElementSet.of(asgn));
         
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         _database.putGradableEvents(SingleElementSet.of(ge));
         
-        DbPart part = DbPart.buildPart(ge, "part", 1);
+        DbPart part = DbPart.build(ge, "part", 1);
         _database.putParts(SingleElementSet.of(part));
         
-        DbInclusionFilter filter = DbInclusionFilter.buildInclusionFilter(part);
+        DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
         _database.putInclusionFilters(SingleElementSet.of(filter));
         
-        DbPartAction action = DbPartAction.buildPartAction(part, ActionType.RUN);
+        DbPartAction action = DbPartAction.build(part, ActionType.RUN);
         action.setName("java:compile-and-run");
         _database.putPartActions(SingleElementSet.of(action));
         
-        DbActionProperty actionProperty = DbActionProperty.buildActionProperty(action, "key");
+        DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
         _database.putPartActionProperties(SingleElementSet.of(actionProperty));
         
@@ -620,15 +620,15 @@ public class DatabaseV5Test {
     @Test
     public void testAddOneAllTheWayDownOnlyCallingDbAtEnd() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);   
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
-        DbPart part = DbPart.buildPart(ge, "part", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
+        DbPart part = DbPart.build(ge, "part", 1);
         
-        DbInclusionFilter filter = DbInclusionFilter.buildInclusionFilter(part);
+        DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
-        DbPartAction action = DbPartAction.buildPartAction(part, ActionType.RUN);
+        DbPartAction action = DbPartAction.build(part, ActionType.RUN);
         action.setName("java:compile-and-run");
-        DbActionProperty actionProperty = DbActionProperty.buildActionProperty(action, "key");
+        DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
         
         _database.putAssignments(SingleElementSet.of(asgn));
@@ -647,22 +647,22 @@ public class DatabaseV5Test {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         _database.putAssignments(SingleElementSet.of(asgn));
         
-        DbGradableEvent ge = DbGradableEvent.buildGradableEvent(asgn, "ge", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         _database.putGradableEvents(SingleElementSet.of(ge));
         
-        DbPart part = DbPart.buildPart(ge, "part", 1);
+        DbPart part = DbPart.build(ge, "part", 1);
         _database.putParts(SingleElementSet.of(part));
         
-        DbInclusionFilter filter = DbInclusionFilter.buildInclusionFilter(part);
+        DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
         _database.putInclusionFilters(SingleElementSet.of(filter));
         
-        DbPartAction action = DbPartAction.buildPartAction(part, ActionType.RUN);
+        DbPartAction action = DbPartAction.build(part, ActionType.RUN);
         action.setName("java:compile-and-run");
         _database.putPartActions(SingleElementSet.of(action));
         
-        DbActionProperty actionProperty = DbActionProperty.buildActionProperty(action, "key");
+        DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
         _database.putPartActionProperties(SingleElementSet.of(actionProperty));
         
