@@ -14,7 +14,7 @@ public class DbInclusionFilter extends DbDataItem
     private volatile FilterType _type;
     private volatile String _path;
     
-    public static DbInclusionFilter buildInclusionFilter(DbPart part) {
+    public static DbInclusionFilter build(DbPart part) {
         DbInclusionFilter filter = new DbInclusionFilter(part);
         part.addInclusionFilter(filter);
         
