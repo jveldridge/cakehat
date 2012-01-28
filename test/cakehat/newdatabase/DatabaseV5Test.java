@@ -1,5 +1,8 @@
 package cakehat.newdatabase;
 
+import java.util.Iterator;
+import cakehat.assignment.Assignment;
+import com.google.common.collect.Iterables;
 import java.util.Comparator;
 import java.util.List;
 import java.util.HashSet;
@@ -19,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import support.utils.SingleElementSet;
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 
 /**
  * Tests the methods of {@link DatabaseV5}.
@@ -685,7 +689,122 @@ public class DatabaseV5Test {
         assignments = _database.getAssignments();
         assertEquals(0, assignments.size());
     }
-    
+
+    @Test
+    public void testGetAllGroupsEmpty() throws SQLException {
+        Set<GroupRecord> groups = _database.getAllGroups();
+        assertEquals(0,groups.size());
+    }
+
+
+    private Assignment createNewAssignmentInDb (String name, int order) throws SQLException, CakeHatDBIOException
+    {
+
+        DbAssignment dbAsgn = new DbAssignment(name, order);
+        _database.putAssignments(SingleElementSet.of(dbAsgn));
+
+       
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getName()).andReturn(name).anyTimes();
+        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
+        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups).anyTimes();
+
+        replay(asgn);
+
+        return asgn;
+            
+    }
+
+    @Test
+    public void testGetAllGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
+
+        Assignment asgn = this.createNewAssignmentInDb("asgn",1);
+
+        
+        _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
+        Student stud = new Student(_database.getStudents().iterator().next());
+        
+        
+        String name = "TestGroup";
+        GroupRecord record = _database.addGroup(new NewGroup(asgn, name, stud));
+
+        Set<GroupRecord> groups = _database.getAllGroups();
+
+        // check that there is only 1 group1 in the database
+        assertEquals(1, groups.size());
+
+        GroupRecord actualRecord = Iterables.get(groups, 0);
+
+        // check that it is the group1 that was added by checking each field of group1 record
+        assertEquals(record.getDbId(), actualRecord.getDbId());
+        assertEquals(record.getAssignmentID(), actualRecord.getAssignmentID());
+        assertEquals(record.getName(), actualRecord.getName());
+        assertTrue(record.getMemberIDs().containsAll(actualRecord.getMemberIDs()));
+    }
+
+    @Test
+    public void testGetGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
+        Assignment asgn = this.createNewAssignmentInDb("asgn",1);
+
+        _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
+        Student stud = new Student(_database.getStudents().iterator().next());
+
+
+        String name = "TestGroup";
+        GroupRecord record = _database.addGroup(new NewGroup(asgn, name, stud));
+
+        Set<Integer> agids = _database.getGroups(asgn.getId());
+
+        // check that there is only 1 group1 in the database
+        assertEquals(1, agids.size());
+
+        int agid = Iterables.get(agids, 0);
+
+        // check that the correct group is returned
+        assertEquals(record.getAssignmentID(), agid);
+
+    }
+
+    @Test
+    public void testRemoveGroups() throws SQLException, CakeHatDBIOException {
+         Assignment asgn1 = this.createNewAssignmentInDb("asgn",1);
+         Assignment asgn2 = this.createNewAssignmentInDb("asgn",2);
+
+        _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
+        Student stud = new Student(_database.getStudents().iterator().next());
+
+        //add group 1
+        String name = "TestGroup1";
+        _database.addGroup(new NewGroup(asgn1, name, stud));
+
+        //add group 2
+        String name2 = "NotRemoved";
+        GroupRecord record = _database.addGroup(new NewGroup(asgn2,name2,stud));
+
+        Set<GroupRecord> groups = _database.getAllGroups();
+
+        
+        assertEquals(2, groups.size());
+
+        //remove group for assignment 1
+        _database.removeGroups(asgn1.getId());
+
+
+        groups = _database.getAllGroups();
+
+        //make sure one group was removed
+        assertEquals(1,groups.size());
+
+        //check that it is the correct group by checking its fields
+        GroupRecord actualRecord = Iterables.get(groups, 0);
+
+        assertEquals(record.getDbId(), actualRecord.getDbId());
+        assertEquals(record.getAssignmentID(), actualRecord.getAssignmentID());
+        assertEquals(record.getName(), actualRecord.getName());
+        assertTrue(record.getMemberIDs().containsAll(actualRecord.getMemberIDs()));
+
+    }
+
     private interface EqualityAsserter<T> {
         void assertEqual(T t1, T t2);
     }
