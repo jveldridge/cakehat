@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.sqlite.SQLiteConfig;
 
@@ -789,6 +790,125 @@ public class DatabaseV5Impl implements DatabaseV5
                         + " or some unknown insidious database issue occurred. No rows have been inserted or updated.");
             }
         }
+    }
+    
+    @Override
+    public Set<StudentRecord> getAllStudents() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public void blacklistStudents(Set<Integer> studentIDs, int taID) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void unBlacklistStudents(Set<Integer> studentIDs, int taID) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<Integer> getBlacklistedStudents() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<Integer> getBlacklist(int taID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public Set<GroupRecord> getAllGroups() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public GroupRecord addGroup(NewGroup group) throws SQLException, CakeHatDBIOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<GroupRecord> addGroups(Set<NewGroup> groups) 
+                                    throws SQLException, CakeHatDBIOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<Integer> getGroups(int asgnID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeGroups(int asgnID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public Map<Integer, Set<Integer>> getDistribution(int partID) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void assignGroup(int groupID, int partID, int taID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void unassignGroup(int groupID, int partID, int taID) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<Integer> getAssignedGroups(int partID, int taID) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<Integer> getAssignedGroups(int partID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<Integer> getPartsWithAssignedGroups(int taID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Integer getGrader(Integer partID, int groupID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setEarned(int groupID, int partID, int taID, double earned,
+                            boolean matchesGml) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public GradeRecord getEarned(int groupID, int partID) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Map<Integer, GradeRecord> getAllEarned(int partID, Set<Integer> groupIDs) 
+                                                        throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     @Override
