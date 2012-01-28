@@ -9,9 +9,27 @@ import org.joda.time.DateTime;
 
 /**
  *
- * @author Hannah
+ * @author hdrosen
  */
 public interface DataServicesV5 {
+    
+    /**
+     * Returns an immutable Set snapshot containing a {@link Student} object for each student in the database at the
+     * time {@link DataServicesV5#updateDataCache()} was called. If the database contained no students, an empty Set is
+     * returned.
+     * 
+     * @return
+     */
+    public Set<Student> getStudents() throws ServicesException;
+    
+    /**
+     * Returns an immutable Set view containing a {@link Student} object for each enabled student in the database at the
+     * time {@link DataServicesV5#updateDataCache()} was called.  If the database contained no enabled students, an
+     * empty Set is returned.
+     *
+     * @return
+     */
+    public Set<Student> getEnabledStudents() throws ServicesException;
     
     /**
      * Returns the TA who has been assigned to grade the given Group for the given Part. If no such TA exists,
@@ -31,7 +49,7 @@ public interface DataServicesV5 {
      * @param part
      * @param group
      * @param ta
-     * @throws ServicesException 
+     * @throws ServicesException
      */
     public void setGrader(Part part, Group group, TA ta) throws ServicesException;
     
@@ -75,23 +93,30 @@ public interface DataServicesV5 {
     public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException;
     
     /**
-     * Returns the handin time for the given gradable event and part.
+     * Returns the handin time for the given gradable event and group.
      * 
      * @param gradableEvent
      * @param part
      * @return
      * @throws ServicesException 
      */
-    public HandinTime getHandinTime(GradableEvent gradableEvent, Part part) throws ServicesException;
+    public HandinTime getHandinTime(GradableEvent gradableEvent, Group group) throws ServicesException;
     
     
     /**
-     * Sets the handin time for the given gradable event and part.
+     * Sets the handin time for the given gradable event and group.
      * 
      * @param gradableEvent
      * @param part
      * @param handinTime
      * @throws ServicesException 
      */
-    public void setHandinTime(GradableEvent gradableEvent, Part part, DateTime handinTime) throws ServicesException;
+    public void setHandinTime(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException;
+    
+    /**
+     * Loads Student and Group objects into memory for all students and groups in the database.
+     *
+     * @throws ServicesException
+     */
+    public void updateDataCache() throws ServicesException;
 }

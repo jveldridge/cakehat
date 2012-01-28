@@ -12,19 +12,25 @@ import javax.mail.internet.InternetAddress;
  */
 public class TA implements Comparable<TA>
 {
+    private final int _id;
     private final String _login;
     private final String _firstName;
     private final String _lastName;
     private final boolean _isDefaultGrader;
     private final boolean _isAdmin;
-
-    TA(String login, String firstName, String lastName, boolean isDefaultGrader, boolean isAdmin)
+    
+    TA(DbTA ta) {
+        _id = ta.getId();
+        _login = ta.getLogin();
+        _firstName = ta.getFirstName();
+        _lastName = ta.getLastName();
+        _isDefaultGrader = ta.isDefaultGrader();
+        _isAdmin = ta.isAdmin();
+    }
+    
+    public int getId()
     {
-        _login = login;
-        _firstName = firstName;
-        _lastName = lastName;
-        _isDefaultGrader = isDefaultGrader;
-        _isAdmin = isAdmin;
+        return _id;
     }
 
     public String getLogin()
