@@ -26,7 +26,7 @@ public class DbPart extends DbDataItem
     private final Set<DbPartAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
     
-    public static DbPart buildPart(DbGradableEvent gradableEvent, String name, int order) {
+    public static DbPart build(DbGradableEvent gradableEvent, String name, int order) {
         DbPart part = new DbPart(gradableEvent, name, order);
         gradableEvent.addPart(part);
         
@@ -150,7 +150,6 @@ public class DbPart extends DbDataItem
         }
     }
     
-    @Deprecated
     public DbPartAction getAction(PartActionDescription.ActionType type)
     {
         synchronized (_actions) {
@@ -164,7 +163,7 @@ public class DbPart extends DbDataItem
         }
     }
     
-    public void addAction(DbPartAction action)
+    void addAction(DbPartAction action)
     {
         synchronized (_actions)
         {
@@ -180,7 +179,7 @@ public class DbPart extends DbDataItem
         }
     }
     
-    public void addInclusionFilter(DbInclusionFilter filter)
+    void addInclusionFilter(DbInclusionFilter filter)
     {
         synchronized(_inclusionFilters)
         {

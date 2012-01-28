@@ -19,7 +19,7 @@ public class DbPartAction extends DbDataItem
     private volatile String _name;
     private final Set<DbActionProperty> _properties;
     
-    public static DbPartAction buildPartAction(DbPart part, ActionType type) {
+    public static DbPartAction build(DbPart part, ActionType type) {
         DbPartAction action = new DbPartAction(part, type);
         part.addAction(action);
         
@@ -73,7 +73,7 @@ public class DbPartAction extends DbDataItem
         return _name;
     }
     
-    public void addActionProperty(DbActionProperty property)
+    void addActionProperty(DbActionProperty property)
     {
         synchronized(_properties)
         {

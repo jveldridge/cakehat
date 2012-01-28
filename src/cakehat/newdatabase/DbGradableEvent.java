@@ -30,7 +30,7 @@ public class DbGradableEvent extends DbDataItem
     private volatile Period _latePeriod;
     private final Set<DbPart> _parts;
     
-    public static DbGradableEvent buildGradableEvent(DbAssignment asgn, String name, int order) {
+    public static DbGradableEvent build(DbAssignment asgn, String name, int order) {
         DbGradableEvent event = new DbGradableEvent(asgn, name, order);
         asgn.addGradableEvent(event);
         
@@ -150,7 +150,7 @@ public class DbGradableEvent extends DbDataItem
         _latePeriod = latePeriod;
     }
     
-    public void addPart(DbPart part)
+    void addPart(DbPart part)
     {
         synchronized(_parts)
         {

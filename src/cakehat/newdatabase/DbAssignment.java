@@ -81,7 +81,7 @@ public class DbAssignment extends DbDataItem
         return _hasGroups;
     }
     
-    public void addGradableEvent(DbGradableEvent gradableEvent)
+    void addGradableEvent(DbGradableEvent gradableEvent)
     {
         synchronized(_gradableEvents)
         {

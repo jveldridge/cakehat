@@ -12,7 +12,7 @@ public class DbActionProperty extends DbDataItem
     private final String _key;
     private volatile String _value;
     
-    public static DbActionProperty buildActionProperty(DbPartAction partAction, String key) {
+    public static DbActionProperty build(DbPartAction partAction, String key) {
         DbActionProperty property = new DbActionProperty(partAction, key);
         partAction.addActionProperty(property);
         
