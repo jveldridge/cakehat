@@ -2,6 +2,7 @@ package cakehat.newdatabase;
 
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,15 +85,6 @@ public interface DatabaseV5
     public void putInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     
     public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
-    
-    /**
-     * Returns an ImmutableSet containing a StudentRecord object for each 
-     * student in the database. If the database contains no students, an empty 
-     * Set is returned.
-     *
-     * @return
-     */
-    public Set<StudentRecord> getAllStudents() throws SQLException;
     
     /**
      * For each student ID in the given Set, adds the corresponding student
@@ -205,15 +197,15 @@ public interface DatabaseV5
     
     /**
      * Returns the distribution for the Part with the given ID.  The Map 
-     * returned maps a TA's ID to a Set of group IDs representing the groups
-     * that TA has been assigned to grade for the Part. The Map returned
+     * returned maps a TA's ID to a Collection of group IDs representing the
+     * groups that TA has been assigned to grade for the Part. The Map returned
      * contains entries only for those TAs who have groups assigned to them.
      * If no distribution has yet been set, an empty Map is returned.
      * 
      * @param partID
      * @return
      */
-    public Map<Integer, Set<Integer>> getDistribution(int partID) 
+    public Map<Integer, Collection<Integer>> getDistribution(int partID) 
                                                         throws SQLException;
     
     /**
@@ -240,7 +232,7 @@ public interface DatabaseV5
      *
      * NOTE: This method should not be used to create an initial distribution
      *       for a project; it should be used only to reassign grading.
-     *       To create an initial distribution, use setAsgnDist(...), below.
+     *       To create an initial distribution, use setDistribution(...), above.
      *
      * @param groupID
      * @param partID
@@ -317,10 +309,11 @@ public interface DatabaseV5
      * @param dateRecorded
      * @param earned
      * @param matchesGml
+     * @param dateRecorded
      * 
      */
-    public void setEarned(int groupID, int partID, int taID, String dateRecorded,
-                            Double earned, boolean matchesGml) throws SQLException;
+    public void setEarned(int groupID, int partID, int taID, Double earned,
+                    boolean matchesGml, String dateRecorded) throws SQLException;
 
     /**
      * Returns a GradeRecord object containing the grade information of the 
@@ -344,7 +337,7 @@ public interface DatabaseV5
      * @param groupIDs
      * @return
      */
-    public Map<Integer, GradeRecord> getAllEarned(int partID, Set<Integer> groupIDs) 
+    public Map<Integer, GradeRecord> getEarned(int partID, Set<Integer> groupIDs) 
                                                         throws SQLException;
 
     /*
