@@ -17,7 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1107,8 +1106,8 @@ public class DatabaseV5Impl implements DatabaseV5
     }
 
     @Override
-    public void setEarned(int groupID, int partID, int taID, double earned,
-                            boolean matchesGml) throws SQLException {
+    public void setEarned(int groupID, int partID, int taID, String dateRecorded,
+                            Double earned, boolean matchesGml) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

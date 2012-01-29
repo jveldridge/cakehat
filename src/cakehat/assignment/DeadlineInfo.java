@@ -186,7 +186,7 @@ public class DeadlineInfo
      * extension may shift any early or late dates that belong to this deadline.
      * 
      * @param handinTime may be {@code null}, if {@code null} then a {@link DeadlineResolution} with a time status of
-     * {@link TimeStatus#NC_LATE} will be returned
+     * {@link TimeStatus#NOT_RECEIVED} with a penalty/bonus of 0
      * @param ontimeExtension may be {@code null}
      * @param shiftDates will be ignored if {@code ontimeExtension} is {@code null}
      * @return 
@@ -196,7 +196,7 @@ public class DeadlineInfo
         DeadlineResolution effect;
         if(handinTime == null)
         {
-            effect = new DeadlineResolution(TimeStatus.NC_LATE, Double.NaN);
+            effect = new DeadlineResolution(TimeStatus.NOT_RECEIVED, 0);
         }
         else if(_type == Type.NONE)
         {
@@ -325,7 +325,7 @@ public class DeadlineInfo
     
     public static enum TimeStatus
     {
-        EARLY("Early"), ON_TIME("On Time"), LATE("Late"), NC_LATE("NC Late");
+        EARLY("Early"), ON_TIME("On Time"), LATE("Late"), NC_LATE("NC Late"), NOT_RECEIVED("Not Received");
 
         private final String _prettyPrintName;
 

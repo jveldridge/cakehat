@@ -167,7 +167,7 @@ public class GMLGRDWriterTest {
             
         }
         expect(dataServices.getGrader(anyObject(Part.class), anyObject(Group.class))).andReturn(ta).anyTimes();
-        expect(dataServices.getEarned(group, part)).andReturn(80.0).anyTimes();
+        expect(dataServices.getEarned(group, part)).andReturn(null).anyTimes();
         
         replay(dataServices);
         
