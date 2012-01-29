@@ -43,6 +43,16 @@ public class UserServicesImpl implements UserServices
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getStudentGroup());
     }
+    
+    public List<String> getTALogins() throws NativeException
+    {
+        return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getTAGroup());
+    }
+    
+    public List<String> getHTALogins() throws NativeException
+    {
+        return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getHTAGroup());
+    }
 
     public String getSanitizedTALogin(TA ta) {
         if (ta == null) {

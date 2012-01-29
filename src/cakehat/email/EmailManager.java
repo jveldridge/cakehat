@@ -1,6 +1,6 @@
 package cakehat.email;
 
-import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -56,9 +56,9 @@ public interface EmailManager
                      String subject, String body, Iterable<File> attachments) throws MessagingException;
     
     /**
-     * Gets an immutable collection of {@link InternetAddress}es that are to be notified.
+     * Gets an immutable set of {@link InternetAddress}es that are to be notified.
      * 
      * @return addresses
      */
-    public ImmutableCollection<InternetAddress> getNotifyAddresses();
+    public ImmutableSet<InternetAddress> getNotifyAddresses();
 }
