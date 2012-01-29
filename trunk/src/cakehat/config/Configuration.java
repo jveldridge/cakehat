@@ -9,6 +9,7 @@ import java.util.List;
  *
  * @author jak2
  */
+@Deprecated
 class Configuration
 {
     private final ImmutableList.Builder<Assignment> _assignmentsBuilder = ImmutableList.builder();

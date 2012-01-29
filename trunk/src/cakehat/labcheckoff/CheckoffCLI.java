@@ -1,7 +1,6 @@
 package cakehat.labcheckoff;
 
 import cakehat.Allocator;
-import cakehat.config.Assignment;
 import cakehat.config.LabPart;
 import cakehat.database.Group;
 import cakehat.database.NewGroup;

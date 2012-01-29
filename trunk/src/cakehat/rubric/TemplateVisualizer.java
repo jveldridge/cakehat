@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class TemplateVisualizer extends JFrame
 {
     TemplateVisualizer(Rubric rubric)

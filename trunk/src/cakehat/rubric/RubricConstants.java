@@ -6,6 +6,7 @@ package cakehat.rubric;
  *
  * @author jak2
  */
+@Deprecated
 interface RubricConstants
 {
     public final static String

@@ -15,6 +15,7 @@ import cakehat.rubric.Rubric.Section;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class TextField extends JTextArea
 {
     private TextField(Collection<String> text)

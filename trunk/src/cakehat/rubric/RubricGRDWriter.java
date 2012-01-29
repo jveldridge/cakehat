@@ -24,6 +24,7 @@ import java.util.Iterator;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class RubricGRDWriter {
     private final static String GRADER_LBL = "GRADER: ";
     private final static String HANDIN_STATUS_LBL = "HANDIN STATUS: ";

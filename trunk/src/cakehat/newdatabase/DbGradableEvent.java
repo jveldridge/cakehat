@@ -1,6 +1,5 @@
 package cakehat.newdatabase;
 
-import cakehat.assignment.DeadlineInfo;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.HashSet;

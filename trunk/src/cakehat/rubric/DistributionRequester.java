@@ -9,6 +9,7 @@ package cakehat.rubric;
  *
  * @author jeldridg
  */
+@Deprecated
 public interface DistributionRequester {
 
     public void updatePercentDone(int newPercentDone);

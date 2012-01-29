@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class RubricGMLParser implements RubricConstants
 {
     /**

@@ -11,6 +11,7 @@ import javax.swing.JScrollBar;
  *
  * @author spoletto
  */
+@Deprecated
 class GradingFocusTraversalPolicy extends FocusTraversalPolicy
 {
     private Vector<Component> _order;

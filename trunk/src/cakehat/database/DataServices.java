@@ -24,6 +24,7 @@ import java.util.Set;
  * 
  * @author jeldridg
  */
+@Deprecated
 public interface DataServices {
 
     public enum ValidityCheck {BYPASS, CHECK};

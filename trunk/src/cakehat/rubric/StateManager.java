@@ -10,6 +10,7 @@ import javax.swing.JButton;
  *
  * @author spoletto
  */
+@Deprecated
 class StateManager {
     
     private boolean _rubricSaved = true;

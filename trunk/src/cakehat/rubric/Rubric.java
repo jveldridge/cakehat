@@ -16,6 +16,7 @@ import cakehat.services.ServicesException;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class Rubric
 {
     private DistributablePart _distPart;

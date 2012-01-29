@@ -23,6 +23,7 @@ import cakehat.views.shared.ErrorView;
  *
  * @author jak2
  */
+@Deprecated
 public class EmailAccount
 {
     private static final String EMAIL_HOST = "smtps.cs.brown.edu";

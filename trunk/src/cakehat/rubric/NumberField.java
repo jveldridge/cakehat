@@ -21,6 +21,7 @@ import cakehat.Allocator;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class NumberField extends JFormattedTextField
 {    
     private Subsection _subsection = null;

@@ -5,6 +5,7 @@ package cakehat.config;
  *
  * @author jak2
  */
+@Deprecated
 public class ConfigurationException extends Exception
 {
     public ConfigurationException(String msg)

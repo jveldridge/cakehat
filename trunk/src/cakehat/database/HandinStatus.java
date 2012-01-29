@@ -2,6 +2,7 @@ package cakehat.database;
 
 import cakehat.rubric.TimeStatus;
 
+@Deprecated
 public class HandinStatus {
     private final TimeStatus _status;
     private final Integer _daysLate;

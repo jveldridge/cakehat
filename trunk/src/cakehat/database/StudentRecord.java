@@ -8,6 +8,7 @@ package cakehat.database;
  * 
  * @author jeldridg
  */
+@Deprecated
 class StudentRecord {
     
     private final int _dbId;

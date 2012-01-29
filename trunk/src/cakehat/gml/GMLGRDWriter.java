@@ -2,8 +2,8 @@ package cakehat.gml;
 
 import cakehat.Allocator;
 import cakehat.assignment.Assignment;
-import cakehat.assignment.DeadlineInfo;
-import cakehat.assignment.DeadlineInfo.DeadlineResolution;
+import cakehat.newdatabase.DeadlineInfo;
+import cakehat.newdatabase.DeadlineInfo.DeadlineResolution;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.gml.InMemoryGML.Section;

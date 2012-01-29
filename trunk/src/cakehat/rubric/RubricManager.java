@@ -14,6 +14,7 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 public interface RubricManager
 {
     public void viewTemplate(DistributablePart dp) throws RubricException;

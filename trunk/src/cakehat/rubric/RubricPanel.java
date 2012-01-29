@@ -44,6 +44,7 @@ import support.ui.PartialDescriptionProvider;
  * @author jak2
  * @author spoletto
  */
+@Deprecated
 class RubricPanel extends JPanel
 {
     private Rubric _rubric;

@@ -3,7 +3,7 @@ package cakehat.views.config;
 import support.ui.DocumentAdapter;
 import cakehat.Allocator;
 import cakehat.assignment.ActionRepository;
-import cakehat.assignment.DeadlineInfo;
+import cakehat.newdatabase.DeadlineInfo;
 import cakehat.assignment.PartActionDescription;
 import cakehat.assignment.PartActionDescription.ActionType;
 import cakehat.assignment.PartActionProperty;

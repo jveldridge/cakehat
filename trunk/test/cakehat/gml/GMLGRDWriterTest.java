@@ -5,8 +5,8 @@
 package cakehat.gml;
 
 import java.io.IOException;
-import cakehat.assignment.DeadlineInfo.DeadlineResolution;
-import cakehat.assignment.DeadlineInfo;
+import cakehat.newdatabase.DeadlineInfo.DeadlineResolution;
+import cakehat.newdatabase.DeadlineInfo;
 import org.joda.time.DateTime;
 import cakehat.newdatabase.DataServicesV5;
 import cakehat.newdatabase.HandinTime;

@@ -14,6 +14,7 @@ import java.util.List;
  *
  * @author jeldridg
  */
+@Deprecated
 public class NewGroup
 {
     private final Assignment _assignment;

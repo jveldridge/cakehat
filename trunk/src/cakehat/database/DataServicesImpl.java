@@ -28,6 +28,7 @@ import support.utils.posix.NativeException;
  *
  * @author jeldridg
  */
+@Deprecated
 public class DataServicesImpl implements DataServices {
 
     /**
