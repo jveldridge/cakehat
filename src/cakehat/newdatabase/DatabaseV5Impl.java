@@ -1125,7 +1125,30 @@ public class DatabaseV5Impl implements DatabaseV5
     
     @Override
     public HandinRecord getHandinTime(int geid, int agid) throws SQLException{
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                    "SELECT tid, daterecorded, time"
+                    + " FROM handintime"
+                    + " WHERE geid == ? AND agid == ?");
+
+            ps.setInt(1, geid);
+            ps.setInt(2, agid);
+
+            ResultSet rs = ps.executeQuery();
+
+            HandinRecord record = null;
+            if (rs.next()) {
+                int tid = rs.getInt("tid");
+                String dateRecorded = rs.getString("daterecorded");
+                String time = rs.getString("time");
+                record = new HandinRecord(geid,agid,time,dateRecorded,tid);
+            }
+            return record;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
 
@@ -1133,7 +1156,23 @@ public class DatabaseV5Impl implements DatabaseV5
     @Override
     public void setHandinTime(int geid, int agid, String time,
                               String dateRecorded, int tid) throws SQLException{
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO  handintime (geid, agid, time, dateRecorded, tid)"
+                    + " VALUES (?, ?, ?, ?, ?)");
+
+            ps.setInt(1, geid);
+            ps.setInt(2, agid);
+            ps.setString(3, time);
+            ps.setString(4, dateRecorded);
+            ps.setInt(5, tid);
+
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
@@ -1153,6 +1192,7 @@ public class DatabaseV5Impl implements DatabaseV5
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS handintime");
 
             //CREATE all DB tables
             conn.createStatement().executeUpdate("CREATE TABLE courseproperties (cpid INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -1232,6 +1272,14 @@ public class DatabaseV5Impl implements DatabaseV5
                     + " sid INTEGER NOT NULL,"
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE)");
+            conn.createStatement().executeUpdate("CREATE TABLE handintime (geid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " time VARCHAR NOT NULL,"
+                    + " daterecorded VARCHAR NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
+                    + " CONSTRAINT singlehandin UNIQUE (agid, geid) ON CONFLICT REPLACE)");
 
             conn.commit();
         } catch (SQLException ex) {
