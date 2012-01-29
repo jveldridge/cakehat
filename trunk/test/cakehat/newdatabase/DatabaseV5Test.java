@@ -715,6 +715,7 @@ public class DatabaseV5Test {
             
     }
 
+
     @Test
     public void testGetAllGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
 
@@ -804,6 +805,98 @@ public class DatabaseV5Test {
         assertTrue(record.getMemberIDs().containsAll(actualRecord.getMemberIDs()));
 
     }
+
+
+
+    @Test
+    public void testGetSetHandinTime() throws SQLException, CakeHatDBIOException{
+        DbAssignment dbAsgn = new DbAssignment("asgn", 1);
+        _database.putAssignments(SingleElementSet.of(dbAsgn));
+
+        DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
+        assertEquals(dbAsgn.getId(), ge.getAssignmentId());
+
+        _database.putGradableEvents(SingleElementSet.of(ge));
+
+
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getName()).andReturn(dbAsgn.getName()).anyTimes();
+        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
+        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
+
+        replay(asgn);
+
+        _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
+        Student stud = new Student(_database.getStudents().iterator().next());
+
+
+        String name = "TestGroup";
+        GroupRecord asgnGroup = _database.addGroup(new NewGroup(asgn, name, stud));
+
+        int geid = ge.getId();
+        int agid = asgnGroup.getDbId();
+        String date = "1/28/2012";
+        String time = "10:05";
+        int tid = 1;
+
+        _database.setHandinTime(geid, agid, time, date, tid);
+
+        HandinRecord record = _database.getHandinTime(geid, agid);
+
+        assertEquals(geid, record.getGradeableEventId());
+        assertEquals(agid, record.getAsgnGroupId());
+        assertEquals(date, record.getDateRecorded());
+        assertEquals(time, record.getTime());
+        assertEquals(tid, record.getTaId());
+    }
+
+    @Test
+    public void testGetSetHandinTimeOverwrite() throws SQLException, CakeHatDBIOException{
+        DbAssignment dbAsgn = new DbAssignment("asgn", 1);
+        _database.putAssignments(SingleElementSet.of(dbAsgn));
+
+        DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
+        assertEquals(dbAsgn.getId(), ge.getAssignmentId());
+
+        _database.putGradableEvents(SingleElementSet.of(ge));
+
+
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getName()).andReturn(dbAsgn.getName()).anyTimes();
+        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
+        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
+
+        replay(asgn);
+
+        _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
+        Student stud = new Student(_database.getStudents().iterator().next());
+
+
+        String name = "TestGroup";
+        GroupRecord asgnGroup = _database.addGroup(new NewGroup(asgn, name, stud));
+
+        int geid = ge.getId();
+        int agid = asgnGroup.getDbId();
+        String date1 = "1/28/2012";
+        String time1 = "10:05";
+        int tid = 1;
+
+        _database.setHandinTime(geid, agid, time1, date1, tid);
+
+        String date2 = "1/29/2012";
+        String time2 = "10:06";
+
+        _database.setHandinTime(geid, agid, time2, date2, tid);
+
+        HandinRecord record = _database.getHandinTime(geid, agid);
+
+        assertEquals(geid, record.getGradeableEventId());
+        assertEquals(agid, record.getAsgnGroupId());
+        assertEquals(date2, record.getDateRecorded());
+        assertEquals(time2, record.getTime());
+        assertEquals(tid, record.getTaId());
+    }
+
 
     private interface EqualityAsserter<T> {
         void assertEqual(T t1, T t2);
