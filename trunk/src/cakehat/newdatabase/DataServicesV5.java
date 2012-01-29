@@ -1,8 +1,10 @@
 package cakehat.newdatabase;
 
+import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
+import java.util.List;
 import java.util.Set;
 import org.joda.time.DateTime;
 
@@ -81,6 +83,11 @@ public interface DataServicesV5 {
      * @return
      */
     public Set<TA> getTAs() throws ServicesException;
+    
+    /**
+     * Returns an immutable ordered list of all assignment.
+     */
+    public List<Assignment> getAssignments() throws ServicesException;
     
     /**
      * Returns the deadline info for the given gradable event.

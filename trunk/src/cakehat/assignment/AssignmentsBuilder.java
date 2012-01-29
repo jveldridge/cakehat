@@ -9,16 +9,19 @@ import cakehat.newdatabase.DbInclusionFilter.FilterType;
 import cakehat.newdatabase.DbPart;
 import cakehat.newdatabase.DbPartAction;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builds assignment objects from database objects.
  * 
  * @author jak2
  */
-class AssignmentsBuilder
+public class AssignmentsBuilder
 {   
     /**
      * Builds an immutable list of {@link Assignment}s.
@@ -26,11 +29,13 @@ class AssignmentsBuilder
      * @param dbAssignments
      * @return 
      */
-    ImmutableList<Assignment> buildAssigments(Iterable<DbAssignment> dbAssignments)
+    public ImmutableList<Assignment> buildAssigments(Set<DbAssignment> dbAssignments)
     {
         ImmutableList.Builder<Assignment> assignmentsBuilder = ImmutableList.builder();
         
-        for(DbAssignment dbAssignment : dbAssignments)
+        List<DbAssignment> sortedDbAssignments = new ArrayList<DbAssignment>(dbAssignments);
+        Collections.sort(sortedDbAssignments);
+        for(DbAssignment dbAssignment : sortedDbAssignments)
         {
             List<GradableEvent> gradableEvents = buildGradableEvents(dbAssignment.getGradableEvents());
             
@@ -51,11 +56,13 @@ class AssignmentsBuilder
         return assignmentsBuilder.build();
     }
     
-    private ImmutableList<GradableEvent> buildGradableEvents(Iterable<DbGradableEvent> dbGradableEvents)
+    private ImmutableList<GradableEvent> buildGradableEvents(Set<DbGradableEvent> dbGradableEvents)
     {
         ImmutableList.Builder<GradableEvent> gradableEventsBuilder = ImmutableList.builder();
         
-        for(DbGradableEvent dbGradableEvent : dbGradableEvents)
+        List<DbGradableEvent> sortedDbGradableEvents = new ArrayList<DbGradableEvent>(dbGradableEvents);
+        Collections.sort(sortedDbGradableEvents);
+        for(DbGradableEvent dbGradableEvent : sortedDbGradableEvents)
         {
             List<Part> parts = buildParts(dbGradableEvent.getParts());
             
@@ -76,11 +83,13 @@ class AssignmentsBuilder
         return gradableEventsBuilder.build();
     }
     
-    private ImmutableList<Part> buildParts(Iterable<DbPart> dbParts)
+    private ImmutableList<Part> buildParts(Set<DbPart> dbParts)
     {
         ImmutableList.Builder<Part> partsBuilder = ImmutableList.builder();
         
-        for(DbPart dbPart : dbParts)
+        List<DbPart> sortedDbParts = new ArrayList<DbPart>(dbParts);
+        Collections.sort(sortedDbParts);
+        for(DbPart dbPart : sortedDbParts)
         {
             Part part = new Part(
                     dbPart.getId(),
@@ -102,32 +111,47 @@ class AssignmentsBuilder
         return partsBuilder.build();
     }
     
-    private FilterProvider buildFilterProvider(Iterable<DbInclusionFilter> dbFilters)
+    private FilterProvider buildFilterProvider(Set<DbInclusionFilter> dbFilters)
     {
-        ImmutableList.Builder<FilterProvider> providers = ImmutableList.builder();
-        for(DbInclusionFilter dbFilter : dbFilters)
+        FilterProvider provider;
+        if(dbFilters.isEmpty())
         {
-            if(dbFilter.getType() == FilterType.DIRECTORY)
+            provider = new AlwaysAcceptingFilterProvider();
+        }
+        else
+        {
+            ImmutableList.Builder<FilterProvider> providers = ImmutableList.builder();
+            for(DbInclusionFilter dbFilter : dbFilters)
             {
-                providers.add(new DirectoryFilterProvider(dbFilter.getPath()));
+                if(dbFilter.getType() == FilterType.DIRECTORY)
+                {
+                    providers.add(new DirectoryFilterProvider(dbFilter.getPath()));
+                }
+                else if(dbFilter.getType() == FilterType.FILE)
+                {
+                    providers.add(new FileFilterProvider(dbFilter.getPath()));
+                }
             }
-            else if(dbFilter.getType() == FilterType.FILE)
-            {
-                providers.add(new FileFilterProvider(dbFilter.getPath()));
-            }
+            provider = new OrFilterProvider(providers.build());
         }
         
-        return new OrFilterProvider(providers.build());
+        return provider;
     }
     
     private PartAction buildPartAction(PartActionDescription.ActionType type, DbPartAction dbPartAction)
     {
-        Map<String, String> properties = new HashMap<String, String>();
-        for(DbActionProperty property : dbPartAction.getActionProperties())
+        PartAction action = null;
+        if(dbPartAction != null)
         {
-            properties.put(property.getKey(), property.getValue());
+            Map<String, String> properties = new HashMap<String, String>();
+            for(DbActionProperty property : dbPartAction.getActionProperties())
+            {
+                properties.put(property.getKey(), property.getValue());
+            }
+            
+            action = ActionRepository.get().getAction(type, dbPartAction.getName(), properties);
         }
         
-        return ActionRepository.get().getAction(type, dbPartAction.getName(), properties);
+        return action;
     }
 }

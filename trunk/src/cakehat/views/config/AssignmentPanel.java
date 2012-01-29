@@ -390,14 +390,7 @@ class AssignmentPanel extends JPanel
                 try
                 {
                     List<DbAssignment> assignments = new ArrayList<DbAssignment>(Allocator.getDatabaseV5().getAssignments());
-                    Collections.sort(assignments, new Comparator<DbAssignment>()
-                    {
-                        @Override
-                        public int compare(DbAssignment asgn1, DbAssignment asgn2)
-                        {
-                            return asgn1.getOrder().compareTo(asgn2.getOrder());
-                        }
-                    });
+                    Collections.sort(assignments);
                     final List<DbAssignment> sortedAssignments = ImmutableList.copyOf(assignments);
                     
                     EventQueue.invokeLater(new Runnable()
@@ -631,14 +624,7 @@ class AssignmentPanel extends JPanel
             scrollPane.setAlignmentX(LEFT_ALIGNMENT);
             
             List<DbGradableEvent> gradableEvents = new ArrayList<DbGradableEvent>(_asgn.getGradableEvents());
-            Collections.sort(gradableEvents, new Comparator<DbGradableEvent>()
-            {
-                @Override
-                public int compare(DbGradableEvent ge1, DbGradableEvent ge2)
-                {
-                    return ge1.getOrder().compareTo(ge2.getOrder());
-                }
-            });
+            Collections.sort(gradableEvents);
             for(DbGradableEvent gradableEvent : gradableEvents)
             {
                 GradableEventPanel panel = new GradableEventPanel(this, gradableEvent);
@@ -685,14 +671,7 @@ class AssignmentPanel extends JPanel
             _gradableEventsPanel.removeAll();
             
             List<DbGradableEvent> gradableEvents = new ArrayList<DbGradableEvent>(_asgn.getGradableEvents());
-            Collections.sort(gradableEvents, new Comparator<DbGradableEvent>()
-            {
-                @Override
-                public int compare(DbGradableEvent ge1, DbGradableEvent ge2)
-                {
-                    return ge1.getOrder().compareTo(ge2.getOrder());
-                }
-            });
+            Collections.sort(gradableEvents);
             
             for(DbGradableEvent event : gradableEvents)
             {
@@ -1135,14 +1114,7 @@ class AssignmentPanel extends JPanel
             contentPanel.add(_partsPanel);
             
             List<DbPart> parts = new ArrayList<DbPart>(_gradableEvent.getParts());
-            Collections.sort(parts, new Comparator<DbPart>()
-            {
-                @Override
-                public int compare(DbPart p1, DbPart p2)
-                {
-                    return new Integer(p1.getOrder()).compareTo(new Integer(p2.getOrder()));
-                }
-            });
+            Collections.sort(parts);
             for(DbPart part : parts)
             {
                 PartPanel panel = new PartPanel(this, part);
@@ -1181,14 +1153,7 @@ class AssignmentPanel extends JPanel
             _partsPanel.removeAll();
             
             List<DbPart> parts = new ArrayList<DbPart>(_gradableEvent.getParts());
-            Collections.sort(parts, new Comparator<DbPart>()
-            {
-                @Override
-                public int compare(DbPart p1, DbPart p2)
-                {
-                    return new Integer(p1.getOrder()).compareTo(p2.getOrder());
-                }
-            });
+            Collections.sort(parts);
             
             for(DbPart part : parts)
             {

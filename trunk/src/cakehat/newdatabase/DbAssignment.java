@@ -10,7 +10,7 @@ import java.util.Set;
  * @author jak2
  * @author jeldridg
  */
-public class DbAssignment extends DbDataItem
+public class DbAssignment extends DbDataItem implements Comparable<DbAssignment>
 {
     private volatile String _name;
     private volatile int _order;
@@ -108,5 +108,11 @@ public class DbAssignment extends DbDataItem
     @Override
     Iterable<DbGradableEvent> getChildren() {
         return this.getGradableEvents();
+    }
+    
+    @Override
+    public int compareTo(DbAssignment other)
+    {
+        return new Integer(_order).compareTo(other._order);
     }
 }
