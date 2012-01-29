@@ -63,6 +63,7 @@ import cakehat.services.ServicesException;
 import cakehat.views.admin.stathist.StatHistView;
 import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.StudentDescriptionProvider;
+import java.awt.EventQueue;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -79,26 +80,15 @@ import support.utils.posix.NativeException;
  */
 public class AdminView extends JFrame
 {
-    public static void launch()
+    public static void launch(final boolean isSSH)
     {
-        if(Allocator.getUserServices().isUserAdmin())
+        EventQueue.invokeLater(new Runnable()
         {
-            boolean isSSH = false;
-            try
-            {
-                isSSH = Allocator.getUserUtilities().isUserRemotelyConnected();
+            public void run()
+            {   
+                new AdminView(isSSH);
             }
-            catch(NativeException e){}
-
-            new AdminView(isSSH);
-        }
-        else
-        {
-            JOptionPane.showMessageDialog(null, "You [" +
-                                         Allocator.getUserUtilities().getUserLogin() +
-                                         "] are not an authorized user.");
-            System.exit(0);
-        }
+        });
     }
 
     private class SelectedLabel extends JLabel
@@ -170,10 +160,13 @@ public class AdminView extends JFrame
     private CardLayout _cardLayout;
     private SinglePartPanel _singlePartPanel;
     private SingleSelectionPanel _singleSelectionPanel;
+    private final boolean _isSSH;
 
     private AdminView(boolean isSSH)
     {
         super("cakehat (admin)" + (isSSH ? " [ssh]" : ""));
+        
+        _isSSH = isSSH;
         
         _students = new LinkedList<Student>(Allocator.getDataServices().getAllStudents());
         Collections.sort(_students);
@@ -1433,7 +1426,7 @@ public class AdminView extends JFrame
         JOptionPane.showMessageDialog(this, "Changes successful.  " +
                 "Cakehat will now restart.", "Reset Successful", JOptionPane.INFORMATION_MESSAGE);
         this.dispose();
-        AdminView.launch();
+        AdminView.launch(_isSSH);
     }
 
     private void autoDistributorButtonActionPerformed()

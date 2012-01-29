@@ -1,12 +1,11 @@
 package cakehat;
 
-import cakehat.views.admin.AdminView;
-import cakehat.views.grader.GraderView;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -16,18 +15,17 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /**
- * Window shown when running in developer mode that allows for selecting either
- * the grader or admin view.
+ * Window shown when running in developer mode that allows for selecting either the grader or admin view.
  *
  * @author jak2
  */
 class DeveloperModeView extends JFrame
 {
-    private DeveloperModeView()
+    private DeveloperModeView(final String[] args)
     {
         super("cakehat (developer)");
 
-         //Menu bar
+        //Menu bar
         JMenuBar menuBar = new JMenuBar();
         this.setJMenuBar(menuBar);
 
@@ -63,8 +61,8 @@ class DeveloperModeView extends JFrame
         menu.add(menuItem);
 
         // Panel for buttons
-        JPanel panel = new JPanel(new GridLayout(1, 2));
-        panel.setPreferredSize(new Dimension(300, 80));
+        JPanel panel = new JPanel(new GridLayout(2, 2));
+        panel.setPreferredSize(new Dimension(300, 150));
         this.add(panel);
 
         // Grader
@@ -73,8 +71,7 @@ class DeveloperModeView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
-               CakehatMain.setRunMode(CakehatRunMode.GRADER);
-               GraderView.launch();
+               CakehatMain.setRunMode(CakehatRunMode.GRADER, args);
                DeveloperModeView.this.dispose();
            }
         });
@@ -86,12 +83,26 @@ class DeveloperModeView extends JFrame
         {
            public void actionPerformed(ActionEvent e)
            {
-               CakehatMain.setRunMode(CakehatRunMode.ADMIN);
-               AdminView.launch();
+               CakehatMain.setRunMode(CakehatRunMode.ADMIN, args);
                DeveloperModeView.this.dispose();
            }
         });
         panel.add(adminButton);
+        
+        // Config
+        JButton configButton = new JButton("Config");
+        configButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+               CakehatMain.setRunMode(CakehatRunMode.CONFIG, args);
+               DeveloperModeView.this.dispose();
+            }
+        });
+        panel.add(configButton);
+        
+        panel.add(Box.createHorizontalBox());
 
         // Configure for display
         this.pack();
@@ -100,8 +111,8 @@ class DeveloperModeView extends JFrame
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    public static void launch()
+    public static void launch(String[] args)
     {
-        new DeveloperModeView().setVisible(true);
+        new DeveloperModeView(args).setVisible(true);
     }
 }
