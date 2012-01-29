@@ -146,6 +146,7 @@ handintime  //only use if non-digital
   * tid INTEGER NOT NULL
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
+  * CONSTRAINT singlehandin UNIQUE (agid, geid) ON CONFLICT REPLACE
 
 exemption
   * geid INTEGER NOT NULL
