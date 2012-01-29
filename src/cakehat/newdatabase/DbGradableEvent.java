@@ -14,7 +14,7 @@ import org.joda.time.Period;
  * @author jak2
  * @author jeldridg
  */
-public class DbGradableEvent extends DbDataItem
+public class DbGradableEvent extends DbDataItem implements Comparable<DbGradableEvent>
 {
     private volatile Integer _asgnId;
     private volatile String _name;
@@ -104,7 +104,7 @@ public class DbGradableEvent extends DbDataItem
         _order = order;
     }
     
-    public Integer getOrder()
+    public int getOrder()
     {
         return _order;
     }
@@ -226,5 +226,11 @@ public class DbGradableEvent extends DbDataItem
     @Override
     Iterable<DbPart> getChildren() {
         return this.getParts();
+    }
+
+    @Override
+    public int compareTo(DbGradableEvent other)
+    {
+        return new Integer(_order).compareTo(other._order);
     }
 }

@@ -14,7 +14,7 @@ import java.util.Set;
  * @author jak2
  * @author jeldridg
  */
-public class DbPart extends DbDataItem
+public class DbPart extends DbDataItem implements Comparable<DbPart>
 {
     private volatile Integer _gradableEventId;
     private volatile String _name;
@@ -221,5 +221,11 @@ public class DbPart extends DbDataItem
         children.addAll(this.getInclusionFilters());
         
         return children;
+    }
+    
+    @Override
+    public int compareTo(DbPart other)
+    {
+        return new Integer(_order).compareTo(other._order);
     }
 }

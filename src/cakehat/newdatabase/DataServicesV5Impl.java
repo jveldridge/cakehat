@@ -1,12 +1,15 @@
 package cakehat.newdatabase;
 
 import cakehat.Allocator;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.AssignmentsBuilder;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +35,8 @@ public class DataServicesV5Impl implements DataServicesV5 {
     private final Set<Student> _enabledStudents = new CopyOnWriteArraySet<Student>();
     
     private Set<TA> _tas = null;
+    
+    private List<Assignment> _assignments = null;
     
     @Override
     public Set<Student> getStudents() throws ServicesException {
@@ -86,6 +91,23 @@ public class DataServicesV5Impl implements DataServicesV5 {
         }
         
         return _tas;
+    }
+    
+    public List<Assignment> getAssignments() throws ServicesException
+    {
+        if(_assignments == null)
+        {
+            try
+            {
+                _assignments = new AssignmentsBuilder().buildAssigments(Allocator.getDatabaseV5().getAssignments());
+            }
+            catch(SQLException ex)
+            {
+                throw new ServicesException(ex);
+            }
+        }
+        
+        return _assignments;
     }
 
     @Override
