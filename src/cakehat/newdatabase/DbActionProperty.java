@@ -30,6 +30,7 @@ public class DbActionProperty extends DbDataItem
         
         _partActionId = partAction.getId();
         _key = key;
+        _value = "";
     }
 
     /**

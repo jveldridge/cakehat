@@ -55,7 +55,7 @@ public class DbPartAction extends DbDataItem
         _partId = partId;
         _type = ActionType.valueOf(type);
         _name = name;
-        _properties = properties;
+        _properties = new HashSet<DbActionProperty>(properties);
     }
 
     public ActionType getType()

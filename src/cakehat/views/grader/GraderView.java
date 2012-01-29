@@ -99,26 +99,15 @@ public class GraderView extends JFrame implements RubricSaveListener
      * is a TA as specified by the cakehat configuration. Otherwise the user
      * will be informed they are not an authorized user.
      */
-    public static void launch()
+    public static void launch(final boolean isSSH)
     {
-        if(Allocator.getUserServices().isUserTA())
+        EventQueue.invokeLater(new Runnable()
         {
-            boolean isSSH = false;
-            try
-            {
-                isSSH = Allocator.getUserUtilities().isUserRemotelyConnected();
+            public void run()
+            {   
+                new GraderView(isSSH);
             }
-            catch(NativeException e){}
-
-            new GraderView(isSSH);
-        }
-        else
-        {
-            JOptionPane.showMessageDialog(null, "You [" +
-                                         Allocator.getUserUtilities().getUserLogin() +
-                                         "] are not an authorized user.");
-            System.exit(0);
-        }
+        });
     }
 
     private GraderView(boolean isSSH)
