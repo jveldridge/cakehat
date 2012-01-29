@@ -10,21 +10,25 @@ package cakehat.newdatabase;
  */
 class GradeRecord {
     
-    private final int _partId;
-    private final int _groupId;
     private final String _dateRecorded;
     private final int _taId;
     private final Double _earned;
     private final boolean _matchesGml;
     
-    GradeRecord(int partId, int groupId, String dateRecorded, int taId, Double earned, boolean matchesGml) {
-        _partId = partId;
-        _groupId = groupId;
+    GradeRecord(String dateRecorded, int taId, Double earned, boolean matchesGml) {
         _dateRecorded = dateRecorded;
         _taId = taId;
         _earned = earned;
         _matchesGml = matchesGml;
     } 
+    
+    public String getDateRecorded() {
+        return _dateRecorded;
+    }
+    
+    public int getTAId() {
+        return _taId;
+    }
     
     public double getEarned() {
         return _earned;

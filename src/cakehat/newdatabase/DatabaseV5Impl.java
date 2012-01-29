@@ -5,6 +5,7 @@ import cakehat.assignment.Assignment;
 import cakehat.database.ConnectionProvider;
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -17,6 +18,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -245,9 +249,8 @@ public class DatabaseV5Impl implements DatabaseV5
     @Override
     public void putTAs(Set<DbTA> tas) throws SQLException {
         Connection conn = this.openConnection();
-        conn.setAutoCommit(false);
-        
         try {
+            conn.setAutoCommit(false);
             PreparedStatement ps = conn.prepareStatement("UPDATE ta SET login = ?, firstname = ?, lastname = ?, "
                     + "admin = ?, defaultgrader = ? WHERE tid == ?");
             
@@ -669,9 +672,8 @@ public class DatabaseV5Impl implements DatabaseV5
     private <T extends DbDataItem> void putDbDataItems(Set<T> items, DbDataItemPutOperation<T> operation,
                                                        DbDataItemIdUpdater idUpdater) throws SQLException {
         Connection conn = this.openConnection();
-        conn.setAutoCommit(false);
-        
         try {
+            conn.setAutoCommit(false);
             PreparedStatement psInsert = conn.prepareStatement(operation._insertCommand);
             PreparedStatement psUpdate = conn.prepareStatement(operation._updateCommand);
             
@@ -716,10 +718,9 @@ public class DatabaseV5Impl implements DatabaseV5
     }
     
     private <T extends DbDataItem> void removeDbDataItems(String table, String idField, Set<T> toRemove) throws SQLException {
-        Connection conn = this.openConnection();
-        conn.setAutoCommit(false);
-        
+        Connection conn = this.openConnection();        
         try {
+            conn.setAutoCommit(false);
             String deleteCommand = String.format("DELETE FROM %s WHERE %s.%s == ?", table, table, idField);
             PreparedStatement ps = conn.prepareStatement(deleteCommand);
             
@@ -807,40 +808,94 @@ public class DatabaseV5Impl implements DatabaseV5
             }
         }
     }
-
-
-
-
-
-
-
-    
-
-    @Override
-    public Set<StudentRecord> getAllStudents() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
     
     @Override
     public void blacklistStudents(Set<Integer> studentIDs, int taID) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO blacklist "
+                    + "('sid', 'tid') VALUES (?, ?)");
+
+            for (Integer studentID : studentIDs) {
+                ps.setInt(1, studentID);
+                ps.setInt(2, taID);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public void unBlacklistStudents(Set<Integer> studentIDs, int taID) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM blacklist "
+                    + "WHERE tid == ? AND sid == ?");
+
+            for (Integer studentID : studentIDs) {
+                ps.setInt(1, taID);
+                ps.setInt(2, studentID);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public Set<Integer> getBlacklistedStudents() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            ResultSet rs = conn.createStatement().executeQuery("SELECT DISTINCT b.sid AS sid "
+                    + "FROM blacklist AS b");
+            Set<Integer> result = new HashSet<Integer>();
+            while (rs.next()) {
+                result.add(rs.getInt("sid"));
+            }
+            return ImmutableSet.copyOf(result);
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public Set<Integer> getBlacklist(int taID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            Set<Integer> blackList = new HashSet<Integer>();
+            
+            PreparedStatement ps = conn.prepareStatement("SELECT b.sid AS sid"
+                                                     + " FROM blacklist AS b"
+                                                     + " WHERE b.tid == ?");
+            ps.setInt(1, taID);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                blackList.add(rs.getInt("sid"));
+            }
+            ps.close();
+
+            return ImmutableSet.copyOf(blackList);
+        } finally {
+            this.closeConnection(conn);
+        }
     }
     
     @Override
@@ -1056,70 +1111,292 @@ public class DatabaseV5Impl implements DatabaseV5
         }
     }
     
-    @Override
-    public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    private String partIDsSetToString(Set<Integer> partIDs) {
+        StringBuilder builder = new StringBuilder();
+        Iterator<Integer> iterator = partIDs.iterator();
+        while (iterator.hasNext()) {
+            builder.append('\'').append(iterator.next()).append('\'');
+            if (iterator.hasNext()) {
+                builder.append(',');
+            }
+        }
+        
+        return builder.toString();
     }
     
     @Override
-    public Map<Integer, Set<Integer>> getDistribution(int partID) 
+    public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.agid) AS rowcount"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid IN (" + this.partIDsSetToString(partIDs) + ")");
+            ResultSet rs = ps.executeQuery();
+            int rows = rs.getInt("rowcount");
+            ps.close();
+
+            return rows == 0;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public Map<Integer, Collection<Integer>> getDistribution(int partID) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            ArrayListMultimap<Integer, Integer> groups = ArrayListMultimap.create();
+
+            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taID, d.agid AS agid"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid == ?");
+            ps.setInt(1, partID);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                groups.put(rs.getInt("taID"), rs.getInt("agid"));
+            }
+            
+            return groups.asMap(); 
+        } finally {
+            this.closeConnection(conn);
+        }
     }
     
     @Override
     public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {  
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
+                    + " WHERE distribution.pid == ?");
+            for (int partID : distribution.keySet()) {
+                ps.setInt(1, partID);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            ps.close();
+            
+            ps = conn.prepareStatement(
+                    "INSERT INTO distribution ('pid', 'agid', 'tid') "
+                    + "VALUES (?, ?, ?)");
+            for (int partID : distribution.keySet()) {
+                for (int taID : distribution.get(partID).keySet()) {
+                    for (Integer groupID : distribution.get(partID).get(taID)) {
+                        ps.setInt(1, partID);
+                        ps.setInt(2, groupID);
+                        ps.setInt(3, taID);
+                        ps.addBatch();   
+                    }
+                }
+            }
+
+            ps.executeBatch();
+            ps.close();
+
+            // commit all the inserts to the DB file
+            conn.commit();
+        } catch (SQLException e) {
+            // the exception is caught so that any old distribution is preserved
+            conn.rollback();
+
+            //then the exception is re-thrown to inform the client of the error
+            throw e;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public void assignGroup(int groupID, int partID, int taID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO distribution ('agid', 'tid', 'pid')"
+                    + " VALUES (?, ?, ?)");
+            ps.setInt(1, groupID);
+            ps.setInt(2, taID);
+            ps.setInt(3, partID);
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public void unassignGroup(int groupID, int partID, int taID) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
+                    + " WHERE pid == ?"
+                    + " AND agid == ?"
+                    + " AND tid ==  ?");
+            ps.setInt(1, partID);
+            ps.setInt(2, groupID);
+            ps.setInt(3, taID);
+
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public Set<Integer> getAssignedGroups(int partID, int taID) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Collection<Integer> fromDist = this.getDistribution(partID).get(taID);
+        if (fromDist != null) {
+            return ImmutableSet.copyOf(fromDist);
+        }
+
+        return Collections.emptySet();
     }
 
     @Override
     public Set<Integer> getAssignedGroups(int partID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Set<Integer> groups = new HashSet<Integer>();
+
+        for (Collection<Integer> groups4TA : this.getDistribution(partID).values()) {
+            groups.addAll(groups4TA);
+        }
+
+        return ImmutableSet.copyOf(groups);
     }
 
     @Override
     public Set<Integer> getPartsWithAssignedGroups(int taID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Set<Integer> partIDs = new HashSet<Integer>();
+
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT d.pid AS partID"
+                    + " FROM distribution AS d"
+                    + " WHERE d.tid == ?");
+            ps.setInt(1, taID);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int partID = rs.getInt("partID");
+                partIDs.add(partID);
+            }
+
+            return ImmutableSet.copyOf(partIDs);
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public Integer getGrader(Integer partID, int groupID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection conn = this.openConnection();
+        
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taID"
+                    + " FROM distribution AS d"
+                    + " WHERE d.pid==? AND d.agid==?");
+            ps.setInt(1, partID);
+            ps.setInt(2, groupID);
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("taID");
+            }
+            return null;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
-    public void setEarned(int groupID, int partID, int taID, String dateRecorded,
-                            Double earned, boolean matchesGml) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setEarned(int groupID, int partID, int taID, Double earned,
+                boolean matchesGml, String dateRecorded) throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            //database uniqueness constraint ensures that any existing grade
+            //for this group will be replaced
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
+                + "('agid', 'pid', 'tid', 'earned', 'matchesgml', 'daterecorded')"
+                + " VALUES (?, ?, ?, ?, ?, ?)");
+            ps.setInt(1, groupID);
+            ps.setInt(2, partID);
+            ps.setInt(3, taID);
+            this.setDouble(ps, 4, earned);
+            ps.setBoolean(5, matchesGml);
+            ps.setString(6, dateRecorded);
+            
+            ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
     }
 
     @Override
     public GradeRecord getEarned(int groupID, int partID) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        GradeRecord record = null;
+        Connection conn = this.openConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                    "SELECT daterecorded, tid, earned, matchesgml" 
+                    + " FROM grade AS g"
+                    + " WHERE g.agid == ? AND g.pid == ?");
+            ps.setInt(1, groupID);
+            ps.setInt(2, partID);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                record = new GradeRecord(rs.getString("daterecorded"), rs.getInt("tid"), 
+                            this.getDouble(rs, "earned"), rs.getBoolean("matchesgml"));
+            }
+
+            return record;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    private String groupIDsSetToString(Set<Integer> groupIDs) {
+        String groupIDString = "";
+        Iterator<Integer> groupIter = groupIDs.iterator();
+        while (groupIter.hasNext()) {
+            groupIDString += "'" + groupIter.next() + "'";
+            if (groupIter.hasNext()) {
+                groupIDString += ",";
+            }
+        }
+        
+        return groupIDString;
     }
 
     @Override
-    public Map<Integer, GradeRecord> getAllEarned(int partID, Set<Integer> groupIDs) 
+    public Map<Integer, GradeRecord> getEarned(int partID, Set<Integer> groupIDs) 
                                                         throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Map<Integer, GradeRecord> records = new HashMap<Integer, GradeRecord>();
+
+        Connection conn = this.openConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                    "SELECT agid, daterecorded, tid, earned, matchesgml"
+                    + " FROM grade AS g"
+                    + " WHERE g.agid IN ("+ this.groupIDsSetToString(groupIDs) +")"
+                    + " AND g.pid == ? ");
+            ps.setInt(1, partID);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                records.put(rs.getInt("agid"), 
+                            new GradeRecord(rs.getString("daterecorded"), rs.getInt("tid"),
+                                    this.getDouble(rs, "earned"), rs.getBoolean("matchesgml")));
+            }
+
+            return records;
+        } finally {
+            this.closeConnection(conn);
+        }
     }
     
     @Override
@@ -1178,8 +1455,8 @@ public class DatabaseV5Impl implements DatabaseV5
     public void resetDatabase() throws SQLException {
         Connection conn = this.openConnection();
         try {
-            //DROP all tables in DB
             conn.setAutoCommit(false);
+            //DROP all tables in DB
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS notifyaddresses");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS ta");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS student");
@@ -1189,8 +1466,11 @@ public class DatabaseV5Impl implements DatabaseV5
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS partaction");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS blacklist");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS grade");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS handintime");
 
             //CREATE all DB tables
@@ -1261,6 +1541,11 @@ public class DatabaseV5Impl implements DatabaseV5
                     + " path VARCHAR NOT NULL,"
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " CONSTRAINT pidpathunique UNIQUE (pid, path) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE blacklist (sid INTEGER NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT sidtidunique UNIQUE (sid, tid) ON CONFLICT IGNORE)");
             conn.createStatement().executeUpdate("CREATE TABLE asgngroup (agid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " aid INTEGER NOT NULL,"
                     + " name VARCHAR NOT NULL,"
@@ -1271,6 +1556,22 @@ public class DatabaseV5Impl implements DatabaseV5
                     + " sid INTEGER NOT NULL,"
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE)");
+            conn.createStatement().executeUpdate("CREATE TABLE distribution (pid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT onegrader UNIQUE (agid, pid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE grade (pid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " earned DOUBLE,"
+                    + " daterecorded VARCHAR NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " matchesgml INTEGER NOT NULL DEFAULT 1,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT onegrade UNIQUE (agid, pid) ON CONFLICT REPLACE)");
             conn.createStatement().executeUpdate("CREATE TABLE handintime (geid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
                     + " time VARCHAR NOT NULL,"
@@ -1279,7 +1580,7 @@ public class DatabaseV5Impl implements DatabaseV5
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
                     + " CONSTRAINT singlehandin UNIQUE (agid, geid) ON CONFLICT REPLACE)");
-
+            
             conn.commit();
         } catch (SQLException ex) {
             conn.rollback();
