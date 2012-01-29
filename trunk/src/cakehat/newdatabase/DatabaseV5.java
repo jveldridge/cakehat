@@ -346,5 +346,34 @@ public interface DatabaseV5
     public Map<Integer, GradeRecord> getAllEarned(int partID, Set<Integer> groupIDs) 
                                                         throws SQLException;
 
+    /*
+     * Returns a HandinRecord object containing handin information for a specific
+     * groups GradeableEvent. Returns null if there is no corresponding time to
+     * the geid and agid
+     *
+     * @param geid
+     * @param agid
+     * @return
+     */
+
+    public HandinRecord getHandinTime(int geid, int agid) throws SQLException;
+    
+
+    /*
+     * Assigns a handin time for a GradeableEvent. Throws a SQLException if
+     * either the agid or geid are invalid
+     *
+     * @param geid
+     * @param agid
+     * @param time
+     * @param dateRecorded
+     * @param tid
+     *
+     */
+
+    public void setHandinTime(int geid, int agid, String time,
+                              String dateRecorded, int tid) throws SQLException;
+
+
     public void resetDatabase() throws SQLException;
 }

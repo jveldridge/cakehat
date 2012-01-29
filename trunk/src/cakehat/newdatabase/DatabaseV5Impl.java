@@ -1124,6 +1124,19 @@ public class DatabaseV5Impl implements DatabaseV5
     }
     
     @Override
+    public HandinRecord getHandinTime(int geid, int agid) throws SQLException{
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+
+    @Override
+    public void setHandinTime(int geid, int agid, String time,
+                              String dateRecorded, int tid) throws SQLException{
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public void resetDatabase() throws SQLException {
         Connection conn = this.openConnection();
         try {
