@@ -58,13 +58,28 @@ public interface UserServices
     public boolean isInTAGroup(String taLogin) throws NativeException;
 
     /**
-     * Returns the logins of all students in the class's student group.
+     * Returns the logins of all memberes in the course's student group.
      *
-     * @return logins of the student in the class's student group
-     *
+     * @return
      * @throws NativeException thrown if the student group does not exist
      */
     public List<String> getStudentLogins() throws NativeException;
+    
+    /**
+     * Returns the logins of all members in the course's TA group.
+     *
+     * @return
+     * @throws NativeException thrown if the TA group does not exist
+     */
+    public List<String> getTALogins() throws NativeException;
+    
+    /**
+     * Returns the logins of all members in the course's HTA group.
+     *
+     * @return 
+     * @throws NativeException thrown if the HTA group does not exist
+     */
+    public List<String> getHTALogins() throws NativeException;
 
     /**
      * Returns the login of the given TA, or, if the given TA object is null,

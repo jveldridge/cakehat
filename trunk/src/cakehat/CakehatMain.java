@@ -166,11 +166,11 @@ public class CakehatMain
             //If there is no matching record in the database
             if(userTA == null)
             {
-                List<String> taLogins = Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getTAGroup());
+                List<String> taLogins = Allocator.getUserServices().getTALogins();
             
                 if(taLogins.contains(userLogin))
                 {
-                    List<String> htaLogins = Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getHTAGroup()); 
+                    List<String> htaLogins = Allocator.getUserServices().getHTALogins(); 
                     
                     //If there are already TAs in the database, add the TA currently running cakehat
                     //Otherwise do not because that means cakehat is not set up yet

@@ -1521,8 +1521,7 @@ public class DatabaseV5Impl implements DatabaseV5
                     + " outof DOUBLE,"
                     + " quickname VARCHAR,"
                     + " gradingguide VARCHAR,"
-                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
-                    + " CONSTRAINT orderingunique UNIQUE (ordering) ON CONFLICT ROLLBACK)");
+                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE)");
             conn.createStatement().executeUpdate("CREATE TABLE partaction (paid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " pid INTEGER NOT NULL,"
                     + " type VARCHAR NOT NULL,"

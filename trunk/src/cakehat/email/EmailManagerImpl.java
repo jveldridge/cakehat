@@ -1,12 +1,10 @@
 package cakehat.email;
 
+import cakehat.Allocator;
 import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.newdatabase.DbNotifyAddress;
-import cakehat.newdatabase.DbPropertyValue;
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import cakehat.views.shared.ErrorView;
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -25,7 +23,7 @@ public class EmailManagerImpl implements EmailManager
 {
     private final EmailAccount _account;
     private final EmailAccountStatus _status;
-    private final ImmutableCollection<InternetAddress> _addresses;
+    private final ImmutableSet<InternetAddress> _addresses;
     
     public EmailManagerImpl()
     {
@@ -38,9 +36,8 @@ public class EmailManagerImpl implements EmailManager
         EmailAccountStatus status;
         try
         {
-            //TODO: Retrieve information from the database
-            String emailLogin = dummyDb_getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT).getValue();
-            String emailPassword = dummyDb_getPropertyValue(DbPropertyKey.EMAIL_PASSWORD).getValue();
+            String emailLogin = Allocator.getDatabaseV5().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT).getValue();
+            String emailPassword = Allocator.getDatabaseV5().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD).getValue();
                     
             if(emailLogin == null || emailLogin.isEmpty() || emailPassword == null || emailPassword.isEmpty())
             {
@@ -74,37 +71,30 @@ public class EmailManagerImpl implements EmailManager
         _status = status;
         
         //Notify addresses
-        ImmutableCollection<InternetAddress> addresses;
+        ImmutableSet<InternetAddress> addresses;
         try
         {
-            //TODO: Retrieve information from the database
-            Set<DbNotifyAddress> dbAddresses = dummyDb_getNotifyAddresses();
+            Set<DbNotifyAddress> dbAddresses = Allocator.getDatabaseV5().getNotifyAddresses();
             
-            ImmutableList.Builder<InternetAddress> addressesBuilder = ImmutableList.builder();
+            ImmutableSet.Builder<InternetAddress> addressesBuilder = ImmutableSet.builder();
             for(DbNotifyAddress address : dbAddresses)
             {
-                String addressString = address.getAddress();
-                
-                //Ignore addresses that are empty strings
-                if(!addressString.isEmpty())
+                //The configuration manager should prevent email addresses with invalid formatting from being stored
+                //so if there is an exception when constructing then something went wrong along the way
+                try
                 {
-                    //The configuration manager should prevent email addresses with invalid formatting from being stored
-                    //so if there is an exception when constructing then something went wrong along the way
-                    try
-                    {
-                        addressesBuilder.add(new InternetAddress(addressString, true));
-                    }
-                    catch(AddressException ex)
-                    {
-                        new ErrorView(ex, "Unable to construct an email address from: " + address);
-                    }
+                    addressesBuilder.add(new InternetAddress(address.getAddress(), true));
+                }
+                catch(AddressException ex)
+                {
+                    new ErrorView(ex, "Unable to construct an email address from: " + address.getAddress());
                 }
             }
             addresses = addressesBuilder.build();
         }
         catch(SQLException ex)
         {
-            addresses = ImmutableList.<InternetAddress>of();
+            addresses = ImmutableSet.<InternetAddress>of();
             
             new ErrorView(ex, "Unable to retrieve notify addresses from database");
         }
@@ -142,37 +132,8 @@ public class EmailManagerImpl implements EmailManager
     }
     
     @Override
-    public ImmutableCollection<InternetAddress> getNotifyAddresses()
+    public ImmutableSet<InternetAddress> getNotifyAddresses()
     {
         return _addresses;
-    }
-    
-    
-    /******************************************************************************************************************\
-    |*                                         Dummy Methods for Testing                                              *|
-    \******************************************************************************************************************/
-    
-    
-    private static <T> DbPropertyValue<T> dummyDb_getPropertyValue(DbPropertyKey<T> key) throws SQLException
-    {
-        if(key.equals(DbPropertyKey.EMAIL_ACCOUNT))
-        {
-            DbPropertyValue<String> prop = new DbPropertyValue<String>("fakelogn");
-            
-            return (DbPropertyValue<T>) prop;
-        }
-        else if(key.equals(DbPropertyKey.EMAIL_PASSWORD))
-        {
-            DbPropertyValue<String> prop = new DbPropertyValue<String>("s3cur3");
-            
-            return (DbPropertyValue<T>) prop;
-        }
-        
-        throw new IllegalArgumentException("Unknown key: " + key);
-    }
-    
-    private static Set<DbNotifyAddress> dummyDb_getNotifyAddresses() throws SQLException
-    {
-        return ImmutableSet.of(new DbNotifyAddress("foo@bar.com"));
     }
 }
