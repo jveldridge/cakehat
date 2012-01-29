@@ -10,6 +10,7 @@ package cakehat.rubric;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 public enum TimeStatus
 {
     EARLY("Early"), ON_TIME("On Time"), LATE("Late"), NC_LATE("NC Late");

@@ -44,6 +44,7 @@ import javax.swing.KeyStroke;
  * @author jak2
  * @author spoletto
  */
+@Deprecated
 class GradingVisualizer extends JFrame
 {
     private Rubric _rubric;

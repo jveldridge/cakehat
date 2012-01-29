@@ -26,6 +26,7 @@ import static cakehat.config.ConfigurationParserHelper.*;
  * 
  * @author jak2
  */
+@Deprecated
 public class ConfigurationParser
 {
     private final static ActionRepository ACTION_REPOSITORY = new ActionRepository();

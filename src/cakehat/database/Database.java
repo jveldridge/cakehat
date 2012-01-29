@@ -15,6 +15,7 @@ import java.util.Set;
  *
  * @author jeldridg
  */
+@Deprecated
 public interface Database {
 
     /**

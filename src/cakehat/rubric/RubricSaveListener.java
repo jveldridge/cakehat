@@ -8,6 +8,7 @@ import cakehat.config.handin.DistributablePart;
  *
  * @author jak2
  */
+@Deprecated
 public interface RubricSaveListener
 {
     public void rubricSaved(DistributablePart part, Group group);

@@ -8,6 +8,7 @@ import org.w3c.dom.Node;
  *
  * @author jak2
  */
+@Deprecated
 public class RubricGMLException extends RubricException
 {
     /**

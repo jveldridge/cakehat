@@ -10,6 +10,7 @@ import java.sql.SQLException;
  *
  * @author aunger
  */
+@Deprecated
 public interface ConnectionProvider {
 
     /**

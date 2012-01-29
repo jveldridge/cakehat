@@ -1,6 +1,5 @@
 package cakehat.newdatabase;
 
-import cakehat.assignment.DeadlineInfo;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;

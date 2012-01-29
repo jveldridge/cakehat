@@ -1,8 +1,8 @@
-package cakehat.assignment;
+package cakehat.newdatabase;
 
 import org.joda.time.DateTime;
-import cakehat.assignment.DeadlineInfo.TimeStatus;
-import cakehat.assignment.DeadlineInfo.DeadlineResolution;
+import cakehat.newdatabase.DeadlineInfo.TimeStatus;
+import cakehat.newdatabase.DeadlineInfo.DeadlineResolution;
 import org.joda.time.Period;
 import org.junit.Test;
 import static org.junit.Assert.*;

@@ -35,6 +35,7 @@ import org.sqlite.SQLiteConfig;
  * @author aunger
  * @author jeldridg
  */
+@Deprecated
 public class DatabaseImpl implements Database {
 
     private ConnectionProvider _connProvider;

@@ -24,6 +24,7 @@ import javax.xml.transform.TransformerException;
  * @author spoletto
  * @author jak2
  */
+@Deprecated
 class RubricGMLWriter implements RubricConstants
 {
     /**

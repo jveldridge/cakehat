@@ -12,6 +12,7 @@ import static cakehat.config.XMLParsingUtilities.*;
  *
  * @author jak2
  */
+@Deprecated
 class ConfigurationParserHelper
 {
     //String constants that represent the tags used in the XML markup

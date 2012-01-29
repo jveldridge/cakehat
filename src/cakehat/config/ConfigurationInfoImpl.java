@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
  *
  * @author jak2
  */
+@Deprecated
 public class ConfigurationInfoImpl implements ConfigurationInfo
 {
     private Configuration _config;

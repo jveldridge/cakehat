@@ -19,6 +19,7 @@ import org.w3c.dom.NodeList;
  *
  * @author jak2
  */
+@Deprecated
 class XMLParsingUtilities
 {
     /**

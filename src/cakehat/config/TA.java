@@ -6,6 +6,7 @@ import cakehat.Allocator;
  *
  * @author jak2
  */
+@Deprecated
 public class TA implements Comparable<TA>
 {
     private final String _login, _name;

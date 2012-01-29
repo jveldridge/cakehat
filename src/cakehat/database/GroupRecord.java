@@ -12,6 +12,7 @@ import java.util.List;
  * 
  * @author jeldridg
  */
+@Deprecated
  class GroupRecord {
     
     private final int _dbId;

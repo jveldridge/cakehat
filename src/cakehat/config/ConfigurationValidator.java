@@ -17,6 +17,7 @@ import support.utils.posix.NativeException;
  *
  * @author jak2
  */
+@Deprecated
 class ConfigurationValidator
 {
     private final Configuration _config;

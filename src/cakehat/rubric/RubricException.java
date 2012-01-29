@@ -5,6 +5,7 @@ package cakehat.rubric;
  *
  * @author jeldridg
  */
+@Deprecated
 public class RubricException extends Exception
 {
     public RubricException() {

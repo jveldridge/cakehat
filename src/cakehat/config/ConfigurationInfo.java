@@ -9,6 +9,7 @@ import java.util.List;
  *
  * @author jak2
  */
+@Deprecated
 public interface ConfigurationInfo
 {
     /**

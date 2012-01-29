@@ -4,6 +4,7 @@ package cakehat.database;
  *
  * @author alexku
  */
+@Deprecated
 public class CakeHatDBIOException extends Exception {
 
     /**

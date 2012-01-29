@@ -26,6 +26,7 @@ import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
+@Deprecated
 public class RubricManagerImpl implements RubricManager {
 
     /**
