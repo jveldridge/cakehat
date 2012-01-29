@@ -707,7 +707,7 @@ public class DatabaseV5Test {
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.getName()).andReturn(name).anyTimes();
         expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
-        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups).anyTimes();
+        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
 
         replay(asgn);
 
