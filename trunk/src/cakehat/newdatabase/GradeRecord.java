@@ -8,12 +8,20 @@ package cakehat.newdatabase;
  * 
  * @author yf6
  */
-public class GradeRecord {
+class GradeRecord {
     
-    private final double _earned;
+    private final int _partId;
+    private final int _groupId;
+    private final String _dateRecorded;
+    private final int _taId;
+    private final Double _earned;
     private final boolean _matchesGml;
     
-    GradeRecord(double earned, boolean matchesGml) {
+    GradeRecord(int partId, int groupId, String dateRecorded, int taId, Double earned, boolean matchesGml) {
+        _partId = partId;
+        _groupId = groupId;
+        _dateRecorded = dateRecorded;
+        _taId = taId;
         _earned = earned;
         _matchesGml = matchesGml;
     } 

@@ -10,6 +10,7 @@ import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.newdatabase.Group;
 import cakehat.newdatabase.HandinTime;
+import cakehat.newdatabase.PartGrade;
 import cakehat.newdatabase.Student;
 import cakehat.newdatabase.TA;
 import cakehat.services.ServicesException;
@@ -193,12 +194,12 @@ public class GMLGRDWriter {
         else {
             double totalScore;
             try {
-                Double earned = Allocator.getDataServicesV5().getEarned(group, part);
-                if (earned == null) {
+                PartGrade partGrade = Allocator.getDataServicesV5().getEarned(group, part);
+                if (partGrade == null || partGrade.getEarned() == null) {
                     totalScore = 0;
                 }
                 else {
-                    totalScore = earned;
+                    totalScore = partGrade.getEarned();
                 }
             }
             catch(ServicesException ex) {

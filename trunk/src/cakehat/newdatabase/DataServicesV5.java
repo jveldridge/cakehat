@@ -62,7 +62,7 @@ public interface DataServicesV5 {
      * @return
      * @throws ServicesException
      */
-    public Double getEarned(Group group, Part part) throws ServicesException;
+    public PartGrade getEarned(Group group, Part part) throws ServicesException;
     
     /**
      * Sets the points earned and matches gml for the given Group and Part.
@@ -74,7 +74,7 @@ public interface DataServicesV5 {
      * @return
      * @throws ServicesException 
      */
-    public Double setEarned(Group group, Part part, double earned, boolean matchesGml) throws ServicesException;
+    public void setEarned(Group group, Part part, Double earned, boolean matchesGml) throws ServicesException;
     
     /**
      * Returns an immutable set of all TAs.

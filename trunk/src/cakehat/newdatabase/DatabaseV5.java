@@ -314,12 +314,13 @@ public interface DatabaseV5
      * @param groupID
      * @param partID
      * @param taID
+     * @param dateRecorded
      * @param earned
      * @param matchesGml
      * 
      */
-    public void setEarned(int groupID, int partID, int taID, double earned,
-                            boolean matchesGml) throws SQLException;
+    public void setEarned(int groupID, int partID, int taID, String dateRecorded,
+                            Double earned, boolean matchesGml) throws SQLException;
 
     /**
      * Returns a GradeRecord object containing the grade information of the 

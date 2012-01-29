@@ -39,8 +39,8 @@ public class DeadlineInfoTest
     {
         DeadlineInfo info = DeadlineInfo.newNoDeadlineInfo();
         
-        DeadlineResolution resolution = info.apply(null, null, null);
-        assertEquals(resolution.getTimeStatus(), TimeStatus.ON_TIME);
+        DeadlineResolution resolution = info.apply(new DateTime().minusYears(1000), null, null);
+        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
         assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
@@ -49,8 +49,8 @@ public class DeadlineInfoTest
     {
         DeadlineInfo info = DeadlineInfo.newNoDeadlineInfo();
         
-        DeadlineResolution resolution = info.apply(null, EXTENSION_DATE, false);
-        assertEquals(resolution.getTimeStatus(), TimeStatus.ON_TIME);
+        DeadlineResolution resolution = info.apply(new DateTime().minusYears(1000), EXTENSION_DATE, false);
+        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
         assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     
@@ -59,8 +59,8 @@ public class DeadlineInfoTest
     {
         DeadlineInfo info = DeadlineInfo.newNoDeadlineInfo();
         
-        DeadlineResolution resolution = info.apply(null, EXTENSION_DATE, true);
-        assertEquals(resolution.getTimeStatus(), TimeStatus.ON_TIME);
+        DeadlineResolution resolution = info.apply(new DateTime().minusYears(1000), EXTENSION_DATE, true);
+        assertEquals(TimeStatus.ON_TIME, resolution.getTimeStatus());
         assertEquals(0D, resolution.getPenaltyOrBonus(EARNED), 0D);
     }
     

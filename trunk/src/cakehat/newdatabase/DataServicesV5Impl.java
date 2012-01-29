@@ -57,13 +57,13 @@ public class DataServicesV5Impl implements DataServicesV5 {
     }
 
     @Override
-    public Double getEarned(Group group, Part part) throws ServicesException
+    public PartGrade getEarned(Group group, Part part) throws ServicesException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Double setEarned(Group group, Part part, double earned, boolean matchesGml) throws ServicesException
+    public void setEarned(Group group, Part part, Double earned, boolean matchesGml) throws ServicesException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
