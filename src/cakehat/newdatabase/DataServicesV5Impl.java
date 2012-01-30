@@ -108,7 +108,7 @@ public class DataServicesV5Impl implements DataServicesV5 {
             TA ta = getGrader(part, group);
             PartGrade grade = null;
             if (record != null) {
-                grade = new PartGrade(part, group, ta, new DateTime(), record.getEarned(), true);
+                grade = new PartGrade(part, group, ta, new DateTime(record.getDateRecorded()), record.getEarned(), record.doesMatchGml());
             }
             return grade;
         } catch (SQLException ex) {
