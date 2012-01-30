@@ -1,8 +1,6 @@
 package cakehat.newdatabase;
 
 import cakehat.Allocator;
-import cakehat.assignment.Assignment;
-import cakehat.database.ConnectionProvider;
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ArrayListMultimap;
@@ -376,7 +374,7 @@ public class DatabaseV5Impl implements DatabaseV5
                                                            rs.getString("deadlinetype"), rs.getString("earlydate"),
                                                            getDouble(rs, "earlypoints"), rs.getString("ontimedate"),
                                                            rs.getString("latedate"), getDouble(rs, "latepoints"),
-                                                           rs.getString("lateperiod"), parts.get(asgnId)));
+                                                           rs.getString("lateperiod"), parts.get(gradableEventId)));
         }
         
         return gradableEvents.build();
@@ -899,11 +897,11 @@ public class DatabaseV5Impl implements DatabaseV5
     }
     
     @Override
-    public Set<GroupRecord> getAllGroups() throws SQLException {
+    public Set<DbGroup> getAllGroups() throws SQLException {
 
         Connection conn = this.openConnection();
         try {
-            Set<GroupRecord> result = new HashSet<GroupRecord>();
+            Set<DbGroup> result = new HashSet<DbGroup>();
 
             PreparedStatement ps = conn.prepareStatement("SELECT gp.agid as agid, gm.sid AS sid,"
                     + " gp.name AS groupName, gp.aid AS aid"
@@ -924,7 +922,7 @@ public class DatabaseV5Impl implements DatabaseV5
                 if (currGroupId != prevGroupId) {   //current row represents the beginning of a new group
                     if (prevGroupId != 0) {
                         //create record for previous group
-                        result.add(new GroupRecord(prevGroupId, groupAsgnId, groupName, memberIDs));
+                        result.add(new DbGroup(prevGroupId, groupAsgnId, groupName, memberIDs));
                     }
 
                     memberIDs.clear();
@@ -939,7 +937,7 @@ public class DatabaseV5Impl implements DatabaseV5
             }
             //create record for last group
             if (prevGroupId != 0) {
-                result.add(new GroupRecord(prevGroupId, groupAsgnId, groupName, memberIDs));
+                result.add(new DbGroup(prevGroupId, groupAsgnId, groupName, memberIDs));
             }
 
             return ImmutableSet.copyOf(result);
@@ -947,43 +945,31 @@ public class DatabaseV5Impl implements DatabaseV5
             this.closeConnection(conn);
         }
     }
-    
-    @Override
-    //TODO make this less verbose
-    public GroupRecord addGroup(NewGroup group) throws SQLException, CakeHatDBIOException {
-         Iterator<GroupRecord> it = this.addGroups(ImmutableSet.of(group)).iterator();
-         if (it.hasNext()){
-             return it.next();
-         } else{
-             throw new CakeHatDBIOException("Could not add group '" + group + "' to database");
-         }
-    }
 
     @Override
-    public Set<GroupRecord> addGroups(Set<NewGroup> groups) 
-                                    throws SQLException, CakeHatDBIOException {
+    public void addGroups(Set<DbGroup> groups) throws SQLException, CakeHatDBIOException {
       Connection conn = this.openConnection();
         try {
-            Set<GroupRecord> result = new HashSet<GroupRecord>(groups.size());
             conn.setAutoCommit(false);
 
             // create new List of NewGroup objects to guarantee consistent iteration order
-            List<NewGroup> groupList = new ArrayList<NewGroup>(groups);
+            List<DbGroup> groupList = new ArrayList<DbGroup>(groups);
 
             // check that no students in the groups to be added already have groups
-            // for the assignment for which the group is being created
-            SetMultimap<Assignment, Student> studentsToCheck = HashMultimap.create();
-            for (NewGroup group : groupList) {
-                studentsToCheck.putAll(group.getAssignment(), group.getMembers());
+            // for the assignment for which the group is being created--
+            // studentsToCheck maps an assignment ID to a set of student IDs for whom groups are being added
+            SetMultimap<Integer, Integer> studentsToCheck = HashMultimap.create();
+            for (DbGroup group : groupList) {
+                studentsToCheck.putAll(group.getAssignmentId(), group.getMemberIds());
 
             }
 
             //Creates string of student ids
             int numConflicts = 0;
-            for (Assignment asgn : studentsToCheck.keySet()) {
+            for (int asgnID : studentsToCheck.keySet()) {
                 StringBuilder sids = new StringBuilder();
-                for (Student student : studentsToCheck.get(asgn)) {
-                    sids.append(", ").append(student.getId());
+                for (int studentID : studentsToCheck.get(asgnID)) {
+                    sids.append(", ").append(studentID);
                 }
                 //removes leading comma from first addition
                 String sidString = sids.toString();
@@ -997,7 +983,7 @@ public class DatabaseV5Impl implements DatabaseV5
                         + " ON gp.agid == gm.agid"
                         + " WHERE gm.sid IN (" + sidString + ")"
                         + " AND gp.aid == ?");
-                ps.setInt(1, asgn.getId());
+                ps.setInt(1, asgnID);
 
                 ResultSet rs = ps.executeQuery();
                 numConflicts += rs.getInt("numConflicts");
@@ -1012,9 +998,9 @@ public class DatabaseV5Impl implements DatabaseV5
             // insert all the groups
             PreparedStatement psGroup = conn.prepareStatement("INSERT INTO asgngroup"
                     + " ('name', 'aid') VALUES (?, ?)");
-            for (NewGroup group : groupList) {
+            for (DbGroup group : groupList) {
                 psGroup.setString(1, group.getName());
-                psGroup.setInt(2, group.getAssignment().getId());
+                psGroup.setInt(2, group.getAssignmentId());
                 psGroup.addBatch();
             }
             psGroup.executeBatch();
@@ -1038,9 +1024,9 @@ public class DatabaseV5Impl implements DatabaseV5
                     + "VALUES (?, ?)");
 
             for (int i = 0; i < groupList.size(); i++) {
-                for (Student student : groupList.get(i).getMembers()) {
+                for (int studentId : groupList.get(i).getMemberIds()) {
                     psMember.setInt(1, groupIDs.get(i));
-                    psMember.setInt(2, student.getId());
+                    psMember.setInt(2, studentId);
                     psMember.addBatch();
                 }
             }
@@ -1048,22 +1034,11 @@ public class DatabaseV5Impl implements DatabaseV5
             psMember.close();
 
             conn.commit();
-
-            // create GroupRecord objects to return
+            
+            //update DbGroup objects with their IDs
             for (int i = 0; i < groupList.size(); i++) {
-                NewGroup group = groupList.get(i);
-                Set<Integer> memberIDs = new HashSet<Integer>(group.size());
-                for (Student member : group.getMembers()) {
-                    memberIDs.add(member.getId());
-                }
-
-                result.add(new GroupRecord(groupIDs.get(i),
-                                           group.getAssignment().getId(),
-                                           group.getName(),
-                                           memberIDs));
+                groupList.get(i).setId(groupIDs.get(i));
             }
-
-            return result;
         } catch (SQLException ex) {
             conn.rollback();
             throw ex;

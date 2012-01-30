@@ -3,7 +3,6 @@ package cakehat.newdatabase;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Iterator;
 import cakehat.assignment.Assignment;
 import com.google.common.collect.Iterables;
 import java.util.Comparator;
@@ -730,7 +729,7 @@ public class DatabaseV5Test {
 
     @Test
     public void testGetAllGroupsEmpty() throws SQLException {
-        Set<GroupRecord> groups = _database.getAllGroups();
+        Set<DbGroup> groups = _database.getAllGroups();
         assertEquals(0,groups.size());
     }
 
@@ -757,28 +756,27 @@ public class DatabaseV5Test {
     @Test
     public void testGetAllGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
 
-        Assignment asgn = this.createNewAssignmentInDb("asgn",1);
+        Assignment asgn = this.createNewAssignmentInDb("asgn", 1);
 
-        
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
-        
-        
-        String name = "TestGroup";
-        GroupRecord record = _database.addGroup(new NewGroup(asgn, name, stud));
 
-        Set<GroupRecord> groups = _database.getAllGroups();
+        DbGroup toAdd = new DbGroup(asgn, stud);
+        _database.addGroups(ImmutableSet.of(toAdd));
+        assertNotNull(toAdd.getId());
 
-        // check that there is only 1 group1 in the database
+        Set<DbGroup> groups = _database.getAllGroups();
+
+        // check that there is only 1 group in the database
         assertEquals(1, groups.size());
 
-        GroupRecord actualRecord = Iterables.get(groups, 0);
+        DbGroup actualRecord = Iterables.get(groups, 0);
 
-        // check that it is the group1 that was added by checking each field of group1 record
-        assertEquals(record.getDbId(), actualRecord.getDbId());
-        assertEquals(record.getAssignmentID(), actualRecord.getAssignmentID());
-        assertEquals(record.getName(), actualRecord.getName());
-        assertTrue(record.getMemberIDs().containsAll(actualRecord.getMemberIDs()));
+        // check that it is the group that was added by checking each field of group record
+        assertEquals(toAdd.getId(), actualRecord.getId());
+        assertEquals(toAdd.getAssignmentId(), actualRecord.getAssignmentId());
+        assertEquals(toAdd.getName(), actualRecord.getName());
+        assertSetsEqual(toAdd.getMemberIds(), actualRecord.getMemberIds());
     }
 
     @Test
@@ -788,9 +786,9 @@ public class DatabaseV5Test {
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
 
-
-        String name = "TestGroup";
-        GroupRecord record = _database.addGroup(new NewGroup(asgn, name, stud));
+        DbGroup toAdd = new DbGroup(asgn, stud);
+        _database.addGroups(ImmutableSet.of(toAdd));
+        assertNotNull(toAdd.getId());
 
         Set<Integer> agids = _database.getGroups(asgn.getId());
 
@@ -800,8 +798,7 @@ public class DatabaseV5Test {
         int agid = Iterables.get(agids, 0);
 
         // check that the correct group is returned
-        assertEquals(record.getAssignmentID(), agid);
-
+        assertEquals(toAdd.getAssignmentId(), agid);
     }
 
     @Test
@@ -812,22 +809,17 @@ public class DatabaseV5Test {
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
 
-        //add group 1
-        String name = "TestGroup1";
-        _database.addGroup(new NewGroup(asgn1, name, stud));
-
-        //add group 2
-        String name2 = "NotRemoved";
-        GroupRecord record = _database.addGroup(new NewGroup(asgn2,name2,stud));
-
-        Set<GroupRecord> groups = _database.getAllGroups();
-
+        DbGroup group1 = new DbGroup(asgn1, stud);
+        DbGroup group2 = new DbGroup(asgn2, stud);
         
+        //add groups
+        _database.addGroups(ImmutableSet.of(group1, group2));
+
+        Set<DbGroup> groups = _database.getAllGroups();
         assertEquals(2, groups.size());
 
         //remove group for assignment 1
         _database.removeGroups(asgn1.getId());
-
 
         groups = _database.getAllGroups();
 
@@ -835,13 +827,12 @@ public class DatabaseV5Test {
         assertEquals(1,groups.size());
 
         //check that it is the correct group by checking its fields
-        GroupRecord actualRecord = Iterables.get(groups, 0);
+        DbGroup actualRecord = Iterables.get(groups, 0);
 
-        assertEquals(record.getDbId(), actualRecord.getDbId());
-        assertEquals(record.getAssignmentID(), actualRecord.getAssignmentID());
-        assertEquals(record.getName(), actualRecord.getName());
-        assertTrue(record.getMemberIDs().containsAll(actualRecord.getMemberIDs()));
-
+        assertEquals(group2.getId(), actualRecord.getId());
+        assertEquals(group2.getAssignmentId(), actualRecord.getAssignmentId());
+        assertEquals(group2.getName(), actualRecord.getName());
+        assertSetsEqual(group2.getMemberIds(), actualRecord.getMemberIds());
     }
 
     @Test
@@ -855,7 +846,7 @@ public class DatabaseV5Test {
                 new HashMap<Integer, Map<Integer, Set<Integer>>>();
         Map<Integer, Set<Integer>> taToGroups = new HashMap<Integer, Set<Integer>>();
         taToGroups.put(wrapper._taId1, 
-                ImmutableSet.of(wrapper._groupRecord1.getDbId(), wrapper._groupRecord2.getDbId()));
+                ImmutableSet.of(wrapper._dbGroup1.getId(), wrapper._dbGroup2.getId()));
         distribution.put(wrapper._part1.getId(), taToGroups);
         _database.setDistribution(distribution);
         
@@ -873,31 +864,31 @@ public class DatabaseV5Test {
     public void testAssignGroup() throws SQLException, CakeHatDBIOException{
         DatabaseContentWrapper wrapper = new DatabaseContentWrapper();
         
-        _database.assignGroup(wrapper._groupRecord1.getDbId(), 
+        _database.assignGroup(wrapper._dbGroup1.getId(), 
                               wrapper._part1.getId(), wrapper._taId1);
-        _database.assignGroup(wrapper._groupRecord2.getDbId(), 
+        _database.assignGroup(wrapper._dbGroup2.getId(), 
                               wrapper._part1.getId(), wrapper._taId1);
         Set<Integer> assignedGroupsFB = 
                 _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId1);
-        this.assertIntCollectionsEqual(ImmutableSet.of(wrapper._groupRecord1.getDbId(), 
-                                                        wrapper._groupRecord2.getDbId()), 
+        this.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup1.getId(), 
+                                                        wrapper._dbGroup2.getId()), 
                                        assignedGroupsFB);
         assertEquals(true, _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId2).isEmpty());
         
-        _database.assignGroup(wrapper._groupRecord1.getDbId(), 
+        _database.assignGroup(wrapper._dbGroup1.getId(), 
                               wrapper._part1.getId(), wrapper._taId2);
-        assertEquals((int)wrapper._taId2, (int)_database.getGrader(wrapper._part1.getId(), wrapper._groupRecord1.getDbId()));
+        assertEquals((int)wrapper._taId2, (int)_database.getGrader(wrapper._part1.getId(), wrapper._dbGroup1.getId()));
         assignedGroupsFB = _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId1);
-        this.assertIntCollectionsEqual(SingleElementSet.of(wrapper._groupRecord2.getDbId()), 
+        this.assertIntCollectionsEqual(SingleElementSet.of(wrapper._dbGroup2.getId()), 
                                        assignedGroupsFB);
         assignedGroupsFB = _database.getAssignedGroups(wrapper._part1.getId());
-        this.assertIntCollectionsEqual(ImmutableSet.of(wrapper._groupRecord1.getDbId(), 
-                                                        wrapper._groupRecord2.getDbId()), 
+        this.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup1.getId(), 
+                                                        wrapper._dbGroup2.getId()), 
                                        assignedGroupsFB);
         
-        _database.unassignGroup(wrapper._groupRecord1.getDbId(), 
+        _database.unassignGroup(wrapper._dbGroup1.getId(), 
                                 wrapper._part1.getId(), wrapper._taId2);
-        assertEquals(null, _database.getGrader(wrapper._part1.getId(), wrapper._groupRecord1.getDbId()));
+        assertEquals(null, _database.getGrader(wrapper._part1.getId(), wrapper._dbGroup1.getId()));
         assertEquals(true, _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId2).isEmpty());
         assertEquals(true, _database.getPartsWithAssignedGroups(wrapper._taId2).isEmpty());
         
@@ -905,7 +896,7 @@ public class DatabaseV5Test {
         this.assertIntCollectionsEqual(assignPartsDB, SingleElementSet.of(wrapper._part1.getId()));
         assertEquals(true, _database.getAssignedGroups(wrapper._part2.getId()).isEmpty());
         
-        _database.assignGroup(wrapper._groupRecord1.getDbId(), 
+        _database.assignGroup(wrapper._dbGroup1.getId(), 
                               wrapper._part2.getId(), wrapper._taId1);
         assignPartsDB = _database.getPartsWithAssignedGroups(wrapper._taId1);
         this.assertIntCollectionsEqual(assignPartsDB, ImmutableSet.of(wrapper._part1.getId(), 
@@ -919,27 +910,27 @@ public class DatabaseV5Test {
         GradeRecord gradeRecord1 = new GradeRecord("date1", wrapper._taId1, 42.0, true);
         GradeRecord gradeRecord2 = new GradeRecord("date2", wrapper._taId1, 79.5, false);
         
-        _database.setEarned(wrapper._groupRecord1.getDbId(), wrapper._part1.getId(), 
+        _database.setEarned(wrapper._dbGroup1.getId(), wrapper._part1.getId(), 
                             gradeRecord1.getTAId(), gradeRecord1.getEarned(), 
                             gradeRecord1.doesMatchGml(), gradeRecord1.getDateRecorded());
-        _database.setEarned(wrapper._groupRecord2.getDbId(), wrapper._part1.getId(), 
+        _database.setEarned(wrapper._dbGroup2.getId(), wrapper._part1.getId(), 
                             gradeRecord2.getTAId(), gradeRecord2.getEarned(), 
                             gradeRecord2.doesMatchGml(), gradeRecord2.getDateRecorded());
         
         GRADE_RECORD_EQC.assertEqual(gradeRecord1, _database.getEarned(
-                        wrapper._groupRecord1.getDbId(), wrapper._part1.getId()));
+                        wrapper._dbGroup1.getId(), wrapper._part1.getId()));
         GRADE_RECORD_EQC.assertEqual(gradeRecord2, _database.getEarned(
-                        wrapper._groupRecord2.getDbId(), wrapper._part1.getId()));
+                        wrapper._dbGroup2.getId(), wrapper._part1.getId()));
         
-        Set<Integer> groupIDs = ImmutableSet.of(wrapper._groupRecord1.getDbId(),
-                                                wrapper._groupRecord2.getDbId());
+        Set<Integer> groupIDs = ImmutableSet.of(wrapper._dbGroup1.getId(),
+                                                wrapper._dbGroup2.getId());
         assertEquals(true, _database.getEarned(wrapper._part2.getId(), groupIDs).isEmpty());
         
         Map<Integer, GradeRecord> groupToGrade = 
                 _database.getEarned(wrapper._part1.getId(), groupIDs);
         assertEquals(2, groupToGrade.size());
-        GRADE_RECORD_EQC.assertEqual(gradeRecord1, groupToGrade.get(wrapper._groupRecord1.getDbId()));
-        GRADE_RECORD_EQC.assertEqual(gradeRecord2, groupToGrade.get(wrapper._groupRecord2.getDbId()));
+        GRADE_RECORD_EQC.assertEqual(gradeRecord1, groupToGrade.get(wrapper._dbGroup1.getId()));
+        GRADE_RECORD_EQC.assertEqual(gradeRecord2, groupToGrade.get(wrapper._dbGroup2.getId()));
     }
 
     @Test
@@ -952,7 +943,6 @@ public class DatabaseV5Test {
 
         _database.putGradableEvents(SingleElementSet.of(ge));
 
-
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.getName()).andReturn(dbAsgn.getName()).anyTimes();
         expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
@@ -963,12 +953,11 @@ public class DatabaseV5Test {
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
 
-
-        String name = "TestGroup";
-        GroupRecord asgnGroup = _database.addGroup(new NewGroup(asgn, name, stud));
+        DbGroup toAdd = new DbGroup(asgn, stud);
+        _database.addGroups(ImmutableSet.of(toAdd));
 
         int geid = ge.getId();
-        int agid = asgnGroup.getDbId();
+        int agid = toAdd.getId();
         String date = "1/28/2012";
         String time = "10:05";
         int tid = 1;
@@ -1006,11 +995,11 @@ public class DatabaseV5Test {
         Student stud = new Student(_database.getStudents().iterator().next());
 
 
-        String name = "TestGroup";
-        GroupRecord asgnGroup = _database.addGroup(new NewGroup(asgn, name, stud));
+        DbGroup toAdd = new DbGroup(asgn, stud);
+        _database.addGroups(ImmutableSet.of(toAdd));
 
         int geid = ge.getId();
-        int agid = asgnGroup.getDbId();
+        int agid = toAdd.getId();
         String date1 = "1/28/2012";
         String time1 = "10:05";
         int tid = 1;
@@ -1040,6 +1029,11 @@ public class DatabaseV5Test {
         Set<T> set2 = new HashSet<T>(Arrays.asList(elements));
         
         this.assertSetsEqual(comparator, set2, set);
+    }
+    
+    private <T> void assertSetsEqual(Set<T> set1, Set<T> set2) {
+        assertEquals(set1.size(), set2.size());
+        assertTrue(set1.containsAll(set2));
     }
     
     private <T extends DbDataItem> void assertSetsEqual(EqualityAsserter<T> comparator, Set<T> set1, Set<T> set2) {
@@ -1100,7 +1094,7 @@ public class DatabaseV5Test {
         private Set<Integer> _partIDs;
         private DbPart _part1, _part2;
         private int _taId1, _taId2;
-        private GroupRecord _groupRecord1, _groupRecord2;
+        private DbGroup _dbGroup1, _dbGroup2;
         
         public DatabaseContentWrapper() throws SQLException, CakeHatDBIOException {
             DbAssignment dbAsgn = new DbAssignment("asgn", 1);
@@ -1131,8 +1125,9 @@ public class DatabaseV5Test {
             DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
             _database.putStudents(ImmutableSet.of(student1, student2));
         
-            _groupRecord1 = _database.addGroup(new NewGroup(asgn, new Student(student1)));
-            _groupRecord2 =_database.addGroup(new NewGroup(asgn, new Student(student2)));
+            _dbGroup1 = new DbGroup(asgn, new Student(student1));
+            _dbGroup2 = new DbGroup(asgn, new Student(student2));
+            _database.addGroups(ImmutableSet.of(_dbGroup1, _dbGroup2));
         }
     }
 }
