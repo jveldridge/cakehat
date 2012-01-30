@@ -357,6 +357,13 @@ public interface DatabaseV5
 
     public void setHandinTime(int geid, int agid, String time,
                               String dateRecorded, int tid) throws SQLException;
+    
+    /**
+     * Null will be returned if no such geid exists in database
+     * @param geid
+     * @return 
+     */
+    public DbGradableEvent getDbGradableEvent(int geid) throws SQLException;
 
 
     public void resetDatabase() throws SQLException;

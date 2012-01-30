@@ -1,6 +1,7 @@
 package cakehat.newdatabase;
 
 import cakehat.Allocator;
+import cakehat.assignment.GradableEvent;
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ArrayListMultimap;
@@ -352,6 +353,23 @@ public class DatabaseV5Impl implements DatabaseV5
             }
         
             return asgns.build();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public DbGradableEvent getDbGradableEvent(int geid) throws SQLException {
+        Connection conn = this.openConnection();
+
+        try {
+            Collection<DbGradableEvent> gradableEvents = this.getGradableEvents(conn).values();
+            for (DbGradableEvent ge : gradableEvents) {
+                if (ge.getId() == geid) {
+                    return ge;
+                }
+            }
+            return null;
         } finally {
             this.closeConnection(conn);
         }
