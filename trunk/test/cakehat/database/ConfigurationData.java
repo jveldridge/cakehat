@@ -134,6 +134,50 @@ public class ConfigurationData
         return asgn;
     }
     
+    public static cakehat.assignment.Assignment generateAsgnWithQuickNamePart() {
+        cakehat.assignment.Assignment asgn = createMock(cakehat.assignment.Assignment.class);
+        final String name = "Some Assignment";
+        expect(asgn.getName()).andReturn(name).anyTimes();
+        expect(asgn.getId()).andReturn(1).anyTimes();
+        expect(asgn.hasGroups()).andReturn(false).anyTimes();
+        
+        cakehat.assignment.GradableEvent gradableEvent1 = createMock(cakehat.assignment.GradableEvent.class);
+        expect(gradableEvent1.getAssignment()).andReturn(asgn).anyTimes();
+        expect(gradableEvent1.getId()).andReturn(1).anyTimes();
+        expect(gradableEvent1.getName()).andReturn("Gradable Event 1").anyTimes();
+        expect(gradableEvent1.hasDigitalHandins()).andReturn(false).anyTimes();
+        
+        
+        cakehat.assignment.Part part1 = createMock(cakehat.assignment.Part.class);
+        expect(part1.getName()).andReturn("The Hard Part").anyTimes();
+        expect(part1.getId()).andReturn(1).anyTimes();
+        expect(part1.getOutOf()).andReturn(10.0).anyTimes();
+        expect(part1.hasSpecifiedGMLTemplate()).andReturn(true).anyTimes();
+        expect(part1.getQuickName()).andReturn("Lab0").anyTimes();
+        expect(part1.hasQuickName()).andReturn(true).anyTimes();
+        expect(part1.getFullDisplayName()).andReturn("Some Assignment - Gradable Event 1 - The Hard Part").anyTimes();
+        
+        expect(part1.getGradableEvent()).andReturn(gradableEvent1).anyTimes();
+        replay(part1);
+        
+        
+        ArrayList<cakehat.assignment.Part> partsGE1 = new ArrayList<cakehat.assignment.Part>();
+        partsGE1.add(part1);
+        expect(gradableEvent1.iterator()).andReturn(partsGE1.iterator()).anyTimes();
+        
+        ArrayList<cakehat.assignment.GradableEvent> ges = new ArrayList<cakehat.assignment.GradableEvent>();
+        ges.add(gradableEvent1);
+        expect(asgn.getGradableEvents()).andReturn(ges).anyTimes(); 
+        expect(asgn.iterator()).andReturn(ges.iterator()).anyTimes();
+        
+        expect(gradableEvent1.getParts()).andReturn(partsGE1).anyTimes();
+        
+        replay(gradableEvent1);
+        replay(asgn);
+        
+        return asgn;
+    }
+    
     public static cakehat.assignment.Assignment generateAssignmentPartHasNoGML() {
         cakehat.assignment.Assignment asgn = createMock(cakehat.assignment.Assignment.class);
         final String name = "Some lab or something";
@@ -232,6 +276,57 @@ public class ConfigurationData
         replay(student);
 
     return student;
+    }
+    
+    public static cakehat.newdatabase.Group generateGroupWithStudent(cakehat.newdatabase.Student stud, cakehat.assignment.Assignment asgn) {
+        String name = generateRandomString();
+        
+        int groupID = 1;
+        HashSet<cakehat.newdatabase.Student> set = new HashSet<cakehat.newdatabase.Student>();
+        set.add(stud);
+        
+        cakehat.newdatabase.Group group = createMock(cakehat.newdatabase.Group.class);
+        expect(group.getAssignment()).andReturn(asgn).anyTimes();
+        expect(group.getId()).andReturn(groupID).anyTimes();
+        expect(group.getOnlyMember()).andReturn(stud);
+        expect(group.getMembers()).andReturn(set).anyTimes();
+        expect(group.isGroupOfOne()).andReturn(true);
+        expect(group.getName()).andReturn(name).anyTimes();
+        
+        replay(group);
+        return group;
+    }
+    
+    public static cakehat.newdatabase.Group generateGroupWithStudents(cakehat.assignment.Assignment asgn, cakehat.newdatabase.Student... members) {
+        String name = generateRandomString();
+        
+        int groupID = 1;
+        HashSet<cakehat.newdatabase.Student> set = new HashSet<cakehat.newdatabase.Student>();
+        for (cakehat.newdatabase.Student s : members) {
+            set.add(s);
+        }
+        
+        cakehat.newdatabase.Group group = createMock(cakehat.newdatabase.Group.class);
+        expect(group.getAssignment()).andReturn(asgn).anyTimes();
+        expect(group.getId()).andReturn(groupID).anyTimes();
+        expect(group.getMembers()).andReturn(set).anyTimes();
+        expect(group.isGroupOfOne()).andReturn(false);
+        expect(group.getName()).andReturn(name).anyTimes();
+        
+        replay(group);
+        return group;
+    }
+    
+    public static cakehat.newdatabase.Student generateNewStudent(String login, String first, String last, int ID) {
+        cakehat.newdatabase.Student student = createMock(cakehat.newdatabase.Student.class);
+        expect(student.getLogin()).andReturn(login).anyTimes();
+        expect(student.getFirstName()).andReturn(first).anyTimes();
+        expect(student.getLastName()).andReturn(last).anyTimes();
+        expect(student.getName()).andReturn(first + " " + last);
+        expect(student.getId()).andReturn(ID).anyTimes();
+        replay(student);
+        
+        return student;
     }
     
     /**

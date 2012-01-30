@@ -102,15 +102,15 @@ public class DataServicesV5Impl implements DataServicesV5 {
     @Override
     public PartGrade getEarned(Group group, Part part) throws ServicesException
     {
-        GradeRecord record;
         try {
-            record = Allocator.getDatabaseV5().getEarned(group.getId(), part.getId());
+            GradeRecord record = Allocator.getDatabaseV5().getEarned(group.getId(), part.getId());
             
             TA ta = getGrader(part, group);
+            PartGrade grade = null;
             if (record != null) {
-                return new PartGrade(part, group, ta, new DateTime(), record.getEarned(), true);
+                grade = new PartGrade(part, group, ta, new DateTime(), record.getEarned(), true);
             }
-            return null;
+            return grade;
         } catch (SQLException ex) {
             throw new ServicesException("Could not get the score for group [" + group.getName() + "]"
                     + " on part [" + part.getName() + "].", ex);
@@ -590,6 +590,22 @@ public class DataServicesV5Impl implements DataServicesV5 {
         }
     }
     
+    @Override
+    public Student getStudentFromLogin(String studentLogin) throws ServicesException {
+        if (!_loginMap.containsKey(studentLogin)) {
+            this.updateDataCache();
+        }
+        return _loginMap.get(studentLogin);
+    }
+    
+    @Override
+    public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException {
+        if (!_loginMap.containsKey(studentLogin)) {
+            this.updateDataCache();
+        }
+        return _loginMap.containsKey(studentLogin);
+    }
+
     private <S, T, U> Map<T, U> safeMapOfMapsGet(Map<S, Map<T, U>> mapOfMaps, S key) {
         if (!mapOfMaps.containsKey(key)) {
             mapOfMaps.put(key, new HashMap<T, U>());
