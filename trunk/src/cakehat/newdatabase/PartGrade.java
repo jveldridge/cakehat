@@ -145,7 +145,7 @@ public class PartGrade
         /**
          * The grading sheet has been modified and has not been submitted.
          * <br/><br/>
-         * Not applicable when not using a grading sheet.
+         * Not applicable when not using a GML file.
          */
         NOT_SUBMITTED_NOT_MATCHING,
         
@@ -161,7 +161,7 @@ public class PartGrade
         /**
          * The grading sheet has been submitted and has been modified since.
          * <br/><br/>
-         * Not applicable when not using a grading sheet.
+         * Not applicable when not using a GML file.
          */
         SUBMITTED_NOT_MATCHING
     }
