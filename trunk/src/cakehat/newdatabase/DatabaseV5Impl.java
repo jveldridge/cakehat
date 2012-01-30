@@ -1,7 +1,6 @@
 package cakehat.newdatabase;
 
 import cakehat.Allocator;
-import cakehat.assignment.GradableEvent;
 import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ArrayListMultimap;

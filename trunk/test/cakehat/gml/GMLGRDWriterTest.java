@@ -16,7 +16,7 @@ import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Assignment;
-import cakehat.database.ConfigurationData;
+import cakehat.newdatabase.ConfigurationData;
 import cakehat.newdatabase.Group;
 import cakehat.services.PathServices;
 import cakehat.services.ServicesException;

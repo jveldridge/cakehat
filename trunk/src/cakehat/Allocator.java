@@ -1,23 +1,16 @@
 package cakehat;
 
-import cakehat.config.ConfigurationInfo;
-import cakehat.config.ConfigurationInfoImpl;
+import cakehat.email.EmailManager;
+import cakehat.email.EmailManagerImpl;
 import cakehat.services.CourseInfo;
 import cakehat.services.CourseInfoImpl;
 import cakehat.services.GradingServices;
-import cakehat.database.DatabaseImpl;
-import cakehat.database.DataServices;
-import cakehat.database.Database;
-import cakehat.export.CSVExporter;
 import cakehat.export.Exporter;
 import cakehat.printing.EnscriptPrintingService;
 import cakehat.printing.LprPrintingService;
 import cakehat.printing.PrintingService;
-import cakehat.rubric.RubricManager;
-import cakehat.rubric.RubricManagerImpl;
 import cakehat.services.Constants;
 import cakehat.services.ConstantsImpl;
-import cakehat.database.DataServicesImpl;
 import cakehat.newdatabase.DatabaseV5;
 import cakehat.newdatabase.DatabaseV5Impl;
 import cakehat.newdatabase.DataServicesV5;
@@ -117,20 +110,15 @@ public class Allocator
         protected abstract T allocate();
     }
 
-    private final SingletonAllocation<ConfigurationInfo> _configInfo;
     private final SingletonAllocation<CourseInfo> _courseInfo;
-    private final SingletonAllocation<RubricManager> _rubricManager;
     private final SingletonAllocation<GradingServices> _gradingServices;
     private final SingletonAllocation<UserServices> _userServices;
-    private final SingletonAllocation<DataServices> _dataServices;
     private final SingletonAllocation<FileSystemServices> _fileSystemServices;
     private final SingletonAllocation<PathServices> _pathServices;
     private final SingletonAllocation<StringManipulationServices> _stringManipServices;
     private final SingletonAllocation<Constants> _constants;
     private final SingletonAllocation<PrintingService> _landscapePrintingService;
     private final SingletonAllocation<PrintingService> _portraitPrintingService;
-    private final SingletonAllocation<Exporter> _csvExporter;
-    private final SingletonAllocation<Database> _database;
     private final SingletonAllocation<DatabaseV5> _databaseV5;
     private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
@@ -140,6 +128,7 @@ public class Allocator
     private final SingletonAllocation<UserUtilities> _userUtils;
     private final SingletonAllocation<DataServicesV5> _dataServicesV5;
     private final SingletonAllocation<GradingSheetManager> _gradingSheetManager;
+    private final SingletonAllocation<EmailManager> _emailManager;
 
     /**
      * Creates the underlying instance of the Allocator. Any of the parameters may be {@code null}. If the parameter is
@@ -147,16 +136,6 @@ public class Allocator
      */
     private Allocator(Customizer customizer)
     {
-        if(customizer._configInfo == null)
-        {
-            _configInfo = new SingletonAllocation<ConfigurationInfo>()
-                          { public ConfigurationInfo allocate() { return new ConfigurationInfoImpl(); } };
-        }
-        else
-        {
-            _configInfo = customizer._configInfo;
-        }
-
         if(customizer._courseInfo == null)
         {
             _courseInfo = new SingletonAllocation<CourseInfo>()
@@ -165,16 +144,6 @@ public class Allocator
         else
         {
             _courseInfo = customizer._courseInfo;
-        }
-
-        if(customizer._rubricManager == null)
-        {
-            _rubricManager = new SingletonAllocation<RubricManager>()
-                             { public RubricManager allocate() { return new RubricManagerImpl(); } };
-        }
-        else
-        {
-            _rubricManager = customizer._rubricManager;
         }
 
         if(customizer._gradingServices == null)
@@ -195,16 +164,6 @@ public class Allocator
         else
         {
             _userServices = customizer._userServices;
-        }
-
-        if(customizer._dataServices == null)
-        {
-            _dataServices = new SingletonAllocation<DataServices>()
-                            { public DataServices allocate() { return new DataServicesImpl(); } };
-        }
-        else
-        {
-            _dataServices = customizer._dataServices;
         }
 
         if(customizer._fileSystemServices == null)
@@ -246,16 +205,6 @@ public class Allocator
         {
             _constants = customizer._constants;
         }
-
-        if(customizer._database == null)
-        {
-            _database = new SingletonAllocation<Database>()
-                            { public Database allocate() { return new DatabaseImpl(); } };
-        }
-        else
-        {
-            _database = customizer._database;
-        }
         
         if(customizer._databaseV5 == null)
         {
@@ -285,16 +234,6 @@ public class Allocator
         else
         {
             _portraitPrintingService = customizer._portraitPrintingService;
-        }
-
-        if(customizer._csvExporter == null)
-        {
-            _csvExporter = new SingletonAllocation<Exporter>()
-                           { public Exporter allocate() { return new CSVExporter(); } };
-        }
-        else
-        {
-            _csvExporter = customizer._csvExporter;
         }
 
         if(customizer._generalUtils == null)
@@ -376,21 +315,21 @@ public class Allocator
         {
             _gradingSheetManager = customizer._gradingSheetManager;
         }
-    }
-
-    public static ConfigurationInfo getConfigurationInfo()
-    {
-        return getInstance()._configInfo.getInstance();
+            
+        if(customizer._emailManager == null)
+        {
+            _emailManager = new SingletonAllocation<EmailManager>()
+                    { public EmailManager allocate() { return new EmailManagerImpl(); } };
+        }
+        else
+        {
+            _emailManager = customizer._emailManager;
+        }
     }
 
     public static CourseInfo getCourseInfo()
     {
         return getInstance()._courseInfo.getInstance();
-    }
-
-    public static RubricManager getRubricManager()
-    {
-        return getInstance()._rubricManager.getInstance();
     }
 
     public static GradingServices getGradingServices()
@@ -401,11 +340,6 @@ public class Allocator
     public static UserServices getUserServices()
     {
         return getInstance()._userServices.getInstance();
-    }
-
-    public static DataServices getDataServices()
-    {
-        return getInstance()._dataServices.getInstance();
     }
 
     public static FileSystemServices getFileSystemServices()
@@ -427,11 +361,6 @@ public class Allocator
     {
         return getInstance()._constants.getInstance();
     }
-
-    public static Database getDatabase()
-    {
-        return getInstance()._database.getInstance();
-    }
     
     public static DatabaseV5 getDatabaseV5()
     {
@@ -451,11 +380,6 @@ public class Allocator
     public static PrintingService getPortraitPrintingService()
     {
         return getInstance()._portraitPrintingService.getInstance();
-    }
-
-    public static Exporter getCSVExporter()
-    {
-        return getInstance()._csvExporter.getInstance();
     }
 
     public static GeneralUtilities getGeneralUtilities()
@@ -492,6 +416,11 @@ public class Allocator
     {
         return getInstance()._gradingSheetManager.getInstance();
     }
+    
+    public static EmailManager getEmailManager()
+    {
+        return getInstance()._emailManager.getInstance();
+    }
 
     /**
      * Outside of the Allocator class, this class should <strong>ONLY</strong> used for testing purposes.
@@ -501,17 +430,13 @@ public class Allocator
      */
     public static class Customizer
     {
-        private SingletonAllocation<ConfigurationInfo> _configInfo;
         private SingletonAllocation<CourseInfo> _courseInfo;
-        private SingletonAllocation<RubricManager> _rubricManager;
         private SingletonAllocation<GradingServices> _gradingServices;
         private SingletonAllocation<UserServices> _userServices;
-        private SingletonAllocation<DataServices> _dataServices;
         private SingletonAllocation<FileSystemServices> _fileSystemServices;
         private SingletonAllocation<PathServices> _pathServices;
         private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
-        private SingletonAllocation<Database> _database;
         private SingletonAllocation<DatabaseV5> _databaseV5;
         private SingletonAllocation<PrintingService> _landscapePrintingService;
         private SingletonAllocation<PrintingService> _portraitPrintingService;
@@ -524,24 +449,11 @@ public class Allocator
         private SingletonAllocation<UserUtilities> _userUtils;
         private SingletonAllocation<DataServicesV5> _dataServicesV5;
         private SingletonAllocation<GradingSheetManager> _gradingSheetManager;
-
-        public Customizer setConfigurationInfo(SingletonAllocation<ConfigurationInfo> configInfo)
-        {
-            _configInfo = configInfo;
-            
-            return this;
-        }
+        private SingletonAllocation<EmailManager> _emailManager;
 
         public Customizer setCourseInfo(SingletonAllocation<CourseInfo> courseInfo)
         {
             _courseInfo = courseInfo;
-
-            return this;
-        }
-
-        public Customizer setRubricManager(SingletonAllocation<RubricManager> rubricManager)
-        {
-            _rubricManager = rubricManager;
 
             return this;
         }
@@ -556,13 +468,6 @@ public class Allocator
         public Customizer setUserServices(SingletonAllocation<UserServices> userServices)
         {
             _userServices = userServices;
-
-            return this;
-        }
-
-        public Customizer setDataServices(SingletonAllocation<DataServices> dataServices)
-        {
-            _dataServices = dataServices;
 
             return this;
         }
@@ -591,13 +496,6 @@ public class Allocator
         public Customizer setConstants(SingletonAllocation<Constants> constants)
         {
             _constants = constants;
-
-            return this;
-        }
-
-        public Customizer setDatabase(SingletonAllocation<Database> database)
-        {
-            _database = database;
 
             return this;
         }
@@ -675,6 +573,13 @@ public class Allocator
         public Customizer setDataServicesV5(SingletonAllocation<DataServicesV5> dataServicesV5)
         {
             _dataServicesV5 = dataServicesV5;
+            
+            return this;
+        }
+        
+        public Customizer setEmailManager(SingletonAllocation<EmailManager> emailManager)
+        {
+            _emailManager = emailManager;
             
             return this;
         }

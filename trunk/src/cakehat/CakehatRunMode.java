@@ -1,12 +1,11 @@
 package cakehat;
 
-import cakehat.labcheckoff.CheckoffCLI;
-import cakehat.views.admin.AdminView;
 import cakehat.views.config.ConfigManagerView;
-import cakehat.views.grader.GraderView;
+import cakehat.views.entergrade.EnterGradeCLI;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JOptionPane;
 
 /**
  * The mode that cakehat is operating under. cakehat will be in the {@link CakehatRunMode#UNKNOWN} mode if cakehat code
@@ -19,7 +18,7 @@ public enum CakehatRunMode
     GRADER("grader", true,  true,  false),
     ADMIN("admin",   true,  true,  true),
     CONFIG("config", false, true,  true),
-    LAB("lab",       true,  false, false),
+    ENTER_GRADE("enter_grade",       true,  false, false),
     UNKNOWN(null,    false, false, false);
 
     private final String _terminalFlag;
@@ -84,19 +83,19 @@ public enum CakehatRunMode
     {
         if(this == GRADER)
         {
-            GraderView.launch(isSSH);
+            JOptionPane.showMessageDialog(null, "Not implemented yet.");
         }
         else if(this == ADMIN)
         {
-            AdminView.launch(isSSH);
+            JOptionPane.showMessageDialog(null, "Not implemented yet.");
         }
         else if(this == CONFIG)
         {
             ConfigManagerView.launch(isSSH);
         }
-        else if(this == LAB)
+        else if(this == ENTER_GRADE)
         {
-            CheckoffCLI.performCheckoff(args);
+            EnterGradeCLI.performEnterGrade(args);
         }
         else if(this == UNKNOWN)
         {

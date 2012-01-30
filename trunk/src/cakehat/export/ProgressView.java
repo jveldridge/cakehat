@@ -1,7 +1,5 @@
 package cakehat.export;
 
-import cakehat.config.Assignment;
-import cakehat.config.Part;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -14,7 +12,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import cakehat.Allocator;
-import cakehat.database.Student;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.Part;
+import cakehat.newdatabase.Student;
 
 /**
  * Displays the progress of exporting.

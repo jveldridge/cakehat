@@ -1,11 +1,10 @@
 package cakehat.services;
 
+import cakehat.assignment.Part;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
-import cakehat.config.Assignment;
-import cakehat.database.Group;
-import cakehat.config.handin.DistributablePart;
-import cakehat.config.handin.Handin;
+import cakehat.assignment.Assignment;
+import cakehat.newdatabase.Group;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -27,6 +26,7 @@ public class PathServicesTest
     private static final String COURSE = "cs001";
     private static final int YEAR = 1988;
 
+    private static final int ASSIGNMENT_NUMBER = 1;
     private static final String ASSIGNMENT_NAME = "the asgn";
     private static final String PART_NAME = "the dist part";
     private static final String TA_LOGIN = "jak2";
@@ -34,8 +34,7 @@ public class PathServicesTest
 
     private Group _group;
     private Assignment _assignment;
-    private Handin _handin;
-    private DistributablePart _part;
+    private Part _part;
     private PathServices _service;
 
     @Before
@@ -49,19 +48,13 @@ public class PathServicesTest
         //Create mocked assignment, handin, and part objects
         _assignment = createMock(Assignment.class);
         expect(_assignment.getName()).andReturn(ASSIGNMENT_NAME).anyTimes();
-        expect(_assignment.getDBID()).andReturn(ASSIGNMENT_NAME).anyTimes();
+        expect(_assignment.getId()).andReturn(ASSIGNMENT_NUMBER).anyTimes();
 
-        _handin = createMock(Handin.class);
-        expect(_handin.getAssignment()).andReturn(_assignment).anyTimes();
-        expect(_assignment.getHandin()).andReturn(_handin).anyTimes();
-
-        _part = createMock(DistributablePart.class);
+        _part = createMock(Part.class);
         expect(_part.getName()).andReturn(PART_NAME).anyTimes();
         expect(_part.getAssignment()).andReturn(_assignment).anyTimes();
-        expect(_part.getHandin()).andReturn(_handin).anyTimes();
 
         replay(_assignment);
-        replay(_handin);
         replay(_part);
         
         //Mock out course information
@@ -113,38 +106,11 @@ public class PathServicesTest
     }
 
     @Test
-    public void testGetHandinDir()
-    {
-        File expected = new File("/course/" + COURSE + "/handin/" +
-                ASSIGNMENT_NAME + "/" + YEAR);
-        
-        assertEquals(expected, _service.getHandinDir(_handin));
-    }
-
-    @Test
     public void testGetCakehatDir()
     {
         File expected = new File("/course/" + COURSE + "/.cakehat");
 
         assertEquals(expected, _service.getCakehatDir());
-    }
-
-    @Test
-    public void testGetConfigurationFile()
-    {
-        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR +
-                "/config/config.xml");
-
-        assertEquals(expected, _service.getConfigurationFile());
-    }
-
-    @Test
-    public void testGetGMLDir()
-    {
-        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR +
-                "/rubrics/" + ASSIGNMENT_NAME + "/" + PART_NAME);
-
-        assertEquals(expected, _service.getGMLDir(_part));
     }
 
     @Test
@@ -201,14 +167,5 @@ public class PathServicesTest
                 GROUP_NAME);
 
         assertEquals(expected, _service.getUnarchiveHandinDir(_part, _group));
-    }
-
-    @Test
-    public void testGetGroupGRDFile()
-    {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +
-                TA_LOGIN + "-test/" + ASSIGNMENT_NAME + "/" + GROUP_NAME + ".txt");
-
-        assertEquals(expected, _service.getGroupGRDFile(_handin, _group));
     }
 }

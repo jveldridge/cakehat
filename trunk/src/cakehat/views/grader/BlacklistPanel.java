@@ -1,12 +1,13 @@
 package cakehat.views.grader;
 
 import cakehat.Allocator;
-import cakehat.config.TA;
-import cakehat.database.Student;
+import cakehat.newdatabase.TA;
+import cakehat.newdatabase.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.StudentDescriptionProvider;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -61,11 +62,11 @@ class BlacklistPanel extends AlphaJPanel
 
         _filterField = new ShadowJTextField("Filter List");
 
-        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServices().getBlacklist(_user));
+        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServicesV5().getBlacklist(_user));
         Collections.sort(blacklist);
 
         _nonblacklistedStudents = new ArrayList<Student>();
-        _nonblacklistedStudents.addAll(Allocator.getDataServices().getAllStudents());
+        _nonblacklistedStudents.addAll(Allocator.getDataServicesV5().getStudents());
         _nonblacklistedStudents.removeAll(blacklist);
         Collections.sort(_nonblacklistedStudents);
 
@@ -140,6 +141,7 @@ class BlacklistPanel extends AlphaJPanel
                 previousIcon, blacklistButtonsPanel.getPreferredSize().width, true);
         blacklistButton.addActionListener(new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent e)
             {
                 List<Student> toBlacklist = _nonblacklistJList.getGenericSelectedValues();
@@ -147,7 +149,7 @@ class BlacklistPanel extends AlphaJPanel
                 try
                 {
                     //Perform black list
-                    Allocator.getDataServices().blacklistStudents(toBlacklist, _user);
+                    Allocator.getDataServicesV5().blacklistStudents(ImmutableSet.copyOf(toBlacklist), _user);
 
                     //Update black list
                     List<Student> allBlacklisted = new ArrayList<Student>();
@@ -178,13 +180,14 @@ class BlacklistPanel extends AlphaJPanel
                 nextIcon, blacklistButtonsPanel.getPreferredSize().width, false);
         unblacklistButton.addActionListener(new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent e)
             {
                 List<Student> toUnblacklist = _blacklistJList.getGenericSelectedValues();
 
                 try
                 {
-                    Allocator.getDataServices().unBlacklistStudents(toUnblacklist, _user);
+                    Allocator.getDataServicesV5().unBlacklistStudents(ImmutableSet.copyOf(toUnblacklist), _user);
 
                     //Update black list
                     List<Student> blacklisted = new ArrayList<Student>(_blacklistJList.getListData());

@@ -1,6 +1,6 @@
 package cakehat.views.shared;
 
-import cakehat.database.Student;
+import cakehat.newdatabase.Student;
 import support.ui.PartialDescriptionProvider;
 
 /**

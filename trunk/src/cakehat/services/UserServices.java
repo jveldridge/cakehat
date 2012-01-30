@@ -1,6 +1,6 @@
 package cakehat.services;
 
-import cakehat.config.TA;
+import cakehat.newdatabase.TA;
 import java.util.List;
 import support.utils.posix.NativeException;
 
@@ -18,23 +18,7 @@ public interface UserServices
      *
      * @return the TA object representing the current user.
      */
-    public TA getUser();
-
-    /**
-     * Returns whether or not the current user is a TA for the course as
-     * specified by the configuration file.
-     *
-     * @return whether user is a TA
-     */
-    public boolean isUserTA();
-
-    /**
-     * Returns whether or not the current user is an admin for the course as
-     * specified by the configuration file.
-     *
-     * @return whether the user is an Admin
-     */
-    public boolean isUserAdmin();
+    public TA getUser() throws ServicesException;
 
     /**
      * Returns whether or not the student with given login studentLogin is a
@@ -81,21 +65,4 @@ public interface UserServices
      */
     public List<String> getHTALogins() throws NativeException;
 
-    /**
-     * Returns the login of the given TA, or, if the given TA object is null,
-     * "UNASSIGNED"
-     * 
-     * @param ta
-     * @return
-     */
-    public String getSanitizedTALogin(TA ta);
-
-    /**
-     * Returns the name of the given TA, or, if the given TA object is null,
-     * "UNASSIGNED"
-     *
-     * @param ta
-     * @return
-     */
-    public String getSanitizedTAName(TA ta);
 }

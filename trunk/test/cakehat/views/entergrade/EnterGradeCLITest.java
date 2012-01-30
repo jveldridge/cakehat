@@ -17,7 +17,7 @@ import cakehat.newdatabase.Student;
 import cakehat.services.ServicesException;
 import cakehat.views.entergrade.EnterGradeCLI.EnterGradeException;
 import cakehat.assignment.Assignment;
-import cakehat.database.ConfigurationData;
+import cakehat.newdatabase.ConfigurationData;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 

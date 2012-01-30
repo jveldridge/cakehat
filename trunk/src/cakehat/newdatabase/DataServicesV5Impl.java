@@ -19,9 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
 import org.joda.time.DateTime;
-
 
 /**
  *
@@ -150,6 +148,18 @@ public class DataServicesV5Impl implements DataServicesV5 {
         }
         
         return _tas;
+    }
+    
+    @Override    
+    public TA getTA(int taId) throws ServicesException {
+        //TODO: dehackify
+        for (TA ta : this.getTAs()) {
+            if (ta.getId() == taId) {
+                return ta;
+            }
+        }
+        
+        return null;
     }
     
     @Override
@@ -584,7 +594,7 @@ public class DataServicesV5Impl implements DataServicesV5 {
     @Override
     public void resetDatabase() throws ServicesException {
         try {
-            Allocator.getDatabase().resetDatabase();
+            Allocator.getDatabaseV5().resetDatabase();
         } catch (SQLException ex) {
             throw new ServicesException("Could not reset database.", ex);
         }
