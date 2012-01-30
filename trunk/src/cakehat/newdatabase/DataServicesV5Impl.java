@@ -93,6 +93,32 @@ public class DataServicesV5Impl implements DataServicesV5 {
         return _tas;
     }
     
+    @Override
+    public void addGroup(DbGroup toAdd) throws ServicesException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public void addGroups(Set<DbGroup> toAdd) throws ServicesException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Group getGroup(Assignment asgn, Student student) throws ServicesException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public Set<Group> getGroups(Assignment asgn) throws ServicesException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public void removeGroups(Assignment asgn) throws ServicesException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
     public List<Assignment> getAssignments() throws ServicesException
     {
         if(_assignments == null)

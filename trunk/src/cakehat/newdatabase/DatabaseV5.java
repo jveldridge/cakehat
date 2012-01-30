@@ -138,17 +138,7 @@ public interface DatabaseV5
      *
      * @return
      */
-    public Set<GroupRecord> getAllGroups() throws SQLException;
-    
-    /** 
-     * Adds a group to the database.  A SQLException will be thrown if the group
-     * to be added has the same name as a group that already exists for that
-     * assignment.  A CakehatDBIOException will be thrown if any member of the
-     * group is already in a group for that assignment.
-     * 
-     * @param group
-     */
-    public GroupRecord addGroup(NewGroup group) throws SQLException, CakeHatDBIOException;
+    public Set<DbGroup> getAllGroups() throws SQLException;
     
     /**
      * Adds a Set of groups to the database. A SQLException will be thrown if 
@@ -159,7 +149,7 @@ public interface DatabaseV5
      * 
      * @param groups
      */
-    public Set<GroupRecord> addGroups(Set<NewGroup> groups) throws SQLException, CakeHatDBIOException;
+    public void addGroups(Set<DbGroup> groups) throws SQLException, CakeHatDBIOException;
 
     /**
      * Returns an ImmutableSet containing the IDs of all groups that have been 

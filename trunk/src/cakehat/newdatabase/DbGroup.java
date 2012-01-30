@@ -1,6 +1,8 @@
 package cakehat.newdatabase;
 
 import cakehat.assignment.Assignment;
+import com.google.common.collect.ImmutableSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,12 +16,22 @@ public class DbGroup extends DbDataItem
     private volatile String _name;
     private final Set<Integer> _studentIds;
     
-    public DbGroup(Assignment asgn)
+    public DbGroup(Assignment asgn, Student student)
+    {
+        this(asgn, student.getName(), ImmutableSet.of(student));
+    }
+    
+    public DbGroup(Assignment asgn, String name, Set<Student> students)
     {
         super(null);
         
         _asgnId = asgn.getId();
+        _name = name;
         _studentIds = new HashSet<Integer>();
+        for (Student student : students)
+        {
+            _studentIds.add(student.getId());
+        }
     }
     
     DbGroup(int asgnId, int id, String name, Set<Integer> studentIds)
@@ -46,7 +58,7 @@ public class DbGroup extends DbDataItem
         return _name;
     }
     
-    public void addStudent(Student student)
+    public void addMember(Student student)
     {
         synchronized(_studentIds)
         {
@@ -54,7 +66,7 @@ public class DbGroup extends DbDataItem
         }
     }
     
-    public void removeStudent(Student student)
+    public void removeMember(Student student)
     {
         synchronized(_studentIds)
         {
@@ -62,5 +74,12 @@ public class DbGroup extends DbDataItem
         }
     }
     
-    //TODO: Figure out if the get students method should return student objects or ids
+    public Set<Integer> getMemberIds()
+    {
+        synchronized(_studentIds)
+        {
+            return Collections.unmodifiableSet(_studentIds);
+        }
+    }
+    
 }
