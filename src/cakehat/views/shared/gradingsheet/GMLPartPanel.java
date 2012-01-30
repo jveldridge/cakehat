@@ -8,7 +8,7 @@ import cakehat.gml.GradingSheetException;
 import cakehat.gml.InMemoryGML;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Dimension;

@@ -2,7 +2,7 @@ package cakehat.services;
 
 import com.google.common.collect.ImmutableList;
 import cakehat.assignment.Assignment;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.Before;

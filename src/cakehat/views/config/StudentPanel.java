@@ -1,7 +1,7 @@
 package cakehat.views.config;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.DbStudent;
+import cakehat.database.DbStudent;
 import cakehat.views.config.ValidationResult.ValidationState;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
@@ -250,7 +250,7 @@ class StudentPanel extends JPanel
     {
         try
         {
-            Set<DbStudent> students = Allocator.getDatabaseV5().getStudents();
+            Set<DbStudent> students = Allocator.getDatabase().getStudents();
             Set<String> logins = null;
             try
             {
@@ -617,7 +617,7 @@ class StudentPanel extends JPanel
                 {
                     try
                     {
-                        Allocator.getDatabaseV5().putStudents(studentsToBeAdded);
+                        Allocator.getDatabase().putStudents(studentsToBeAdded);
                     }
                     catch(SQLException e)
                     {
@@ -1200,7 +1200,7 @@ class StudentPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabaseV5().putStudents(SingleElementSet.of(_student));
+                Allocator.getDatabase().putStudents(SingleElementSet.of(_student));
             }
 
             @Override

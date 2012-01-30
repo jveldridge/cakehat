@@ -3,7 +3,7 @@ package cakehat.gml;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
 import org.w3c.dom.NodeList;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import cakehat.assignment.Part;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;

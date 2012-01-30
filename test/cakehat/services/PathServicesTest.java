@@ -4,7 +4,7 @@ import cakehat.assignment.Part;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.assignment.Assignment;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;

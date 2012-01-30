@@ -3,7 +3,7 @@ package cakehat.assignment;
 import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;
 import support.utils.OrFileFilter;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.TextViewerView;
 import java.io.File;

@@ -2,8 +2,8 @@ package cakehat.views.shared.gradingsheet;
 
 import cakehat.Allocator;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.TA;
+import cakehat.database.Group;
+import cakehat.database.TA;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.Color;
@@ -66,8 +66,8 @@ abstract class PartPanel extends GradingSheetPanel
         {
             try
             {
-                TA assignedTo = Allocator.getDataServicesV5().getGrader(_part, _group);
-                Set<TA> tas = _isAdmin ? Allocator.getDataServicesV5().getTAs() : null;
+                TA assignedTo = Allocator.getDataServices().getGrader(_part, _group);
+                Set<TA> tas = _isAdmin ? Allocator.getDataServices().getTAs() : null;
                     
                 initHeaderUI(assignedTo, tas);
             }
@@ -124,7 +124,7 @@ abstract class PartPanel extends GradingSheetPanel
                     {   
                         try
                         {
-                            Allocator.getDataServicesV5().setGrader(_part, _group, newValue);
+                            Allocator.getDataServices().setGrader(_part, _group, newValue);
                         }
                         catch(ServicesException ex)
                         {

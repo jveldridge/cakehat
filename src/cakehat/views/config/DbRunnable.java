@@ -1,6 +1,6 @@
 package cakehat.views.config;
 
-import cakehat.newdatabase.DbDataItem;
+import cakehat.database.DbDataItem;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;

@@ -1,9 +1,9 @@
 package cakehat.services;
 
 import cakehat.assignment.Assignment;
-import cakehat.newdatabase.TA;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.Student;
+import cakehat.database.TA;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
 import java.util.Collection;
 import java.util.List;

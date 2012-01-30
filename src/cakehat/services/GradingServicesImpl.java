@@ -14,9 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
-import cakehat.newdatabase.TA;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.Student;
+import cakehat.database.TA;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
@@ -137,7 +137,7 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException {
-        Collection<Student> blacklist = Allocator.getDataServicesV5().getBlacklist(ta);
+        Collection<Student> blacklist = Allocator.getDataServices().getBlacklist(ta);
 
         if (Allocator.getGeneralUtilities().containsAny(blacklist, group.getMembers())) {
             int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + group + " is on TA "
@@ -419,7 +419,7 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public Map<Student, Group> getGroupsForStudents(Assignment asgn) throws ServicesException {
-        Collection<Group> groups = Allocator.getDataServicesV5().getGroups(asgn);
+        Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
 
         Map<Student, Group> studentToGroup = new HashMap<Student, Group>();
         for (Group group : groups) {

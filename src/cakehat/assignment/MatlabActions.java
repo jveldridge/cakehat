@@ -4,7 +4,7 @@ import support.utils.AlphabeticFileComparator;
 import cakehat.Allocator;
 import support.ui.GenericJComboBox;
 import support.ui.ShadowJTextField;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;

@@ -2,17 +2,17 @@ package cakehat.gml;
 
 import cakehat.Allocator;
 import cakehat.assignment.Assignment;
-import cakehat.newdatabase.DeadlineInfo;
-import cakehat.newdatabase.DeadlineInfo.DeadlineResolution;
+import cakehat.database.DeadlineInfo;
+import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.HandinTime;
-import cakehat.newdatabase.PartGrade;
-import cakehat.newdatabase.Student;
-import cakehat.newdatabase.TA;
+import cakehat.database.Group;
+import cakehat.database.HandinTime;
+import cakehat.database.PartGrade;
+import cakehat.database.Student;
+import cakehat.database.TA;
 import cakehat.services.ServicesException;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -141,7 +141,7 @@ public class GMLGRDWriter {
         
         TA grader = null;
         try {
-            grader = Allocator.getDataServicesV5().getGrader(part, group);
+            grader = Allocator.getDataServices().getGrader(part, group);
         } catch (ServicesException ex) {
             throw new GradingSheetException("Could not read grader for group " + group + " on " +
                                       "part " + part + " of assignment " + group.getAssignment().getName() + ". ", ex);
@@ -194,7 +194,7 @@ public class GMLGRDWriter {
         else {
             double totalScore;
             try {
-                PartGrade partGrade = Allocator.getDataServicesV5().getEarned(group, part);
+                PartGrade partGrade = Allocator.getDataServices().getEarned(group, part);
                 if (partGrade == null || partGrade.getEarned() == null) {
                     totalScore = 0;
                 }
@@ -354,7 +354,7 @@ public class GMLGRDWriter {
 
         DeadlineInfo info;
         try {
-            info = Allocator.getDataServicesV5().getDeadlineInfo(event);
+            info = Allocator.getDataServices().getDeadlineInfo(event);
         } catch (ServicesException ex) {
             throw new GradingSheetException("Could not get early bonus / late penalty for " +
                                          "group " + group + " on gradable event " + event.getName() + ".", ex);
@@ -375,7 +375,7 @@ public class GMLGRDWriter {
         else {
             HandinTime time;
             try {
-               time = Allocator.getDataServicesV5().getHandinTime(event, group); 
+               time = Allocator.getDataServices().getHandinTime(event, group); 
             } catch (ServicesException ex) {
                 throw new GradingSheetException("Could not get handin status for " +
                                           "group " + group + " on assignment " + event.getName() + ".", ex);

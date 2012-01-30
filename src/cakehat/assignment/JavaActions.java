@@ -1,7 +1,7 @@
 package cakehat.assignment;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;

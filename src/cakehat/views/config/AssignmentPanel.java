@@ -3,15 +3,15 @@ package cakehat.views.config;
 import support.ui.DocumentAdapter;
 import cakehat.Allocator;
 import cakehat.assignment.ActionRepository;
-import cakehat.newdatabase.DeadlineInfo;
+import cakehat.database.DeadlineInfo;
 import cakehat.assignment.PartActionDescription;
 import cakehat.assignment.PartActionDescription.ActionType;
 import cakehat.assignment.PartActionProperty;
-import cakehat.newdatabase.DbActionProperty;
-import cakehat.newdatabase.DbAssignment;
-import cakehat.newdatabase.DbGradableEvent;
-import cakehat.newdatabase.DbPart;
-import cakehat.newdatabase.DbPartAction;
+import cakehat.database.DbActionProperty;
+import cakehat.database.DbAssignment;
+import cakehat.database.DbGradableEvent;
+import cakehat.database.DbPart;
+import cakehat.database.DbPartAction;
 import cakehat.views.config.ValidationResult.ValidationState;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
@@ -147,7 +147,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putAssignments(reorderedAssignments);
+                            Allocator.getDatabase().putAssignments(reorderedAssignments);
                         }
 
                         @Override
@@ -221,7 +221,7 @@ class AssignmentPanel extends JPanel
                     @Override
                     public void dbCall() throws SQLException
                     {
-                        Allocator.getDatabaseV5().putAssignments(SingleElementSet.of(asgn));
+                        Allocator.getDatabase().putAssignments(SingleElementSet.of(asgn));
                     }
 
                     @Override
@@ -263,11 +263,11 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().removeAssignments(SingleElementSet.of(asgn));
+                            Allocator.getDatabase().removeAssignments(SingleElementSet.of(asgn));
 
                             //This absolutely needs to occur after the delete call so in case that fails this
                             //code will not execute
-                            Allocator.getDatabaseV5().putAssignments(reorderedAssignments);
+                            Allocator.getDatabase().putAssignments(reorderedAssignments);
                         }
 
                         @Override
@@ -389,7 +389,7 @@ class AssignmentPanel extends JPanel
             {
                 try
                 {
-                    List<DbAssignment> assignments = new ArrayList<DbAssignment>(Allocator.getDatabaseV5().getAssignments());
+                    List<DbAssignment> assignments = new ArrayList<DbAssignment>(Allocator.getDatabase().getAssignments());
                     Collections.sort(assignments);
                     final List<DbAssignment> sortedAssignments = ImmutableList.copyOf(assignments);
                     
@@ -532,8 +532,8 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabaseV5().putAssignments(SingleElementSet.of(_asgn));
-                                Allocator.getDatabaseV5().removeGroups(_asgn.getId());
+                                Allocator.getDatabase().putAssignments(SingleElementSet.of(_asgn));
+                                Allocator.getDatabase().removeGroups(_asgn.getId());
                             }
 
                             @Override
@@ -604,7 +604,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putGradableEvents(SingleElementSet.of(gradableEvent));
+                            Allocator.getDatabase().putGradableEvents(SingleElementSet.of(gradableEvent));
                         }
 
                         @Override
@@ -705,7 +705,7 @@ class AssignmentPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabaseV5().putAssignments(SingleElementSet.of(_asgn));
+                Allocator.getDatabase().putAssignments(SingleElementSet.of(_asgn));
             }
 
             @Override
@@ -795,7 +795,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putGradableEvents(reorderedEvents);
+                            Allocator.getDatabase().putGradableEvents(reorderedEvents);
                         }
 
                         @Override
@@ -839,7 +839,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putGradableEvents(reorderedEvents);
+                            Allocator.getDatabase().putGradableEvents(reorderedEvents);
                         }
 
                         @Override
@@ -889,11 +889,11 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabaseV5().removeGradableEvents(SingleElementSet.of(_gradableEvent));
+                                Allocator.getDatabase().removeGradableEvents(SingleElementSet.of(_gradableEvent));
 
                                 //This absolutely needs to occur after the delete call so in case that fails this
                                 //code will not execute
-                                Allocator.getDatabaseV5().putGradableEvents(reorderedEvents);
+                                Allocator.getDatabase().putGradableEvents(reorderedEvents);
                             }
 
                             @Override
@@ -931,7 +931,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putGradableEvents(SingleElementSet.of(_gradableEvent));
+                            Allocator.getDatabase().putGradableEvents(SingleElementSet.of(_gradableEvent));
                         }
 
                         @Override
@@ -1012,7 +1012,7 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabaseV5().putGradableEvents(SingleElementSet.of(_gradableEvent));
+                                Allocator.getDatabase().putGradableEvents(SingleElementSet.of(_gradableEvent));
                             }
 
                             @Override
@@ -1095,7 +1095,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putParts(SingleElementSet.of(part));
+                            Allocator.getDatabase().putParts(SingleElementSet.of(part));
                         }
 
                         @Override
@@ -1468,7 +1468,7 @@ class AssignmentPanel extends JPanel
                 @Override
                 public void dbCall() throws SQLException
                 {
-                    Allocator.getDatabaseV5().putGradableEvents(SingleElementSet.of(_gradableEvent));
+                    Allocator.getDatabase().putGradableEvents(SingleElementSet.of(_gradableEvent));
                 }
 
                 @Override
@@ -1559,7 +1559,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putParts(reorderedParts);
+                            Allocator.getDatabase().putParts(reorderedParts);
                         }
 
                         @Override
@@ -1603,7 +1603,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabaseV5().putParts(reorderedParts);
+                            Allocator.getDatabase().putParts(reorderedParts);
                         }
 
                         @Override
@@ -1651,11 +1651,11 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabaseV5().removeParts(SingleElementSet.of(_part));
+                                Allocator.getDatabase().removeParts(SingleElementSet.of(_part));
 
                                 //This absolutely needs to occur after the delete call so in case that fails this
                                 //code will not execute
-                                Allocator.getDatabaseV5().putParts(reorderedParts);
+                                Allocator.getDatabase().putParts(reorderedParts);
                             }
 
                             @Override
@@ -1985,7 +1985,7 @@ class AssignmentPanel extends JPanel
                     @Override
                     public void dbCall() throws SQLException
                     {
-                        Allocator.getDatabaseV5().removePartActions(toRemove);
+                        Allocator.getDatabase().removePartActions(toRemove);
                     }
 
                     @Override
@@ -2051,7 +2051,7 @@ class AssignmentPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabaseV5().putParts(SingleElementSet.of(_part));
+                Allocator.getDatabase().putParts(SingleElementSet.of(_part));
             }
 
             @Override
@@ -2191,9 +2191,9 @@ class AssignmentPanel extends JPanel
                                 @Override
                                 public void dbCall() throws SQLException
                                 {
-                                    Allocator.getDatabaseV5().removePartActionProperties(propsToRemove);
-                                    Allocator.getDatabaseV5().putPartActions(SingleElementSet.of(_partAction));
-                                    Allocator.getDatabaseV5().putPartActionProperties(propsToAdd);
+                                    Allocator.getDatabase().removePartActionProperties(propsToRemove);
+                                    Allocator.getDatabase().putPartActions(SingleElementSet.of(_partAction));
+                                    Allocator.getDatabase().putPartActionProperties(propsToAdd);
                                 }
 
                                 @Override
@@ -2215,7 +2215,7 @@ class AssignmentPanel extends JPanel
                                 @Override
                                 public void dbCall() throws SQLException
                                 {
-                                    Allocator.getDatabaseV5().removePartActions(SingleElementSet.of(_partAction));;
+                                    Allocator.getDatabase().removePartActions(SingleElementSet.of(_partAction));;
                                 }
 
                                 @Override
@@ -2326,7 +2326,7 @@ class AssignmentPanel extends JPanel
                                     @Override
                                     public void dbCall() throws SQLException
                                     {
-                                        Allocator.getDatabaseV5().putPartActionProperties(SingleElementSet.of(propInDb));
+                                        Allocator.getDatabase().putPartActionProperties(SingleElementSet.of(propInDb));
                                     }
 
                                     @Override
@@ -2406,11 +2406,11 @@ class AssignmentPanel extends JPanel
                                     {
                                         if(propInDb.getValue().isEmpty())
                                         {
-                                            Allocator.getDatabaseV5().removePartActionProperties(SingleElementSet.of(propInDb));
+                                            Allocator.getDatabase().removePartActionProperties(SingleElementSet.of(propInDb));
                                         }
                                         else
                                         {
-                                            Allocator.getDatabaseV5().putPartActionProperties(SingleElementSet.of(propInDb));
+                                            Allocator.getDatabase().putPartActionProperties(SingleElementSet.of(propInDb));
                                         }
                                     }
 

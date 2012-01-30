@@ -11,10 +11,10 @@ import cakehat.printing.LprPrintingService;
 import cakehat.printing.PrintingService;
 import cakehat.services.Constants;
 import cakehat.services.ConstantsImpl;
-import cakehat.newdatabase.DatabaseV5;
-import cakehat.newdatabase.DatabaseV5Impl;
-import cakehat.newdatabase.DataServicesV5;
-import cakehat.newdatabase.DataServicesV5Impl;
+import cakehat.database.Database;
+import cakehat.database.DatabaseImpl;
+import cakehat.database.DataServices;
+import cakehat.database.DataServicesImpl;
 import cakehat.services.FileSystemServices;
 import cakehat.services.FileSystemServicesImpl;
 import cakehat.services.GradingServicesImpl;
@@ -119,14 +119,14 @@ public class Allocator
     private final SingletonAllocation<Constants> _constants;
     private final SingletonAllocation<PrintingService> _landscapePrintingService;
     private final SingletonAllocation<PrintingService> _portraitPrintingService;
-    private final SingletonAllocation<DatabaseV5> _databaseV5;
+    private final SingletonAllocation<Database> _database;
     private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
     private final SingletonAllocation<CalendarUtilities> _calendarUtils;
     private final SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
     private final SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
     private final SingletonAllocation<UserUtilities> _userUtils;
-    private final SingletonAllocation<DataServicesV5> _dataServicesV5;
+    private final SingletonAllocation<DataServices> _dataServices;
     private final SingletonAllocation<GradingSheetManager> _gradingSheetManager;
     private final SingletonAllocation<EmailManager> _emailManager;
 
@@ -206,14 +206,14 @@ public class Allocator
             _constants = customizer._constants;
         }
         
-        if(customizer._databaseV5 == null)
+        if(customizer._database == null)
         {
-            _databaseV5 = new SingletonAllocation<DatabaseV5>()
-                            { public DatabaseV5 allocate() { return new DatabaseV5Impl(); } };
+            _database = new SingletonAllocation<Database>()
+                            { public Database allocate() { return new DatabaseImpl(); } };
         }
         else
         {
-            _databaseV5 = customizer._databaseV5;
+            _database = customizer._database;
         }
 
         if(customizer._landscapePrintingService == null)
@@ -296,14 +296,14 @@ public class Allocator
             _userUtils = customizer._userUtils;
         }
         
-        if(customizer._dataServicesV5 == null)
+        if(customizer._dataServices == null)
         {
-            _dataServicesV5 = new SingletonAllocation<DataServicesV5>()
-                         { public DataServicesV5 allocate() { return new DataServicesV5Impl(); } };
+            _dataServices = new SingletonAllocation<DataServices>()
+                         { public DataServices allocate() { return new DataServicesImpl(); } };
         }
         else
         {
-            _dataServicesV5 = customizer._dataServicesV5;
+            _dataServices = customizer._dataServices;
         }
         
         if(customizer._gradingSheetManager == null)
@@ -362,14 +362,14 @@ public class Allocator
         return getInstance()._constants.getInstance();
     }
     
-    public static DatabaseV5 getDatabaseV5()
+    public static Database getDatabase()
     {
-        return getInstance()._databaseV5.getInstance();
+        return getInstance()._database.getInstance();
     }
 
-    public static DataServicesV5 getDataServicesV5() 
+    public static DataServices getDataServices() 
     {
-        return getInstance()._dataServicesV5.getInstance();
+        return getInstance()._dataServices.getInstance();
     }
 
     public static PrintingService getLandscapePrintingService()
@@ -437,7 +437,7 @@ public class Allocator
         private SingletonAllocation<PathServices> _pathServices;
         private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
-        private SingletonAllocation<DatabaseV5> _databaseV5;
+        private SingletonAllocation<Database> _database;
         private SingletonAllocation<PrintingService> _landscapePrintingService;
         private SingletonAllocation<PrintingService> _portraitPrintingService;
         private SingletonAllocation<Exporter> _csvExporter;
@@ -447,7 +447,7 @@ public class Allocator
         private SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
-        private SingletonAllocation<DataServicesV5> _dataServicesV5;
+        private SingletonAllocation<DataServices> _dataServices;
         private SingletonAllocation<GradingSheetManager> _gradingSheetManager;
         private SingletonAllocation<EmailManager> _emailManager;
 
@@ -500,9 +500,9 @@ public class Allocator
             return this;
         }
         
-        public Customizer setDatabaseV5(SingletonAllocation<DatabaseV5> databaseV5)
+        public Customizer setDatabase(SingletonAllocation<Database> database)
         {
-            _databaseV5 = databaseV5;
+            _database = database;
 
             return this;
         }
@@ -570,9 +570,9 @@ public class Allocator
             return this;
         }
         
-        public Customizer setDataServicesV5(SingletonAllocation<DataServicesV5> dataServicesV5)
+        public Customizer setDataServices(SingletonAllocation<DataServices> dataServices)
         {
-            _dataServicesV5 = dataServicesV5;
+            _dataServices = dataServices;
             
             return this;
         }

@@ -1,7 +1,7 @@
 package cakehat.views.config;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.DbTA;
+import cakehat.database.DbTA;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -235,7 +235,7 @@ class TAPanel extends JPanel
         List<String> htasOnSystem;
         try
         {
-            tasInDb = Allocator.getDatabaseV5().getTAs();
+            tasInDb = Allocator.getDatabase().getTAs();
         }
         catch(SQLException e)
         {
@@ -332,7 +332,7 @@ class TAPanel extends JPanel
         {
             try
             {
-                Allocator.getDatabaseV5().putTAs(toAddToDb);
+                Allocator.getDatabase().putTAs(toAddToDb);
             }
             catch(SQLException e)
             {
@@ -544,7 +544,7 @@ class TAPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabaseV5().putTAs(SingleElementSet.of(_ta));
+                Allocator.getDatabase().putTAs(SingleElementSet.of(_ta));
             }
 
             @Override

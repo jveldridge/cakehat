@@ -4,8 +4,8 @@ import cakehat.Allocator;
 import cakehat.views.shared.ErrorView;
 import java.awt.FlowLayout;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.PartGrade;
+import cakehat.database.Group;
+import cakehat.database.PartGrade;
 import cakehat.services.ServicesException;
 import java.awt.BorderLayout;
 import javax.swing.Box;
@@ -37,7 +37,7 @@ class DBPartPanel extends PartPanel
         {
             try
             {
-                initNormalUI(Allocator.getDataServicesV5().getEarned(_group, _part));
+                initNormalUI(Allocator.getDataServices().getEarned(_group, _part));
             }
             catch(ServicesException e)
             {
@@ -107,7 +107,7 @@ class DBPartPanel extends PartPanel
         {
             try
             {
-                Allocator.getDataServicesV5().setEarned(_group, _part, _earned, true);
+                Allocator.getDataServices().setEarned(_group, _part, _earned, true);
                 notifySavedSuccessfully();
             }
             catch(ServicesException ex)

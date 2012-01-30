@@ -1,6 +1,6 @@
 package cakehat.assignment;
 
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 
 /**
  * Represents a digital handin that is expected to exist but no longer does. This does <strong>not</strong> represent a

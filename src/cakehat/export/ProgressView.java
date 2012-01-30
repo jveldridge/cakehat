@@ -14,7 +14,7 @@ import javax.swing.JProgressBar;
 import cakehat.Allocator;
 import cakehat.assignment.Assignment;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.Student;
+import cakehat.database.Student;
 
 /**
  * Displays the progress of exporting.

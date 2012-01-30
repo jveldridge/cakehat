@@ -2,8 +2,8 @@ package cakehat.views.shared.gradingsheet;
 
 import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.Student;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;

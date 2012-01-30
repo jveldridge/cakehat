@@ -1,7 +1,7 @@
 package cakehat.views.config;
 
 import support.ui.DocumentAdapter;
-import cakehat.newdatabase.DbDataItem;
+import cakehat.database.DbDataItem;
 import cakehat.views.config.ValidationResult.ValidationState;
 import com.google.common.collect.ImmutableMap;
 import java.awt.Color;

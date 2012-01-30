@@ -2,7 +2,7 @@ package cakehat.assignment;
 
 import support.utils.AlphabeticFileComparator;
 import cakehat.Allocator;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;

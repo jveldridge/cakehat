@@ -1,6 +1,6 @@
 package cakehat.assignment;
 
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import java.util.Collection;
 
 /**

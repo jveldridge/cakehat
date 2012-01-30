@@ -1,8 +1,8 @@
 package cakehat.assignment;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.Student;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.FileFilter;

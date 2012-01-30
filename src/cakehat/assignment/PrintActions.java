@@ -1,7 +1,7 @@
 package cakehat.assignment;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import cakehat.services.ServicesException;

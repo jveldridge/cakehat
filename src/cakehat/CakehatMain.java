@@ -1,6 +1,6 @@
 package cakehat;
 
-import cakehat.newdatabase.DbTA;
+import cakehat.database.DbTA;
 import cakehat.services.ServicesException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -148,7 +148,7 @@ public class CakehatMain
             boolean canProceed = false;
             
             //Find the DbTA that corresponds to the user running cakehat
-            Set<DbTA> tas = Allocator.getDatabaseV5().getTAs();
+            Set<DbTA> tas = Allocator.getDatabase().getTAs();
             DbTA userTA = null;
             int userID = Allocator.getUserUtilities().getUserId();
             for(DbTA ta : tas)
@@ -180,7 +180,7 @@ public class CakehatMain
                         String lastName = nameParts[nameParts.length - 1];
                         userTA = new DbTA(userID, userLogin, firstName, lastName, true, htaLogins.contains(userLogin));
                         
-                        Allocator.getDatabaseV5().putTAs(SingleElementSet.of(userTA));
+                        Allocator.getDatabase().putTAs(SingleElementSet.of(userTA));
                         
                         canProceed = true;
                     }
@@ -226,7 +226,7 @@ public class CakehatMain
                 if(!userTA.getLogin().equals(userLogin))
                 {
                     userTA.setLogin(userLogin);
-                    Allocator.getDatabaseV5().putTAs(SingleElementSet.of(userTA));
+                    Allocator.getDatabase().putTAs(SingleElementSet.of(userTA));
                 }
                 
                 //Determine if the user is allowed access to the run mode
@@ -269,7 +269,7 @@ public class CakehatMain
     {
         try
         {
-            Allocator.getDataServicesV5().updateDataCache();
+            Allocator.getDataServices().updateDataCache();
         }
         catch(ServicesException e)
         {

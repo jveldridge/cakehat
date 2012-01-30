@@ -1,8 +1,8 @@
 package cakehat.views.grader;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.TA;
-import cakehat.newdatabase.Student;
+import cakehat.database.TA;
+import cakehat.database.Student;
 import cakehat.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
@@ -62,11 +62,11 @@ class BlacklistPanel extends AlphaJPanel
 
         _filterField = new ShadowJTextField("Filter List");
 
-        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServicesV5().getBlacklist(_user));
+        List<Student> blacklist = new ArrayList<Student>(Allocator.getDataServices().getBlacklist(_user));
         Collections.sort(blacklist);
 
         _nonblacklistedStudents = new ArrayList<Student>();
-        _nonblacklistedStudents.addAll(Allocator.getDataServicesV5().getStudents());
+        _nonblacklistedStudents.addAll(Allocator.getDataServices().getStudents());
         _nonblacklistedStudents.removeAll(blacklist);
         Collections.sort(_nonblacklistedStudents);
 
@@ -149,7 +149,7 @@ class BlacklistPanel extends AlphaJPanel
                 try
                 {
                     //Perform black list
-                    Allocator.getDataServicesV5().blacklistStudents(ImmutableSet.copyOf(toBlacklist), _user);
+                    Allocator.getDataServices().blacklistStudents(ImmutableSet.copyOf(toBlacklist), _user);
 
                     //Update black list
                     List<Student> allBlacklisted = new ArrayList<Student>();
@@ -187,7 +187,7 @@ class BlacklistPanel extends AlphaJPanel
 
                 try
                 {
-                    Allocator.getDataServicesV5().unBlacklistStudents(ImmutableSet.copyOf(toUnblacklist), _user);
+                    Allocator.getDataServices().unBlacklistStudents(ImmutableSet.copyOf(toUnblacklist), _user);
 
                     //Update black list
                     List<Student> blacklisted = new ArrayList<Student>(_blacklistJList.getListData());

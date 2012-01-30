@@ -2,8 +2,8 @@ package cakehat.email;
 
 import cakehat.Allocator;
 import cakehat.email.EmailManager.EmailAccountStatus;
-import cakehat.newdatabase.DbNotifyAddress;
-import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
+import cakehat.database.DbNotifyAddress;
+import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
@@ -36,8 +36,8 @@ public class EmailManagerImpl implements EmailManager
         EmailAccountStatus status;
         try
         {
-            String emailLogin = Allocator.getDatabaseV5().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT).getValue();
-            String emailPassword = Allocator.getDatabaseV5().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD).getValue();
+            String emailLogin = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT).getValue();
+            String emailPassword = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD).getValue();
                     
             if(emailLogin == null || emailLogin.isEmpty() || emailPassword == null || emailPassword.isEmpty())
             {
@@ -74,7 +74,7 @@ public class EmailManagerImpl implements EmailManager
         ImmutableSet<InternetAddress> addresses;
         try
         {
-            Set<DbNotifyAddress> dbAddresses = Allocator.getDatabaseV5().getNotifyAddresses();
+            Set<DbNotifyAddress> dbAddresses = Allocator.getDatabase().getNotifyAddresses();
             
             ImmutableSet.Builder<InternetAddress> addressesBuilder = ImmutableSet.builder();
             for(DbNotifyAddress address : dbAddresses)
