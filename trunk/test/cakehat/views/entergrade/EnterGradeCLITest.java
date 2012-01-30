@@ -53,6 +53,7 @@ public class EnterGradeCLITest {
         expect(grade.getPart()).andReturn(part).anyTimes();
         expect(grade.getSubmissionStatus()).andReturn(PartGrade.SubmissionStatus.SUBMITTED_MATCHING).anyTimes();
         expect(grade.getTA()).andReturn(ta).anyTimes();
+        replay(grade);
         
         HashSet<Student> enabledStuds = new HashSet<Student>();
         enabledStuds.add(stud);
