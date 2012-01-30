@@ -1,12 +1,12 @@
 package cakehat.views.shared.gradingsheet;
 
 import cakehat.Allocator;
-import cakehat.newdatabase.DeadlineInfo;
-import cakehat.newdatabase.DeadlineInfo.DeadlineResolution;
+import cakehat.database.DeadlineInfo;
+import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.HandinTime;
+import cakehat.database.Group;
+import cakehat.database.HandinTime;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
@@ -58,7 +58,7 @@ class GradableEventPanel extends GradingSheetPanel
     {   
         try
         {
-            DeadlineInfo deadlineInfo = Allocator.getDataServicesV5().getDeadlineInfo(_gradableEvent);
+            DeadlineInfo deadlineInfo = Allocator.getDataServices().getDeadlineInfo(_gradableEvent);
             
             DateTime receivedDate = null;
             if(_group != null)
@@ -73,7 +73,7 @@ class GradableEventPanel extends GradingSheetPanel
                 }
                 else
                 {
-                    HandinTime handinTime = Allocator.getDataServicesV5().getHandinTime(_gradableEvent, _group);
+                    HandinTime handinTime = Allocator.getDataServices().getHandinTime(_gradableEvent, _group);
                     if(handinTime != null)
                     {
                         receivedDate = handinTime.getHandinTime();

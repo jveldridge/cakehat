@@ -3,8 +3,8 @@ package cakehat.gml;
 import cakehat.assignment.Part;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
-import cakehat.newdatabase.ConfigurationData;
-import cakehat.newdatabase.Group;
+import cakehat.database.ConfigurationData;
+import cakehat.database.Group;
 import java.io.File;
 import org.junit.Test;
 

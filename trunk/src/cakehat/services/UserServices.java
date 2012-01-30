@@ -1,6 +1,6 @@
 package cakehat.services;
 
-import cakehat.newdatabase.TA;
+import cakehat.database.TA;
 import java.util.List;
 import support.utils.posix.NativeException;
 

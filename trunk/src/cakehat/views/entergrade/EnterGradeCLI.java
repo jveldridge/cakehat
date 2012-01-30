@@ -4,10 +4,10 @@ import cakehat.Allocator;
 import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.DbGroup;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.PartGrade;
-import cakehat.newdatabase.Student;
+import cakehat.database.DbGroup;
+import cakehat.database.Group;
+import cakehat.database.PartGrade;
+import cakehat.database.Student;
 import cakehat.services.ServicesException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -140,7 +140,7 @@ public class EnterGradeCLI {
         {
             try
             {
-                Allocator.getDataServicesV5().setEarned(group, part, pointsNum, true);
+                Allocator.getDataServices().setEarned(group, part, pointsNum, true);
             }
             catch(ServicesException e)
             {
@@ -188,13 +188,13 @@ public class EnterGradeCLI {
     private static Student getStudent(String studentLogin) throws EnterGradeException
     {
         try {
-            Student student = Allocator.getDataServicesV5().getStudentFromLogin(studentLogin);
+            Student student = Allocator.getDataServices().getStudentFromLogin(studentLogin);
             
             if (student == null) {
                 throw new EnterGradeException("No such student [" + studentLogin + "].");
             }
 
-            if (!Allocator.getDataServicesV5().getEnabledStudents().contains(student)) {
+            if (!Allocator.getDataServices().getEnabledStudents().contains(student)) {
                 throw new EnterGradeException("Provided student login [" + studentLogin +
                             "] is not enabled. A cakehat admin may re-enable the student");
             }
@@ -216,7 +216,7 @@ public class EnterGradeCLI {
     {
         HashMap<String, Part> nameToPart = new HashMap<String, Part>();
         try {
-            for (Assignment asgn : Allocator.getDataServicesV5().getAssignments()) {
+            for (Assignment asgn : Allocator.getDataServices().getAssignments()) {
                 for (GradableEvent ge : asgn.getGradableEvents()) {
                     for (Part part : ge.getParts()) {
                         if (part.hasQuickName()) {
@@ -289,7 +289,7 @@ public class EnterGradeCLI {
     {
         Group group = null;
         try {
-            group = Allocator.getDataServicesV5().getGroup(part.getGradableEvent().getAssignment(), student);
+            group = Allocator.getDataServices().getGroup(part.getGradableEvent().getAssignment(), student);
 
         } catch (ServicesException e) {
             throw new EnterGradeException(e, "Cannot retrieve student's group");
@@ -316,7 +316,7 @@ public class EnterGradeCLI {
 
         try
         {
-            PartGrade partGrade = Allocator.getDataServicesV5().getEarned(group, part);
+            PartGrade partGrade = Allocator.getDataServices().getEarned(group, part);
 
             //If there is an existing grade
             if(partGrade != null && partGrade.getEarned() != null)

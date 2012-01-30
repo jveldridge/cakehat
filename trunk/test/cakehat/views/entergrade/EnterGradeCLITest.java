@@ -3,21 +3,21 @@ package cakehat.views.entergrade;
 import java.util.HashSet;
 import java.util.ArrayList;
 import org.junit.Test;
-import cakehat.newdatabase.TA;
+import cakehat.database.TA;
 import org.joda.time.DateTime;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.Allocator;
 import java.util.List;
 import java.util.Arrays;
-import cakehat.newdatabase.PartGrade;
-import cakehat.newdatabase.DataServicesV5;
+import cakehat.database.PartGrade;
+import cakehat.database.DataServices;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.Student;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import cakehat.services.ServicesException;
 import cakehat.views.entergrade.EnterGradeCLI.EnterGradeException;
 import cakehat.assignment.Assignment;
-import cakehat.newdatabase.ConfigurationData;
+import cakehat.database.ConfigurationData;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -61,7 +61,7 @@ public class EnterGradeCLITest {
         ArrayList<Assignment> asgns = new ArrayList<Assignment>();
         asgns.add(asgn);
         
-        final DataServicesV5 ds = createMock(DataServicesV5.class);
+        final DataServices ds = createMock(DataServices.class);
         expect(ds.isStudentLoginInDatabase(stud.getLogin())).andReturn(true).anyTimes();
         expect(ds.getStudentFromLogin(stud.getLogin())).andReturn(stud).anyTimes();
         expect(ds.getEnabledStudents()).andReturn(enabledStuds).anyTimes();
@@ -70,12 +70,12 @@ public class EnterGradeCLITest {
         expect(ds.getGroup(asgn, stud)).andReturn(group).anyTimes();
         replay(ds);
         
-        SingletonAllocation<DataServicesV5> dsAlloc =
-            new SingletonAllocation<DataServicesV5>()
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
             {
-                public DataServicesV5 allocate() { return ds; };
+                public DataServices allocate() { return ds; };
             };
-        new Allocator.Customizer().setDataServicesV5(dsAlloc).customize();
+        new Allocator.Customizer().setDataServices(dsAlloc).customize();
 
         EnterGradeCLI.EnterGradeInteractor interactor = new EnterGradeCLI.EnterGradeInteractor()
         {
@@ -122,7 +122,7 @@ public class EnterGradeCLITest {
         ArrayList<Assignment> asgns = new ArrayList<Assignment>();
         asgns.add(asgn);
         
-        final DataServicesV5 ds = createMock(DataServicesV5.class);
+        final DataServices ds = createMock(DataServices.class);
         expect(ds.isStudentLoginInDatabase(hannah.getLogin())).andReturn(true).anyTimes();
         expect(ds.getStudentFromLogin(hannah.getLogin())).andReturn(hannah).anyTimes();
         expect(ds.getGroup(asgn, hannah)).andReturn(group).anyTimes();
@@ -146,12 +146,12 @@ public class EnterGradeCLITest {
 
         replay(ds);
         
-        SingletonAllocation<DataServicesV5> dsAlloc =
-            new SingletonAllocation<DataServicesV5>()
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
             {
-                public DataServicesV5 allocate() { return ds; };
+                public DataServices allocate() { return ds; };
             };
-        new Allocator.Customizer().setDataServicesV5(dsAlloc).customize();
+        new Allocator.Customizer().setDataServices(dsAlloc).customize();
 
         EnterGradeCLI.EnterGradeInteractor interactor = new EnterGradeCLI.EnterGradeInteractor()
         {
@@ -190,7 +190,7 @@ public class EnterGradeCLITest {
         ArrayList<Assignment> asgns = new ArrayList<Assignment>();
         asgns.add(asgn);
         
-        final DataServicesV5 ds = createMock(DataServicesV5.class);
+        final DataServices ds = createMock(DataServices.class);
         expect(ds.isStudentLoginInDatabase(stud.getLogin())).andReturn(true).anyTimes();
         expect(ds.getStudentFromLogin(stud.getLogin())).andReturn(stud).anyTimes();
         expect(ds.getEnabledStudents()).andReturn(enabledStuds).anyTimes();
@@ -201,12 +201,12 @@ public class EnterGradeCLITest {
         expectLastCall();
         replay(ds);
         
-        SingletonAllocation<DataServicesV5> dsAlloc =
-            new SingletonAllocation<DataServicesV5>()
+        SingletonAllocation<DataServices> dsAlloc =
+            new SingletonAllocation<DataServices>()
             {
-                public DataServicesV5 allocate() { return ds; };
+                public DataServices allocate() { return ds; };
             };
-        new Allocator.Customizer().setDataServicesV5(dsAlloc).customize();
+        new Allocator.Customizer().setDataServices(dsAlloc).customize();
 
         EnterGradeCLI.EnterGradeInteractor interactor = new EnterGradeCLI.EnterGradeInteractor()
         {

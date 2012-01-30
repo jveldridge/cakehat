@@ -1,8 +1,8 @@
 package cakehat.printing;
 
-import cakehat.newdatabase.TA;
-import cakehat.newdatabase.Group;
-import cakehat.newdatabase.Student;
+import cakehat.database.TA;
+import cakehat.database.Group;
+import cakehat.database.Student;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

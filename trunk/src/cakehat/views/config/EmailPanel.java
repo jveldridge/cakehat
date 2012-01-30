@@ -3,9 +3,9 @@ package cakehat.views.config;
 import support.ui.DocumentAdapter;
 import cakehat.Allocator;
 import cakehat.email.EmailAccount;
-import cakehat.newdatabase.DbNotifyAddress;
-import cakehat.newdatabase.DbPropertyValue;
-import cakehat.newdatabase.DbPropertyValue.DbPropertyKey;
+import cakehat.database.DbNotifyAddress;
+import cakehat.database.DbPropertyValue;
+import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.views.config.ValidationResult.ValidationState;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
@@ -84,15 +84,15 @@ class EmailPanel extends JPanel
                 try
                 {
                     //Retrieve account and password from database, create new values if not in database
-                    DbPropertyValue<String> accountInDb = Allocator.getDatabaseV5().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT);
+                    DbPropertyValue<String> accountInDb = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT);
                     final DbPropertyValue<String> accountProp =
                             (accountInDb == null ? new DbPropertyValue<String>("") : accountInDb);
-                    DbPropertyValue<String> passwordInDb = Allocator.getDatabaseV5().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD);
+                    DbPropertyValue<String> passwordInDb = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD);
                     final DbPropertyValue<String> passwordProp =
                             (passwordInDb == null ? new DbPropertyValue<String>("") : passwordInDb);
                     
                     //Adjust the list of notify addresses to have three as the UI shows 3 entries
-                    Iterator<DbNotifyAddress> dbAddresses = Allocator.getDatabaseV5().getNotifyAddresses().iterator();
+                    Iterator<DbNotifyAddress> dbAddresses = Allocator.getDatabase().getNotifyAddresses().iterator();
                     ImmutableList.Builder<DbNotifyAddress> addressesBuilder = ImmutableList.builder();
                     for(int i = 0; i < 3; i++)
                     {
@@ -306,7 +306,7 @@ class EmailPanel extends JPanel
                     @Override
                     public void dbCall() throws SQLException
                     {
-                        Allocator.getDatabaseV5().putPropertyValue(_propertyKey, _propertyValue);
+                        Allocator.getDatabase().putPropertyValue(_propertyKey, _propertyValue);
                     }
 
                     @Override
@@ -579,11 +579,11 @@ class EmailPanel extends JPanel
                             {   
                                 if(notifyAddress.getAddress().isEmpty())
                                 {
-                                    Allocator.getDatabaseV5().removeNotifyAddresses(SingleElementSet.of(notifyAddress));
+                                    Allocator.getDatabase().removeNotifyAddresses(SingleElementSet.of(notifyAddress));
                                 }
                                 else
                                 {
-                                    Allocator.getDatabaseV5().putNotifyAddresses(SingleElementSet.of(notifyAddress));
+                                    Allocator.getDatabase().putNotifyAddresses(SingleElementSet.of(notifyAddress));
                                 }
                             }
 

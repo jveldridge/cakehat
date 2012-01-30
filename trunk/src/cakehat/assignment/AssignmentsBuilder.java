@@ -1,13 +1,13 @@
 package cakehat.assignment;
 
 import cakehat.assignment.PartActionDescription.ActionType;
-import cakehat.newdatabase.DbActionProperty;
-import cakehat.newdatabase.DbAssignment;
-import cakehat.newdatabase.DbGradableEvent;
-import cakehat.newdatabase.DbInclusionFilter;
-import cakehat.newdatabase.DbInclusionFilter.FilterType;
-import cakehat.newdatabase.DbPart;
-import cakehat.newdatabase.DbPartAction;
+import cakehat.database.DbActionProperty;
+import cakehat.database.DbAssignment;
+import cakehat.database.DbGradableEvent;
+import cakehat.database.DbInclusionFilter;
+import cakehat.database.DbInclusionFilter.FilterType;
+import cakehat.database.DbPart;
+import cakehat.database.DbPartAction;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;

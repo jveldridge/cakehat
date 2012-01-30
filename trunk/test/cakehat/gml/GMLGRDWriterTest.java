@@ -5,19 +5,19 @@
 package cakehat.gml;
 
 import java.io.IOException;
-import cakehat.newdatabase.DeadlineInfo.DeadlineResolution;
-import cakehat.newdatabase.DeadlineInfo;
+import cakehat.database.DeadlineInfo.DeadlineResolution;
+import cakehat.database.DeadlineInfo;
 import org.joda.time.DateTime;
-import cakehat.newdatabase.DataServicesV5;
-import cakehat.newdatabase.HandinTime;
-import cakehat.newdatabase.TA;
+import cakehat.database.DataServices;
+import cakehat.database.HandinTime;
+import cakehat.database.TA;
 import cakehat.assignment.Part;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Assignment;
-import cakehat.newdatabase.ConfigurationData;
-import cakehat.newdatabase.Group;
+import cakehat.database.ConfigurationData;
+import cakehat.database.Group;
 import cakehat.services.PathServices;
 import cakehat.services.ServicesException;
 import java.io.File;
@@ -66,7 +66,7 @@ public class GMLGRDWriterTest {
         replay(ta);
         
         // mock dataservices
-        final DataServicesV5 dataServices = createMock(DataServicesV5.class);
+        final DataServices dataServices = createMock(DataServices.class);
         
         for (GradableEvent e : asgn.getGradableEvents()) {
             HandinTime time = createMock(HandinTime.class);
@@ -97,13 +97,13 @@ public class GMLGRDWriterTest {
         
         replay(dataServices);
         
-        SingletonAllocation<DataServicesV5> dataAlloc = 
-                new SingletonAllocation<DataServicesV5>()
+        SingletonAllocation<DataServices> dataAlloc = 
+                new SingletonAllocation<DataServices>()
                 {
-                    public DataServicesV5 allocate() { return dataServices; };
+                    public DataServices allocate() { return dataServices; };
                 };
         
-        new Allocator.Customizer().setPathServices(pathAlloc).setDataServicesV5(dataAlloc).customize();
+        new Allocator.Customizer().setPathServices(pathAlloc).setDataServices(dataAlloc).customize();
 
         GMLGRDWriter.write(group, new File(OUTPUT));
     }
@@ -139,7 +139,7 @@ public class GMLGRDWriterTest {
         Part part = asgn.getGradableEvents().get(0).getParts().get(0);
         
         // mock dataservices
-        final DataServicesV5 dataServices = createMock(DataServicesV5.class);
+        final DataServices dataServices = createMock(DataServices.class);
         
         for (GradableEvent e : asgn.getGradableEvents()) {
             HandinTime time = createMock(HandinTime.class);
@@ -171,13 +171,13 @@ public class GMLGRDWriterTest {
         
         replay(dataServices);
         
-        SingletonAllocation<DataServicesV5> dataAlloc = 
-                new SingletonAllocation<DataServicesV5>()
+        SingletonAllocation<DataServices> dataAlloc = 
+                new SingletonAllocation<DataServices>()
                 {
-                    public DataServicesV5 allocate() { return dataServices; };
+                    public DataServices allocate() { return dataServices; };
                 };
         
-        new Allocator.Customizer().setPathServices(pathAlloc).setDataServicesV5(dataAlloc).customize();
+        new Allocator.Customizer().setPathServices(pathAlloc).setDataServices(dataAlloc).customize();
         
         GMLGRDWriter.write(group, new File(NO_GML_OUTPUT));
         

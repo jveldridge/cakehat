@@ -1,6 +1,6 @@
 package cakehat.assignment;
 
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import java.util.List;

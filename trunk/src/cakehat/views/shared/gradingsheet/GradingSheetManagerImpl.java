@@ -3,7 +3,7 @@ package cakehat.views.shared.gradingsheet;
 import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
-import cakehat.newdatabase.Group;
+import cakehat.database.Group;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
