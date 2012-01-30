@@ -351,6 +351,25 @@ public interface DataServicesV5 {
     public void updateDataCache() throws ServicesException;
     
     /**
+     * Returns the Student object corresponding to the given studentLogin.
+     * If no such student exists in the database, <code>null</code> will be
+     * returned.
+     *
+     * @param studentLogin
+     * @return
+     */
+    public Student getStudentFromLogin(String studentLogin) throws ServicesException;
+
+    /**
+     * Returns whether or not the given student login corresponds to
+     * a valid Student object.
+     * 
+     * @param studentLogin
+     * @return
+     */
+    public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException;
+    
+    /**
      * Removes all data from database tables and rebuilds the tables. If no DB
      * file exists or is empty then it will be set to the initial configuration.
      */
