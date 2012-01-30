@@ -141,4 +141,19 @@ public class Group implements Comparable<Group>, Iterable<Student>
             listener.groupChanged(this);
         }
     }
+    
+    /**
+     * Updates the fields of this Group object to have the given values.
+     * This method should be called only by {@link DataServices} to ensure
+     * consistency with the database.
+     * 
+     * @param name
+     * @param members
+     */
+    void update(String name, Set<Student> members) {
+        _name = name;
+        _members.clear();
+        _members.addAll(members);
+    }
+    
 }
