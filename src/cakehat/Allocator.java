@@ -31,6 +31,8 @@ import cakehat.services.PathServices;
 import cakehat.services.PathServicesImpl;
 import cakehat.services.UserServices;
 import cakehat.services.UserServicesImpl;
+import cakehat.views.shared.gradingsheet.GradingSheetManager;
+import cakehat.views.shared.gradingsheet.GradingSheetManagerImpl;
 import support.testutils.TestUtilities;
 import support.utils.ArchiveUtilities;
 import support.utils.ArchiveUtilitiesImpl;
@@ -79,18 +81,15 @@ public class Allocator
     }
 
     /**
-     * Subclass this abstract class and implement allocate() so that it returns
-     * an instance of whatever SingletonAllocation is parametrized on.
+     * Subclass this abstract class and implement {@link #allocate()} so that it returns an instance of whatever
+     * SingletonAllocation is parameterized on.
      * <br/><br/>
-     * The reason for this class is to act as a "thunk" around what it is likely
-     * constructed in the allocate() method. This is needed because the
-     * constructor of an allocated object might make calls to the Allocator. If
-     * this is the case, this could cause a problem. If for a test the object
-     * being called for is going to be replaced by a test version, the test
-     * version would not necessarily have been supplied yet. By providing all
-     * allocations to be as SingletonAllocation's, when the first call to the
-     * Allocator is made, the SingletonAllocation is used, thus meaning any
-     * customized allocated objects are guaranteed to be used.
+     * The reason for this class is to act as a "thunk" around what it is likely constructed in the allocate() method.
+     * This is needed because the constructor of an allocated object might make calls to the Allocator. If this is the
+     * case, this could cause a problem. If for a test the object being called for is going to be replaced by a test
+     * version, the test version would not necessarily have been supplied yet. By providing all allocations to be as
+     * SingletonAllocation's, when the first call to the Allocator is made, the SingletonAllocation is used, thus
+     * meaning any customized allocated objects are guaranteed to be used.
      * <br/><br/>
      * Essentially, this is an implementation of laziness.
      *
@@ -140,273 +139,242 @@ public class Allocator
     private final SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
     private final SingletonAllocation<UserUtilities> _userUtils;
     private final SingletonAllocation<DataServicesV5> _dataServicesV5;
+    private final SingletonAllocation<GradingSheetManager> _gradingSheetManager;
 
     /**
-     * Creates the underlying instance of the Allocator. Any of the parameters
-     * may be <code>null</code>. If the parameter is <code>null</code> then the
-     * standard implementation will be used.
-     *
-     * @param configInfo
-     * @param courseInfo
-     * @param rubricManager
-     * @param gradingServices
-     * @param userServices
-     * @param dataServices
-     * @param pathServices
-     * @param fileSystemServices
-     * @param constants
-     * @param database
-     * @param databaseV5
-     * @param landscapePrintingService
-     * @param portraitPrintingService
-     * @param csvExporter
-     * @param generalUtils
-     * @param archiveUtils
-     * @param calendarUtils
-     * @param externalProcessesUtils
-     * @param fileSystemUtils
-     * @param userUtils
+     * Creates the underlying instance of the Allocator. Any of the parameters may be {@code null}. If the parameter is
+     * {@code null} then the standard implementation will be null.
      */
-    private Allocator(SingletonAllocation<ConfigurationInfo> configInfo,
-                      SingletonAllocation<CourseInfo> courseInfo,
-                      SingletonAllocation<RubricManager> rubricManager,
-                      SingletonAllocation<GradingServices> gradingServices,
-                      SingletonAllocation<UserServices> userServices,
-                      SingletonAllocation<DataServices> dataServices,
-                      SingletonAllocation<FileSystemServices> fileSystemServices,
-                      SingletonAllocation<PathServices> pathServices,
-                      SingletonAllocation<StringManipulationServices> stringManipServices,
-                      SingletonAllocation<Constants> constants,
-                      SingletonAllocation<Database> database,
-                      SingletonAllocation<DatabaseV5> databaseV5,
-                      SingletonAllocation<PrintingService> landscapePrintingService,
-                      SingletonAllocation<PrintingService> portraitPrintingService,
-                      SingletonAllocation<Exporter> csvExporter,
-                      SingletonAllocation<GeneralUtilities> generalUtils,
-                      SingletonAllocation<ArchiveUtilities> archiveUtils,
-                      SingletonAllocation<CalendarUtilities> calendarUtils,
-                      SingletonAllocation<ExternalProcessesUtilities> externalProcessesUtils,
-                      SingletonAllocation<FileSystemUtilities> fileSystemUtils,
-                      SingletonAllocation<UserUtilities> userUtils,
-                      SingletonAllocation<DataServicesV5> dataServicesV5)
+    private Allocator(Customizer customizer)
     {
-        if(configInfo == null)
+        if(customizer._configInfo == null)
         {
             _configInfo = new SingletonAllocation<ConfigurationInfo>()
                           { public ConfigurationInfo allocate() { return new ConfigurationInfoImpl(); } };
         }
         else
         {
-            _configInfo = configInfo;
+            _configInfo = customizer._configInfo;
         }
 
-        if(courseInfo == null)
+        if(customizer._courseInfo == null)
         {
             _courseInfo = new SingletonAllocation<CourseInfo>()
                           { public CourseInfo allocate() { return new CourseInfoImpl(); } };
         }
         else
         {
-            _courseInfo = courseInfo;
+            _courseInfo = customizer._courseInfo;
         }
 
-        if(rubricManager == null)
+        if(customizer._rubricManager == null)
         {
             _rubricManager = new SingletonAllocation<RubricManager>()
                              { public RubricManager allocate() { return new RubricManagerImpl(); } };
         }
         else
         {
-            _rubricManager = rubricManager;
+            _rubricManager = customizer._rubricManager;
         }
 
-        if(gradingServices == null)
+        if(customizer._gradingServices == null)
         {
             _gradingServices = new SingletonAllocation<GradingServices>()
                                { public GradingServices allocate() { return new GradingServicesImpl(); } };
         }
         else
         {
-            _gradingServices = gradingServices;
+            _gradingServices = customizer._gradingServices;
         }
 
-        if(userServices == null)
+        if(customizer._userServices == null)
         {
             _userServices = new SingletonAllocation<UserServices>()
                             { public UserServices allocate() { return new UserServicesImpl(); } };
         }
         else
         {
-            _userServices = userServices;
+            _userServices = customizer._userServices;
         }
 
-        if(dataServices == null)
+        if(customizer._dataServices == null)
         {
             _dataServices = new SingletonAllocation<DataServices>()
                             { public DataServices allocate() { return new DataServicesImpl(); } };
         }
         else
         {
-            _dataServices = dataServices;
+            _dataServices = customizer._dataServices;
         }
 
-        if(fileSystemServices == null)
+        if(customizer._fileSystemServices == null)
         {
             _fileSystemServices = new SingletonAllocation<FileSystemServices>()
                             { public FileSystemServices allocate() { return new FileSystemServicesImpl(); } };
         }
         else
         {
-            _fileSystemServices = fileSystemServices;
+            _fileSystemServices = customizer._fileSystemServices;
         }
 
-        if(pathServices == null)
+        if(customizer._pathServices == null)
         {
             _pathServices = new SingletonAllocation<PathServices>()
                             { public PathServices allocate() { return new PathServicesImpl(); } };
         }
         else
         {
-            _pathServices = pathServices;
+            _pathServices = customizer._pathServices;
         }
 
-        if(stringManipServices == null)
+        if(customizer._stringManipServices == null)
         {
             _stringManipServices = new SingletonAllocation<StringManipulationServices>()
                             { public StringManipulationServices allocate() { return new StringManipulationServicesImpl(); } };
         }
         else
         {
-            _stringManipServices = stringManipServices;
+            _stringManipServices = customizer._stringManipServices;
         }
 
-        if(constants == null)
+        if(customizer._constants == null)
         {
             _constants = new SingletonAllocation<Constants>()
                         { public Constants allocate() { return new ConstantsImpl(); } };
         }
         else
         {
-            _constants = constants;
+            _constants = customizer._constants;
         }
 
-        if(database == null)
+        if(customizer._database == null)
         {
             _database = new SingletonAllocation<Database>()
                             { public Database allocate() { return new DatabaseImpl(); } };
         }
         else
         {
-            _database = database;
+            _database = customizer._database;
         }
         
-        if(databaseV5 == null)
+        if(customizer._databaseV5 == null)
         {
             _databaseV5 = new SingletonAllocation<DatabaseV5>()
                             { public DatabaseV5 allocate() { return new DatabaseV5Impl(); } };
         }
         else
         {
-            _databaseV5 = databaseV5;
+            _databaseV5 = customizer._databaseV5;
         }
 
-        if(landscapePrintingService == null)
+        if(customizer._landscapePrintingService == null)
         {
             _landscapePrintingService = new SingletonAllocation<PrintingService>()
                                 { public PrintingService allocate() { return new EnscriptPrintingService(); } };
         }
         else
         {
-            _landscapePrintingService = landscapePrintingService;
+            _landscapePrintingService = customizer._landscapePrintingService;
         }
 
-        if(portraitPrintingService == null)
+        if(customizer._portraitPrintingService == null)
         {
             _portraitPrintingService = new SingletonAllocation<PrintingService>()
                                 { public PrintingService allocate() { return new LprPrintingService(); } };
         }
         else
         {
-            _portraitPrintingService = portraitPrintingService;
+            _portraitPrintingService = customizer._portraitPrintingService;
         }
 
-        if(csvExporter == null)
+        if(customizer._csvExporter == null)
         {
             _csvExporter = new SingletonAllocation<Exporter>()
                            { public Exporter allocate() { return new CSVExporter(); } };
         }
         else
         {
-            _csvExporter = csvExporter;
+            _csvExporter = customizer._csvExporter;
         }
 
-        if(generalUtils == null)
+        if(customizer._generalUtils == null)
         {
             _generalUtils = new SingletonAllocation<GeneralUtilities>()
                             { public GeneralUtilities allocate() { return new GeneralUtilitiesImpl(); } };
         }
         else
         {
-            _generalUtils = generalUtils;
+            _generalUtils = customizer._generalUtils;
         }
 
-        if(archiveUtils == null)
+        if(customizer._archiveUtils == null)
         {
             _archiveUtils = new SingletonAllocation<ArchiveUtilities>()
                             { public ArchiveUtilities allocate() { return new ArchiveUtilitiesImpl(); } };
         }
         else
         {
-            _archiveUtils = archiveUtils;
+            _archiveUtils = customizer._archiveUtils;
         }
 
-        if(calendarUtils == null)
+        if(customizer._calendarUtils == null)
         {
             _calendarUtils = new SingletonAllocation<CalendarUtilities>()
                              { public CalendarUtilities allocate() { return new CalendarUtilitiesImpl(); } };
         }
         else
         {
-            _calendarUtils = calendarUtils;
+            _calendarUtils = customizer._calendarUtils;
         }
 
-        if(externalProcessesUtils == null)
+        if(customizer._externalProcessesUtils == null)
         {
             _externalProcessesUtils = new SingletonAllocation<ExternalProcessesUtilities>()
                                       { public ExternalProcessesUtilities allocate() { return new ExternalProcessesUtilitiesImpl(); } };
         }
         else
         {
-            _externalProcessesUtils = externalProcessesUtils;
+            _externalProcessesUtils = customizer._externalProcessesUtils;
         }
 
-        if(fileSystemUtils == null)
+        if(customizer._fileSystemUtils == null)
         {
             _fileSystemUtils = new SingletonAllocation<FileSystemUtilities>()
                                { public FileSystemUtilities allocate() { return new FileSystemUtilitiesImpl(); } };
         }
         else
         {
-            _fileSystemUtils = fileSystemUtils;
+            _fileSystemUtils = customizer._fileSystemUtils;
         }
 
-        if(userUtils == null)
+        if(customizer._userUtils == null)
         {
             _userUtils = new SingletonAllocation<UserUtilities>()
                          { public UserUtilities allocate() { return new UserUtilitiesImpl(); } };
         }
         else
         {
-            _userUtils = userUtils;
+            _userUtils = customizer._userUtils;
         }
-        if(dataServicesV5 == null)
+        
+        if(customizer._dataServicesV5 == null)
         {
             _dataServicesV5 = new SingletonAllocation<DataServicesV5>()
                          { public DataServicesV5 allocate() { return new DataServicesV5Impl(); } };
         }
         else
         {
-            _dataServicesV5 = dataServicesV5;
+            _dataServicesV5 = customizer._dataServicesV5;
+        }
+        
+        if(customizer._gradingSheetManager == null)
+        {
+            _gradingSheetManager = new SingletonAllocation<GradingSheetManager>()
+                    { public GradingSheetManager allocate() { return new GradingSheetManagerImpl(); } };
+        }
+        else
+        {
+            _gradingSheetManager = customizer._gradingSheetManager;
         }
     }
 
@@ -519,13 +487,17 @@ public class Allocator
     {
         return getInstance()._userUtils.getInstance();
     }
+    
+    public static GradingSheetManager getGradingSheetManager()
+    {
+        return getInstance()._gradingSheetManager.getInstance();
+    }
 
     /**
-     * Outside of the Allocator class, this class should <b>ONLY<b/> used for
-     * testing purposes.
-     *
-     * Constructs an Allocator with custom allocations. Any allocations that are
-     * not provided will use the standard ones.
+     * Outside of the Allocator class, this class should <strong>ONLY</strong> used for testing purposes.
+     * <br/><br/>
+     * Constructs an Allocator with custom allocations. Any allocations that are not provided will use the standard
+     * ones.
      */
     public static class Customizer
     {
@@ -551,10 +523,12 @@ public class Allocator
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
         private SingletonAllocation<DataServicesV5> _dataServicesV5;
+        private SingletonAllocation<GradingSheetManager> _gradingSheetManager;
 
         public Customizer setConfigurationInfo(SingletonAllocation<ConfigurationInfo> configInfo)
         {
             _configInfo = configInfo;
+            
             return this;
         }
 
@@ -723,28 +697,7 @@ public class Allocator
          */
         private void createSingletonInstance()
         {
-            Allocator.INSTANCE = new Allocator(_configInfo,
-                    _courseInfo,
-                    _rubricManager,
-                    _gradingServices,
-                    _userServices,
-                    _dataServices,
-                    _fileSystemServices,
-                    _pathServices,
-                    _stringManipServices,
-                    _constants,
-                    _database,
-                    _databaseV5,
-                    _landscapePrintingService,
-                    _portraitPrintingService,
-                    _csvExporter,
-                    _generalUtils,
-                    _archiveUtils,
-                    _calendarUtils,
-                    _externalProcessesUtils,
-                    _fileSystemUtils,
-                    _userUtils,
-                    _dataServicesV5);
+            Allocator.INSTANCE = new Allocator(this);
         }
     }
 }
