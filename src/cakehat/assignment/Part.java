@@ -206,6 +206,11 @@ public class Part implements Comparable<Part>
         return _gradableEvent;
     }
     
+    public Assignment getAssignment()
+    {
+        return this.getGradableEvent().getAssignment();
+    }
+    
     /**
      * The name of this part.
      * 

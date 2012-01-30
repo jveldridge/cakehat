@@ -1,8 +1,8 @@
 package cakehat.printing;
 
-import cakehat.config.TA;
+import cakehat.newdatabase.TA;
 import cakehat.newdatabase.Group;
-import cakehat.database.Student;
+import cakehat.newdatabase.Student;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -31,41 +31,6 @@ public class PrintRequest
      * @param group
      * @throws FileNotFoundException thrown if a file is passed in that does not exist
      */
-    @Deprecated
-    public PrintRequest(File file, TA ta, cakehat.database.Group group) throws FileNotFoundException
-    {
-        this(Arrays.asList(file), ta, group);
-    }
-
-    /**
-     * A request of text files.
-     *
-     * @param files
-     * @param ta
-     * @param group
-     * @throws FileNotFoundException thrown if a file is passed in that does not exist
-     */
-    @Deprecated
-    public PrintRequest(Iterable<File> files, TA ta, cakehat.database.Group group) throws FileNotFoundException
-    {
-        this(files);
-        _ta = ta;
-        if (group.size() == 1) {
-            _displayString = "student: " + group.getName();
-        }
-        else {
-            _displayString = "group: " + group.getName();
-        }
-    }
-    
-    /**
-     * A request of text files.
-     *
-     * @param file
-     * @param ta
-     * @param group
-     * @throws FileNotFoundException thrown if a file is passed in that does not exist
-     */
     public PrintRequest(File file, TA ta, Group group) throws FileNotFoundException
     {
         this(Arrays.asList(file), ta, group);
@@ -83,12 +48,10 @@ public class PrintRequest
     {
         this(files);
         _ta = ta;
-        if(group.isGroupOfOne())
-        {
+        if (group.size() == 1) {
             _displayString = "student: " + group.getName();
         }
-        else
-        {
+        else {
             _displayString = "group: " + group.getName();
         }
     }

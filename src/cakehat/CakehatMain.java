@@ -122,7 +122,6 @@ public class CakehatMain
             {
                 System.err.println("cakehat could not initialize properly; please try again.\n" +
                                    "If this problem persists, please contact the cakehat team.\n" +
-                                   "Contact address: " + Allocator.getConstants().getCakehatEmailAddress() +"\n" +
                                    "Underlying cause:\n");
                 e.printStackTrace(System.err);
             }

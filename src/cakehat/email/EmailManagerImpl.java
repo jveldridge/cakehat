@@ -102,6 +102,15 @@ public class EmailManagerImpl implements EmailManager
     }
     
     @Override
+    public InternetAddress getCakehatEmailAddress() {
+        try {
+            return new InternetAddress("cakehat@cs.brown.edu");
+        } catch (AddressException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    @Override
     public EmailAccountStatus getEmailAccountStatus()
     {
         return _status;

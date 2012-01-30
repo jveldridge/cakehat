@@ -31,6 +31,8 @@ public interface EmailManager
         INITIALIZATION_ERROR;
     }
     
+    public InternetAddress getCakehatEmailAddress();
+    
     public EmailAccountStatus getEmailAccountStatus();
     
     /**

@@ -78,6 +78,11 @@ public class Group implements Comparable<Group>, Iterable<Student>
         notifyListeners();
     }
     
+    public int size()
+    {
+        return _members.size();
+    }
+    
     public boolean isGroupOfOne()
     {
         return _members.size() == 1;

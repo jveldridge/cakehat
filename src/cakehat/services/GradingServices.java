@@ -1,11 +1,9 @@
 package cakehat.services;
 
-import cakehat.config.Assignment;
-import cakehat.config.ConfigurationInfo;
-import cakehat.config.TA;
-import cakehat.database.Group;
-import cakehat.config.handin.Handin;
-import cakehat.database.Student;
+import cakehat.assignment.Assignment;
+import cakehat.newdatabase.TA;
+import cakehat.newdatabase.Group;
+import cakehat.newdatabase.Student;
 import cakehat.printing.CITPrinter;
 import java.util.Collection;
 import java.util.List;
@@ -57,33 +55,35 @@ public interface GradingServices
      */
     public CITPrinter getDefaultPrinter();
 
-    /**
-     * Prints GRD files for the specified groups and handin. This method does
-     * <strong>not</strong> generate GRD files, if any GRD files are missing
-     * then an exception will be thrown.
-     *
-     * @param handin
-     * @param groups
-     * @param printer
-     * @throws ServicesException
-     */
-    public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException;
-
-    /**
-     * Opens a new EmailView so that user TA can inform students that their assignment
-     * has been graded.  Default settings:
-     *  FROM:    user TA
-     *  TO:      user TA
-     *  CC:      notify addresses as specified by {@link ConfigurationInfo#getNotifyAddresses()}
-     *  BCC:     students the user TA is assigned to grade for this assignment, as selected
-     *  SUBJECT: "[<course code>] <Assignment> Graded"
-     *  MESSAGE: "<Assignment> has been graded."
-     *
-     * @param handin
-     * @param groups
-     * @param emailRubrics
-     */
-    public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics);
+//    /**
+//     * Prints GRD files for the specified groups and handin. This method does
+//     * <strong>not</strong> generate GRD files, if any GRD files are missing
+//     * then an exception will be thrown.
+//     *
+//     * @param handin
+//     * @param groups
+//     * @param printer
+//     * @throws ServicesException
+//     */
+//    //TODO: a similar method will need to be called from the new admin view and updated grader view
+//    public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException;
+//
+//    /**
+//     * Opens a new EmailView so that user TA can inform students that their assignment
+//     * has been graded.  Default settings:
+//     *  FROM:    user TA
+//     *  TO:      user TA
+//     *  CC:      notify addresses as specified by {@link ConfigurationInfo#getNotifyAddresses()}
+//     *  BCC:     students the user TA is assigned to grade for this assignment, as selected
+//     *  SUBJECT: "[<course code>] <Assignment> Graded"
+//     *  MESSAGE: "<Assignment> has been graded."
+//     *
+//     * @param handin
+//     * @param groups
+//     * @param emailRubrics
+//     */
+//    //TODO: a similar method will need to be called from the new admin view
+//    public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics);
 
     /**
      * Prompts the user to a select a printer.
@@ -171,22 +171,6 @@ public interface GradingServices
      * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
     public Collection<String> resolveUnexpectedHandins(Assignment asgn) throws ServicesException;
-
-    /**
-     * For each Group in the given Collection, calculates the handin status for that
-     * Group for the given Handin and stores the handin status in the database.  If
-     * overwrite is true, any existing handin status will be overwritten.  If false,
-     * handin statuses will only be stored for groups that do not already have handin
-     * statuses.
-     *
-     * @param handin
-     * @param groups
-     * @param minsLeniency
-     * @param overwrite
-     * @throws ServicesException
-     */
-    public void storeHandinStatuses(Handin handin, Collection<Group> groups,
-                                    int minsLeniency, boolean overwrite) throws ServicesException;
     
     /**
      * Builds a mapping from assignment to student to score for a given assignment. A given mapping will never be null;

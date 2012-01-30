@@ -239,6 +239,8 @@ public interface DataServicesV5 {
      */
     public Set<TA> getTAs() throws ServicesException;
     
+    public TA getTA(int taId) throws ServicesException;
+    
     /**
      * Adds the given newly created group to the database.  A ServicesException will be thrown if a group with that name
      * already exists for the corresponding assignment, if any member of the group is already assigned to another group

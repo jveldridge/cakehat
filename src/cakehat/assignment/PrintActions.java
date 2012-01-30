@@ -4,6 +4,7 @@ import cakehat.Allocator;
 import cakehat.newdatabase.Group;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
+import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
@@ -115,6 +116,10 @@ class PrintActions implements ActionProvider
                             {
                                 throw new ActionException("Unable to generate print request for group: " +
                                         group.getName(), e);
+                            }
+                            catch (ServicesException e)
+                            {
+                                throw new ActionException("Unable to print because an internal error.", e);
                             }
                         }
 

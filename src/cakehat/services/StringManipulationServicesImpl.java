@@ -1,7 +1,7 @@
 package cakehat.services;
 
-import cakehat.config.Assignment;
-import cakehat.database.Group;
+import cakehat.assignment.Assignment;
+import cakehat.newdatabase.Group;
 import java.util.Collection;
 
 /**
@@ -11,6 +11,7 @@ import java.util.Collection;
  */
 public class StringManipulationServicesImpl implements StringManipulationServices {
 
+    @Override
     public String localizeText(String text, Assignment asgn, Collection<Group> groups) {
         text = text.replaceAll(StringManipulationServices.BE_TAG, getBeText(groups));
         text = text.replaceAll(StringManipulationServices.UNIT_TAG, getUnitText(asgn, groups));
