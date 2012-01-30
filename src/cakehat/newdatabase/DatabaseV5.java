@@ -138,7 +138,7 @@ public interface DatabaseV5
      *
      * @return
      */
-    public Set<DbGroup> getAllGroups() throws SQLException;
+    public Set<DbGroup> getGroups() throws SQLException;
     
     /**
      * Adds a Set of groups to the database. A SQLException will be thrown if 

@@ -729,7 +729,7 @@ public class DatabaseV5Test {
 
     @Test
     public void testGetAllGroupsEmpty() throws SQLException {
-        Set<DbGroup> groups = _database.getAllGroups();
+        Set<DbGroup> groups = _database.getGroups();
         assertEquals(0,groups.size());
     }
 
@@ -765,7 +765,7 @@ public class DatabaseV5Test {
         _database.addGroups(ImmutableSet.of(toAdd));
         assertNotNull(toAdd.getId());
 
-        Set<DbGroup> groups = _database.getAllGroups();
+        Set<DbGroup> groups = _database.getGroups();
 
         // check that there is only 1 group in the database
         assertEquals(1, groups.size());
@@ -815,13 +815,13 @@ public class DatabaseV5Test {
         //add groups
         _database.addGroups(ImmutableSet.of(group1, group2));
 
-        Set<DbGroup> groups = _database.getAllGroups();
+        Set<DbGroup> groups = _database.getGroups();
         assertEquals(2, groups.size());
 
         //remove group for assignment 1
         _database.removeGroups(asgn1.getId());
 
-        groups = _database.getAllGroups();
+        groups = _database.getGroups();
 
         //make sure one group was removed
         assertEquals(1,groups.size());

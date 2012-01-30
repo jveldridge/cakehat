@@ -897,7 +897,7 @@ public class DatabaseV5Impl implements DatabaseV5
     }
     
     @Override
-    public Set<DbGroup> getAllGroups() throws SQLException {
+    public Set<DbGroup> getGroups() throws SQLException {
 
         Connection conn = this.openConnection();
         try {
