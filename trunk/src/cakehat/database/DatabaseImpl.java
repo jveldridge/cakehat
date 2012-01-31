@@ -939,7 +939,7 @@ public class DatabaseImpl implements Database
                 if (currGroupId != prevGroupId) {   //current row represents the beginning of a new group
                     if (prevGroupId != 0) {
                         //create record for previous group
-                        result.add(new DbGroup(prevGroupId, groupAsgnId, groupName, memberIDs));
+                        result.add(new DbGroup(groupAsgnId, prevGroupId, groupName, memberIDs));
                     }
 
                     memberIDs.clear();
@@ -954,7 +954,7 @@ public class DatabaseImpl implements Database
             }
             //create record for last group
             if (prevGroupId != 0) {
-                result.add(new DbGroup(prevGroupId, groupAsgnId, groupName, memberIDs));
+                result.add(new DbGroup(groupAsgnId, prevGroupId, groupName, memberIDs));
             }
 
             return ImmutableSet.copyOf(result);
