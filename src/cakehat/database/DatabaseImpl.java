@@ -1449,22 +1449,23 @@ public class DatabaseImpl implements Database
         try {
             conn.setAutoCommit(false);
             //DROP all tables in DB
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS notifyaddresses");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS ta");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS student");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS assignment");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradableevent");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS part");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS partaction");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS blacklist");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS grade");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS handintime");
-
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS grade");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS blacklist");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS partaction");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS part");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradableevent");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS assignment");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS student");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS ta");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS notifyaddresses");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS courseproperties");
+            
             //CREATE all DB tables
             conn.createStatement().executeUpdate("CREATE TABLE courseproperties (cpid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + "key VARCHAR NOT NULL,"
@@ -1582,7 +1583,7 @@ public class DatabaseImpl implements Database
     }
     
     public static void main(String[] argv) throws SQLException {
-        DatabaseImpl db = new DatabaseImpl();
+        Database db = new DatabaseImpl();
         db.resetDatabase();
     }
 }
