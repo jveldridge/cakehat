@@ -5,11 +5,8 @@
 #
 # author:  jak2 (Joshua Kaplan)
 # created: January 20, 2010
-# last updated: March 30, 2011
+# last updated: January 30, 2012
 #==============================================================================
-
-#message displayed when run incorrectly
-usage="Usage: cakehat (admin)"
 
 #retrieve the location of this script
 abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
@@ -31,7 +28,13 @@ then
 elif [[ ( $# == 1 && $1 == "admin") ]]
 then
     java -jar $cakehat admin
+#Else if exactly 1 argument and the argument is config
+elif [[ ( $# == 1 && $1 == "config") ]]
+then
+    java -jar $cakehat config
 #Else, improper usage
 else
-    echo $usage
+    echo "Usage: cakehat"
+    echo "       cakehat admin"
+    echo "       cakehat config"
 fi

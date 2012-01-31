@@ -15,11 +15,11 @@ import javax.swing.JOptionPane;
  */
 public enum CakehatRunMode
 {
-    GRADER("grader", true,  true,  false),
-    ADMIN("admin",   true,  true,  true),
-    CONFIG("config", false, true,  true),
-    ENTER_GRADE("enter_grade",       true,  false, false),
-    UNKNOWN(null,    false, false, false);
+    GRADER(     "grader",     true,  true,  false),
+    ADMIN(      "admin",      true,  true,  true),
+    CONFIG(     "config",     false, true,  true),
+    ENTER_GRADE("enterGrade", true,  false, false),
+    UNKNOWN(    null,         false, false, false);
 
     private final String _terminalFlag;
     private final boolean _loadDataCache;
