@@ -185,7 +185,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Set<Part> getDPsWithAssignedGroups(TA ta) throws ServicesException;
+    public Set<Part> getPartsWithAssignedGroups(TA ta) throws ServicesException;
     
     /**
      * Returns the TA who has been assigned to grade the given Group for the given Part. If no such TA exists,
@@ -237,9 +237,9 @@ public interface DataServices {
      * 
      * @return
      */
-    public Set<TA> getTAs() throws ServicesException;
+    public Set<TA> getTAs();
     
-    public TA getTA(int taId) throws ServicesException;
+    public TA getTA(int taId);
     
     /**
      * Adds the given newly created group to the database.  A ServicesException will be thrown if a group with that name
@@ -303,7 +303,7 @@ public interface DataServices {
     /**
      * Returns an immutable ordered list of all assignment.
      */
-    public List<Assignment> getAssignments() throws ServicesException;
+    public List<Assignment> getAssignments();
     
     /**
      * Returns the deadline info for the given gradable event.
@@ -323,7 +323,6 @@ public interface DataServices {
      * @throws ServicesException 
      */
     public HandinTime getHandinTime(GradableEvent gradableEvent, Group group) throws ServicesException;
-    
     
     /**
      * Sets the handin time for the given gradable event and group.

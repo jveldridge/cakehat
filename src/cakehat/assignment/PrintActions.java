@@ -117,10 +117,6 @@ class PrintActions implements ActionProvider
                                 throw new ActionException("Unable to generate print request for group: " +
                                         group.getName(), e);
                             }
-                            catch (ServicesException e)
-                            {
-                                throw new ActionException("Unable to print because an internal error.", e);
-                            }
                         }
 
                         //Issue print command

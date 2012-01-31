@@ -251,10 +251,7 @@ public class ErrorView extends JFrame
                     }
                     catch(MessagingException e)
                     {
-                        e.printStackTrace();
-                    }
-                    catch(ServicesException e)
-                    {
+                        System.err.println("Unable to send email");
                         e.printStackTrace();
                     }
                 }
