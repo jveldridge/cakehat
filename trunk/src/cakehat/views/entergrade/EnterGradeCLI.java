@@ -215,19 +215,14 @@ public class EnterGradeCLI {
     private static Part getQuickNamePart(String quickName) throws EnterGradeException
     {
         HashMap<String, Part> nameToPart = new HashMap<String, Part>();
-        try {
-            for (Assignment asgn : Allocator.getDataServices().getAssignments()) {
-                for (GradableEvent ge : asgn.getGradableEvents()) {
-                    for (Part part : ge.getParts()) {
-                        if (part.hasQuickName()) {
-                            nameToPart.put(part.getQuickName(), part);
-                        }
+        for (Assignment asgn : Allocator.getDataServices().getAssignments()) {
+            for (GradableEvent ge : asgn.getGradableEvents()) {
+                for (Part part : ge.getParts()) {
+                    if (part.hasQuickName()) {
+                        nameToPart.put(part.getQuickName(), part);
                     }
                 }
             }
-        } catch (ServicesException ex) {
-            throw new EnterGradeException(ex, "Internal database error occurred: "
-                                            + "Cannot retrieve Assignment object abstraction");
         }
 
         if(!nameToPart.containsKey(quickName))

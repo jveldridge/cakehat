@@ -1,11 +1,13 @@
 package cakehat.database;
 
 import cakehat.Allocator;
+import cakehat.InitializationException;
 import cakehat.assignment.Assignment;
 import cakehat.assignment.AssignmentsBuilder;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;
@@ -35,22 +37,9 @@ public class DataServicesImpl implements DataServices {
     /**
      * Maps a student's login to the corresponding Student object.
      */
-    private final Map<String, Student> _loginMap = new ConcurrentHashMap<String, Student>();
+    private final Map<String, Student> _studentLoginMap = new ConcurrentHashMap<String, Student>();
     
     private final Set<Student> _enabledStudents = new CopyOnWriteArraySet<Student>();
-    
-    private Set<TA> _tas = null;
-    
-    /**
-     * Maps a TA's ID in the database to the corresponding TA object.
-     */
-    private final Map<Integer, TA> _taIdMap = new HashMap<Integer, TA>();
-    
-    private List<Assignment> _assignments = null;
-    
-    private Map<Integer, Assignment> _asgnIdMap = null;
-    
-    private Map<Integer, Part> _partIdMap = null;
     
     /**
      * Maps a group's ID in the database to the corresponding Group object.
@@ -62,6 +51,71 @@ public class DataServicesImpl implements DataServices {
      * assignment.
      */
     private Map<Integer, Map<Integer, Group>> _groupsCache = new ConcurrentHashMap<Integer, Map<Integer, Group>>();
+    
+    private final ImmutableSet<TA> _tas;
+    private final ImmutableMap<Integer, TA> _taIdMap;
+    
+    private final ImmutableList<Assignment> _assignments;
+    private final ImmutableMap<Integer, Assignment> _asgnIdMap;
+    private final ImmutableMap<Integer, GradableEvent> _geIdMap;
+    private final ImmutableMap<Integer, Part> _partIdMap;
+    
+    public DataServicesImpl()
+    {
+        try
+        {
+            //Assignments
+            _assignments = new AssignmentsBuilder().buildAssigments(Allocator.getDatabase().getAssignments());
+            ImmutableMap.Builder<Integer, Assignment> asgnMapBuilder = ImmutableMap.builder();
+            ImmutableMap.Builder<Integer, GradableEvent> geMapBuilder = ImmutableMap.builder();
+            ImmutableMap.Builder<Integer, Part> partMapBuilder = ImmutableMap.builder();
+            for(Assignment asgn : _assignments)
+            {
+                asgnMapBuilder.put(asgn.getId(), asgn);
+                _groupsCache.put(asgn.getId(), new ConcurrentHashMap<Integer, Group>());
+                
+                for(GradableEvent ge : asgn)
+                {
+                    geMapBuilder.put(ge.getId(), ge);
+                    
+                    for(Part part : ge)
+                    {
+                        partMapBuilder.put(part.getId(), part);
+                    }
+                }
+            }
+            _asgnIdMap = asgnMapBuilder.build();
+            _geIdMap = geMapBuilder.build();
+            _partIdMap = partMapBuilder.build();
+            
+            //TAs
+            ImmutableSet.Builder<TA> tasBuilder = ImmutableSet.builder();
+            ImmutableMap.Builder<Integer, TA> taIdMapBuilder = ImmutableMap.builder();
+            Set<DbTA> dbTAs = Allocator.getDatabase().getTAs();
+            for(DbTA ta : dbTAs)
+            {
+                TA toAdd = new TA(ta);
+                tasBuilder.add(toAdd);
+                taIdMapBuilder.put(toAdd.getId(), toAdd);
+            }
+            _tas = tasBuilder.build();
+            _taIdMap = taIdMapBuilder.build();
+        }
+        catch(SQLException e)
+        {
+            throw new InitializationException("Unable to initialize data services", e);
+        }
+        
+        try
+        {
+            //Load student and groups cache
+            this.updateDataCache();
+        }
+        catch(ServicesException e)
+        {
+            throw new InitializationException("Unable to load data cache", e);
+        }
+    }
     
     @Override
     public Set<Student> getStudents() throws ServicesException {
@@ -128,38 +182,15 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Set<TA> getTAs() throws ServicesException
-    {
-        if (_tas == null) {
-            try {
-                Set<DbTA> dbTAs = Allocator.getDatabase().getTAs();
-                
-                ImmutableSet.Builder<TA> tasBuilder = ImmutableSet.builder();
-                for (DbTA ta : dbTAs) {
-                    TA toAdd = new TA(ta);
-                    tasBuilder.add(toAdd);
-                    _taIdMap.put(toAdd.getId(), toAdd);
-                }
-                
-                _tas = tasBuilder.build();
-            } catch (SQLException ex) {
-                throw new ServicesException(ex);
-            }
-        }
-        
+    public Set<TA> getTAs()
+    {   
         return _tas;
     }
     
     @Override    
-    public TA getTA(int taId) throws ServicesException {
-        //TODO: dehackify
-        for (TA ta : this.getTAs()) {
-            if (ta.getId() == taId) {
-                return ta;
-            }
-        }
-        
-        return null;
+    public TA getTA(int taId)
+    {
+        return _taIdMap.get(taId);
     }
     
     @Override
@@ -172,7 +203,7 @@ public class DataServicesImpl implements DataServices {
         //ensure that no student in a group to add is already to assigned to a group for the corresponding assignment
         for (DbGroup group : toAdd) {
             for (int memberId : group.getMemberIds()) {
-                if (this.safeMapOfMapsGet(_groupsCache, group.getAssignmentId()).containsKey(memberId)) {
+                if (_groupsCache.get(group.getAssignmentId()).containsKey(memberId)) {
                     throw new ServicesException("Student [" + _studentIdMap.get(memberId) + "] is already "
                             + "assigned to a group for assignment [" + _asgnIdMap.get(group.getAssignmentId()) + "]. "
                             + "No groups have been added to the database.");
@@ -191,7 +222,7 @@ public class DataServicesImpl implements DataServices {
                 Group newGroup = new Group(dbGroup.getId(), asgn, dbGroup.getName(), members);
                 _groupIdMap.put(newGroup.getId(), newGroup);
                 for (Student member : newGroup.getMembers()) {
-                    this.safeMapOfMapsGet(_groupsCache, asgn.getId()).put(member.getId(), newGroup);
+                    _groupsCache.get(asgn.getId()).put(member.getId(), newGroup);
                 }
             }
         } catch (SQLException ex) {
@@ -205,10 +236,10 @@ public class DataServicesImpl implements DataServices {
 
     @Override
     public Group getGroup(Assignment asgn, Student student) throws ServicesException {
-        if (!this.safeMapOfMapsGet(_groupsCache, asgn.getId()).containsKey(student.getId())) {
+        if (!_groupsCache.get(asgn.getId()).containsKey(student.getId())) {
             this.updateDataCache();
 
-            if (!this.safeMapOfMapsGet(_groupsCache, asgn.getId()).containsKey(student.getId())) {
+            if (!_groupsCache.get(asgn.getId()).containsKey(student.getId())) {
                 //if the assignment does not have groups, create group of one
                 if (!asgn.hasGroups()) {
                     this.addGroup(new DbGroup(asgn, student));
@@ -216,7 +247,7 @@ public class DataServicesImpl implements DataServices {
             }
         }
         
-        return this.safeMapOfMapsGet(_groupsCache, asgn.getId()).get(student.getId());
+        return _groupsCache.get(asgn.getId()).get(student.getId());
     }
     
     @Override
@@ -233,7 +264,7 @@ public class DataServicesImpl implements DataServices {
             Set<DbGroup> groupsToAdd = new HashSet<DbGroup>();
             
             for (Student student : _studentIdMap.values()) {
-                if (!this.safeMapOfMapsGet(_groupsCache, asgn.getId()).containsKey(student.getId())) {
+                if (!_groupsCache.get(asgn.getId()).containsKey(student.getId())) {
                     groupsToAdd.add(new DbGroup(asgn, student));
                 }
             }
@@ -259,62 +290,51 @@ public class DataServicesImpl implements DataServices {
             Allocator.getDatabase().removeGroups(asgn.getId());
             
             //if removing groups was successful, update caches
-            this.safeMapOfMapsGet(_groupsCache, asgn.getId()).clear();
+            _groupsCache.get(asgn.getId()).clear();
         } catch (SQLException ex) {
             throw new ServicesException("Could not remove groups for assignment [" + asgn + "] from the database.");
         }
     }
     
     @Override
-    public List<Assignment> getAssignments() throws ServicesException
-    {
-        if(_assignments == null)
-        {
-            try
-            {
-                _assignments = new AssignmentsBuilder().buildAssigments(Allocator.getDatabase().getAssignments());
-                
-                _asgnIdMap = new ConcurrentHashMap<Integer, Assignment>(_assignments.size());
-                for (Assignment asgn : _assignments) {
-                    _asgnIdMap.put(asgn.getId(), asgn);
-                }
-            }
-            catch(SQLException ex)
-            {
-                throw new ServicesException(ex);
-            }
-        }
-        
+    public List<Assignment> getAssignments()
+    {   
         return _assignments;
     }
 
     @Override
     public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException
     {
-
         DbGradableEvent dbEvent = null;
-        try {
+        try
+        {
             dbEvent = Allocator.getDatabase().getDbGradableEvent(gradableEvent.getId());
-        } catch (SQLException ex) {
-            throw new ServicesException("Unable to retrieve gradable event [" + gradableEvent.getName() + "] from the database.", ex);
+        }
+        catch(SQLException ex)
+        {
+            throw new ServicesException("Unable to retrieve gradable event [" + gradableEvent.getName() +
+                    "] from the database.", ex);
         }
        
-        if (dbEvent == null) {
-            throw new ServicesException("Could not find gradable event [" + gradableEvent.getName() + "] in database.");
+        if(dbEvent == null)
+        {
+            throw new ServicesException("Gradable event [" + gradableEvent.getName() + "] no longer in database.");
         }
         
-        DeadlineInfo info = null;
-        if (dbEvent.getDeadlineType().equals(DeadlineInfo.Type.VARIABLE)) {
-            info = DeadlineInfo.newVariableDeadlineInfo(dbEvent.getOnTimeDate(), dbEvent.getLateDate(), dbEvent.getLatePoints(), 
-                    dbEvent.getLatePeriod());
+        DeadlineInfo info = DeadlineInfo.newNoDeadlineInfo();
+        if(dbEvent.getDeadlineType().equals(DeadlineInfo.Type.VARIABLE))
+        {
+            info = DeadlineInfo.newVariableDeadlineInfo(dbEvent.getOnTimeDate(),
+                                                        dbEvent.getLateDate(), dbEvent.getLatePoints(), 
+                                                        dbEvent.getLatePeriod());
         }
-        else if (dbEvent.getDeadlineType().equals(DeadlineInfo.Type.FIXED)) {
-            info = DeadlineInfo.newFixedDeadlineInfo(dbEvent.getEarlyDate(), dbEvent.getEarlyPoints(), dbEvent.getOnTimeDate()
-                    , dbEvent.getLateDate(), dbEvent.getLatePoints());
+        else if(dbEvent.getDeadlineType().equals(DeadlineInfo.Type.FIXED))
+        {
+            info = DeadlineInfo.newFixedDeadlineInfo(dbEvent.getEarlyDate(), dbEvent.getEarlyPoints(),
+                                                     dbEvent.getOnTimeDate(),
+                                                     dbEvent.getLateDate(), dbEvent.getLatePoints());
         }
-        else if (dbEvent.getDeadlineType().equals(DeadlineInfo.Type.NONE)) {
-            info = DeadlineInfo.newNoDeadlineInfo();
-        }
+        
         return info;
     }
 
@@ -337,9 +357,7 @@ public class DataServicesImpl implements DataServices {
     @Override
     public void setHandinTime(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException
     {
-        Map<Group, DateTime> map = new HashMap<Group, DateTime>();
-        map.put(group, handinTime);
-        this.setHandinTimes(gradableEvent, map);
+        this.setHandinTimes(gradableEvent, ImmutableMap.of(group, handinTime));
     }
     
     @Override
@@ -367,7 +385,7 @@ public class DataServicesImpl implements DataServices {
                 if (!_studentIdMap.containsKey(dbStudent.getId())) {
                     Student newStudent = new Student(dbStudent);
                     _studentIdMap.put(newStudent.getId(), newStudent);
-                    _loginMap.put(newStudent.getLogin(), newStudent);
+                    _studentLoginMap.put(newStudent.getLogin(), newStudent);
                 }
                 
                 Student student = _studentIdMap.get(dbStudent.getId());
@@ -393,7 +411,7 @@ public class DataServicesImpl implements DataServices {
                 if (!validGroupIds.contains(group.getId())) {
                     _groupIdMap.remove(group.getId());
                     for (Student member : group.getMembers()) {
-                        this.safeMapOfMapsGet(_groupsCache, group.getAssignment().getId()).remove(member.getId());
+                        _groupsCache.get(group.getAssignment().getId()).remove(member.getId());
                     }
                 }
             }
@@ -414,7 +432,7 @@ public class DataServicesImpl implements DataServices {
                     Group newGroup = new Group(dbGroup.getId(), asgn, dbGroup.getName(), members);
                     _groupIdMap.put(newGroup.getId(), newGroup);
                     for (Student member : newGroup.getMembers()) {
-                        this.safeMapOfMapsGet(_groupsCache, asgn.getId()).put(member.getId(), newGroup);
+                        _groupsCache.get(asgn.getId()).put(member.getId(), newGroup);
                     }
                 }
             }
@@ -577,11 +595,11 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Set<Part> getDPsWithAssignedGroups(TA ta) throws ServicesException {
+    public Set<Part> getPartsWithAssignedGroups(TA ta) throws ServicesException {
         try {
             Set<Part> toReturn = new HashSet<Part>();
             for (int partID : Allocator.getDatabase().getPartsWithAssignedGroups(ta.getId())) {
-                toReturn.add(this.partIdToPart(partID));
+                toReturn.add(_partIdMap.get(partID));
             }
             
             return toReturn;
@@ -602,26 +620,18 @@ public class DataServicesImpl implements DataServices {
     
     @Override
     public Student getStudentFromLogin(String studentLogin) throws ServicesException {
-        if (!_loginMap.containsKey(studentLogin)) {
+        if (!_studentLoginMap.containsKey(studentLogin)) {
             this.updateDataCache();
         }
-        return _loginMap.get(studentLogin);
+        return _studentLoginMap.get(studentLogin);
     }
     
     @Override
     public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException {
-        if (!_loginMap.containsKey(studentLogin)) {
+        if (!_studentLoginMap.containsKey(studentLogin)) {
             this.updateDataCache();
         }
-        return _loginMap.containsKey(studentLogin);
-    }
-
-    private <S, T, U> Map<T, U> safeMapOfMapsGet(Map<S, Map<T, U>> mapOfMaps, S key) {
-        if (!mapOfMaps.containsKey(key)) {
-            mapOfMaps.put(key, new HashMap<T, U>());
-        }
-        
-        return mapOfMaps.get(key);
+        return _studentLoginMap.containsKey(studentLogin);
     }
     
     private <T extends Collection<Integer>, S extends Collection<Student>> S idsToStudents(T ids, S students) throws ServicesException {
@@ -667,23 +677,5 @@ public class DataServicesImpl implements DataServices {
         }
         
         return ids;
-    }
-    
-    private Part partIdToPart(int partID) throws ServicesException {
-        if(_partIdMap == null)
-        {
-            ImmutableMap.Builder<Integer, Part> builder = ImmutableMap.builder();
-            
-            for (Assignment asgn : this.getAssignments()) {
-                for (GradableEvent ge : asgn.getGradableEvents()) {
-                    for (Part part : ge.getParts()) {
-                        builder.put(part.getId(), part);
-                    }
-                }
-            }
-            _partIdMap = builder.build();
-        }
-
-        return _partIdMap.get(partID);
     }
 }

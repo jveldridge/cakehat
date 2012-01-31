@@ -6,30 +6,17 @@ import java.util.List;
 import support.utils.posix.NativeException;
 
 public class UserServicesImpl implements UserServices
-{
-    private TA _user;
-    
+{   
     @Override
-    public TA getUser() throws ServicesException
+    public TA getUser() 
     {
-        if(_user == null)
-        {
-            _user = Allocator.getDataServices().getTA(Allocator.getUserUtilities().getUserId());
-        }
-
-        return _user;
+        return Allocator.getDataServices().getTA(Allocator.getUserUtilities().getUserId());
     }
 
     @Override
     public boolean isInStudentGroup(String studentLogin) throws NativeException
     {
         return Allocator.getUserUtilities().isMemberOfGroup(studentLogin, Allocator.getCourseInfo().getStudentGroup());
-    }
-
-    @Override
-    public boolean isInTAGroup(String taLogin) throws NativeException
-    {
-        return Allocator.getUserUtilities().isMemberOfGroup(taLogin, Allocator.getCourseInfo().getTAGroup());
     }
 
     @Override
@@ -49,5 +36,4 @@ public class UserServicesImpl implements UserServices
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getHTAGroup());
     }
-
 }
