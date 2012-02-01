@@ -369,10 +369,4 @@ public interface DataServices {
      * @return
      */
     public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException;
-    
-    /**
-     * Removes all data from database tables and rebuilds the tables. If no DB
-     * file exists or is empty then it will be set to the initial configuration.
-     */
-    public void resetDatabase() throws ServicesException;
 }

@@ -18,7 +18,7 @@ public class DbGroup extends DbDataItem
     
     public DbGroup(Assignment asgn, Student student)
     {
-        this(asgn, student.getName(), ImmutableSet.of(student));
+        this(asgn, student.getLogin(), ImmutableSet.of(student));
     }
     
     public DbGroup(Assignment asgn, String name, Set<Student> students)
@@ -40,7 +40,7 @@ public class DbGroup extends DbDataItem
         
         _asgnId = asgnId;
         _name = name;
-        _studentIds = studentIds;
+        _studentIds = new HashSet<Integer>(studentIds);
     }
     
     int getAssignmentId()
