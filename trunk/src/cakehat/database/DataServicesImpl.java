@@ -130,10 +130,8 @@ public class DataServicesImpl implements DataServices {
 
     @Override
     public TA getGrader(Part part, Group group) throws ServicesException {
-        int id = 0;
         try {
-            id = Allocator.getDatabase().getGrader(part.getId(), group.getId());
-            return _taIdMap.get(id);
+            return _taIdMap.get(Allocator.getDatabase().getGrader(part.getId(), group.getId()));
         } catch (SQLException ex) {
             throw new ServicesException("Could not get grader for group [" + group.getName() + "] "
                     + "on part [" + part.getName() + "] from the database.", ex);
@@ -157,10 +155,10 @@ public class DataServicesImpl implements DataServices {
         try {
             GradeRecord record = Allocator.getDatabase().getEarned(group.getId(), part.getId());
             
-            TA ta = getGrader(part, group);
             PartGrade grade = null;
             if (record != null) {
-                grade = new PartGrade(part, group, ta, new DateTime(record.getDateRecorded()), record.getEarned(), record.doesMatchGml());
+                grade = new PartGrade(part, group, _taIdMap.get(record.getTAId()),
+                            new DateTime(record.getDateRecorded()), record.getEarned(), record.doesMatchGml());
             }
             return grade;
         } catch (SQLException ex) {
@@ -322,13 +320,13 @@ public class DataServicesImpl implements DataServices {
         }
         
         DeadlineInfo info = DeadlineInfo.newNoDeadlineInfo();
-        if(dbEvent.getDeadlineType().equals(DeadlineInfo.Type.VARIABLE))
+        if(DeadlineInfo.Type.VARIABLE.equals(dbEvent.getDeadlineType()))
         {
             info = DeadlineInfo.newVariableDeadlineInfo(dbEvent.getOnTimeDate(),
                                                         dbEvent.getLateDate(), dbEvent.getLatePoints(), 
                                                         dbEvent.getLatePeriod());
         }
-        else if(dbEvent.getDeadlineType().equals(DeadlineInfo.Type.FIXED))
+        else if(DeadlineInfo.Type.FIXED.equals(dbEvent.getDeadlineType()))
         {
             info = DeadlineInfo.newFixedDeadlineInfo(dbEvent.getEarlyDate(), dbEvent.getEarlyPoints(),
                                                      dbEvent.getOnTimeDate(),
@@ -606,15 +604,6 @@ public class DataServicesImpl implements DataServices {
         } catch (SQLException ex) {
             throw new ServicesException("Could not read DPs with assigned groups "
                     + "for TA [" + ta + "] from the database.", ex);
-        }
-    }
-
-    @Override
-    public void resetDatabase() throws ServicesException {
-        try {
-            Allocator.getDatabase().resetDatabase();
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not reset database.", ex);
         }
     }
     
