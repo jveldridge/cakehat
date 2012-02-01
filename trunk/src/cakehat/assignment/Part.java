@@ -797,6 +797,12 @@ public class Part implements Comparable<Part>
         }
     }
     
+    @Override
+    public String toString()
+    {
+        return _name;
+    }
+    
     /**
      * Compares this part to another based on its ordering.
      * 

@@ -102,9 +102,12 @@ class GradableEventPanel extends GradingSheetPanel
     private void initUI(DeadlineInfo deadlineInfo, DateTime receivedTime)
     {
         addContent(createHeaderLabel(_gradableEvent.getName(), false));
+        
         addContent(Box.createVerticalStrut(10));
         
         this.initDeadlineUI(deadlineInfo);
+        
+        addContent(Box.createVerticalStrut(10));
         
         if(deadlineInfo.getType() != DeadlineInfo.Type.NONE && _group != null)
         {

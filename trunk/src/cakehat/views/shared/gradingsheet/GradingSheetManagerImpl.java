@@ -8,7 +8,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JComponent;
 import support.utils.Pair;
 
 /**
@@ -63,20 +62,20 @@ public class GradingSheetManagerImpl implements GradingSheetManager
     }
 
     @Override
-    public <T extends JComponent & GradingSheet> T getGradingSheet(Assignment asgn, Group group, boolean isAdmin)
+    public GradingSheet getGradingSheet(Assignment asgn, Group group, boolean isAdmin)
     {
-        return (T) new WidthTrackingViewportPanel(new AssignmentPanel(asgn, group, isAdmin));
+        return new WidthTrackingViewportPanel(new AssignmentPanel(asgn, group, isAdmin));
     }
 
     @Override
-    public <T extends JComponent & GradingSheet> T getGradingSheet(GradableEvent gradableEvent, Group group, boolean isAdmin)
+    public GradingSheet getGradingSheet(GradableEvent gradableEvent, Group group, boolean isAdmin)
     {
-        return (T) new WidthTrackingViewportPanel(new GradableEventPanel(gradableEvent, group, isAdmin));
+        return new WidthTrackingViewportPanel(new GradableEventPanel(gradableEvent, group,isAdmin));
     }
 
     @Override
-    public <T extends JComponent & GradingSheet> T getGradingSheet(Part part, Group group, boolean isAdmin)
+    public GradingSheet getGradingSheet(Part part, Group group, boolean isAdmin)
     {
-        return (T) new WidthTrackingViewportPanel(PartPanel.getPartPanel(part, group, isAdmin));
+        return new WidthTrackingViewportPanel(PartPanel.getPartPanel(part, group, isAdmin));
     }
 }
