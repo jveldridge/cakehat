@@ -1,5 +1,7 @@
 package cakehat.views.shared.gradingsheet;
 
+import java.awt.Component;
+
 /**
  *
  * @author jak2
@@ -24,4 +26,6 @@ public interface GradingSheet
     public void addGradingSheetListener(GradingSheetListener listener);
     
     public void removeGradingSheetListener(GradingSheetListener listener);
+    
+    public Component getAsComponent();
 }

@@ -298,6 +298,12 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
 
         return logins;
     }
+    
+    @Override
+    public String toString()
+    {
+        return _name;
+    }
 
     /**
      * Compares this GradableEvent to another based on its ordering.

@@ -42,6 +42,12 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         this.add(_contentPanel, BorderLayout.CENTER);
     }
     
+    @Override
+    public Component getAsComponent()
+    {
+        return this;
+    }
+    
     // Listener
     
     @Override

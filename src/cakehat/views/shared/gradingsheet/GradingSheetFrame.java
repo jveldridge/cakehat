@@ -1,6 +1,7 @@
 package cakehat.views.shared.gradingsheet;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -31,6 +32,12 @@ class GradingSheetFrame<T extends JComponent & GradingSheet> extends JFrame impl
         this.pack();
         this.setResizable(true);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+    }
+    
+    @Override
+    public Component getAsComponent()
+    {
+        return this;
     }
 
     @Override

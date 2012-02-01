@@ -1,6 +1,7 @@
 package cakehat.views.shared.gradingsheet;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
@@ -87,5 +88,11 @@ class WidthTrackingViewportPanel<T extends JComponent & GradingSheet> extends JP
     public void removeGradingSheetListener(GradingSheetListener listener)
     {
         _gradingSheet.removeGradingSheetListener(listener);
+    }
+
+    @Override
+    public Component getAsComponent()
+    {
+        return this;
     }
 }

@@ -8,9 +8,6 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import support.ui.PaddingPanel;
 
 /**
  *
@@ -31,7 +28,7 @@ class AssignmentPanel extends GradingSheetPanel
     
     AssignmentPanel(Assignment asgn, Group group, boolean isAdmin)
     {
-        super(Color.LIGHT_GRAY);
+        super(Color.WHITE);
         
         _asgn = asgn;
         _group = group;
@@ -43,40 +40,37 @@ class AssignmentPanel extends GradingSheetPanel
     private void initUI()
     {
         initHeaderUI();
+        
+        addContent(Box.createVerticalStrut(10));
+        
         initGradableEventsUI();
     }
     
     private void initHeaderUI()
     {
-        JPanel titlePanel = new PreferredHeightPanel(Color.WHITE);
-        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
-        titlePanel.add(createHeaderLabel(_asgn.getName(), false));
-        titlePanel.add(Box.createVerticalStrut(10));
+        addContent(createHeaderLabel(_asgn.getName(), false));
         
         if(_group == null)
         {
-            titlePanel.add(createSubheaderLabel("Template", true));
+            addContent(createSubheaderLabel("Template", true));
         }
         else
         {
             if(_group.isGroupOfOne())
             {
                 Student student = _group.getOnlyMember();
-                titlePanel.add(createSubheaderLabel("Student: " +  student.getName() + " (" + student.getLogin() + ")",
+                addContent(createSubheaderLabel("Student: " +  student.getName() + " (" + student.getLogin() + ")",
                         true));
             }
             else
             {
-                titlePanel.add(createSubheaderLabel("Group: " + _group.getName(), true));
+                addContent(createSubheaderLabel("Group: " + _group.getName(), true));
                 for(Student member : _group)
                 {
-                    titlePanel.add(createSubheaderLabel("\t" + member.getName() + " (" + member.getLogin() + ")", true));
+                    addContent(createSubheaderLabel("\t" + member.getName() + " (" + member.getLogin() + ")", true));
                 }
             }
         }
-        
-        JPanel paddingPanel = new PaddingPanel(titlePanel, 10);
-        addContent(paddingPanel);
     }
     
     private void initGradableEventsUI()
