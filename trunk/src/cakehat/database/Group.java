@@ -119,7 +119,7 @@ public class Group implements Comparable<Group>, Iterable<Student>
     {
         if(this.getAssignment().equals(g.getAssignment()))
         {
-            return this.getName().compareTo(g.getName());
+            return this.getName().compareToIgnoreCase(g.getName());
         }
         return this.getAssignment().compareTo(g.getAssignment());
     }
