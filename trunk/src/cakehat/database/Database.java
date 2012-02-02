@@ -298,12 +298,12 @@ public interface Database
      * @param taID
      * @param dateRecorded
      * @param earned
-     * @param matchesGml
+     * @param submitted
      * @param dateRecorded
      * 
      */
     public void setEarned(int groupID, int partID, int taID, Double earned,
-                    boolean matchesGml, String dateRecorded) throws SQLException;
+                    boolean submitted, String dateRecorded) throws SQLException;
 
     /**
      * Returns a GradeRecord object containing the grade information of the 

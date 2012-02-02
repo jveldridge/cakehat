@@ -458,7 +458,7 @@ public class DatabaseTest {
     private final EqualityAsserter<GradeRecord> GRADE_RECORD_EQC = new EqualityAsserter<GradeRecord>() {
         @Override
         public void assertEqual(GradeRecord t1, GradeRecord t2) {
-            assertEquals(t1.doesMatchGml(), t2.doesMatchGml());
+            assertEquals(t1.isSubmitted(), t2.isSubmitted());
             assertEquals(t1.getDateRecorded(), t2.getDateRecorded());
             assertEquals(t1.getEarned(), t2.getEarned(), 10E-10);
             assertEquals(t1.getTAId(), t2.getTAId());
@@ -930,10 +930,10 @@ public class DatabaseTest {
         
         _database.setEarned(wrapper._dbGroup1.getId(), wrapper._part1.getId(), 
                             gradeRecord1.getTAId(), gradeRecord1.getEarned(), 
-                            gradeRecord1.doesMatchGml(), gradeRecord1.getDateRecorded());
+                            gradeRecord1.isSubmitted(), gradeRecord1.getDateRecorded());
         _database.setEarned(wrapper._dbGroup2.getId(), wrapper._part1.getId(), 
                             gradeRecord2.getTAId(), gradeRecord2.getEarned(), 
-                            gradeRecord2.doesMatchGml(), gradeRecord2.getDateRecorded());
+                            gradeRecord2.isSubmitted(), gradeRecord2.getDateRecorded());
         
         GRADE_RECORD_EQC.assertEqual(gradeRecord1, _database.getEarned(
                         wrapper._dbGroup1.getId(), wrapper._part1.getId()));

@@ -51,7 +51,6 @@ public class EnterGradeCLITest {
         expect(grade.getEarned()).andReturn(pointsGiven).anyTimes();
         expect(grade.getGroup()).andReturn(group).anyTimes();
         expect(grade.getPart()).andReturn(part).anyTimes();
-        expect(grade.getSubmissionStatus()).andReturn(PartGrade.SubmissionStatus.SUBMITTED_MATCHING).anyTimes();
         expect(grade.getTA()).andReturn(ta).anyTimes();
         replay(grade);
         

@@ -15,10 +15,9 @@ public class PartGrade
     private final TA _ta;
     private final DateTime _dateRecorded;
     private final Double _earned;
+    private final boolean _submitted;
     
-    private final SubmissionStatus _status;
-    
-    PartGrade(Part part, Group group, TA ta, DateTime dateRecorded, Double earned, boolean inSync)
+    PartGrade(Part part, Group group, TA ta, DateTime dateRecorded, Double earned, boolean submitted)
     {
         //Validate arguments
         if(part == null)
@@ -43,8 +42,7 @@ public class PartGrade
         _ta = ta;
         _dateRecorded = dateRecorded;
         _earned = earned;
-        
-        _status = determineSubmissionStatus(earned, inSync, group, part);
+        _submitted = submitted;
     }
     
     /**
@@ -89,7 +87,8 @@ public class PartGrade
     
     /**
      * The amount of points earned by the group for the part. Will be {@code null} if no grade has yet been recorded
-     * for this group and part.
+     * for this group and part. If {@link #isSubmitted()} returns {@code false} then this value is not the final earned
+     * value for the group and part.
      * 
      * @return 
      */
@@ -99,70 +98,12 @@ public class PartGrade
     }
     
     /**
-     * Gets the status of this grade in the database relative to the grading sheet.
+     * Whether this grade has been submitted.
      * 
      * @return 
      */
-    public SubmissionStatus getSubmissionStatus()
+    public boolean isSubmitted()
     {
-        return _status;
-    }
-    
-    private static SubmissionStatus determineSubmissionStatus(Double earned, boolean inSync, Group group, Part part)
-    {
-        SubmissionStatus status = null;
-        if(earned == null)
-        {
-            if(inSync)
-            {
-                throw new IllegalStateException("database has no recorded grade earned, but database has recorded " +
-                        "insync as true\n"+
-                        "Group: " + group.getName() + " [" + group.getId() + "]\n" +
-                        "Part: " + part.getFullDisplayName() + " [" + part.getId() + "]");
-            }
-            else
-            {
-                status = SubmissionStatus.NOT_SUBMITTED_NOT_MATCHING;
-            }
-        }
-        else
-        {
-            if(inSync)
-            {
-                status = SubmissionStatus.SUBMITTED_MATCHING;
-            }
-            else
-            {
-                status = SubmissionStatus.SUBMITTED_NOT_MATCHING;
-            }
-        }
-        
-        return status;
-    }
-    
-    public static enum SubmissionStatus
-    {   
-        /**
-         * The grading sheet has been modified and has not been submitted.
-         * <br/><br/>
-         * Not applicable when not using a GML file.
-         */
-        NOT_SUBMITTED_NOT_MATCHING,
-        
-        /**
-         * The grading sheet has been submitted and has not been modified since.
-         * <br/><br/>
-         * OR
-         * <br/><br/>
-         * There is no grading sheet and a grade has been submitted.
-         */
-        SUBMITTED_MATCHING,
-        
-        /**
-         * The grading sheet has been submitted and has been modified since.
-         * <br/><br/>
-         * Not applicable when not using a GML file.
-         */
-        SUBMITTED_NOT_MATCHING
+       return _submitted; 
     }
 }
