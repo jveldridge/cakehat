@@ -1305,19 +1305,19 @@ public class DatabaseImpl implements Database
 
     @Override
     public void setEarned(int groupID, int partID, int taID, Double earned,
-                boolean matchesGml, String dateRecorded) throws SQLException {
+                boolean submitted, String dateRecorded) throws SQLException {
         Connection conn = this.openConnection();
         try {
             //database uniqueness constraint ensures that any existing grade
             //for this group will be replaced
             PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
-                + "('agid', 'pid', 'tid', 'earned', 'matchesgml', 'daterecorded')"
+                + "('agid', 'pid', 'tid', 'earned', 'submitted', 'daterecorded')"
                 + " VALUES (?, ?, ?, ?, ?, ?)");
             ps.setInt(1, groupID);
             ps.setInt(2, partID);
             ps.setInt(3, taID);
             this.setDouble(ps, 4, earned);
-            ps.setBoolean(5, matchesGml);
+            ps.setBoolean(5, submitted);
             ps.setString(6, dateRecorded);
             
             ps.executeUpdate();
@@ -1333,7 +1333,7 @@ public class DatabaseImpl implements Database
 
         try {
             PreparedStatement ps = conn.prepareStatement(
-                    "SELECT daterecorded, tid, earned, matchesgml" 
+                    "SELECT daterecorded, tid, earned, submitted" 
                     + " FROM grade AS g"
                     + " WHERE g.agid == ? AND g.pid == ?");
             ps.setInt(1, groupID);
@@ -1342,7 +1342,7 @@ public class DatabaseImpl implements Database
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 record = new GradeRecord(rs.getString("daterecorded"), rs.getInt("tid"), 
-                            this.getDouble(rs, "earned"), rs.getBoolean("matchesgml"));
+                            this.getDouble(rs, "earned"), rs.getBoolean("submitted"));
             }
 
             return record;
@@ -1372,7 +1372,7 @@ public class DatabaseImpl implements Database
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement(
-                    "SELECT agid, daterecorded, tid, earned, matchesgml"
+                    "SELECT agid, daterecorded, tid, earned, submitted"
                     + " FROM grade AS g"
                     + " WHERE g.agid IN ("+ this.groupIDsSetToString(groupIDs) +")"
                     + " AND g.pid == ? ");
@@ -1382,7 +1382,7 @@ public class DatabaseImpl implements Database
             while (rs.next()) {
                 records.put(rs.getInt("agid"), 
                             new GradeRecord(rs.getString("daterecorded"), rs.getInt("tid"),
-                                    this.getDouble(rs, "earned"), rs.getBoolean("matchesgml")));
+                                    this.getDouble(rs, "earned"), rs.getBoolean("submitted")));
             }
 
             return records;
@@ -1559,7 +1559,7 @@ public class DatabaseImpl implements Database
                     + " earned DOUBLE,"
                     + " daterecorded VARCHAR NOT NULL,"
                     + " tid INTEGER NOT NULL,"
-                    + " matchesgml INTEGER NOT NULL DEFAULT 1,"
+                    + " submitted INTEGER NOT NULL DEFAULT 1,"
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"

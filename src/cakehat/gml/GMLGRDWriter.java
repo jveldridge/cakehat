@@ -40,7 +40,6 @@ public class GMLGRDWriter {
     private final static int SECTION_INDENT_WIDTH = 8;
     private final static int DETAIL_INDENT_WIDTH = 12;
     private final static int TOTAL_INDENT_WIDTH = 49;
-    private final static int STATIC_TEXT_WIDTH = 28;
     
     public static void write(Group group, File grdFile) throws GradingSheetException {
         
@@ -165,9 +164,19 @@ public class GMLGRDWriter {
 
         printStrongDivider(output);
         
+        PartGrade partGrade;
+        boolean useGrade;
+        try {
+            partGrade = Allocator.getDataServices().getEarned(group, part);
+            useGrade = (partGrade != null && partGrade.isSubmitted());
+        } catch(ServicesException e) {
+                throw new GradingSheetException("Unable to retrieve grade information for group " + group +
+                        " on assignment " + group.getAssignment(), e);
+        }
+        
         if (part.hasSpecifiedGMLTemplate()) {
             File gmlFile = Allocator.getPathServices().getGroupGMLFile(part, group);
-            if (gmlFile.exists()) {
+            if (gmlFile.exists() && useGrade) {
                 InMemoryGML gml = GMLParser.parse(gmlFile, part, group);
 
                 for (Section section : gml.getSections()) {
@@ -193,17 +202,11 @@ public class GMLGRDWriter {
         }
         else {
             double totalScore;
-            try {
-                PartGrade partGrade = Allocator.getDataServices().getEarned(group, part);
-                if (partGrade == null || partGrade.getEarned() == null) {
-                    totalScore = 0;
-                }
-                else {
-                    totalScore = partGrade.getEarned();
-                }
+            if (useGrade && partGrade.getEarned() != null) {
+                totalScore = partGrade.getEarned();
             }
-            catch(ServicesException ex) {
-                throw new GradingSheetException("Unable to retrieve score for group " + group + " on assignment " + group.getAssignment() + ".");
+            else {
+                totalScore = 0;
             }
             printWithinBounds(0, SECTION_TEXT_WIDTH, "Earned: ", output);
             printEnd(totalScore, part.getOutOf(), output);

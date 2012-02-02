@@ -13,13 +13,13 @@ class GradeRecord {
     private final String _dateRecorded;
     private final int _taId;
     private final Double _earned;
-    private final boolean _matchesGml;
+    private final boolean _submitted;
     
-    GradeRecord(String dateRecorded, int taId, Double earned, boolean matchesGml) {
+    GradeRecord(String dateRecorded, int taId, Double earned, boolean submitted) {
         _dateRecorded = dateRecorded;
         _taId = taId;
         _earned = earned;
-        _matchesGml = matchesGml;
+        _submitted = submitted;
     } 
     
     public String getDateRecorded() {
@@ -34,7 +34,7 @@ class GradeRecord {
         return _earned;
     }
     
-    public boolean doesMatchGml(){
-        return _matchesGml;
+    public boolean isSubmitted(){
+        return _submitted;
     }
 }

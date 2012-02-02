@@ -158,7 +158,7 @@ public class DataServicesImpl implements DataServices {
             PartGrade grade = null;
             if (record != null) {
                 grade = new PartGrade(part, group, _taIdMap.get(record.getTAId()),
-                            new DateTime(record.getDateRecorded()), record.getEarned(), record.doesMatchGml());
+                            new DateTime(record.getDateRecorded()), record.getEarned(), record.isSubmitted());
             }
             return grade;
         } catch (SQLException ex) {
