@@ -1,5 +1,6 @@
 package cakehat;
 
+import cakehat.views.admin.AdminView;
 import cakehat.views.config.ConfigManagerView;
 import cakehat.views.entergrade.EnterGradeCLI;
 import com.google.common.collect.ImmutableSet;
@@ -15,28 +16,21 @@ import javax.swing.JOptionPane;
  */
 public enum CakehatRunMode
 {
-    GRADER(     "grader",     true,  true,  false),
-    ADMIN(      "admin",      true,  true,  true),
-    CONFIG(     "config",     false, true,  true),
-    ENTER_GRADE("enterGrade", true,  false, false),
-    UNKNOWN(    null,         false, false, false);
+    GRADER(     "grader",     true,  false),
+    ADMIN(      "admin",      true,  true),
+    CONFIG(     "config",     true,  true),
+    ENTER_GRADE("enterGrade", false, false),
+    UNKNOWN(    null,         false, false);
 
     private final String _terminalFlag;
-    private final boolean _loadDataCache;
     private final boolean _hasGUI;
     private final boolean _requiresAdmin;
 
-    private CakehatRunMode(String terminalFlag, boolean loadDataCache, boolean hasGUI, boolean requiresAdmin)
+    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin)
     {
         _terminalFlag = terminalFlag;
         _hasGUI = hasGUI;
         _requiresAdmin = requiresAdmin;
-        _loadDataCache = loadDataCache;
-    }
-    
-    boolean requiresLoadDataCache()
-    {
-        return _loadDataCache;
     }
     
     boolean hasGUI()
@@ -87,7 +81,7 @@ public enum CakehatRunMode
         }
         else if(this == ADMIN)
         {
-            JOptionPane.showMessageDialog(null, "Not implemented yet.");
+            AdminView.launch(isSSH);
         }
         else if(this == CONFIG)
         {

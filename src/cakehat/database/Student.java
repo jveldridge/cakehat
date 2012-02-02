@@ -78,13 +78,13 @@ public class Student implements Comparable<Student>
     /**
      * Compares based on login
      * 
-     * @param s
+     * @param other
      * @return 
      */
     @Override
     public int compareTo(Student other)
-    {
-        return _login.compareTo(other.getLogin());
+    {   
+        return _login.compareToIgnoreCase(other.getLogin());
     }
     
     public static final Comparator<Student> NAME_COMPARATOR = new Comparator<Student>()

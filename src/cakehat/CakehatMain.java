@@ -31,6 +31,10 @@ public class CakehatMain
 
         CakehatUncaughtExceptionHandler.registerHandler();
         
+        //Causes the allocator to create an instance of itself when cakehat is running on a single thread ensuring that
+        //only one of it will ever be created (stores itself in a volatile variable)
+        Allocator.getInstance();
+        
         if(args.length == 0)
         {
             applyLookAndFeel();
@@ -96,11 +100,6 @@ public class CakehatMain
             {
                 if(validateUser(_runMode))
                 {
-                    if(_runMode.requiresLoadDataCache())
-                    {
-                        loadDataCache();
-                    }
-
                     boolean isSSH = false;
                     if(_runMode.hasGUI())
                     {
@@ -252,11 +251,11 @@ public class CakehatMain
         }
         catch(SQLException e)
         {
-            throw new CakehatException("Could not retrieve TAs from database or insert/update TA into database", e);
+            throw new CakehatException("Could not retrieve TAs from database or insert/update TA into database.", e);
         }
         catch(NativeException e)
         {
-            throw new CakehatException("Could not retrieve TA related information with native system calls", e);
+            throw new CakehatException("Could not retrieve TA related information with native system calls.", e);
         }
     }
     

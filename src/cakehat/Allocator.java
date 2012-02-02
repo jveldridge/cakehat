@@ -50,19 +50,17 @@ public class Allocator
     /**
      * The singleton instance used by the Allocator.
      */
-    private static Allocator INSTANCE;
+    private static volatile Allocator INSTANCE;
 
     /**
-     * Retrieves the singleton instance, and if it does not exist, creates the
-     * standard implementation.
+     * Retrieves the singleton instance, and if it does not exist, creates the standard implementation.
      *
-     * The only situation in which the standard implementation would not be used
-     * is if a custom one was created by Allocator.Customizer for testing
-     * purposes.
+     * The only situation in which the standard implementation would not be used is if a custom one was created by
+     * {@link Allocator.Customizer} for testing purposes.
      * 
      * @return
      */
-    private static Allocator getInstance()
+    static Allocator getInstance()
     {
        if(INSTANCE == null)
        {
@@ -75,7 +73,7 @@ public class Allocator
 
     /**
      * Subclass this abstract class and implement {@link #allocate()} so that it returns an instance of whatever
-     * SingletonAllocation is parameterized on.
+     * {@code SingletonAllocation} is parameterized on.
      * <br/><br/>
      * The reason for this class is to act as a "thunk" around what it is likely constructed in the allocate() method.
      * This is needed because the constructor of an allocated object might make calls to the Allocator. If this is the
@@ -90,7 +88,7 @@ public class Allocator
      */
     public static abstract class SingletonAllocation<T>
     {
-        private T _instance = null;
+        private volatile T _instance = null;
 
         public T getInstance()
         {
@@ -103,8 +101,9 @@ public class Allocator
         }
 
         /**
-         * This method should never be called by any other class. It should
-         * only be called by this class, and implemented by subclasses.
+         * This method should never be called by any other class. It should only be called by this class, and
+         * implemented by subclasses.
+         * 
          * @return
          */
         protected abstract T allocate();
