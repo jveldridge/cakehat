@@ -8,6 +8,7 @@ import cakehat.printing.CITPrinter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class provides grading specific utility functions.
@@ -55,35 +56,32 @@ public interface GradingServices
      */
     public CITPrinter getDefaultPrinter();
 
-//    /**
-//     * Prints GRD files for the specified groups and handin. This method does
-//     * <strong>not</strong> generate GRD files, if any GRD files are missing
-//     * then an exception will be thrown.
-//     *
-//     * @param handin
-//     * @param groups
-//     * @param printer
-//     * @throws ServicesException
-//     */
-//    //TODO: a similar method will need to be called from the new admin view and updated grader view
-//    public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException;
-//
-//    /**
-//     * Opens a new EmailView so that user TA can inform students that their assignment
-//     * has been graded.  Default settings:
-//     *  FROM:    user TA
-//     *  TO:      user TA
-//     *  CC:      notify addresses as specified by {@link ConfigurationInfo#getNotifyAddresses()}
-//     *  BCC:     students the user TA is assigned to grade for this assignment, as selected
-//     *  SUBJECT: "[<course code>] <Assignment> Graded"
-//     *  MESSAGE: "<Assignment> has been graded."
-//     *
-//     * @param handin
-//     * @param groups
-//     * @param emailRubrics
-//     */
-//    //TODO: a similar method will need to be called from the new admin view
-//    public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics);
+    
+    /**
+     * Creates and prints GRD files (plain text files with a .txt file extension) for each student in the given groups
+     * for the assignment they all belong to. The output will be printed to the provided printer.
+     * <br/><br/>
+     * If the groups do not all belong to the assignment an exception will be thrown.
+     * 
+     * @param asgn
+     * @param groups
+     * @param printer
+     * @throws ServicesException 
+     */
+    public void printGRDFiles(Assignment asgn, Set<Group> groups, CITPrinter printer) throws ServicesException;
+    
+    /**
+     * Creates and emails GRD files (plain text files with a .txt file extension) for each student in the given groups
+     * for the assignment they belong to.
+     * <br/><br/>
+     * If the groups do not all belong to the assignment an exception will be thrown.
+     * 
+     * @param asgn
+     * @param groups
+     * @throws ServicesException 
+     */
+    public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException;
+    
 
     /**
      * Prompts the user to a select a printer.

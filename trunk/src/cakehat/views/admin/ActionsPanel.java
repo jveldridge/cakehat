@@ -1,5 +1,6 @@
 package cakehat.views.admin;
 
+import cakehat.Allocator;
 import cakehat.assignment.ActionException;
 import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
@@ -7,9 +8,11 @@ import cakehat.assignment.MissingHandinException;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.printing.CITPrinter;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.Iterables;
@@ -576,16 +579,36 @@ class ActionsPanel extends JPanel
     
     private void printGradingSheetButtonActionPerformed()
     {
-        _adminView.saveDisplayedGradingSheet();
-        
-        ModalDialog.showMessage("Unavailable", "Not Yet Implemented");
+        CITPrinter printer = Allocator.getGradingServices().getPrinter();
+        if(printer != null)
+        {
+            //Save the current grading sheet so that GRD generation reflects any changes made
+            _adminView.saveDisplayedGradingSheet();
+            
+            try
+            {
+                Allocator.getGradingServices().printGRDFiles(_treeSelection.getAssignment(), _selectedGroups, printer);
+            }
+            catch(ServicesException ex)
+            {
+                new ErrorView(ex);
+            }
+        }
     }
 
     private void emailGradingSheetButtonActionPerformed()
     {
+        //Save the current grading sheet so that GRD generation reflects any changes made
         _adminView.saveDisplayedGradingSheet();
-        
-        ModalDialog.showMessage("Unavailable", "Not Yet Implemented");
+            
+        try
+        {
+            Allocator.getGradingServices().emailGRDFiles(_treeSelection.getAssignment(), _selectedGroups);
+        }
+        catch(ServicesException ex)
+        {
+            new ErrorView(ex);
+        }
     }
 
     private void notifyHandinMissing(MissingHandinException ex)

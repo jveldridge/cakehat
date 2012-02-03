@@ -18,6 +18,7 @@ class AssignmentPanel extends GradingSheetPanel
     private final Assignment _asgn;
     private final Group _group;
     private final boolean _isAdmin;
+    private final boolean _submitOnSave;
     
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<GradableEventPanel, Boolean> _gradableEventPanelSaveStatus =
@@ -26,13 +27,14 @@ class AssignmentPanel extends GradingSheetPanel
     private double _totalEarned = 0;
     private double _totalOutOf = 0;
     
-    AssignmentPanel(Assignment asgn, Group group, boolean isAdmin)
+    AssignmentPanel(Assignment asgn, Group group, boolean isAdmin, boolean submitOnSave)
     {
         super(Color.WHITE);
         
         _asgn = asgn;
         _group = group;
         _isAdmin = isAdmin;
+        _submitOnSave = submitOnSave;
         
         initUI();
     }
@@ -79,7 +81,7 @@ class AssignmentPanel extends GradingSheetPanel
         {
             final GradableEvent gradableEvent = _asgn.getGradableEvents().get(i);
             
-            final GradableEventPanel panel = new GradableEventPanel(gradableEvent, _group, _isAdmin);
+            final GradableEventPanel panel = new GradableEventPanel(gradableEvent, _group, _isAdmin, _submitOnSave);
             
             _gradableEventPanelSaveStatus.put(panel, false);
             _totalEarned += panel.getEarned();

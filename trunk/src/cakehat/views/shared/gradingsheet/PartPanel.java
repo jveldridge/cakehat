@@ -38,16 +38,16 @@ abstract class PartPanel extends GradingSheetPanel
         this.init();
     }
     
-    static PartPanel getPartPanel(Part part, Group group, boolean isAdmin)
+    static PartPanel getPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {
         PartPanel panel;
         if(part.hasSpecifiedGMLTemplate())
         {
-            panel = new GMLPartPanel(part, group, isAdmin);
+            panel = new GMLPartPanel(part, group, isAdmin, submitOnSave);
         }
         else
         {
-            panel = new DBPartPanel(part, group, isAdmin);
+            panel = new DBPartPanel(part, group, isAdmin, submitOnSave);
         }
         
         return panel;

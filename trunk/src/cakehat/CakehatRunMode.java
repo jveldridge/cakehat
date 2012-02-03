@@ -16,21 +16,23 @@ import javax.swing.JOptionPane;
  */
 public enum CakehatRunMode
 {
-    GRADER(     "grader",     true,  false),
-    ADMIN(      "admin",      true,  true),
-    CONFIG(     "config",     true,  true),
-    ENTER_GRADE("enterGrade", false, false),
-    UNKNOWN(    null,         false, false);
+    GRADER(     "grader",     true,  false, true),
+    ADMIN(      "admin",      true,  true,  true),
+    CONFIG(     "config",     true,  true,  false),
+    ENTER_GRADE("enterGrade", false, false, false),
+    UNKNOWN(    null,         false, false, false);
 
     private final String _terminalFlag;
     private final boolean _hasGUI;
     private final boolean _requiresAdmin;
+    private final boolean _requiresWorkspaceDir;
 
-    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin)
+    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin, boolean requiresWorkspaceDir)
     {
         _terminalFlag = terminalFlag;
         _hasGUI = hasGUI;
         _requiresAdmin = requiresAdmin;
+        _requiresWorkspaceDir = requiresWorkspaceDir;
     }
     
     boolean hasGUI()
@@ -39,6 +41,11 @@ public enum CakehatRunMode
     }
     
     boolean requiresAdminPrivileges()
+    {
+        return _requiresAdmin;
+    }
+    
+    boolean requiresWorkspaceDir()
     {
         return _requiresAdmin;
     }

@@ -1,7 +1,9 @@
 package cakehat.services;
 
+import cakehat.assignment.Assignment;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import java.io.File;
 
 /**
@@ -103,8 +105,9 @@ public interface PathServices
      * }
      * </pre>
      *
-     * Any other state (such as during lab checkoff) will result in a runtime exception being thrown. If cakehat is not
-     * using the grader, admin, or testing then the user workspace directory should not need be needed.
+     * Any other state (such as during enter grade CLI or config manager) will result in a runtime exception being
+     * thrown. If cakehat is not using the grader, admin, or testing then the user workspace directory should not need
+     * be needed.
      * <br/><br/>
      * All other path methods that reference {@code <ta id>} in their path build from this path and so follow the same
      * pattern.
@@ -112,6 +115,22 @@ public interface PathServices
      * @return
      */
     public File getUserWorkspaceDir();
+    
+    /**
+     * The path to the file, inside the user's temporary workspace directory, that is the location of the student's
+     * GRD file which will end in {@code .txt}.
+     * 
+     * <pre>
+     * {@code 
+     * /course/<course>/.cakehat/workspaces/<ta id>/<assignment id>/<student login>.txt
+     * }
+     * </pre>
+     * 
+     * @param asgn
+     * @param student
+     * @return 
+     */
+    public File getStudentGRDFile(Assignment asgn, Student student);
     
     /**
      * The path to the directory, inside the user's temporary workspace directory, which contains unarchived digital
@@ -139,5 +158,4 @@ public interface PathServices
      * </pre>
      */
     public File getUnarchiveHandinDir(Part part, Group group);
-
 }

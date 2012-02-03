@@ -14,18 +14,35 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
+import cakehat.assignment.GradableEvent;
+import cakehat.assignment.Part;
 import cakehat.database.TA;
 import cakehat.database.Group;
+import cakehat.database.PartGrade;
 import cakehat.database.Student;
+import cakehat.email.EmailManager.EmailAccountStatus;
+import cakehat.gml.GMLGRDWriter;
+import cakehat.gml.GradingSheetException;
 import cakehat.printing.CITPrinter;
+import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 import javax.swing.Icon;
+import support.ui.ModalDialog;
 import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
@@ -431,62 +448,179 @@ public class GradingServicesImpl implements GradingServices
         return studentToGroup;
     }
 
-//    @Override
-//    public void notifyStudents(Handin handin, Collection<Group> groups, boolean emailRubrics) {
-//        Map<Student, File> attachments = new HashMap<Student, File>();
-//
-//        List<Student> students = new ArrayList<Student>(groups.size());
-//        for (Group group : groups) {
-//            for (Student student : group.getMembers()) {
-//                students.add(student);
-//
-//                if (emailRubrics) {
-//                    attachments.put(student, Allocator.getPathServices().getGroupGRDFile(handin, group));
-//                }
-//            }
-//        }
-//
-//        if (!emailRubrics) {
-//            attachments = null;
-//        }
-//
-//        new EmailView(students, Allocator.getConfigurationInfo().getNotifyAddresses(),
-//                      "[" + Allocator.getCourseInfo().getCourse() + "] " + handin.getAssignment().getName() + " Graded",
-//                      handin.getAssignment().getName() + " has been graded.", "submitted grading", attachments);
-//    }
-//
-//    @Override
-//    public void printGRDFiles(Handin handin, Iterable<Group> groups, CITPrinter printer) throws ServicesException
-//    {
-//        TA ta = Allocator.getUserServices().getUser();
-//        List<PrintRequest> requests = new ArrayList<PrintRequest>();
-//
-//        for(Group group : groups)
-//        {
-//            File file = Allocator.getPathServices().getGroupGRDFile(handin, group);
-//            for(Student student : group.getMembers())
-//            {
-//                try
-//                {
-//                    requests.add(new PrintRequest(file, ta, student));
-//                }
-//                catch (FileNotFoundException ex) {
-//                    throw new ServicesException("Could not print GRD files because a requested" +
-//                                                "file was not found.\nFile: " + file.getAbsolutePath(), ex);
-//                }
-//            }
-//        }
-//
-//        try
-//        {
-//            Allocator.getPortraitPrintingService().print(requests, printer);
-//        }
-//        catch(IOException e)
-//        {
-//            new ErrorView(e, "Unable to issue print command for " + handin.getAssignment() + ".\n" +
-//                              "For the following students: " + groups);
-//        }
-//    }
+    @Override
+    public void printGRDFiles(Assignment asgn, Set<Group> groups, CITPrinter printer) throws ServicesException
+    {
+        //Create a set of print requests - one for each student
+        Map<Student, File> grdFiles = generateGRDFiles(asgn, groups);
+        TA ta = Allocator.getUserServices().getUser();
+        Set<PrintRequest> requests = new HashSet<PrintRequest>();
+        for(Entry<Student, File> entry : grdFiles.entrySet())
+        {
+            try
+            {
+                requests.add(new PrintRequest(entry.getValue(), ta, entry.getKey()));
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new ServicesException("Could not print GRD file, because file was not found.\n" +
+                        "File: " + entry.getValue().getAbsolutePath() + "\n" +
+                        "Student: " + entry.getKey().getLogin() + "\n" +
+                        "Assignment: " + asgn, ex);
+            }
+        }
+
+        //Submit print requests
+        try
+        {
+            Allocator.getPortraitPrintingService().print(requests, printer);
+        }
+        catch(IOException e)
+        {
+            throw new ServicesException("Unable to issue print command for GRD files", e);
+        }
+    }
+    
+    @Override
+    public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
+    {
+        EmailAccountStatus emailStatus = Allocator.getEmailManager().getEmailAccountStatus();
+        if(emailStatus == EmailAccountStatus.INITIALIZATION_ERROR)
+        {
+            throw new ServicesException("The email account could not initialize properly");
+        }
+        else if(emailStatus == EmailAccountStatus.NOT_CONFIGURED)
+        {
+            ModalDialog.showMessage("Email Unavailable", "Email has not been configured by your course");
+        }
+        else
+        {
+            Map<Student, File> grdFiles = generateGRDFiles(asgn, groups);
+        
+            boolean proceed = ModalDialog.showConfirmation("Email Grading Sheets",
+                    "Each student will be sent an email with their grading sheet attached, do you wish to proceed?",
+                    "Email Students", "Cancel");
+            if(proceed)
+            {
+                InternetAddress from = Allocator.getUserServices().getUser().getEmailAddress();
+                String subject = "[" + Allocator.getCourseInfo().getCourse() + "]" + asgn.getName() + " Graded";
+                String body = asgn.getName() + " has been graded; your grading sheet is attached as a plain text file.";
+
+                
+                for(Entry<Student, File> entry : grdFiles.entrySet())
+                {
+                    try
+                    {
+                        Allocator.getEmailManager().send(from,
+                                                         ImmutableSet.of(entry.getKey().getEmailAddress()),
+                                                         null,
+                                                         null,
+                                                         subject,
+                                                         body,
+                                                         ImmutableSet.of(entry.getValue()));
+                    }
+                    catch(MessagingException e)
+                    {
+                        throw new ServicesException("Unable to send grading sheet\n" +
+                                "Student: " + entry.getKey().getLogin() + "\n" +
+                                "Student's email: " + entry.getKey().getEmailAddress() + "\n" +
+                                "File: " + entry.getValue().getAbsolutePath() , e);
+                    }
+                }
+            }
+        }
+    }
+    
+    private Map<Student, File> generateGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
+    {
+        //Validate all groups belong to the assignment
+        for(Group group : groups)
+        {
+            if(group.getAssignment().equals(asgn))
+            {
+                throw new ServicesException(group.getName() + " does not belong to assignment " + asgn.getName());
+            }
+        }
+        
+        //Figure out grades have not been submitted
+        Multimap<Group, Part> groupsWithNonSubmittedGrades = HashMultimap.create();
+        for(GradableEvent ge : asgn)
+        {
+            for(Part part : ge)
+            {
+                Map<Group, PartGrade> grades = Allocator.getDataServices().getEarned(groups, part);
+                
+                for(Group group : groups)
+                {
+                    PartGrade grade = grades.get(group);
+                    if(grade == null || !grade.isSubmitted())
+                    {
+                        groupsWithNonSubmittedGrades.put(group, part);
+                    }
+                }
+            }
+        }
+        
+        //Determine whether to proceed if not all groups have submitted grades
+        boolean proceed = true;
+        if(!groupsWithNonSubmittedGrades.isEmpty())
+        {
+            String groupsOrStudents = asgn.hasGroups() ? "groups" : "students";
+            
+            StringBuilder builder = new StringBuilder();
+            builder.append("The following ");
+            builder.append(groupsOrStudents);
+            builder.append(" do not have grades submitted for one or more parts:\n\n");
+            for(Entry<Group, Collection<Part>> entry : groupsWithNonSubmittedGrades.asMap().entrySet())
+            {
+                builder.append(entry.getKey().getName());
+                builder.append("\n");
+                
+                for(Part part : entry.getValue())
+                {
+                    builder.append(" • ");
+                    builder.append(part.getFullDisplayName());
+                    builder.append("\n");
+                }
+            }
+            builder.append("\n\nThese ");
+            builder.append(groupsOrStudents);
+            builder.append(" will not be included, do you wish to proceed?");
+            
+            proceed = ModalDialog.showConfirmation("Some Grades Not Submitted", builder.toString(), "Proceed", "Cancel");
+        }
+        
+        //Generate GRD files
+        HashMap<Student, File> generatedGRDs = new HashMap<Student, File>();
+        if(proceed)
+        {
+            HashSet<Group> groupsWithSubmittedGrades = new HashSet<Group>(groups);
+            groupsWithSubmittedGrades.removeAll(groupsWithNonSubmittedGrades.keySet());
+            
+            for(Group group : groupsWithSubmittedGrades)
+            {
+                for(Student student : group)
+                {
+                    File grdFile = Allocator.getPathServices().getStudentGRDFile(asgn, student);
+                    try
+                    {
+                        GMLGRDWriter.write(group, grdFile);
+                        generatedGRDs.put(student, grdFile);
+                    }
+                    catch(GradingSheetException e)
+                    {
+                        throw new ServicesException("Unable to create GRD file\n" +
+                                "Group: " + group.getName() + "\n" +
+                                "Student: " + student.getName() + "\n" +
+                                "Assignment: " + asgn.getName() + "\n" +
+                                "File: " + grdFile.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        
+        return generatedGRDs;
+    }
 
     /**
      * panel containing student login, resolution radio buttons, and radio button group.

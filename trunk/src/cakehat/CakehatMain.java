@@ -105,6 +105,18 @@ public class CakehatMain
                     {
                         isSSH = adjustIfRemote();
                     }
+                    
+                    if(_runMode.requiresWorkspaceDir())
+                    {
+                        try
+                        {
+                            Allocator.getGradingServices().makeUserWorkspace();
+                        }
+                        catch(ServicesException e)
+                        {
+                            throw new CakehatException("Unable to create user workspace directory", e);
+                        }
+                    }
 
                     //Creating the ArrayList is necessary because the list created by Arrays.asList(...) is immutable
                     ArrayList<String> argList = new ArrayList<String>(Arrays.asList(args));
