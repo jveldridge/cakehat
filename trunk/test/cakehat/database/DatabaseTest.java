@@ -1,23 +1,5 @@
 package cakehat.database;
 
-import cakehat.database.HandinRecord;
-import cakehat.database.Database;
-import cakehat.database.DbNotifyAddress;
-import cakehat.database.Student;
-import cakehat.database.GradeRecord;
-import cakehat.database.CakeHatDBIOException;
-import cakehat.database.DbPart;
-import cakehat.database.DbGroup;
-import cakehat.database.DbPropertyValue;
-import cakehat.database.DbPartAction;
-import cakehat.database.DbActionProperty;
-import cakehat.database.DbTA;
-import cakehat.database.DbInclusionFilter;
-import cakehat.database.DbGradableEvent;
-import cakehat.database.DbStudent;
-import cakehat.database.DatabaseImpl;
-import cakehat.database.DbAssignment;
-import cakehat.database.DbDataItem;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
