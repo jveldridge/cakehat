@@ -12,8 +12,8 @@ All students are enabled when they are added to the database.  Setting the enabl
 	-The student will not be included when all students are selected
 	 Buttons or other UI elements used to select all students will not select disabled students; rather, disabled students must be separately and explicitly selected.
 	 
-	-A notification will be shown in the admin view when a disabled student has handin
-	 Disabling a student means that that the student is not expected to submit any more assignments.  Thus, if an admin user goes to make a distribution and a disabled student has a handin, the user will be notified of this fact and given the option to re-enable the student.  If the user chooses not to re-enable the student, however, the student can still be distributed.  This notification will also be shown in case of a group project in which some member of a group with a handin is disabled.  Again, the group is still distributable even if any or all of its disabled students are not re-enabled.
+	-Disabled students cannot be distributed, and a notification will be shown in the admin view when a disabled student has handin
+	 Disabling a student means that that the student is not expected to submit any more assignments.  Thus, if an admin user goes to make a distribution and a disabled student has a handin, the user will be notified of this fact and given the option to re-enable the student.  If the user chooses not to re-enable the student, the student will not be included in the list of students to be distributed.  This notification will also be shown in case of a group project in which some member of a group with a handin is disabled.  Again, the group is still distributable if at least one student is *not* disabled.
 	 
 	-The student will not be included in charts/statistics
 	 Charts and statistics that display information about the entire class will not include the grades of or other data about disabled students.
