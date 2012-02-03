@@ -82,6 +82,7 @@ public class DataServiceTest {
         assertEquals(0, students.size());
     }
       
+    @Test
     public void testGet1Students() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         _database.putStudents(SingleElementSet.of(dbstudent1));
@@ -90,6 +91,7 @@ public class DataServiceTest {
         this.assertDbStudentCollectionEqual(SingleElementSet.of(dbstudent1), students);
     }
     
+    @Test
     public void testGet2Students() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
@@ -99,6 +101,7 @@ public class DataServiceTest {
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1, dbstudent2), students);
     }
     
+    @Test
     public void testIsStudentLoginInDatabase() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         _database.putStudents(SingleElementSet.of(dbstudent1));
@@ -108,6 +111,7 @@ public class DataServiceTest {
         assertFalse(_dataService.isStudentLoginInDatabase("imaginary login"));
     }
     
+    @Test
     public void testGetStudentFromLogin() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         _database.putStudents(SingleElementSet.of(dbstudent1));
@@ -335,6 +339,7 @@ public class DataServiceTest {
         assertEquals(0, groups.size());            
     }
     
+    @Test
     public void testGetGroupAutoGroupCreation() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
@@ -363,6 +368,7 @@ public class DataServiceTest {
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbStudent1, dbStudent2), studs);
     }
     
+    @Test
     public void testAddGetGroups() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
@@ -391,6 +397,7 @@ public class DataServiceTest {
         this.assertGroupCollectionEqual(SingleElementSet.of(dbGroup1), groups);
     }
     
+    @Test
     public void testGet2Groups() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
@@ -414,6 +421,7 @@ public class DataServiceTest {
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
+    @Test
     public void testAddGet2Groups() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
@@ -437,6 +445,7 @@ public class DataServiceTest {
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
+    @Test
     public void testGetGroup() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
@@ -461,6 +470,7 @@ public class DataServiceTest {
         this.assertGroupEqual(dbGroup1, _dataService.getGroup(asgnA, student1));
     }
     
+    @Test
     public void testRemoveGroups() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
@@ -482,6 +492,7 @@ public class DataServiceTest {
         assertEquals(0, _dataService.getGroups(asgnA).size());
     }
     
+    @Test
     public void testAddAfterRemoveGroups() throws SQLException, ServicesException {
         Assignment asgnA = createMock(Assignment.class);
         expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
