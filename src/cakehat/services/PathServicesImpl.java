@@ -3,8 +3,10 @@ package cakehat.services;
 import cakehat.Allocator;
 import cakehat.CakehatRunMode;
 import cakehat.CakehatMain;
+import cakehat.assignment.Assignment;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
+import cakehat.database.Student;
 import java.io.File;
 
 /**
@@ -90,6 +92,15 @@ public class PathServicesImpl implements PathServices
     }
     
     @Override
+    public File getStudentGRDFile(Assignment asgn, Student student)
+    {
+        return new File(new File(
+                getUserWorkspaceDir(),
+                Integer.toString(asgn.getId())),
+                student.getLogin() + ".txt");
+    }
+    
+    @Override
     public File getUserPartDir(Part part)
     {
         return new File(new File(new File(
@@ -104,5 +115,4 @@ public class PathServicesImpl implements PathServices
     {
         return new File(getUserPartDir(part), Integer.toString(group.getId()));
     }
-
 }

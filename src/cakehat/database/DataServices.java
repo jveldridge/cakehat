@@ -221,6 +221,17 @@ public interface DataServices {
     public PartGrade getEarned(Group group, Part part) throws ServicesException;
     
     /**
+     * Returns a mapping from group to part grade for each group that has a value stored in the database. If no value
+     * is stored in the database for a given group, that group will not be the key set.
+     * 
+     * @param groups
+     * @param part
+     * @return
+     * @throws ServicesException 
+     */
+    public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException;
+    
+    /**
      * Sets the points earned and matches gml for the given Group and Part.
      * 
      * @param group

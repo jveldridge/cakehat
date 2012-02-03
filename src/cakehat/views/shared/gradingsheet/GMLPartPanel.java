@@ -9,6 +9,7 @@ import cakehat.gml.InMemoryGML;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.database.Group;
+import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,12 +29,15 @@ import support.ui.DocumentAdapter;
  */
 class GMLPartPanel extends PartPanel
 {
+    private final boolean _submitOnSave;
     private InMemoryGML _gml;
     private double _totalEarned = 0;
     
-    GMLPartPanel(Part part, Group group, boolean isAdmin)
+    GMLPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {   
         super(part, group, isAdmin);
+        
+        _submitOnSave = submitOnSave;
         
         this.init();
     }
@@ -224,6 +228,7 @@ class GMLPartPanel extends PartPanel
                 try
                 {
                     GMLWriter.write(_gml, gmlFile);
+                    Allocator.getDataServices().setEarned(_group, _part, _totalEarned, _submitOnSave);
                     notifySavedSuccessfully();
                 }
                 catch(GradingSheetException e)
@@ -232,6 +237,12 @@ class GMLPartPanel extends PartPanel
                             "Part: " + _part.getFullDisplayName() + "\n" +
                             "Group: " + _group.getName() + "\n" + 
                             "File: " + gmlFile.getAbsolutePath());
+                }
+                catch(ServicesException e)
+                {
+                    new ErrorView(e, "Unable to record changes in database\n" +
+                            "Part: " + _part.getFullDisplayName() + "\n" +
+                            "Group: " + _group.getName());
                 }
             }
         }

@@ -230,15 +230,18 @@ public class AdminView extends JFrame
                 Group group = selectedGroups.isEmpty() ? null : Iterables.get(selectedGroups, 0);
                 if(part != null)
                 {
-                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager().getGradingSheet(part, group, true);
+                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
+                            .getGradingSheet(part, group, true, true);
                 }
                 else if(ge != null)
                 {
-                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager().getGradingSheet(ge, group, true);
+                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
+                            .getGradingSheet(ge, group, true, true);
                 }
                 else
                 {
-                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager().getGradingSheet(asgn, group, true);
+                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
+                            .getGradingSheet(asgn, group, true, true);
                 }
                 
                 _mainPanel.add(_currentlyDisplayedSheet.getAsComponent(), BorderLayout.CENTER);

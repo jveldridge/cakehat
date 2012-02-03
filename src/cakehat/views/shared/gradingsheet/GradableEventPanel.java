@@ -34,6 +34,7 @@ class GradableEventPanel extends GradingSheetPanel
     private final GradableEvent _gradableEvent;
     private final Group _group;
     private final boolean _isAdmin;
+    private final boolean _submitOnSave;
     
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<PartPanel, Boolean> _partPanelSaveStatus = new HashMap<PartPanel, Boolean>();
@@ -43,13 +44,14 @@ class GradableEventPanel extends GradingSheetPanel
     
     private PenaltyOrBonusField _penaltyOrBonusField;
     
-    GradableEventPanel(GradableEvent gradableEvent, Group group, boolean isAdmin)
+    GradableEventPanel(GradableEvent gradableEvent, Group group, boolean isAdmin, boolean submitOnSave)
     {
         super(Color.WHITE);
         
         _gradableEvent = gradableEvent;
         _group = group;
         _isAdmin = isAdmin;
+        _submitOnSave = submitOnSave;
         
         init();
     }
@@ -298,7 +300,7 @@ class GradableEventPanel extends GradingSheetPanel
         {
             final Part part = _gradableEvent.getParts().get(i);
             
-            final PartPanel panel = PartPanel.getPartPanel(part, _group, _isAdmin);
+            final PartPanel panel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave);
             
             _partPanelSaveStatus.put(panel, false);
             _totalEarned += panel.getEarned();

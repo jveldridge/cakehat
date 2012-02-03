@@ -14,6 +14,7 @@ import cakehat.database.PartGrade;
 import cakehat.database.Student;
 import cakehat.database.TA;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableSet;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -62,6 +63,25 @@ public class GMLGRDWriter {
     }
     
     private static BufferedWriter openGRDFile(File grdFile) throws GradingSheetException {
+        
+        if (grdFile.exists()) {
+            try {
+                Allocator.getFileSystemUtilities().deleteFiles(ImmutableSet.of(grdFile));
+            }
+            catch (IOException e) {
+                throw new GradingSheetException("Unable to delete existing GRD file\n" +
+                        "File: " + grdFile.getAbsolutePath(), e);
+            }
+        }
+        else {
+            try {
+                Allocator.getFileSystemServices().makeDirectory(grdFile.getParentFile());
+            } catch (ServicesException e) {
+                throw new GradingSheetException("Unable to make directory for GRD file\n" +
+                        "File: " + grdFile.getAbsolutePath(), e);
+            }
+        }
+        
         BufferedWriter output = null;
         try {
             output = new BufferedWriter(new FileWriter(grdFile));

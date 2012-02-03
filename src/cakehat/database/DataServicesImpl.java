@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -164,6 +165,38 @@ public class DataServicesImpl implements DataServices {
         } catch (SQLException ex) {
             throw new ServicesException("Could not get the score for group [" + group.getName() + "]"
                     + " on part [" + part.getName() + "].", ex);
+        }
+    }
+    
+    @Override
+    public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException
+    {
+        try
+        {
+            Map<Integer, Group> idsToGroups = new HashMap<Integer, Group>();
+            for(Group group : groups)
+            {
+                idsToGroups.put(group.getId(), group);
+            }
+            
+            Map<Integer, GradeRecord> records = Allocator.getDatabase().getEarned(part.getId(), idsToGroups.keySet());
+            
+            Map<Group, PartGrade> grades = new HashMap<Group, PartGrade>(records.size());
+            for(Entry<Integer, GradeRecord> entry : records.entrySet())
+            {
+                GradeRecord record = entry.getValue();
+                Group group = idsToGroups.get(entry.getKey());
+                PartGrade grade = new PartGrade(part, group, _taIdMap.get(record.getTAId()),
+                        new DateTime(record.getDateRecorded()), record.getEarned(), record.isSubmitted());
+                grades.put(group, grade);
+            }
+            
+            return grades;
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Unable to retrieve earned for part " + part.getFullDisplayName() + " for " +
+                    "groups: " + groups, e);
         }
     }
 

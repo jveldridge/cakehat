@@ -17,11 +17,14 @@ import javax.swing.JPanel;
  */
 class DBPartPanel extends PartPanel
 {   
+    private final boolean _submitOnSave;
     private double _earned = 0;
     
-    DBPartPanel(Part part, Group group, boolean isAdmin)
+    DBPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {   
         super(part, group, isAdmin);
+        
+        _submitOnSave = submitOnSave;
         
         this.init();
     }
@@ -107,7 +110,7 @@ class DBPartPanel extends PartPanel
         {
             try
             {
-                Allocator.getDataServices().setEarned(_group, _part, _earned, true);
+                Allocator.getDataServices().setEarned(_group, _part, _earned, _submitOnSave);
                 notifySavedSuccessfully();
             }
             catch(ServicesException ex)
