@@ -139,6 +139,7 @@ extension
   * tid INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
+  * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
   * CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE
 
 handintime  //only use if non-digital
@@ -149,6 +150,7 @@ handintime  //only use if non-digital
   * tid INTEGER NOT NULL
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
+  * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
   * CONSTRAINT singlehandin UNIQUE (agid, geid) ON CONFLICT REPLACE
 
 exemption
@@ -156,9 +158,10 @@ exemption
   * agid INTEGER NOT NULL
   * note TEXT
   * daterecorded VARCHAR NOT NULL
-  * recordedby INTEGER NOT NULL
+  * tid INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
+  * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
   * CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE
 
 adjustment
