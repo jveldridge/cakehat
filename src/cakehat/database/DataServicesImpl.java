@@ -278,7 +278,6 @@ public class DataServicesImpl implements DataServices {
                 }
             }
         }
-        
         return Collections.unmodifiableSet(this.idsToGroups(groupIDs, new HashSet<Group>(groupIDs.size())));
     }
     
@@ -377,7 +376,7 @@ public class DataServicesImpl implements DataServices {
              * Get Students
              */
             Set<DbStudent> students = Allocator.getDatabase().getStudents();
-            
+
             //create an object for any student that has been added to the database
             for (DbStudent dbStudent : students) {
                 if (!_studentIdMap.containsKey(dbStudent.getId())) {
