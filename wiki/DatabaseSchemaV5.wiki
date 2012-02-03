@@ -112,7 +112,7 @@ grade
   * earned DOUBLE
   * daterecorded VARCHAR NOT NULL
   * tid INTEGER NOT NULL //TA which last updated this grade
-  * matchesgml INTEGER NOT NULL DEFAULT 1
+  * submitted INTEGER NOT NULL DEFAULT 1
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE
   * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
@@ -137,6 +137,7 @@ extension
   * tid INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
+  * CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE
 
 handintime  //only use if non-digital
   * geid INTEGER NOT NULL
@@ -156,6 +157,7 @@ exemption
   * recordedby INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
+  * CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE
 
 adjustment
   * aid INTEGER NOT NULL
@@ -166,6 +168,7 @@ adjustment
   * daterecorded VARCHAR NOT NULL
   * FOREIGN KEY (aid) REFERENCES assignment(aid) ON DELETE CASCADE
   * FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE
+  * CONSTRAINT singleadjustment UNIQUE (aid, sid) ON CONFLICT REPLACE
 
 courseproperties
   * cpid INTEGER PRIMARY KEY AUTOINCREMENT
