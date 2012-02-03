@@ -98,6 +98,7 @@ groupmember
   * sid INTEGER NOT NULL
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE
+  * CONSTRAINT singlemembership UNIQUE (agid, sid) ON CONFLICT ROLLBACK
 
 distribution
   * pid INTEGER NOT NULL
