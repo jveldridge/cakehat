@@ -949,6 +949,9 @@ public class DatabaseTest {
         expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
 
         replay(asgn);
+        
+        int tid = 1;
+        _database.putTAs(ImmutableSet.of(new DbTA(tid, "ta", "The", "Grader", true, false)));
 
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
@@ -960,8 +963,7 @@ public class DatabaseTest {
         int agid = toAdd.getId();
         String date = "1/28/2012";
         String time = "10:05";
-        int tid = 1;
-
+        
         _database.setHandinTime(geid, agid, time, date, tid);
 
         HandinRecord record = _database.getHandinTime(geid, agid);
@@ -990,7 +992,10 @@ public class DatabaseTest {
         expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
 
         replay(asgn);
-
+        
+        int tid = 1;
+        _database.putTAs(ImmutableSet.of(new DbTA(tid, "ta", "The", "Grader", true, false)));
+        
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
 
@@ -1002,7 +1007,7 @@ public class DatabaseTest {
         int agid = toAdd.getId();
         String date1 = "1/28/2012";
         String time1 = "10:05";
-        int tid = 1;
+        
 
         _database.setHandinTime(geid, agid, time1, date1, tid);
 
