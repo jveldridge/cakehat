@@ -1449,18 +1449,22 @@ public class DatabaseImpl implements Database
         try {
             conn.setAutoCommit(false);
             //DROP all tables in DB
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS handintime");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS adjustment");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS flag");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS grade");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS exemption");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS extension");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS handintime");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS blacklist");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS partaction");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS part");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradableevent");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS assignment");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS blacklist");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS student");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS ta");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS notifyaddresses");
@@ -1489,6 +1493,11 @@ public class DatabaseImpl implements Database
                     + " enabled INTEGER NOT NULL DEFAULT 1,"
                     + " hascollab INTEGER NOT NULL DEFAULT 0,"
                     + " CONSTRAINT loginunique UNIQUE (login) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE blacklist (sid INTEGER NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT sidtidunique UNIQUE (sid, tid) ON CONFLICT IGNORE)");
             conn.createStatement().executeUpdate("CREATE TABLE assignment (aid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " name VARCHAR NOT NULL,"
                     + " ordering INTEGER NOT NULL,"
@@ -1533,11 +1542,6 @@ public class DatabaseImpl implements Database
                     + " path VARCHAR NOT NULL,"
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " CONSTRAINT pidpathunique UNIQUE (pid, path) ON CONFLICT ROLLBACK)");
-            conn.createStatement().executeUpdate("CREATE TABLE blacklist (sid INTEGER NOT NULL,"
-                    + " tid INTEGER NOT NULL,"
-                    + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE,"
-                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
-                    + " CONSTRAINT sidtidunique UNIQUE (sid, tid) ON CONFLICT IGNORE)");
             conn.createStatement().executeUpdate("CREATE TABLE asgngroup (agid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " aid INTEGER NOT NULL,"
                     + " name VARCHAR NOT NULL,"
@@ -1547,7 +1551,37 @@ public class DatabaseImpl implements Database
                     + " agid INTEGER NOT NULL,"
                     + " sid INTEGER NOT NULL,"
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
-                    + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE)");
+                    + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE,"
+                    + " CONSTRAINT singlemembership UNIQUE (agid, sid) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE handintime (geid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " time VARCHAR NOT NULL,"
+                    + " daterecorded VARCHAR NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT singlehandin UNIQUE (agid, geid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE extension (geid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " ontime VARCHAR NOT NULL,"
+                    + " shiftdates INTEGER NOT NULL DEFAULT 0,"
+                    + " note TEXT,"
+                    + " daterecorded VARCHAR NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE exemption (geid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " note TEXT,"
+                    + " daterecorded VARCHAR NOT NULL,"
+                    + " tid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE)");
             conn.createStatement().executeUpdate("CREATE TABLE distribution (pid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
                     + " tid INTEGER NOT NULL,"
@@ -1564,14 +1598,25 @@ public class DatabaseImpl implements Database
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
                     + " CONSTRAINT onegrade UNIQUE (agid, pid) ON CONFLICT REPLACE)");
-            conn.createStatement().executeUpdate("CREATE TABLE handintime (geid INTEGER NOT NULL,"
+            conn.createStatement().executeUpdate("CREATE TABLE flag (pid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
-                    + " time VARCHAR NOT NULL,"
+                    + " note TEXT,"
                     + " daterecorded VARCHAR NOT NULL,"
                     + " tid INTEGER NOT NULL,"
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
-                    + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
-                    + " CONSTRAINT singlehandin UNIQUE (agid, geid) ON CONFLICT REPLACE)");
+                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT oneflag UNIQUE (agid, pid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE adjustment (aid INTEGER NOT NULL,"
+                    + "sid INTEGER NOT NULL,"
+                    + "note TEXT,"
+                    + "points DOUBLE,"
+                    + "tid INTEGER NOT NULL,"
+                    + "daterecorded VARCHAR NOT NULL,"
+                    + "FOREIGN KEY (aid) REFERENCES assignment(aid) ON DELETE CASCADE,"
+                    + "FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE,"
+                    + "FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + "CONSTRAINT singleadjustment UNIQUE (aid, sid) ON CONFLICT REPLACE)");
             
             conn.commit();
         } catch (SQLException ex) {
