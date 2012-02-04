@@ -4,6 +4,7 @@ import cakehat.assignment.Part;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.assignment.Assignment;
+import cakehat.assignment.GradableEvent;
 import cakehat.database.Group;
 import java.io.File;
 import java.io.IOException;
@@ -26,14 +27,15 @@ public class PathServicesTest
     private static final String COURSE = "cs001";
     private static final int YEAR = 1988;
 
-    private static final int ASSIGNMENT_NUMBER = 1;
-    private static final String ASSIGNMENT_NAME = "the asgn";
-    private static final String PART_NAME = "the dist part";
-    private static final String TA_LOGIN = "jak2";
-    private static final String GROUP_NAME = "the group";
+    private static final int ASSIGNMENT_ID = 13;
+    private static final int GRADABLE_EVENT_ID = 27;
+    private static final int PART_ID = 39;
+    private static final int TA_ID = 501;
+    private static final int GROUP_ID = 42;
 
     private Group _group;
     private Assignment _assignment;
+    private GradableEvent _gradableEvent;
     private Part _part;
     private PathServices _service;
 
@@ -42,19 +44,24 @@ public class PathServicesTest
     {
         //Mock group
         _group = createMock(Group.class);
-        expect(_group.getName()).andReturn(GROUP_NAME).anyTimes();
+        expect(_group.getId()).andReturn(GROUP_ID).anyTimes();
         replay(_group);
 
-        //Create mocked assignment, handin, and part objects
+        //Create mocked assignment, gradable event, and part objects
         _assignment = createMock(Assignment.class);
-        expect(_assignment.getName()).andReturn(ASSIGNMENT_NAME).anyTimes();
-        expect(_assignment.getId()).andReturn(ASSIGNMENT_NUMBER).anyTimes();
-
+        expect(_assignment.getId()).andReturn(ASSIGNMENT_ID).anyTimes();
+        
+        _gradableEvent = createMock(GradableEvent.class);
+        expect(_gradableEvent.getId()).andReturn(GRADABLE_EVENT_ID).anyTimes();
+        expect(_gradableEvent.getAssignment()).andReturn(_assignment).anyTimes();
+        
         _part = createMock(Part.class);
-        expect(_part.getName()).andReturn(PART_NAME).anyTimes();
+        expect(_part.getId()).andReturn(PART_ID).anyTimes();
+        expect(_part.getGradableEvent()).andReturn(_gradableEvent).anyTimes();
         expect(_part.getAssignment()).andReturn(_assignment).anyTimes();
 
         replay(_assignment);
+        replay(_gradableEvent);
         replay(_part);
         
         //Mock out course information
@@ -79,14 +86,13 @@ public class PathServicesTest
 
         //Mock out user utilities
         final UserUtilities userUtil = createMock(UserUtilities.class);
-        expect(userUtil.getUserLogin()).andReturn(TA_LOGIN).anyTimes();
+        expect(userUtil.getUserId()).andReturn(TA_ID).anyTimes();
         replay(userUtil);
         SingletonAllocation<UserUtilities> userUtilAlloc =
             new SingletonAllocation<UserUtilities>()
             {
                 public UserUtilities allocate() { return userUtil; };
             };
-        
         
         new Allocator.Customizer()
                 .setCourseInfo(courseInfoAlloc)
@@ -116,9 +122,8 @@ public class PathServicesTest
     @Test
     public void testGroupGMLFile()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR +
-                "/rubrics/" + ASSIGNMENT_NAME + "/" + PART_NAME + "/" +
-                GROUP_NAME + ".gml");
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/gml/" + ASSIGNMENT_ID + "/" +
+                GRADABLE_EVENT_ID + "/" + PART_ID + "/" + GROUP_ID + ".gml");
 
         assertEquals(expected, _service.getGroupGMLFile(_part, _group));
     }
@@ -126,8 +131,7 @@ public class PathServicesTest
     @Test
     public void testGetDatabaseFile()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR +
-                "/database/database.db");
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/database/database.db");
 
         assertEquals(expected, _service.getDatabaseFile());
     }
@@ -135,8 +139,7 @@ public class PathServicesTest
     @Test
     public void testGetDatabaseBackupDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR +
-                "/database/backups");
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/database/backups");
 
         assertEquals(expected, _service.getDatabaseBackupDir());
     }
@@ -144,8 +147,7 @@ public class PathServicesTest
     @Test
     public void testGetUserWorkspaceDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +
-                TA_LOGIN + "-test");
+        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" + TA_ID + "-test");
 
         assertEquals(expected, _service.getUserWorkspaceDir());
     }
@@ -153,8 +155,8 @@ public class PathServicesTest
     @Test
     public void testGetUserPartDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +
-                TA_LOGIN + "-test/" + ASSIGNMENT_NAME + "/" + PART_NAME);
+        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +  TA_ID + "-test/" + ASSIGNMENT_ID +
+                "/" + GRADABLE_EVENT_ID + "/" + PART_ID);
 
         assertEquals(expected, _service.getUserPartDir(_part));
     }
@@ -162,9 +164,8 @@ public class PathServicesTest
     @Test
     public void testGetUnarchiveHandinDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +
-                TA_LOGIN + "-test/" + ASSIGNMENT_NAME + "/" + PART_NAME + "/" +
-                GROUP_NAME);
+        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +  TA_ID + "-test/" + ASSIGNMENT_ID +
+                "/" + GRADABLE_EVENT_ID + "/" + PART_ID + "/" + GROUP_ID);
 
         assertEquals(expected, _service.getUnarchiveHandinDir(_part, _group));
     }

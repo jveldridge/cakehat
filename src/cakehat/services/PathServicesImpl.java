@@ -51,7 +51,7 @@ public class PathServicesImpl implements PathServices
     public File getGroupGMLFile(Part part, Group group)
     {
         return new File(new File(new File(new File(new File(new File(
-                getCourseDir(),
+                getCakehatDir(),
                 Integer.toString(Allocator.getCalendarUtilities().getCurrentYear())),
                 "gml"),
                 Integer.toString(part.getGradableEvent().getAssignment().getId())),
