@@ -105,14 +105,14 @@ public interface DataServices {
     public Collection<Student> getBlacklist(TA ta) throws ServicesException;
     
     /**
-     * Indicates whether the Assignment has a distribution.  Returns true if
-     * the Assignment currently has no distribution, and false if it does.
+     * Indicates whether the gradable event has a distribution.  Returns true if
+     * the gradable event currently has no distribution, and false if it does.
      *
      * @param asgn
      * @return
      * @throws ServicesException 
      */
-    public boolean isDistEmpty(Assignment asgn) throws ServicesException;
+    public boolean isDistEmpty(GradableEvent ge) throws ServicesException;
     
     /**
      * Returns a map that maps a TA to a Collection of Groups that TA has been
@@ -254,6 +254,11 @@ public interface DataServices {
      * @return
      */
     public Set<TA> getTAs();
+    
+    /**
+     * Returns an immutable set of the TAs who are default graders.
+     */
+    public Set<TA> getDefaultGraders();
     
     public TA getTA(int taId);
     
