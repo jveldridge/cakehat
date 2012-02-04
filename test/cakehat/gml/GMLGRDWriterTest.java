@@ -4,6 +4,7 @@
  */
 package cakehat.gml;
 
+import cakehat.database.PartGrade;
 import java.io.IOException;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.DeadlineInfo;
@@ -31,7 +32,7 @@ import static org.easymock.EasyMock.*;
  */
 public class GMLGRDWriterTest {
     
-    private static final String OUTPUT = "test/cakehat/gml/ouput.txt";
+    private static final String OUTPUT = "test/cakehat/gml/output.txt";
     private static final String GML_FILE = "test/cakehat/gml/GRDWriter.gml";
     private static final String NO_GML_OUTPUT = "test/cakehat/gml/NoGML.txt";
     
@@ -91,6 +92,19 @@ public class GMLGRDWriterTest {
             
             expect(dataServices.getHandinTime(e, group)).andReturn(time).anyTimes();
             expect(dataServices.getDeadlineInfo(e)).andReturn(info).anyTimes();
+            for (Part p : e.getParts()) {
+                PartGrade grade = createMock(PartGrade.class);
+                expect(grade.getDateRecorded()).andReturn(new DateTime()).anyTimes();
+                double rand = Math.random()*p.getOutOf();
+                expect(grade.getEarned()).andReturn(rand).anyTimes();
+                expect(grade.getGroup()).andReturn(group).anyTimes();
+                expect(grade.getPart()).andReturn(p).anyTimes();
+                expect(grade.getTA()).andReturn(ta).anyTimes();
+                expect(grade.isSubmitted()).andReturn(true).anyTimes();
+                replay(grade);
+                
+                expect(dataServices.getEarned(group, p)).andReturn(grade).anyTimes();
+            }
             
         }
         expect(dataServices.getGrader(anyObject(Part.class), anyObject(Group.class))).andReturn(ta).anyTimes();
