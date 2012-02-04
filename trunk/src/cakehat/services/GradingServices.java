@@ -1,6 +1,7 @@
 package cakehat.services;
 
 import cakehat.assignment.Assignment;
+import cakehat.assignment.GradableEvent;
 import cakehat.database.TA;
 import cakehat.database.Group;
 import cakehat.database.Student;
@@ -124,17 +125,18 @@ public interface GradingServices
 
 
     /**
-     * Return value maps a handin name to the Group corresponding to that handin
-     * for the given assignment.  Will not try to determine a group for handins in
-     * handinsToIgnore.
+     * Return value maps a handin name to the Group corresponding to that handin for the given gradable event and handin
+     * names.  This code assumes that {@link #resolveUnexpectedHandins(GradableEvent)} has already been used to ensure
+     * that all handin names in the given Set are in fact for a group valid for the Assignment.  If this is not the case,
+     * a ServicesException will be thrown.
      * 
-     * @param asgn
-     * @param handinsToIgnore
+     * @param ge
+     * @param handinNames
      * @return
      * @throws ServicesException
      */
-    public Map<String, Group> getGroupsForHandins(Assignment asgn,
-                                                  Collection<String> handinsToIgnore) throws ServicesException;
+    public Map<String, Group> getGroupsForHandins(GradableEvent ge,
+                                                  Set<String> handinNames) throws ServicesException;
 
     /**
      * Return value maps a Student object to the Group object for that student on
@@ -153,22 +155,22 @@ public interface GradingServices
     public Map<Student, Group> getGroupsForStudents(Assignment asgn) throws ServicesException;
 
     /**
-     * Checks that all handins for the given Assignment belong to a valid student or Group.
+     * Checks that all handins for the given GradableEvent belong to a valid student or group.
      *
-     * If the Assignment is a group assignment, this method checks that the name of each handin
+     * If the GradableEvent belongs to a group assignment, this method checks that the name of each handin
      * is either the name of some group or the login of a member of some group.  If this is
      * not the case for any handin, a message listing the problematic handins will be shown
      * to the user, and the names of the problematic handins will be returned.
      *
-     * If the Assignment is not a group assignment, this method checks that the name of each
+     * If the Gradable Event belongs to a non-group assignment, this method checks that the name of each
      * handin is the login of a student who is in the database and enabled.  If this is not the
-     * case for any handin, presents the user with an appopriate warning dialog through which students
-     * corresponding to these handins can either be either added/enabled them or ignored.
+     * case for any handin, presents the user with an appropriate warning dialog through which students
+     * corresponding to these handins can either be added/enabled or ignored.
      *
      * @param asgn
      * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
-    public Collection<String> resolveUnexpectedHandins(Assignment asgn) throws ServicesException;
+    public Set<String> resolveUnexpectedHandins(GradableEvent ge) throws ServicesException;
     
     /**
      * Builds a mapping from assignment to student to score for a given assignment. A given mapping will never be null;

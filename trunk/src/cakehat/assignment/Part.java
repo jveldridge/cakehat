@@ -267,7 +267,7 @@ public class Part implements Comparable<Part>
     }
     
     /**
-     * Returns a convenient human readable string describing this assignment. The format is "[Assignment Name] - 
+     * Returns a convenient human readable string describing this part. The format is "[Assignment Name] - 
      * [Gradable Event Name] - [Part Name]"
      * 
      * @return 

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.joda.time.DateTime;
+import support.utils.posix.NativeException;
 
 /**
  *
@@ -127,6 +128,37 @@ public class DataServicesImpl implements DataServices {
     @Override
     public Set<Student> getEnabledStudents() throws ServicesException {
         return Collections.unmodifiableSet(_enabledStudents);
+    }
+    
+    @Override
+    public void addStudentsByLogin(Set<String> studentLogins) throws ServicesException {
+        Set<DbStudent> toAdd = new HashSet<DbStudent>();
+        for (String studentLogin : studentLogins) {
+            try {
+                if (Allocator.getUserServices().isInStudentGroup(studentLogin)) {
+                    throw new ServicesException("Login [" + studentLogin + "] is not in the course's student group. "
+                            + "No students have been added to the database.  To add the student anyway, use the config "
+                            + "manager.");
+                }
+            } catch (NativeException ex) {
+                throw new ServicesException("Could not determine if login [" + studentLogin + "] is in the course's"
+                        + "student group.  No students have been added to the database.  To add the student anyway, use"
+                        + "the config manager.", ex);
+            }
+            try {
+                String[] nameParts = Allocator.getUserUtilities().getUserName(studentLogin).split(" ");
+                String firstName = nameParts[0];
+                String lastName = nameParts[nameParts.length - 1];
+                String email = studentLogin + "@" + Allocator.getConstants().getEmailDomain();
+               
+                toAdd.add(new DbStudent(studentLogin, firstName, lastName, email));
+            } catch (NativeException ex) {
+                throw new ServicesException("Cannot determine the name of student with login [" + studentLogin + "].  No "
+                        + "students have been added to the database.", ex);
+            }
+        }
+        
+        this.addStudents(toAdd);
     }
     
     @Override
