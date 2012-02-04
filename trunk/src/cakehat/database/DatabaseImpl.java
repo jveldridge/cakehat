@@ -183,7 +183,7 @@ public class DatabaseImpl implements Database
                 value.setId(id);
             }
             else {
-                ps = conn.prepareStatement("UPDATE courseproperties SET value = ? WHERE cpid == ?");
+                ps = conn.prepareStatement("UPDATE courseproperties set  value = ? WHERE cpid == ?");
                 key.setValue(ps, 1, value.getValue());
                 ps.setInt(2, value.getId());
                 ps.executeUpdate();
@@ -1531,7 +1531,7 @@ public class DatabaseImpl implements Database
                     + " paid INTEGER NOT NULL,"
                     + " key VARCHAR NOT NULL,"
                     + " value VARCHAR NOT NULL,"
-                    + " FOREIGN KEY (apid) REFERENCES partaction(paid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (paid) REFERENCES partaction(paid) ON DELETE CASCADE,"
                     + " CONSTRAINT paidkeyunique UNIQUE (paid, key) ON CONFLICT ROLLBACK)");
             conn.createStatement().executeUpdate("CREATE TABLE inclusionfilter (ifid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " pid INTEGER NOT NULL,"
