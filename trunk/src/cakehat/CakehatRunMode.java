@@ -3,10 +3,10 @@ package cakehat;
 import cakehat.views.admin.AdminView;
 import cakehat.views.config.ConfigManagerView;
 import cakehat.views.entergrade.EnterGradeCLI;
+import cakehat.views.grader.GraderView;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JOptionPane;
 
 /**
  * The mode that cakehat is operating under. cakehat will be in the {@link CakehatRunMode#UNKNOWN} mode if cakehat code
@@ -47,7 +47,7 @@ public enum CakehatRunMode
     
     boolean requiresWorkspaceDir()
     {
-        return _requiresAdmin;
+        return _requiresWorkspaceDir;
     }
     
     static Set<CakehatRunMode> getValidModes()
@@ -84,7 +84,7 @@ public enum CakehatRunMode
     {
         if(this == GRADER)
         {
-            JOptionPane.showMessageDialog(null, "Not implemented yet.");
+            GraderView.launch(isSSH);
         }
         else if(this == ADMIN)
         {
