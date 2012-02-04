@@ -1218,17 +1218,14 @@ public class DatabaseImpl implements Database
     }
 
     @Override
-    public void unassignGroup(int groupID, int partID, int taID) 
-                                                        throws SQLException {
+    public void unassignGroup(int groupID, int partID) throws SQLException {
         Connection conn = this.openConnection();
         try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
                     + " WHERE pid == ?"
-                    + " AND agid == ?"
-                    + " AND tid ==  ?");
+                    + " AND agid == ?");
             ps.setInt(1, partID);
             ps.setInt(2, groupID);
-            ps.setInt(3, taID);
 
             ps.executeUpdate();
         } finally {

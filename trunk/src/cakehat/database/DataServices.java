@@ -124,33 +124,19 @@ public interface DataServices {
     public void setDistribution(Map<Part, Map<TA, Collection<Group>>> distribution) throws ServicesException;
     
     /**
-     * Assigns the given Group to the given TA to grade for the given Part.  
-     * This will enable the TA to open, run, grade, etc. the Group's code for 
-     * the given Part.  If the group is already assigned to the TA for the Part, 
-     * this method has no effect. The Group will first be unassigned from any TA 
-     * to which it has previously been assigned for the Part.
-     *
-     * NOTE: This method should not be used to create an initial automated distribution
-     *       for a project; it should be used only to assign grading manually.
-     *       To create an initial distribution, use {@link DataServices#setDistribution(java.util.Map)}.
-     *
+     * Assigns the given Group to the given TA to grade for the given Part. If the group is already assigned to the TA
+     * for the Part, this method has no effect. The Group will first be unassigned from any TA to which it has
+     * previously been assigned for the Part. If the TA is {@code null} the Group will not be assigned to any TA.
+     * <br/><br/>
+     * For efficiency reasons this method should not be used create an initial automated distribution. For that purpose,
+     * use {@link #setDistribution(java.util.Map)}.
+     * 
      * @param group
      * @param part
      * @param ta
      * @throws ServicesException
      */
     public void assignGroup(Group group, Part part, TA ta) throws ServicesException;
-
-    /**
-     * Unassigns Group group from the given TA for Part part.  If the Group was not
-     * previously assigned to the TA to grade for the Part, this method has no effect.
-     *
-     * @param group
-     * @param part
-     * @param ta
-     * @throws ServicesException 
-     */
-    public void unassignGroup(Group group, Part part, TA ta) throws ServicesException;
 
     /**
      * Returns a Collection of Groups that the given TA is assigned to grade for

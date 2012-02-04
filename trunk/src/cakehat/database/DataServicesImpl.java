@@ -143,7 +143,11 @@ public class DataServicesImpl implements DataServices {
     public void setGrader(Part part, Group group, TA ta) throws ServicesException
     {
         try {
-            Allocator.getDatabase().assignGroup(group.getId(), part.getId(), ta.getId());
+            if (ta == null) {
+                Allocator.getDatabase().unassignGroup(group.getId(), part.getId());
+            } else {
+                Allocator.getDatabase().assignGroup(group.getId(), part.getId(), ta.getId());
+            }
         } catch (SQLException ex) {
             throw new ServicesException("Could not set grader for group [" + group.getName() + "]"
                     + " on part [" + part.getName() + "].", ex);
@@ -587,16 +591,6 @@ public class DataServicesImpl implements DataServices {
         } catch (SQLException ex) {
             throw new ServicesException("Group [" + group + "] could not be assigned "
                     + "to TA [" + ta + "] on part [" + part + "].", ex);
-        }
-    }
-
-    @Override
-    public void unassignGroup(Group group, Part part, TA ta) throws ServicesException {
-        try {
-            Allocator.getDatabase().unassignGroup(group.getId(), part.getId(), ta.getId());
-        } catch (SQLException ex) {
-            throw new ServicesException("Group [" + group + "] could not be unassigned "
-                    + "from TA [" + ta + "] on part [" + part + "].", ex);
         }
     }
 
