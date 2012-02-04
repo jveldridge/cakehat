@@ -4,7 +4,6 @@ import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
-import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
@@ -108,7 +107,7 @@ class PrintActions implements ActionProvider
                             try
                             {
                                 Collections.sort(filesToPrint);
-                                PrintRequest request = new PrintRequest(filesToPrint,
+                                PrintRequest request = new PrintRequest(filesToPrint, unarchiveDir,
                                         Allocator.getUserServices().getUser(), group);
                                 requests.add(request);
                             }
