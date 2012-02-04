@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A {@code GradableEvent} belongs to an {@code Assignment} and is a collection of {@link Part}s. Conceptually a
@@ -138,6 +139,17 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     public String getName()
     {
         return _name;
+    }
+    
+    /**
+     * Returns a convenient human readable string describing this gradable event. The format is "[Assignment Name] - 
+     * [Gradable Event Name]"
+     * 
+     * @return 
+     */
+    public String getFullDisplayName()
+    {
+        return this.getAssignment().getName() + " - " + this.getName();
     }
     
     /**
@@ -285,9 +297,9 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      * @return
      * @throws IOException
      */
-    public List<String> getDigitalHandinNames() throws IOException
+    public Set<String> getDigitalHandinNames() throws IOException
     {
-        ArrayList<String> logins = new ArrayList<String>();
+        Set<String> logins = new HashSet<String>();
         for(File handin : this.getDigitalHandins())
         {
             //Split at the first . in the filename

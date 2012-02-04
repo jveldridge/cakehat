@@ -16,9 +16,7 @@ import org.joda.time.DateTime;
  * @author hdrosen
  */
 public interface DataServices {
-    
-    public enum ValidityCheck {BYPASS, CHECK};
-    
+        
     /**
      * Returns an immutable Set snapshot containing a {@link Student} object for each student in the database at the
      * time {@link DataServicesV5#updateDataCache()} was called. If the database contained no students, an empty Set is
@@ -36,6 +34,17 @@ public interface DataServices {
      * @return
      */
     public Set<Student> getEnabledStudents() throws ServicesException;
+    
+    /**
+     * For each login in the given Set of student logins, adds the corresponding student to the database.  Each
+     * student's name will be determined by (@link UserUtilities#getUserName(java.lang.String)}, and each student's
+     * email address will be automatically generated as login@cs.brown.edu.  Each student will be enabled and without
+     * collaboration policy.  All of these properties can subsequently be changed in the config manager.
+     * 
+     * If any login in the set does not correspond to a student in the student group, a ServicesException will be thrown
+     * and no students will have been added.
+     */
+    public void addStudentsByLogin(Set<String> studentLogins) throws ServicesException;
     
     public void addStudents(Set<DbStudent> students) throws ServicesException;
     

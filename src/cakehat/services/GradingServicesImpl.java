@@ -28,20 +28,33 @@ import cakehat.printing.PrintRequest;
 import cakehat.resources.icons.IconLoader;
 import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
+import cakehat.views.shared.ErrorView;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JScrollPane;
 import support.ui.ModalDialog;
 import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
@@ -180,258 +193,296 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public Collection<String> resolveUnexpectedHandins(Assignment asgn) throws ServicesException {
-        throw new UnsupportedOperationException("Not implemented yet.");
-//        Collection<String> handinNames;
-//        try {
-//            handinNames = asgn.getHandin().getHandinNames();
-//        } catch (IOException e) {
-//            throw new ServicesException("Unable to retrieve handin names for " + asgn.getName(), e);
-//        }
-//
-//        //group project- check that that the name of each handin is either
-//        //the name of some group or the login of a member of some group
-//        if (asgn.hasGroups()) {
-//            Set<String> validNames = new HashSet<String>();
-//
-//            Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
-//            for (Group group : groups) {
-//                validNames.add(group.getName());
-//                validNames.addAll(group.getMemberLogins());
-//            }
-//
-//            Collection<String> badHandins = new LinkedList<String>();
-//            for (String handinName : handinNames) {
-//                if (!validNames.contains(handinName)) {
-//                    badHandins.add(handinName);
-//                }
-//            }
-//
-//            if (!badHandins.isEmpty()) {
-//                String errMsg = "The following handins do not correspond to a group name " +
-//                                "or a group member's login:\n";
-//                for (String handin : badHandins) {
-//                    errMsg += handin + "\n";
-//                }
-//                errMsg += "They will not be available for distribution.";
-//
-//                JOptionPane.showMessageDialog(null, errMsg, "Unexpected Handins", JOptionPane.WARNING_MESSAGE);
-//            }
-//
-//            return badHandins;
-//        }
-//
-//        //not a group project- every handin's name will be a student's login,
-//        //so check that the login corresponding to the name of each handin is
-//        //in the database and enabled
-//        else {
-//            Collection<String> allStudentLogins = new ArrayList<String>();
-//            Collection<String> enabledStudentLogins = new ArrayList<String>();
-//            Collection<Student> students = Allocator.getDataServices().getAllStudents();
-//            for (Student student : students) {
-//                allStudentLogins.add(student.getLogin());
-//                if (student.isEnabled()) {
-//                    enabledStudentLogins.add(student.getLogin());
-//                }
-//            }
-//
-//            Set<String> handinsNotInDB = new HashSet<String>();
-//            Set<String> handinsDisabled = new HashSet<String>();
-//
-//            for (String handinLogin : handinNames) {
-//                if (!allStudentLogins.contains(handinLogin)) {
-//                    handinsNotInDB.add(handinLogin);
-//                }
-//                else if (!enabledStudentLogins.contains(handinLogin)) {
-//                    handinsDisabled.add(handinLogin);
-//                }
-//            }
-//
-//            // if there are no issues then return an list of no logins
-//            if (handinsNotInDB.isEmpty() && handinsDisabled.isEmpty()) {
-//                return Collections.emptyList();
-//            }
-//
-//            JPanel warningPanel = new JPanel();
-//            warningPanel.setLayout(new GridBagLayout());
-//            GridBagConstraints c = new GridBagConstraints();
-//
-//            JLabel explainationText = new JLabel("<html><p>The following students are"
-//                    + " <font color=red>not</font> in the database or are disabled and they"
-//                    + " have handins for: <font color=blue><i>" + asgn.getName() + "</i></font>."
-//                    + " You should consider adding them to the database or enabling them."
-//                    + " If you do not their handins will <font color=red>not</font> be distributed to"
-//                    + " a TA for grading.</p></html>");
-//            explainationText.setPreferredSize(new Dimension(175, 100));
-//
-//            c.fill = GridBagConstraints.HORIZONTAL;
-//            c.gridwidth = 2;
-//            c.gridx = 0;
-//            c.gridy = 0;
-//            warningPanel.add(explainationText, c);
-//
-//            final Collection<IssueResolutionPanel> notInDBPanels = new ArrayList<IssueResolutionPanel>();
-//
-//            if (!handinsNotInDB.isEmpty()) {
-//                JPanel notInDBChoicePanel = new JPanel();
-//                notInDBChoicePanel.setLayout(new GridLayout(0, 1));
-//
-//                c.gridy = 1;
-//                c.insets = new Insets(20, 0, 0, 0);
-//                warningPanel.add(new JLabel("<html><u>Select which students to add to the database:</u></html>"), c);
-//
-//                for (String handinNotInDB : handinsNotInDB) {
-//                    IssueResolutionPanel IRPanel = new IssueResolutionPanel(handinNotInDB, "Add");
-//                    notInDBChoicePanel.add(IRPanel);
-//                    notInDBPanels.add(IRPanel);
-//                }
-//
-//                int scrollHeight = notInDBChoicePanel.getPreferredSize().height > 100 ? 100 : notInDBChoicePanel.getPreferredSize().height;
-//
-//                JScrollPane notInDBScrollPane = new JScrollPane(notInDBChoicePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//                notInDBScrollPane.setPreferredSize(new Dimension(notInDBChoicePanel.getPreferredSize().width, scrollHeight));
-//                notInDBScrollPane.setBorder(BorderFactory.createEmptyBorder());
-//                c.gridy = 2;
-//                c.insets = new Insets(0, 0, 0, 0);
-//                warningPanel.add(notInDBScrollPane, c);
-//            }
-//
-//            final Collection<IssueResolutionPanel> disabledPanels = new ArrayList<IssueResolutionPanel>();
-//
-//            if (!handinsDisabled.isEmpty()) {
-//                JPanel disabledChoicePanel = new JPanel();
-//                disabledChoicePanel.setLayout(new GridLayout(0, 1));
-//
-//                c.gridy = 3;
-//                c.insets = new Insets(20, 0, 0, 0);
-//                warningPanel.add(new JLabel("<html><u>Select which students to enable in the database:</u></html>"), c);
-//
-//                for (String handinDisabled : handinsDisabled) {
-//                    IssueResolutionPanel DPanel = new IssueResolutionPanel(handinDisabled, "Enable");
-//                    disabledChoicePanel.add(DPanel);
-//                    disabledPanels.add(DPanel);
-//                }
-//
-//                int scrollHeight = disabledChoicePanel.getPreferredSize().height > 100 ? 100 : disabledChoicePanel.getPreferredSize().height;
-//
-//                JScrollPane disabledScrollPane = new JScrollPane(disabledChoicePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//                disabledScrollPane.setPreferredSize(new Dimension(disabledChoicePanel.getPreferredSize().width, scrollHeight));
-//                disabledScrollPane.setBorder(BorderFactory.createEmptyBorder());
-//                c.gridy = 4;
-//                c.insets = new Insets(0, 0, 0, 0);
-//                warningPanel.add(disabledScrollPane, c);
-//            }
-//
-//            JPanel allButtonsPanel = new JPanel();
-//            allButtonsPanel.setLayout(new FlowLayout());
-//
-//            JButton changeAllButton = new JButton("Change All");
-//            changeAllButton.addActionListener(new ActionListener() {
-//
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
-//                        notInDBPanel.setAction2Change();
-//                    }
-//                    for (IssueResolutionPanel disabledPanel : disabledPanels) {
-//                        disabledPanel.setAction2Change();
-//                    }
-//                }
-//            });
-//            allButtonsPanel.add(changeAllButton);
-//
-//            JButton ignoreAllButton = new JButton("Ignore All");
-//            ignoreAllButton.addActionListener(new ActionListener() {
-//
-//                public void actionPerformed(ActionEvent e) {
-//                    for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
-//                        notInDBPanel.setAction2Ignore();
-//                    }
-//                    for (IssueResolutionPanel disabledPanel : disabledPanels) {
-//                        disabledPanel.setAction2Ignore();
-//                    }
-//                }
-//            });
-//            allButtonsPanel.add(ignoreAllButton);
-//
-//            c.gridwidth = 1;
-//            c.insets = new Insets(20, 0, 25, 0);
-//            c.gridx = 1;
-//            c.gridy = 5;
-//            warningPanel.add(allButtonsPanel, c);
-//
-//            Object[] options = {"Proceed", "Cancel"};
-//            int doProceed = JOptionPane.showOptionDialog(null, warningPanel, "Resolve Handin Issues", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
-//
-//            if (doProceed == JOptionPane.YES_OPTION) {
-//                for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
-//                    if (notInDBPanel.isChangeSelected()) {
-//                        String studentLogin = notInDBPanel.getStudentLogin();
-//                        Allocator.getDataServices().addStudent(studentLogin, ValidityCheck.CHECK);
-//                        handinsNotInDB.remove(studentLogin);
-//                    }
-//                }
-//
-//                for (IssueResolutionPanel disabledPanel : disabledPanels) {
-//                    if (disabledPanel.isChangeSelected()) {
-//                        String studentLogin = disabledPanel.getStudentLogin();
-//                        try {
-//                            Allocator.getDataServices().setStudentEnabled(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
-//                            handinsDisabled.remove(studentLogin);
-//                        } catch (ServicesException e) {
-//                            new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
-//                        }
-//                    }
-//                }
-//
-//                //create a list of the remaining badlogins
-//                Collection badLogins = new ArrayList();
-//                badLogins.addAll(handinsNotInDB);
-//                badLogins.addAll(handinsDisabled);
-//                return badLogins;
-//            }
-//            return null;
-//        }
+    public Set<String> resolveUnexpectedHandins(GradableEvent ge) throws ServicesException {
+        Set<String> handinNames;
+        try {
+            handinNames = ge.getDigitalHandinNames();
+        } catch (IOException e) {
+            throw new ServicesException("Unable to retrieve handin names for " + ge.getName(), e);
+        }
+         if (ge.getAssignment().hasGroups()) {
+             return this.resolveUnexpectedHandinsForGroupAssignment(ge, handinNames);
+         }
+         else {
+             return this.resolveUnexpectedHandinsForNonGroupAssignment(ge, handinNames);
+         }
+    }
+    
+    private Set<String> resolveUnexpectedHandinsForGroupAssignment(GradableEvent ge, Set<String> handinNames) throws ServicesException {
+        //check that each group for the assignment has at least one enabled student
+        Set<Student> enabledStudents = Allocator.getDataServices().getEnabledStudents();
+        Set<Group> distributableGroups = new HashSet<Group>(Allocator.getDataServices().getGroups(ge.getAssignment()));
+        Set<Group> nonDistributableGroups = new HashSet<Group>();
+        
+        for (Group group : distributableGroups) {
+            boolean hasEnabledStudent = false;
+            
+            for (Student student : group) {
+                if (enabledStudents.contains(student)) {
+                    hasEnabledStudent = true;
+                    break;
+                }
+            }
+            
+            if (!hasEnabledStudent) {
+                nonDistributableGroups.add(group);
+            }
+        }
+        
+        if (!nonDistributableGroups.isEmpty()) {
+            StringBuilder warnMsg = new StringBuilder("The following groups contain no enabled students.  They will "
+                    + "not be available for distribution.");
+            for (Group group : nonDistributableGroups) {
+                warnMsg.append(" - ").append(group).append('\n');
+            }
+            
+            boolean proceed  = ModalDialog.showConfirmation("Non-distributable groups", warnMsg.toString(), "Proceed",
+                                                            "Cancel");
+            if (!proceed) {
+                return null;
+            }
+        }
+        
+        //check that that the name of each handin is either the name of some distributable group or the login of a
+        //member of some distributable group
+        Set<String> validNames = new HashSet<String>();
+        for (Group group : distributableGroups) {
+            validNames.add(group.getName());
+
+            for (Student student : group) {
+                validNames.add(student.getLogin());
+            }
+            
+        }
+        
+        Set<String> badHandins = new HashSet<String>();
+        for (String handinName : handinNames) {
+            if (!validNames.contains(handinName)) {
+                badHandins.add(handinName);
+            }
+        }
+
+        if (!badHandins.isEmpty()) {
+            StringBuilder warnMsg = new StringBuilder("The following handins do not correspond to a group name or a "
+                    + "group member's login:\n");
+            for (String handin : badHandins) {
+                warnMsg.append(handin).append('\n');
+            }
+            warnMsg.append("They will not be available for distribution.");
+            
+            boolean proceed = ModalDialog.showConfirmation("Unexpected Handins", warnMsg.toString(), "Proceed", "Cancel");
+            if (!proceed) {
+                return null;
+            }
+        }
+
+        return badHandins;
+    }
+    
+    private Set<String> resolveUnexpectedHandinsForNonGroupAssignment(GradableEvent ge, Set<String> handinNames)
+            throws ServicesException {
+        //every handin's name will be a student's login, so check that the login corresponding to the name of each 
+        //handin is in the database and enabled
+        
+        Set<Student> students = Allocator.getDataServices().getStudents();
+        Set<Student> enabledStudents = Allocator.getDataServices().getEnabledStudents();
+        Set<String> allStudentLogins = new HashSet<String>();
+        Set<String> enabledStudentLogins = new HashSet<String>();
+        
+        for (Student student : students) {
+            allStudentLogins.add(student.getLogin());
+        }
+        
+        for (Student enabledStudent : enabledStudents) {
+            enabledStudentLogins.add(enabledStudent.getLogin());
+        }
+
+        Set<String> handinsNotInDB = new HashSet<String>();
+        Set<String> handinsDisabled = new HashSet<String>();
+
+        for (String handinLogin : handinNames) {
+            if (!allStudentLogins.contains(handinLogin)) {
+                handinsNotInDB.add(handinLogin);
+            }
+            else if (!enabledStudentLogins.contains(handinLogin)) {
+                handinsDisabled.add(handinLogin);
+            }
+        }
+
+        // if there are no issues then return a set of no logins
+        if (handinsNotInDB.isEmpty() && handinsDisabled.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        JPanel warningPanel = new JPanel();
+        warningPanel.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+
+        JLabel explainationText = new JLabel("<html><p>The following students are"
+                + " <font color=red>not</font> in the database or are disabled and they"
+                + " have handins for: <font color=blue><i>" + ge.getFullDisplayName() + "</i></font>."
+                + " You should consider adding them to the database or enabling them."
+                + " If you do not their handins will <font color=red>not</font> be distributed to"
+                + " a TA for grading.</p></html>");
+        explainationText.setPreferredSize(new Dimension(175, 100));
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridwidth = 2;
+        c.gridx = 0;
+        c.gridy = 0;
+        warningPanel.add(explainationText, c);
+
+        final Collection<IssueResolutionPanel> notInDBPanels = new ArrayList<IssueResolutionPanel>();
+
+        if (!handinsNotInDB.isEmpty()) {
+            JPanel notInDBChoicePanel = new JPanel();
+            notInDBChoicePanel.setLayout(new GridLayout(0, 1));
+
+            c.gridy = 1;
+            c.insets = new Insets(20, 0, 0, 0);
+            warningPanel.add(new JLabel("<html><u>Select which students to add to the database:</u></html>"), c);
+
+            for (String handinNotInDB : handinsNotInDB) {
+                IssueResolutionPanel iRPanel = new IssueResolutionPanel(handinNotInDB, "Add");
+                notInDBChoicePanel.add(iRPanel);
+                notInDBPanels.add(iRPanel);
+            }
+
+            int scrollHeight = notInDBChoicePanel.getPreferredSize().height > 100 ? 100 : notInDBChoicePanel.getPreferredSize().height;
+
+            JScrollPane notInDBScrollPane = new JScrollPane(notInDBChoicePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            notInDBScrollPane.setPreferredSize(new Dimension(notInDBChoicePanel.getPreferredSize().width, scrollHeight));
+            notInDBScrollPane.setBorder(BorderFactory.createEmptyBorder());
+            c.gridy = 2;
+            c.insets = new Insets(0, 0, 0, 0);
+            warningPanel.add(notInDBScrollPane, c);
+        }
+
+        final Collection<IssueResolutionPanel> disabledPanels = new ArrayList<IssueResolutionPanel>();
+
+        if (!handinsDisabled.isEmpty()) {
+            JPanel disabledChoicePanel = new JPanel();
+            disabledChoicePanel.setLayout(new GridLayout(0, 1));
+
+            c.gridy = 3;
+            c.insets = new Insets(20, 0, 0, 0);
+            warningPanel.add(new JLabel("<html><u>Select which students to enable in the database:</u></html>"), c);
+
+            for (String handinDisabled : handinsDisabled) {
+                IssueResolutionPanel DPanel = new IssueResolutionPanel(handinDisabled, "Enable");
+                disabledChoicePanel.add(DPanel);
+                disabledPanels.add(DPanel);
+            }
+
+            int scrollHeight = disabledChoicePanel.getPreferredSize().height > 100 ? 100 : disabledChoicePanel.getPreferredSize().height;
+
+            JScrollPane disabledScrollPane = new JScrollPane(disabledChoicePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            disabledScrollPane.setPreferredSize(new Dimension(disabledChoicePanel.getPreferredSize().width, scrollHeight));
+            disabledScrollPane.setBorder(BorderFactory.createEmptyBorder());
+            c.gridy = 4;
+            c.insets = new Insets(0, 0, 0, 0);
+            warningPanel.add(disabledScrollPane, c);
+        }
+
+        JPanel allButtonsPanel = new JPanel();
+        allButtonsPanel.setLayout(new FlowLayout());
+
+        JButton changeAllButton = new JButton("Change All");
+        changeAllButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
+                    notInDBPanel.setActionToChange();
+                }
+                for (IssueResolutionPanel disabledPanel : disabledPanels) {
+                    disabledPanel.setActionToChange();
+                }
+            }
+        });
+        allButtonsPanel.add(changeAllButton);
+
+        JButton ignoreAllButton = new JButton("Ignore All");
+        ignoreAllButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
+                    notInDBPanel.setAction2Ignore();
+                }
+                for (IssueResolutionPanel disabledPanel : disabledPanels) {
+                    disabledPanel.setAction2Ignore();
+                }
+            }
+        });
+        allButtonsPanel.add(ignoreAllButton);
+
+        c.gridwidth = 1;
+        c.insets = new Insets(20, 0, 25, 0);
+        c.gridx = 1;
+        c.gridy = 5;
+        warningPanel.add(allButtonsPanel, c);
+
+        Object[] options = {"Proceed", "Cancel"};
+        int doProceed = JOptionPane.showOptionDialog(null, warningPanel, "Resolve Handin Issues", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+
+        if (doProceed == JOptionPane.YES_OPTION) {
+            Set<String> loginsToAdd = new HashSet<String>();
+            for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
+                if (notInDBPanel.isChangeSelected()) {
+                    String studentLogin = notInDBPanel.getStudentLogin();
+                    loginsToAdd.add(studentLogin);
+                    handinsNotInDB.remove(studentLogin);
+                }
+            }
+            if (!loginsToAdd.isEmpty()) {
+                Allocator.getDataServices().addStudentsByLogin(loginsToAdd);
+            }
+
+            for (IssueResolutionPanel disabledPanel : disabledPanels) {
+                if (disabledPanel.isChangeSelected()) {
+                    String studentLogin = disabledPanel.getStudentLogin();
+                    try {
+                        Allocator.getDataServices().setStudentEnabled(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
+                        handinsDisabled.remove(studentLogin);
+                    } catch (ServicesException e) {
+                        new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
+                    }
+                }
+            }
+
+            //create a list of the remaining bad handin names
+            Set<String> badHandinNames = new HashSet<String>();
+            badHandinNames.addAll(handinsNotInDB);
+            badHandinNames.addAll(handinsDisabled);
+            return badHandinNames;
+        }
+        return null;
     }
 
     @Override
-    public Map<String, Group> getGroupsForHandins(Assignment asgn, Collection<String> handinsToIgnore) throws ServicesException {
-        throw new UnsupportedOperationException("Not implemented yet.");
-//        Collection<String> handinNames;
-//        try {
-//            handinNames = asgn.getHandin().getHandinNames();
-//        } catch (IOException e) {
-//            throw new ServicesException("Unable to retrieve handin names", e);
-//        }
-//
-//        handinNames.removeAll(handinsToIgnore);
-//
-//        Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
-//        Map<String, Group> nameToGroup = new HashMap<String, Group>();
-//        Map<String, Group> loginToGroup = new HashMap<String, Group>();
-//        for (Group group : groups) {
-//            nameToGroup.put(group.getName(), group);
-//
-//            for (Student member : group.getMembers()) {
-//                loginToGroup.put(member.getLogin(), group);
-//            }
-//        }
-//
-//        Map<String, Group> toReturn = new HashMap<String, Group>();
-//
-//        for (String handinName : handinNames) {
-//            if (nameToGroup.containsKey(handinName)) {
-//                toReturn.put(handinName, nameToGroup.get(handinName));
-//            }
-//            else if (loginToGroup.containsKey(handinName)) {
-//                toReturn.put(handinName, loginToGroup.get(handinName));
-//            }
-//            else {
-//                throw new ServicesException("There is no group corresponding to the handin named " + handinName + ".");
-//            }
-//        }
-//
-//        return toReturn;
+    public Map<String, Group> getGroupsForHandins(GradableEvent ge, Set<String> handinNames) throws ServicesException {
+        Collection<Group> groups = Allocator.getDataServices().getGroups(ge.getAssignment());
+        Map<String, Group> validNamesToGroup = new HashMap<String, Group>();
+        for (Group group : groups) {
+            validNamesToGroup.put(group.getName(), group);
+
+            for (Student member : group) {
+                validNamesToGroup.put(member.getLogin(), group);
+            }
+        }
+
+        Map<String, Group> toReturn = new HashMap<String, Group>();
+
+        for (String handinName : handinNames) {
+            if (validNamesToGroup.containsKey(handinName)) {
+                toReturn.put(handinName, validNamesToGroup.get(handinName));
+            }
+            else {
+                throw new ServicesException("There is no group corresponding to the handin named " + handinName + ".");
+            }
+        }
+
+        return toReturn;
     }
 
     @Override
@@ -440,7 +491,7 @@ public class GradingServicesImpl implements GradingServices
 
         Map<Student, Group> studentToGroup = new HashMap<Student, Group>();
         for (Group group : groups) {
-            for (Student member : group.getMembers()) {
+            for (Student member : group) {
                 studentToGroup.put(member, group);
             }
         }
@@ -666,7 +717,7 @@ public class GradingServicesImpl implements GradingServices
             return _changeButton.isSelected();
         }
 
-        public void setAction2Change()
+        public void setActionToChange()
         {
             _changeButton.setSelected(true);
             _ignoreButton.setSelected(false);
