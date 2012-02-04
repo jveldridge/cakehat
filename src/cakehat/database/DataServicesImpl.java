@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.joda.time.DateTime;
+import support.utils.Pair;
 import support.utils.posix.NativeException;
 
 /**
@@ -272,6 +273,48 @@ public class DataServicesImpl implements DataServices {
         } catch (SQLException ex) {
             throw new ServicesException("Could not store the score for group [" + group.getName() + "]"
                     + " on part " + part.getName() + "].", ex);
+        }
+    }
+
+    @Override
+    public void setEarned(Part part, Map<Group, Pair<Double, Boolean>> earned) throws ServicesException
+    {
+        Map<Integer, Pair<Double, Boolean>> earnedWithIds = new HashMap<Integer, Pair<Double, Boolean>>();
+        for(Entry<Group, Pair<Double, Boolean>> entry : earned.entrySet())
+        {
+            earnedWithIds.put(entry.getKey().getId(), entry.getValue());
+        }
+        
+        try
+        {
+            Allocator.getDatabase().setEarned(part.getId(), Allocator.getUserUtilities().getUserId(),
+                    new DateTime().toString(), earnedWithIds);
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Could not store earned for part: " + part.getFullDisplayName() +" for " +
+                    "groups: " + earned.keySet(), e);
+        }
+    }
+
+    @Override
+    public void setEarnedSubmitted(Part part, Map<Group, Boolean> submitted) throws ServicesException
+    {
+        Map<Integer, Boolean> submittedWithIds = new HashMap<Integer, Boolean>();
+        for(Entry<Group, Boolean> entry : submitted.entrySet())
+        {
+            submittedWithIds.put(entry.getKey().getId(), entry.getValue());
+        }
+        
+        try
+        {
+            Allocator.getDatabase().setEarnedSubmitted(part.getId(), Allocator.getUserUtilities().getUserId(),
+                    new DateTime().toString(), submittedWithIds);
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Could not store submitted status for part: " + part.getFullDisplayName() +
+                    " for  groups: " + submitted.keySet(), e);
         }
     }
 

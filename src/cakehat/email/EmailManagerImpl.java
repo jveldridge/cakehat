@@ -3,6 +3,7 @@ package cakehat.email;
 import cakehat.Allocator;
 import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.database.DbNotifyAddress;
+import cakehat.database.DbPropertyValue;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
@@ -36,8 +37,10 @@ public class EmailManagerImpl implements EmailManager
         EmailAccountStatus status;
         try
         {
-            String emailLogin = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT).getValue();
-            String emailPassword = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD).getValue();
+            DbPropertyValue<String> accountProp = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT);
+            DbPropertyValue<String> passwordProp = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_PASSWORD);
+            String emailLogin = accountProp == null ? null : accountProp.getValue();
+            String emailPassword = passwordProp == null ? null : passwordProp.getValue();
                     
             if(emailLogin == null || emailLogin.isEmpty() || emailPassword == null || emailPassword.isEmpty())
             {

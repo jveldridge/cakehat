@@ -11,18 +11,26 @@ import cakehat.database.Group;
 public class MissingHandinException extends Exception
 {
     private final Group _group;
+    private final Part _part;
 
-    MissingHandinException(Group group)
+    MissingHandinException(Group group, Part part)
     {
-        super("The handin for " + (group.getAssignment().hasGroups() ? "group" : "student") + " [" + group.getName() +
-              "] could not be found. This could because the file was moved, you do not have access to the file, or " +
-              "there is an issue with the file system.");
+        super("The digital handin for " + (group.getAssignment().hasGroups() ? "group" : "student") + " [" + 
+              group.getName() + "] could not be found for part [" + part.getFullDisplayName() + "]. This could be " +
+              "because the file was moved, you do not have access to the file, or there is an issue with the file " +
+              "system.");
 
         _group = group;
+        _part = part;
     }
 
     public Group getGroup()
     {
         return _group;
+    }
+    
+    public Part getPart()
+    {
+        return _part;
     }
 }

@@ -30,7 +30,7 @@ class GradeRecord {
         return _taId;
     }
     
-    public double getEarned() {
+    public Double getEarned() {
         return _earned;
     }
     

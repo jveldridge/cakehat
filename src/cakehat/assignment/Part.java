@@ -611,7 +611,7 @@ public class Part implements Comparable<Part>
             //Because the handins are cached, check it still exists
             if(handin == null || !handin.exists())
             {
-                throw new MissingHandinException(group);
+                throw new MissingHandinException(group, this);
             }
             else
             {
@@ -736,7 +736,7 @@ public class Part implements Comparable<Part>
                 //Because the handins are cached, check it still exists
                 if(handin == null || !handin.exists())
                 {
-                    throw new MissingHandinException(group);
+                    throw new MissingHandinException(group, this);
                 }
 
                 try
