@@ -88,7 +88,7 @@ public class EnscriptPrintingService extends PrintingService
 
         for(File file : request.getFiles())
         {
-            text += getHeader(file, request.getHeaderString());
+            text += getHeader(file, request.getParentPathToHide());
             text += "\n";
             text += "\n";
 
@@ -101,18 +101,19 @@ public class EnscriptPrintingService extends PrintingService
     }
 
     /**
-     * Creates a header for a file. Based on the filepath of file, but removes
-     * everything up to the student login directory that their code exists in.
+     * Creates a header for a file. Based on the filepath of file, but removes the parent path to hide if it exists.
      *
      * @param file
      * @param studentLogin
      * @return
      */
-    private String getHeader(File file, String studentLogin)
+    private String getHeader(File file, File parentPathToHide)
     {
         String filePath = file.getAbsolutePath();
-        int index = filePath.indexOf(studentLogin);
-        filePath = filePath.substring(index + studentLogin.length());
+        if(parentPathToHide != null)
+        {
+            filePath = filePath.substring(parentPathToHide.getAbsolutePath().length());
+        }
 
         String header = "";
         header += "/------------------------------------------------------ \n";
