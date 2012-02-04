@@ -438,7 +438,7 @@ class ActionsPanel extends JPanel
 
     private void manualDistributorButtonActionPerformed()
     {
-        ModalDialog.showMessage("Unavailable", "Not Yet Implemented");
+        new ManualDistributorView(_treeSelection.getPart()).setVisible(true);
     }
 
     private void viewGradingGuideButtonActionPerformed()

@@ -134,21 +134,6 @@ public interface DataServices {
      * @throws ServicesException 
      */
     public void setDistribution(Map<Part, Map<TA, Collection<Group>>> distribution) throws ServicesException;
-    
-    /**
-     * Assigns the given Group to the given TA to grade for the given Part. If the group is already assigned to the TA
-     * for the Part, this method has no effect. The Group will first be unassigned from any TA to which it has
-     * previously been assigned for the Part. If the TA is {@code null} the Group will not be assigned to any TA.
-     * <br/><br/>
-     * For efficiency reasons this method should not be used create an initial automated distribution. For that purpose,
-     * use {@link #setDistribution(java.util.Map)}.
-     * 
-     * @param group
-     * @param part
-     * @param ta
-     * @throws ServicesException
-     */
-    public void assignGroup(Group group, Part part, TA ta) throws ServicesException;
 
     /**
      * Returns a Collection of Groups that the given TA is assigned to grade for
@@ -195,10 +180,13 @@ public interface DataServices {
      * @throws ServicesException
      */
     public TA getGrader(Part part, Group group) throws ServicesException;
- 
+
     /**
      * Sets the TA who has been assigned to grade the given Group and  Part. Pass {@code ta} as {@code null} to
-     * have the given group and part be unassigned.
+     * have the given group and part be unassigned.  This overwrites any existing assignment for the group for the part.
+     * <br/><br/>
+     * For efficiency reasons this method should not be used create an initial automated distribution. For that purpose,
+     * use {@link #setDistribution(java.util.Map)}.
      * 
      * @param part
      * @param group

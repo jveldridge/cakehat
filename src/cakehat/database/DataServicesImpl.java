@@ -687,16 +687,6 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public void assignGroup(Group group, Part part, TA ta) throws ServicesException {
-        try {
-            Allocator.getDatabase().assignGroup(group.getId(), part.getId(), ta.getId());
-        } catch (SQLException ex) {
-            throw new ServicesException("Group [" + group + "] could not be assigned "
-                    + "to TA [" + ta + "] on part [" + part + "].", ex);
-        }
-    }
-
-    @Override
     public Collection<Group> getAssignedGroups(Part part, TA ta) throws ServicesException {
         Collection<Integer> groupIDs;
         try {
