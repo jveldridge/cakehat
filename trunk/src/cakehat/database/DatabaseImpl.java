@@ -183,7 +183,7 @@ public class DatabaseImpl implements Database
                 value.setId(id);
             }
             else {
-                ps = conn.prepareStatement("UPDATE courseproperties value = ? WHERE cpid == ?");
+                ps = conn.prepareStatement("UPDATE courseproperties SET value = ? WHERE cpid == ?");
                 key.setValue(ps, 1, value.getValue());
                 ps.setInt(2, value.getId());
                 ps.executeUpdate();

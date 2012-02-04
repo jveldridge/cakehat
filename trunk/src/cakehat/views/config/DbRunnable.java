@@ -1,6 +1,7 @@
 package cakehat.views.config;
 
 import cakehat.database.DbDataItem;
+import cakehat.views.shared.ErrorView;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ abstract class DbRunnable implements Runnable
             dbCall();
         }
         //If the database call(s) fails
-        catch(SQLException e)
+        catch(final SQLException e)
         {
             //If the worker is still taking submissions - if it's not that means the configuration manager is closing
             //If this update task has been placed on the queue again then the update will be tried again so there's no
@@ -54,6 +55,7 @@ abstract class DbRunnable implements Runnable
                     {
                         public void run()
                         {
+                            new ErrorView(e, "Database call failed");
                             onDbCallFailure();
                         }
                     });
@@ -67,6 +69,7 @@ abstract class DbRunnable implements Runnable
                     {
                         public void run()
                         {
+                            new ErrorView(e, "Database call failed");
                             onFinalFailureLater();
                         }
                     });
@@ -80,6 +83,7 @@ abstract class DbRunnable implements Runnable
                     {
                         public void run()
                         {
+                            new ErrorView(e, "Database call failed");
                             onFinalFailureLater();
                         }
                     });
