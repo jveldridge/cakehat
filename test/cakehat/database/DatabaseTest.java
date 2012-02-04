@@ -886,8 +886,7 @@ public class DatabaseTest {
                                                         wrapper._dbGroup2.getId()), 
                                        assignedGroupsFB);
         
-        _database.unassignGroup(wrapper._dbGroup1.getId(), 
-                                wrapper._part1.getId(), wrapper._taId2);
+        _database.unassignGroup(wrapper._dbGroup1.getId(), wrapper._part1.getId());
         assertEquals(null, _database.getGrader(wrapper._part1.getId(), wrapper._dbGroup1.getId()));
         assertEquals(true, _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId2).isEmpty());
         assertEquals(true, _database.getPartsWithAssignedGroups(wrapper._taId2).isEmpty());

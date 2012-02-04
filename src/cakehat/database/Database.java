@@ -238,8 +238,7 @@ public interface Database
      * @param partID
      * @param taID
      */
-    public void unassignGroup(int groupID, int partID, int taID) 
-                                                        throws SQLException;
+    public void unassignGroup(int groupID, int partID) throws SQLException;
 
     /**
      * Returns an ImmutableSet of IDs for the groups that the given TA has been 
