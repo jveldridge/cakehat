@@ -134,8 +134,9 @@ public interface GradingServices
 
     /**
      * Return value maps a handin name to the Group corresponding to that handin for the given gradable event and handin
-     * names.  This code assumes that {@link #resolveUnexpectedHandins(GradableEvent)} has already been used to ensure
-     * that all handin names in the given Set are in fact for a group valid for the Assignment.  If this is not the case,
+     * names.  Will not attempt to determine a group for handins in handinsToIgnore.  This code assumes that
+     * {@link #resolveUnexpectedHandins(GradableEvent)} has already been used to ensure that all handin names not in the
+     * the given Set of handins to ignore are in fact for a group valid for the Assignment.  If this is not the case,
      * a ServicesException will be thrown.
      * 
      * @param ge
@@ -144,7 +145,7 @@ public interface GradingServices
      * @throws ServicesException
      */
     public Map<String, Group> getGroupsForHandins(GradableEvent ge,
-                                                  Set<String> handinNames) throws ServicesException;
+                                                  Set<String> handinsToIgnore) throws ServicesException;
 
     /**
      * Return value maps a Student object to the Group object for that student on

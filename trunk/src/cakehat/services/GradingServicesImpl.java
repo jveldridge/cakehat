@@ -460,7 +460,15 @@ public class GradingServicesImpl implements GradingServices
     }
 
     @Override
-    public Map<String, Group> getGroupsForHandins(GradableEvent ge, Set<String> handinNames) throws ServicesException {
+    public Map<String, Group> getGroupsForHandins(GradableEvent ge, Set<String> handinsToIgnore) throws ServicesException {
+        Set<String> handinNames;
+        try {
+            handinNames = new HashSet<String>(ge.getDigitalHandinNames());
+        } catch (IOException e) {
+            throw new ServicesException("Unable to retrieve handin names for " + ge.getName(), e);
+        }
+        handinNames.removeAll(handinsToIgnore);
+        
         Collection<Group> groups = Allocator.getDataServices().getGroups(ge.getAssignment());
         Map<String, Group> validNamesToGroup = new HashMap<String, Group>();
         for (Group group : groups) {
