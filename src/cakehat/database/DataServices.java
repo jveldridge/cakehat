@@ -37,6 +37,8 @@ public interface DataServices {
      */
     public Set<Student> getEnabledStudents() throws ServicesException;
     
+    public void addStudents(Set<DbStudent> students) throws ServicesException;
+    
     /**
      * Sets the given Student's enabled status.  Students are enabled by default,
      * but students who have dropped the course should be disabled.  Disabled students

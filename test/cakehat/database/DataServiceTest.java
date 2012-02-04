@@ -10,6 +10,7 @@ import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -118,6 +119,19 @@ public class DataServiceTest {
         
         this.assertStudentEqual(dbstudent1, _dataService.getStudentFromLogin(dbstudent1.getLogin()));
         assertEquals(null, _dataService.getStudentFromLogin("imaginary login"));
+    }
+    
+    @Test
+    public void testAddSingleStudent() throws ServicesException {
+        DbStudent toAdd = new DbStudent("login", "first", "last", "email");
+        _dataService.addStudents(ImmutableSet.of(toAdd));
+        assertNotNull(toAdd.getId());
+        
+        Set<Student> students = _dataService.getStudents();
+        assertEquals(1, students.size());
+        Student student = Iterables.get(students, 0);
+        
+        assertStudentEqual(toAdd, student);
     }
     
     @Test

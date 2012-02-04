@@ -128,6 +128,33 @@ public class DataServicesImpl implements DataServices {
     public Set<Student> getEnabledStudents() throws ServicesException {
         return Collections.unmodifiableSet(_enabledStudents);
     }
+    
+    @Override
+    public void addStudents(Set<DbStudent> students) throws ServicesException {
+        for (DbStudent student : students) {
+            if (student.getId() != null) {
+                throw new RuntimeException("Student [" + student + "] already has an ID set, and thus cannot be added " +
+                                           "to the database.  No students have been added.");
+            }
+            if (!student.isEnabled()) {
+                throw new RuntimeException("Student [" + student + "] is not enabled, and thus cannot be added " +
+                                           "to the database.  No students have been added.");
+            }
+        }
+        try {
+            Allocator.getDatabase().putStudents(students);
+            
+            //update the cache
+            for (DbStudent dbStudent : students) {
+                Student newStudent = new Student(dbStudent);
+                _studentIdMap.put(newStudent.getId(), newStudent);
+                _studentLoginMap.put(newStudent.getLogin(), newStudent);
+                _enabledStudents.add(newStudent);
+            }
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not add students to the database.", ex);
+        }
+    }
 
     @Override
     public TA getGrader(Part part, Group group) throws ServicesException {
