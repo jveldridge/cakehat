@@ -615,6 +615,8 @@ class ActionsPanel extends JPanel
     {
         ModalDialog.showMessage("Digital Handin Missing",
                 "The handin for " + ex.getGroup().getName() + " can no longer be found");
+        ex.getPart().getGradableEvent().clearDigitalHandinCache();
+        notifySelectionChanged(_treeSelection, _selectedGroups, _selectedStudentsNotInGroups);
     }
     
     private static class ActionButton extends JButton

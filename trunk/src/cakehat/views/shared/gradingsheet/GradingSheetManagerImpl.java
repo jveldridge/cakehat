@@ -1,9 +1,11 @@
 package cakehat.views.shared.gradingsheet;
 
+import cakehat.Allocator;
 import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
+import java.awt.EventQueue;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ public class GradingSheetManagerImpl implements GradingSheetManager
         GradingSheetFrame frame = _openGradingSheetFrames.get(pair);
         if(frame != null)
         {
+            frame.setLocationRelativeTo(Allocator.getGeneralUtilities().getFocusedFrame());
             frame.toFront();
         }
         else
@@ -49,12 +52,22 @@ public class GradingSheetManagerImpl implements GradingSheetManager
                 @Override
                 public void windowClosed(WindowEvent we)
                 {
-                    GradingSheetFrame frame = _openGradingSheetFrames.get(pair);
+                    final GradingSheetFrame frame = _openGradingSheetFrames.get(pair);
                     _openGradingSheetFrames.remove(pair);
-                    frame.save();
+                    
+                    //Wait for the grading sheet to lose focus, causing any last change to be applied, then save
+                    EventQueue.invokeLater(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            frame.save();
+                        }
+                    });
                 }
             });
             
+            frame.setLocationRelativeTo(Allocator.getGeneralUtilities().getFocusedFrame());
             frame.setVisible(true);
         }
         

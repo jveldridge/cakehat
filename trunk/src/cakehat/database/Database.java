@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import support.utils.Pair;
 
 /**
  *
@@ -303,6 +304,12 @@ public interface Database
      */
     public void setEarned(int groupID, int partID, int taID, Double earned,
                     boolean submitted, String dateRecorded) throws SQLException;
+    
+    public void setEarned(int partId, int taId, String dateRecorded, Map<Integer, Pair<Double, Boolean>> earned)
+            throws SQLException;
+    
+    public void setEarnedSubmitted(int partId, int taId, String dateRecorded, Map<Integer, Boolean> submitted)
+            throws SQLException;
 
     /**
      * Returns a GradeRecord object containing the grade information of the 

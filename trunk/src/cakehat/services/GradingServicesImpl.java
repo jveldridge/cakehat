@@ -581,19 +581,20 @@ public class GradingServicesImpl implements GradingServices
             }
         }
     }
-    
-    private Map<Student, File> generateGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
+
+    @Override
+    public Map<Student, File> generateGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
     {
         //Validate all groups belong to the assignment
         for(Group group : groups)
         {
-            if(group.getAssignment().equals(asgn))
+            if(!group.getAssignment().equals(asgn))
             {
                 throw new ServicesException(group.getName() + " does not belong to assignment " + asgn.getName());
             }
         }
         
-        //Figure out grades have not been submitted
+        //Determine which grades have not been submitted
         Multimap<Group, Part> groupsWithNonSubmittedGrades = HashMultimap.create();
         for(GradableEvent ge : asgn)
         {

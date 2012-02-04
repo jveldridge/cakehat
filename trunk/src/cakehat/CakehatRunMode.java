@@ -3,7 +3,7 @@ package cakehat;
 import cakehat.views.admin.AdminView;
 import cakehat.views.config.ConfigManagerView;
 import cakehat.views.entergrade.EnterGradeCLI;
-//import cakehat.views.grader.GraderView;
+import cakehat.views.grader.GraderView;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +84,7 @@ public enum CakehatRunMode
     {
         if(this == GRADER)
         {
-//            GraderView.launch(isSSH);
+            GraderView.launch(isSSH);
         }
         else if(this == ADMIN)
         {

@@ -6,6 +6,7 @@ import cakehat.database.TA;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.printing.CITPrinter;
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,13 @@ public interface GradingServices
      */
     public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException;
     
+    /**
+     * Generates GRD files (plain text files with a .txt file extension) for each member of each group. The user will
+     * be notified if they want to proceed with creating GRD files if a group has a part that lacks a submitted grade.
+     * If the user chooses not to proceed, then the map will be empty. The map will contain a mapping from the student
+     * to the GRD file created.
+     */
+    public Map<Student, File> generateGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException;
 
     /**
      * Prompts the user to a select a printer.

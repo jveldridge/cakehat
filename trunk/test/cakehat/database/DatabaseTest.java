@@ -442,7 +442,7 @@ public class DatabaseTest {
         public void assertEqual(GradeRecord t1, GradeRecord t2) {
             assertEquals(t1.isSubmitted(), t2.isSubmitted());
             assertEquals(t1.getDateRecorded(), t2.getDateRecorded());
-            assertEquals(t1.getEarned(), t2.getEarned(), 10E-10);
+            assertEquals(t1.getEarned(), t2.getEarned());
             assertEquals(t1.getTAId(), t2.getTAId());
         }
     };

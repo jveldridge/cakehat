@@ -23,8 +23,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.sqlite.SQLiteConfig;
+import support.utils.Pair;
 
 /**
  *
@@ -1318,6 +1320,65 @@ public class DatabaseImpl implements Database
             ps.setString(6, dateRecorded);
             
             ps.executeUpdate();
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void setEarned(int partId, int taId, String dateRecorded, Map<Integer, Pair<Double, Boolean>> earned)
+            throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
+                + "('agid', 'pid', 'tid', 'earned', 'submitted', 'daterecorded')"
+                + " VALUES (?, ?, ?, ?, ?, ?)");
+            
+            for (Entry<Integer, Pair<Double, Boolean>> entry : earned.entrySet()) {
+                ps.setInt(1, entry.getKey());
+                ps.setInt(2, partId);
+                ps.setInt(3, taId);
+                this.setDouble(ps, 4, entry.getValue().getFirst());
+                ps.setBoolean(5, entry.getValue().getSecond());
+                ps.setString(6, dateRecorded);
+                ps.addBatch();
+            }
+            
+            ps.executeBatch();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void setEarnedSubmitted(int partId, int taId, String dateRecorded, Map<Integer, Boolean> submitted)
+            throws SQLException {
+        Connection conn = this.openConnection();
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
+                + "('agid', 'pid', 'tid', 'submitted', 'daterecorded')"
+                + " VALUES (?, ?, ?, ?, ?)");
+            
+            for (Entry<Integer, Boolean> entry : submitted.entrySet()) {
+                ps.setInt(1, entry.getKey());
+                ps.setInt(2, partId);
+                ps.setInt(3, taId);
+                ps.setBoolean(4, entry.getValue());
+                ps.setString(5, dateRecorded);
+                ps.addBatch();
+            }
+            
+            ps.executeBatch();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
         } finally {
             this.closeConnection(conn);
         }
