@@ -92,9 +92,16 @@ public class Allocator
 
         public T getInstance()
         {
+            //Perform double-checked locking (DCL) - it's not ideal but it does work as expected
             if(_instance == null)
             {
-                _instance = this.allocate();
+                synchronized(this)
+                {
+                    if(_instance == null)
+                    {
+                        _instance = this.allocate();
+                    }
+                }
             }
 
             return _instance;
