@@ -433,7 +433,7 @@ class ActionsPanel extends JPanel
     
     private void autoDistributorButtonActionPerformed()
     {
-        ModalDialog.showMessage("Unavailable", "Not Yet Implemented");
+        new AutomaticDistributorView(_treeSelection.getGradableEvent()).setVisible(true);
     }
 
     private void manualDistributorButtonActionPerformed()

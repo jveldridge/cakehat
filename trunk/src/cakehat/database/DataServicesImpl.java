@@ -56,6 +56,7 @@ public class DataServicesImpl implements DataServices {
     private Map<Integer, Map<Integer, Group>> _groupsCache = new ConcurrentHashMap<Integer, Map<Integer, Group>>();
     
     private final ImmutableSet<TA> _tas;
+    private final ImmutableSet<TA> _defaultGraders;
     private final ImmutableMap<Integer, TA> _taIdMap;
     
     private final ImmutableList<Assignment> _assignments;
@@ -94,15 +95,21 @@ public class DataServicesImpl implements DataServices {
             //TAs
             ImmutableSet.Builder<TA> tasBuilder = ImmutableSet.builder();
             ImmutableMap.Builder<Integer, TA> taIdMapBuilder = ImmutableMap.builder();
+            ImmutableSet.Builder<TA> defaultGradersBuilder = ImmutableSet.builder();
             Set<DbTA> dbTAs = Allocator.getDatabase().getTAs();
             for(DbTA ta : dbTAs)
             {
                 TA toAdd = new TA(ta);
                 tasBuilder.add(toAdd);
                 taIdMapBuilder.put(toAdd.getId(), toAdd);
+                
+                if (toAdd.isDefaultGrader()) {
+                    defaultGradersBuilder.add(toAdd);
+                }
             }
             _tas = tasBuilder.build();
             _taIdMap = taIdMapBuilder.build();
+            _defaultGraders = defaultGradersBuilder.build();
         }
         catch(SQLException e)
         {
@@ -322,6 +329,11 @@ public class DataServicesImpl implements DataServices {
     public Set<TA> getTAs()
     {   
         return _tas;
+    }
+    
+    @Override
+    public Set<TA> getDefaultGraders() {
+        return _defaultGraders;
     }
     
     @Override    
@@ -622,19 +634,17 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public boolean isDistEmpty(Assignment asgn) throws ServicesException {
+    public boolean isDistEmpty(GradableEvent ge) throws ServicesException {
         Set<Integer> partIDs = new HashSet<Integer>();
-        for (GradableEvent ge : asgn.getGradableEvents()) {
-            for (Part p : ge.getParts()) {
-                partIDs.add(p.getId());
-            }
+        for (Part p : ge.getParts()) {
+            partIDs.add(p.getId());
         }
         
         try {
             return Allocator.getDatabase().isDistEmpty(partIDs);
         } catch (SQLException ex) {
             throw new ServicesException("Could not determine whether the distribution "
-                    + "is empty for assignment [" + asgn + "].", ex);
+                    + "is empty for gradable event [" + ge.getFullDisplayName() + "].", ex);
         }
     }
 
