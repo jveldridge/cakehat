@@ -3,7 +3,6 @@ package cakehat.database;
 import java.util.ArrayList;
 import java.io.File;
 import org.joda.time.DateTime;
-import java.util.Iterator;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.joda.time.chrono.ISOChronology;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -35,7 +32,7 @@ import static org.easymock.EasyMock.*;
  * @author Yudi
  */
 public class DataServiceTest {
-    
+
     private DataServices _dataService;
     private Database _database;
     private DbTA _dbTA1, _dbTA2;
@@ -55,8 +52,7 @@ public class DataServiceTest {
         _database.resetDatabase();
         
         //set-up tas
-        int taId1 = 1;
-        _dbTA1 = new DbTA(taId1, "taLogin1", "taFirst1", "taLast1", true, false);
+        _dbTA1 = new DbTA(Allocator.getUserUtilities().getUserId(), "taLogin1", "taFirst1", "taLast1", true, false);
         int taId2 = 2;
         _dbTA2 = new DbTA(taId2, "taLogin2", "taFirst2", "taLast2", true, false);
         _database.putTAs(ImmutableSet.of(_dbTA1, _dbTA2));
@@ -83,6 +79,134 @@ public class DataServiceTest {
         _dataService = new DataServicesImpl();
     }
     
+    @Test
+    public void testSetHandinTimes() throws SQLException, ServicesException, CakeHatDBIOException {
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
+        expect(asgn.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
+        expect(asgn.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
+        replay(asgn);
+
+        DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
+        DbStudent student3 = new DbStudent("sLogin3", "sFirst3", "sLast3", "sEmail3");
+        DbStudent student4 = new DbStudent("sLogin4", "sFirst4", "sLast4", "sEmail4");
+        _database.putStudents(ImmutableSet.of(student1, student2, student3, student4));
+
+        DbGroup dbGroup1 = new DbGroup(asgn, new Student(student1));
+        DbGroup dbGroup2 = new DbGroup(asgn, new Student(student2));
+        dbGroup2.addMember(new Student(student3));
+        DbGroup dbGroup3 = new DbGroup(asgn, new Student(student4));
+        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2, dbGroup3));
+
+        DateTime handinTime = new DateTime();
+
+        Map<Group, DateTime> handinTimes = new HashMap<Group, DateTime>();
+
+        //makes groups for handinTimes map
+        Set<Student> studentSet = new HashSet<Student>();
+        studentSet.add(new Student(student1));
+        Group g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+        handinTimes.put(g, handinTime);
+
+        studentSet = new HashSet<Student>();
+        studentSet.add(new Student(student2));
+        studentSet.add(new Student(student3));
+        g = new Group(dbGroup2.getId(), asgn, dbGroup1.getName(), studentSet);
+        handinTimes.put(g, handinTime);
+
+        //gets only gradableEvent from DB
+        GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
+
+        _dataService.setHandinTimes(ge, handinTimes);
+
+        HandinRecord hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
+
+        hr = _database.getHandinTime(ge.getId(), dbGroup2.getId());
+        assertHandinRecordEqual(hr, dbGroup2.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
+
+        hr = _database.getHandinTime(ge.getId(), dbGroup3.getId());
+        assertNull(hr);
+
+
+        //Check that changing only one handin time doesn't effect other handin times
+
+        DateTime handinTime2 = new DateTime();
+        handinTime2 = handinTime.minusHours(1); //make sure the two times are different by subtracting 1 hour
+
+        handinTimes = new HashMap<Group, DateTime>();
+
+        //makes groups for handinTimes map
+        studentSet = new HashSet<Student>();
+        studentSet.add(new Student(student1));
+        g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+
+        //add only group1 to the handinTimes
+        handinTimes.put(g, handinTime2);
+
+        _dataService.setHandinTimes(ge, handinTimes);
+
+        hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
+
+        hr = _database.getHandinTime(ge.getId(), dbGroup2.getId());
+        assertHandinRecordEqual(hr, dbGroup2.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
+    }
+
+    @Test
+    public void testSetHandinTime() throws SQLException, ServicesException, CakeHatDBIOException {
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
+        expect(asgn.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
+        expect(asgn.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
+        replay(asgn);
+
+        DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
+        DbStudent student3 = new DbStudent("sLogin3", "sFirst3", "sLast3", "sEmail3");
+        _database.putStudents(ImmutableSet.of(student1, student2, student3));
+
+        DbGroup dbGroup1 = new DbGroup(asgn, new Student(student1));
+        DbGroup dbGroup2 = new DbGroup(asgn, new Student(student2));
+        dbGroup2.addMember(new Student(student3));
+        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+
+        DateTime handinTime = new DateTime();
+
+        //makes groups for handinTimes map
+        Set<Student> studentSet = new HashSet<Student>();
+        studentSet.add(new Student(student1));
+        Group g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+
+        //gets only gradableEvent from DB
+        GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
+
+        _dataService.setHandinTime(ge, g, handinTime);
+
+        HandinRecord hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
+
+        hr = _database.getHandinTime(ge.getId(), dbGroup2.getId());
+        assertNull(hr);
+
+
+        //Check that changing only one handin time doesn't effect other handin times
+
+        DateTime handinTime2 = new DateTime();
+        handinTime2 = handinTime.minusHours(1); //make sure the two times are different by subtracting 1 hour
+
+        //makes groups for handinTimes map
+        studentSet = new HashSet<Student>();
+        studentSet.add(new Student(student1));
+        g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+
+        _dataService.setHandinTime(ge, g, handinTime2);
+
+        hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
+    }
+
     @Test
     public void testGetStudentsFromEmptyDatabase() throws SQLException, ServicesException {
         Collection<Student> students = _dataService.getStudents();
@@ -1704,5 +1828,11 @@ public class DataServiceTest {
         assertEquals(dbpart.getOutOf(), part.getOutOf(), 10E-10);
         assertEquals(dbpart.getQuickName(), part.getQuickName());
     }
-
+    
+    private void assertHandinRecordEqual(HandinRecord hr1, int agID, int geID, int taID, String time) {
+        assertEquals(hr1.getAsgnGroupId(), agID);
+        assertEquals(hr1.getGradeableEventId(), geID);
+        assertEquals(hr1.getTaId(), taID);
+        assertEquals(0, hr1.getTime().toString().compareTo(time));
+    }
 }
