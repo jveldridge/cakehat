@@ -393,7 +393,12 @@ public class GMLGRDWriter {
                 throw new GradingSheetException("Could not retrieve handin file for " + "group " + group
                         + " on assignment " + event.getName() + ".", e);
             }
-            res = info.apply(new DateTime(handin.lastModified()), null, null);
+            if (handin != null) {
+                res = info.apply(new DateTime(handin.lastModified()), null, null);
+            }
+            else {
+                res = info.apply(null, null, null);
+            }
         }
         else {
             GradableEventOccurrence time;
