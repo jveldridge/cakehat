@@ -20,6 +20,6 @@ public class CakehatReleaseInfo
 
     public static String getReleaseCommitNumber()
     {
-        return "r976";
+        return "r977";
     }
 }
