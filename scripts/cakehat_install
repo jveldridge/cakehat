@@ -13,11 +13,11 @@ set -e
 #prints usage
 function usage
 {
-    echo -e "Usage: cakehat_installer [Options] <course number> \n"
+    echo -e "Usage: cakehat_install [Options] <course number> \n"
     echo -e "Sets up a clean copy of cakehat into the course directory specified."
     echo -e "If you need help please contact the cakehat team at: $cakehat_email\n"
     echo -e "Note: The course should be specified as it is in the file system."
-    echo -e "For example, installing cakehat for cs015 would be: cakehat_installer cs015"									
+    echo -e "For example, installing cakehat for cs015 would be: cakehat_install cs015"									
 }
 
 #parameter: error message
@@ -33,6 +33,7 @@ function die
 {
     echo -e "\n\n\n\n"
     rm -rfv "/course/$course/.cakehat"
+    
     echo "Installation failed. Cakehat files were deleted"
 }
 
@@ -50,7 +51,7 @@ function verifyUser
 {
     user_groups=`groups`
     if [[ !("$user_groups" =~ "${course}hta") ]]; then
-	    cancel "You are not a hta for '$course"
+	    cancel "You are not a hta for '$course'"
     fi
 }
 
@@ -132,7 +133,7 @@ done
 #changes the group of all files / directories to the ta group for the course
 chgrp -v -R     "${course}ta" "/course/$course/.cakehat"
 #opens cakehat, which should run the configuration manager
-`$java_path -jar "/course/$course/.cakehat/bin/cakehat.jar config"`
+`$java_path -jar "/course/$course/.cakehat/bin/cakehat.jar" config`
 }
 
 
