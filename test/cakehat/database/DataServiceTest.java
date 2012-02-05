@@ -1,5 +1,6 @@
 package cakehat.database;
 
+import support.utils.UserUtilities;
 import java.util.ArrayList;
 import java.io.File;
 import org.joda.time.DateTime;
@@ -39,6 +40,7 @@ public class DataServiceTest {
     private DbAssignment _dbAsgnA, _dbAsgnB;
     private DbGradableEvent _geA, _geB;
     private DbPart _partA1, _partA2, _partB1;
+    private Assignment _asgnA, _asgnB;
     
     @Before
     public void setUp() throws ServicesException, SQLException, IOException {
@@ -64,6 +66,18 @@ public class DataServiceTest {
         _dbAsgnB.setHasGroups(false);
         _database.putAssignments(ImmutableSet.of(_dbAsgnA, _dbAsgnB));
         
+        _asgnA = createMock(Assignment.class);
+        expect(_asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
+        expect(_asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
+        expect(_asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
+        replay(_asgnA);
+        
+        _asgnB = createMock(Assignment.class);
+        expect(_asgnB.getName()).andReturn(_dbAsgnB.getName()).anyTimes();
+        expect(_asgnB.getId()).andReturn(_dbAsgnB.getId()).anyTimes();
+        expect(_asgnB.hasGroups()).andReturn(_dbAsgnB.hasGroups()).anyTimes();
+        replay(_asgnB);
+        
         _geA = DbGradableEvent.build(_dbAsgnA, "geA", 1);
         _geB = DbGradableEvent.build(_dbAsgnB, "geB", 2);
         _database.putGradableEvents(ImmutableSet.of(_geA, _geB));
@@ -81,22 +95,16 @@ public class DataServiceTest {
     
     @Test
     public void testSetHandinTimes() throws SQLException, ServicesException, CakeHatDBIOException {
-        Assignment asgn = createMock(Assignment.class);
-        expect(asgn.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgn.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgn.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgn);
-
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
         DbStudent student3 = new DbStudent("sLogin3", "sFirst3", "sLast3", "sEmail3");
         DbStudent student4 = new DbStudent("sLogin4", "sFirst4", "sLast4", "sEmail4");
         _database.putStudents(ImmutableSet.of(student1, student2, student3, student4));
 
-        DbGroup dbGroup1 = new DbGroup(asgn, new Student(student1));
-        DbGroup dbGroup2 = new DbGroup(asgn, new Student(student2));
+        DbGroup dbGroup1 = new DbGroup(_asgnA, new Student(student1));
+        DbGroup dbGroup2 = new DbGroup(_asgnA, new Student(student2));
         dbGroup2.addMember(new Student(student3));
-        DbGroup dbGroup3 = new DbGroup(asgn, new Student(student4));
+        DbGroup dbGroup3 = new DbGroup(_asgnA, new Student(student4));
         _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2, dbGroup3));
 
         DateTime handinTime = new DateTime();
@@ -106,13 +114,13 @@ public class DataServiceTest {
         //makes groups for handinTimes map
         Set<Student> studentSet = new HashSet<Student>();
         studentSet.add(new Student(student1));
-        Group g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+        Group g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
         handinTimes.put(g, handinTime);
 
         studentSet = new HashSet<Student>();
         studentSet.add(new Student(student2));
         studentSet.add(new Student(student3));
-        g = new Group(dbGroup2.getId(), asgn, dbGroup1.getName(), studentSet);
+        g = new Group(dbGroup2.getId(), _asgnA, dbGroup1.getName(), studentSet);
         handinTimes.put(g, handinTime);
 
         //gets only gradableEvent from DB
@@ -140,7 +148,7 @@ public class DataServiceTest {
         //makes groups for handinTimes map
         studentSet = new HashSet<Student>();
         studentSet.add(new Student(student1));
-        g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+        g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
 
         //add only group1 to the handinTimes
         handinTimes.put(g, handinTime2);
@@ -156,19 +164,13 @@ public class DataServiceTest {
 
     @Test
     public void testSetHandinTime() throws SQLException, ServicesException, CakeHatDBIOException {
-        Assignment asgn = createMock(Assignment.class);
-        expect(asgn.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgn.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgn.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgn);
-
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
         DbStudent student3 = new DbStudent("sLogin3", "sFirst3", "sLast3", "sEmail3");
         _database.putStudents(ImmutableSet.of(student1, student2, student3));
 
-        DbGroup dbGroup1 = new DbGroup(asgn, new Student(student1));
-        DbGroup dbGroup2 = new DbGroup(asgn, new Student(student2));
+        DbGroup dbGroup1 = new DbGroup(_asgnA, new Student(student1));
+        DbGroup dbGroup2 = new DbGroup(_asgnA, new Student(student2));
         dbGroup2.addMember(new Student(student3));
         _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
 
@@ -177,7 +179,7 @@ public class DataServiceTest {
         //makes groups for handinTimes map
         Set<Student> studentSet = new HashSet<Student>();
         studentSet.add(new Student(student1));
-        Group g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+        Group g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
 
         //gets only gradableEvent from DB
         GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
@@ -199,7 +201,7 @@ public class DataServiceTest {
         //makes groups for handinTimes map
         studentSet = new HashSet<Student>();
         studentSet.add(new Student(student1));
-        g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
+        g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
 
         _dataService.setGradableEventOccurrence(ge, g, handinTime2);
 
@@ -467,43 +469,25 @@ public class DataServiceTest {
     
     @Test
     public void testGetNoGroup() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));  
         _dataService.updateDataCache();
         
         //an assignment has group, but without any group created should return an empty set
-        Set<Group> groups = _dataService.getGroups(asgnA);
+        Set<Group> groups = _dataService.getGroups(_asgnA);
         assertEquals(0, groups.size());            
     }
     
     @Test
-    public void testGetGroupAutoGroupCreation() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-            
-        Assignment asgnB = createMock(Assignment.class);
-        expect(asgnB.getName()).andReturn(_dbAsgnB.getName()).anyTimes();
-        expect(asgnB.getId()).andReturn(_dbAsgnB.getId()).anyTimes();
-        expect(asgnB.hasGroups()).andReturn(_dbAsgnB.hasGroups()).anyTimes();
-        replay(asgnB);
-        
+    public void testGetGroupAutoGroupCreation() throws SQLException, ServicesException {        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
         _dataService.updateDataCache();
         
         //an assignment has no group, groups of one will be created and returned
-        Set<Group> groups = _dataService.getGroups(asgnB);
+        Set<Group> groups = _dataService.getGroups(_asgnB);
         assertEquals(2, groups.size());
         Set<Student> studs = new HashSet<Student>();
         for (Group g : groups) {
@@ -514,41 +498,21 @@ public class DataServiceTest {
     
     @Test
     public void testAddGetGroups() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-            
-        Assignment asgnB = createMock(Assignment.class);
-        expect(asgnB.getName()).andReturn(_dbAsgnB.getName()).anyTimes();
-        expect(asgnB.getId()).andReturn(_dbAsgnB.getId()).anyTimes();
-        expect(asgnB.hasGroups()).andReturn(_dbAsgnB.hasGroups()).anyTimes();
-        replay(asgnB);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
         _dataService.updateDataCache();
             
         Student student1 = new Student(dbStudent1);
-        Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _dataService.addGroup(dbGroup1);
 
-        Set<Group> groups = _dataService.getGroups(asgnA);
+        Set<Group> groups = _dataService.getGroups(_asgnA);
         this.assertGroupCollectionEqual(SingleElementSet.of(dbGroup1), groups);
     }
     
     @Test
     public void testGet2Groups() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
@@ -556,23 +520,17 @@ public class DataServiceTest {
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _dataService.addGroup(dbGroup1);
         _dataService.addGroup(dbGroup2);
         
-        Set<Group> groups = _dataService.getGroups(asgnA);
+        Set<Group> groups = _dataService.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
     @Test
     public void testAddGet2Groups() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
@@ -581,22 +539,16 @@ public class DataServiceTest {
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
-        Set<Group> groups = _dataService.getGroups(asgnA);
+        Set<Group> groups = _dataService.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
     @Test
     public void testGetGroup() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
@@ -604,24 +556,18 @@ public class DataServiceTest {
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _dataService.addGroup(dbGroup1);
         
         //group doesn't exist
-        assertNull(_dataService.getGroup(asgnA, student2));
+        assertNull(_dataService.getGroup(_asgnA, student2));
 
-        this.assertGroupEqual(dbGroup1, _dataService.getGroup(asgnA, student1));
+        this.assertGroupEqual(dbGroup1, _dataService.getGroup(_asgnA, student1));
     }
     
     @Test
     public void testRemoveGroups() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
@@ -629,21 +575,15 @@ public class DataServiceTest {
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-        _dataService.removeGroups(asgnA);
-        assertEquals(0, _dataService.getGroups(asgnA).size());
+        _dataService.removeGroups(_asgnA);
+        assertEquals(0, _dataService.getGroups(_asgnA).size());
     }
     
     @Test
-    public void testAddAfterRemoveGroups() throws SQLException, ServicesException {
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(asgnA);
-        
+    public void testAddAfterRemoveGroups() throws SQLException, ServicesException {        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
@@ -651,13 +591,13 @@ public class DataServiceTest {
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _dataService.addGroups(SingleElementSet.of(dbGroup1));
         _dataService.addGroups(SingleElementSet.of(dbGroup2));
-        _dataService.removeGroups(asgnA);        
+        _dataService.removeGroups(_asgnA);        
         _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-        Set<Group> groups = _dataService.getGroups(asgnA);
+        Set<Group> groups = _dataService.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
@@ -1610,7 +1550,131 @@ public class DataServiceTest {
         assertTrue(part2TA1Groups.contains(group1));
         assertTrue(part2TA1Groups.contains(group2));
     }
-    
+
+    @Test
+    public void testGetGraderNoGrader() throws SQLException, ServicesException{
+        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        _database.putStudents(ImmutableSet.of(dbStudent1));
+
+        Student student1 = new Student(dbStudent1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        _dataService.addGroup(dbGroup1);
+
+        Part partA = createMock(Part.class);
+        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        replay(partA);
+
+        Group group1 = createMock(Group.class);
+        expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
+        replay(group1);
+
+        _dataService.updateDataCache();
+
+        TA ta = _dataService.getGrader(partA, group1);
+
+        assertNull(ta);
+    }
+
+    @Test
+    public void testGetSetGrader() throws SQLException, ServicesException{
+        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
+        _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
+
+        Student student1 = new Student(dbStudent1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        _dataService.addGroup(dbGroup1);
+        
+        Student student2 = new Student(dbStudent2);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
+        _dataService.addGroup(dbGroup2);
+
+        Part partA = createMock(Part.class);
+        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        replay(partA);
+
+        Group group1 = createMock(Group.class);
+        expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
+        replay(group1);
+
+        TA ta = createMock(TA.class);
+        expect(ta.getId()).andReturn(_dbTA1.getId()).anyTimes();
+        replay(ta);
+
+        _dataService.setGrader(partA, group1, ta);
+
+        _dataService.updateDataCache();
+
+        TA returnedTA = _dataService.getGrader(partA, group1);
+
+        assertTAEqual(_dbTA1, returnedTA);
+
+        //make sure setting one grader doesn't effect others
+        Group group2 = createMock(Group.class);
+        expect(group2.getId()).andReturn(dbGroup2.getId()).anyTimes();
+        replay(group2);
+        
+        TA returnedTANull = _dataService.getGrader(partA, group2);
+
+        assertNull(returnedTANull);
+    }
+
+    @Test
+    public void testGetEarnedNoGrade() throws SQLException, ServicesException{
+        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        _database.putStudents(ImmutableSet.of(dbStudent1));
+
+        Student student1 = new Student(dbStudent1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        _dataService.addGroup(dbGroup1);
+
+        Part partA = createMock(Part.class);
+        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        replay(partA);
+
+        Group group1 = createMock(Group.class);
+        expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
+        replay(group1);
+
+         _dataService.updateDataCache();
+
+         PartGrade pg = _dataService.getEarned(group1, partA);
+
+         assertNull(pg);
+    }
+
+    @Test
+    public void testGetSetEarned() throws SQLException, ServicesException{
+        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        _database.putStudents(ImmutableSet.of(dbStudent1));
+
+        Student student1 = new Student(dbStudent1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        _dataService.addGroup(dbGroup1);
+
+        Part partA = createMock(Part.class);
+        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
+        replay(partA);
+
+        Group group1 = createMock(Group.class);
+        expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
+        expect(group1.getName()).andReturn(dbGroup1.getName()).anyTimes();
+        replay(group1);
+
+        TA ta = createMock(TA.class);
+        expect(ta.getId()).andReturn(_dbTA1.getId()).anyTimes();
+        replay(ta);
+
+        _dataService.setGrader(partA, group1, ta);
+
+        _dataService.setEarned(group1, partA, _partA1.getOutOf(), true);
+
+         PartGrade pg = _dataService.getEarned(group1, partA);
+
+         assertNotNull(pg);
+    }
+
     private void assertDbStudentCollectionEqual(Collection<DbStudent> students1, Collection<Student> students2) {
         assertEquals(students1.size(), students2.size());
         Map<Integer, DbStudent> dbStudMap = new HashMap<Integer, DbStudent>();
