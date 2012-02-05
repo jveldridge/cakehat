@@ -19,6 +19,7 @@ import javax.swing.Box;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
@@ -103,6 +104,10 @@ class GMLPartPanel extends PartPanel
     
     private void initNormalUI()
     {
+        final JTextField totalEarnedField = new JTextField(5);
+        totalEarnedField.setEnabled(false);
+        totalEarnedField.setHorizontalAlignment(JTextField.CENTER); 
+        
         for(final Section section : _gml.getSections())
         {
             addContent(createSubheaderLabel(section.getName(), false));
@@ -154,6 +159,8 @@ class GMLPartPanel extends PartPanel
                             _totalEarned -= prevEarned;
                             _totalEarned += currEarned;
 
+                            totalEarnedField.setText(Double.toString(_totalEarned));
+                            
                             notifyEarnedChanged(prevTotalEarned, _totalEarned);
                             notifyUnsavedChangeOccurred();
                         }
@@ -208,6 +215,25 @@ class GMLPartPanel extends PartPanel
             
             addContent(Box.createVerticalStrut(10));
         }
+        
+        //Total
+        addContent(createSubheaderLabel("Part Total", false));
+        JPanel totalPanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
+        addContent(totalPanel);
+        totalPanel.add(createContentLabel("Total", false, false), BorderLayout.CENTER);
+        JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        pointsPanel.setBackground(this.getBackground());
+        totalPanel.add(pointsPanel, BorderLayout.EAST);
+        pointsPanel.add(Box.createHorizontalStrut(5));
+        
+        //Total earned
+        totalEarnedField.setText(Double.toString(_totalEarned));
+        pointsPanel.add(totalEarnedField);
+        
+        pointsPanel.add(Box.createHorizontalStrut(5));
+        
+        //Total out of
+        pointsPanel.add(createDisabledField(_part.getOutOf()));
     }
 
     @Override
@@ -219,31 +245,28 @@ class GMLPartPanel extends PartPanel
     @Override
     public void save()
     {
-        //If not a template and the gml file was parsed successfully
-        if(_group != null && _gml != null)
+        //If not a template, the gml file was parsed successfully, and has unsaved changes
+        if(_group != null && _gml != null && this.hasUnsavedChanges())
         {
-            if(this.hasUnsavedChanges())
+            File gmlFile = Allocator.getPathServices().getGroupGMLFile(_part, _group);
+            try
             {
-                File gmlFile = Allocator.getPathServices().getGroupGMLFile(_part, _group);
-                try
-                {
-                    GMLWriter.write(_gml, gmlFile);
-                    Allocator.getDataServices().setEarned(_group, _part, _totalEarned, _submitOnSave);
-                    notifySavedSuccessfully();
-                }
-                catch(GradingSheetException e)
-                {
-                    new ErrorView(e, "Unable to save GML file\n" +
-                            "Part: " + _part.getFullDisplayName() + "\n" +
-                            "Group: " + _group.getName() + "\n" + 
-                            "File: " + gmlFile.getAbsolutePath());
-                }
-                catch(ServicesException e)
-                {
-                    new ErrorView(e, "Unable to record changes in database\n" +
-                            "Part: " + _part.getFullDisplayName() + "\n" +
-                            "Group: " + _group.getName());
-                }
+                GMLWriter.write(_gml, gmlFile);
+                Allocator.getDataServices().setEarned(_group, _part, _totalEarned, _submitOnSave);
+                notifySavedSuccessfully();
+            }
+            catch(GradingSheetException e)
+            {
+                new ErrorView(e, "Unable to save GML file\n" +
+                        "Part: " + _part.getFullDisplayName() + "\n" +
+                        "Group: " + _group.getName() + "\n" + 
+                        "File: " + gmlFile.getAbsolutePath());
+            }
+            catch(ServicesException e)
+            {
+                new ErrorView(e, "Unable to record changes in database\n" +
+                        "Part: " + _part.getFullDisplayName() + "\n" +
+                        "Group: " + _group.getName());
             }
         }
     }
