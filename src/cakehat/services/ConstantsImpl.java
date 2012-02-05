@@ -6,13 +6,9 @@ package cakehat.services;
  */
 public class ConstantsImpl implements Constants
 {
+    @Override
     public String getEmailDomain()
     {
         return "cs.brown.edu";
-    }
-
-    public String getCakehatEmailAddress()
-    {
-        return "cakehat@cs.brown.edu";
     }
 }

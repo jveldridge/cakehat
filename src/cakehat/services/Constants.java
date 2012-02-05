@@ -19,17 +19,4 @@ public interface Constants
      * @return
      */
     public String getEmailDomain();
-
-    /**
-     * The cakehat email address.
-     * <br/><br/>
-     * <pre>
-     * {@code
-     * cakehat@cs.brown.edu
-     * }
-     * </pre>
-     *
-     * @return
-     */
-    public String getCakehatEmailAddress();
 }

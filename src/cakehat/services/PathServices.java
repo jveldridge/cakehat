@@ -12,33 +12,7 @@ import java.io.File;
  * @author jak2
  */
 public interface PathServices
-{
-    /**
-     * Course directory.
-     * 
-     * <pre>
-     * {@code
-     * /course/<course>/
-     * }
-     * </pre>
-     *
-     * @return
-     */
-    public File getCourseDir();
-    
-    /**
-     * The directory where cakehat exists.
-     *
-     * <pre>
-     * {@code
-     * /course/<course>/.cakehat/
-     * }
-     * </pre>
-     *
-     * @return
-     */
-    public File getCakehatDir();
-    
+{    
     /**
      * The database file.
      *
@@ -97,8 +71,8 @@ public interface PathServices
      * }
      * </pre>
      * 
-     * If cakehat's normal main class was not run and cakehat is in an unknown
-     * mode, which should only occur during a test:
+     * If cakehat's normal main class was not run and cakehat is in an unknown mode, which should only occur during a
+     * test:
      * <pre>
      * {@code
      * /course/<course>/.cakehat/workspaces/<ta id>-test/
@@ -133,23 +107,8 @@ public interface PathServices
     public File getStudentGRDFile(Assignment asgn, Student student);
     
     /**
-     * The path to the directory, inside the user's temporary workspace directory, which contains unarchived digital
-     * handins.
-     * 
-     * <pre>
-     * {@code
-     * /course/<course>/.cakehat/workspaces/<ta id>/<assignment id>/<gradable event id>/<part id>/
-     * }
-     * </pre>
-     * 
-     * @param part
-     * @return 
-     */
-    public File getUserPartDir(Part part);
-    
-    /**
-     * The directory the handin is unarchived into for a given part. Even if two parts belong to the same part block,
-     * they will have different unarchive directories.
+     * The directory the handin is unarchived into for a given part. Even if two parts belong to the same gradable
+     * event, they will have different unarchive directories.
      * 
      * <pre>
      * {@code
