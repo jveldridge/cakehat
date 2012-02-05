@@ -6,8 +6,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
+import support.ui.ModalDialog;
 import support.ui.PaddingPanel;
 
 /**
@@ -66,15 +65,16 @@ public class ConfigManagerView extends JFrame
         {
             public void run()
             {   
-                new ConfigManagerView(isSSH);
+                boolean proceed = ModalDialog.showConfirmation("Warning",
+                        "The cakehat configuration manager should only be run when no other instances of cakehat are " +
+                        "running. Running this configuration manager while other instances of cakehat are running " +
+                        "can result in your database being left in an unusable state.",
+                        "Proceed", "Cancel");
+                if(proceed)
+                {
+                    new ConfigManagerView(isSSH);
+                }
             }
         });
-    }
-    
-    //For testing
-    public static void main(String[] args) throws Throwable
-    {
-        UIManager.setLookAndFeel(new MetalLookAndFeel());
-        launch(false);
     }
 }

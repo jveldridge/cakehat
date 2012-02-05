@@ -1979,6 +1979,10 @@ class AssignmentPanel extends JPanel
                     }
                 }
                 final ImmutableSet<DbPartAction> toRemove = toRemoveBuilder.build();
+                for(DbPartAction actionToRemove : toRemove)
+                {
+                    _part.removeAction(actionToRemove);
+                }
                 
                 _worker.submit(WORKER_TAG, new ReinitializeRunnable()
                 {
