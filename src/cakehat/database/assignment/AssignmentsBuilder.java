@@ -1,6 +1,6 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
-import cakehat.assignment.PartActionDescription.ActionType;
+import cakehat.database.assignment.PartActionDescription.ActionType;
 import cakehat.database.DbActionProperty;
 import cakehat.database.DbAssignment;
 import cakehat.database.DbGradableEvent;

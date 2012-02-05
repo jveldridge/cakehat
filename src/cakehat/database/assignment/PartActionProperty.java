@@ -1,4 +1,4 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
 /**
  * The description of a property.

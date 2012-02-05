@@ -1,11 +1,11 @@
 package cakehat.gml;
 
 import cakehat.Allocator;
-import cakehat.assignment.Assignment;
+import cakehat.database.assignment.Assignment;
 import cakehat.database.DeadlineInfo;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
-import cakehat.assignment.GradableEvent;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.GradableEvent;
+import cakehat.database.assignment.Part;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.database.Group;

@@ -2,10 +2,10 @@ package cakehat.views.grader;
 
 import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
-import cakehat.assignment.ActionException;
-import cakehat.assignment.GradableEvent;
-import cakehat.assignment.MissingHandinException;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.ActionException;
+import cakehat.database.assignment.GradableEvent;
+import cakehat.database.assignment.MissingHandinException;
+import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;

@@ -12,8 +12,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import cakehat.Allocator;
-import cakehat.assignment.Assignment;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.Assignment;
+import cakehat.database.assignment.Part;
 import cakehat.database.Student;
 
 /**

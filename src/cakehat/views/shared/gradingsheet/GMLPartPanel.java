@@ -1,7 +1,7 @@
 package cakehat.views.shared.gradingsheet;
 
 import cakehat.Allocator;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.Part;
 import cakehat.gml.GMLParser;
 import cakehat.gml.GMLWriter;
 import cakehat.gml.GradingSheetException;

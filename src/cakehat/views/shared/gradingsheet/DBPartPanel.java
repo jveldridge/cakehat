@@ -3,7 +3,7 @@ package cakehat.views.shared.gradingsheet;
 import cakehat.Allocator;
 import cakehat.views.shared.ErrorView;
 import java.awt.FlowLayout;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.services.ServicesException;

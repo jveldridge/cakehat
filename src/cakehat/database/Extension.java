@@ -1,6 +1,6 @@
 package cakehat.database;
 
-import cakehat.assignment.GradableEvent;
+import cakehat.database.assignment.GradableEvent;
 import org.joda.time.DateTime;
 
 /**

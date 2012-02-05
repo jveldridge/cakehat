@@ -1,6 +1,6 @@
 package cakehat.database;
 
-import cakehat.assignment.PartActionDescription;
+import cakehat.database.assignment.PartActionDescription;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.ArrayList;

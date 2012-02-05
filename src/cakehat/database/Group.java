@@ -1,6 +1,6 @@
 package cakehat.database;
 
-import cakehat.assignment.Assignment;
+import cakehat.database.assignment.Assignment;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;

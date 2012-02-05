@@ -1,4 +1,4 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
 import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;

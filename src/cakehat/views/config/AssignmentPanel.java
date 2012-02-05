@@ -2,11 +2,11 @@ package cakehat.views.config;
 
 import support.ui.DocumentAdapter;
 import cakehat.Allocator;
-import cakehat.assignment.ActionRepository;
+import cakehat.database.assignment.ActionRepository;
 import cakehat.database.DeadlineInfo;
-import cakehat.assignment.PartActionDescription;
-import cakehat.assignment.PartActionDescription.ActionType;
-import cakehat.assignment.PartActionProperty;
+import cakehat.database.assignment.PartActionDescription;
+import cakehat.database.assignment.PartActionDescription.ActionType;
+import cakehat.database.assignment.PartActionProperty;
 import cakehat.database.DbActionProperty;
 import cakehat.database.DbAssignment;
 import cakehat.database.DbGradableEvent;
