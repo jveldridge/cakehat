@@ -336,14 +336,14 @@ public interface DataServices {
     public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException;
     
     /**
-     * Returns the handin time for the given gradable event and group.
+     * Returns the gradable event occurrence for the given gradable event and group.
      * 
      * @param gradableEvent
      * @param part
      * @return
      * @throws ServicesException 
      */
-    public HandinTime getHandinTime(GradableEvent gradableEvent, Group group) throws ServicesException;
+    public GradableEventOccurrence getGradableEventOccurrence(GradableEvent gradableEvent, Group group) throws ServicesException;
     
     /**
      * Sets the handin time for the given gradable event and group.
@@ -353,17 +353,17 @@ public interface DataServices {
      * @param handinTime
      * @throws ServicesException 
      */
-    public void setHandinTime(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException;
+    public void setGradableEventOccurrence(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException;
     
     /**
-     * For each entry in the given Map, stores the corresponding HandinStatus in
+     * For each entry in the given Map, stores the corresponding gradable event occurrence in
      * the database for the corresponding Group and given Handin.  Any existing
-     * handin statuses for Groups with entries in the Map will be overwritten.
+     * gradable event occurrences for Groups with entries in the Map will be overwritten.
      *
      * @param handin
      * @param statuses
      */
-    public void setHandinTimes(GradableEvent gradableEvent, Map<Group, DateTime> statuses) throws ServicesException;
+    public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses) throws ServicesException;
     
     /**
      * Loads Student and Group objects into memory for all students and groups in the database.

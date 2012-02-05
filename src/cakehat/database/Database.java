@@ -346,7 +346,7 @@ public interface Database
      * @return
      */
 
-    public HandinRecord getHandinTime(int geid, int agid) throws SQLException;
+    public GradableEventOccurrenceRecord getGradableEventOccurrence(int geid, int agid) throws SQLException;
     
 
     /*
@@ -361,7 +361,7 @@ public interface Database
      *
      */
 
-    public void setHandinTime(int geid, int agid, String time,
+    public void setGradableEventOccurrence(int geid, int agid, String time,
                               String dateRecorded, int tid) throws SQLException;
     
     /**

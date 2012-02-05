@@ -118,15 +118,15 @@ public class DataServiceTest {
         //gets only gradableEvent from DB
         GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
 
-        _dataService.setHandinTimes(ge, handinTimes);
+        _dataService.setGradableEventOccurrences(ge, handinTimes);
 
-        HandinRecord hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        GradableEventOccurrenceRecord hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
 
-        hr = _database.getHandinTime(ge.getId(), dbGroup2.getId());
+        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup2.getId());
         assertHandinRecordEqual(hr, dbGroup2.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
 
-        hr = _database.getHandinTime(ge.getId(), dbGroup3.getId());
+        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup3.getId());
         assertNull(hr);
 
 
@@ -145,12 +145,12 @@ public class DataServiceTest {
         //add only group1 to the handinTimes
         handinTimes.put(g, handinTime2);
 
-        _dataService.setHandinTimes(ge, handinTimes);
+        _dataService.setGradableEventOccurrences(ge, handinTimes);
 
-        hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
 
-        hr = _database.getHandinTime(ge.getId(), dbGroup2.getId());
+        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup2.getId());
         assertHandinRecordEqual(hr, dbGroup2.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
     }
 
@@ -182,12 +182,12 @@ public class DataServiceTest {
         //gets only gradableEvent from DB
         GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
 
-        _dataService.setHandinTime(ge, g, handinTime);
+        _dataService.setGradableEventOccurrence(ge, g, handinTime);
 
-        HandinRecord hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        GradableEventOccurrenceRecord hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
 
-        hr = _database.getHandinTime(ge.getId(), dbGroup2.getId());
+        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup2.getId());
         assertNull(hr);
 
 
@@ -201,9 +201,9 @@ public class DataServiceTest {
         studentSet.add(new Student(student1));
         g = new Group(dbGroup1.getId(), asgn, dbGroup1.getName(), studentSet);
 
-        _dataService.setHandinTime(ge, g, handinTime2);
+        _dataService.setGradableEventOccurrence(ge, g, handinTime2);
 
-        hr = _database.getHandinTime(ge.getId(), dbGroup1.getId());
+        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
     }
 
@@ -1829,7 +1829,7 @@ public class DataServiceTest {
         assertEquals(dbpart.getQuickName(), part.getQuickName());
     }
     
-    private void assertHandinRecordEqual(HandinRecord hr1, int agID, int geID, int taID, String time) {
+    private void assertHandinRecordEqual(GradableEventOccurrenceRecord hr1, int agID, int geID, int taID, String time) {
         assertEquals(hr1.getAsgnGroupId(), agID);
         assertEquals(hr1.getGradeableEventId(), geID);
         assertEquals(hr1.getTaId(), taID);

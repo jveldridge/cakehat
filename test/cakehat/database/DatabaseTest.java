@@ -963,9 +963,9 @@ public class DatabaseTest {
         String date = "1/28/2012";
         String time = "10:05";
         
-        _database.setHandinTime(geid, agid, time, date, tid);
+        _database.setGradableEventOccurrence(geid, agid, time, date, tid);
 
-        HandinRecord record = _database.getHandinTime(geid, agid);
+        GradableEventOccurrenceRecord record = _database.getGradableEventOccurrence(geid, agid);
 
         assertEquals(geid, record.getGradeableEventId());
         assertEquals(agid, record.getAsgnGroupId());
@@ -1008,14 +1008,14 @@ public class DatabaseTest {
         String time1 = "10:05";
         
 
-        _database.setHandinTime(geid, agid, time1, date1, tid);
+        _database.setGradableEventOccurrence(geid, agid, time1, date1, tid);
 
         String date2 = "1/29/2012";
         String time2 = "10:06";
 
-        _database.setHandinTime(geid, agid, time2, date2, tid);
+        _database.setGradableEventOccurrence(geid, agid, time2, date2, tid);
 
-        HandinRecord record = _database.getHandinTime(geid, agid);
+        GradableEventOccurrenceRecord record = _database.getGradableEventOccurrence(geid, agid);
 
         assertEquals(geid, record.getGradeableEventId());
         assertEquals(agid, record.getAsgnGroupId());

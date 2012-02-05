@@ -9,7 +9,7 @@ import cakehat.assignment.Part;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.database.Group;
-import cakehat.database.HandinTime;
+import cakehat.database.GradableEventOccurrence;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;
 import cakehat.database.TA;
@@ -396,9 +396,9 @@ public class GMLGRDWriter {
             res = info.apply(new DateTime(handin.lastModified()), null, null);
         }
         else {
-            HandinTime time;
+            GradableEventOccurrence time;
             try {
-               time = Allocator.getDataServices().getHandinTime(event, group); 
+               time = Allocator.getDataServices().getGradableEventOccurrence(event, group); 
             } catch (ServicesException ex) {
                 throw new GradingSheetException("Could not get handin status for " +
                                           "group " + group + " on assignment " + event.getName() + ".", ex);

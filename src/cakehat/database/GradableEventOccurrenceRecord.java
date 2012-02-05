@@ -2,13 +2,13 @@ package cakehat.database;
 
 /**
  *  Represents information about a handin stored in the database.  Unlike the
- * {@link HandinTime} object, instances of this class are not managed and are not
+ * {@link GradableEventOccurrence} object, instances of this class are not managed and are not
  * guaranteed to be valid.  This class should be used only as a return type for
- * {@link DatabaseV5} methods supporting {@link DataServices} methods.
+ * {@link Database} methods supporting {@link DataServices} methods.
  *
  * @author wyegelwe
  */
- class HandinRecord {
+ class GradableEventOccurrenceRecord {
 
     private final int _agid;
     private final int _geid;
@@ -16,7 +16,7 @@ package cakehat.database;
     private final String _time;
     private final int _tid;
 
-    HandinRecord(int geid, int agid, String time, String dateRecorded,
+    GradableEventOccurrenceRecord(int geid, int agid, String time, String dateRecorded,
                                                                     int tid){
         _agid = agid;
         _geid = geid;

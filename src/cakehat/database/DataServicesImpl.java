@@ -487,13 +487,13 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public HandinTime getHandinTime(GradableEvent gradableEvent, Group group) throws ServicesException
+    public GradableEventOccurrence getGradableEventOccurrence(GradableEvent gradableEvent, Group group) throws ServicesException
     {
         try {
-            HandinRecord record = Allocator.getDatabase().getHandinTime(gradableEvent.getId(), group.getId());
+            GradableEventOccurrenceRecord record = Allocator.getDatabase().getGradableEventOccurrence(gradableEvent.getId(), group.getId());
             TA ta = _taIdMap.get(Allocator.getUserUtilities().getUserId());
             if (record != null) {
-                return new HandinTime(gradableEvent, group, ta, new DateTime(), DateTime.parse(record.getTime()));
+                return new GradableEventOccurrence(gradableEvent, group, ta, new DateTime(), DateTime.parse(record.getTime()));
             }
             return null;
         } catch (SQLException ex) {
@@ -503,16 +503,16 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public void setHandinTime(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException
+    public void setGradableEventOccurrence(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException
     {
-        this.setHandinTimes(gradableEvent, ImmutableMap.of(group, handinTime));
+        this.setGradableEventOccurrences(gradableEvent, ImmutableMap.of(group, handinTime));
     }
     
     @Override
-    public void setHandinTimes(GradableEvent gradableEvent, Map<Group, DateTime> statuses) throws ServicesException {
+    public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses) throws ServicesException {
         try {
             for (Group group : statuses.keySet()) {
-                Allocator.getDatabase().setHandinTime(gradableEvent.getId(), group.getId(),
+                Allocator.getDatabase().setGradableEventOccurrence(gradableEvent.getId(), group.getId(),
                     statuses.get(group).toString(), new DateTime().toString(), Allocator.getUserUtilities().getUserId());
             }
         } catch (SQLException ex) {

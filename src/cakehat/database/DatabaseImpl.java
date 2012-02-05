@@ -1452,13 +1452,13 @@ public class DatabaseImpl implements Database
     }
     
     @Override
-    public HandinRecord getHandinTime(int geid, int agid) throws SQLException{
+    public GradableEventOccurrenceRecord getGradableEventOccurrence(int geid, int agid) throws SQLException {
         Connection conn = this.openConnection();
 
         try {
             PreparedStatement ps = conn.prepareStatement(
                     "SELECT tid, daterecorded, time"
-                    + " FROM handintime"
+                    + " FROM geoccurrence"
                     + " WHERE geid == ? AND agid == ?");
 
             ps.setInt(1, geid);
@@ -1466,12 +1466,12 @@ public class DatabaseImpl implements Database
 
             ResultSet rs = ps.executeQuery();
 
-            HandinRecord record = null;
+            GradableEventOccurrenceRecord record = null;
             if (rs.next()) {
                 int tid = rs.getInt("tid");
                 String dateRecorded = rs.getString("daterecorded");
                 String time = rs.getString("time");
-                record = new HandinRecord(geid,agid,time,dateRecorded,tid);
+                record = new GradableEventOccurrenceRecord(geid,agid,time,dateRecorded,tid);
             }
             return record;
         } finally {
@@ -1479,16 +1479,14 @@ public class DatabaseImpl implements Database
         }
     }
 
-
-
     @Override
-    public void setHandinTime(int geid, int agid, String time,
+    public void setGradableEventOccurrence(int geid, int agid, String time,
                               String dateRecorded, int tid) throws SQLException{
         Connection conn = this.openConnection();
 
         try {
             PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO  handintime (geid, agid, time, dateRecorded, tid)"
+                    "INSERT INTO geoccurrence (geid, agid, time, dateRecorded, tid)"
                     + " VALUES (?, ?, ?, ?, ?)");
 
             ps.setInt(1, geid);
@@ -1515,7 +1513,7 @@ public class DatabaseImpl implements Database
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS exemption");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS extension");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS handintime");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS geoccurrence");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
@@ -1613,7 +1611,7 @@ public class DatabaseImpl implements Database
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE,"
                     + " CONSTRAINT singlemembership UNIQUE (agid, sid) ON CONFLICT ROLLBACK)");
-            conn.createStatement().executeUpdate("CREATE TABLE handintime (geid INTEGER NOT NULL,"
+            conn.createStatement().executeUpdate("CREATE TABLE geoccurrence (geid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
                     + " time VARCHAR NOT NULL,"
                     + " daterecorded VARCHAR NOT NULL,"
