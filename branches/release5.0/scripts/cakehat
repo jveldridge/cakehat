@@ -1,0 +1,40 @@
+#!/bin/bash
+#==============================================================================
+# A convenience script to run cakehat. Must be located somewhere within the
+# course directory from which cakehat will be run.
+#
+# author:  jak2 (Joshua Kaplan)
+# created: January 20, 2010
+# last updated: January 30, 2012
+#==============================================================================
+
+#retrieve the location of this script
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+#extract the course name by splitting on each / and then taking the second
+#argument of the resulting array, which will be the course so long as this
+#script is in the course directory (which it absolutely should be)
+path_parts=(`echo $abspath | tr '/' ' '`)
+course=${path_parts[1]}
+
+#location of jar to run
+cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
+
+#If no arguments, run the grader view.
+if [[ ( $# == 0 ) ]]
+then
+    java -jar $cakehat grader
+#Else if exactly 1 argument and the argument is admin
+elif [[ ( $# == 1 && $1 == "admin") ]]
+then
+    java -jar $cakehat admin
+#Else if exactly 1 argument and the argument is config
+elif [[ ( $# == 1 && $1 == "config") ]]
+then
+    java -jar $cakehat config
+#Else, improper usage
+else
+    echo "Usage: cakehat"
+    echo "       cakehat admin"
+    echo "       cakehat config"
+fi
