@@ -34,9 +34,8 @@ public interface GradingServices
     public void makeUserWorkspace() throws ServicesException;
     
     /**
-     * Attempts to make a backup of the database.  The backup will be created in
-     * the directory returned by {@link PathServices#getDatabaseBackupDir()}.
-     * It will be named "csXXXdb_bk_<date>".
+     * Attempts to make a backup of the database. The backup will be created in the directory returned by
+     * {@link PathServices#getDatabaseBackupDir()}. It will be named "database_backup_<current time millis>.db".
      * 
      * @throws ServicesException 
      */
@@ -58,7 +57,6 @@ public interface GradingServices
      */
     public CITPrinter getDefaultPrinter();
 
-    
     /**
      * Creates and prints GRD files (plain text files with a .txt file extension) for each student in the given groups
      * for the assignment they all belong to. The output will be printed to the provided printer.
@@ -180,17 +178,4 @@ public interface GradingServices
      * @return what are the remaining bad logins (null if the user clicked Cancel)
      */
     public Set<String> resolveUnexpectedHandins(GradableEvent ge) throws ServicesException;
-    
-    /**
-     * Builds a mapping from assignment to student to score for a given assignment. A given mapping will never be null;
-     * if no score exists for a student, the score will be set to 0. This is the raw score from the database and does
-     * not take into account handin bonus or penalty - see bug 309.
-     * 
-     * @param asgns assignments to include in the map
-     * @param studentsToInclude students to include in the map
-     * @return
-     * @throws ServicesException 
-     */
-    public Map<Assignment, Map<Student, Double>> getScores(Collection<Assignment> asgns,
-            Collection<Student> studentsToInclude) throws ServicesException;
 }

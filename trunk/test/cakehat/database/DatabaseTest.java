@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
-import support.utils.SingleElementSet;
 import static org.junit.Assert.*;
 import static org.easymock.EasyMock.*;
 
@@ -90,7 +89,7 @@ public class DatabaseTest {
         
         DbNotifyAddress addressIn = new DbNotifyAddress(invalidId, addressString);
         
-        _database.putNotifyAddresses(SingleElementSet.of(addressIn));
+        _database.putNotifyAddresses(ImmutableSet.of(addressIn));
     }
     
     @Test
@@ -101,7 +100,7 @@ public class DatabaseTest {
         String nullAddress = null;
         
         DbNotifyAddress addressIn = new DbNotifyAddress(nullAddress);
-        _database.putNotifyAddresses(SingleElementSet.of(addressIn));
+        _database.putNotifyAddresses(ImmutableSet.of(addressIn));
     }
     
     private final EqualityAsserter<DbNotifyAddress> DB_NOTIFY_ADDRESS_EQ_C = 
@@ -118,7 +117,7 @@ public class DatabaseTest {
         String addressString = "cakehat@cs.brown.edu";
         DbNotifyAddress addressIn = new DbNotifyAddress(addressString);
         
-        _database.putNotifyAddresses(SingleElementSet.of(addressIn));
+        _database.putNotifyAddresses(ImmutableSet.of(addressIn));
         //database method must update the ID of the element it is given
         assertNotNull(addressIn.getId());
         
@@ -134,7 +133,7 @@ public class DatabaseTest {
         String subsequentAddressString = "another@email.com";
         
         DbNotifyAddress address = new DbNotifyAddress(initialAddressString);
-        _database.putNotifyAddresses(SingleElementSet.of(address));
+        _database.putNotifyAddresses(ImmutableSet.of(address));
         Integer id = address.getId();
         assertNotNull(id);
         
@@ -143,7 +142,7 @@ public class DatabaseTest {
         this.assertSetContainsGivenElements(DB_NOTIFY_ADDRESS_EQ_C, addresses, address);
         
         address.setAddress(subsequentAddressString);
-        _database.putNotifyAddresses(SingleElementSet.of(address));
+        _database.putNotifyAddresses(ImmutableSet.of(address));
         //ID should not have changed
         assertEquals(id, address.getId());
         
@@ -176,7 +175,7 @@ public class DatabaseTest {
         String address1String = "cakehat@cs.brown.edu";
         DbNotifyAddress address1In = new DbNotifyAddress(address1String);
         
-        _database.putNotifyAddresses(SingleElementSet.of(address1In));
+        _database.putNotifyAddresses(ImmutableSet.of(address1In));
         assertNotNull(address1In.getId());
         
         Set<DbNotifyAddress> addresses = _database.getNotifyAddresses();
@@ -186,7 +185,7 @@ public class DatabaseTest {
         String address2String = "another@email.com";
         DbNotifyAddress address2In = new DbNotifyAddress(address2String);
         
-        _database.putNotifyAddresses(SingleElementSet.of(address2In));
+        _database.putNotifyAddresses(ImmutableSet.of(address2In));
         assertNotNull(address2In.getId());
         assertFalse(address1In.getId().equals(address2In.getId()));
         
@@ -242,7 +241,7 @@ public class DatabaseTest {
         _thrown.expectMessage(this.getInvalidIdErrMsg(nonExistentId));
         
         DbNotifyAddress toRemove = new DbNotifyAddress(nonExistentId, addressString);
-        _database.removeNotifyAddresses(SingleElementSet.of(toRemove));
+        _database.removeNotifyAddresses(ImmutableSet.of(toRemove));
     }
     
     @Test
@@ -255,7 +254,7 @@ public class DatabaseTest {
         assertEquals(2, addresses.size());
         this.assertSetContainsGivenElements(DB_NOTIFY_ADDRESS_EQ_C, addresses, address1, address2);
         
-        _database.removeNotifyAddresses(SingleElementSet.of(address1));
+        _database.removeNotifyAddresses(ImmutableSet.of(address1));
         //database method must updated the ID of the removed element
         assertNull(address1.getId());
         
@@ -281,7 +280,7 @@ public class DatabaseTest {
         int taId = 1;
         DbTA ta = new DbTA(taId, "login", "first", "last", true, false);
         
-        _database.putTAs(SingleElementSet.of(ta));
+        _database.putTAs(ImmutableSet.of(ta));
         //ID should not have changed
         assertEquals(taId, (int) ta.getId());
         
@@ -295,7 +294,7 @@ public class DatabaseTest {
        int taId = 1;
         DbTA ta = new DbTA(taId, "login", "first", "last", true, false);
         
-        _database.putTAs(SingleElementSet.of(ta));
+        _database.putTAs(ImmutableSet.of(ta));
         //ID should not have changed
         assertEquals(taId, (int) ta.getId());
         
@@ -308,7 +307,7 @@ public class DatabaseTest {
         ta.setIsAdmin(true);
         ta.setIsDefaultGrader(false);
         
-        _database.putTAs(SingleElementSet.of(ta));
+        _database.putTAs(ImmutableSet.of(ta));
         tas = _database.getTAs();
         this.assertSetContainsGivenElements(DB_TA_EQ_C, tas, ta); 
     }
@@ -329,7 +328,7 @@ public class DatabaseTest {
     public void testPutGetSingleStudent() throws SQLException {
         DbStudent student = new DbStudent("login", "first", "last", "email");
         
-        _database.putStudents(SingleElementSet.of(student));
+        _database.putStudents(ImmutableSet.of(student));
         assertNotNull(student.getId());
         
         Set<DbStudent> students = _database.getStudents();
@@ -343,7 +342,7 @@ public class DatabaseTest {
         assertTrue(student.isEnabled());
         assertFalse(student.hasCollabPolicy());
         
-        _database.putStudents(SingleElementSet.of(student));
+        _database.putStudents(ImmutableSet.of(student));
         Integer id = student.getId();
         assertNotNull(id);
         
@@ -353,7 +352,7 @@ public class DatabaseTest {
         student.setLogin("different");
         student.setHasCollabPolicy(true);
         
-        _database.putStudents(SingleElementSet.of(student));
+        _database.putStudents(ImmutableSet.of(student));
         assertEquals(id, student.getId());
         
         students = _database.getStudents();
@@ -457,7 +456,7 @@ public class DatabaseTest {
     public void testPutGetSingleAssignmentWithNoGEs() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         assertNotNull(asgn.getId());
         
         Set<DbAssignment> assignments = _database.getAssignments();
@@ -469,7 +468,7 @@ public class DatabaseTest {
     public void testUpdateSingleAssignmentWithNoGEs() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         int id = asgn.getId();
         assertNotNull(id);
         
@@ -480,7 +479,7 @@ public class DatabaseTest {
         asgn.setName("newname");
         asgn.setOrder(2);
         
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         assertEquals(id, (int) asgn.getId());
         
         assignments = _database.getAssignments();
@@ -508,12 +507,12 @@ public class DatabaseTest {
     @Test
     public void testAddGradableEventToAsgnInDatabase() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         assertEquals(asgn.getId(), ge.getAssignmentId());
         
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
         assertNotNull(ge.getId());
         
         Set<DbAssignment> assignments = _database.getAssignments();
@@ -527,8 +526,8 @@ public class DatabaseTest {
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
         assertEquals(asgn.getId(), ge.getAssignmentId());
         
-        _database.putAssignments(SingleElementSet.of(asgn));
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putAssignments(ImmutableSet.of(asgn));
+        _database.putGradableEvents(ImmutableSet.of(ge));
         assertNotNull(asgn.getId());
         assertEquals(asgn.getId(), ge.getAssignmentId());
         assertNotNull(ge.getId());
@@ -544,7 +543,7 @@ public class DatabaseTest {
         DbGradableEvent ge1 = DbGradableEvent.build(asgn, "ge1", 1);
         DbGradableEvent ge2 = DbGradableEvent.build(asgn, "ge2", 2);
         
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         _database.putGradableEvents(ImmutableSet.of(ge1, ge2));
         assertNotNull(ge1.getId());
         assertNotNull(ge2.getId());
@@ -570,13 +569,13 @@ public class DatabaseTest {
     @Test
     public void testAddPart() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
         
         DbPart part = DbPart.build(ge, "part", 1);
-        _database.putParts(SingleElementSet.of(part));
+        _database.putParts(ImmutableSet.of(part));
         assertNotNull(part.getId());
         assertEquals(ge.getId(), part.getGradableEventId());
         
@@ -587,19 +586,19 @@ public class DatabaseTest {
     @Test
     public void testAddUpdatedPart() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
         
         DbPart part = DbPart.build(ge, "part", 1);
-        _database.putParts(SingleElementSet.of(part));
+        _database.putParts(ImmutableSet.of(part));
         assertNotNull(part.getId());
         assertEquals(ge.getId(), part.getGradableEventId());
         
         part.setOutOf(15.0);
         part.setQuickName("lab");
-        _database.putParts(SingleElementSet.of(part));
+        _database.putParts(ImmutableSet.of(part));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         this.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -608,26 +607,26 @@ public class DatabaseTest {
     @Test
     public void testAddOneAllTheWayDown() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
         
         DbPart part = DbPart.build(ge, "part", 1);
-        _database.putParts(SingleElementSet.of(part));
+        _database.putParts(ImmutableSet.of(part));
         
         DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
-        _database.putInclusionFilters(SingleElementSet.of(filter));
+        _database.putInclusionFilters(ImmutableSet.of(filter));
         
         DbPartAction action = DbPartAction.build(part, ActionType.RUN);
         action.setName("java:compile-and-run");
-        _database.putPartActions(SingleElementSet.of(action));
+        _database.putPartActions(ImmutableSet.of(action));
         
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
-        _database.putPartActionProperties(SingleElementSet.of(actionProperty));
+        _database.putPartActionProperties(ImmutableSet.of(actionProperty));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         this.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -647,12 +646,12 @@ public class DatabaseTest {
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
         
-        _database.putAssignments(SingleElementSet.of(asgn));
-        _database.putGradableEvents(SingleElementSet.of(ge));
-        _database.putParts(SingleElementSet.of(part));
-        _database.putInclusionFilters(SingleElementSet.of(filter));
-        _database.putPartActions(SingleElementSet.of(action));
-        _database.putPartActionProperties(SingleElementSet.of(actionProperty));
+        _database.putAssignments(ImmutableSet.of(asgn));
+        _database.putGradableEvents(ImmutableSet.of(ge));
+        _database.putParts(ImmutableSet.of(part));
+        _database.putInclusionFilters(ImmutableSet.of(filter));
+        _database.putPartActions(ImmutableSet.of(action));
+        _database.putPartActionProperties(ImmutableSet.of(actionProperty));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         this.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -661,31 +660,31 @@ public class DatabaseTest {
     @Test
     public void testAddOneAllTheWayDownRemoveAsgn() throws SQLException {
         DbAssignment asgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(asgn));
+        _database.putAssignments(ImmutableSet.of(asgn));
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
         
         DbPart part = DbPart.build(ge, "part", 1);
-        _database.putParts(SingleElementSet.of(part));
+        _database.putParts(ImmutableSet.of(part));
         
         DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
-        _database.putInclusionFilters(SingleElementSet.of(filter));
+        _database.putInclusionFilters(ImmutableSet.of(filter));
         
         DbPartAction action = DbPartAction.build(part, ActionType.RUN);
         action.setName("java:compile-and-run");
-        _database.putPartActions(SingleElementSet.of(action));
+        _database.putPartActions(ImmutableSet.of(action));
         
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
-        _database.putPartActionProperties(SingleElementSet.of(actionProperty));
+        _database.putPartActionProperties(ImmutableSet.of(actionProperty));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         this.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
         
-        _database.removeAssignments(SingleElementSet.of(asgn));
+        _database.removeAssignments(ImmutableSet.of(asgn));
         assertNull(asgn.getId());
         assertNull(ge.getId());
         assertNull(ge.getAssignmentId());
@@ -706,7 +705,7 @@ public class DatabaseTest {
     public void testBlacklist() throws SQLException {
         int taId = 1;
         DbTA ta = new DbTA(taId, "taLogin", "taFirst", "taLast", true, false);
-        _database.putTAs(SingleElementSet.of(ta));
+        _database.putTAs(ImmutableSet.of(ta));
         
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
@@ -718,7 +717,7 @@ public class DatabaseTest {
         this.assertIntCollectionsEqual(blacklistedStudents, studentIDs);
         
           
-        _database.unBlacklistStudents(SingleElementSet.of(student1.getId()), taId);
+        _database.unBlacklistStudents(ImmutableSet.of(student1.getId()), taId);
         blacklistedStudents = _database.getBlacklistedStudents();
         assertEquals(blacklistedStudents.size(), 1);
         
@@ -738,7 +737,7 @@ public class DatabaseTest {
     {
 
         DbAssignment dbAsgn = new DbAssignment(name, order);
-        _database.putAssignments(SingleElementSet.of(dbAsgn));
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
 
        
         Assignment asgn = createMock(Assignment.class);
@@ -879,7 +878,7 @@ public class DatabaseTest {
                               wrapper._part1.getId(), wrapper._taId2);
         assertEquals((int)wrapper._taId2, (int)_database.getGrader(wrapper._part1.getId(), wrapper._dbGroup1.getId()));
         assignedGroupsFB = _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId1);
-        this.assertIntCollectionsEqual(SingleElementSet.of(wrapper._dbGroup2.getId()), 
+        this.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup2.getId()), 
                                        assignedGroupsFB);
         assignedGroupsFB = _database.getAssignedGroups(wrapper._part1.getId());
         this.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup1.getId(), 
@@ -892,7 +891,7 @@ public class DatabaseTest {
         assertEquals(true, _database.getPartsWithAssignedGroups(wrapper._taId2).isEmpty());
         
         Set<Integer> assignPartsDB = _database.getPartsWithAssignedGroups(wrapper._taId1);
-        this.assertIntCollectionsEqual(assignPartsDB, SingleElementSet.of(wrapper._part1.getId()));
+        this.assertIntCollectionsEqual(assignPartsDB, ImmutableSet.of(wrapper._part1.getId()));
         assertEquals(true, _database.getAssignedGroups(wrapper._part2.getId()).isEmpty());
         
         _database.assignGroup(wrapper._dbGroup1.getId(), 
@@ -935,12 +934,12 @@ public class DatabaseTest {
     @Test
     public void testGetSetHandinTime() throws SQLException, CakeHatDBIOException{
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(dbAsgn));
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
 
         DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
         assertEquals(dbAsgn.getId(), ge.getAssignmentId());
 
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
 
         Assignment asgn = createMock(Assignment.class);
         expect(asgn.getName()).andReturn(dbAsgn.getName()).anyTimes();
@@ -977,12 +976,12 @@ public class DatabaseTest {
     @Test
     public void testGetSetHandinTimeOverwrite() throws SQLException, CakeHatDBIOException{
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
-        _database.putAssignments(SingleElementSet.of(dbAsgn));
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
 
         DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
         assertEquals(dbAsgn.getId(), ge.getAssignmentId());
 
-        _database.putGradableEvents(SingleElementSet.of(ge));
+        _database.putGradableEvents(ImmutableSet.of(ge));
 
 
         Assignment asgn = createMock(Assignment.class);
@@ -1102,7 +1101,7 @@ public class DatabaseTest {
         
         public DatabaseContentWrapper() throws SQLException, CakeHatDBIOException {
             DbAssignment dbAsgn = new DbAssignment("asgn", 1);
-            _database.putAssignments(SingleElementSet.of(dbAsgn));
+            _database.putAssignments(ImmutableSet.of(dbAsgn));
         
             Assignment asgn = createMock(Assignment.class);
             expect(asgn.getName()).andReturn("asgn").anyTimes();
@@ -1111,7 +1110,7 @@ public class DatabaseTest {
             replay(asgn);
         
             DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
-            _database.putGradableEvents(SingleElementSet.of(ge));
+            _database.putGradableEvents(ImmutableSet.of(ge));
         
             _part1 = DbPart.build(ge, "part1", 1);
             _part2 = DbPart.build(ge, "part2", 2);

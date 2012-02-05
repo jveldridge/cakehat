@@ -66,7 +66,6 @@ import support.ui.PaddingPanel;
 import support.ui.PartialDescriptionProvider;
 import support.ui.SelectionListener;
 import support.ui.SelectionListener.SelectionAction;
-import support.utils.SingleElementSet;
 
 /**
  *
@@ -221,7 +220,7 @@ class AssignmentPanel extends JPanel
                     @Override
                     public void dbCall() throws SQLException
                     {
-                        Allocator.getDatabase().putAssignments(SingleElementSet.of(asgn));
+                        Allocator.getDatabase().putAssignments(ImmutableSet.of(asgn));
                     }
 
                     @Override
@@ -263,7 +262,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabase().removeAssignments(SingleElementSet.of(asgn));
+                            Allocator.getDatabase().removeAssignments(ImmutableSet.of(asgn));
 
                             //This absolutely needs to occur after the delete call so in case that fails this
                             //code will not execute
@@ -532,7 +531,7 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabase().putAssignments(SingleElementSet.of(_asgn));
+                                Allocator.getDatabase().putAssignments(ImmutableSet.of(_asgn));
                                 Allocator.getDatabase().removeGroups(_asgn.getId());
                             }
 
@@ -604,7 +603,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabase().putGradableEvents(SingleElementSet.of(gradableEvent));
+                            Allocator.getDatabase().putGradableEvents(ImmutableSet.of(gradableEvent));
                         }
 
                         @Override
@@ -705,7 +704,7 @@ class AssignmentPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabase().putAssignments(SingleElementSet.of(_asgn));
+                Allocator.getDatabase().putAssignments(ImmutableSet.of(_asgn));
             }
 
             @Override
@@ -889,7 +888,7 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabase().removeGradableEvents(SingleElementSet.of(_gradableEvent));
+                                Allocator.getDatabase().removeGradableEvents(ImmutableSet.of(_gradableEvent));
 
                                 //This absolutely needs to occur after the delete call so in case that fails this
                                 //code will not execute
@@ -931,7 +930,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabase().putGradableEvents(SingleElementSet.of(_gradableEvent));
+                            Allocator.getDatabase().putGradableEvents(ImmutableSet.of(_gradableEvent));
                         }
 
                         @Override
@@ -1012,7 +1011,7 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabase().putGradableEvents(SingleElementSet.of(_gradableEvent));
+                                Allocator.getDatabase().putGradableEvents(ImmutableSet.of(_gradableEvent));
                             }
 
                             @Override
@@ -1095,7 +1094,7 @@ class AssignmentPanel extends JPanel
                         @Override
                         public void dbCall() throws SQLException
                         {
-                            Allocator.getDatabase().putParts(SingleElementSet.of(part));
+                            Allocator.getDatabase().putParts(ImmutableSet.of(part));
                         }
 
                         @Override
@@ -1468,7 +1467,7 @@ class AssignmentPanel extends JPanel
                 @Override
                 public void dbCall() throws SQLException
                 {
-                    Allocator.getDatabase().putGradableEvents(SingleElementSet.of(_gradableEvent));
+                    Allocator.getDatabase().putGradableEvents(ImmutableSet.of(_gradableEvent));
                 }
 
                 @Override
@@ -1651,7 +1650,7 @@ class AssignmentPanel extends JPanel
                             @Override
                             public void dbCall() throws SQLException
                             {
-                                Allocator.getDatabase().removeParts(SingleElementSet.of(_part));
+                                Allocator.getDatabase().removeParts(ImmutableSet.of(_part));
 
                                 //This absolutely needs to occur after the delete call so in case that fails this
                                 //code will not execute
@@ -2055,7 +2054,7 @@ class AssignmentPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabase().putParts(SingleElementSet.of(_part));
+                Allocator.getDatabase().putParts(ImmutableSet.of(_part));
             }
 
             @Override
@@ -2196,7 +2195,7 @@ class AssignmentPanel extends JPanel
                                 public void dbCall() throws SQLException
                                 {
                                     Allocator.getDatabase().removePartActionProperties(propsToRemove);
-                                    Allocator.getDatabase().putPartActions(SingleElementSet.of(_partAction));
+                                    Allocator.getDatabase().putPartActions(ImmutableSet.of(_partAction));
                                     Allocator.getDatabase().putPartActionProperties(propsToAdd);
                                 }
 
@@ -2219,7 +2218,7 @@ class AssignmentPanel extends JPanel
                                 @Override
                                 public void dbCall() throws SQLException
                                 {
-                                    Allocator.getDatabase().removePartActions(SingleElementSet.of(_partAction));;
+                                    Allocator.getDatabase().removePartActions(ImmutableSet.of(_partAction));;
                                 }
 
                                 @Override
@@ -2330,7 +2329,7 @@ class AssignmentPanel extends JPanel
                                     @Override
                                     public void dbCall() throws SQLException
                                     {
-                                        Allocator.getDatabase().putPartActionProperties(SingleElementSet.of(propInDb));
+                                        Allocator.getDatabase().putPartActionProperties(ImmutableSet.of(propInDb));
                                     }
 
                                     @Override
@@ -2410,11 +2409,11 @@ class AssignmentPanel extends JPanel
                                     {
                                         if(propInDb.getValue().isEmpty())
                                         {
-                                            Allocator.getDatabase().removePartActionProperties(SingleElementSet.of(propInDb));
+                                            Allocator.getDatabase().removePartActionProperties(ImmutableSet.of(propInDb));
                                         }
                                         else
                                         {
-                                            Allocator.getDatabase().putPartActionProperties(SingleElementSet.of(propInDb));
+                                            Allocator.getDatabase().putPartActionProperties(ImmutableSet.of(propInDb));
                                         }
                                     }
 
@@ -2525,7 +2524,7 @@ class AssignmentPanel extends JPanel
                 {
                     DateTime date = new DateTime(value);
 
-                    if(date.getYear() != Allocator.getCalendarUtilities().getCurrentYear())
+                    if(date.getYear() != new DateTime().getYear())
                     {
                         result = new ValidationResult(ValidationState.WARNING, "Specified year is not current year");
                     }

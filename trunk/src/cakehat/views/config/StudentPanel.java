@@ -45,7 +45,6 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
-import support.utils.SingleElementSet;
 import support.utils.posix.NativeException;
 
 /**
@@ -1200,7 +1199,7 @@ class StudentPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabase().putStudents(SingleElementSet.of(_student));
+                Allocator.getDatabase().putStudents(ImmutableSet.of(_student));
             }
 
             @Override

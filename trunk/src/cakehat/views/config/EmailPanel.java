@@ -9,6 +9,7 @@ import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.views.config.ValidationResult.ValidationState;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -38,7 +39,6 @@ import javax.swing.JTextField;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
-import support.utils.SingleElementSet;
 
 /**
  *
@@ -579,11 +579,11 @@ class EmailPanel extends JPanel
                             {   
                                 if(notifyAddress.getAddress().isEmpty())
                                 {
-                                    Allocator.getDatabase().removeNotifyAddresses(SingleElementSet.of(notifyAddress));
+                                    Allocator.getDatabase().removeNotifyAddresses(ImmutableSet.of(notifyAddress));
                                 }
                                 else
                                 {
-                                    Allocator.getDatabase().putNotifyAddresses(SingleElementSet.of(notifyAddress));
+                                    Allocator.getDatabase().putNotifyAddresses(ImmutableSet.of(notifyAddress));
                                 }
                             }
 

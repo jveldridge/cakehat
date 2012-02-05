@@ -6,9 +6,8 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 
 /**
- * Utility methods that do not fit well into any other utility class. If
- * enough methods in this class are sufficiently related they should be split
- * into a seperate utility class.
+ * Utility methods that do not fit well into any other utility class. If enough methods in this class are sufficiently
+ * related they should be split into a separate utility class.
  */
 public interface GeneralUtilities
 {
@@ -56,18 +55,6 @@ public interface GeneralUtilities
      * match is found
      */
     public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass);
-
-    /**
-     * Returns whether or not the two given Collections contain the same elements.
-     * The Collections are considered to contain the same elements if removing all
-     * elements of one Collection from the other results in an empty Collection.
-     *
-     * @param <E>
-     * @param c1
-     * @param c2
-     * @return true if the Collections contain the same elements, false if not
-     */
-    public <E> boolean  containSameElements(Collection<E> c1, Collection<E> c2);
 
     /**
      * The code inside of the runnable is run with the error stream redirected

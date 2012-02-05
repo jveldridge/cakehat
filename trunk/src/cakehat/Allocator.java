@@ -5,7 +5,6 @@ import cakehat.email.EmailManagerImpl;
 import cakehat.services.CourseInfo;
 import cakehat.services.CourseInfoImpl;
 import cakehat.services.GradingServices;
-import cakehat.export.Exporter;
 import cakehat.printing.EnscriptPrintingService;
 import cakehat.printing.LprPrintingService;
 import cakehat.printing.PrintingService;
@@ -18,8 +17,6 @@ import cakehat.database.DataServicesImpl;
 import cakehat.services.FileSystemServices;
 import cakehat.services.FileSystemServicesImpl;
 import cakehat.services.GradingServicesImpl;
-import cakehat.services.StringManipulationServices;
-import cakehat.services.StringManipulationServicesImpl;
 import cakehat.services.PathServices;
 import cakehat.services.PathServicesImpl;
 import cakehat.services.UserServices;
@@ -29,8 +26,6 @@ import cakehat.views.shared.gradingsheet.GradingSheetManagerImpl;
 import support.testutils.TestUtilities;
 import support.utils.ArchiveUtilities;
 import support.utils.ArchiveUtilitiesImpl;
-import support.utils.CalendarUtilities;
-import support.utils.CalendarUtilitiesImpl;
 import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilitiesImpl;
 import support.utils.FileSystemUtilities;
@@ -90,7 +85,7 @@ public class Allocator
     {
         private volatile T _instance = null;
 
-        public T getInstance()
+        private T getInstance()
         {
             //Perform double-checked locking (DCL) - it's not ideal but it does work as expected
             if(_instance == null)
@@ -121,14 +116,12 @@ public class Allocator
     private final SingletonAllocation<UserServices> _userServices;
     private final SingletonAllocation<FileSystemServices> _fileSystemServices;
     private final SingletonAllocation<PathServices> _pathServices;
-    private final SingletonAllocation<StringManipulationServices> _stringManipServices;
     private final SingletonAllocation<Constants> _constants;
     private final SingletonAllocation<PrintingService> _landscapePrintingService;
     private final SingletonAllocation<PrintingService> _portraitPrintingService;
     private final SingletonAllocation<Database> _database;
     private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
-    private final SingletonAllocation<CalendarUtilities> _calendarUtils;
     private final SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
     private final SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
     private final SingletonAllocation<UserUtilities> _userUtils;
@@ -191,17 +184,7 @@ public class Allocator
         {
             _pathServices = customizer._pathServices;
         }
-
-        if(customizer._stringManipServices == null)
-        {
-            _stringManipServices = new SingletonAllocation<StringManipulationServices>()
-                            { public StringManipulationServices allocate() { return new StringManipulationServicesImpl(); } };
-        }
-        else
-        {
-            _stringManipServices = customizer._stringManipServices;
-        }
-
+        
         if(customizer._constants == null)
         {
             _constants = new SingletonAllocation<Constants>()
@@ -260,16 +243,6 @@ public class Allocator
         else
         {
             _archiveUtils = customizer._archiveUtils;
-        }
-
-        if(customizer._calendarUtils == null)
-        {
-            _calendarUtils = new SingletonAllocation<CalendarUtilities>()
-                             { public CalendarUtilities allocate() { return new CalendarUtilitiesImpl(); } };
-        }
-        else
-        {
-            _calendarUtils = customizer._calendarUtils;
         }
 
         if(customizer._externalProcessesUtils == null)
@@ -358,11 +331,6 @@ public class Allocator
         return getInstance()._pathServices.getInstance();
     }
 
-    public static StringManipulationServices getStringManipulationServices()
-    {
-        return getInstance()._stringManipServices.getInstance();
-    }
-
     public static Constants getConstants()
     {
         return getInstance()._constants.getInstance();
@@ -396,11 +364,6 @@ public class Allocator
     public static ArchiveUtilities getArchiveUtilities()
     {
         return getInstance()._archiveUtils.getInstance();
-    }
-
-    public static CalendarUtilities getCalendarUtilities()
-    {
-        return getInstance()._calendarUtils.getInstance();
     }
 
     public static ExternalProcessesUtilities getExternalProcessesUtilities()
@@ -441,15 +404,12 @@ public class Allocator
         private SingletonAllocation<UserServices> _userServices;
         private SingletonAllocation<FileSystemServices> _fileSystemServices;
         private SingletonAllocation<PathServices> _pathServices;
-        private SingletonAllocation<StringManipulationServices> _stringManipServices;
         private SingletonAllocation<Constants> _constants;
         private SingletonAllocation<Database> _database;
         private SingletonAllocation<PrintingService> _landscapePrintingService;
         private SingletonAllocation<PrintingService> _portraitPrintingService;
-        private SingletonAllocation<Exporter> _csvExporter;
         private SingletonAllocation<GeneralUtilities> _generalUtils;
         private SingletonAllocation<ArchiveUtilities> _archiveUtils;
-        private SingletonAllocation<CalendarUtilities> _calendarUtils;
         private SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
@@ -492,13 +452,6 @@ public class Allocator
             return this;
         }
 
-        public Customizer setLocalizationServices(SingletonAllocation<StringManipulationServices> stringManipServices)
-        {
-            _stringManipServices = stringManipServices;
-
-            return this;
-        }
-
         public Customizer setConstants(SingletonAllocation<Constants> constants)
         {
             _constants = constants;
@@ -527,13 +480,6 @@ public class Allocator
             return this;
         }
 
-        public Customizer setCsvExporter(SingletonAllocation<Exporter> csvExporter)
-        {
-            _csvExporter = csvExporter;
-
-            return this;
-        }
-
         public Customizer setGeneralUtils(SingletonAllocation<GeneralUtilities> generalUtils)
         {
             _generalUtils = generalUtils;
@@ -544,13 +490,6 @@ public class Allocator
         public Customizer setArchiveUtils(SingletonAllocation<ArchiveUtilities> archiveUtils)
         {
             _archiveUtils = archiveUtils;
-
-            return this;
-        }
-
-        public Customizer setCalendarUtils(SingletonAllocation<CalendarUtilities> calendarUtils)
-        {
-            _calendarUtils = calendarUtils;
 
             return this;
         }

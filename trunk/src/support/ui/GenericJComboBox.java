@@ -1,6 +1,6 @@
 package support.ui;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
@@ -21,15 +21,17 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     private GenericComboBoxModel<E> _model;
     private DescriptionProviderCellRenderer _renderer;
 
-    public GenericJComboBox(E... values)
-    {
-        this(Arrays.asList(values));
-    }
-
-    public GenericJComboBox(Iterable<E> values, final DescriptionProvider<E> descriptionProvider)
+    public GenericJComboBox(Iterable<E> values, DescriptionProvider<E> descriptionProvider)
     {
         this(values);
 
+        this.setDescriptionProvider(descriptionProvider);
+    }
+    
+    public GenericJComboBox(DescriptionProvider<E> descriptionProvider)
+    {
+        this(Collections.<E>emptyList());
+        
         this.setDescriptionProvider(descriptionProvider);
     }
     

@@ -2,6 +2,7 @@ package cakehat;
 
 import cakehat.database.DbTA;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import support.utils.SingleElementSet;
 import support.utils.posix.NativeException;
 
 /**
@@ -192,7 +192,7 @@ public class CakehatMain
                         String lastName = nameParts[nameParts.length - 1];
                         userTA = new DbTA(userID, userLogin, firstName, lastName, true, htaLogins.contains(userLogin));
                         
-                        Allocator.getDatabase().putTAs(SingleElementSet.of(userTA));
+                        Allocator.getDatabase().putTAs(ImmutableSet.of(userTA));
                         
                         canProceed = true;
                     }
@@ -238,7 +238,7 @@ public class CakehatMain
                 if(!userTA.getLogin().equals(userLogin))
                 {
                     userTA.setLogin(userLogin);
-                    Allocator.getDatabase().putTAs(SingleElementSet.of(userTA));
+                    Allocator.getDatabase().putTAs(ImmutableSet.of(userTA));
                 }
                 
                 //Determine if the user is allowed access to the run mode

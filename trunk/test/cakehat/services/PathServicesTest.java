@@ -1,5 +1,6 @@
 package cakehat.services;
 
+import org.joda.time.DateTime;
 import cakehat.database.assignment.Part;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
-import support.utils.CalendarUtilities;
 import support.utils.UserUtilities;
 
 import static org.junit.Assert.*;
@@ -25,7 +25,7 @@ import static org.easymock.EasyMock.*;
 public class PathServicesTest
 {
     private static final String COURSE = "cs001";
-    private static final int YEAR = 1988;
+    private static final int YEAR = new DateTime().getYear();
 
     private static final int ASSIGNMENT_ID = 13;
     private static final int GRADABLE_EVENT_ID = 27;
@@ -74,16 +74,6 @@ public class PathServicesTest
                 public CourseInfo allocate() { return courseInfo; };
             };
 
-        //Mock out calendar info
-        final CalendarUtilities calendarUtil = createMock(CalendarUtilities.class);
-        expect(calendarUtil.getCurrentYear()).andReturn(YEAR).anyTimes();
-        replay(calendarUtil);
-        SingletonAllocation<CalendarUtilities> calendarUtilAlloc =
-            new SingletonAllocation<CalendarUtilities>()
-            {
-                public CalendarUtilities allocate() { return calendarUtil; };
-            };
-
         //Mock out user utilities
         final UserUtilities userUtil = createMock(UserUtilities.class);
         expect(userUtil.getUserId()).andReturn(TA_ID).anyTimes();
@@ -96,29 +86,12 @@ public class PathServicesTest
         
         new Allocator.Customizer()
                 .setCourseInfo(courseInfoAlloc)
-                .setCalendarUtils(calendarUtilAlloc)
                 .setUserUtils(userUtilAlloc)
                 .customize();
 
         _service = Allocator.getPathServices();
     }
-
-    @Test
-    public void testGetCourseDir()
-    {
-        File expected = new File("/course/" + COURSE);
-
-        assertEquals(expected, _service.getCourseDir());
-    }
-
-    @Test
-    public void testGetCakehatDir()
-    {
-        File expected = new File("/course/" + COURSE + "/.cakehat");
-
-        assertEquals(expected, _service.getCakehatDir());
-    }
-
+    
     @Test
     public void testGroupGMLFile()
     {
@@ -150,15 +123,6 @@ public class PathServicesTest
         File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" + TA_ID + "-test");
 
         assertEquals(expected, _service.getUserWorkspaceDir());
-    }
-
-    @Test
-    public void testGetUserPartDir()
-    {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +  TA_ID + "-test/" + ASSIGNMENT_ID +
-                "/" + GRADABLE_EVENT_ID + "/" + PART_ID);
-
-        assertEquals(expected, _service.getUserPartDir(_part));
     }
 
     @Test

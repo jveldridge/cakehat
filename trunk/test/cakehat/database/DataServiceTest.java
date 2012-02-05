@@ -25,7 +25,6 @@ import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import support.utils.SingleElementSet;
 import static org.easymock.EasyMock.*;
 
 /**
@@ -218,10 +217,10 @@ public class DataServiceTest {
     @Test
     public void testGet1Students() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
-        _database.putStudents(SingleElementSet.of(dbstudent1));
+        _database.putStudents(ImmutableSet.of(dbstudent1));
         _dataService.updateDataCache();
         Collection<Student> students = _dataService.getStudents();
-        this.assertDbStudentCollectionEqual(SingleElementSet.of(dbstudent1), students);
+        this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1), students);
     }
     
     @Test
@@ -237,7 +236,7 @@ public class DataServiceTest {
     @Test
     public void testIsStudentLoginInDatabase() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
-        _database.putStudents(SingleElementSet.of(dbstudent1));
+        _database.putStudents(ImmutableSet.of(dbstudent1));
         _dataService.updateDataCache();
         
         assertTrue(_dataService.isStudentLoginInDatabase(dbstudent1.getLogin()));
@@ -247,7 +246,7 @@ public class DataServiceTest {
     @Test
     public void testGetStudentFromLogin() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
-        _database.putStudents(SingleElementSet.of(dbstudent1));
+        _database.putStudents(ImmutableSet.of(dbstudent1));
         _dataService.updateDataCache();
         
         this.assertStudentEqual(dbstudent1, _dataService.getStudentFromLogin(dbstudent1.getLogin()));
@@ -311,9 +310,9 @@ public class DataServiceTest {
         
         Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
         
-        _dataService.blacklistStudents(SingleElementSet.of(student1), _dataService.getTA(_dbTA1.getId()));
+        _dataService.blacklistStudents(ImmutableSet.of(student1), _dataService.getTA(_dbTA1.getId()));
         Collection<Student> blacklistedStuds = _dataService.getBlacklistedStudents();
-        this.assertStudentCollectionEqual(SingleElementSet.of(student1), blacklistedStuds);
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1), blacklistedStuds);
     }
     
     @Test
@@ -341,8 +340,8 @@ public class DataServiceTest {
         Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
         Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
         
-        _dataService.blacklistStudents(SingleElementSet.of(student1), _dataService.getTA(_dbTA1.getId()));        
-        _dataService.blacklistStudents(SingleElementSet.of(student2), _dataService.getTA(_dbTA2.getId()));
+        _dataService.blacklistStudents(ImmutableSet.of(student1), _dataService.getTA(_dbTA1.getId()));        
+        _dataService.blacklistStudents(ImmutableSet.of(student2), _dataService.getTA(_dbTA2.getId()));
         Collection<Student> blacklistedStuds = _dataService.getBlacklistedStudents();
         this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), blacklistedStuds);
     }
@@ -359,11 +358,11 @@ public class DataServiceTest {
         TA ta1 = _dataService.getTA(_dbTA1.getId());
         TA ta2 = _dataService.getTA(_dbTA2.getId());
         
-        _dataService.blacklistStudents(SingleElementSet.of(student1), ta1);
-        _dataService.blacklistStudents(SingleElementSet.of(student2), ta2);
+        _dataService.blacklistStudents(ImmutableSet.of(student1), ta1);
+        _dataService.blacklistStudents(ImmutableSet.of(student2), ta2);
         
-        this.assertStudentCollectionEqual(SingleElementSet.of(student1), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(SingleElementSet.of(student2), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1), _dataService.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student2), _dataService.getBlacklist(ta2));
     }
     
     @Test
@@ -407,10 +406,10 @@ public class DataServiceTest {
         
         _dataService.blacklistStudents(ImmutableSet.of(student1, student2),ta1);
         _dataService.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
-        _dataService.unBlacklistStudents(SingleElementSet.of(student2), ta2);
+        _dataService.unBlacklistStudents(ImmutableSet.of(student2), ta2);
         
         this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(SingleElementSet.of(student3), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student3), _dataService.getBlacklist(ta2));
     }
     
     @Test
@@ -434,7 +433,7 @@ public class DataServiceTest {
         _dataService.unBlacklistStudents(ImmutableSet.of(student1, student2), ta2);
         
         this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(SingleElementSet.of(student3), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student3), _dataService.getBlacklist(ta2));
     }
     
     @Test
@@ -508,7 +507,7 @@ public class DataServiceTest {
         _dataService.addGroup(dbGroup1);
 
         Set<Group> groups = _dataService.getGroups(_asgnA);
-        this.assertGroupCollectionEqual(SingleElementSet.of(dbGroup1), groups);
+        this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1), groups);
     }
     
     @Test
@@ -593,8 +592,8 @@ public class DataServiceTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroups(SingleElementSet.of(dbGroup1));
-        _dataService.addGroups(SingleElementSet.of(dbGroup2));
+        _dataService.addGroups(ImmutableSet.of(dbGroup1));
+        _dataService.addGroups(ImmutableSet.of(dbGroup2));
         _dataService.removeGroups(_asgnA);        
         _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         Set<Group> groups = _dataService.getGroups(_asgnA);

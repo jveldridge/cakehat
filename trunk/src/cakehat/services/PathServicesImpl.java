@@ -8,6 +8,7 @@ import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import java.io.File;
+import org.joda.time.DateTime;
 
 /**
  *
@@ -15,14 +16,12 @@ import java.io.File;
  */
 public class PathServicesImpl implements PathServices
 {
-    @Override
-    public File getCourseDir()
+    private File getCourseDir()
     {
         return new File("/course", Allocator.getCourseInfo().getCourse());
     }
 
-    @Override
-    public File getCakehatDir()
+    private File getCakehatDir()
     {
         return new File(getCourseDir(), ".cakehat");
     }
@@ -32,7 +31,7 @@ public class PathServicesImpl implements PathServices
     {
         return new File(new File(new File(
                 getCakehatDir(),
-                Integer.toString(Allocator.getCalendarUtilities().getCurrentYear())),
+                Integer.toString(new DateTime().getYear())),
                 "database"),
                 "database.db");
     }
@@ -42,7 +41,7 @@ public class PathServicesImpl implements PathServices
     {
         return new File(new File(new File(
                 getCakehatDir(),
-                Integer.toString(Allocator.getCalendarUtilities().getCurrentYear())),
+                Integer.toString(new DateTime().getYear())),
                 "database"),
                 "backups");
     }
@@ -52,7 +51,7 @@ public class PathServicesImpl implements PathServices
     {
         return new File(new File(new File(new File(new File(new File(
                 getCakehatDir(),
-                Integer.toString(Allocator.getCalendarUtilities().getCurrentYear())),
+                Integer.toString(new DateTime().getYear())),
                 "gml"),
                 Integer.toString(part.getGradableEvent().getAssignment().getId())),
                 Integer.toString(part.getGradableEvent().getId())),
@@ -101,18 +100,13 @@ public class PathServicesImpl implements PathServices
     }
     
     @Override
-    public File getUserPartDir(Part part)
+    public File getUnarchiveHandinDir(Part part, Group group)
     {
-        return new File(new File(new File(
+        return new File(new File(new File(new File(
                 getUserWorkspaceDir(),
                 Integer.toString(part.getGradableEvent().getAssignment().getId())),
                 Integer.toString(part.getGradableEvent().getId())),
-                Integer.toString(part.getId()));
-    }
-    
-    @Override
-    public File getUnarchiveHandinDir(Part part, Group group)
-    {
-        return new File(getUserPartDir(part), Integer.toString(group.getId()));
+                Integer.toString(part.getId())),
+                Integer.toString(group.getId()));
     }
 }

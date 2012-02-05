@@ -98,20 +98,14 @@ public class GradingServicesImpl implements GradingServices
     }
     
     @Override
-    public void makeDatabaseBackup() throws ServicesException {
-        String backupFileName = Allocator.getCourseInfo().getCourse() +
-                            "db_bk_" +
-                            Allocator.getCalendarUtilities()
-                            .getCalendarAsString(Calendar.getInstance())
-                            .replaceAll("(\\s|:)", "_");
-                    File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(),
-                            backupFileName);
+    public void makeDatabaseBackup() throws ServicesException
+    {
+        String backupFileName =  "database_backup_" + System.currentTimeMillis() + ".db";
+        File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(), backupFileName);
         try
         {
-            Allocator.getFileSystemServices()
-                .copy(Allocator.getPathServices().getDatabaseFile(),
-                backupFile, OverwriteMode.FAIL_ON_EXISTING,
-                false, FileCopyPermissions.READ_WRITE);
+            Allocator.getFileSystemServices().copy(Allocator.getPathServices().getDatabaseFile(), backupFile,
+                    OverwriteMode.FAIL_ON_EXISTING, false, FileCopyPermissions.READ_WRITE);
         }
         catch(FileCopyingException ex)
         {
@@ -742,60 +736,5 @@ public class GradingServicesImpl implements GradingServices
         {
             return _studentLogin;
         }
-    }
-    
-    @Override
-    public Map<Assignment, Map<Student, Double>> getScores(Collection<Assignment> asgns,
-            Collection<Student> studentsToInclude) throws ServicesException
-    {
-        throw new UnsupportedOperationException("Not implemented yet.");
-//        HashSet<Student> studentsToIncludeHashed = new HashSet<Student>(studentsToInclude);
-//        
-//        Map<Assignment, Map<Student, Double>> allScores = new HashMap<Assignment, Map<Student, Double>>();
-//        for(Assignment asgn : asgns)
-//        {
-//            //Pull from database
-//            Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
-//            Map<Group, Double> groupScores = Allocator.getDataServices().getScores(asgn, groups);
-//            
-//            //Build a mapping from included students to their scores for the assignment
-//            Map<Student, Double> studentScores = new HashMap<Student, Double>();
-//            allScores.put(asgn, studentScores);
-//            for(Group group : groups)
-//            {
-//                for(Student student : group.getMembers())
-//                {
-//                    if(studentsToIncludeHashed.contains(student))
-//                    {
-////                        try
-////                        {
-//                            Double score = groupScores.get(group);
-//                            Handin handin = asgn.getHandin();
-//                            double penaltyOrBonus = 0;
-//                            if (handin != null) {
-//                                penaltyOrBonus = Allocator.getRubricManager()
-//                                    .getHandinPenaltyOrBonus(handin, group);
-//                            }
-//                            double totalScore = (score == null ? 0 : score + penaltyOrBonus);
-//                            studentScores.put(student, totalScore);
-////                        }
-////                        catch(RubricException ex)
-////                        {
-////                            throw new ServicesException("Unable to determine the handin bonus or penalty for " + 
-////                                    student, ex);
-////                        }
-//                    }
-//                }
-//            }
-//            for(Student student : studentsToInclude)
-//            {
-//                if(!studentScores.containsKey(student))
-//                {
-//                    studentScores.put(student, 0D);
-//                }
-//            }
-//        }
-//        
-//        return allScores;
     }
 }

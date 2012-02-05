@@ -3,6 +3,7 @@ package cakehat.views.config;
 import cakehat.Allocator;
 import cakehat.database.DbTA;
 import cakehat.views.shared.ErrorView;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +16,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +31,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
-import support.utils.SingleElementSet;
 import support.utils.posix.NativeException;
 
 /**
@@ -544,7 +543,7 @@ class TAPanel extends JPanel
             @Override
             public void dbCall() throws SQLException
             {
-                Allocator.getDatabase().putTAs(SingleElementSet.of(_ta));
+                Allocator.getDatabase().putTAs(ImmutableSet.of(_ta));
             }
 
             @Override
