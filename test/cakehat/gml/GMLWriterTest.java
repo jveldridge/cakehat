@@ -1,5 +1,6 @@
 package cakehat.gml;
 
+import org.junit.AfterClass;
 import cakehat.database.assignment.Part;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
@@ -14,6 +15,8 @@ import static org.junit.Assert.*;
  * @author Hannah
  */
 public class GMLWriterTest {
+    
+    private static boolean DELETE_GENERATED_FILES = true;
     
     private static String COMMENT = "no comments";
     private static String DETAIL1 = "Detail 1";
@@ -32,6 +35,17 @@ public class GMLWriterTest {
     private static String SUB1PROB2 = "Problem 2";
     private static String TYPE = "ADDITIVE";
     private static String VERSION = "5.0";
+    
+    private static final File OUTPUT = new File("test/cakehat/gml/output.gml");
+    
+    @AfterClass
+    public static void cleanupGeneratedFiles()
+    {
+        if(DELETE_GENERATED_FILES)
+        {
+            OUTPUT.delete();
+        }
+    }
     
     
     @Test
@@ -59,7 +73,7 @@ public class GMLWriterTest {
         GMLWriter.write(gml, new File("test/cakehat/gml/output.gml"));
         
         // read back gml and check that everything is correct
-        InMemoryGML read = GMLParser.parse(new File("test/cakehat/gml/output.gml"), part, group);
+        InMemoryGML read = GMLParser.parse(OUTPUT, part, group);
         
         assertEquals(part, read.getPart());
         assertEquals(group, read.getGroup());
