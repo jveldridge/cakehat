@@ -1,0 +1,162 @@
+#!/bin/bash
+
+cakehat_jar_path="/course/cs000/cakehat_releases/latest/cakehat.jar"
+cakehat_lib_dir="/course/cs000/.cakehat/bin/lib/"
+cakehat_scripts_dir="/course/cs000/cakehat_scripts"
+cakehat_email="cakehat@cs.brown.edu"
+java_path="/course/cs000/java_test/jdk1.6.0_22/bin/java"
+
+
+#If any basic command (mkdir, cp, chmod, etc) fails, then code immediately exits
+set -e
+
+#prints usage
+function usage
+{
+    echo -e "Usage: cakehat_installer [Options] <course number> \n"
+    echo -e "Sets up a clean copy of cakehat into the course directory specified."
+    echo -e "If you need help please contact the cakehat team at: $cakehat_email\n"
+    echo -e "Note: The course should be specified as it is in the file system."
+    echo -e "For example, installing cakehat for cs015 would be: cakehat_installer cs015"									
+}
+
+#parameter: error message
+#prints error message and Installation cancelled then exits
+function cancel
+{
+    echo "$1. Installation cancelled"
+    exit 1;
+}
+
+#Function called if any command fails. Deletes .cakehat and informs the user
+function die
+{
+    echo -e "\n\n\n\n"
+    rm -rfv "/course/$course/.cakehat"
+    echo "Installation failed. Cakehat files were deleted"
+}
+
+#verifies the course exists. This is done by checking that the course exists in /course
+function verifyCourse
+{    
+    if [ ! -d "/course/$course" ]; then
+	    cancel "'$course' is not a course"
+    fi
+}
+
+
+#verifies the caller is the hta for the course 
+function verifyUser
+{
+    user_groups=`groups`
+    if [[ !("$user_groups" =~ "${course}hta") ]]; then
+	    cancel "You are not a hta for '$course"
+    fi
+}
+
+#checks if cakehat already exists for that course, and if so prompts the user to reinstall cakehat
+function checkCakehat
+{
+    if [ -d "/course/$course/.cakehat" ]; then
+	echo "Cakehat already exists for '$course'"
+	echo -n "Would you like to DELETE cakehat and reinstall cakehat?(y/n): "
+	read response;
+	if [[ "$response" == "y" || "$response" == "Y" ]]; then
+		echo -e "Deleting .cakehat\n"
+		rm -rf "/course/$course/.cakehat"			
+	else
+		cancel "Cakehat not deleted"
+	fi 
+    fi	
+}
+
+
+
+
+#Asks user where the scripts should be copied to 
+function getScriptsDir
+{
+    echo -n "Where would you like the cakehat scripts moved to?: /course/$course/"
+    read scripts_dir;
+    scripts_dir="/course/$course/$scripts_dir"
+    
+    #checks if the directory exists, if not, then it creates the directory
+    if [ ! -d $scripts_dir ]; then
+	echo "$scripts_dir does not exist"
+	echo -n "Would you like to create it now? (y/n): "
+	read response;
+	if [[ "$response" == "y" || "$response" == "Y" ]]; then
+	    mkdir -v -p -m 770 $scripts_dir
+	else
+	    cancel "Directory not created"
+	fi
+    fi
+}
+
+#driver of script
+function installer
+{
+#verification
+verifyCourse
+verifyUser
+checkCakehat
+getScriptsDir
+
+
+echo "Beginning installation of cakehat to $course";
+
+#if any commands fail, it will call function die
+trap die EXIT
+
+#creates cakehat directories
+mkdir -v -m 770 "/course/$course/.cakehat"
+mkdir -v -m 770 "/course/$course/.cakehat/bin"
+mkdir -v -m 770 "/course/$course/.cakehat/bin/lib"
+
+#copies over jar
+cp -v   $cakehat_jar_path "/course/$course/.cakehat/bin/"
+chmod 660 "/course/$course/.cakehat/bin/cakehat.jar"
+
+#copies over lib
+cp -v	$cakehat_lib_dir* "/course/$course/.cakehat/bin/lib/"
+chmod 660 /course/$course/.cakehat/bin/lib/*
+
+#copies over scripts and sets permissions
+cp -v 	$cakehat_scripts_dir/* $scripts_dir
+for file in $cakehat_scripts_dir/*; do
+    file=$(basename $file);
+    chmod 660 $scripts_dir/$file
+    chgrp -v "${course}ta" $scripts_dir/$file
+done
+
+#changes the group of all files / directories to the ta group for the course
+chgrp -v -R     "${course}ta" "/course/$course/.cakehat"
+#opens cakehat, which should run the configuration manager
+`$java_path -jar "/course/$course/.cakehat/bin/cakehat.jar config"`
+}
+
+
+
+
+#process input
+
+case $1 in 
+	-h | --help ) 		usage
+				exit
+				;;
+
+	#check that course number is given
+	cs[0-9]* )		course=$1
+				installer
+				trap EXIT #remove trap
+				;;
+
+	#if no options are specified and a course number is not given, die
+	*)			echo -e "Please specify a course in the format described under Note\n"			
+				usage
+				exit 1
+				;;
+esac
+
+
+exit 0
