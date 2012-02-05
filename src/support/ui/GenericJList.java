@@ -41,6 +41,11 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     {
         this.setListData(values);
     }
+    
+    public GenericJList(DescriptionProvider<E> converter) 
+    {
+        this(Collections.EMPTY_SET, converter);
+    }
 
     /**
      * Sets the DescriptionProvider used to render all values in the list. This will cause the list to be refreshed,

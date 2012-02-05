@@ -433,12 +433,16 @@ class ActionsPanel extends JPanel
     
     private void autoDistributorButtonActionPerformed()
     {
-        new AutomaticDistributorView(_treeSelection.getGradableEvent()).setVisible(true);
+        AutomaticDistributorView adv = new AutomaticDistributorView(_treeSelection.getGradableEvent());
+        adv.setLocationRelativeTo(_adminView);
+        adv.setVisible(true);
     }
 
     private void manualDistributorButtonActionPerformed()
     {
-        new ManualDistributorView(_treeSelection.getPart()).setVisible(true);
+        ManualDistributorView mdv = new ManualDistributorView(_treeSelection.getPart());
+        mdv.setLocationRelativeTo(_adminView);
+        mdv.setVisible(true);
     }
 
     private void viewGradingGuideButtonActionPerformed()
