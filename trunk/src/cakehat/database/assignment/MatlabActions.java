@@ -1,4 +1,4 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
 import support.utils.AlphabeticFileComparator;
 import cakehat.Allocator;

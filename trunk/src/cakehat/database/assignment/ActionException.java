@@ -1,4 +1,4 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
 /**
  * An exception that occurred while performing a {@link PartAction} or one of the non-configurable aspects of

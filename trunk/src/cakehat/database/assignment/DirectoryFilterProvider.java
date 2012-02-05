@@ -1,4 +1,5 @@
-package cakehat.assignment;
+
+package cakehat.database.assignment;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -6,20 +7,21 @@ import java.util.Collection;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 
 /**
- * Generates FileFilters which accepts files that exactly match the path as specified by the configuration file. The
- * actual FileFilter created will be with respect to the directory the handin was unarchived into.
+ * Generates FileFilters which accept files that are the directory or are in the directory specified by the path
+ * property in the configuration file. The actual FileFilter created will be with respect to the directory the handin
+ * was unarchived into.
  *
  * @author jak2
  */
-class FileFilterProvider implements FilterProvider
+class DirectoryFilterProvider implements FilterProvider
 {
     private final String _relativePath;
 
     /**
-     *
+     * 
      * @param relativePath the PATH value from the configuration file
      */
-    public FileFilterProvider(String relativePath)
+    public DirectoryFilterProvider(String relativePath)
     {
         _relativePath = relativePath;
     }
@@ -27,13 +29,13 @@ class FileFilterProvider implements FilterProvider
     @Override
     public FileFilter getFileFilter(File unarchivedDir)
     {
-        final File absolutePath = new File(unarchivedDir, _relativePath);
+        final String absolutePath = new File(unarchivedDir, _relativePath).getAbsolutePath();
 
         FileFilter filter = new FileFilter()
         {
             public boolean accept(File file)
             {
-                return absolutePath.equals(file);
+                return file.getAbsolutePath().startsWith(absolutePath);
             }
         };
 
@@ -47,27 +49,32 @@ class FileFilterProvider implements FilterProvider
 
         for(ArchiveEntry entry : archiveContents)
         {
-            if(!entry.isDirectory())
+            if(entry.isDirectory())
             {
                 //Entry's path does not start with a /
                 //However, the specified relative path may, if it does, trim it
-                String filePath = _relativePath;
-                if(filePath.startsWith("/"))
+                String dirPath = _relativePath;
+                if(dirPath.startsWith("/"))
                 {
-                    filePath = filePath.substring(1);
+                    dirPath = dirPath.substring(1);
+                }
+                //Entry's path ends with a /
+                //However, the specified relative path may not, add it if necessary
+                if(!dirPath.endsWith("/"))
+                {
+                    dirPath += "/";
                 }
 
-                if(entry.getName().equals(filePath))
+                if(entry.getName().equals(dirPath))
                 {
                     matches = true;
-                    break;
                 }
             }
         }
 
         if(!matches)
         {
-            builder.append("File: ");
+            builder.append("Directory: ");
             builder.append(_relativePath);
             builder.append("\n");
         }

@@ -1,6 +1,6 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
-import cakehat.assignment.PartActionDescription.ActionType;
+import cakehat.database.assignment.PartActionDescription.ActionType;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;

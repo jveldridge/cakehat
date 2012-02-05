@@ -1,9 +1,9 @@
 package cakehat.views.shared.gradingsheet;
 
 import cakehat.Allocator;
-import cakehat.assignment.Assignment;
-import cakehat.assignment.GradableEvent;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.Assignment;
+import cakehat.database.assignment.GradableEvent;
+import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import java.awt.EventQueue;
 import java.awt.event.WindowAdapter;

@@ -1,4 +1,4 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
 import cakehat.database.Group;
 import java.util.Collection;

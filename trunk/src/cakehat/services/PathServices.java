@@ -1,7 +1,7 @@
 package cakehat.services;
 
-import cakehat.assignment.Assignment;
-import cakehat.assignment.Part;
+import cakehat.database.assignment.Assignment;
+import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import java.io.File;

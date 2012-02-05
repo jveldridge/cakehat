@@ -1,4 +1,4 @@
-package cakehat.assignment;
+package cakehat.database.assignment;
 
 import java.io.FileFilter;
 import java.util.Arrays;

@@ -1,6 +1,6 @@
 package cakehat.gml;
 
-import cakehat.assignment.Part;
+import cakehat.database.assignment.Part;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.database.ConfigurationData;

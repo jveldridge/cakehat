@@ -1,6 +1,6 @@
 package cakehat.database;
 
-import cakehat.assignment.PartActionDescription.ActionType;
+import cakehat.database.assignment.PartActionDescription.ActionType;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Set;
