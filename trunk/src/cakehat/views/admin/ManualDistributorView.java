@@ -13,6 +13,7 @@ import cakehat.database.TA;
 import cakehat.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,6 +51,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import support.ui.DescriptionProvider;
 import support.ui.GenericJList;
 import support.ui.PartialDescriptionProvider;
 
@@ -84,9 +86,11 @@ class ManualDistributorView extends JFrame {
     private JTextField _studentFilterBox;
     private JSpinner _randomStudentsSpinner;
     private JLabel _randomStudentLabel;
-    private Set<Group> _unassignedGroups;
+    private Set<Group> _groupsForAsgn;
     private Set<String> _unresolvedHandins;
-
+    private Set<Group> _groupsWithHandins;
+    private Set<Group> _unassignedGroups;
+    
     public ManualDistributorView(Part part) {
         super("Manual Distributor : " + part.getFullDisplayName());
         
@@ -97,8 +101,20 @@ class ManualDistributorView extends JFrame {
         try {
             _tas = new ArrayList<TA>(Allocator.getDataServices().getTAs());
             Collections.sort(_tas);
-
-            _unassignedGroups = new HashSet<Group>();
+            
+            _groupsForAsgn = Allocator.getDataServices().getGroups(_part.getAssignment());
+            
+            _unresolvedHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_part.getGradableEvent());
+            if (_unresolvedHandins == null) {
+                this.dispose();
+                return;
+            }
+            
+            _groupsWithHandins = ImmutableSet.copyOf(Allocator.getGradingServices()
+                    .getGroupsForHandins(_part.getGradableEvent(), _unresolvedHandins).values());
+            
+            _unassignedGroups = new HashSet<Group>(_groupsForAsgn);            
+            _unassignedGroups.removeAll(Allocator.getDataServices().getAssignedGroups(_part));
 
             this.setLayout(new BorderLayout());
 
@@ -114,13 +130,7 @@ class ManualDistributorView extends JFrame {
             this.add(Box.createHorizontalStrut(padding), BorderLayout.EAST);
             this.add(Box.createHorizontalStrut(padding), BorderLayout.WEST);
             this.add(contentPanel, BorderLayout.CENTER);
-        
-            _unresolvedHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_part.getGradableEvent());
-            if (_unresolvedHandins == null) {
-                this.dispose();
-                return;
-            }
-
+            
             //default selections
             _fromUnassigned.selectFirst();
             _toTAList.selectFirst();
@@ -232,7 +242,7 @@ class ManualDistributorView extends JFrame {
             }
         });
 
-        _fromGroupList = new GenericJList<Group>();
+        _fromGroupList = new GenericJList<Group>(_groupDescriptionProvider);
         _fromGroupList.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -434,8 +444,7 @@ class ManualDistributorView extends JFrame {
 
         //if UNASSIGNED is selected
         if (!_fromUnassigned.isSelectionEmpty()) {
-            _unassignedGroups = new HashSet<Group>(Allocator.getGradingServices()
-                    .getGroupsForHandins(_part.getGradableEvent(),_unresolvedHandins).values());
+            _unassignedGroups = new HashSet<Group>(Allocator.getDataServices().getGroups(_part.getAssignment()));
             _unassignedGroups.removeAll(Allocator.getDataServices().getAssignedGroups(_part));
             groupsToDisplay = new ArrayList<Group>(_unassignedGroups);
 
@@ -468,8 +477,7 @@ class ManualDistributorView extends JFrame {
         List<Group> groupsToDisplay;
 
         if (!_toUnassigned.isSelectionEmpty()) {
-            _unassignedGroups = new HashSet<Group>(Allocator.getGradingServices()
-                    .getGroupsForHandins(_part.getGradableEvent(), _unresolvedHandins).values());
+            _unassignedGroups = new HashSet<Group>(Allocator.getDataServices().getGroups(_part.getAssignment()));
             _unassignedGroups.removeAll(Allocator.getDataServices().getAssignedGroups(_part));
             groupsToDisplay = new ArrayList<Group>(_unassignedGroups);
         } else if (!_toTAList.isSelectionEmpty()) {
@@ -681,6 +689,30 @@ class ManualDistributorView extends JFrame {
                     ")</font></html>";
         }
     }
+    
+    private final DescriptionProvider<Group> _groupDescriptionProvider = new DescriptionProvider<Group>() {
+        @Override
+        public String getDisplayText(Group group) {
+            if (_part.getGradableEvent().hasDigitalHandins()) {
+                if (!_groupsWithHandins.contains(group)) {
+                    return "<html><font color=#B40404>" + group.toString() + "</font></html>";
+                }
+            }
+            
+            return group.toString();
+        }
+
+        @Override
+        public String getToolTipText(Group group) {
+            if (_part.getGradableEvent().hasDigitalHandins()) {
+                if (!_groupsWithHandins.contains(group)) {
+                    return "Group does not have a handin for gradable event [" + _part.getGradableEvent() + "].";
+                }
+            }
+            
+            return null;
+        }
+    };
 
     private class TADescriptionProvider extends PartialDescriptionProvider<TA> {
         private Map<TA, Collection<Group>> _distribution;
