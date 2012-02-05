@@ -103,6 +103,7 @@ public class CakehatMain
                     boolean isSSH = false;
                     if(_runMode.hasGUI())
                     {
+                        applyLookAndFeel();
                         isSSH = adjustIfRemote();
                     }
                     
@@ -272,23 +273,6 @@ public class CakehatMain
     }
     
     /**
-     * Loads and caches data from the database.
-     * 
-     * @throws CakehatException 
-     */
-    private static void loadDataCache() throws CakehatException
-    {
-        try
-        {
-            Allocator.getDataServices().updateDataCache();
-        }
-        catch(ServicesException e)
-        {
-            throw new CakehatException("Could not load data to be cached.", e);
-        }
-    }
-    
-    /**
      * If the user is running over SSH some UI properties will be changed to improve performance.
      */
     private static boolean adjustIfRemote()
@@ -343,7 +327,6 @@ public class CakehatMain
      */
     public static void initializeForTesting() throws CakehatException
     {
-        loadDataCache();
         applyLookAndFeel();  
     }
 }
