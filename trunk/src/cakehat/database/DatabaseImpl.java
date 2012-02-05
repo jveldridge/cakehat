@@ -743,8 +743,10 @@ public class DatabaseImpl implements Database
             
             List<DbDataItem> orderingedItems = new ArrayList<DbDataItem>(toRemove);
             for (DbDataItem item : orderingedItems) {
-                ps.setInt(1, item.getId());
-                ps.addBatch();
+                if (item.getId() != null) {
+                    ps.setInt(1, item.getId());
+                    ps.addBatch();
+                }
             }
             
             int[] results = ps.executeBatch();
