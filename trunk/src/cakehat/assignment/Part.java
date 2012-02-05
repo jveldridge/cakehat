@@ -4,6 +4,11 @@ import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;
 import support.utils.OrFileFilter;
 import cakehat.database.Group;
+import cakehat.gml.GMLParser;
+import cakehat.gml.GradingSheetException;
+import cakehat.gml.InMemoryGML;
+import cakehat.gml.InMemoryGML.Section;
+import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.TextViewerView;
 import java.io.File;
@@ -252,10 +257,24 @@ public class Part implements Comparable<Part>
     {
         if(_outOf == null)
         {
-            if(_gmlTemplate.exists() && _gmlTemplate.isFile())
+            if(_gmlTemplate.exists() && _gmlTemplate.isFile() && _gmlTemplate.canRead())
             {
-                //TODO: Parse GML template to determine part's total out of
-                _outOf = 0D;
+                double totalOutOf = 0;
+                try
+                {
+                    InMemoryGML gml = GMLParser.parse(_gmlTemplate, this, null);
+                    for(Section section : gml.getSections())
+                    {
+                        for(Subsection subsection : section.getSubsections())
+                        {
+                            totalOutOf += subsection.getOutOf();
+                        }
+                    }
+                }
+                //TODO: Figure out how to communicate this case of user error from an incorrectly formatted GML template
+                catch(GradingSheetException e) { }
+                
+                _outOf = totalOutOf;
             }
             else
             {
