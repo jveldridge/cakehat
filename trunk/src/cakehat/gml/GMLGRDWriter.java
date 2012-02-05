@@ -403,7 +403,12 @@ public class GMLGRDWriter {
                 throw new GradingSheetException("Could not get handin status for " +
                                           "group " + group + " on assignment " + event.getName() + ".", ex);
             }
-            res = info.apply(time.getHandinTime(), null, null);
+            if (time != null) {
+                res = info.apply(time.getHandinTime(), null, null);
+            }
+            else {
+                res = info.apply(null, null, null);
+            }
         }
         
         double penalty = res.getPenaltyOrBonus(totalScore._earned);
