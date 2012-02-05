@@ -11,8 +11,8 @@ import java.util.Set;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import support.ui.DocumentAdapter;
 
 /**
  *
@@ -63,32 +63,17 @@ class EarnedField extends JFormattedTextField
                         {
                             setText("0");
                         }
-                        
-                        double earned = getEarned();
-                        if(_currEarned != earned)
-                        {
-                            notifyListeners(_currEarned, earned);
-                            _currEarned = earned;
-                        }
                     }
                 });
             }
         });
         
-        this.getDocument().addDocumentListener(new DocumentListener()
+        this.getDocument().addDocumentListener(new DocumentAdapter()
         {
             @Override
-            public void insertUpdate(DocumentEvent de) { anyUpdate(de); }
-
-            @Override
-            public void removeUpdate(DocumentEvent de) { anyUpdate(de); }
-
-            @Override
-            public void changedUpdate(DocumentEvent de) { anyUpdate(de); }
-            
-            public void anyUpdate(DocumentEvent de)
+            public void modificationOccurred(DocumentEvent de)
             {
-                Double currEarned = 0D;
+                Double earned = 0D;
                 try
                 {   
                     String text = de.getDocument().getText(0, de.getDocument().getLength());
@@ -97,17 +82,25 @@ class EarnedField extends JFormattedTextField
                     {
                         try
                         {
-                            currEarned = Double.parseDouble(text);
+                            earned = Double.parseDouble(text);
                         }
                         catch(NumberFormatException e)
                         {
-                            currEarned = null;
+                            earned = null;
                         }
                     }
                 }
                 catch(BadLocationException e) { }
                 
-                applyColorIndicator(currEarned);
+                applyColorIndicator(earned);
+                
+                //Notify listeners
+                double numericEarned = (earned == null ? 0 : earned);
+                if(_currEarned != numericEarned)
+                {
+                    notifyListeners(_currEarned, numericEarned);
+                    _currEarned = numericEarned;
+                }
             }
         });
         

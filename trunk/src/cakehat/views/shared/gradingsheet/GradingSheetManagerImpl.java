@@ -52,18 +52,9 @@ public class GradingSheetManagerImpl implements GradingSheetManager
                 @Override
                 public void windowClosed(WindowEvent we)
                 {
-                    final GradingSheetFrame frame = _openGradingSheetFrames.get(pair);
+                    GradingSheetFrame frame = _openGradingSheetFrames.get(pair);
                     _openGradingSheetFrames.remove(pair);
-                    
-                    //Wait for the grading sheet to lose focus, causing any last change to be applied, then save
-                    EventQueue.invokeLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            frame.save();
-                        }
-                    });
+                    frame.save();
                 }
             });
             
