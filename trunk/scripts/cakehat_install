@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cakehat_jar_path="/course/cs000/cakehat_releases/latest/cakehat.jar"
-cakehat_lib_dir="/course/cs000/.cakehat/bin/lib/"
-cakehat_scripts_dir="/course/cs000/cakehat_scripts"
+cakehat_jar_path="/contrib/cakehat/releases/latest/bin/cakehat.jar"
+cakehat_lib_dir="/contrib/cakehat/releases/latest/bin/lib/"
+cakehat_scripts_dir="/contrib/cakehat/releases/latest/scripts"
 cakehat_email="cakehat@cs.brown.edu"
 java_path="/course/cs000/java_test/jdk1.6.0_22/bin/java"
 
