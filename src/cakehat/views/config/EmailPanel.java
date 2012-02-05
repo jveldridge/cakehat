@@ -188,8 +188,8 @@ class EmailPanel extends JPanel
             descriptionPanel.add(Box.createVerticalStrut(5), BorderLayout.CENTER);
             
             JLabel descriptionLabel = new JLabel("<html>" +
-                    "To send email, cakehat needs the email credentials of a Brown CS account. " +
-                    "We suggest you make use of your course's test account. " +
+                    "To send email, cakehat needs the email credentials of a Brown CS account. The password is not " +
+                    "the Kerberos password used for login. We suggest you make use of your course's test account. " +
                     "To set or reset an account's LDAP password (which is the password used for Brown CS email), run " +
                     "<tt>ldappasswd</tt> while signed into the account.</html>");
             descriptionPanel.add(descriptionLabel, BorderLayout.SOUTH);
