@@ -6,7 +6,7 @@ import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
-import cakehat.database.HandinTime;
+import cakehat.database.GradableEventOccurrence;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
@@ -75,7 +75,7 @@ class GradableEventPanel extends GradingSheetPanel
                 }
                 else
                 {
-                    HandinTime handinTime = Allocator.getDataServices().getHandinTime(_gradableEvent, _group);
+                    GradableEventOccurrence handinTime = Allocator.getDataServices().getGradableEventOccurrence(_gradableEvent, _group);
                     if(handinTime != null)
                     {
                         receivedDate = handinTime.getHandinTime();

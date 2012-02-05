@@ -10,7 +10,7 @@ import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.DeadlineInfo;
 import org.joda.time.DateTime;
 import cakehat.database.DataServices;
-import cakehat.database.HandinTime;
+import cakehat.database.GradableEventOccurrence;
 import cakehat.database.TA;
 import cakehat.assignment.Part;
 import cakehat.Allocator;
@@ -70,7 +70,7 @@ public class GMLGRDWriterTest {
         final DataServices dataServices = createMock(DataServices.class);
         
         for (GradableEvent e : asgn.getGradableEvents()) {
-            HandinTime time = createMock(HandinTime.class);
+            GradableEventOccurrence time = createMock(GradableEventOccurrence.class);
             expect(time.getDateRecorded()).andReturn(new DateTime(2012, 1, 25, 6, 37, 38)).anyTimes();
             expect(time.getGradableEvent()).andReturn(e).anyTimes();
             expect(time.getGroup()).andReturn(group).anyTimes();
@@ -90,7 +90,7 @@ public class GMLGRDWriterTest {
             expect(info.apply(time.getHandinTime(), null, null)).andReturn(res).anyTimes();
             replay(info);
             
-            expect(dataServices.getHandinTime(e, group)).andReturn(time).anyTimes();
+            expect(dataServices.getGradableEventOccurrence(e, group)).andReturn(time).anyTimes();
             expect(dataServices.getDeadlineInfo(e)).andReturn(info).anyTimes();
             for (Part p : e.getParts()) {
                 PartGrade grade = createMock(PartGrade.class);
@@ -156,7 +156,7 @@ public class GMLGRDWriterTest {
         final DataServices dataServices = createMock(DataServices.class);
         
         for (GradableEvent e : asgn.getGradableEvents()) {
-            HandinTime time = createMock(HandinTime.class);
+            GradableEventOccurrence time = createMock(GradableEventOccurrence.class);
             expect(time.getDateRecorded()).andReturn(new DateTime(2012, 1, 25, 6, 37, 38)).anyTimes();
             expect(time.getGradableEvent()).andReturn(e).anyTimes();
             expect(time.getGroup()).andReturn(group).anyTimes();
@@ -176,7 +176,7 @@ public class GMLGRDWriterTest {
             expect(info.apply(time.getHandinTime(), null, null)).andReturn(res).anyTimes();
             replay(info);
             
-            expect(dataServices.getHandinTime(e, group)).andReturn(time).anyTimes();
+            expect(dataServices.getGradableEventOccurrence(e, group)).andReturn(time).anyTimes();
             expect(dataServices.getDeadlineInfo(e)).andReturn(info).anyTimes();
             
         }
