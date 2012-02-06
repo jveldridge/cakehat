@@ -5,7 +5,6 @@ import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.services.ServicesException;
 import java.util.Map;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.joda.time.DateTime;
@@ -91,7 +90,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Collection<Student> getBlacklistedStudents() throws ServicesException;
+    public Set<Student> getBlacklistedStudents() throws ServicesException;
     
     /**
      * Returns a Collection containing the Student object representing each student
@@ -102,7 +101,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Collection<Student> getBlacklist(TA ta) throws ServicesException;
+    public Set<Student> getBlacklist(TA ta) throws ServicesException;
     
     /**
      * Indicates whether the gradable event has a distribution.  Returns true if
@@ -124,7 +123,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Map<TA, Collection<Group>> getDistribution(Part dp) throws ServicesException;
+    public Map<TA, Set<Group>> getDistribution(Part dp) throws ServicesException;
     
     /**
      * Assigns Groups for each TA to grade for each Part.  Any existing
@@ -133,7 +132,7 @@ public interface DataServices {
      * @param distribution
      * @throws ServicesException 
      */
-    public void setDistribution(Map<Part, Map<TA, Collection<Group>>> distribution) throws ServicesException;
+    public void setDistribution(Map<Part, Map<TA, Set<Group>>> distribution) throws ServicesException;
 
     /**
      * Returns a Collection of Groups that the given TA is assigned to grade for
@@ -146,7 +145,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Collection<Group> getAssignedGroups(Part part, TA ta) throws ServicesException;
+    public Set<Group> getAssignedGroups(Part part, TA ta) throws ServicesException;
 
     /**
      * Returns a Collection of Groups that have been assigned to any TA
@@ -158,7 +157,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Collection<Group> getAssignedGroups(Part part) throws ServicesException;
+    public Set<Group> getAssignedGroups(Part part) throws ServicesException;
     
     /**
      * Returns a Collection of Parts for which the given TA has been

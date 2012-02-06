@@ -1,8 +1,8 @@
 package cakehat.database;
 
 import cakehat.database.DbPropertyValue.DbPropertyKey;
+import com.google.common.collect.SetMultimap;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import support.utils.Pair;
@@ -187,17 +187,16 @@ public interface Database
     public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException;
     
     /**
-     * Returns the distribution for the Part with the given ID.  The Map 
-     * returned maps a TA's ID to a Collection of group IDs representing the
-     * groups that TA has been assigned to grade for the Part. The Map returned
+     * Returns the distribution for the Part with the given ID.  The SetMultimap 
+     * returned maps a TA's ID to a Set of group IDs representing the
+     * groups that TA has been assigned to grade for the Part. The SetMultiap returned
      * contains entries only for those TAs who have groups assigned to them.
-     * If no distribution has yet been set, an empty Map is returned.
+     * If no distribution has yet been set, an empty SetMultimap is returned.
      * 
      * @param partID
      * @return
      */
-    public Map<Integer, Collection<Integer>> getDistribution(int partID) 
-                                                        throws SQLException;
+    public SetMultimap<Integer, Integer> getDistribution(int partID) throws SQLException;
     
     /**
      * Stores a distribution in the database.  The given Map maps the ID of a 

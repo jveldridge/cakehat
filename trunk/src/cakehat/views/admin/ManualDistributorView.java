@@ -715,7 +715,7 @@ class ManualDistributorView extends JFrame {
     };
 
     private class TADescriptionProvider extends PartialDescriptionProvider<TA> {
-        private Map<TA, Collection<Group>> _distribution;
+        private Map<TA, Set<Group>> _distribution;
 
         public void updateData() {
             _distribution = null;

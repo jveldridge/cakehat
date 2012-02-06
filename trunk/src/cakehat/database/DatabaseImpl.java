@@ -1138,11 +1138,10 @@ public class DatabaseImpl implements Database
     }
     
     @Override
-    public Map<Integer, Collection<Integer>> getDistribution(int partID) 
-                                                        throws SQLException {
+    public SetMultimap<Integer, Integer> getDistribution(int partID) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            ArrayListMultimap<Integer, Integer> groups = ArrayListMultimap.create();
+            SetMultimap<Integer, Integer> dist = HashMultimap.create();
 
             PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taID, d.agid AS agid"
                     + " FROM distribution AS d"
@@ -1151,10 +1150,10 @@ public class DatabaseImpl implements Database
             ResultSet rs = ps.executeQuery();
             
             while (rs.next()) {
-                groups.put(rs.getInt("taID"), rs.getInt("agid"));
+                dist.put(rs.getInt("taID"), rs.getInt("agid"));
             }
             
-            return groups.asMap(); 
+            return dist; 
         } finally {
             this.closeConnection(conn);
         }
@@ -1250,13 +1249,7 @@ public class DatabaseImpl implements Database
 
     @Override
     public Set<Integer> getAssignedGroups(int partID) throws SQLException {
-        Set<Integer> groups = new HashSet<Integer>();
-
-        for (Collection<Integer> groups4TA : this.getDistribution(partID).values()) {
-            groups.addAll(groups4TA);
-        }
-
-        return ImmutableSet.copyOf(groups);
+        return ImmutableSet.copyOf(this.getDistribution(partID).values());
     }
 
     @Override
