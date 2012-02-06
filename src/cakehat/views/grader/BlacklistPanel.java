@@ -3,7 +3,7 @@ package cakehat.views.grader;
 import cakehat.Allocator;
 import cakehat.database.TA;
 import cakehat.database.Student;
-import cakehat.resources.icons.IconLoader;
+import support.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.StudentDescriptionProvider;

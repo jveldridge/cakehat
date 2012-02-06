@@ -1,4 +1,4 @@
-package cakehat.resources.icons;
+package support.resources.icons;
 
 import cakehat.Allocator;
 import java.awt.image.BufferedImage;

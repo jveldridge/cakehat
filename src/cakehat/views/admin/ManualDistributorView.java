@@ -10,7 +10,7 @@ import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.database.TA;
-import cakehat.resources.icons.IconLoader;
+import support.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
