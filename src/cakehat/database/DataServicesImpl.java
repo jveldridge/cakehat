@@ -10,6 +10,7 @@ import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -614,20 +615,20 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Collection<Student> getBlacklistedStudents() throws ServicesException {
+    public Set<Student> getBlacklistedStudents() throws ServicesException {
         try {
-            Collection<Integer> blacklistedIDs = Allocator.getDatabase().getBlacklistedStudents();
-            return this.idsToStudents(blacklistedIDs, new ArrayList<Student>(blacklistedIDs.size()));
+            Set<Integer> blacklistedIDs = Allocator.getDatabase().getBlacklistedStudents();
+            return this.idsToStudents(blacklistedIDs, new HashSet<Student>(blacklistedIDs.size()));
         } catch (SQLException ex) {
             throw new ServicesException("Could not read blacklisted students from the database.", ex);
         }
     }
 
     @Override
-    public Collection<Student> getBlacklist(TA ta) throws ServicesException {
+    public Set<Student> getBlacklist(TA ta) throws ServicesException {
         try {
-            Collection<Integer> blacklistedIDs = Allocator.getDatabase().getBlacklist(ta.getId());
-            return this.idsToStudents(blacklistedIDs, new ArrayList<Student>(blacklistedIDs.size()));
+            Set<Integer> blacklistedIDs = Allocator.getDatabase().getBlacklist(ta.getId());
+            return this.idsToStudents(blacklistedIDs, new HashSet<Student>(blacklistedIDs.size()));
         } catch (SQLException ex) {
             throw new ServicesException("Could not read blacklisted students from the database", ex);
         }
@@ -649,9 +650,9 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Map<TA, Collection<Group>> getDistribution(Part dp) throws ServicesException {
-        Map<TA, Collection<Group>> dist = new HashMap<TA, Collection<Group>>();
-        Map<Integer, Collection<Integer>> idDist;
+    public Map<TA, Set<Group>> getDistribution(Part dp) throws ServicesException {
+        Map<TA, Set<Group>> dist = new HashMap<TA, Set<Group>>();
+        SetMultimap<Integer, Integer> idDist;
         try {
             idDist = Allocator.getDatabase().getDistribution(dp.getId());
         } catch (SQLException ex) {
@@ -661,13 +662,13 @@ public class DataServicesImpl implements DataServices {
         
         for (TA ta : this.getTAs()) {
             if (idDist.containsKey(ta.getId())) {
-                Collection<Integer> toGrade = idDist.get(ta.getId());
-                dist.put(ta, this.idsToGroups(toGrade, new ArrayList<Group>(toGrade.size())));
+                Set<Integer> toGrade = idDist.get(ta.getId());
+                dist.put(ta, this.idsToGroups(toGrade, new HashSet<Group>(toGrade.size())));
             }
             else {
                 //for any TA who has not been assigned any groups to grade,
                 //add an empty collection to the map 
-                dist.put(ta, Collections.EMPTY_LIST);
+                dist.put(ta, Collections.<Group>emptySet());
             }
         }
         
@@ -675,7 +676,7 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public void setDistribution(Map<Part, Map<TA, Collection<Group>>> distribution) throws ServicesException {
+    public void setDistribution(Map<Part, Map<TA, Set<Group>>> distribution) throws ServicesException {
         try {
             Map<Integer, Map<Integer, Set<Integer>>> distForDb = new HashMap<Integer, Map<Integer, Set<Integer>>>();
             for (Part part : distribution.keySet()) {
@@ -697,11 +698,10 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Collection<Group> getAssignedGroups(Part part, TA ta) throws ServicesException {
-        Collection<Integer> groupIDs;
+    public Set<Group> getAssignedGroups(Part part, TA ta) throws ServicesException {
         try {
-            groupIDs = Allocator.getDatabase().getAssignedGroups(part.getId(), ta.getId());
-            return this.idsToGroups(groupIDs, new ArrayList<Group>(groupIDs.size()));
+            Set<Integer> groupIDs = Allocator.getDatabase().getAssignedGroups(part.getId(), ta.getId());
+            return this.idsToGroups(groupIDs, new HashSet<Group>(groupIDs.size()));
         } catch (SQLException ex) {
             throw new ServicesException("Could not read groups assigned to TA [" +
                     ta + "] on part [" + part + "] from the database.", ex);
@@ -709,11 +709,10 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Collection<Group> getAssignedGroups(Part part) throws ServicesException {
-        Collection<Integer> groupIDs;
+    public Set<Group> getAssignedGroups(Part part) throws ServicesException {
         try {
-            groupIDs = Allocator.getDatabase().getAssignedGroups(part.getId());
-            return this.idsToGroups(groupIDs, new ArrayList<Group>(groupIDs.size()));
+            Set<Integer> groupIDs = Allocator.getDatabase().getAssignedGroups(part.getId());
+            return this.idsToGroups(groupIDs, new HashSet<Group>(groupIDs.size()));
         } catch (SQLException ex) {
             throw new ServicesException("Could not read all assigned groups "
                     + "for part [" + part + "] from the database.", ex);

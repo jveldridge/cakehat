@@ -1,5 +1,6 @@
 package cakehat.database;
 
+import com.google.common.collect.SetMultimap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -852,9 +853,8 @@ public class DatabaseTest {
         assertEquals(false, _database.isDistEmpty(wrapper._partIDs));
         assertEquals(true, _database.getDistribution(wrapper._part2.getId()).isEmpty());
         
-        Map<Integer, Collection<Integer>> part1Dist = 
-                _database.getDistribution(wrapper._part1.getId());
-        assertEquals(1, part1Dist.size());
+        SetMultimap<Integer, Integer> part1Dist = _database.getDistribution(wrapper._part1.getId());
+        assertEquals(1, part1Dist.keySet().size());
         assertEquals(true, part1Dist.containsKey(wrapper._taId1));
         assertEquals(2, part1Dist.get(wrapper._taId1).size());
     }

@@ -34,6 +34,7 @@ import cakehat.resources.icons.IconLoader.IconImage;
 import cakehat.resources.icons.IconLoader.IconSize;
 import cakehat.views.shared.ErrorView;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Box;
@@ -300,7 +301,7 @@ class AutomaticDistributorView extends JFrame {
             }
         }
 
-        Map<Part, Map<TA, Collection<Group>>> distForDB = new HashMap<Part, Map<TA, Collection<Group>>>();
+        Map<Part, Map<TA, Set<Group>>> distForDB = new HashMap<Part, Map<TA, Set<Group>>>();
         for (Part part : _gradableEvent) {
             distForDB.put(part, distribution.get(part).getDistribution());
         }
@@ -346,16 +347,16 @@ class AutomaticDistributorView extends JFrame {
 
         //overallDist represents distribution of both Groups that have members blacklisted by
         //some TA and Groups in which no member is blacklisted
-        Map<TA, Collection<Group>> overallDist = new HashMap<TA, Collection<Group>>(blacklistedResponse.getDistribution());
+        Map<TA, Set<Group>> overallDist = new HashMap<TA, Set<Group>>(blacklistedResponse.getDistribution());
         for (TA ta : remainingDist.keySet()) {
             if (!overallDist.containsKey(ta)) {
-                overallDist.put(ta, new ArrayList<Group>());
+                overallDist.put(ta, new HashSet<Group>());
             }
             overallDist.get(ta).addAll(remainingDist.get(ta));
         }
 
         //students who could not be distributed without violating some TA's blacklisted
-        Collection<Group> overallUndistributed = new ArrayList<Group>(blacklistedResponse.getProblemStudents());
+        Set<Group> overallUndistributed = new HashSet<Group>(blacklistedResponse.getProblemStudents());
 
         return new DistributionResponse(overallDist, overallUndistributed);
     }
@@ -395,12 +396,12 @@ class AutomaticDistributorView extends JFrame {
                                          Map<TA, Collection<Student>> graderBlacklists) {
         List<TA> graders = new ArrayList<TA>(numStudsNeeded.keySet());
 
-        Map<TA, Collection<Group>> distribution = new HashMap<TA, Collection<Group>>();
+        Map<TA, Set<Group>> distribution = new HashMap<TA, Set<Group>>();
         for (TA grader : graders) {
-            distribution.put(grader, new ArrayList<Group>());
+            distribution.put(grader, new HashSet<Group>());
         }
 
-        Collection<Group> unDistributed = new ArrayList<Group>();
+        Set<Group> unDistributed = new HashSet<Group>();
 
         for (Group blGroup : groups) {
             Collections.shuffle(graders);
@@ -517,20 +518,19 @@ class AutomaticDistributorView extends JFrame {
 
     private class DistributionResponse {
 
-        private Map<TA, Collection<Group>> _distribution;
-        private Collection<Group> _problemGroups;
+        private Map<TA, Set<Group>> _distribution;
+        private Set<Group> _problemGroups;
 
-        public DistributionResponse(Map<TA, Collection<Group>> distribution,
-                                    Collection<Group> problemGroup) {
+        public DistributionResponse(Map<TA, Set<Group>> distribution, Set<Group> problemGroup) {
             _distribution = distribution;
             _problemGroups = problemGroup;
         }
 
-        public Map<TA, Collection<Group>> getDistribution() {
+        public Map<TA, Set<Group>> getDistribution() {
             return _distribution;
         }
 
-        public Collection<Group> getProblemStudents() {
+        public Set<Group> getProblemStudents() {
             return _problemGroups;
         }
 

@@ -1,6 +1,5 @@
 package cakehat.database;
 
-import support.utils.UserUtilities;
 import java.util.ArrayList;
 import java.io.File;
 import org.joda.time.DateTime;
@@ -31,7 +30,7 @@ import static org.easymock.EasyMock.*;
  *
  * @author Yudi
  */
-public class DataServiceTest {
+public class DataServicesTest {
 
     private DataServices _dataService;
     private Database _database;
@@ -1506,37 +1505,37 @@ public class DataServiceTest {
         TA ta1 = _dataService.getTA(_dbTA1.getId());
         TA ta2 = _dataService.getTA(_dbTA2.getId());
         
-        Map<Part, Map<TA, Collection<Group>>> dist = new HashMap<Part, Map<TA, Collection<Group>>>();
-        Map<TA, Collection<Group>> part1Map = new HashMap<TA, Collection<Group>>();
-        Map<TA, Collection<Group>> part2Map = new HashMap<TA, Collection<Group>>();
+        Map<Part, Map<TA, Set<Group>>> dist = new HashMap<Part, Map<TA, Set<Group>>>();
+        Map<TA, Set<Group>> part1Map = new HashMap<TA, Set<Group>>();
+        Map<TA, Set<Group>> part2Map = new HashMap<TA, Set<Group>>();
         
-        ArrayList<Group> both = new ArrayList<Group>();
+        HashSet<Group> both = new HashSet<Group>();
         both.add(group1);
         both.add(group2);
         
-        ArrayList<Group> first = new ArrayList<Group>();
+        HashSet<Group> first = new HashSet<Group>();
         first.add(group1);
         
-        ArrayList<Group> second = new ArrayList<Group>();
+        HashSet<Group> second = new HashSet<Group>();
         second.add(group2);
         
         part1Map.put(ta1, first);
         part1Map.put(ta2, second);
         part2Map.put(ta1, both);
-        part2Map.put(ta2, new ArrayList<Group>());
+        part2Map.put(ta2, new HashSet<Group>());
         
         dist.put(part1, part1Map);
         dist.put(part2, part2Map);
         
         _dataService.setDistribution(dist);
         
-        Map<TA, Collection<Group>> result1 = _dataService.getDistribution(part1);
-        Map<TA, Collection<Group>> result2 = _dataService.getDistribution(part2);
+        Map<TA, Set<Group>> result1 = _dataService.getDistribution(part1);
+        Map<TA, Set<Group>> result2 = _dataService.getDistribution(part2);
         assertEquals(2, result1.size());
         assertEquals(2, result2.size());
         
-        Collection<Group> part1TA1Groups = result1.get(ta1);
-        Collection<Group> part1TA2Groups = result1.get(ta2);
+        Set<Group> part1TA1Groups = result1.get(ta1);
+        Set<Group> part1TA2Groups = result1.get(ta2);
         assertEquals(1, part1TA1Groups.size());
         assertEquals(1, part1TA2Groups.size());
         assertTrue(part1TA1Groups.contains(group1));
