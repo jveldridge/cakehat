@@ -37,7 +37,7 @@ public class CakehatAboutBox extends JFrame
         this.add(panel);
 
         // Icon
-        ImageIcon cakehatIcon = new ImageIcon(getClass().getResource("/cakehat/resources/cakehat.png"));
+        ImageIcon cakehatIcon = new ImageIcon(getClass().getResource("/cakehat/cakehat.png"));
         panel.add(new JLabel(cakehatIcon), BorderLayout.CENTER);
 
         // Info

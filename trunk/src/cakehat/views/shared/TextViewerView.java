@@ -41,9 +41,9 @@ import cakehat.Allocator;
 import cakehat.CakehatMain;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
-import cakehat.resources.icons.IconLoader;
-import cakehat.resources.icons.IconLoader.IconImage;
-import cakehat.resources.icons.IconLoader.IconSize;
+import support.resources.icons.IconLoader;
+import support.resources.icons.IconLoader.IconImage;
+import support.resources.icons.IconLoader.IconSize;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
