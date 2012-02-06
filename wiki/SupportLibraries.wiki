@@ -2,30 +2,28 @@
 
 =Support Libraries=
 
-cakehat relies upon a number of external jars. These libraries have proven themselves reliable. Upgrading to the latest version of a library should be done carefully, not just automatically because it is available.
+cakehat relies upon a number of external jars. These libraries have proven themselves reliable.
 
 ==Javassist==
 http://www.csg.is.titech.ac.jp/~chiba/javassist/
 
-`javassist-3.14.0.jar` {NOT LATEST}
+`javassist-3.15.0.jar`
 
 Javassist reads Java class files and allows for determining information about them without actually turning them into Java objects. (This is very different from Java reflection.) This functionality is used to determine the directory containing all of the root packages and which classes have main lines.
 
 ==Commons Compress==
 http://commons.apache.org/compress/
 
-`commons-compress-1.0.jar` {NOT LATEST}
+`commons-compress-1.3.jar`
 
 Commons Compress can extract and create tar and zip files. cakehat uses this library to extract digital file handins.
 
-==Google Collections Library==
-http://code.google.com/p/google-collections/
+==Guava==
+http://code.google.com/p/guava-libraries/
 
-`google-collection-1.0.jar` {NOT LATEST}
+`guava-11.0.1.jar`
 
-Google Collections provides a large number of data structures not found in the standard Java library. cakehat makes use of the multimap, immutable list, and immutable map. A very important detail is that most of these data structures do not support storing null.
-
-Note: Google Collections has been merged into Guava (http://code.google.com/p/guava-libraries/) but cakehat uses a version of Google Collections from before this merge
+Guava contains what was formally known as Google Collections. This library provides a large number of data structures not found in the standard Java library such as multimaps and immutable data structures. A very important detail is that most of these data structures do not support storing null.
 
 ==JavaMail==
 http://www.oracle.com/technetwork/java/javamail/index.html
@@ -33,20 +31,6 @@ http://www.oracle.com/technetwork/java/javamail/index.html
 `javamail-1.4.4.jar`
 
 JavaMail allows for sending emails on behalf of the actual TA using cakehat.
-
-==JFreeChart==
-http://www.jfree.org/jfreechart/
-
-`jfreechart-1.0.13.jar` {NOT LATEST}
-
-JFreeChart is used to create the charts and graphs used in cakehat.
-
-==JCommon==
-http://www.jfree.org/jcommon/
-
-`jcommon-1.0.16.jar` {NOT LATEST}
-
-JCommon is a dependency of JFreeChart.
 
 ==Java Native Access (JNA)==
 https://github.com/twall/jna
