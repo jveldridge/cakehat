@@ -75,6 +75,12 @@ class AutomaticDistributorView extends JFrame {
 
         try {
             _remainingBadHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_gradableEvent);
+            
+            //if returned null, user clicked cancel
+            if (_remainingBadHandins == null) {
+                this.dispose();
+                return;
+            }
         } catch (ServicesException ex) {
             new ErrorView(ex);
             this.dispose();
