@@ -33,6 +33,7 @@ import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import cakehat.views.shared.ErrorView;
+import java.awt.Component;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -64,7 +65,7 @@ class AutomaticDistributorView extends JFrame {
 
     private JButton _setUpGradingButton;
 
-    public AutomaticDistributorView(GradableEvent ge) {
+    public AutomaticDistributorView(GradableEvent ge, Component parent) {
         if (!ge.hasDigitalHandins()) {
             throw new RuntimeException("The automatic distributor can only be used for gradable events with digital "
                     + "handins.");
@@ -75,12 +76,6 @@ class AutomaticDistributorView extends JFrame {
 
         try {
             _remainingBadHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_gradableEvent);
-            
-            //if returned null, user clicked cancel
-            if (_remainingBadHandins == null) {
-                this.dispose();
-                return;
-            }
         } catch (ServicesException ex) {
             new ErrorView(ex);
             this.dispose();
@@ -186,6 +181,8 @@ class AutomaticDistributorView extends JFrame {
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.pack();
         this.setResizable(false);
+        this.setLocationRelativeTo(parent);
+        this.setVisible(true);
     }
 
     private void updateInterface() {
@@ -554,7 +551,7 @@ class AutomaticDistributorView extends JFrame {
         }
         
         if (ge != null) {
-            new AutomaticDistributorView(ge).setVisible(true);
+            new AutomaticDistributorView(ge, null).setVisible(true);
         }
         else {
             System.err.println("Cannot test view because the configuration contains no assignments with gradable events "

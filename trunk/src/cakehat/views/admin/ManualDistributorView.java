@@ -16,6 +16,7 @@ import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -91,7 +92,7 @@ class ManualDistributorView extends JFrame {
     private Set<Group> _groupsWithHandins;
     private Set<Group> _unassignedGroups;
     
-    public ManualDistributorView(Part part) {
+    public ManualDistributorView(Part part, Component parent) {
         super("Manual Distributor : " + part.getFullDisplayName());
         
         _part = part;
@@ -142,6 +143,8 @@ class ManualDistributorView extends JFrame {
             this.pack();
             this.setResizable(false);
             this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            this.setLocationRelativeTo(parent);
+            this.setVisible(true);
 
             _studentFilterBox.requestFocus();
         } catch (ServicesException ex) {
@@ -763,7 +766,7 @@ class ManualDistributorView extends JFrame {
         }
         
         if(part != null) {
-            new ManualDistributorView(part).setVisible(true);
+            new ManualDistributorView(part, null).setVisible(true);
         } else {
             System.err.println("Cannot test view because the configuration contains no assignments with gradable events "
                     + "with parts.");
