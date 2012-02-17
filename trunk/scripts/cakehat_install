@@ -116,17 +116,17 @@ mkdir -v -m 770 "/course/$course/.cakehat/bin/lib"
 
 #copies over jar
 cp -v   $cakehat_jar_path "/course/$course/.cakehat/bin/"
-chmod 660 "/course/$course/.cakehat/bin/cakehat.jar"
+chmod 550 "/course/$course/.cakehat/bin/cakehat.jar"
 
 #copies over lib
 cp -v	$cakehat_lib_dir* "/course/$course/.cakehat/bin/lib/"
-chmod 660 /course/$course/.cakehat/bin/lib/*
+chmod 550 /course/$course/.cakehat/bin/lib/*
 
 #copies over scripts and sets permissions
 cp -v 	$cakehat_scripts_dir/* $scripts_dir
 for file in $cakehat_scripts_dir/*; do
     file=$(basename $file);
-    chmod 660 $scripts_dir/$file
+    chmod 550 $scripts_dir/$file
     chgrp -v "${course}ta" $scripts_dir/$file
 done
 
