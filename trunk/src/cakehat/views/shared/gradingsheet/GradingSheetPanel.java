@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -46,6 +47,76 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     public Component getAsComponent()
     {
         return this;
+    }
+    
+    abstract List<JComponent> getFocusableComponents();
+    
+    @Override
+    public Component getFirstComponent()
+    {
+        Component first = null;
+        if(!getFocusableComponents().isEmpty())
+        {
+            first = getFocusableComponents().get(0);
+        }
+        
+        return first;
+    }
+
+    @Override
+    public Component getLastComponent()
+    {
+        Component last = null;
+        if(!getFocusableComponents().isEmpty())
+        {
+            last = getFocusableComponents().get(getFocusableComponents().size() - 1);
+        }
+        
+        return last;
+    }
+
+    @Override
+    public boolean containsComponent(Component component)
+    {
+        return getFocusableComponents().contains(component);
+    }
+
+    @Override
+    public Component getComponentAfter(Component component)
+    {   
+        int index = getFocusableComponents().indexOf(component);
+        
+        Component next;
+        //If the component is not contained or is the last component, the next component is undefined
+        if(index == -1 || index == getFocusableComponents().size() - 1)
+        {
+            next = null;
+        }
+        else
+        {
+            next = getFocusableComponents().get(index + 1);
+        }
+        
+        return next;
+    }
+
+    @Override
+    public Component getComponentBefore(Component component)
+    {
+        int index = getFocusableComponents().indexOf(component);
+        
+        Component prev;
+        //If the component is not contained or is the first component, the previous component is undefined
+        if(index == -1 || index == 0)
+        {
+            prev = null;
+        }
+        else
+        {
+            prev = getFocusableComponents().get(index - 1);
+        }
+        
+        return prev;
     }
     
     // Listener

@@ -1,7 +1,6 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
-import cakehat.CakehatMain;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
@@ -12,10 +11,17 @@ import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
 import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.gradingsheet.GradingSheet;
 import com.google.common.collect.Iterables;
+import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashSet;
@@ -28,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -35,7 +42,7 @@ import javax.swing.JSeparator;
  */
 public class AdminView extends JFrame
 {
-    private final JPanel _mainPanel;
+    private final JScrollPane _mainPane;
     private final AssignmentTree _assignmentTree;
     private final StudentList _studentList;
     private final ActionsPanel _actionsPanel;
@@ -60,11 +67,15 @@ public class AdminView extends JFrame
         });
         
         //Setup UI
-        _mainPanel = new JPanel();
+        _mainPane = new JScrollPane();
         _actionsPanel = new ActionsPanel(this);
         _assignmentTree = new AssignmentTree();
         _studentList = new StudentList();
         this.initUI();
+        
+        //Setup focus traversal
+        this.initFocusTraversalPolicy();
+        _assignmentTree.selectFirstAssignment();
         
         //Display
         this.setMinimumSize(new Dimension(950, 450));
@@ -103,10 +114,9 @@ public class AdminView extends JFrame
         
         contentPanel.add(Box.createHorizontalStrut(5));
         
-        _mainPanel.setLayout(new BorderLayout(0, 0));
-        JScrollPane mainScrollPane = new JScrollPane(_mainPanel);
-        mainScrollPane.setBorder(null);
-        contentPanel.add(mainScrollPane);
+        _mainPane.setBorder(null);
+        _mainPane.getViewport().setBackground(Color.WHITE);
+        contentPanel.add(_mainPane);
         
         contentPanel.add(Box.createHorizontalStrut(5));
         JSeparator separator = new JSeparator(JSeparator.VERTICAL);
@@ -200,16 +210,16 @@ public class AdminView extends JFrame
         _actionsPanel.notifySelectionChanged(treeSelection, selectedGroups, selectedStudentsNotInGroups);
         
         //Update the center panel
-        updateMainPanel(treeSelection, selectedGroups, selectedStudentsNotInGroups);
+        updateMainPane(treeSelection, selectedGroups, selectedStudentsNotInGroups);
     }
     
-    private void updateMainPanel(AssignmentTreeSelection treeSelection,
-            Set<Group> selectedGroups, Set<Student> selectedStudentsNotInGroups)
+    private void updateMainPane(AssignmentTreeSelection treeSelection, Set<Group> selectedGroups,
+            Set<Student> selectedStudentsNotInGroups)
     {
         saveDisplayedGradingSheet();
         _currentlyDisplayedSheet = null;
         
-        _mainPanel.removeAll();
+        Component componentToDisplay = null;
         
         Assignment asgn = treeSelection.getAssignment();
         GradableEvent ge = treeSelection.getGradableEvent();
@@ -220,7 +230,8 @@ public class AdminView extends JFrame
             JLabel label = new JLabel("<html>Select an Assignment, Gradable Event, or Part</html>");
             label.setFont(new Font("Dialog", Font.BOLD, 16));
             label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            _mainPanel.add(label, BorderLayout.CENTER);
+            
+            componentToDisplay = label;
         }
         else
         {
@@ -244,7 +255,7 @@ public class AdminView extends JFrame
                             .getGradingSheet(asgn, group, true, true);
                 }
                 
-                _mainPanel.add(_currentlyDisplayedSheet.getAsComponent(), BorderLayout.CENTER);
+                componentToDisplay = _currentlyDisplayedSheet.getAsComponent();
             }
             else
             {
@@ -252,13 +263,14 @@ public class AdminView extends JFrame
                 JLabel label = new JLabel("<html>Multi-" + studentOrGroup + " display not yet supported</html>");
                 label.setFont(new Font("Dialog", Font.BOLD, 16));
                 label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                _mainPanel.add(label, BorderLayout.CENTER);
+                
+                componentToDisplay = label;
             }
         }
         
-        //Force visual update
-        _mainPanel.repaint();
-        _mainPanel.revalidate();
+        _mainPane.setViewportView(componentToDisplay);
+        _mainPane.repaint();
+        _mainPane.revalidate();
     }
     
     void saveDisplayedGradingSheet()
@@ -267,6 +279,110 @@ public class AdminView extends JFrame
         {
             _currentlyDisplayedSheet.save();
         }
+    }
+    
+    private void initFocusTraversalPolicy()
+    {
+        // Add Enter as forward traversal key
+        Set<AWTKeyStroke> forwardKeys = this.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        Set<AWTKeyStroke> newForwardKeys = new HashSet<AWTKeyStroke>(forwardKeys);
+        newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
+
+        this.setFocusTraversalPolicy(new FocusTraversalPolicy()
+        {
+            @Override
+            public Component getComponentAfter(Container cntnr, Component cmpnt)
+            {
+                Component next = null;
+                
+                if(cmpnt == _studentList.getFilterField())
+                {
+                    //If there are students displayed in the student list
+                    if(_studentList.getList().hasListData())
+                    {
+                        //If this is because of a filter term
+                        if(!_studentList.getFilterField().getText().isEmpty())
+                        {
+                            _studentList.getFilterField().setText(_studentList.getList().getListData().get(0).getLogin());
+                            _studentList.getList().selectFirst();
+
+                            //If the main pane holds a grading sheet
+                            if(_currentlyDisplayedSheet != null)
+                            {
+                                next = _currentlyDisplayedSheet.getFirstComponent();
+                            }
+                        }
+                        else
+                        {
+                            next = _studentList.getList();
+                        }
+                    }
+                }
+                else if(cmpnt == _studentList.getList())
+                {
+                    if(_studentList.getList().hasSelectedValue())
+                    {
+                        next = _currentlyDisplayedSheet.getFirstComponent();
+                    }
+                }
+                else if(_currentlyDisplayedSheet != null && _currentlyDisplayedSheet.containsComponent(cmpnt))
+                {
+                    next = _currentlyDisplayedSheet.getComponentAfter(cmpnt);
+                }
+                
+                //If no next was defined, select all text in the filter field and move focus to it
+                if(next == null)
+                {
+                    _studentList.getFilterField().selectAll();
+                    next = _studentList.getFilterField();
+                }
+
+                return next;
+            }
+
+            @Override
+            public Component getComponentBefore(Container cntnr, Component cmpnt)
+            {
+                Component prev = null;
+                
+                if(_currentlyDisplayedSheet != null && _currentlyDisplayedSheet.containsComponent(cmpnt))
+                {
+                    prev = _currentlyDisplayedSheet.getComponentBefore(cmpnt);
+                }
+                else if(cmpnt == _studentList.getFilterField())
+                {
+                    prev = _assignmentTree.getTree();
+                }
+                
+                //If no previous was defined, select all text in the filter field and move focus to it  
+                if(prev == null)
+                {
+                    _studentList.getFilterField().selectAll();
+                    prev = _studentList.getFilterField();
+                }
+
+                return prev;
+            }
+
+            @Override
+            public Component getFirstComponent(Container cntnr)
+            {
+                return _studentList.getFilterField();
+            }
+
+            @Override
+            public Component getLastComponent(Container cntnr)
+            {
+                return _studentList.getFilterField();
+            }
+
+            @Override
+            public Component getDefaultComponent(Container cntnr)
+            {
+                return _studentList.getFilterField();
+            }
+        });
     }
     
     public static void launch(final boolean isSSH)
@@ -279,12 +395,5 @@ public class AdminView extends JFrame
                 new AdminView(isSSH).setVisible(true);
             }
         });
-    }
-    
-    //For testing
-    public static void main(String[] args) throws Throwable
-    {
-        CakehatMain.initializeForTesting();
-        launch(false);
     }
 }

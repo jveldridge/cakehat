@@ -3,23 +3,36 @@ package cakehat.views.shared.gradingsheet;
 import cakehat.Allocator;
 import cakehat.database.assignment.Part;
 import cakehat.gml.GMLParser;
-import cakehat.gml.GMLWriter;
 import cakehat.gml.GradingSheetException;
 import cakehat.gml.InMemoryGML;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.database.Group;
+import cakehat.gml.GMLWriter;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
@@ -33,6 +46,8 @@ class GMLPartPanel extends PartPanel
     private final boolean _submitOnSave;
     private InMemoryGML _gml;
     private double _totalEarned = 0;
+    
+    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
     
     GMLPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {   
@@ -166,6 +181,8 @@ class GMLPartPanel extends PartPanel
                         }
                     });
                     pointsPanel.add(earnedField);
+                    
+                    _focusableComponents.add(earnedField);
                 }
 
                 //Spacing
@@ -269,5 +286,11 @@ class GMLPartPanel extends PartPanel
                         "Group: " + _group.getName());
             }
         }
+    }
+
+    @Override
+    List<JComponent> getFocusableComponents()
+    {
+        return _focusableComponents;
     }
 }

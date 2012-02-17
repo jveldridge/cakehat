@@ -5,9 +5,12 @@ import cakehat.database.assignment.GradableEvent;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
+import javax.swing.JComponent;
 
 /**
  *
@@ -23,6 +26,8 @@ class AssignmentPanel extends GradingSheetPanel
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<GradableEventPanel, Boolean> _gradableEventPanelSaveStatus =
             new HashMap<GradableEventPanel, Boolean>();
+    
+    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
     
     private double _totalEarned = 0;
     private double _totalOutOf = 0;
@@ -82,6 +87,7 @@ class AssignmentPanel extends GradingSheetPanel
             final GradableEvent gradableEvent = _asgn.getGradableEvents().get(i);
             
             final GradableEventPanel panel = new GradableEventPanel(gradableEvent, _group, _isAdmin, _submitOnSave);
+            _focusableComponents.addAll(panel.getFocusableComponents());
             
             _gradableEventPanelSaveStatus.put(panel, false);
             _totalEarned += panel.getEarned();
@@ -133,6 +139,12 @@ class AssignmentPanel extends GradingSheetPanel
                 addContent(Box.createVerticalStrut(10));
             }
         }
+    }
+    
+    @Override
+    List<JComponent> getFocusableComponents()
+    {
+        return _focusableComponents;
     }
 
     @Override

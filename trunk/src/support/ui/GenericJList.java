@@ -44,7 +44,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     
     public GenericJList(DescriptionProvider<E> converter) 
     {
-        this(Collections.EMPTY_SET, converter);
+        this(Collections.<E>emptyList(), converter);
     }
 
     /**
@@ -55,7 +55,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
      */
     public void setDescriptionProvider(DescriptionProvider<E> descriptionProvider)
     {
-        _renderer = new DescriptionProviderCellRenderer(new DefaultListCellRenderer(), this, descriptionProvider);
+        _renderer = new DescriptionProviderCellRenderer<E>(new DefaultListCellRenderer(), this, descriptionProvider);
         this.setCellRenderer(_renderer);
         _model.notifyRefresh();
     }
@@ -148,7 +148,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
      */
     public void clearListData()
     {
-        this.setListData(Collections.EMPTY_LIST);
+        this.setListData(Collections.<E>emptyList());
     }
 
     /**
@@ -244,6 +244,16 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
         _model.notifyRefresh();
     }
 
+    /**
+     * Returns whether the list has a selected value.
+     * 
+     * @return
+     */
+    public boolean hasSelectedValue()
+    {
+        return (super.getSelectedIndex() != -1);
+    }
+    
     /**
      * Returns the first selected value in the list or <code>null</code> if no
      * items are selected.

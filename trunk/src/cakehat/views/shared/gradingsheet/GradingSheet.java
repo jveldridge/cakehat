@@ -27,5 +27,15 @@ public interface GradingSheet
     
     public void removeGradingSheetListener(GradingSheetListener listener);
     
+    public boolean containsComponent(Component component);
+    
+    public Component getComponentAfter(Component component);
+    
+    public Component getComponentBefore(Component component);
+    
+    public Component getFirstComponent();
+
+    public Component getLastComponent();
+    
     public Component getAsComponent();
 }
