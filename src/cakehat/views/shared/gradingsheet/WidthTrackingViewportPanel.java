@@ -95,4 +95,34 @@ class WidthTrackingViewportPanel<T extends JComponent & GradingSheet> extends JP
     {
         return this;
     }
+
+    @Override
+    public boolean containsComponent(Component component)
+    {
+        return _gradingSheet.containsComponent(component);
+    }
+
+    @Override
+    public Component getComponentAfter(Component component)
+    {
+        return _gradingSheet.getComponentAfter(component);
+    }
+
+    @Override
+    public Component getComponentBefore(Component component)
+    {
+        return _gradingSheet.getComponentBefore(component);
+    }
+
+    @Override
+    public Component getFirstComponent()
+    {
+        return _gradingSheet.getFirstComponent();
+    }
+
+    @Override
+    public Component getLastComponent()
+    {
+        return _gradingSheet.getLastComponent();
+    }
 }

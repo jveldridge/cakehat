@@ -14,9 +14,12 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.joda.time.DateTime;
@@ -38,6 +41,8 @@ class GradableEventPanel extends GradingSheetPanel
     
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<PartPanel, Boolean> _partPanelSaveStatus = new HashMap<PartPanel, Boolean>();
+    
+    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
     
     private double _totalEarned = 0;
     private double _totalOutOf = 0;
@@ -263,6 +268,12 @@ class GradableEventPanel extends GradingSheetPanel
         //Out of
         pointsPanel.add(createDisabledField(null));
     }
+
+    @Override
+    List<JComponent> getFocusableComponents()
+    {
+        return _focusableComponents;
+    }
     
     private static class PenaltyOrBonusField extends JTextField
     {
@@ -301,6 +312,7 @@ class GradableEventPanel extends GradingSheetPanel
             final Part part = _gradableEvent.getParts().get(i);
             
             final PartPanel panel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave);
+            _focusableComponents.addAll(panel.getFocusableComponents());
             
             _partPanelSaveStatus.put(panel, false);
             _totalEarned += panel.getEarned();

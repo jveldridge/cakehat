@@ -8,7 +8,10 @@ import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.services.ServicesException;
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
@@ -19,6 +22,8 @@ class DBPartPanel extends PartPanel
 {   
     private final boolean _submitOnSave;
     private double _earned = 0;
+    
+    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
     
     DBPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {   
@@ -88,6 +93,7 @@ class DBPartPanel extends PartPanel
                 }
             });
             pointsPanel.add(earnedField);
+            _focusableComponents.add(earnedField);
         }
         
         //Spacing
@@ -118,5 +124,11 @@ class DBPartPanel extends PartPanel
                 new ErrorView(ex, "Unable to save grade for part " + _part.getFullDisplayName() + " for group " + _group);
             }
         }
+    }
+
+    @Override
+    List<JComponent> getFocusableComponents()
+    {
+        return _focusableComponents;
     }
 }

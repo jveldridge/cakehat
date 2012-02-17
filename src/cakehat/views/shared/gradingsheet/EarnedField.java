@@ -8,6 +8,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -46,7 +47,8 @@ class EarnedField extends JFormattedTextField
                     @Override
                     public void run()
                     {
-                        EarnedField.this.selectAll();
+                        scrollToVisible();
+                        selectAll();
                     }
                 });
             }
@@ -177,6 +179,14 @@ class EarnedField extends JFormattedTextField
         for(EarnedListener listener : _listeners)
         {
             listener.earnedChanged(prevEarned, currEarned);
+        }
+    }
+ 
+    private void scrollToVisible()
+    {
+        if(this.getParent() instanceof JComponent)
+        {
+            ((JComponent) this.getParent()).scrollRectToVisible(this.getBounds());
         }
     }
 }
