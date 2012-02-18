@@ -190,7 +190,7 @@ public class GraderView extends JFrame
     private void populateGroupsList()
     {
         Part selected = _partList.getSelectedValue();
-        List<GroupStatus> statuses = new ArrayList(_assignedGroups.get(selected).values());
+        List<GroupStatus> statuses = new ArrayList<GroupStatus>(_assignedGroups.get(selected).values());
         Collections.sort(statuses);
         List<Group> groups = new ArrayList<Group>();
         for(GroupStatus status : statuses)
@@ -317,7 +317,7 @@ public class GraderView extends JFrame
         JLabel partLabel = new JLabel("<html><b>Assignment Part</b></html>");
         partLabel.setPreferredSize(partLabelSize);
 
-        _partList = new GenericJList<Part>(Collections.EMPTY_LIST, new PartDescriptionProvider());
+        _partList = new GenericJList<Part>(Collections.<Part>emptyList(), new PartDescriptionProvider());
         _partList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         _partList.usePlainFont();
         _partList.addListSelectionListener(new ListSelectionListener()

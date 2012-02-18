@@ -31,7 +31,7 @@ public abstract class DbDataItem
         throw new UnsupportedOperationException("This data item type has no parent.");
     }
     
-    <T extends DbDataItem> Iterable<T> getChildren() {
+    Iterable<? extends DbDataItem> getChildren() {
         return Collections.emptyList();
     }
 }

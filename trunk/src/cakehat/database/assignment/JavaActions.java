@@ -627,7 +627,7 @@ class JavaActions implements ActionProvider
         }
 
         //Listens to errors
-        DiagnosticCollector collector = new DiagnosticCollector();
+        DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<JavaFileObject>();
 
         //Get all of the Java files that are allowed by the inclusion filter
         FileFilter javaFilter = new FileExtensionFilter("java");
@@ -1056,7 +1056,11 @@ class JavaActions implements ActionProvider
 
         boolean hasMain = false;
         boolean hasJUnitTest = false;
+        
+        //This unchecked conversion is required because the javassist API does not use generics
+        @SuppressWarnings(value="unchecked")
         List<MethodInfo> methods = cFile.getMethods();
+        
         for(MethodInfo method : methods)
         {
             //A nested class cannot be a main class even if it has a main method

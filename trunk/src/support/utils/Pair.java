@@ -51,7 +51,7 @@ public class Pair<A, B>
         {
             return false;
         }
-        final Pair<A, B> other = (Pair<A, B>) obj;
+        final Pair other = (Pair) obj;
         if(this._first != other._first && (this._first == null || !this._first.equals(other._first)))
         {
             return false;

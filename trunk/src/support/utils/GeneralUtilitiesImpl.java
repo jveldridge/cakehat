@@ -75,7 +75,7 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         }
         else if(throwableClass.isInstance(throwable))
         {
-            return (E) throwable;
+            return throwableClass.cast(throwable);
         }
         else
         {

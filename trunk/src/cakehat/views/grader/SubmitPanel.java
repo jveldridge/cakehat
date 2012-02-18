@@ -388,12 +388,12 @@ class SubmitPanel extends AlphaJPanel
     }
 
     private void addGroupBoxes(String labelText, AlphaJPanel panel, List<GenericJCheckBox<Group>> allGroupBoxes,
-            boolean selectBox, List<Group> groups, List<Group>... aboveListsOfGroups)
+            boolean selectBox, List<Group> groups, List<?>... aboveListsOfGroups)
     {
         if(!groups.isEmpty())
         {
             // If any of the above lists were not empty
-            for(List<Group> aboveList : aboveListsOfGroups)
+            for(List<?> aboveList : aboveListsOfGroups)
             {
                 if(!aboveList.isEmpty())
                 {
