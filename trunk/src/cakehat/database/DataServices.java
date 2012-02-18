@@ -193,6 +193,42 @@ public interface DataServices {
      * @throws ServicesException
      */
     public void setGrader(Part part, Group group, TA ta) throws ServicesException;
+
+    /**
+     * Sets the same extension for each group in {@code groups} for the {@code gradableEvent}. The groups must belong
+     * to the same assignment that the gradable event belongs to, an exception will be thrown if not.
+     * 
+     * @param gradableEvent
+     * @param groups
+     * @param ontime
+     * @param shiftDates
+     * @param note may be {@code null}
+     * @throws ServicesException if thrown no changes to extensions will have occurred
+     */
+    public void setExtensions(GradableEvent gradableEvent, Set<Group> groups, DateTime ontime, boolean shiftDates,
+            String note) throws ServicesException;
+    
+    /**
+     * Returns a mapping of group to the extensions for that group in {@code groups}. The groups must belong to the
+     * same assignment that {@code gradableEvent} belongs to, an exception will be thrown if not. If a group does not
+     * have an extension it will not be in the mapping.
+     * 
+     * @param gradableEvent
+     * @param groups
+     * @return
+     * @throws ServicesException 
+     */
+    public Map<Group, Extension> getExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException;
+
+    /**
+     * Deletes extensions for each group in {@code groups} for the {@code gradableEvent}. The groups must belong
+     * to the same assignment that the gradable event belongs to, an exception will be thrown if not.
+     * 
+     * @param gradableEvent
+     * @param groups
+     * @throws ServicesException if thrown no changes to extensions will have occurred
+     */
+    public void deleteExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException;
     
     /**
      * Returns the points earned for the given Group and Part. If no such value is stored in the database, {@code null}

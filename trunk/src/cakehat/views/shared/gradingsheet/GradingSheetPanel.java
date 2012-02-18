@@ -220,12 +220,24 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     
     static JLabel createContentLabel(String text, boolean grayOut, boolean bold)
     {
-        JLabel label = new JLabel("<html>" + text + "</html>");
+        JLabel label = new JLabel()
+        {
+            @Override
+            public void setText(String text)
+            {
+                super.setText("<html>" + text + "</html>");
+            }
+        };
+        label.setText(text);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         label.setForeground(grayOut ? Color.GRAY : Color.BLACK);
         if(bold)
         {
             label.setFont(new Font("Dialog", Font.BOLD, 12));
+        }
+        else
+        {
+            label.setFont(new Font("Dialog", Font.PLAIN, 12));
         }
         
         return label;

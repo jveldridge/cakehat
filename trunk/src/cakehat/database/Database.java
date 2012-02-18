@@ -289,6 +289,44 @@ public interface Database
     public Integer getGrader(Integer partID, int groupID) throws SQLException;
 
     /**
+     * Sets the same extension for the groups specified by {@code groupIds} for gradable event {@code geId}. The groups
+     * should to belong to the assignment that the gradable event belongs to; this is not enforced by the database.
+     * 
+     * @param geId
+     * @param ontime
+     * @param shiftDates
+     * @param note
+     * @param dateRecorded
+     * @param taId
+     * @param groupIds
+     * @throws SQLException if thrown no changes to extensions will have occurred
+     */
+    public void setExtensions(int geId, String ontime, boolean shiftDates, String note, String dateRecorded,
+            int taId, Set<Integer> groupIds) throws SQLException;
+    
+    /**
+     * Deletes extensions for the groups specified by {@code groupIds} for gradable event {@code geId}. The groups
+     * should belong to the assignment that the gradable event belongs to; this is not enforced by the database.
+     * 
+     * @param geId
+     * @param groupIds
+     * @throws SQLException if thrown no changes to extensions will have occurred
+     */
+    public void deleteExtensions(int geId, Set<Integer> groupIds) throws SQLException;
+    
+    /**
+     * Retrieves a mapping of group id to extension record for the groups specified by {@code groupIds} for gradable
+     * event {@code geId}. The groups should to belong to the assignment that the gradable event belongs to; this is
+     * not enforced by the database. If no extension exists for a group it will not be in the mapping.
+     * 
+     * @param geId
+     * @param groupIds
+     * @return
+     * @throws SQLException 
+     */
+    public Map<Integer, ExtensionRecord> getExtensions(int geId, Set<Integer> groupIds) throws SQLException;
+    
+    /**
      * Assigns a grade of score to the group with the given group ID on the part
      * with the given part ID. If the group ID is invalid then a SQLException is thrown.
      *
@@ -344,7 +382,6 @@ public interface Database
      * @param agid
      * @return
      */
-
     public GradableEventOccurrenceRecord getGradableEventOccurrence(int geid, int agid) throws SQLException;
     
 
