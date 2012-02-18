@@ -4,6 +4,7 @@ import cakehat.Allocator;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.DeadlineInfo;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
+import cakehat.database.Extension;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.gml.InMemoryGML.Section;
@@ -379,8 +380,22 @@ public class GMLGRDWriter {
         try {
             info = Allocator.getDataServices().getDeadlineInfo(event);
         } catch (ServicesException ex) {
-            throw new GradingSheetException("Could not get early bonus / late penalty for " +
-                                         "group " + group + " on gradable event " + event.getName() + ".", ex);
+            throw new GradingSheetException("Could not get early bonus / late penalty for group " + group +
+                    " on gradable event " + event.getFullDisplayName(), ex);
+        }
+        
+        DateTime extensionDate = null;
+        Boolean shiftDatesForExtension = null;
+        try {
+            Extension extension = Allocator.getDataServices().getExtensions(event, ImmutableSet.of(group)).get(group);
+            if(extension != null) {
+                extensionDate = extension.getNewOnTime();
+                shiftDatesForExtension = extension.getShiftDates();
+            }
+        }
+        catch(ServicesException e) {
+            throw new GradingSheetException("Could not determine extension for group " + group + " on gradable event " +
+                    event.getFullDisplayName(), e);
         }
         
         DeadlineResolution res;
@@ -390,26 +405,26 @@ public class GMLGRDWriter {
                 handin = event.getDigitalHandin(group);
             }
             catch(IOException e) {
-                throw new GradingSheetException("Could not retrieve handin file for " + "group " + group
-                        + " on assignment " + event.getName() + ".", e);
+                throw new GradingSheetException("Could not retrieve handin file for group " + group
+                        + " on gradable event " + event.getFullDisplayName(), e);
             }
             if (handin != null) {
-                res = info.apply(new DateTime(handin.lastModified()), null, null);
+                res = info.apply(new DateTime(handin.lastModified()), extensionDate, shiftDatesForExtension);
             }
             else {
                 res = info.apply(null, null, null);
             }
         }
         else {
-            GradableEventOccurrence time;
+            GradableEventOccurrence occurrence;
             try {
-               time = Allocator.getDataServices().getGradableEventOccurrence(event, group); 
+               occurrence = Allocator.getDataServices().getGradableEventOccurrence(event, group); 
             } catch (ServicesException ex) {
-                throw new GradingSheetException("Could not get handin status for " +
-                                          "group " + group + " on assignment " + event.getName() + ".", ex);
+                throw new GradingSheetException("Could not get occurrence for group " + group + " on gradable event " +
+                        event.getFullDisplayName(), ex);
             }
-            if (time != null) {
-                res = info.apply(time.getHandinTime(), null, null);
+            if (occurrence != null) {
+                res = info.apply(occurrence.getHandinTime(), extensionDate, shiftDatesForExtension);
             }
             else {
                 res = info.apply(null, null, null);

@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -221,6 +220,76 @@ public class DataServicesImpl implements DataServices {
                     + " on part [" + part.getName() + "].", ex);
         }
     }
+    
+    @Override
+    public void setExtensions(GradableEvent gradableEvent, Set<Group> groups, DateTime ontime, boolean shiftDates,
+        String note) throws ServicesException
+    {
+        checkAssignmentEquality(gradableEvent.getAssignment(), groups);
+        
+        HashSet<Integer> groupIds = groupsToIdCollection(groups, new HashSet<Integer>());
+        
+        try
+        {
+            Allocator.getDatabase().setExtensions(gradableEvent.getId(), ontime.toString(), shiftDates, 
+                    note, new DateTime().toString(), Allocator.getUserUtilities().getUserId(), groupIds);
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Could not store extensions for gradable event: " +
+                    gradableEvent.getFullDisplayName() + " for groups: " + groups, e);
+        }
+    }
+    
+    @Override
+    public void deleteExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException
+    {
+        checkAssignmentEquality(gradableEvent.getAssignment(), groups);
+        
+        HashSet<Integer> groupIds = groupsToIdCollection(groups, new HashSet<Integer>());
+        
+        try
+        {
+            Allocator.getDatabase().deleteExtensions(gradableEvent.getId(), groupIds);
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Could not delete extensions for gradable event: " +
+                    gradableEvent.getFullDisplayName() + " for groups: " + groups, e);
+        }
+    }
+    
+    @Override
+    public Map<Group, Extension> getExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException
+    {       
+        checkAssignmentEquality(gradableEvent.getAssignment(), groups);
+        
+        try
+        {
+            Map<Integer, Group> idsToGroups = groupsToIdMap(groups, new HashMap<Integer, Group>());
+            
+            Map<Integer, ExtensionRecord> records = Allocator.getDatabase().getExtensions(gradableEvent.getId(),
+                    idsToGroups.keySet());
+            
+            Map<Group, Extension> extensions = new HashMap<Group, Extension>(records.size());
+            for(Entry<Integer, ExtensionRecord> entry : records.entrySet())
+            {
+                ExtensionRecord record = entry.getValue();
+                Group group = idsToGroups.get(entry.getKey());
+                Extension extension = new Extension(gradableEvent, group, _taIdMap.get(record.getTAId()),
+                        new DateTime(record.getDateRecorded()), new DateTime(record.getOnTime()),
+                        record.getShiftDates(), record.getNote());
+                extensions.put(group, extension);
+            }
+            
+            return extensions;
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Unable to retrieve extensions for gradable event " +
+                    gradableEvent.getFullDisplayName() + " for groups: " + groups, e);
+        }
+    }
 
     @Override
     public PartGrade getEarned(Group group, Part part) throws ServicesException
@@ -245,11 +314,7 @@ public class DataServicesImpl implements DataServices {
     {
         try
         {
-            Map<Integer, Group> idsToGroups = new HashMap<Integer, Group>();
-            for(Group group : groups)
-            {
-                idsToGroups.put(group.getId(), group);
-            }
+            Map<Integer, Group> idsToGroups = groupsToIdMap(groups, new HashMap<Integer, Group>());
             
             Map<Integer, GradeRecord> records = Allocator.getDatabase().getEarned(part.getId(), idsToGroups.keySet());
             
@@ -762,6 +827,57 @@ public class DataServicesImpl implements DataServices {
         }
         
         return students;
+    }
+    
+    private static void checkAssignmentEquality(Assignment asgn, Iterable<Group> groups) throws ServicesException
+    {
+        Set<Group> notEqual = new HashSet<Group>();
+        
+        for(Group group : groups)
+        {
+            if(!group.getAssignment().equals(asgn))
+            {
+                notEqual.add(group);
+            }
+        }
+        
+        if(!notEqual.isEmpty())
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append("One or more groups do not belong to assignment [");
+            builder.append(asgn.getName());
+            builder.append("]\n");
+            for(Group group : notEqual)
+            {
+                builder.append("Group [");
+                builder.append(group.getName());
+                builder.append("] belong to assignment [");
+                builder.append(group.getAssignment().getName());
+                builder.append("]\n");
+            }
+            
+            throw new ServicesException(builder.toString());
+        }
+    }
+    
+    private static <T extends Collection<Integer>> T groupsToIdCollection(Iterable<Group> groups, T idCollection)
+    {
+        for(Group group : groups)
+        {
+            idCollection.add(group.getId());
+        }
+        
+        return idCollection;
+    }
+    
+    private static <T extends Map<Integer, Group>> T groupsToIdMap(Iterable<Group> groups, T idMap)
+    {
+        for(Group group : groups)
+        {
+            idMap.put(group.getId(), group);
+        }
+        
+        return idMap;
     }
     
     private <T extends Collection<Integer>, S extends Collection<Group>> S idsToGroups(T ids, S groups) throws ServicesException {

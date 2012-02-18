@@ -1022,6 +1022,120 @@ public class DatabaseTest {
         assertEquals(time2, record.getTime());
         assertEquals(tid, record.getTaId());
     }
+    
+    @Test
+    public void testSetGetExtensions() throws SQLException, CakeHatDBIOException
+    {
+        //Set up
+        DbAssignment dbAsgn = new DbAssignment("The Asgn", 27);
+        DbGradableEvent dbEvent = DbGradableEvent.build(dbAsgn, "The Event", 42);
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
+        _database.putGradableEvents(ImmutableSet.of(dbEvent));
+        
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
+        replay(asgn);
+        
+        DbGroup dbGroup1 = new DbGroup(asgn, "The Group", ImmutableSet.<Student>of());
+        DbGroup dbGroup2 = new DbGroup(asgn, "Another Group", ImmutableSet.<Student>of());
+        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        Set<Integer> groupIds = ImmutableSet.of(dbGroup1.getId(), dbGroup2.getId());
+        
+        DbTA ta = new DbTA(57, "talogin", "FirstName", "LastName", true, true);
+        _database.putTAs(ImmutableSet.of(ta));
+        
+        //Set, get, and verify extensions
+        _database.setExtensions(dbEvent.getId(), "On Time", true, "A note", "Right Now", ta.getId(), groupIds);
+        
+        Map<Integer, ExtensionRecord> extensions = _database.getExtensions(dbEvent.getId(), groupIds);
+        
+        assertSetsEqual(groupIds, extensions.keySet());
+        for(ExtensionRecord record : extensions.values())
+        {
+            assertEquals("Right Now", record.getDateRecorded());
+            assertEquals("A note", record.getNote());
+            assertEquals("On Time", record.getOnTime());
+            assertEquals(true, record.getShiftDates());
+            assertEquals((Integer) ta.getId(), (Integer) record.getTAId());
+        }
+    }
+    
+    @Test
+    public void testSetSetGetExtensions() throws SQLException, CakeHatDBIOException
+    {
+        //Set up
+        DbAssignment dbAsgn = new DbAssignment("The Asgn", 27);
+        DbGradableEvent dbEvent = DbGradableEvent.build(dbAsgn, "The Event", 42);
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
+        _database.putGradableEvents(ImmutableSet.of(dbEvent));
+        
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
+        replay(asgn);
+        
+        DbGroup dbGroup1 = new DbGroup(asgn, "The Group", ImmutableSet.<Student>of());
+        DbGroup dbGroup2 = new DbGroup(asgn, "Another Group", ImmutableSet.<Student>of());
+        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        Set<Integer> groupIds = ImmutableSet.of(dbGroup1.getId(), dbGroup2.getId());
+        
+        DbTA ta = new DbTA(57, "talogin", "FirstName", "LastName", true, true);
+        _database.putTAs(ImmutableSet.of(ta));
+        
+        //Set, set again with different values, get, and verify extensions
+        _database.setExtensions(dbEvent.getId(), "Blah", false, "Lazy students", "Eventually", ta.getId(), groupIds);
+        _database.setExtensions(dbEvent.getId(), "On Time", true, "A note", "Right Now", ta.getId(), groupIds);
+        
+        Map<Integer, ExtensionRecord> extensions = _database.getExtensions(dbEvent.getId(), groupIds);
+        
+        assertSetsEqual(groupIds, extensions.keySet());
+        for(ExtensionRecord record : extensions.values())
+        {
+            assertEquals("Right Now", record.getDateRecorded());
+            assertEquals("A note", record.getNote());
+            assertEquals("On Time", record.getOnTime());
+            assertEquals(true, record.getShiftDates());
+            assertEquals((Integer) ta.getId(), (Integer) record.getTAId());
+        }
+    }
+    
+    @Test
+    public void testSetDeleteGetExtensions() throws SQLException, CakeHatDBIOException
+    {
+        //Set up
+        DbAssignment dbAsgn = new DbAssignment("The Asgn", 27);
+        DbGradableEvent dbEvent = DbGradableEvent.build(dbAsgn, "The Event", 42);
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
+        _database.putGradableEvents(ImmutableSet.of(dbEvent));
+        
+        Assignment asgn = createMock(Assignment.class);
+        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
+        replay(asgn);
+        
+        DbGroup dbGroup1 = new DbGroup(asgn, "The Group", ImmutableSet.<Student>of());
+        DbGroup dbGroup2 = new DbGroup(asgn, "Another Group", ImmutableSet.<Student>of());
+        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        Set<Integer> groupIds = ImmutableSet.of(dbGroup1.getId(), dbGroup2.getId());
+        
+        DbTA ta = new DbTA(57, "talogin", "FirstName", "LastName", true, true);
+        _database.putTAs(ImmutableSet.of(ta));
+        
+        //Set for two, delete for one, get extensions
+        _database.setExtensions(dbEvent.getId(), "On Time", true, "A note", "Right Now", ta.getId(), groupIds);
+        
+        _database.deleteExtensions(dbEvent.getId(), ImmutableSet.of(dbGroup1.getId()));
+        
+        Map<Integer, ExtensionRecord> extensions = _database.getExtensions(dbEvent.getId(), groupIds);
+        
+        assertSetsEqual(ImmutableSet.of(dbGroup2.getId()), extensions.keySet());
+        for(ExtensionRecord record : extensions.values())
+        {
+            assertEquals("Right Now", record.getDateRecorded());
+            assertEquals("A note", record.getNote());
+            assertEquals("On Time", record.getOnTime());
+            assertEquals(true, record.getShiftDates());
+            assertEquals((Integer) ta.getId(), (Integer) record.getTAId());
+        }
+    }
 
     private interface EqualityAsserter<T> {
         void assertEqual(T t1, T t2);

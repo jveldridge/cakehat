@@ -3,7 +3,6 @@ package cakehat.database;
 import cakehat.Allocator;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -110,25 +109,6 @@ public class DatabaseImpl implements Database
                 ex.printStackTrace();
                 System.exit(-1);
             }
-
-            /* TODO: re-implement using new objects and methods
-            // If this is test mode, create some test students
-            if(CakehatMain.isDeveloperMode())
-            {
-                try
-                {
-                    for(char letter = 'a'; letter <= 'z'; letter++)
-                    {
-                        this.addStudent(letter + "student", new Character(letter).toString().toUpperCase(), "Student");
-                    }
-                }
-                catch(SQLException ex)
-                {
-                    System.err.println("Unable to add test students to database.");
-                    ex.printStackTrace();
-                }
-            }
-             */
         }
     }
     
@@ -1293,6 +1273,105 @@ public class DatabaseImpl implements Database
             }
             return null;
         } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void setExtensions(int geId, String ontime, boolean shiftDates, String note, String dateRecorded,
+            int taId, Set<Integer> groupIds) throws SQLException
+    {
+        Connection conn = this.openConnection();
+        try
+        {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO extension "
+                + "('agid', 'geid', 'tid', 'daterecorded', 'ontime', 'shiftdates', 'note')"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?)");
+            
+            for(Integer agid : groupIds)
+            {
+                ps.setInt(1, agid);
+                ps.setInt(2, geId);
+                ps.setInt(3, taId);
+                ps.setString(4, dateRecorded);
+                ps.setString(5, ontime);
+                ps.setBoolean(6, shiftDates);
+                ps.setString(7, note);
+                ps.addBatch();
+            }
+            
+            ps.executeBatch();
+            conn.commit();
+        }
+        catch(SQLException ex)
+        {
+            conn.rollback();
+            throw ex;
+        }
+        finally
+        {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void deleteExtensions(int geId, Set<Integer> groupIds) throws SQLException
+    {
+        Connection conn = this.openConnection();
+        try
+        {
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM extension "
+                    + "WHERE geid == ? AND agid == ?");
+
+            for(Integer groupId : groupIds)
+            {
+                ps.setInt(1, geId);
+                ps.setInt(2, groupId);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+        }
+        catch(SQLException ex)
+        {
+            conn.rollback();
+            throw ex;
+        }
+        finally
+        {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public Map<Integer, ExtensionRecord> getExtensions(int geId, Set<Integer> groupIds) throws SQLException
+    {
+        Map<Integer, ExtensionRecord> records = new HashMap<Integer, ExtensionRecord>();
+
+        Connection conn = this.openConnection();
+        try
+        {
+            PreparedStatement ps = conn.prepareStatement(
+                    "SELECT agid, ontime, shiftdates, note, daterecorded, tid"
+                    + " FROM extension AS e"
+                    + " WHERE e.agid IN ("+ this.groupIDsSetToString(groupIds) +")"
+                    + " AND e.geid == ? ");
+            ps.setInt(1, geId);
+            
+            ResultSet rs = ps.executeQuery();
+            while(rs.next())
+            {
+                ExtensionRecord record = new ExtensionRecord(rs.getString("ontime"), rs.getBoolean("shiftdates"),
+                        rs.getString("note"), rs.getString("daterecorded"), rs.getInt("tid"));
+                records.put(rs.getInt("agid"), record);
+            }
+
+            return records;
+        }
+        finally
+        {
             this.closeConnection(conn);
         }
     }

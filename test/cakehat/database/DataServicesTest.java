@@ -23,6 +23,7 @@ import java.util.Set;
 import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
+import support.utils.UserUtilities;
 import static org.junit.Assert.*;
 import static org.easymock.EasyMock.*;
 
@@ -32,13 +33,16 @@ import static org.easymock.EasyMock.*;
  */
 public class DataServicesTest {
 
-    private DataServices _dataService;
+    private static final int USER_TA_UID = 429;
+    
+    private DataServices _dataServices;
     private Database _database;
-    private DbTA _dbTA1, _dbTA2;
+    private DbTA _dbUserTA, _dbTA2;
     private DbAssignment _dbAsgnA, _dbAsgnB;
-    private DbGradableEvent _geA, _geB;
-    private DbPart _partA1, _partA2, _partB1;
+    private DbGradableEvent _dbGeA, _dbGeB;
+    private DbPart _dbPartA1, _dbPartA2, _dbPartB1;
     private Assignment _asgnA, _asgnB;
+    private GradableEvent _geA, _geB;
     
     @Before
     public void setUp() throws ServicesException, SQLException, IOException {
@@ -48,14 +52,23 @@ public class DataServicesTest {
             {
                 public Database allocate() { return _database; };
             };
-        new Allocator.Customizer().setDatabase(dbioAlloc).customize(); 
         _database.resetDatabase();
         
+        final UserUtilities userUtils = createMock(UserUtilities.class);
+        expect(userUtils.getUserId()).andReturn(USER_TA_UID).anyTimes();
+        replay(userUtils);
+        SingletonAllocation<UserUtilities> userUtilsAlloc =
+            new SingletonAllocation<UserUtilities>()
+            {
+                protected UserUtilities allocate() { return userUtils; };
+            };
+        
+        new Allocator.Customizer().setDatabase(dbioAlloc).setUserUtils(userUtilsAlloc).customize(); 
+        
         //set-up tas
-        _dbTA1 = new DbTA(Allocator.getUserUtilities().getUserId(), "taLogin1", "taFirst1", "taLast1", true, false);
-        int taId2 = 2;
-        _dbTA2 = new DbTA(taId2, "taLogin2", "taFirst2", "taLast2", true, false);
-        _database.putTAs(ImmutableSet.of(_dbTA1, _dbTA2));
+        _dbUserTA = new DbTA(Allocator.getUserUtilities().getUserId(), "taLogin1", "taFirst1", "taLast1", true, false);
+        _dbTA2 = new DbTA(137, "taLogin2", "taFirst2", "taLast2", true, false);
+        _database.putTAs(ImmutableSet.of(_dbUserTA, _dbTA2));
         
         //set up assignment
         _dbAsgnA = new DbAssignment("asgnA", 1);
@@ -76,19 +89,27 @@ public class DataServicesTest {
         expect(_asgnB.hasGroups()).andReturn(_dbAsgnB.hasGroups()).anyTimes();
         replay(_asgnB);
         
-        _geA = DbGradableEvent.build(_dbAsgnA, "geA", 1);
-        _geB = DbGradableEvent.build(_dbAsgnB, "geB", 2);
-        _database.putGradableEvents(ImmutableSet.of(_geA, _geB));
+        _dbGeA = DbGradableEvent.build(_dbAsgnA, "geA", 1);
+        _dbGeB = DbGradableEvent.build(_dbAsgnB, "geB", 2);
+        _database.putGradableEvents(ImmutableSet.of(_dbGeA, _dbGeB));
         
-        _partA1 = DbPart.build(_geA, "partA1", 1);
-        _partA2 = DbPart.build(_geA, "partA2", 2);
-        _partB1 = DbPart.build(_geB, "partB1", 11);
-        _partA1.setOutOf(10.0);
-        _partA2.setOutOf(12.0);
-        _partB1.setOutOf(15.0);
-        _database.putParts(ImmutableSet.of(_partA1, _partA2, _partB1));
+        _geA = createMock(GradableEvent.class);
+        expect(_geA.getId()).andReturn(_dbGeA.getId()).anyTimes();
+        replay(_geA);
         
-        _dataService = new DataServicesImpl();
+        _geB = createMock(GradableEvent.class);
+        expect(_geB.getId()).andReturn(_dbGeB.getId()).anyTimes();
+        replay(_geB);
+        
+        _dbPartA1 = DbPart.build(_dbGeA, "partA1", 1);
+        _dbPartA2 = DbPart.build(_dbGeA, "partA2", 2);
+        _dbPartB1 = DbPart.build(_dbGeB, "partB1", 11);
+        _dbPartA1.setOutOf(10.0);
+        _dbPartA2.setOutOf(12.0);
+        _dbPartB1.setOutOf(15.0);
+        _database.putParts(ImmutableSet.of(_dbPartA1, _dbPartA2, _dbPartB1));
+        
+        _dataServices = new DataServicesImpl();
     }
     
     @Test
@@ -122,9 +143,9 @@ public class DataServicesTest {
         handinTimes.put(g, handinTime);
 
         //gets only gradableEvent from DB
-        GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
+        GradableEvent ge = _dataServices.getAssignments().get(0).getGradableEvents().get(0);
 
-        _dataService.setGradableEventOccurrences(ge, handinTimes);
+        _dataServices.setGradableEventOccurrences(ge, handinTimes);
 
         GradableEventOccurrenceRecord hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
@@ -151,7 +172,7 @@ public class DataServicesTest {
         //add only group1 to the handinTimes
         handinTimes.put(g, handinTime2);
 
-        _dataService.setGradableEventOccurrences(ge, handinTimes);
+        _dataServices.setGradableEventOccurrences(ge, handinTimes);
 
         hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
@@ -180,9 +201,9 @@ public class DataServicesTest {
         Group g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
 
         //gets only gradableEvent from DB
-        GradableEvent ge = _dataService.getAssignments().get(0).getGradableEvents().get(0);
+        GradableEvent ge = _dataServices.getAssignments().get(0).getGradableEvents().get(0);
 
-        _dataService.setGradableEventOccurrence(ge, g, handinTime);
+        _dataServices.setGradableEventOccurrence(ge, g, handinTime);
 
         GradableEventOccurrenceRecord hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
@@ -201,7 +222,7 @@ public class DataServicesTest {
         studentSet.add(new Student(student1));
         g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
 
-        _dataService.setGradableEventOccurrence(ge, g, handinTime2);
+        _dataServices.setGradableEventOccurrence(ge, g, handinTime2);
 
         hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
         assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
@@ -209,7 +230,7 @@ public class DataServicesTest {
 
     @Test
     public void testGetStudentsFromEmptyDatabase() throws SQLException, ServicesException {
-        Collection<Student> students = _dataService.getStudents();
+        Collection<Student> students = _dataServices.getStudents();
         assertEquals(0, students.size());
     }
     
@@ -217,8 +238,8 @@ public class DataServicesTest {
     public void testGet1Students() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         _database.putStudents(ImmutableSet.of(dbstudent1));
-        _dataService.updateDataCache();
-        Collection<Student> students = _dataService.getStudents();
+        _dataServices.updateDataCache();
+        Collection<Student> students = _dataServices.getStudents();
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1), students);
     }
     
@@ -227,8 +248,8 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
-        Collection<Student> students = _dataService.getStudents();
+        _dataServices.updateDataCache();
+        Collection<Student> students = _dataServices.getStudents();
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1, dbstudent2), students);
     }
     
@@ -236,29 +257,29 @@ public class DataServicesTest {
     public void testIsStudentLoginInDatabase() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         _database.putStudents(ImmutableSet.of(dbstudent1));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        assertTrue(_dataService.isStudentLoginInDatabase(dbstudent1.getLogin()));
-        assertFalse(_dataService.isStudentLoginInDatabase("imaginary login"));
+        assertTrue(_dataServices.isStudentLoginInDatabase(dbstudent1.getLogin()));
+        assertFalse(_dataServices.isStudentLoginInDatabase("imaginary login"));
     }
     
     @Test
     public void testGetStudentFromLogin() throws SQLException, ServicesException {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         _database.putStudents(ImmutableSet.of(dbstudent1));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        this.assertStudentEqual(dbstudent1, _dataService.getStudentFromLogin(dbstudent1.getLogin()));
-        assertEquals(null, _dataService.getStudentFromLogin("imaginary login"));
+        this.assertStudentEqual(dbstudent1, _dataServices.getStudentFromLogin(dbstudent1.getLogin()));
+        assertEquals(null, _dataServices.getStudentFromLogin("imaginary login"));
     }
     
     @Test
     public void testAddSingleStudent() throws ServicesException {
         DbStudent toAdd = new DbStudent("login", "first", "last", "email");
-        _dataService.addStudents(ImmutableSet.of(toAdd));
+        _dataServices.addStudents(ImmutableSet.of(toAdd));
         assertNotNull(toAdd.getId());
         
-        Set<Student> students = _dataService.getStudents();
+        Set<Student> students = _dataServices.getStudents();
         assertEquals(1, students.size());
         Student student = Iterables.get(students, 0);
         
@@ -270,19 +291,19 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Collection<Student> students = _dataService.getEnabledStudents();
+        Collection<Student> students = _dataServices.getEnabledStudents();
 
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1, dbstudent2), students);
     }
     
     @Test
     public void testTA() throws SQLException, ServicesException {
-        this.assertTAEqual(_dbTA2, _dataService.getTA(_dbTA2.getId()));
+        this.assertTAEqual(_dbTA2, _dataServices.getTA(_dbTA2.getId()));
         
-        Set<TA> tas = _dataService.getTAs();
-        this.assertTACollectionEqual(ImmutableSet.of(_dbTA1, _dbTA2), tas);
+        Set<TA> tas = _dataServices.getTAs();
+        this.assertTACollectionEqual(ImmutableSet.of(_dbUserTA, _dbTA2), tas);
     }
     
     @Test
@@ -290,14 +311,14 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
-        this.assertStudentCollectionEqual(Collections.<Student>emptyList(), _dataService.getBlacklistedStudents());
-        this.assertStudentCollectionEqual(Collections.<Student>emptyList(), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(Collections.<Student>emptyList(), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(Collections.<Student>emptyList(), _dataServices.getBlacklistedStudents());
+        this.assertStudentCollectionEqual(Collections.<Student>emptyList(), _dataServices.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(Collections.<Student>emptyList(), _dataServices.getBlacklist(ta2));
     }
     
     @Test
@@ -305,12 +326,12 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1), _dataService.getTA(_dbTA1.getId()));
-        Collection<Student> blacklistedStuds = _dataService.getBlacklistedStudents();
+        _dataServices.blacklistStudents(ImmutableSet.of(student1), _dataServices.getTA(_dbUserTA.getId()));
+        Collection<Student> blacklistedStuds = _dataServices.getBlacklistedStudents();
         this.assertStudentCollectionEqual(ImmutableSet.of(student1), blacklistedStuds);
     }
     
@@ -319,13 +340,13 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1, student2), _dataService.getTA(_dbTA1.getId()));
-        Collection<Student> blacklistedStuds = _dataService.getBlacklistedStudents();
+        _dataServices.blacklistStudents(ImmutableSet.of(student1, student2), _dataServices.getTA(_dbUserTA.getId()));
+        Collection<Student> blacklistedStuds = _dataServices.getBlacklistedStudents();
         this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), blacklistedStuds);
     }
     
@@ -334,14 +355,14 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1), _dataService.getTA(_dbTA1.getId()));        
-        _dataService.blacklistStudents(ImmutableSet.of(student2), _dataService.getTA(_dbTA2.getId()));
-        Collection<Student> blacklistedStuds = _dataService.getBlacklistedStudents();
+        _dataServices.blacklistStudents(ImmutableSet.of(student1), _dataServices.getTA(_dbUserTA.getId()));        
+        _dataServices.blacklistStudents(ImmutableSet.of(student2), _dataServices.getTA(_dbTA2.getId()));
+        Collection<Student> blacklistedStuds = _dataServices.getBlacklistedStudents();
         this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), blacklistedStuds);
     }
     
@@ -350,18 +371,18 @@ public class DataServicesTest {
         DbStudent dbstudent1 = new DbStudent("login1", "first1", "last1", "email1");
         DbStudent dbstudent2 = new DbStudent("login2", "first2", "last2", "email2");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1), ta1);
-        _dataService.blacklistStudents(ImmutableSet.of(student2), ta2);
+        _dataServices.blacklistStudents(ImmutableSet.of(student1), ta1);
+        _dataServices.blacklistStudents(ImmutableSet.of(student2), ta2);
         
-        this.assertStudentCollectionEqual(ImmutableSet.of(student1), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(ImmutableSet.of(student2), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1), _dataServices.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student2), _dataServices.getBlacklist(ta2));
     }
     
     @Test
@@ -371,20 +392,20 @@ public class DataServicesTest {
         DbStudent dbstudent3 = new DbStudent("login3", "first2", "last3", "email3");
         DbStudent dbstudent4 = new DbStudent("login4", "first2", "last4", "email4");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2, dbstudent3, dbstudent4));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
-        Student student3 = _dataService.getStudentFromLogin(dbstudent3.getLogin());
-        Student student4 = _dataService.getStudentFromLogin(dbstudent4.getLogin());
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
+        Student student3 = _dataServices.getStudentFromLogin(dbstudent3.getLogin());
+        Student student4 = _dataServices.getStudentFromLogin(dbstudent4.getLogin());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1, student2), ta1);
-        _dataService.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
+        _dataServices.blacklistStudents(ImmutableSet.of(student1, student2), ta1);
+        _dataServices.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
         
-        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(ImmutableSet.of(student2, student3), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataServices.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student2, student3), _dataServices.getBlacklist(ta2));
     }
     
     @Test
@@ -394,21 +415,21 @@ public class DataServicesTest {
         DbStudent dbstudent3 = new DbStudent("login3", "first2", "last3", "email3");
         DbStudent dbstudent4 = new DbStudent("login4", "first2", "last4", "email4");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2, dbstudent3, dbstudent4));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
-        Student student3 = _dataService.getStudentFromLogin(dbstudent3.getLogin());
-        Student student4 = _dataService.getStudentFromLogin(dbstudent4.getLogin());
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
+        Student student3 = _dataServices.getStudentFromLogin(dbstudent3.getLogin());
+        Student student4 = _dataServices.getStudentFromLogin(dbstudent4.getLogin());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1, student2),ta1);
-        _dataService.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
-        _dataService.unBlacklistStudents(ImmutableSet.of(student2), ta2);
+        _dataServices.blacklistStudents(ImmutableSet.of(student1, student2),ta1);
+        _dataServices.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
+        _dataServices.unBlacklistStudents(ImmutableSet.of(student2), ta2);
         
-        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(ImmutableSet.of(student3), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataServices.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student3), _dataServices.getBlacklist(ta2));
     }
     
     @Test
@@ -418,21 +439,21 @@ public class DataServicesTest {
         DbStudent dbstudent3 = new DbStudent("login3", "first2", "last3", "email3");
         DbStudent dbstudent4 = new DbStudent("login4", "first2", "last4", "email4");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2, dbstudent3, dbstudent4));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
-        Student student3 = _dataService.getStudentFromLogin(dbstudent3.getLogin());
-        Student student4 = _dataService.getStudentFromLogin(dbstudent4.getLogin());
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
+        Student student3 = _dataServices.getStudentFromLogin(dbstudent3.getLogin());
+        Student student4 = _dataServices.getStudentFromLogin(dbstudent4.getLogin());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1, student2), ta1);
-        _dataService.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
-        _dataService.unBlacklistStudents(ImmutableSet.of(student1, student2), ta2);
+        _dataServices.blacklistStudents(ImmutableSet.of(student1, student2), ta1);
+        _dataServices.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
+        _dataServices.unBlacklistStudents(ImmutableSet.of(student1, student2), ta2);
         
-        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(ImmutableSet.of(student3), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataServices.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student3), _dataServices.getBlacklist(ta2));
     }
     
     @Test
@@ -442,26 +463,26 @@ public class DataServicesTest {
         DbStudent dbstudent3 = new DbStudent("login3", "first2", "last3", "email3");
         DbStudent dbstudent4 = new DbStudent("login4", "first2", "last4", "email4");
         _database.putStudents(ImmutableSet.of(dbstudent1, dbstudent2, dbstudent3, dbstudent4));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
-        Student student1 = _dataService.getStudentFromLogin(dbstudent1.getLogin());
-        Student student2 = _dataService.getStudentFromLogin(dbstudent2.getLogin());
-        Student student3 = _dataService.getStudentFromLogin(dbstudent3.getLogin());
-        Student student4 = _dataService.getStudentFromLogin(dbstudent4.getLogin());
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        Student student1 = _dataServices.getStudentFromLogin(dbstudent1.getLogin());
+        Student student2 = _dataServices.getStudentFromLogin(dbstudent2.getLogin());
+        Student student3 = _dataServices.getStudentFromLogin(dbstudent3.getLogin());
+        Student student4 = _dataServices.getStudentFromLogin(dbstudent4.getLogin());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
-        _dataService.blacklistStudents(ImmutableSet.of(student1, student2), ta1);
-        _dataService.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
-        _dataService.unBlacklistStudents(ImmutableSet.of(student1, student2, student3), ta2);
+        _dataServices.blacklistStudents(ImmutableSet.of(student1, student2), ta1);
+        _dataServices.blacklistStudents(ImmutableSet.of(student2, student3), ta2);
+        _dataServices.unBlacklistStudents(ImmutableSet.of(student1, student2, student3), ta2);
         
-        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataService.getBlacklist(ta1));
-        this.assertStudentCollectionEqual(Collections.<Student>emptySet(), _dataService.getBlacklist(ta2));
+        this.assertStudentCollectionEqual(ImmutableSet.of(student1, student2), _dataServices.getBlacklist(ta1));
+        this.assertStudentCollectionEqual(Collections.<Student>emptySet(), _dataServices.getBlacklist(ta2));
     }
     
     @Test
     public void testGetAssignments() throws SQLException, ServicesException {
-        List<Assignment> assignments = _dataService.getAssignments();
+        List<Assignment> assignments = _dataServices.getAssignments();
         this.assertAsgnCollectionEqual(ImmutableSet.of(_dbAsgnA, _dbAsgnB), assignments);
     }
     
@@ -470,10 +491,10 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));  
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
         //an assignment has group, but without any group created should return an empty set
-        Set<Group> groups = _dataService.getGroups(_asgnA);
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
         assertEquals(0, groups.size());            
     }
     
@@ -482,10 +503,10 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
         
         //an assignment has no group, groups of one will be created and returned
-        Set<Group> groups = _dataService.getGroups(_asgnB);
+        Set<Group> groups = _dataServices.getGroups(_asgnB);
         assertEquals(2, groups.size());
         Set<Student> studs = new HashSet<Student>();
         for (Group g : groups) {
@@ -499,13 +520,13 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
             
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
 
-        Set<Group> groups = _dataService.getGroups(_asgnA);
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1), groups);
     }
     
@@ -514,16 +535,16 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroup(dbGroup1);
-        _dataService.addGroup(dbGroup2);
+        _dataServices.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup2);
         
-        Set<Group> groups = _dataService.getGroups(_asgnA);
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
@@ -532,16 +553,16 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
 
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
-        Set<Group> groups = _dataService.getGroups(_asgnA);
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
@@ -550,18 +571,18 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
         //group doesn't exist
-        assertNull(_dataService.getGroup(_asgnA, student2));
+        assertNull(_dataServices.getGroup(_asgnA, student2));
 
-        this.assertGroupEqual(dbGroup1, _dataService.getGroup(_asgnA, student1));
+        this.assertGroupEqual(dbGroup1, _dataServices.getGroup(_asgnA, student1));
     }
     
     @Test
@@ -569,15 +590,15 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-        _dataService.removeGroups(_asgnA);
-        assertEquals(0, _dataService.getGroups(_asgnA).size());
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _dataServices.removeGroups(_asgnA);
+        assertEquals(0, _dataServices.getGroups(_asgnA).size());
     }
     
     @Test
@@ -585,17 +606,17 @@ public class DataServicesTest {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
             
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroups(ImmutableSet.of(dbGroup1));
-        _dataService.addGroups(ImmutableSet.of(dbGroup2));
-        _dataService.removeGroups(_asgnA);        
-        _dataService.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-        Set<Group> groups = _dataService.getGroups(_asgnA);
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1));
+        _dataServices.addGroups(ImmutableSet.of(dbGroup2));
+        _dataServices.removeGroups(_asgnA);        
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
@@ -610,12 +631,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -631,17 +652,17 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
         
         
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
-        assertEquals(1, _dataService.getAssignedGroups(part, ta).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
     }
     
     @Test
@@ -655,12 +676,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -676,28 +697,28 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
         // first assign group1 to ta1
-        _dataService.setGrader(part, group, ta1);
+        _dataServices.setGrader(part, group, ta1);
         
-        assertEquals(1, _dataService.getAssignedGroups(part, ta1).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta1).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta1).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta1).contains(group));
         
         // reassign group1 to ta2
-        _dataService.setGrader(part, group, ta2);
+        _dataServices.setGrader(part, group, ta2);
         
         // check that group1 is now assigned to ta2 and not ta1
-        assertEquals(0, _dataService.getAssignedGroups(part, ta1).size());
-        assertFalse(_dataService.getAssignedGroups(part, ta1).contains(group));
+        assertEquals(0, _dataServices.getAssignedGroups(part, ta1).size());
+        assertFalse(_dataServices.getAssignedGroups(part, ta1).contains(group));
         
-        assertEquals(1, _dataService.getAssignedGroups(part, ta2).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta2).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta2).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta2).contains(group));
     }
     
     @Test
@@ -711,12 +732,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -732,22 +753,22 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
 
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
-        assertEquals(1, _dataService.getAssignedGroups(part, ta).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
         
         // this shouldn't throw an exception or do anything 
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
-        assertEquals(1, _dataService.getAssignedGroups(part, ta).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
     }
     
     @Test
@@ -761,12 +782,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         events.add(eventA);
         
@@ -782,21 +803,21 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
 
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
-        assertEquals(1, _dataService.getAssignedGroups(part, ta).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
         
         // unassign the group1 and check that the group1 is no longer assigned to the ta1
-        _dataService.setGrader(part, group, null);
+        _dataServices.setGrader(part, group, null);
         
-        assertEquals(0, _dataService.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
     }
     
     @Test
@@ -810,12 +831,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -831,20 +852,20 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
 
         // group1 has not been assigned
         
-        assertEquals(0, _dataService.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
         
         // unassign the group1 and check that nothing happens
-        _dataService.setGrader(part, group, null);
+        _dataServices.setGrader(part, group, null);
         
-        assertEquals(0, _dataService.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
     }
     
     @Test
@@ -858,12 +879,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         events.add(eventA);
         
@@ -875,10 +896,10 @@ public class DataServicesTest {
         replay(partA);
         
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
         
         // make sure that getAssignedGroups returns an empty collection
-        assertEquals(0, _dataService.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
     }
     
     @Test
@@ -892,12 +913,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -913,17 +934,17 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
 
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
         // check that the list only has 1 group1 in it and it is the correct group1
-        assertEquals(1, _dataService.getAssignedGroups(part, ta).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
     }
     
     @Test
@@ -937,12 +958,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -961,21 +982,21 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataService.addGroup(dbGroup1);
-        _dataService.addGroup(dbGroup2);
+        _dataServices.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup2);
         
-        Group group1 = _dataService.getGroup(asgnA, student1);
-        Group group2 = _dataService.getGroup(asgnA, student2);
+        Group group1 = _dataServices.getGroup(asgnA, student1);
+        Group group2 = _dataServices.getGroup(asgnA, student2);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
 
-        _dataService.setGrader(part, group1, ta);
-        _dataService.setGrader(part, group2, ta);
+        _dataServices.setGrader(part, group1, ta);
+        _dataServices.setGrader(part, group2, ta);
         
         // check that the list only has 1 group1 in it and it is the correct group1
-        assertEquals(2, _dataService.getAssignedGroups(part, ta).size());
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group1));
-        assertTrue(_dataService.getAssignedGroups(part, ta).contains(group2));
+        assertEquals(2, _dataServices.getAssignedGroups(part, ta).size());
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group1));
+        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group2));
     }
     
     @Test
@@ -989,12 +1010,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1005,7 +1026,7 @@ public class DataServicesTest {
         events.add(eventA);
         replay(partA);
         
-        assertEquals(0, _dataService.getAssignedGroups(partA).size());
+        assertEquals(0, _dataServices.getAssignedGroups(partA).size());
     }
     
     @Test
@@ -1019,12 +1040,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         events.add(eventA);
         
@@ -1040,17 +1061,17 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
 
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
         // check that the list only has 1 group in it and it is the correct group
-        assertEquals(1, _dataService.getAssignedGroups(part).size());
-        assertTrue(_dataService.getAssignedGroups(part).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(part).size());
+        assertTrue(_dataServices.getAssignedGroups(part).contains(group));
     }
     
     @Test
@@ -1064,12 +1085,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1088,29 +1109,29 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataService.addGroup(dbGroup1);
-        _dataService.addGroup(dbGroup2);
+        _dataServices.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup2);
         
-        Group group1 = _dataService.getGroup(asgnA, student1);
-        Group group2 = _dataService.getGroup(asgnA, student2);
+        Group group1 = _dataServices.getGroup(asgnA, student1);
+        Group group2 = _dataServices.getGroup(asgnA, student2);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
 
-        _dataService.setGrader(part, group1, ta1);
-        _dataService.setGrader(part, group2, ta2);
+        _dataServices.setGrader(part, group1, ta1);
+        _dataServices.setGrader(part, group2, ta2);
         
         // check that the list only has 1 group1 in it and it is the correct group1
-        assertEquals(2, _dataService.getAssignedGroups(part).size());
-        assertTrue(_dataService.getAssignedGroups(part).contains(group1));
-        assertTrue(_dataService.getAssignedGroups(part).contains(group2));
+        assertEquals(2, _dataServices.getAssignedGroups(part).size());
+        assertTrue(_dataServices.getAssignedGroups(part).contains(group1));
+        assertTrue(_dataServices.getAssignedGroups(part).contains(group2));
     }
     
     @Test
     public void testGetPartsWithAssignedGroupsStartsEmpty() throws ServicesException {
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
         
-        assertEquals(0, _dataService.getPartsWithAssignedGroups(ta1).size());
+        assertEquals(0, _dataServices.getPartsWithAssignedGroups(ta1).size());
     }
     
     @Test
@@ -1124,12 +1145,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1145,19 +1166,19 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
         
         
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
-        assertEquals(1, _dataService.getPartsWithAssignedGroups(ta).size());
+        assertEquals(1, _dataServices.getPartsWithAssignedGroups(ta).size());
 
         // make sure that it is the correct part1
-        this.assertPartEqual(_partA1, _dataService.getPartsWithAssignedGroups(ta).iterator().next());
+        this.assertPartEqual(_dbPartA1, _dataServices.getPartsWithAssignedGroups(ta).iterator().next());
     }
     
     @Test
@@ -1171,17 +1192,17 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA1 = createMock(Part.class);
-        expect(partA1.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA1.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA1.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA1.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA1);
         
         Part partA2 = createMock(Part.class);
-        expect(partA2.getName()).andReturn(_partA2.getName()).anyTimes();
-        expect(partA2.getId()).andReturn(_partA2.getId()).anyTimes();
+        expect(partA2.getName()).andReturn(_dbPartA2.getName()).anyTimes();
+        expect(partA2.getId()).andReturn(_dbPartA2.getId()).anyTimes();
         parts.add(partA2);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1201,26 +1222,26 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataService.addGroup(dbGroup1);
-        _dataService.addGroup(dbGroup2);
+        _dataServices.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup2);
         
-        Group group1 = _dataService.getGroup(asgnA, student1);
-        Group group2 = _dataService.getGroup(asgnA, student2);
+        Group group1 = _dataServices.getGroup(asgnA, student1);
+        Group group2 = _dataServices.getGroup(asgnA, student2);
         Part part1 = asgnA.getGradableEvents().get(0).getParts().get(0);
         Part part2 = asgnA.getGradableEvents().get(0).getParts().get(1);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
         
         
-        _dataService.setGrader(part1, group1, ta);
-        _dataService.setGrader(part2, group2, ta);
+        _dataServices.setGrader(part1, group1, ta);
+        _dataServices.setGrader(part2, group2, ta);
         
-        assertEquals(2, _dataService.getPartsWithAssignedGroups(ta).size());
+        assertEquals(2, _dataServices.getPartsWithAssignedGroups(ta).size());
 
         // make sure that it is the correct part1
         ArrayList<DbPart> dbParts = new ArrayList<DbPart>();
-        dbParts.add(_partA1);
-        dbParts.add(_partA2);
-        this.assertPartCollectionEqual(dbParts, _dataService.getPartsWithAssignedGroups(ta));
+        dbParts.add(_dbPartA1);
+        dbParts.add(_dbPartA2);
+        this.assertPartCollectionEqual(dbParts, _dataServices.getPartsWithAssignedGroups(ta));
     }
     
     @Test
@@ -1240,7 +1261,7 @@ public class DataServicesTest {
         expect(event.getLateDate()).andReturn(late).anyTimes();
         expect(event.getLatePoints()).andReturn(latePoints).anyTimes();
         expect(event.getEarlyPoints()).andReturn(earlyPoints).anyTimes();
-        expect(event.getName()).andReturn(_geA.getName()).anyTimes();
+        expect(event.getName()).andReturn(_dbGeA.getName()).anyTimes();
         expect(event.getId()).andReturn(1).anyTimes();
         expect(event.getOrder()).andReturn(1).anyTimes();
         expect(event.getDirectory()).andReturn(new File("")).anyTimes();
@@ -1254,7 +1275,7 @@ public class DataServicesTest {
         
         _database.putGradableEvents(ImmutableSet.of(event));
         
-        DeadlineInfo info = _dataService.getDeadlineInfo(eventA);
+        DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
         assertEquals(DeadlineInfo.Type.FIXED, info.getType()); 
         assertTrue(info.getEarlyDate().equals(early));
         assertTrue(info.getOnTimeDate().equals(onTime));
@@ -1296,7 +1317,7 @@ public class DataServicesTest {
         
         _database.putGradableEvents(ImmutableSet.of(event));
         
-        DeadlineInfo info = _dataService.getDeadlineInfo(eventA);
+        DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
         assertEquals(DeadlineInfo.Type.VARIABLE, info.getType()); 
         assertNull(info.getEarlyDate());
         assertTrue(info.getOnTimeDate().equals(onTime));
@@ -1316,7 +1337,7 @@ public class DataServicesTest {
         expect(event.getLateDate()).andReturn(null).anyTimes();
         expect(event.getLatePoints()).andReturn(null).anyTimes();
         expect(event.getEarlyPoints()).andReturn(null).anyTimes();
-        expect(event.getName()).andReturn(_geA.getName()).anyTimes();
+        expect(event.getName()).andReturn(_dbGeA.getName()).anyTimes();
         expect(event.getId()).andReturn(1).anyTimes();
         expect(event.getOrder()).andReturn(1).anyTimes();
         expect(event.getDirectory()).andReturn(new File("")).anyTimes();
@@ -1330,7 +1351,7 @@ public class DataServicesTest {
         
         _database.putGradableEvents(ImmutableSet.of(event));
         
-        DeadlineInfo info = _dataService.getDeadlineInfo(eventA);
+        DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
         assertEquals(DeadlineInfo.Type.NONE, info.getType()); 
         assertNull(info.getEarlyDate());
         assertNull(info.getOnTimeDate());
@@ -1351,12 +1372,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1367,7 +1388,7 @@ public class DataServicesTest {
         events.add(eventA);
         replay(partA);
         
-        assertTrue(_dataService.isDistEmpty(eventA));
+        assertTrue(_dataServices.isDistEmpty(eventA));
     }
     
     @Test
@@ -1381,12 +1402,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         events.add(eventA);
         
@@ -1402,15 +1423,15 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
         
-        _dataService.setGrader(part, group, ta);
+        _dataServices.setGrader(part, group, ta);
         
-        assertFalse(_dataService.isDistEmpty(eventA));
+        assertFalse(_dataServices.isDistEmpty(eventA));
     }
     
     @Test
@@ -1424,12 +1445,12 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1445,13 +1466,13 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
-        Group group = _dataService.getGroup(asgnA, student1);
+        Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataService.getTA(_dbTA1.getId());
+        TA ta = _dataServices.getTA(_dbUserTA.getId());
         
-        assertEquals(0, _dataService.getDistribution(part).get(ta).size());
+        assertEquals(0, _dataServices.getDistribution(part).get(ta).size());
     }
     
     @Test
@@ -1465,17 +1486,17 @@ public class DataServicesTest {
         expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
         GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_geA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_geA.getId()).anyTimes();
+        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
+        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         
         Part partA1 = createMock(Part.class);
-        expect(partA1.getName()).andReturn(_partA1.getName()).anyTimes();
-        expect(partA1.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA1.getName()).andReturn(_dbPartA1.getName()).anyTimes();
+        expect(partA1.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         parts.add(partA1);
         
         Part partA2 = createMock(Part.class);
-        expect(partA2.getName()).andReturn(_partA2.getName()).anyTimes();
-        expect(partA2.getId()).andReturn(_partA2.getId()).anyTimes();
+        expect(partA2.getName()).andReturn(_dbPartA2.getName()).anyTimes();
+        expect(partA2.getId()).andReturn(_dbPartA2.getId()).anyTimes();
         parts.add(partA2);
         
         expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
@@ -1495,15 +1516,15 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataService.addGroup(dbGroup1);
-        _dataService.addGroup(dbGroup2);
+        _dataServices.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup2);
         
-        Group group1 = _dataService.getGroup(asgnA, student1);
-        Group group2 = _dataService.getGroup(asgnA, student2);
+        Group group1 = _dataServices.getGroup(asgnA, student1);
+        Group group2 = _dataServices.getGroup(asgnA, student2);
         Part part1 = asgnA.getGradableEvents().get(0).getParts().get(0);
         Part part2 = asgnA.getGradableEvents().get(0).getParts().get(1);
-        TA ta1 = _dataService.getTA(_dbTA1.getId());
-        TA ta2 = _dataService.getTA(_dbTA2.getId());
+        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
+        TA ta2 = _dataServices.getTA(_dbTA2.getId());
         
         Map<Part, Map<TA, Set<Group>>> dist = new HashMap<Part, Map<TA, Set<Group>>>();
         Map<TA, Set<Group>> part1Map = new HashMap<TA, Set<Group>>();
@@ -1527,10 +1548,10 @@ public class DataServicesTest {
         dist.put(part1, part1Map);
         dist.put(part2, part2Map);
         
-        _dataService.setDistribution(dist);
+        _dataServices.setDistribution(dist);
         
-        Map<TA, Set<Group>> result1 = _dataService.getDistribution(part1);
-        Map<TA, Set<Group>> result2 = _dataService.getDistribution(part2);
+        Map<TA, Set<Group>> result1 = _dataServices.getDistribution(part1);
+        Map<TA, Set<Group>> result2 = _dataServices.getDistribution(part2);
         assertEquals(2, result1.size());
         assertEquals(2, result2.size());
         
@@ -1556,19 +1577,19 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
 
         Part partA = createMock(Part.class);
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         replay(partA);
 
         Group group1 = createMock(Group.class);
         expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
         replay(group1);
 
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
 
-        TA ta = _dataService.getGrader(partA, group1);
+        TA ta = _dataServices.getGrader(partA, group1);
 
         assertNull(ta);
     }
@@ -1581,14 +1602,14 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
         
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataService.addGroup(dbGroup2);
+        _dataServices.addGroup(dbGroup2);
 
         Part partA = createMock(Part.class);
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         replay(partA);
 
         Group group1 = createMock(Group.class);
@@ -1596,23 +1617,23 @@ public class DataServicesTest {
         replay(group1);
 
         TA ta = createMock(TA.class);
-        expect(ta.getId()).andReturn(_dbTA1.getId()).anyTimes();
+        expect(ta.getId()).andReturn(_dbUserTA.getId()).anyTimes();
         replay(ta);
 
-        _dataService.setGrader(partA, group1, ta);
+        _dataServices.setGrader(partA, group1, ta);
 
-        _dataService.updateDataCache();
+        _dataServices.updateDataCache();
 
-        TA returnedTA = _dataService.getGrader(partA, group1);
+        TA returnedTA = _dataServices.getGrader(partA, group1);
 
-        assertTAEqual(_dbTA1, returnedTA);
+        assertTAEqual(_dbUserTA, returnedTA);
 
         //make sure setting one grader doesn't effect others
         Group group2 = createMock(Group.class);
         expect(group2.getId()).andReturn(dbGroup2.getId()).anyTimes();
         replay(group2);
         
-        TA returnedTANull = _dataService.getGrader(partA, group2);
+        TA returnedTANull = _dataServices.getGrader(partA, group2);
 
         assertNull(returnedTANull);
     }
@@ -1624,19 +1645,19 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
 
         Part partA = createMock(Part.class);
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
         replay(partA);
 
         Group group1 = createMock(Group.class);
         expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
         replay(group1);
 
-         _dataService.updateDataCache();
+         _dataServices.updateDataCache();
 
-         PartGrade pg = _dataService.getEarned(group1, partA);
+         PartGrade pg = _dataServices.getEarned(group1, partA);
 
          assertNull(pg);
     }
@@ -1648,11 +1669,11 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataService.addGroup(dbGroup1);
+        _dataServices.addGroup(dbGroup1);
 
         Part partA = createMock(Part.class);
-        expect(partA.getId()).andReturn(_partA1.getId()).anyTimes();
-        expect(partA.getName()).andReturn(_partA1.getName()).anyTimes();
+        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
+        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
         replay(partA);
 
         Group group1 = createMock(Group.class);
@@ -1661,16 +1682,67 @@ public class DataServicesTest {
         replay(group1);
 
         TA ta = createMock(TA.class);
-        expect(ta.getId()).andReturn(_dbTA1.getId()).anyTimes();
+        expect(ta.getId()).andReturn(_dbUserTA.getId()).anyTimes();
         replay(ta);
 
-        _dataService.setGrader(partA, group1, ta);
+        _dataServices.setGrader(partA, group1, ta);
 
-        _dataService.setEarned(group1, partA, _partA1.getOutOf(), true);
+        _dataServices.setEarned(group1, partA, _dbPartA1.getOutOf(), true);
 
-         PartGrade pg = _dataService.getEarned(group1, partA);
+         PartGrade pg = _dataServices.getEarned(group1, partA);
 
          assertNotNull(pg);
+    }
+    
+    @Test
+    public void testSetGetExtensions() throws ServicesException
+    {
+        DbGroup dbGroup1 = new DbGroup(_asgnA, "The Group", ImmutableSet.<Student>of());
+        DbGroup dbGroup2 = new DbGroup(_asgnA, "Another Group", ImmutableSet.<Student>of());
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
+        
+        DateTime newOnTime = new DateTime();
+        String note = "Just because";
+        
+        _dataServices.setExtensions(_geA, groups, newOnTime, true, note);
+        
+        Map<Group, Extension> extensions = _dataServices.getExtensions(_geA, groups);
+        assertSetsEqual(groups, extensions.keySet());
+        for(Map.Entry<Group, Extension> entry : extensions.entrySet())
+        {
+            Group group = entry.getKey();
+            Extension extension = entry.getValue();
+            
+            assertEquals(newOnTime, extension.getNewOnTime());
+            assertEquals(note, extension.getNote());
+            assertEquals(_geA.getId(), extension.getGradableEvent().getId());
+            assertEquals(group, extension.getGroup());
+            assertEquals((Integer) _dbUserTA.getId(), (Integer) extension.getTA().getId());
+        }
+    }
+    
+    @Test
+    public void testSetDeleteGetExtensions() throws ServicesException
+    {
+        DbGroup dbGroup1 = new DbGroup(_asgnA, "The Group", ImmutableSet.<Student>of());
+        DbGroup dbGroup2 = new DbGroup(_asgnA, "Another Group", ImmutableSet.<Student>of());
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
+        
+        _dataServices.setExtensions(_geA, groups, new DateTime(), true, "Just because");
+        
+        _dataServices.deleteExtensions(_geA, groups);
+        
+        Map<Group, Extension> extensions = _dataServices.getExtensions(_geA, groups);
+        assertTrue(extensions.isEmpty());
+    }
+    
+    private <T> void assertSetsEqual(Set<T> set1, Set<T> set2) {
+        assertEquals(set1.size(), set2.size());
+        assertTrue(set1.containsAll(set2));
     }
 
     private void assertDbStudentCollectionEqual(Collection<DbStudent> students1, Collection<Student> students2) {

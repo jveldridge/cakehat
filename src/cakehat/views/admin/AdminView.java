@@ -78,8 +78,8 @@ public class AdminView extends JFrame
         _assignmentTree.selectFirstAssignment();
         
         //Display
-        this.setMinimumSize(new Dimension(950, 450));
-        this.setPreferredSize(new Dimension(1100, 550));
+        this.setMinimumSize(new Dimension(1125, 550));
+        this.setPreferredSize(new Dimension(1125, 550));
         this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(true);
