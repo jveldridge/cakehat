@@ -43,7 +43,7 @@ public class GradingSheetManagerImpl implements GradingSheetManager
                 title = group.getName() + "'s " + part.getFullDisplayName();
             }
             
-            frame = new GradingSheetFrame(PartPanel.getPartPanel(part, group, isAdmin, submitOnSave), title);
+            frame = new GradingSheetFrame<PartPanel>(PartPanel.getPartPanel(part, group, isAdmin, submitOnSave), title);
             _openGradingSheetFrames.put(pair, frame);
             
             frame.addWindowListener(new WindowAdapter()
@@ -67,18 +67,18 @@ public class GradingSheetManagerImpl implements GradingSheetManager
     @Override
     public GradingSheet getGradingSheet(Assignment asgn, Group group, boolean isAdmin, boolean submitOnSave)
     {
-        return new WidthTrackingViewportPanel(new AssignmentPanel(asgn, group, isAdmin, submitOnSave));
+        return new WidthTrackingViewportPanel<AssignmentPanel>(new AssignmentPanel(asgn, group, isAdmin, submitOnSave));
     }
 
     @Override
     public GradingSheet getGradingSheet(GradableEvent gradableEvent, Group group, boolean isAdmin, boolean submitOnSave)
     {
-        return new WidthTrackingViewportPanel(new GradableEventPanel(gradableEvent, group,isAdmin, submitOnSave));
+        return new WidthTrackingViewportPanel<GradableEventPanel>(new GradableEventPanel(gradableEvent, group,isAdmin, submitOnSave));
     }
 
     @Override
     public GradingSheet getGradingSheet(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {
-        return new WidthTrackingViewportPanel(PartPanel.getPartPanel(part, group, isAdmin, submitOnSave));
+        return new WidthTrackingViewportPanel<PartPanel>(PartPanel.getPartPanel(part, group, isAdmin, submitOnSave));
     }
 }

@@ -42,7 +42,7 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
 
     public void setDescriptionProvider(DescriptionProvider<E> descriptionProvider)
     {
-        _renderer = new DescriptionProviderCellRenderer(new BasicComboBoxRenderer(), this, descriptionProvider);
+        _renderer = new DescriptionProviderCellRenderer<E>(new BasicComboBoxRenderer(), this, descriptionProvider);
         this.setRenderer(_renderer);
         _model.notifyRefresh();
     }

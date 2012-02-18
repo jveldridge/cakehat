@@ -32,7 +32,7 @@ import support.ui.SelectionListener.SelectionAction;
 
     public GenericComboBoxModel()
     {
-        this(Collections.EMPTY_LIST);
+        this(Collections.<T>emptyList());
     }
 
     @Override

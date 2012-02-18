@@ -809,7 +809,7 @@ public class DatabaseImpl implements Database
         }
     };
     
-    private void setChildIdsNull(Iterable<DbDataItem> children) {
+    private void setChildIdsNull(Iterable<? extends DbDataItem> children) {
         for (DbDataItem child : children) {
             child.setParentId(null);
             child.setId(null);
