@@ -5,6 +5,7 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
+import com.google.common.collect.ImmutableSet;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
@@ -43,7 +44,9 @@ public class GradingSheetManagerImpl implements GradingSheetManager
                 title = group.getName() + "'s " + part.getFullDisplayName();
             }
             
-            frame = new GradingSheetFrame<PartPanel>(PartPanel.getPartPanel(part, group, isAdmin, submitOnSave), title);
+            GradableEventPanel panel = new GradableEventPanel(part.getGradableEvent(), ImmutableSet.of(part), group,
+                    isAdmin, submitOnSave);
+            frame = new GradingSheetFrame<GradableEventPanel>(panel, title);
             _openGradingSheetFrames.put(pair, frame);
             
             frame.addWindowListener(new WindowAdapter()
@@ -73,7 +76,8 @@ public class GradingSheetManagerImpl implements GradingSheetManager
     @Override
     public GradingSheet getGradingSheet(GradableEvent gradableEvent, Group group, boolean isAdmin, boolean submitOnSave)
     {
-        return new WidthTrackingViewportPanel<GradableEventPanel>(new GradableEventPanel(gradableEvent, group,isAdmin, submitOnSave));
+        return new WidthTrackingViewportPanel<GradableEventPanel>(new GradableEventPanel(gradableEvent,
+                ImmutableSet.copyOf(gradableEvent.getParts()), group,isAdmin, submitOnSave));
     }
 
     @Override
