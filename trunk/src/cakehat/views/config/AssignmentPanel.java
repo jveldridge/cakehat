@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -57,6 +58,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import support.ui.DateTimeControl;
 import support.ui.DescriptionProvider;
 import support.ui.DnDList;
 import support.ui.DnDListener;
@@ -64,6 +66,7 @@ import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
 import support.ui.PaddingPanel;
 import support.ui.PartialDescriptionProvider;
+import support.ui.PeriodControl;
 import support.ui.SelectionListener;
 import support.ui.SelectionListener.SelectionAction;
 
@@ -554,8 +557,8 @@ class AssignmentPanel extends JPanel
             this.add(Box.createVerticalStrut(10));
             
             JLabel gradableEventsLabel = createTitleLabel("Gradable Events",
-                    "Gradable Events represents a gradable product of work done by a group of one or more students. " +
-                    "This could be, but is not limited, to paper handins, digital handins, labs, design checks, and " +
+                    "A gradable event represents a gradable product of work done by a group of one or more students. " +
+                    "This could be, but is not limited to, paper handins, digital handins, labs, design checks, and " +
                     "exams.",
                     LEFT_ALIGNMENT);
             this.add(gradableEventsLabel);
@@ -945,6 +948,15 @@ class AssignmentPanel extends JPanel
             
             contentPanel.add(Box.createVerticalStrut(10));
             
+            JLabel deadlineLabel = createTitleLabel("Deadlines", null, LEFT_ALIGNMENT); 
+            contentPanel.add(deadlineLabel);
+            
+            JPanel deadlinePanel = new DeadlinePanel(this.getBackground());
+            deadlinePanel.setAlignmentX(LEFT_ALIGNMENT);
+            contentPanel.add(deadlinePanel);
+            
+            contentPanel.add(Box.createVerticalStrut(10));
+            
             JLabel directoryLabel = createTitleLabel("Digital Handin Directory", 
                     "This directory will be searched recursively for digital handins",
                     LEFT_ALIGNMENT);
@@ -1034,15 +1046,6 @@ class AssignmentPanel extends JPanel
             _directoryField.setAlignmentX(LEFT_ALIGNMENT);
             _directoryField.setMaximumSize(new Dimension(Short.MAX_VALUE, 25));
             contentPanel.add(_directoryField);
-            
-            contentPanel.add(Box.createVerticalStrut(10));
-            
-            JLabel deadlineLabel = createTitleLabel("Deadlines", null, LEFT_ALIGNMENT); 
-            contentPanel.add(deadlineLabel);
-            
-            JPanel deadlinePanel = new DeadlinePanel(this.getBackground());
-            deadlinePanel.setAlignmentX(LEFT_ALIGNMENT);
-            contentPanel.add(deadlinePanel);
             
             contentPanel.add(Box.createVerticalStrut(10));
             
@@ -1183,62 +1186,50 @@ class AssignmentPanel extends JPanel
         
         private class DeadlinePanel extends JPanel
         {
-            private final ValidatingDateTimeField _earlyDateField, _onTimeDateField, _lateDateField;
+            private final DateTimeControl _earlyDateControl, _onTimeDateControl, _lateDateControl;
             private final ValidatingNumberField _earlyPointsField, _latePointsField;
-            private final ValidatingTextField _latePeriodField;
+            private final PeriodControl _latePeriodControl;
             
             private DeadlinePanel(Color backgroundColor)
             {
                 this.setBackground(backgroundColor);
                 
                 //Dates
-                _earlyDateField = new ValidatingDateTimeField(true)
+                _earlyDateControl = new DateTimeControl(_gradableEvent.getEarlyDate());
+                _earlyDateControl.setBackground(backgroundColor);
+                _earlyDateControl.addDateTimeChangeListener(new DateTimeControl.DateTimeChangeListener()
                 {
                     @Override
-                    protected String getDbValue()
+                    public void dateTimeChanged(DateTime prevDateTime, DateTime newDateTime)
                     {
-                        return _gradableEvent.getEarlyDate() == null ? "" : _gradableEvent.getEarlyDate().toString();
-                    }
-
-                    @Override
-                    protected void applyChange(String newValue)
-                    {
-                        _gradableEvent.setEarlyDate(newValue.isEmpty() ? null : new DateTime(newValue));
+                        _gradableEvent.setEarlyDate(newDateTime);
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
                     }
-                };
+                });
                 
-                _onTimeDateField = new ValidatingDateTimeField(false)
+                _onTimeDateControl = new DateTimeControl(_gradableEvent.getOnTimeDate());
+                _onTimeDateControl.setBackground(backgroundColor);
+                _onTimeDateControl.addDateTimeChangeListener(new DateTimeControl.DateTimeChangeListener()
                 {
                     @Override
-                    protected String getDbValue()
+                    public void dateTimeChanged(DateTime prevDateTime, DateTime newDateTime)
                     {
-                        return _gradableEvent.getOnTimeDate() == null ? "" : _gradableEvent.getOnTimeDate().toString();
-                    }
-
-                    @Override
-                    protected void applyChange(String newValue)
-                    {
-                        _gradableEvent.setOnTimeDate(newValue.isEmpty() ? null : new DateTime(newValue));
+                        _gradableEvent.setOnTimeDate(newDateTime);
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
                     }
-                };
+                });
                 
-                _lateDateField = new ValidatingDateTimeField(true)
+                _lateDateControl = new DateTimeControl(_gradableEvent.getLateDate());
+                _lateDateControl.setBackground(backgroundColor);
+                _lateDateControl.addDateTimeChangeListener(new DateTimeControl.DateTimeChangeListener()
                 {
                     @Override
-                    protected String getDbValue()
+                    public void dateTimeChanged(DateTime prevDateTime, DateTime newDateTime)
                     {
-                        return _gradableEvent.getLateDate() == null ? "" : _gradableEvent.getLateDate().toString();
-                    }
-
-                    @Override
-                    protected void applyChange(String newValue)
-                    {
-                        _gradableEvent.setLateDate(newValue.isEmpty() ? null : new DateTime(newValue));
+                        _gradableEvent.setLateDate(newDateTime);
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
                     }
-                };
+                });
                 
                 //Points
                 _earlyPointsField = new ValidatingNumberField()
@@ -1246,7 +1237,7 @@ class AssignmentPanel extends JPanel
                     @Override
                     protected String getDbValue()
                     {
-                        return _gradableEvent.getEarlyPoints() == null ? "0" : (_gradableEvent.getEarlyPoints() + "");
+                        return _gradableEvent.getEarlyPoints() == null ? "" : (_gradableEvent.getEarlyPoints() + "");
                     }
 
                     @Override
@@ -1256,13 +1247,14 @@ class AssignmentPanel extends JPanel
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
                     }
                 };
+                _earlyPointsField.setColumns(5);
                 
                 _latePointsField = new ValidatingNumberField()
                 {
                     @Override
                     protected String getDbValue()
                     {
-                        return _gradableEvent.getLatePoints() == null ? "0" : (_gradableEvent.getLatePoints() + "");
+                        return _gradableEvent.getLatePoints() == null ? "" : (_gradableEvent.getLatePoints() + "");
                     }
 
                     @Override
@@ -1272,42 +1264,20 @@ class AssignmentPanel extends JPanel
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
                     }
                 };
+                _latePointsField.setColumns(5);
                 
                 //Period
-                _latePeriodField = new ValidatingTextField()
+                _latePeriodControl = new PeriodControl(_gradableEvent.getLatePeriod());
+                _latePeriodControl.setBackground(backgroundColor);
+                _latePeriodControl.addPeriodChangeListener(new PeriodControl.PeriodChangeListener()
                 {
                     @Override
-                    protected String getDbValue()
+                    public void periodChanged(Period prevPeriod, Period newPeriod)
                     {
-                        return _gradableEvent.getLatePeriod() == null ? "" : _gradableEvent.getLatePeriod().toString();
-                    }
-
-                    @Override
-                    protected ValidationResult validate(String value)
-                    {
-                        ValidationResult result = ValidationResult.NO_ISSUE;
-                        if(!value.isEmpty())
-                        {
-                            try
-                            {
-                                new Period(value);
-                            }
-                            catch(IllegalArgumentException e)
-                            {
-                                result = new ValidationResult(ValidationState.ERROR, "Invalid period format");
-                            }
-                        }
-                        
-                        return result;
-                    }
-
-                    @Override
-                    protected void applyChange(String newValue)
-                    {
-                        _gradableEvent.setLatePeriod(newValue.isEmpty() ? null : new Period(newValue));
+                        _gradableEvent.setLatePeriod(newPeriod);
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
                     }
-                };
+                });
                 
                 this.displayDeadlineInfo();
             }
@@ -1340,57 +1310,121 @@ class AssignmentPanel extends JPanel
                 }
             }
             
-            void displayDeadlineInfo()
+            private void displayDeadlineInfo()
             {
                 this.removeAll();
                 
-                _earlyDateField.setTextToDbValue();
-                _onTimeDateField.setTextToDbValue();
-                _lateDateField.setTextToDbValue();
-                _earlyPointsField.setTextToDbValue();
-                _latePointsField.setTextToDbValue();
-                _latePeriodField.setTextToDbValue();
+                _earlyDateControl.setDateTime(_gradableEvent.getEarlyDate(), true);
+                _onTimeDateControl.setDateTime(_gradableEvent.getOnTimeDate(), true);
+                _lateDateControl.setDateTime(_gradableEvent.getLateDate(), true);
+                _latePeriodControl.setPeriod(_gradableEvent.getLatePeriod(), true);
                 
                 DeadlineInfo.Type deadlineType = _gradableEvent.getDeadlineType();
                 if(deadlineType == DeadlineInfo.Type.FIXED)
                 {
                     this.setLayout(new BorderLayout(0, 0));
                     
-                    JPanel removePanel = new JPanel();
-                    removePanel.setBackground(this.getBackground());
-                    this.add(removePanel, BorderLayout.SOUTH);
-                    final JButton removeButton = new JButton("Remove Deadlines");
-                    removeButton.setAlignmentX(CENTER_ALIGNMENT);
-                    removeButton.addActionListener(new RemoveDeadlinesActionListener());
-                    removePanel.add(removeButton);
+                    //Controls for the fixed deadlines
+                    JPanel controlsPanel = new JPanel();
+                    controlsPanel.setBackground(this.getBackground());
+                    this.add(controlsPanel, BorderLayout.CENTER);
+                    controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.Y_AXIS));
                     
-                    JPanel fieldsPanel = new JPanel(new GridLayout(4, 3));
-                    fieldsPanel.setBackground(this.getBackground());
-                    this.add(fieldsPanel, BorderLayout.CENTER);
-
-                    fieldsPanel.add(Box.createHorizontalBox());
-                    fieldsPanel.add(new JLabel("Date and Time"));
-                    fieldsPanel.add(new JLabel("Points"));
-
                     //Early
-                    fieldsPanel.add(new JLabel("Early"));
-                    fieldsPanel.add(_earlyDateField);
-                    fieldsPanel.add(_earlyPointsField);
-
-                    //On Time
-                    fieldsPanel.add(new JLabel("On Time"));
-                    fieldsPanel.add(_onTimeDateField);
-                    fieldsPanel.add(Box.createHorizontalBox());
-
-                    //Late
-                    fieldsPanel.add(new JLabel("Late"));
-                    fieldsPanel.add(_lateDateField);
-                    fieldsPanel.add(_latePointsField);
-                }
-                else if(deadlineType == DeadlineInfo.Type.VARIABLE)
-                {
-                    this.setLayout(new BorderLayout(0, 0));
+                    boolean hasEarly = _earlyDateControl.getDateTime() != null;
+                    final JCheckBox earlyCheckBox = new JCheckBox("Early", hasEarly);
+                    earlyCheckBox.addActionListener(new ActionListener()
+                    {
+                        @Override
+                        public void actionPerformed(ActionEvent ae)
+                        {
+                            if(earlyCheckBox.isSelected())
+                            {
+                                DateTime earlyDate = _onTimeDateControl.getDateTime().minusDays(2);
+                                
+                                _gradableEvent.setEarlyDate(earlyDate);
+                                _gradableEvent.setEarlyPoints(0D);
+                                _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                                
+                                _earlyDateControl.setDateTime(earlyDate, true);
+                                _earlyPointsField.setText("0");
+                                _earlyPointsField.setEnabled(true);
+                            }
+                            else
+                            {
+                                _gradableEvent.setEarlyDate(null);
+                                _gradableEvent.setEarlyPoints(null);
+                                _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                                
+                                _earlyDateControl.setDateTime(null, true);
+                                _earlyPointsField.setEnabled(false);
+                                _earlyPointsField.setText("");
+                            }
+                        }
+                    });
+                    earlyCheckBox.setBackground(this.getBackground());
+                    earlyCheckBox.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(earlyCheckBox);
+                    controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _earlyDateControl));
+                    controlsPanel.add(Box.createVerticalStrut(3));
+                    _earlyPointsField.setEnabled(hasEarly);
+                    _earlyPointsField.setTextToDbValue();
+                    controlsPanel.add(createDeadlineComponentPanel("Bonus Points: ", _earlyPointsField));
                     
+                    controlsPanel.add(Box.createVerticalStrut(5));
+                    
+                    //On Time
+                    JLabel onTimeLabel = new JLabel("On Time");
+                    onTimeLabel.setBackground(this.getBackground());
+                    onTimeLabel.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(onTimeLabel);
+                    _onTimeDateControl.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _onTimeDateControl));
+                    
+                    controlsPanel.add(Box.createVerticalStrut(5));
+                    
+                    //Late
+                    boolean hasLate = _lateDateControl.getDateTime() != null;
+                    final JCheckBox lateCheckBox = new JCheckBox("Late", hasLate);
+                    lateCheckBox.addActionListener(new ActionListener()
+                    {
+                        @Override
+                        public void actionPerformed(ActionEvent ae)
+                        {
+                            if(lateCheckBox.isSelected())
+                            {
+                                DateTime lateDate = _onTimeDateControl.getDateTime().plusDays(2);
+                                
+                                _gradableEvent.setLateDate(lateDate);
+                                _gradableEvent.setLatePoints(0D);
+                                _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                                
+                                _lateDateControl.setDateTime(lateDate, true);
+                                _latePointsField.setText("0");
+                                _latePointsField.setEnabled(true);
+                            }
+                            else
+                            {
+                                _gradableEvent.setLateDate(null);
+                                _gradableEvent.setLatePoints(null);
+                                _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                                
+                                _lateDateControl.setDateTime(null, true);
+                                _latePointsField.setEnabled(false);
+                                _latePointsField.setText("");
+                            }
+                        }
+                    });
+                    lateCheckBox.setBackground(this.getBackground());
+                    lateCheckBox.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(lateCheckBox);
+                    controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _lateDateControl));
+                    controlsPanel.add(Box.createVerticalStrut(3));
+                    _latePointsField.setEnabled(hasLate);
+                    _latePointsField.setTextToDbValue();
+                    controlsPanel.add(createDeadlineComponentPanel("Penalty Points: ", _latePointsField));
+                    
+                    //Remove deadlines
                     JPanel removePanel = new JPanel();
                     removePanel.setBackground(this.getBackground());
                     this.add(removePanel, BorderLayout.SOUTH);
@@ -1398,27 +1432,81 @@ class AssignmentPanel extends JPanel
                     removeButton.setAlignmentX(CENTER_ALIGNMENT);
                     removeButton.addActionListener(new RemoveDeadlinesActionListener());
                     removePanel.add(removeButton);
+                }
+                else if(deadlineType == DeadlineInfo.Type.VARIABLE)
+                {
+                    this.setLayout(new BorderLayout(0, 0));
                     
-                    JPanel fieldsPanel = new JPanel(new GridLayout(3, 4));
-                    fieldsPanel.setBackground(this.getBackground());
-                    this.add(fieldsPanel, BorderLayout.CENTER);
-                    
-                    fieldsPanel.add(Box.createHorizontalBox());
-                    fieldsPanel.add(new JLabel("Date and Time"));
-                    fieldsPanel.add(new JLabel("Points"));
-                    fieldsPanel.add(new JLabel("Period"));
+                    //Controls for the variable deadlines
+                    JPanel controlsPanel = new JPanel();
+                    controlsPanel.setBackground(this.getBackground());
+                    this.add(controlsPanel, BorderLayout.CENTER);
+                    controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.Y_AXIS));
                     
                     //On Time
-                    fieldsPanel.add(new JLabel("On Time"));
-                    fieldsPanel.add(_onTimeDateField);
-                    fieldsPanel.add(Box.createHorizontalBox());
-                    fieldsPanel.add(Box.createHorizontalBox());
+                    JLabel onTimeLabel = new JLabel("On Time");
+                    onTimeLabel.setBackground(this.getBackground());
+                    onTimeLabel.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(onTimeLabel);
+                    _onTimeDateControl.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _onTimeDateControl));
+                    
+                    controlsPanel.add(Box.createVerticalStrut(5));
+                    
+                    //Deduction
+                    JLabel deductionLabel = new JLabel("Deduction");
+                    deductionLabel.setBackground(this.getBackground());
+                    deductionLabel.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(deductionLabel);
+                    _latePeriodControl.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(createDeadlineComponentPanel("Period: ", _latePeriodControl));
+                    controlsPanel.add(Box.createVerticalStrut(3));
+                    _latePointsField.setAlignmentX(LEFT_ALIGNMENT);
+                    _latePointsField.setEnabled(true);
+                    _latePointsField.setTextToDbValue();
+                    controlsPanel.add(createDeadlineComponentPanel("Penalty Points per Period: ", _latePointsField));
                     
                     //Late
-                    fieldsPanel.add(new JLabel("Late"));
-                    fieldsPanel.add(_lateDateField);
-                    fieldsPanel.add(_latePointsField);
-                    fieldsPanel.add(_latePeriodField);
+                    boolean hasLate = _lateDateControl.getDateTime() != null;
+                    final JCheckBox lateCheckBox = new JCheckBox("Late", hasLate);
+                    lateCheckBox.addActionListener(new ActionListener()
+                    {
+                        @Override
+                        public void actionPerformed(ActionEvent ae)
+                        {
+                            if(lateCheckBox.isSelected())
+                            {
+                                Period period = _latePeriodControl.getPeriod();
+                                DateTime lateDate = _onTimeDateControl.getDateTime().plus(period).plus(period);
+                                
+                                _gradableEvent.setLateDate(lateDate);
+                                _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                                
+                                _lateDateControl.setDateTime(lateDate, true);
+                            }
+                            else
+                            {
+                                _gradableEvent.setLateDate(null);
+                                _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                                
+                                _lateDateControl.setDateTime(null, true);
+                            }
+                        }
+                    });
+                    lateCheckBox.setBackground(this.getBackground());
+                    lateCheckBox.setAlignmentX(LEFT_ALIGNMENT);
+                    controlsPanel.add(lateCheckBox);
+                    controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _lateDateControl));
+                    controlsPanel.add(Box.createVerticalStrut(3));
+                    
+                    //Remove deadlines
+                    JPanel removePanel = new JPanel();
+                    removePanel.setBackground(this.getBackground());
+                    this.add(removePanel, BorderLayout.SOUTH);
+                    JButton removeButton = new JButton("Remove Deadlines");
+                    removeButton.setAlignmentX(CENTER_ALIGNMENT);
+                    removeButton.addActionListener(new RemoveDeadlinesActionListener());
+                    removePanel.add(removeButton);
                 }
                 else
                 {
@@ -1448,6 +1536,8 @@ class AssignmentPanel extends JPanel
                         {   
                             _gradableEvent.setDeadlineType(DeadlineInfo.Type.VARIABLE);
                             _gradableEvent.setOnTimeDate(new DateTime());
+                            _gradableEvent.setLatePeriod(new Period(0, 0, 0, 1, 0, 0, 0, 0));
+                            _gradableEvent.setLatePoints(0D);
 
                             _worker.submit(WORKER_TAG, new DeadlineRunnable());
                             
@@ -1460,6 +1550,18 @@ class AssignmentPanel extends JPanel
                 //Force visual update to reflect these changes
                 this.repaint();
                 this.revalidate();
+            }
+            
+            private JPanel createDeadlineComponentPanel(String labelText, Component component)
+            {
+                JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+                panel.setBackground(this.getBackground());
+                panel.setAlignmentX(LEFT_ALIGNMENT);
+                panel.add(Box.createHorizontalStrut(21));
+                panel.add(new JLabel(labelText));
+                panel.add(component);
+
+                return panel;
             }
             
             private class DeadlineRunnable extends ReinitializeRunnable
@@ -2478,64 +2580,17 @@ class AssignmentPanel extends JPanel
         @Override
         protected ValidationResult validate(String value)
         {
-            ValidationResult result;
-            try
-            {
-                Double.parseDouble(value);
-                result = ValidationResult.NO_ISSUE;
-            }
-            catch(NumberFormatException e)
-            {
-                result = new ValidationResult(ValidationState.ERROR, "Numerical value not provided");
-            }
-
-            return result;
-        }
-    }
-
-    private abstract class ValidatingDateTimeField extends ValidatingTextField
-    {
-        private final boolean _allowEmptyString;
-
-        ValidatingDateTimeField(boolean allowEmptyString)
-        {
-            _allowEmptyString = allowEmptyString;
-        }
-
-        @Override
-        protected ValidationResult validate(String value)
-        {
-            ValidationResult result;
-
-            if(value.isEmpty())
-            {
-                if(_allowEmptyString)
-                {
-                    result = ValidationResult.NO_ISSUE;
-                }
-                else
-                {
-                    result = new ValidationResult(ValidationState.ERROR, "An ontime date must be provided");
-                }
-            }
-            else
+            ValidationResult result = ValidationResult.NO_ISSUE;
+            
+            if(this.isEnabled())
             {
                 try
                 {
-                    DateTime date = new DateTime(value);
-
-                    if(date.getYear() != new DateTime().getYear())
-                    {
-                        result = new ValidationResult(ValidationState.WARNING, "Specified year is not current year");
-                    }
-                    else
-                    {
-                        result = ValidationResult.NO_ISSUE;
-                    }
+                    Double.parseDouble(value);
                 }
-                catch(IllegalArgumentException e)
+                catch(NumberFormatException e)
                 {
-                    result = new ValidationResult(ValidationState.ERROR, "Invalid date time format");
+                    result = new ValidationResult(ValidationState.ERROR, "Numerical value not provided");
                 }
             }
 

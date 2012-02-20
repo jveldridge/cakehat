@@ -1,17 +1,12 @@
 package support.ui;
 
-import cakehat.CakehatMain;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.joda.time.DateTime;
@@ -313,55 +308,4 @@ public class DateTimeControl extends JPanel
             return text;
         }
     };
-    
-    
-    //For testing only
-    public static void main(String[] args) throws Throwable
-    {
-        CakehatMain.initializeForTesting();
-        
-        DateTime date = new DateTime();
-        
-        JFrame frame = new JFrame();
-        JPanel panel = new JPanel();
-        frame.add(panel);
-        
-        final DateTimeControl control = new DateTimeControl(date);
-        panel.add(control);
-        
-        control.addDateTimeChangeListener(new DateTimeChangeListener()
-        {
-            @Override
-            public void dateTimeChanged(DateTime prevDateTime, DateTime newDateTime)
-            {
-                System.out.println("Prev: " + prevDateTime + ", new: " + newDateTime);
-            }
-        });
-        
-        JButton disableButton = new JButton("Toggle");
-        disableButton.addActionListener(new ActionListener()
-        {
-            private DateTime _dateTime;
-            
-            @Override
-            public void actionPerformed(ActionEvent ae)
-            {
-                _dateTime = control.getDateTime();
-                
-                if(_dateTime == null)
-                {
-                    control.setDateTime(new DateTime(), false);
-                }
-                else
-                {
-                    control.setDateTime(null, false);
-                }
-            }
-        });
-        panel.add(disableButton);
-        
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
 }
