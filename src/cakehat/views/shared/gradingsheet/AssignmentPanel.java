@@ -4,6 +4,7 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import com.google.common.collect.ImmutableSet;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,7 +87,8 @@ class AssignmentPanel extends GradingSheetPanel
         {
             final GradableEvent gradableEvent = _asgn.getGradableEvents().get(i);
             
-            final GradableEventPanel panel = new GradableEventPanel(gradableEvent, _group, _isAdmin, _submitOnSave);
+            final GradableEventPanel panel = new GradableEventPanel(gradableEvent,
+                    ImmutableSet.copyOf(gradableEvent.getParts()), _group, _isAdmin, _submitOnSave);
             _focusableComponents.addAll(panel.getFocusableComponents());
             
             _gradableEventPanelSaveStatus.put(panel, false);

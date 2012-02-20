@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -49,6 +50,8 @@ import support.ui.DateTimeControl;
 class GradableEventPanel extends GradingSheetPanel
 {
     private final GradableEvent _gradableEvent;
+    private final Set<Part> _partsToFullyShow;
+    private final boolean _fullyShowingAllParts;
     private final Group _group;
     private final boolean _isAdmin;
     private final boolean _submitOnSave;
@@ -63,11 +66,14 @@ class GradableEventPanel extends GradingSheetPanel
     
     private GroupDeadlineResolutionPanel _groupDeadlineResolutionPanel;
     
-    GradableEventPanel(GradableEvent gradableEvent, Group group, boolean isAdmin, boolean submitOnSave)
+    GradableEventPanel(GradableEvent gradableEvent, Set<Part> partsToFullyShow, Group group,
+                       boolean isAdmin, boolean submitOnSave)
     {
         super(Color.WHITE);
         
         _gradableEvent = gradableEvent;
+        _partsToFullyShow = partsToFullyShow;
+        _fullyShowingAllParts = _partsToFullyShow.containsAll(_gradableEvent.getParts());
         _group = group;
         _isAdmin = isAdmin;
         _submitOnSave = submitOnSave;
@@ -137,7 +143,11 @@ class GradableEventPanel extends GradingSheetPanel
         {
             if(_isAdmin)
             {
-                this.initGroupExtensionUI(deadlineInfo, extension);
+                this.initAdminGroupExtensionUI(deadlineInfo, extension);
+            }
+            else
+            {
+                this.initViewGroupExtensionUI(extension);
             }
             
             this.initGroupDeadlineResolutionUI(deadlineInfo, receivedTime, extension);
@@ -254,7 +264,38 @@ class GradableEventPanel extends GradingSheetPanel
         }
     }
     
-    private void initGroupExtensionUI(final DeadlineInfo deadlineInfo, Extension extension)
+    private void initViewGroupExtensionUI(Extension extension)
+    {
+        if(extension != null)
+        {
+            addContent(createSubheaderLabel("Extension", false));
+            
+            addContent(createContentLabel("On Time", false, true));
+            DateTimeFormatter dateTimeFormatter = DateTimeFormat.shortDateTime();
+            String extensionMessage = " • Before or on " + dateTimeFormatter.print(extension.getNewOnTime());
+            addContent(createContentLabel(extensionMessage, false, false));
+            if(extension.getShiftDates())
+            {
+                addContent(createContentLabel(" • Other deadlines shifted", false, false));
+            }
+            else
+            {
+                addContent(createContentLabel(" • Other deadlines ignored", false, false));
+            }
+            
+            String note = extension.getNote();
+            if(note != null)
+            {
+                addContent(createContentLabel("Note", false, true));
+                addContent(createContentLabel(note, false, false));
+            }
+            
+            //Vertical spacing
+            addContent(Box.createVerticalStrut(10));    
+        }
+    }
+    
+    private void initAdminGroupExtensionUI(final DeadlineInfo deadlineInfo, Extension extension)
     {
         //Button to revoke or grant extension
         final JButton extensionButton = new JButton(extension == null ? "Grant Extension" : "Revoke Extension");
@@ -489,22 +530,29 @@ class GradableEventPanel extends GradingSheetPanel
             //Text
             resolutionPanel.add(_resolutionStatusLabel, BorderLayout.CENTER);
 
-            //Points panel
-            JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            pointsPanel.setBackground(this.getBackground());
-            resolutionPanel.add(pointsPanel, BorderLayout.EAST);
+            //Only show the points impact of the deadline resolution if showing all of the parts for the gradable event
+            //This is necessary because when the resolution is NC Late the amount of points deducted is equal to the
+            //total earned amount of points for the gradable event and that info will not be available/current/reliable
+            //when not all of the parts are shown
+            if(_fullyShowingAllParts)
+            {
+                //Points panel
+                JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+                pointsPanel.setBackground(this.getBackground());
+                resolutionPanel.add(pointsPanel, BorderLayout.EAST);
 
-            //Spacing
-            pointsPanel.add(Box.createHorizontalStrut(5));
+                //Spacing
+                pointsPanel.add(Box.createHorizontalStrut(5));
 
-            //Penalty or bonus
-            pointsPanel.add(_penaltyOrBonusField);
+                //Penalty or bonus
+                pointsPanel.add(_penaltyOrBonusField);
 
-            //Spacing
-            pointsPanel.add(Box.createHorizontalStrut(5));
+                //Spacing
+                pointsPanel.add(Box.createHorizontalStrut(5));
 
-            //Out of
-            pointsPanel.add(createDisabledField(null));
+                //Out of
+                pointsPanel.add(createDisabledField(null));
+            }
             
             //Apply initial values
             update(receivedTime, extensionTime, shiftDates);
@@ -546,20 +594,25 @@ class GradableEventPanel extends GradingSheetPanel
         
         private void updatePenaltyOrBonus(DeadlineResolution resolution, boolean notify)
         {
-            //Subtract out the current penalty or bonus, use raw total earned to calculate new penalty or bonus, then
-            //add that to the raw total earned
-            double prevTotalEarned = _totalEarned;
-            _totalEarned -= _currPenaltyOrBonus;
-            _currPenaltyOrBonus = resolution.getPenaltyOrBonus(_totalEarned);
-            _totalEarned += _currPenaltyOrBonus;
-            
-            //Visually update
-            _penaltyOrBonusField.setText(Double.toString(_currPenaltyOrBonus));
-            
-            //Notify
-            if(notify && prevTotalEarned != _totalEarned)
+            //Do not perform when all parts are not shown as in the NC Late case this value cannot be calculated
+            //correctly - the UI for this value is also not show in this case
+            if(_fullyShowingAllParts)
             {
-                notifyEarnedChanged(prevTotalEarned, _totalEarned);
+                //Subtract out the current penalty or bonus, use raw total earned to calculate new penalty or bonus,
+                //then add that to the raw total earned
+                double prevTotalEarned = _totalEarned;
+                _totalEarned -= _currPenaltyOrBonus;
+                _currPenaltyOrBonus = resolution.getPenaltyOrBonus(_totalEarned);
+                _totalEarned += _currPenaltyOrBonus;
+
+                //Visually update
+                _penaltyOrBonusField.setText(Double.toString(_currPenaltyOrBonus));
+
+                //Notify
+                if(notify && prevTotalEarned != _totalEarned)
+                {
+                    notifyEarnedChanged(prevTotalEarned, _totalEarned);
+                }
             }
         }
     }
@@ -568,59 +621,68 @@ class GradableEventPanel extends GradingSheetPanel
     {
         for(int i = 0; i < _gradableEvent.getParts().size(); i++)
         {
-            final Part part = _gradableEvent.getParts().get(i);
+            Part part = _gradableEvent.getParts().get(i);
             
-            final PartPanel partPanel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave);
-            _focusableComponents.addAll(partPanel.getFocusableComponents());
-            
-            _partPanelSaveStatus.put(partPanel, false);
-            _totalEarned += partPanel.getEarned();
-            _totalOutOf += partPanel.getOutOf();
-            
-            partPanel.addGradingSheetListener(new GradingSheetListener()
+            final PartPanel partPanel;
+            if(_partsToFullyShow.contains(part))
             {
-                @Override
-                public void earnedChanged(double prevEarned, double currEarned)
-                {
-                    double prevTotalEarned = _totalEarned;
+                partPanel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave);
+                _focusableComponents.addAll(partPanel.getFocusableComponents());
 
-                    _totalEarned -= prevEarned;
-                    _totalEarned += currEarned;
-                    
-                    if(_groupDeadlineResolutionPanel != null)
-                    {
-                        _groupDeadlineResolutionPanel.notifyTotalEarnedChanged(false);
-                    }
+                _partPanelSaveStatus.put(partPanel, false);
+                _totalEarned += partPanel.getEarned();
+                _totalOutOf += partPanel.getOutOf();
 
-                    notifyEarnedChanged(prevTotalEarned, _totalEarned);
-                    notifyUnsavedChangeOccurred();
-                }
-              
-                @Override
-                public void saveChanged(boolean hasUnsavedChanges)
+                partPanel.addGradingSheetListener(new GradingSheetListener()
                 {
-                    _partPanelSaveStatus.put(partPanel, hasUnsavedChanges);
-                    
-                    if(hasUnsavedChanges)
+                    @Override
+                    public void earnedChanged(double prevEarned, double currEarned)
                     {
+                        double prevTotalEarned = _totalEarned;
+
+                        _totalEarned -= prevEarned;
+                        _totalEarned += currEarned;
+
+                        if(_groupDeadlineResolutionPanel != null)
+                        {
+                            _groupDeadlineResolutionPanel.notifyTotalEarnedChanged(false);
+                        }
+
+                        notifyEarnedChanged(prevTotalEarned, _totalEarned);
                         notifyUnsavedChangeOccurred();
                     }
-                    else
-                    {
-                        boolean allSaved = true;
-                        for(boolean unsavedChanges : _partPanelSaveStatus.values())
-                        {
-                            allSaved = allSaved && !unsavedChanges;
-                        }
 
-                        if(allSaved)
+                    @Override
+                    public void saveChanged(boolean hasUnsavedChanges)
+                    {
+                        _partPanelSaveStatus.put(partPanel, hasUnsavedChanges);
+
+                        if(hasUnsavedChanges)
                         {
-                            notifySavedSuccessfully();
+                            notifyUnsavedChangeOccurred();
                         }
-                    }
-                };
-            });
+                        else
+                        {
+                            boolean allSaved = true;
+                            for(boolean unsavedChanges : _partPanelSaveStatus.values())
+                            {
+                                allSaved = allSaved && !unsavedChanges;
+                            }
+
+                            if(allSaved)
+                            {
+                                notifySavedSuccessfully();
+                            }
+                        }
+                    };
+                });
+            }
+            else
+            {
+                partPanel = new PartInfoPanel(part, _group);
+            }
             
+            //Visually add
             partPanel.setAlignmentX(LEFT_ALIGNMENT);
             addContent(partPanel);
             if(i != _gradableEvent.getParts().size() - 1)
