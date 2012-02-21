@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -64,11 +62,6 @@ class UniqueElementSingleThreadWorker
     private final Thread _taskThread;
     
     /**
-     * A thread safe mapping from a runnable that is blocking a calling thread to the thread that is being blocked.
-     */
-    private final ConcurrentMap<Runnable, Thread> _blockingSubmissions = new ConcurrentHashMap<Runnable, Thread>();
-    
-    /**
      * A special task that is enqueued in order to shut down the worker thread.
      */
     private static final Runnable SHUTDOWN_TASK = new Runnable() { @Override public void run() { } };
@@ -102,14 +95,6 @@ class UniqueElementSingleThreadWorker
                             break;
                         }
                         task.run();
-                        
-                        //If there was a thread waiting for this task to be run, interrupt it so it can resume
-                        Thread blockedThread = _blockingSubmissions.get(task);
-                        if(blockedThread != null)
-                        {
-                            _blockingSubmissions.remove(task);
-                            blockedThread.interrupt();
-                        }
                     }
                     catch(InterruptedException ex) { }
                     //Catch run time exceptions that the runnable might throw so that the thread does not die
@@ -195,50 +180,46 @@ class UniqueElementSingleThreadWorker
     }
     
     /**
-     * Submits {@code task} for execution on a separate thread and waits for its completion. 
+     * Blocks the calling thread until all elements in the queue at the moment this method is invoked have been removed
+     * from the queue and run.
      * 
-     * @param tag
-     * @param task
-     * @return {@code true} if {@code task} was added to the execution queue
-     * @throws NullPointerException if {@code task} is null
-     * @throws IllegalStateException if shut down has commenced
-     * @throws InterruptedException if unable to wait for the task to be run
+     * @throws InterruptedException 
      */
-    public boolean blockingSubmit(String tag, Runnable task) throws InterruptedException
+    public void blockOnQueuedTasks() throws InterruptedException
     {
-        if(!canSubmit())
-        {
-            throw new IllegalStateException("new tasks cannot be submitted");
-        }
+        final ReentrantLock lock = new ReentrantLock();
+        final Condition waitingCompleteCondition = lock.newCondition();
         
-        boolean submitted = _taskQueue.offer(tag, task);
-        
-        //If it was submitted, wait for it to be executed
-        if(submitted)
+        //Create a runnable which will signal the condition when it is run
+        Runnable waitRunnable = new Runnable()
         {
-            _blockingSubmissions.put(task, Thread.currentThread());
-            
-            try
+            @Override
+            public void run()
             {
-                Thread.currentThread().join();
-            }
-            //Thread will be interrupted upon task completion
-            catch(InterruptedException e)
-            {
-                //If the task is still in the blocking submission map then something went wrong - it should have
-                //been removed before interruption
-                if(_blockingSubmissions.containsKey(task))
+                lock.lock();
+                try
                 {
-                    throw e;
+                    waitingCompleteCondition.signal();
+                }
+                finally
+                {
+                    lock.unlock();
                 }
             }
-            finally
-            {
-                _blockingSubmissions.remove(task);
-            }
-        }
+        };
         
-        return submitted;
+        //Acquire the lock, submit the runnable, and then wait for the runnable to be run by the worker thread where the
+        //condition that is being waited on will be signaled
+        lock.lock();
+        try
+        {
+            this.submit(null, waitRunnable);
+            waitingCompleteCondition.await();
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
     
     /**
@@ -261,20 +242,7 @@ class UniqueElementSingleThreadWorker
      */
     public Set<Runnable> cancel(String tag)
     {
-        Set<Runnable> cancelledTasks = _taskQueue.remove(tag);
-        
-        //Check if any of the cancelled tasks were blocking submissions - if so, wake up the thread
-        for(Runnable task : cancelledTasks)
-        {
-            Thread blockedThread = _blockingSubmissions.get(task);
-            if(blockedThread != null)
-            {
-                _blockingSubmissions.remove(task);
-                blockedThread.interrupt();
-            }
-        }
-        
-        return cancelledTasks;
+        return _taskQueue.remove(tag);
     }
     
     /**
