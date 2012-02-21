@@ -571,17 +571,11 @@ class StudentPanel extends JPanel
             //Add students to the database while blocking the UI thread
             try
             {   
-                //Request to be on the database thread from this thread (the UI thread) so after this occurs there is
-                //nothing waiting to be written to the database
-                _worker.blockingSubmit(null, new Runnable()
-                {
-                    @Override
-                    public void run() { }
-                });
+                //Wait for the worker thread to finish all of its tasks
+                _worker.blockOnQueuedTasks();
                 
                 //Now back on the UI thread there are no pending database calls and none can be made while the code
                 //below is running because tasks are only being adding to the worker queue from the UI thread
-                
                 
                 List<String> loginsInGroupNotInDb = new ArrayList<String>(_studentPanel
                         .getCurrentStudentData().getLoginsInGroupNotInDb());
