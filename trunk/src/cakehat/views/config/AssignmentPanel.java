@@ -1187,7 +1187,7 @@ class AssignmentPanel extends JPanel
         private class DeadlinePanel extends JPanel
         {
             private final DateTimeControl _earlyDateControl, _onTimeDateControl, _lateDateControl;
-            private final ValidatingNumberField _earlyPointsField, _latePointsField;
+            private final ValidatingTextField _earlyPointsField, _latePointsField;
             private final PeriodControl _latePeriodControl;
             
             private DeadlinePanel(Color backgroundColor)
@@ -1232,7 +1232,7 @@ class AssignmentPanel extends JPanel
                 });
                 
                 //Points
-                _earlyPointsField = new ValidatingNumberField()
+                _earlyPointsField = new ValidatingTextField()
                 {
                     @Override
                     protected String getDbValue()
@@ -1243,13 +1243,49 @@ class AssignmentPanel extends JPanel
                     @Override
                     protected void applyChange(String newValue)
                     {
-                        _gradableEvent.setEarlyPoints(newValue.isEmpty() ? 0 : Double.parseDouble(newValue));
+                        _gradableEvent.setEarlyPoints(newValue.isEmpty() ? null : Double.parseDouble(newValue));
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                    }
+
+                    @Override
+                    protected ValidationResult validate(String value)
+                    {
+                        ValidationResult result;
+                        if(this.isEnabled())
+                        {
+                            try
+                            {
+                                double numericValue = Double.parseDouble(value);
+                                if(numericValue == 0.0D)
+                                {
+                                    result = new ValidationResult(ValidationState.WARNING, "No bonus given");
+                                }
+                                else if(numericValue < 0D)
+                                {
+                                    result = new ValidationResult(ValidationState.WARNING, "Bonus is negative. " +
+                                            "Student work will lose points for being early.");
+                                }
+                                else
+                                {
+                                    result = ValidationResult.NO_ISSUE;
+                                }
+                            }
+                            catch(NumberFormatException e)
+                            {
+                                result = new ValidationResult(ValidationState.ERROR, "Numerical value not provided");
+                            }
+                        }
+                        else
+                        {
+                            result = ValidationResult.NO_VALIDATION;
+                        }
+                        
+                        return result;
                     }
                 };
                 _earlyPointsField.setColumns(5);
                 
-                _latePointsField = new ValidatingNumberField()
+                _latePointsField = new ValidatingTextField()
                 {
                     @Override
                     protected String getDbValue()
@@ -1260,8 +1296,44 @@ class AssignmentPanel extends JPanel
                     @Override
                     protected void applyChange(String newValue)
                     {
-                        _gradableEvent.setLatePoints(newValue.isEmpty() ? 0 : Double.parseDouble(newValue));
+                        _gradableEvent.setLatePoints(newValue.isEmpty() ? null : Double.parseDouble(newValue));
                         _worker.submit(WORKER_TAG, new DeadlineRunnable());
+                    }
+
+                    @Override
+                    protected ValidationResult validate(String value)
+                    {
+                        ValidationResult result;
+                        if(this.isEnabled())
+                        {
+                            try
+                            {
+                                double numericValue = Double.parseDouble(value);
+                                if(numericValue == 0.0D)
+                                {
+                                    result = new ValidationResult(ValidationState.WARNING, "No penalty given");
+                                }
+                                else if(numericValue > 0D)
+                                {
+                                    result = new ValidationResult(ValidationState.WARNING, "Penalty is positive. " +
+                                            "Student work will gain points for being late.");
+                                }
+                                else
+                                {
+                                    result = ValidationResult.NO_ISSUE;
+                                }
+                            }
+                            catch(NumberFormatException e)
+                            {
+                                result = new ValidationResult(ValidationState.ERROR, "Numerical value not provided");
+                            }
+                        }
+                        else
+                        {
+                            result = ValidationResult.NO_VALIDATION;
+                        }
+                        
+                        return result;
                     }
                 };
                 _latePointsField.setColumns(5);
@@ -1347,8 +1419,8 @@ class AssignmentPanel extends JPanel
                                 _worker.submit(WORKER_TAG, new DeadlineRunnable());
                                 
                                 _earlyDateControl.setDateTime(earlyDate, true);
-                                _earlyPointsField.setText("0");
                                 _earlyPointsField.setEnabled(true);
+                                _earlyPointsField.setText("0");
                             }
                             else
                             {
@@ -1400,8 +1472,8 @@ class AssignmentPanel extends JPanel
                                 _worker.submit(WORKER_TAG, new DeadlineRunnable());
                                 
                                 _lateDateControl.setDateTime(lateDate, true);
-                                _latePointsField.setText("0");
                                 _latePointsField.setEnabled(true);
+                                _latePointsField.setText("0");
                             }
                             else
                             {
@@ -2573,28 +2645,5 @@ class AssignmentPanel extends JPanel
         label.setToolTipText(tooltip);
         
         return label;
-    }
-    
-    private abstract class ValidatingNumberField extends ValidatingTextField
-    {
-        @Override
-        protected ValidationResult validate(String value)
-        {
-            ValidationResult result = ValidationResult.NO_ISSUE;
-            
-            if(this.isEnabled())
-            {
-                try
-                {
-                    Double.parseDouble(value);
-                }
-                catch(NumberFormatException e)
-                {
-                    result = new ValidationResult(ValidationState.ERROR, "Numerical value not provided");
-                }
-            }
-
-            return result;
-        }
     }
 }
