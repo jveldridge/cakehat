@@ -8,6 +8,7 @@ import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.services.ServicesException;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -23,11 +24,11 @@ class DBPartPanel extends PartPanel
     private final boolean _submitOnSave;
     private double _earned = 0;
     
-    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
+    private final List<Component> _focusableComponents = new ArrayList<Component>();
     
-    DBPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
+    DBPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave, boolean showBorder)
     {   
-        super(part, group, isAdmin);
+        super(part, group, isAdmin, showBorder);
         
         _submitOnSave = submitOnSave;
         
@@ -127,7 +128,7 @@ class DBPartPanel extends PartPanel
     }
 
     @Override
-    List<JComponent> getFocusableComponents()
+    List<Component> getFocusableComponents()
     {
         return _focusableComponents;
     }

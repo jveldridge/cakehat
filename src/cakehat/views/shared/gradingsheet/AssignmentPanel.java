@@ -6,12 +6,12 @@ import cakehat.database.Group;
 import cakehat.database.Student;
 import com.google.common.collect.ImmutableSet;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
-import javax.swing.JComponent;
 
 /**
  *
@@ -28,14 +28,14 @@ class AssignmentPanel extends GradingSheetPanel
     private final Map<GradableEventPanel, Boolean> _gradableEventPanelSaveStatus =
             new HashMap<GradableEventPanel, Boolean>();
     
-    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
+    private final List<Component> _focusableComponents = new ArrayList<Component>();
     
     private double _totalEarned = 0;
     private double _totalOutOf = 0;
     
-    AssignmentPanel(Assignment asgn, Group group, boolean isAdmin, boolean submitOnSave)
+    AssignmentPanel(Assignment asgn, Group group, boolean isAdmin, boolean submitOnSave, boolean showBorder)
     {
-        super(Color.WHITE);
+        super(Color.WHITE, showBorder);
         
         _asgn = asgn;
         _group = group;
@@ -88,7 +88,7 @@ class AssignmentPanel extends GradingSheetPanel
             final GradableEvent gradableEvent = _asgn.getGradableEvents().get(i);
             
             final GradableEventPanel panel = new GradableEventPanel(gradableEvent,
-                    ImmutableSet.copyOf(gradableEvent.getParts()), _group, _isAdmin, _submitOnSave);
+                    ImmutableSet.copyOf(gradableEvent.getParts()), _group, _isAdmin, _submitOnSave, true);
             _focusableComponents.addAll(panel.getFocusableComponents());
             
             _gradableEventPanelSaveStatus.put(panel, false);
@@ -144,7 +144,7 @@ class AssignmentPanel extends GradingSheetPanel
     }
     
     @Override
-    List<JComponent> getFocusableComponents()
+    List<Component> getFocusableComponents()
     {
         return _focusableComponents;
     }

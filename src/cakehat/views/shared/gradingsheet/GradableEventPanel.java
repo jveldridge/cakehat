@@ -13,6 +13,7 @@ import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -31,7 +32,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -59,7 +59,7 @@ class GradableEventPanel extends GradingSheetPanel
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<PartPanel, Boolean> _partPanelSaveStatus = new HashMap<PartPanel, Boolean>();
     
-    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
+    private final List<Component> _focusableComponents = new ArrayList<Component>();
     
     private double _totalEarned = 0;
     private double _totalOutOf = 0;
@@ -67,9 +67,9 @@ class GradableEventPanel extends GradingSheetPanel
     private GroupDeadlineResolutionPanel _groupDeadlineResolutionPanel;
     
     GradableEventPanel(GradableEvent gradableEvent, Set<Part> partsToFullyShow, Group group,
-                       boolean isAdmin, boolean submitOnSave)
+                       boolean isAdmin, boolean submitOnSave, boolean showBorder)
     {
-        super(Color.WHITE);
+        super(Color.WHITE, showBorder);
         
         _gradableEvent = gradableEvent;
         _partsToFullyShow = partsToFullyShow;
@@ -310,10 +310,7 @@ class GradableEventPanel extends GradingSheetPanel
         dateTimeControl.setBackground(this.getBackground());
         
         //Check box for whether extension dates are shifted
-        final JCheckBox shiftDatesCheckBox = new JCheckBox("Shift Dates");
-        shiftDatesCheckBox.setToolTipText("<html>Check to shift all deadline dates relative to the new on time date." +
-                                          "<br/>Otherwise only this new on time date will be used, and any other" +
-                                          "<br/>dates from the original deadline will be ignored.</html>");
+        final JCheckBox shiftDatesCheckBox = new JCheckBox();
         shiftDatesCheckBox.setBackground(this.getBackground());
         shiftDatesCheckBox.setSelected(extension == null || (extension != null && extension.getShiftDates()));
         
@@ -453,17 +450,27 @@ class GradableEventPanel extends GradingSheetPanel
         
         extensionPanel.add(Box.createVerticalStrut(5));
         
-        JPanel topPanel = new PreferredHeightPanel(this.getBackground());
-        topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        extensionPanel.add(topPanel);
-        
-        topPanel.add(createContentLabel("On Time:", false, true));
-        topPanel.add(Box.createHorizontalStrut(3));
-        topPanel.add(dateTimeControl);
-        topPanel.add(Box.createHorizontalStrut(5));
-        topPanel.add(shiftDatesCheckBox);
+        JPanel datePanel = new PreferredHeightPanel(this.getBackground());
+        datePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        extensionPanel.add(datePanel);
+        datePanel.add(createContentLabel("On Time:", false, true));
+        datePanel.add(Box.createHorizontalStrut(23));
+        datePanel.add(dateTimeControl);
         
         extensionPanel.add(Box.createVerticalStrut(5));
+        
+        JPanel shiftPanel = new PreferredHeightPanel(this.getBackground());
+        shiftPanel.setToolTipText("<html>Check to shift all deadline dates relative to the new on time date." +
+                                          "<br/>Otherwise only this new on time date will be used, and any other" +
+                                          "<br/>dates from the original deadline will be ignored.</html>");
+        shiftPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        extensionPanel.add(shiftPanel);
+        shiftPanel.add(createContentLabel("Shift Dates:", false, true));
+        shiftPanel.add(Box.createHorizontalStrut(3));
+        shiftPanel.add(shiftDatesCheckBox);
+        
+        extensionPanel.add(Box.createVerticalStrut(5));
+        
         extensionPanel.add(noteScrollPane);
         
         addContent(Box.createVerticalStrut(5));
@@ -626,7 +633,7 @@ class GradableEventPanel extends GradingSheetPanel
             final PartPanel partPanel;
             if(_partsToFullyShow.contains(part))
             {
-                partPanel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave);
+                partPanel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave, true);
                 _focusableComponents.addAll(partPanel.getFocusableComponents());
 
                 _partPanelSaveStatus.put(partPanel, false);
@@ -679,7 +686,7 @@ class GradableEventPanel extends GradingSheetPanel
             }
             else
             {
-                partPanel = new PartInfoPanel(part, _group);
+                partPanel = new PartInfoPanel(part, _group, true);
             }
             
             //Visually add
@@ -693,7 +700,7 @@ class GradableEventPanel extends GradingSheetPanel
     }
     
     @Override
-    List<JComponent> getFocusableComponents()
+    List<Component> getFocusableComponents()
     {
         return _focusableComponents;
     }
