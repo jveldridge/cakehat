@@ -45,7 +45,7 @@ public class GradingSheetManagerImpl implements GradingSheetManager
             }
             
             GradableEventPanel panel = new GradableEventPanel(part.getGradableEvent(), ImmutableSet.of(part), group,
-                    isAdmin, submitOnSave);
+                    isAdmin, submitOnSave, false);
             frame = new GradingSheetFrame<GradableEventPanel>(panel, title);
             _openGradingSheetFrames.put(pair, frame);
             
@@ -70,19 +70,21 @@ public class GradingSheetManagerImpl implements GradingSheetManager
     @Override
     public GradingSheet getGradingSheet(Assignment asgn, Group group, boolean isAdmin, boolean submitOnSave)
     {
-        return new WidthTrackingViewportPanel<AssignmentPanel>(new AssignmentPanel(asgn, group, isAdmin, submitOnSave));
+        return new WidthTrackingViewportPanel<AssignmentPanel>(
+                new AssignmentPanel(asgn, group, isAdmin, submitOnSave, false));
     }
 
     @Override
     public GradingSheet getGradingSheet(GradableEvent gradableEvent, Group group, boolean isAdmin, boolean submitOnSave)
     {
         return new WidthTrackingViewportPanel<GradableEventPanel>(new GradableEventPanel(gradableEvent,
-                ImmutableSet.copyOf(gradableEvent.getParts()), group,isAdmin, submitOnSave));
+                ImmutableSet.copyOf(gradableEvent.getParts()), group,isAdmin, submitOnSave, false));
     }
 
     @Override
     public GradingSheet getGradingSheet(Part part, Group group, boolean isAdmin, boolean submitOnSave)
     {
-        return new WidthTrackingViewportPanel<PartPanel>(PartPanel.getPartPanel(part, group, isAdmin, submitOnSave));
+        return new WidthTrackingViewportPanel<PartPanel>(
+                PartPanel.getPartPanel(part, group, isAdmin, submitOnSave, false));
     }
 }

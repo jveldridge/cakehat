@@ -15,24 +15,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Box;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JViewport;
-import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
@@ -47,11 +37,11 @@ class GMLPartPanel extends PartPanel
     private InMemoryGML _gml;
     private double _totalEarned = 0;
     
-    private final List<JComponent> _focusableComponents = new ArrayList<JComponent>();
+    private final List<Component> _focusableComponents = new ArrayList<Component>();
     
-    GMLPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
+    GMLPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave, boolean showBorder)
     {   
-        super(part, group, isAdmin);
+        super(part, group, isAdmin, showBorder);
         
         _submitOnSave = submitOnSave;
         
@@ -289,7 +279,7 @@ class GMLPartPanel extends PartPanel
     }
 
     @Override
-    List<JComponent> getFocusableComponents()
+    List<Component> getFocusableComponents()
     {
         return _focusableComponents;
     }

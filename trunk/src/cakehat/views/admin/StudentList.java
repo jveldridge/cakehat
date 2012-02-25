@@ -95,27 +95,7 @@ class StudentList extends JPanel
             @Override
             public void modificationOccurred(DocumentEvent de)
             {
-                String filterOn = _filterField.getText();
-                List<Student> matchingStudents = new ArrayList<Student>();
-
-                if(filterOn == null || filterOn.isEmpty())
-                {
-                    List<Student> allStudentsSorted = new ArrayList<Student>(_students);
-                    Collections.sort(allStudentsSorted);
-                    matchingStudents.addAll(allStudentsSorted);
-                }
-                else
-                {
-                    for(Student student : _students)
-                    {
-                        if(student.getLogin().startsWith(filterOn))
-                        {
-                            matchingStudents.add(student);
-                        }
-                    }
-                }
-                
-                _studentList.setListData(matchingStudents);
+                applyFilterTerm();
             }
         });
         commandPanel.add(filterPanel);
@@ -171,6 +151,31 @@ class StudentList extends JPanel
                 }
             }
         });
+    }
+    
+    void applyFilterTerm()
+    {
+        String filterTerm = _filterField.getText();
+        List<Student> matchingStudents = new ArrayList<Student>();
+
+        if(filterTerm == null || filterTerm.isEmpty())
+        {
+            List<Student> allStudentsSorted = new ArrayList<Student>(_students);
+            Collections.sort(allStudentsSorted);
+            matchingStudents.addAll(allStudentsSorted);
+        }
+        else
+        {
+            for(Student student : _students)
+            {
+                if(student.getLogin().startsWith(filterTerm))
+                {
+                    matchingStudents.add(student);
+                }
+            }
+        }
+
+        _studentList.setListData(matchingStudents);
     }
 
     JTextField getFilterField()

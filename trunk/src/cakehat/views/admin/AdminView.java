@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatReleaseInfo;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
@@ -33,7 +34,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 /**
@@ -72,14 +72,14 @@ public class AdminView extends JFrame
         _assignmentTree = new AssignmentTree();
         _studentList = new StudentList();
         this.initUI();
+        this.setJMenuBar(new AdminMenu(this));
         
         //Setup focus traversal
         this.initFocusTraversalPolicy();
-        _assignmentTree.selectFirstAssignment();
         
         //Display
-        this.setMinimumSize(new Dimension(1125, 550));
-        this.setPreferredSize(new Dimension(1125, 550));
+        this.setMinimumSize(new Dimension(1024, 550));
+        this.setPreferredSize(new Dimension(1024, 550));
         this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(true);
@@ -98,7 +98,7 @@ public class AdminView extends JFrame
         
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
         
-        Dimension assignmentTreeSize = new Dimension(215, Short.MAX_VALUE);
+        Dimension assignmentTreeSize = new Dimension(200, Short.MAX_VALUE);
         _assignmentTree.setMinimumSize(assignmentTreeSize);
         _assignmentTree.setPreferredSize(assignmentTreeSize);
         _assignmentTree.setMaximumSize(assignmentTreeSize);
@@ -114,19 +114,22 @@ public class AdminView extends JFrame
         
         contentPanel.add(Box.createHorizontalStrut(5));
         
-        _mainPane.setBorder(null);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        contentPanel.add(mainPanel);
+        //This label exists to match the exact spacing of the label headers for assignments, students, and actions
+        JLabel placeHolderLabel = new JLabel(" ");
+        placeHolderLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+        placeHolderLabel.setAlignmentX(LEFT_ALIGNMENT);
+        mainPanel.add(placeHolderLabel);
+        mainPanel.add(Box.createVerticalStrut(5));
+        _mainPane.setAlignmentX(LEFT_ALIGNMENT);
         _mainPane.getViewport().setBackground(Color.WHITE);
-        contentPanel.add(_mainPane);
+        mainPanel.add(_mainPane);
         
         contentPanel.add(Box.createHorizontalStrut(5));
-        JSeparator separator = new JSeparator(JSeparator.VERTICAL);
-        separator.setMinimumSize(new Dimension(5, Short.MAX_VALUE));
-        separator.setPreferredSize(new Dimension(5, Short.MAX_VALUE));
-        separator.setMaximumSize(new Dimension(5, Short.MAX_VALUE));
-        contentPanel.add(separator);
-        contentPanel.add(Box.createHorizontalStrut(5));
         
-        Dimension actionsPanelSize = new Dimension(200, Short.MAX_VALUE);
+        Dimension actionsPanelSize = new Dimension(185, Short.MAX_VALUE);
         _actionsPanel.setMinimumSize(actionsPanelSize);
         _actionsPanel.setPreferredSize(actionsPanelSize);
         _actionsPanel.setMaximumSize(actionsPanelSize);
@@ -227,15 +230,82 @@ public class AdminView extends JFrame
         
         if(asgn == null)
         {
-            JLabel label = new JLabel("<html>Select an Assignment, Gradable Event, or Part</html>");
-            label.setFont(new Font("Dialog", Font.BOLD, 16));
-            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            if(selectedStudentsNotInGroups.isEmpty())
+            {
+                JLabel label = new JLabel("cakehat v" + CakehatReleaseInfo.getVersion());
+                label.setFont(new Font("Dialog", Font.BOLD, 16));
+                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
             
-            componentToDisplay = label;
+                componentToDisplay = label;
+            }
+            else
+            {
+                JLabel label = new JLabel("Student info display not yet supported");
+                label.setFont(new Font("Dialog", Font.BOLD, 16));
+                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            
+                componentToDisplay = label;
+            }
         }
         else
         {
-            if(selectedGroups.size() < 2)
+            //If there are students selected that do not belong to a group
+            if(!selectedStudentsNotInGroups.isEmpty())
+            {
+                //This case is fine - just means groups have not been created for all of the selected students
+                if(asgn.hasGroups())
+                {
+                    StringBuilder msgBuilder = new StringBuilder();
+                    msgBuilder.append("<html>");
+                    msgBuilder.append("<center>");
+                    msgBuilder.append("<font size=4>");
+                    msgBuilder.append("The following selected students are not in a group");
+                    msgBuilder.append("</font>");
+                    msgBuilder.append("<br/><br/>");
+                    for(Student student : selectedStudentsNotInGroups)
+                    {
+                        msgBuilder.append("<font size=3>");
+                        msgBuilder.append(student.getLogin());
+                        msgBuilder.append(" - ");
+                        msgBuilder.append(student.getName());
+                        msgBuilder.append("</font>");
+                        msgBuilder.append("<br/>");
+                    }
+                    msgBuilder.append("</center>");
+                    msgBuilder.append("</html>");
+                    
+                    JLabel label = new JLabel(msgBuilder.toString());
+                    label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                    
+                    componentToDisplay = label;
+                }
+                //If this occurs it is a cakehat bug - autogroups of 1 should have been created
+                else
+                {
+                    JLabel label = new JLabel("<html>Internal Failure - autogroups of one were not created</html>");
+                    label.setFont(new Font("Dialog", Font.BOLD, 16));
+                    label.setForeground(Color.RED);
+                    label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+                    componentToDisplay = label;
+                    
+                    new ErrorView("Missing autogroups of one\n" +
+                            "Assignment: " + asgn + "\n" +
+                            "Students: " + selectedStudentsNotInGroups);
+                }
+            }
+            //Multiple groups have been selected
+            else if(selectedGroups.size() > 1)
+            {
+                String studentOrGroup = asgn.hasGroups() ? "group" : "student";
+                JLabel label = new JLabel("<html>Multi-" + studentOrGroup + " display not yet supported</html>");
+                label.setFont(new Font("Dialog", Font.BOLD, 16));
+                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                
+                componentToDisplay = label;
+            }       
+            //Zero or one groups have been selected
+            else if(selectedGroups.isEmpty() || selectedGroups.size() == 1)
             {
                 //If the group is null a template will be shown
                 Group group = selectedGroups.isEmpty() ? null : Iterables.get(selectedGroups, 0);
@@ -257,15 +327,6 @@ public class AdminView extends JFrame
                 
                 componentToDisplay = _currentlyDisplayedSheet.getAsComponent();
             }
-            else
-            {
-                String studentOrGroup = asgn.hasGroups() ? "group" : "student";
-                JLabel label = new JLabel("<html>Multi-" + studentOrGroup + " display not yet supported</html>");
-                label.setFont(new Font("Dialog", Font.BOLD, 16));
-                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                
-                componentToDisplay = label;
-            }
         }
         
         _mainPane.setViewportView(componentToDisplay);
@@ -281,9 +342,27 @@ public class AdminView extends JFrame
         }
     }
     
+    void refresh()
+    {
+        saveDisplayedGradingSheet();
+        
+        //Get most recent student and group information from the database
+        try
+        {
+            Allocator.getDataServices().updateDataCache();
+        }
+        catch(ServicesException e)
+        {
+            new ErrorView(e, "Unable to refresh");
+        }
+        
+        //Reapply the filter on the student list which will cause any additions or changes to students to be reflected
+        _studentList.applyFilterTerm();
+    }
+    
     private void initFocusTraversalPolicy()
     {
-        // Add Enter as forward traversal key
+        //Add Enter as forward traversal key
         Set<AWTKeyStroke> forwardKeys = this.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         Set<AWTKeyStroke> newForwardKeys = new HashSet<AWTKeyStroke>(forwardKeys);
         newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));

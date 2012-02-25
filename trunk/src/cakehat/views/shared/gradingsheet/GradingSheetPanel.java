@@ -26,11 +26,14 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     private boolean _hasUnsavedChanges = false;
     private final Set<GradingSheetListener> _listeners = new HashSet<GradingSheetListener>();
     
-    GradingSheetPanel(Color backgroundColor)
+    GradingSheetPanel(Color backgroundColor, boolean showBorder)
     {
         super(backgroundColor);
         
-        this.setBorder(BorderFactory.createEtchedBorder());
+        if(showBorder)
+        {
+            this.setBorder(BorderFactory.createEtchedBorder());
+        }
         
         this.setLayout(new BorderLayout(0, 0));
         this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
@@ -49,7 +52,7 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         return this;
     }
     
-    abstract List<JComponent> getFocusableComponents();
+    abstract List<Component> getFocusableComponents();
     
     @Override
     public Component getFirstComponent()
@@ -202,7 +205,7 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     {
         JLabel label = new JLabel(text);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setFont(new Font("Dialog", Font.BOLD, 22));
+        label.setFont(new Font("Dialog", Font.BOLD, 16));
         label.setForeground(grayOut ? Color.GRAY : Color.BLACK);
         
         return label;
@@ -212,7 +215,7 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     {
         JLabel label = new JLabel(text);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setFont(new Font("Dialog", Font.BOLD, 16));
+        label.setFont(new Font("Dialog", Font.BOLD, 14));
         label.setForeground(grayOut ? Color.GRAY : Color.BLACK);
         
         return label;

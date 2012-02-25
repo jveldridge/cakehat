@@ -7,6 +7,7 @@ import cakehat.database.TA;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,9 +28,9 @@ abstract class PartPanel extends GradingSheetPanel
     protected final Group _group;
     protected final boolean _isAdmin;
     
-    PartPanel(Part part, Group group, boolean isAdmin)
+    PartPanel(Part part, Group group, boolean isAdmin, boolean showBorder)
     {   
-        super(Color.WHITE);
+        super(Color.WHITE, showBorder);
         
         _part = part;
         _group = group;
@@ -38,16 +39,16 @@ abstract class PartPanel extends GradingSheetPanel
         this.init();
     }
     
-    static PartPanel getPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave)
+    static PartPanel getPartPanel(Part part, Group group, boolean isAdmin, boolean submitOnSave, boolean showBorder)
     {
         PartPanel panel;
         if(part.hasSpecifiedGMLTemplate())
         {
-            panel = new GMLPartPanel(part, group, isAdmin, submitOnSave);
+            panel = new GMLPartPanel(part, group, isAdmin, submitOnSave, showBorder);
         }
         else
         {
-            panel = new DBPartPanel(part, group, isAdmin, submitOnSave);
+            panel = new DBPartPanel(part, group, isAdmin, submitOnSave, showBorder);
         }
         
         return panel;
@@ -117,6 +118,7 @@ abstract class PartPanel extends GradingSheetPanel
                         return text;
                     };
                 });
+                assignedComboBox.setPreferredSize(new Dimension(200, 20));
                 assignedComboBox.addSelectionListener(new SelectionListener<TA>()
                 {
                     @Override

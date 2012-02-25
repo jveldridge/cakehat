@@ -17,6 +17,7 @@ import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.Iterables;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -41,6 +42,7 @@ class ActionsPanel extends JPanel
 {
     private final AdminView _adminView;
     
+    private final JLabel _noActionsAvailable;
     private final AssignmentPanel _assignmentPanel;
     private final GradableEventPanel _gradableEventPanel;
     private final PartPanel _partPanel;
@@ -61,6 +63,12 @@ class ActionsPanel extends JPanel
         this.add(actionsLabel);
 
         this.add(Box.createVerticalStrut(5));
+        
+        _noActionsAvailable = new JLabel(" - No Actions Available");
+        _noActionsAvailable.setFont(new Font("Dialog", Font.PLAIN, 11));
+        _noActionsAvailable.setAlignmentX(LEFT_ALIGNMENT);
+        _noActionsAvailable.setVisible(false);
+        this.add(_noActionsAvailable);
         
         _assignmentPanel = new AssignmentPanel();
         _assignmentPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -98,6 +106,9 @@ class ActionsPanel extends JPanel
         _assignmentPanel.setVisible(treeSelection.getAssignment() != null);
         _gradableEventPanel.setVisible(treeSelection.getGradableEvent() != null);
         _partPanel.setVisible(treeSelection.getPart() != null);
+        
+        //If no assignment, gradable event, or part panel has been shown - indicate there are no actions available
+        _noActionsAvailable.setVisible(treeSelection.getAssignment() == null);
     }
     
     private class AssignmentPanel extends JPanel
@@ -152,10 +163,13 @@ class ActionsPanel extends JPanel
         
         void notifySelectionChanged(Assignment assignment, Set<Group> selectedGroups,
                 Set<Student> selectedStudentsNotInGroups)
-        {   
-            _emailGradingSheetButton.setVisible(!selectedGroups.isEmpty());
-            _printGradingSheetButton.setVisible(!selectedGroups.isEmpty());
-            _noActionsAvailable.setVisible(selectedGroups.isEmpty());
+        {
+            boolean showButtons = !selectedGroups.isEmpty();
+            
+            _emailGradingSheetButton.setVisible(showButtons);
+            _printGradingSheetButton.setVisible(showButtons);
+            
+            _noActionsAvailable.setVisible(!showButtons);
             
             _emailGradingSheetButton.updateText(selectedGroups.size() < 2);
             _printGradingSheetButton.updateText(selectedGroups.size() < 2);
@@ -203,8 +217,10 @@ class ActionsPanel extends JPanel
         void notifySelectionChanged(GradableEvent gradableEvent, Set<Group> selectedGroups,
             Set<Student> selectedStudentsNotInGroups)
         {   
-            _autoDistributorButton.setVisible(gradableEvent != null && gradableEvent.hasDigitalHandins());
-            _noActionsAvailable.setVisible(!(gradableEvent != null && gradableEvent.hasDigitalHandins()));
+            boolean showButtons = gradableEvent != null && gradableEvent.hasDigitalHandins();
+            
+            _autoDistributorButton.setVisible(showButtons);
+            _noActionsAvailable.setVisible(!showButtons);
         }
     }
     
@@ -627,6 +643,8 @@ class ActionsPanel extends JPanel
         {
             _singleText = "<html><b>" + singleText + "</b></html>";
             _pluralText = "<html><b>" + pluralText + "</b></html>";
+            
+            this.setMargin(new Insets(2, 10, 2, 10));
             
             this.setIcon(IconLoader.loadIcon(IconSize.s16x16, image));
             this.updateText(true);

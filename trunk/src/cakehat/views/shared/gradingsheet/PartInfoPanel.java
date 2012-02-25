@@ -2,9 +2,9 @@ package cakehat.views.shared.gradingsheet;
 
 import cakehat.database.Group;
 import cakehat.database.assignment.Part;
+import java.awt.Component;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.JComponent;
 
 /**
  * A panel which serves to only show the header information for a {@link Part}.
@@ -13,15 +13,15 @@ import javax.swing.JComponent;
  */
 class PartInfoPanel extends PartPanel
 {
-    PartInfoPanel(Part part, Group group)
+    PartInfoPanel(Part part, Group group, boolean showBorder)
     {
-        super(part, group, false);
+        super(part, group, false, showBorder);
     }
 
     @Override
-    List<JComponent> getFocusableComponents()
+    List<Component> getFocusableComponents()
     {
-        return Collections.<JComponent>emptyList();
+        return Collections.<Component>emptyList();
     }
 
     @Override
