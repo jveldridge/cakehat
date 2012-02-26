@@ -11,18 +11,28 @@ import cakehat.database.Group;
 import cakehat.gml.GMLWriter;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
@@ -208,12 +218,30 @@ class GMLPartPanel extends PartPanel
                         {
                             section.setComment(text);
                         }
-                        
                         notifyUnsavedChangeOccurred();
                     }
                     catch(BadLocationException e) { }
                 }
             });
+            //Remap tab to insert 4 spaces
+            commentArea.getActionMap().put("tab", new AbstractAction("tab")
+            {
+                @Override
+                public void actionPerformed(ActionEvent evt)
+                {
+                    try {
+                        // replaces tab with 4 spaces and fires the key events so that the user sees
+                        // the spaces happen
+                        Robot robot = new Robot();
+                        for (int i = 0; i < 4; i++) {
+                            robot.keyPress(KeyEvent.VK_SPACE);
+                            robot.keyRelease(KeyEvent.VK_SPACE);
+                        }
+                    } catch (AWTException ex) {}
+                                
+                }
+             });
+            commentArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0, false), "tab");
             commentArea.setEnabled(_group != null);
             JScrollPane commentScrollPanel = new JScrollPane(commentArea);
             commentScrollPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 70));
