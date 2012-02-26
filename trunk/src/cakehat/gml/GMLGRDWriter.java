@@ -247,7 +247,7 @@ public class GMLGRDWriter {
         }
         
         //Print comments
-        if(section.getComment() != null) {
+        if(section.getComment() != null) {  
             printSpaces(SECTION_TEXT_WIDTH, output);
             printEnd(null, null, output);
             writeLine("", output);
@@ -255,7 +255,11 @@ public class GMLGRDWriter {
             printWithinBounds(0, SECTION_TEXT_WIDTH, "Comments:", output);
             printEnd(null, null, output);
             writeLine("", output);
-            writeEntry(section.getComment(), output);
+            
+            String[] lines = section.getComment().split("\n");
+            for (String s : lines) {
+                writeEntry(s, output);
+            }
         }
 
         double groupEarned = 0.0;
