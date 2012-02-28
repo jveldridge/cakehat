@@ -10,7 +10,7 @@ public class CakehatReleaseInfo
 {
     public static String getVersion()
     {
-        return "5.1 (Development)";
+        return "5.2 (Development)";
     }
 
     public static String getReleaseDate()
