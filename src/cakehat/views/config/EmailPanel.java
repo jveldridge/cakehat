@@ -15,7 +15,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,9 +36,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
-
+import support.ui.FormattedLabel;
 /**
  *
  * @author jak2
@@ -67,10 +65,7 @@ class EmailPanel extends JPanel
         _contentPanel.removeAll();
         _contentPanel.setLayout(new BorderLayout(0, 0));
         
-        JLabel loadingLabel = new JLabel("Initializing...");
-        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        loadingLabel.setFont(loadingLabel.getFont().deriveFont(Font.BOLD, 16));
-        _contentPanel.add(loadingLabel, BorderLayout.CENTER);
+        _contentPanel.add(FormattedLabel.asHeader("Initializing...").centerHorizontally(), BorderLayout.CENTER);
         
         JProgressBar loadingBar = new JProgressBar();
         loadingBar.setIndeterminate(true);
@@ -127,11 +122,8 @@ class EmailPanel extends JPanel
                             _contentPanel.setLayout(new BorderLayout(0, 0));
 
                             //Error message
-                            JLabel errorLabel = new JLabel("Unable to retrieve email information from the database");
-                            errorLabel.setForeground(Color.RED);
-                            errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                            errorLabel.setFont(errorLabel.getFont().deriveFont(Font.BOLD, 16));
-                            _contentPanel.add(errorLabel, BorderLayout.CENTER);
+                            _contentPanel.add(FormattedLabel.asHeader("Unable to retrieve email information from the " +
+                                    "database").centerHorizontally().showAsErrorMessage(), BorderLayout.CENTER);
 
                             //Option to retry
                             JButton retryButton = new JButton("Retry");
@@ -181,17 +173,15 @@ class EmailPanel extends JPanel
             //Descriptive text
             JPanel descriptionPanel = new JPanel(new BorderLayout(0, 0));
             
-            JLabel headerLabel = new JLabel("Credentials");
-            headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 18));
-            descriptionPanel.add(headerLabel, BorderLayout.NORTH);
+            descriptionPanel.add(FormattedLabel.asHeader("Credentials"), BorderLayout.NORTH);
             
             descriptionPanel.add(Box.createVerticalStrut(5), BorderLayout.CENTER);
             
-            JLabel descriptionLabel = new JLabel("<html>" +
+            JLabel descriptionLabel = FormattedLabel.asContent(
                     "To send email, cakehat needs the email credentials of a Brown CS account. The password is not " +
                     "the Kerberos password used for login. We suggest you make use of your course's test account. " +
                     "To set or reset an account's LDAP password (which is the password used for Brown CS email), run " +
-                    "<tt>ldappasswd</tt> while signed into the account.</html>");
+                    "<tt>ldappasswd</tt> while signed into the account.");
             descriptionPanel.add(descriptionLabel, BorderLayout.SOUTH);
             this.add(descriptionPanel);
          
@@ -202,13 +192,9 @@ class EmailPanel extends JPanel
             JPanel labelsPanel = new JPanel(new GridLayout(1, 5));
             this.add(labelsPanel);
             labelsPanel.add(Box.createHorizontalBox());
-            JLabel accountLabel = new JLabel("Account");
-            accountLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            labelsPanel.add(accountLabel);
+            labelsPanel.add(FormattedLabel.asContent("Account").centerHorizontally());
             labelsPanel.add(Box.createHorizontalBox());
-            JLabel passwordLabel = new JLabel("Password");
-            passwordLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            labelsPanel.add(passwordLabel);
+            labelsPanel.add(FormattedLabel.asContent("Password").centerHorizontally());
             labelsPanel.add(Box.createHorizontalBox());
             
             //Vertical space
@@ -444,13 +430,11 @@ class EmailPanel extends JPanel
             _contentPanel.setLayout(new BorderLayout(0, 0));
                     
             //Message
-            JLabel label = new JLabel(message);
+            FormattedLabel label = FormattedLabel.asHeader(message).centerHorizontally();
             if(!success)
             {
-                label.setForeground(Color.RED);
+                label.showAsErrorMessage();
             }
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setFont(label.getFont().deriveFont(Font.BOLD, 16));
             _contentPanel.add(label, BorderLayout.CENTER);
 
             //Close
@@ -486,7 +470,7 @@ class EmailPanel extends JPanel
                 }
             };
             
-            JLabel label = new JLabel(labelText);
+            JLabel label = FormattedLabel.asContent(labelText);
             label.setPreferredSize(new Dimension(50, 25));
             panel.add(label);
             
@@ -511,13 +495,11 @@ class EmailPanel extends JPanel
             
             //Descriptive text
             JPanel descriptionPanel = new JPanel(new BorderLayout(0, 0));
-            JLabel headerLabel = new JLabel("Notifications");
-            headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 18));
-            descriptionPanel.add(headerLabel, BorderLayout.NORTH);
+            descriptionPanel.add(FormattedLabel.asHeader("Notifications"), BorderLayout.NORTH);
             descriptionPanel.add(Box.createVerticalStrut(5), BorderLayout.CENTER);
-            JLabel descriptionLabel = new JLabel("<html>" +
+            JLabel descriptionLabel = FormattedLabel.asContent(
                     "When certain actions are taken in cakehat, such as TAs submitting grades, email will be sent " +
-                    "to the following email addresses:</html>");
+                    "to the following email addresses:");
             descriptionPanel.add(descriptionLabel, BorderLayout.SOUTH);
             this.add(descriptionPanel);
          

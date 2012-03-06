@@ -20,7 +20,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
-import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -31,10 +30,10 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -118,10 +117,7 @@ public class AdminView extends JFrame
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         contentPanel.add(mainPanel);
         //This label exists to match the exact spacing of the label headers for assignments, students, and actions
-        JLabel placeHolderLabel = new JLabel(" ");
-        placeHolderLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        placeHolderLabel.setAlignmentX(LEFT_ALIGNMENT);
-        mainPanel.add(placeHolderLabel);
+        mainPanel.add(FormattedLabel.asHeader(" "));
         mainPanel.add(Box.createVerticalStrut(5));
         _mainPane.setAlignmentX(LEFT_ALIGNMENT);
         _mainPane.getViewport().setBackground(Color.WHITE);
@@ -232,19 +228,13 @@ public class AdminView extends JFrame
         {
             if(selectedStudentsNotInGroups.isEmpty())
             {
-                JLabel label = new JLabel("cakehat v" + CakehatReleaseInfo.getVersion());
-                label.setFont(new Font("Dialog", Font.BOLD, 16));
-                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            
-                componentToDisplay = label;
+                componentToDisplay = FormattedLabel.asHeader("cakehat v" + CakehatReleaseInfo.getVersion())
+                        .centerHorizontally();
             }
             else
             {
-                JLabel label = new JLabel("Student info display not yet supported");
-                label.setFont(new Font("Dialog", Font.BOLD, 16));
-                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            
-                componentToDisplay = label;
+                componentToDisplay = FormattedLabel.asHeader("Student info display not yet supported")
+                        .centerHorizontally();
             }
         }
         else
@@ -256,7 +246,6 @@ public class AdminView extends JFrame
                 if(asgn.hasGroups())
                 {
                     StringBuilder msgBuilder = new StringBuilder();
-                    msgBuilder.append("<html>");
                     msgBuilder.append("<center>");
                     msgBuilder.append("<font size=4>");
                     msgBuilder.append("The following selected students are not in a group");
@@ -272,22 +261,14 @@ public class AdminView extends JFrame
                         msgBuilder.append("<br/>");
                     }
                     msgBuilder.append("</center>");
-                    msgBuilder.append("</html>");
                     
-                    JLabel label = new JLabel(msgBuilder.toString());
-                    label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                    
-                    componentToDisplay = label;
+                    componentToDisplay = FormattedLabel.asContent(msgBuilder.toString()).centerHorizontally();
                 }
                 //If this occurs it is a cakehat bug - autogroups of 1 should have been created
                 else
                 {
-                    JLabel label = new JLabel("<html>Internal Failure - autogroups of one were not created</html>");
-                    label.setFont(new Font("Dialog", Font.BOLD, 16));
-                    label.setForeground(Color.RED);
-                    label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
-                    componentToDisplay = label;
+                    componentToDisplay = FormattedLabel.asHeader("Internal Failure - autogroups of one were not created")
+                            .showAsErrorMessage().centerHorizontally();
                     
                     new ErrorView("Missing autogroups of one\n" +
                             "Assignment: " + asgn + "\n" +
@@ -298,11 +279,9 @@ public class AdminView extends JFrame
             else if(selectedGroups.size() > 1)
             {
                 String studentOrGroup = asgn.hasGroups() ? "group" : "student";
-                JLabel label = new JLabel("<html>Multi-" + studentOrGroup + " display not yet supported</html>");
-                label.setFont(new Font("Dialog", Font.BOLD, 16));
-                label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
                 
-                componentToDisplay = label;
+                componentToDisplay = FormattedLabel.asContent("Multi-" + studentOrGroup + " display not yet supported")
+                        .centerHorizontally();
             }       
             //Zero or one groups have been selected
             else if(selectedGroups.isEmpty() || selectedGroups.size() == 1)

@@ -10,12 +10,10 @@ import support.resources.icons.IconLoader.IconSize;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -26,6 +24,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import support.ui.FormattedLabel;
 
 /**
  * A panel containing a tree of Assignments, GradableEvents, and Parts.
@@ -46,10 +45,7 @@ class AssignmentTree extends JPanel
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         this.add(headerPanel, BorderLayout.NORTH);
 
-        JLabel assignmentsLabel = new JLabel("Assignments");
-        assignmentsLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        assignmentsLabel.setAlignmentX(LEFT_ALIGNMENT);
-        headerPanel.add(assignmentsLabel);
+        headerPanel.add(FormattedLabel.asHeader("Assignments"));
 
         headerPanel.add(Box.createVerticalStrut(5));
 
@@ -375,8 +371,13 @@ class AssignmentTree extends JPanel
             return index;
         }
 
+        @Override
         public void valueForPathChanged(TreePath tp, Object o) { }
+        
+        @Override
         public void addTreeModelListener(TreeModelListener tl) { }
+        
+        @Override
         public void removeTreeModelListener(TreeModelListener tl) { }
     }
 }

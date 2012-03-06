@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Box;
 import javax.swing.JSeparator;
+import support.ui.FormattedLabel;
 import support.ui.ModalDialog;
 
 /**
@@ -99,15 +100,14 @@ class AutomaticDistributorView extends JFrame {
 
         JPanel instructionsPanel = new JPanel();
 
-        instructionsPanel.add(new JLabel("<html>Enter the number " +
-                "of handins above or below the average for each TA to grade" +
+        instructionsPanel.add(FormattedLabel.asContent("Enter the number of handins above or below the " +
+                "average for each TA to grade" +
                 "<br/>" +
-                "<font color=gray>Examples: -2 = two fewer to grade, " +
-                "3 = three more to grade</font></html>"));
+                "<font color=gray>Examples: -2 = two fewer to grade, 3 = three more to grade</font>"));
         topPanel.add(instructionsPanel);
 
         JPanel addGraderPanel = new JPanel();
-        addGraderPanel.add(new JLabel("Add Grader: "));
+        addGraderPanel.add(FormattedLabel.asContent("Add Grader: "));
 
         _selectGraderToAddBox = new GenericJComboBox<TA>(_nonGradingTAs);
         _selectGraderToAddBox.setPreferredSize(new Dimension(100, 20));
@@ -475,7 +475,7 @@ class AutomaticDistributorView extends JFrame {
             this.setLayout(new GridLayout(1, 0));
             this.setPreferredSize(new Dimension(GRADER_PANEL_WIDTH, GRADER_PANEL_HEIGHT));
 
-            JLabel loginLabel = new JLabel(_grader.getLogin());
+            JLabel loginLabel = FormattedLabel.asContent(_grader.getLogin());
             loginLabel.setVerticalTextPosition(JLabel.CENTER);
 
             JPanel loginPanel = new JPanel(new BorderLayout(0, 0));

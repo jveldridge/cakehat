@@ -8,7 +8,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +30,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import support.ui.FormattedLabel;
 import support.utils.posix.NativeException;
 
 /**
@@ -113,10 +113,9 @@ class TAPanel extends JPanel
         
         private JLabel makeLabel(String text, String tooltip)
         {
-            JLabel label = new JLabel(text);
+            JLabel label = FormattedLabel.asSubheader(text);
             label.setToolTipText(tooltip);
             label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setFont(label.getFont().deriveFont(Font.BOLD, 14));
             
             return label;
         }
@@ -136,9 +135,8 @@ class TAPanel extends JPanel
         _contentPanel.removeAll();
         _contentPanel.setLayout(new BorderLayout(0, 0));
         
-        JLabel loadingLabel = new JLabel("Initializing...");
+        JLabel loadingLabel = FormattedLabel.asHeader("Initializing...");
         loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        loadingLabel.setFont(loadingLabel.getFont().deriveFont(Font.BOLD, 16));
         _contentPanel.add(loadingLabel, BorderLayout.CENTER);
         
         JProgressBar loadingBar = new JProgressBar();
@@ -182,11 +180,8 @@ class TAPanel extends JPanel
                             _contentPanel.setLayout(new BorderLayout(0, 0));
 
                             //Error message
-                            JLabel errorLabel = new JLabel(e.getMessage());
-                            errorLabel.setForeground(Color.RED);
-                            errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                            errorLabel.setFont(errorLabel.getFont().deriveFont(Font.BOLD, 16));
-                            _contentPanel.add(errorLabel, BorderLayout.CENTER);
+                            _contentPanel.add(FormattedLabel.asHeader(e.getMessage()).centerHorizontally()
+                                    .showAsErrorMessage(), BorderLayout.CENTER);
                             
                             //Option to retry
                             JButton retryButton = new JButton("Retry");
@@ -414,11 +409,10 @@ class TAPanel extends JPanel
             
             this.setLayout(new GridLayout(1, 0));
             
-            JLabel loginLabel = new JLabel(_taInfo.getTA().getLogin());
-            loginLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            FormattedLabel loginLabel = FormattedLabel.asContent(_taInfo.getTA().getLogin()).centerHorizontally();
             if(!_taInfo.isInTAGroup())
             {
-                loginLabel.setForeground(Color.RED);
+                loginLabel.showAsErrorMessage();
                 loginLabel.setToolTipText(_taInfo.getTA().getLogin() + " is no longer a member of " + 
                         Allocator.getCourseInfo().getTAGroup());
             }

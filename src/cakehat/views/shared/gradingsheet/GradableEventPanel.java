@@ -42,6 +42,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.PeriodFormat;
 import org.joda.time.format.PeriodFormatter;
 import support.ui.DateTimeControl;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -131,7 +132,7 @@ class GradableEventPanel extends GradingSheetPanel
     
     private void initUI(DeadlineInfo deadlineInfo, DateTime receivedTime, Extension extension)
     {
-        addContent(createHeaderLabel(_gradableEvent.getName(), false));
+        addContent(FormattedLabel.asHeader(_gradableEvent.getName()));
         
         addContent(Box.createVerticalStrut(10));
         
@@ -163,7 +164,7 @@ class GradableEventPanel extends GradingSheetPanel
     
     private void initDeadlineUI(DeadlineInfo deadlineInfo)
     {
-        addContent(createSubheaderLabel("Deadline Info", false));
+        addContent(FormattedLabel.asSubheader("Deadline Info"));
         addContent(Box.createVerticalStrut(3));
         
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.shortDateTime();
@@ -173,93 +174,93 @@ class GradableEventPanel extends GradingSheetPanel
         DeadlineInfo.Type deadlineType = deadlineInfo.getType();
         if(deadlineType == DeadlineInfo.Type.NONE)
         {
-            addContent(createContentLabel("No deadline specified", false, true));
+            addContent(FormattedLabel.asContent("No deadline specified"));
         }
         else if(deadlineType == DeadlineInfo.Type.VARIABLE)
         {
-            addContent(createContentLabel("On Time", false, true));
+            addContent(FormattedLabel.asContent("On Time"));
             String onTimeMessage = " • Before or on " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate());
-            addContent(createContentLabel(onTimeMessage, false, false));
+            addContent(FormattedLabel.asContent(onTimeMessage).usePlainFont());
             
             addContent(Box.createVerticalStrut(3));
             
             if(deadlineInfo.getLateDate() != null)
             {
-                addContent(createContentLabel("Late", false, true));
+                addContent(FormattedLabel.asContent("Late"));
                 String lateMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate()) +
                         " and before or on " + dateTimeFormatter.print(deadlineInfo.getLateDate());
-                addContent(createContentLabel(lateMessage, false, false));
+                addContent(FormattedLabel.asContent(lateMessage));
                 String lateDeductionMessage = " • " + deadlineInfo.getLatePoints() + " deducted at least once, and " +
                         "additionally every " + periodFormatter.print(deadlineInfo.getLatePeriod());
-                addContent(createContentLabel(lateDeductionMessage, false, false));
+                addContent(FormattedLabel.asContent(lateDeductionMessage).usePlainFont());
                 
                 addContent(Box.createVerticalStrut(3));
                 
-                addContent(createContentLabel("NC Late", false, true));
+                addContent(FormattedLabel.asContent("NC Late"));
                 String ncLateMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getLateDate());
-                addContent(createContentLabel(ncLateMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateMessage).usePlainFont());
                 String ncLateDeductionMessage = " • All earned points will be deducted";
-                addContent(createContentLabel(ncLateDeductionMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateDeductionMessage).usePlainFont());
             }
             else
             {   
-                addContent(createContentLabel("NC Late", false, true));
+                addContent(FormattedLabel.asContent("NC Late"));
                 String lateMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate());
-                addContent(createContentLabel(lateMessage, false, false));
+                addContent(FormattedLabel.asContent(lateMessage).usePlainFont());
                 String ncLateDeductionMessage = " • All earned points will be deducted";
-                addContent(createContentLabel(ncLateDeductionMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateDeductionMessage).usePlainFont());
             }
         }
         else if(deadlineType == DeadlineInfo.Type.FIXED)
         {   
             if(deadlineInfo.getEarlyDate() != null)
             {
-                addContent(createContentLabel("Early", false, true));
+                addContent(FormattedLabel.asContent("Early"));
                 String earlyMessage = " • Before or on " + dateTimeFormatter.print(deadlineInfo.getEarlyDate());
-                addContent(createContentLabel(earlyMessage, false, false));
+                addContent(FormattedLabel.asContent(earlyMessage).usePlainFont());
                 String earlyBonusMessage = " • " + deadlineInfo.getEarlyPoints() + " added";
-                addContent(createContentLabel(earlyBonusMessage, false, false));
+                addContent(FormattedLabel.asContent(earlyBonusMessage).usePlainFont());
                 
                 addContent(Box.createVerticalStrut(3));
                 
-                addContent(createContentLabel("On Time", false, true));
+                addContent(FormattedLabel.asContent("On Time"));
                 String onTimeMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getEarlyDate()) +
                         " and before or on " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate());
-                addContent(createContentLabel(onTimeMessage, false, false));
+                addContent(FormattedLabel.asContent(onTimeMessage).usePlainFont());
             }
             else
             {
-                addContent(createContentLabel("On Time", false, true));
+                addContent(FormattedLabel.asContent("On Time"));
                 String onTimeMessage = " • Before or on " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate());
-                addContent(createContentLabel(onTimeMessage, false, false));
+                addContent(FormattedLabel.asContent(onTimeMessage).usePlainFont());
             }
             
             addContent(Box.createVerticalStrut(3));
             
             if(deadlineInfo.getLateDate() != null)
             {
-                addContent(createContentLabel("Late", false, true));
+                addContent(FormattedLabel.asContent("Late"));
                 String lateMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate()) +
                         " and before or on " + dateTimeFormatter.print(deadlineInfo.getLateDate());
-                addContent(createContentLabel(lateMessage, false, false));
+                addContent(FormattedLabel.asContent(lateMessage).usePlainFont());
                 String lateDeductionMessage = " • " + deadlineInfo.getLatePoints() + " deducted";
-                addContent(createContentLabel(lateDeductionMessage, false, false));
+                addContent(FormattedLabel.asContent(lateDeductionMessage).usePlainFont());
                 
                 addContent(Box.createVerticalStrut(3));
                 
-                addContent(createContentLabel("NC Late", false, true));
+                addContent(FormattedLabel.asContent("NC Late"));
                 String ncLateMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getLateDate());
-                addContent(createContentLabel(ncLateMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateMessage).usePlainFont());
                 String ncLateDeductionMessage = " • All earned points will be deducted";
-                addContent(createContentLabel(ncLateDeductionMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateDeductionMessage).usePlainFont());
             }
             else
             {
-                addContent(createContentLabel("NC Late", false, true));
+                addContent(FormattedLabel.asContent("NC Late"));
                 String ncLateMessage = " • After " + dateTimeFormatter.print(deadlineInfo.getOnTimeDate());
-                addContent(createContentLabel(ncLateMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateMessage).usePlainFont());
                 String ncLateDeductionMessage = " • All earned points will be deducted";
-                addContent(createContentLabel(ncLateDeductionMessage, false, false));
+                addContent(FormattedLabel.asContent(ncLateDeductionMessage).usePlainFont());
             }
         }
     }
@@ -268,26 +269,26 @@ class GradableEventPanel extends GradingSheetPanel
     {
         if(extension != null)
         {
-            addContent(createSubheaderLabel("Extension", false));
+            addContent(FormattedLabel.asSubheader("Extension"));
             
-            addContent(createContentLabel("On Time", false, true));
+            addContent(FormattedLabel.asContent("On Time"));
             DateTimeFormatter dateTimeFormatter = DateTimeFormat.shortDateTime();
             String extensionMessage = " • Before or on " + dateTimeFormatter.print(extension.getNewOnTime());
-            addContent(createContentLabel(extensionMessage, false, false));
+            addContent(FormattedLabel.asContent(extensionMessage).usePlainFont());
             if(extension.getShiftDates())
             {
-                addContent(createContentLabel(" • Other deadlines shifted", false, false));
+                addContent(FormattedLabel.asContent(" • Other deadlines shifted").usePlainFont());
             }
             else
             {
-                addContent(createContentLabel(" • Other deadlines ignored", false, false));
+                addContent(FormattedLabel.asContent(" • Other deadlines ignored").usePlainFont());
             }
             
             String note = extension.getNote();
             if(note != null)
             {
-                addContent(createContentLabel("Note", false, true));
-                addContent(createContentLabel(note, false, false));
+                addContent(FormattedLabel.asContent("Note"));
+                addContent(FormattedLabel.asContent(note).usePlainFont());
             }
             
             //Vertical spacing
@@ -443,7 +444,7 @@ class GradableEventPanel extends GradingSheetPanel
         });
         
         //Layout
-        addContent(createSubheaderLabel("Extension", false));
+        addContent(FormattedLabel.asSubheader("Extension"));
         
         extensionPanel.setLayout(new BoxLayout(extensionPanel, BoxLayout.Y_AXIS));
         addContent(extensionPanel);
@@ -453,7 +454,7 @@ class GradableEventPanel extends GradingSheetPanel
         JPanel datePanel = new PreferredHeightPanel(this.getBackground());
         datePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         extensionPanel.add(datePanel);
-        datePanel.add(createContentLabel("On Time:", false, true));
+        datePanel.add(FormattedLabel.asContent("On Time:"));
         datePanel.add(Box.createHorizontalStrut(23));
         datePanel.add(dateTimeControl);
         
@@ -461,11 +462,11 @@ class GradableEventPanel extends GradingSheetPanel
         
         JPanel shiftPanel = new PreferredHeightPanel(this.getBackground());
         shiftPanel.setToolTipText("<html>Check to shift all deadline dates relative to the new on time date." +
-                                          "<br/>Otherwise only this new on time date will be used, and any other" +
-                                          "<br/>dates from the original deadline will be ignored.</html>");
+                                  "<br/>Otherwise only this new on time date will be used, and any other" +
+                                  "<br/>dates from the original deadline will be ignored.</html>");
         shiftPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         extensionPanel.add(shiftPanel);
-        shiftPanel.add(createContentLabel("Shift Dates:", false, true));
+        shiftPanel.add(FormattedLabel.asContent("Shift Dates:"));
         shiftPanel.add(Box.createHorizontalStrut(3));
         shiftPanel.add(shiftDatesCheckBox);
         
@@ -484,7 +485,7 @@ class GradableEventPanel extends GradingSheetPanel
     
     private void initGroupDeadlineResolutionUI(DeadlineInfo deadlineInfo, DateTime receivedTime, Extension extension)
     {
-        addContent(createSubheaderLabel("Deadline Resolution", false));
+        addContent(FormattedLabel.asSubheader("Deadline Resolution"));
         
         _groupDeadlineResolutionPanel = new GroupDeadlineResolutionPanel(this.getBackground(), deadlineInfo,
                 receivedTime, extension == null ? null : extension.getNewOnTime(),
@@ -518,8 +519,8 @@ class GradableEventPanel extends GradingSheetPanel
             _currShiftDates = shiftDates;
             
             //Create UI elements
-            _receivedOnLabel = createContentLabel("", false, false);
-            _resolutionStatusLabel = createContentLabel("", false, false);
+            _receivedOnLabel = FormattedLabel.asContent("").usePlainFont();
+            _resolutionStatusLabel = FormattedLabel.asContent("").usePlainFont();
             _penaltyOrBonusField = new JTextField(5);
             _penaltyOrBonusField.setEnabled(false);
             _penaltyOrBonusField.setHorizontalAlignment(JTextField.CENTER);

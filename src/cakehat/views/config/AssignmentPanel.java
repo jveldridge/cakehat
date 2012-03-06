@@ -22,7 +22,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -52,7 +51,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -63,6 +61,7 @@ import support.ui.DescriptionProvider;
 import support.ui.DnDList;
 import support.ui.DnDListener;
 import support.ui.GenericJComboBox;
+import support.ui.FormattedLabel;
 import support.ui.ModalDialog;
 import support.ui.PaddingPanel;
 import support.ui.PartialDescriptionProvider;
@@ -302,10 +301,8 @@ class AssignmentPanel extends JPanel
         
         if(selectedAsgn == null)
         {
-            JLabel noSelectionLabel = new JLabel("No Assignment Selected");
-            noSelectionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            noSelectionLabel.setFont(noSelectionLabel.getFont().deriveFont(Font.BOLD, 16));
-            _selectedAssignmentPanel.add(noSelectionLabel, BorderLayout.CENTER);
+            _selectedAssignmentPanel.add(FormattedLabel.asSubheader("No Assignment Selected").centerHorizontally(),
+                    BorderLayout.CENTER);
         }
         else
         {
@@ -556,11 +553,10 @@ class AssignmentPanel extends JPanel
             
             this.add(Box.createVerticalStrut(10));
             
-            JLabel gradableEventsLabel = createTitleLabel("Gradable Events",
-                    "A gradable event represents a gradable product of work done by a group of one or more students. " +
-                    "This could be, but is not limited to, paper handins, digital handins, labs, design checks, and " +
-                    "exams.",
-                    LEFT_ALIGNMENT);
+            JLabel gradableEventsLabel = FormattedLabel.asSubheader("Gradable Events");
+            gradableEventsLabel.setToolTipText("A gradable event represents a gradable product of work done by a " +
+                    "group of one or more students. This could be, but is not limited to, paper handins, digital " +
+                    "handins, labs, design checks, and exams.");
             this.add(gradableEventsLabel);
             
             _addGradableEventButton = new JButton("Add Gradable Event");
@@ -947,9 +943,8 @@ class AssignmentPanel extends JPanel
             headlinePanel.add(_nameField, BorderLayout.CENTER);
             
             contentPanel.add(Box.createVerticalStrut(10));
-            
-            JLabel deadlineLabel = createTitleLabel("Deadlines", null, LEFT_ALIGNMENT); 
-            contentPanel.add(deadlineLabel);
+             
+            contentPanel.add(FormattedLabel.asSubheader("Deadlines"));
             
             JPanel deadlinePanel = new DeadlinePanel(this.getBackground());
             deadlinePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -957,9 +952,8 @@ class AssignmentPanel extends JPanel
             
             contentPanel.add(Box.createVerticalStrut(10));
             
-            JLabel directoryLabel = createTitleLabel("Digital Handin Directory", 
-                    "This directory will be searched recursively for digital handins",
-                    LEFT_ALIGNMENT);
+            JLabel directoryLabel = FormattedLabel.asSubheader("Digital Handin Directory");
+            directoryLabel.setToolTipText("This directory will be searched recursively for digital handins");
             contentPanel.add(directoryLabel);
             
             _directoryField = new ValidatingTextField()
@@ -1049,9 +1043,8 @@ class AssignmentPanel extends JPanel
             
             contentPanel.add(Box.createVerticalStrut(10));
             
-            JLabel partsLabel = createTitleLabel("Parts",
-                    "A Part is an arbitrary portion of a Gradable Event that can be assigned to a TA",
-                    LEFT_ALIGNMENT);
+            JLabel partsLabel = FormattedLabel.asSubheader("Parts");
+            partsLabel.setToolTipText("A Part is an arbitrary portion of a Gradable Event that can be assigned to a TA");
             contentPanel.add(partsLabel);
             
             _addPartButton = new JButton("Add Part");
@@ -1446,10 +1439,7 @@ class AssignmentPanel extends JPanel
                     controlsPanel.add(Box.createVerticalStrut(5));
                     
                     //On Time
-                    JLabel onTimeLabel = new JLabel("On Time");
-                    onTimeLabel.setBackground(this.getBackground());
-                    onTimeLabel.setAlignmentX(LEFT_ALIGNMENT);
-                    controlsPanel.add(onTimeLabel);
+                    controlsPanel.add(FormattedLabel.asContent("On Time"));
                     _onTimeDateControl.setAlignmentX(LEFT_ALIGNMENT);
                     controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _onTimeDateControl));
                     
@@ -1516,20 +1506,14 @@ class AssignmentPanel extends JPanel
                     controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.Y_AXIS));
                     
                     //On Time
-                    JLabel onTimeLabel = new JLabel("On Time");
-                    onTimeLabel.setBackground(this.getBackground());
-                    onTimeLabel.setAlignmentX(LEFT_ALIGNMENT);
-                    controlsPanel.add(onTimeLabel);
+                    controlsPanel.add(FormattedLabel.asContent("On Time"));
                     _onTimeDateControl.setAlignmentX(LEFT_ALIGNMENT);
                     controlsPanel.add(createDeadlineComponentPanel("Deadline: ", _onTimeDateControl));
                     
                     controlsPanel.add(Box.createVerticalStrut(5));
                     
                     //Deduction
-                    JLabel deductionLabel = new JLabel("Deduction");
-                    deductionLabel.setBackground(this.getBackground());
-                    deductionLabel.setAlignmentX(LEFT_ALIGNMENT);
-                    controlsPanel.add(deductionLabel);
+                    controlsPanel.add(FormattedLabel.asContent("Deduction"));
                     _latePeriodControl.setAlignmentX(LEFT_ALIGNMENT);
                     controlsPanel.add(createDeadlineComponentPanel("Period: ", _latePeriodControl));
                     controlsPanel.add(Box.createVerticalStrut(3));
@@ -1630,7 +1614,7 @@ class AssignmentPanel extends JPanel
                 panel.setBackground(this.getBackground());
                 panel.setAlignmentX(LEFT_ALIGNMENT);
                 panel.add(Box.createHorizontalStrut(21));
-                panel.add(new JLabel(labelText));
+                panel.add(FormattedLabel.asContent(labelText));
                 panel.add(component);
 
                 return panel;
@@ -1867,9 +1851,8 @@ class AssignmentPanel extends JPanel
             
             contentPanel.add(Box.createVerticalStrut(10));
             
-            JLabel gradingGuideLabel = createTitleLabel("Grading Guide",
-                    "A plain text file viewable by TAs to assist in grading a Part",
-                    LEFT_ALIGNMENT);
+            JLabel gradingGuideLabel = FormattedLabel.asSubheader("Grading Guide");
+            gradingGuideLabel.setToolTipText("A plain text file viewable by TAs to assist in grading a Part");
             contentPanel.add(gradingGuideLabel);
             
             _gradingGuideField = new ValidatingTextField()
@@ -1930,15 +1913,15 @@ class AssignmentPanel extends JPanel
             
             contentPanel.add(Box.createVerticalStrut(10));
             
-            JLabel gradingSheetLabel = createTitleLabel("Grading Sheet",
-                    "A grading sheet is filled out by TAs while grading a student", LEFT_ALIGNMENT);
+            JLabel gradingSheetLabel = FormattedLabel.asSubheader("Grading Sheet");
+            gradingSheetLabel.setToolTipText("A grading sheet is filled out by TAs while grading a student");
             contentPanel.add(gradingSheetLabel);
             
             JPanel gmlPanel = new JPanel(new BorderLayout(5, 0));
             gmlPanel.setAlignmentX(LEFT_ALIGNMENT);
             gmlPanel.setBackground(contentPanel.getBackground());
             contentPanel.add(gmlPanel);
-            gmlPanel.add(new JLabel("GML Template"), BorderLayout.WEST);
+            gmlPanel.add(FormattedLabel.asContent("GML Template"), BorderLayout.WEST);
             _gmlField = new ValidatingTextField()
             {
                 @Override
@@ -2004,7 +1987,7 @@ class AssignmentPanel extends JPanel
             gradingSheetOrPanel.setAlignmentX(LEFT_ALIGNMENT);
             gradingSheetOrPanel.setBackground(contentPanel.getBackground());
             contentPanel.add(gradingSheetOrPanel);
-            gradingSheetOrPanel.add(new JLabel("OR"));
+            gradingSheetOrPanel.add(FormattedLabel.asContent("OR"));
             
             JPanel outOfAndQuickNamePanel = new JPanel(new GridLayout(1, 3));
             outOfAndQuickNamePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -2015,7 +1998,7 @@ class AssignmentPanel extends JPanel
             outOfPanel.setAlignmentX(LEFT_ALIGNMENT);
             outOfPanel.setBackground(outOfAndQuickNamePanel.getBackground());
             outOfAndQuickNamePanel.add(outOfPanel);
-            outOfPanel.add(new JLabel("Total Points"), BorderLayout.WEST);
+            outOfPanel.add(FormattedLabel.asContent("Total Points"), BorderLayout.WEST);
             _outOfField = new ValidatingTextField()
             {
                 @Override
@@ -2058,15 +2041,13 @@ class AssignmentPanel extends JPanel
             };
             outOfPanel.add(_outOfField);
             
-            JLabel andLabel = new JLabel("and (optionally)");
-            andLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            outOfAndQuickNamePanel.add(andLabel);
+            outOfAndQuickNamePanel.add(FormattedLabel.asContent("and (optionally)").centerHorizontally());
             
             JPanel quickNamePanel = new JPanel(new BorderLayout(5, 0));
             quickNamePanel.setAlignmentX(LEFT_ALIGNMENT);
             quickNamePanel.setBackground(outOfAndQuickNamePanel.getBackground());
             outOfAndQuickNamePanel.add(quickNamePanel);
-            quickNamePanel.add(new JLabel("Quick Name"), BorderLayout.WEST);
+            quickNamePanel.add(FormattedLabel.asContent("Quick Name"), BorderLayout.WEST);
             _quickNameField = new ValidatingTextField()
             {
                 @Override
@@ -2254,11 +2235,10 @@ class AssignmentPanel extends JPanel
                 this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
                 
                 String name = _type.name().charAt(0) + _type.name().substring(1, _type.name().length()).toLowerCase();
-                JLabel typeLabel = createTitleLabel(name, null, LEFT_ALIGNMENT);
-                this.add(typeLabel);
+                this.add(FormattedLabel.asSubheader(name));
                 
                 //Text pane to display description info
-                final JLabel descriptionLabel = new JLabel("<html>No action will be taken</html>");
+                final JLabel descriptionLabel = FormattedLabel.asContent("No action will be taken");
                 descriptionLabel.setAlignmentX(LEFT_ALIGNMENT);
                 
                 //List of descriptions
@@ -2328,9 +2308,7 @@ class AssignmentPanel extends JPanel
                         
                         
                         //Display updated text in the description label
-                        String description = "<html>" +
-                                             (action == null ? "No action will be taken" : action.getDescription()) +
-                                             "</html>";
+                        String description = (action == null ? "No action will be taken" : action.getDescription());
                         descriptionLabel.setText(description);
                         
                         //Hacky way of not causing this method not to cause database writes if this already matches the
@@ -2454,7 +2432,7 @@ class AssignmentPanel extends JPanel
                 
                 if(action != null && !action.getRequiredProperties().isEmpty())
                 {
-                    _requiredPropsPanel.add(createTitleLabel("Required Properties", null, LEFT_ALIGNMENT));
+                    _requiredPropsPanel.add(FormattedLabel.asSubheader("Required Properties"));
                     
                     for(final PartActionProperty prop : action.getRequiredProperties())
                     {
@@ -2470,15 +2448,9 @@ class AssignmentPanel extends JPanel
                         final DbActionProperty propInDb = dbProp;
                         
                         _requiredPropsPanel.add(Box.createVerticalStrut(3));
-                        JLabel propLabel = new JLabel(prop.getName());
-                        propLabel.setFont(propLabel.getFont().deriveFont(Font.BOLD, 14));
-                        propLabel.setAlignmentX(LEFT_ALIGNMENT);
-                        _requiredPropsPanel.add(propLabel);
-                        JLabel descLabel = new JLabel("<html>" +
-                                                      prop.getDescription().replaceAll("\n", "<br/>") +
-                                                      "</html>");
-                        descLabel.setAlignmentX(LEFT_ALIGNMENT);
-                        _requiredPropsPanel.add(descLabel);
+                        _requiredPropsPanel.add(FormattedLabel.asSubheader(prop.getName()));
+                        _requiredPropsPanel.add(FormattedLabel.asContent(prop.getDescription()
+                                .replaceAll("\n", "<br/>")));
                         ValidatingTextField valueField = new ValidatingTextField()
                         {
                             @Override
@@ -2521,7 +2493,7 @@ class AssignmentPanel extends JPanel
                 
                 if(action != null && !action.getOptionalProperties().isEmpty())
                 {
-                    _optionalPropsPanel.add(createTitleLabel("Optional Properties", null, LEFT_ALIGNMENT));
+                    _optionalPropsPanel.add(FormattedLabel.asSubheader("Optional Properties"));
                     
                     for(final PartActionProperty prop : action.getOptionalProperties())
                     {
@@ -2541,15 +2513,9 @@ class AssignmentPanel extends JPanel
                         final DbActionProperty propInDb = dbProp;
                         
                         _optionalPropsPanel.add(Box.createVerticalStrut(3));
-                        JLabel propLabel = new JLabel(prop.getName());
-                        propLabel.setFont(propLabel.getFont().deriveFont(Font.BOLD, 14));
-                        propLabel.setAlignmentX(LEFT_ALIGNMENT);
-                        _optionalPropsPanel.add(propLabel);
-                        JLabel descLabel = new JLabel("<html>" +
-                                                      prop.getDescription().replaceAll("\n", "<br/>") +
-                                                      "</html>");
-                        descLabel.setAlignmentX(LEFT_ALIGNMENT);
-                        _optionalPropsPanel.add(descLabel);
+                        _optionalPropsPanel.add(FormattedLabel.asSubheader(prop.getName()));
+                        _optionalPropsPanel.add(FormattedLabel.asContent(prop.getDescription()
+                                .replaceAll("\n", "<br/>")));
                         ValidatingTextField valueField = new ValidatingTextField()
                         {
                             @Override
@@ -2611,39 +2577,5 @@ class AssignmentPanel extends JPanel
                 _optionalPropsPanel.revalidate();
             }
         }
-    }
-    
-    private static JLabel createTitleLabel(String labelText, String tooltip, float xAlignment)
-    {
-        JLabel label = new JLabel(labelText);
-        label.setAlignmentX(xAlignment);
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 14));
-        
-        final int wrapLength = 80;
-        if(tooltip != null && tooltip.length() > wrapLength)
-        {
-            StringBuilder wrappedTooltip = new StringBuilder("<html>");
-            int lineCounter = 0;
-            for(char c : tooltip.toCharArray())
-            {
-                lineCounter++;
-
-                if(lineCounter > wrapLength && c == ' ')
-                {
-                    wrappedTooltip.append("<br/>");
-                    lineCounter = 0;
-                }
-                else
-                {
-                    wrappedTooltip.append(c);
-                }
-            }
-            wrappedTooltip.append("</html>");
-
-            tooltip = wrappedTooltip.toString();
-        }
-        label.setToolTipText(tooltip);
-        
-        return label;
     }
 }

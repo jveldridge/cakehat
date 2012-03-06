@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import support.ui.DescriptionProvider;
 import support.ui.GenericJList;
+import support.ui.FormattedLabel;
 import support.ui.PartialDescriptionProvider;
 
 /**
@@ -298,7 +299,7 @@ class ManualDistributorView extends JFrame {
         centerPanel.add(assignControlPanel);
         centerPanel.add(Box.createVerticalBox());
 
-        _randomStudentLabel = new JLabel("Random Student(s):");
+        _randomStudentLabel = FormattedLabel.asContent("Random Student(s):");
         //Initially do not show the text, instead of making invisible via
         //setVisible(false) which would affect layout, just hide the text
         _randomStudentLabel.setForeground(new Color(0, 0, 0, Color.TRANSLUCENT));
