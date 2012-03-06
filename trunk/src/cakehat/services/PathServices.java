@@ -14,6 +14,19 @@ import java.io.File;
 public interface PathServices
 {    
     /**
+     * The course directory.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/
+     * }
+     * </pre>
+     * 
+     * @return 
+     */
+    public File getCourseDir();
+    
+    /**
      * The database file.
      *
      * <pre>
