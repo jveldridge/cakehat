@@ -1,13 +1,18 @@
 package cakehat.views.admin;
 
+import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
+import cakehat.services.CSVExportTask;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import support.ui.ProgressDialog;
 
 /**
  *
@@ -50,6 +55,29 @@ class AdminMenu extends JMenuBar
             }
         });
         fileMenu.add(quitItem);
+        
+        //Grades menu
+        JMenu gradesMenu = new JMenu("Grades");
+        this.add(gradesMenu);
+
+        //CSV Export item
+        JMenuItem gradesReportItem = new JMenuItem("CSV Export");
+        gradesReportItem.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                JFileChooser chooser = new JFileChooser(Allocator.getPathServices().getCourseDir());
+                chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
+                if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
+                {
+                    new ProgressDialog(_adminView, "CSV Export",
+                            "<html><center><h2>Exporting student grades</h2></center></html>",
+                            new CSVExportTask(chooser.getSelectedFile()));
+                }
+            }
+        });
+        gradesMenu.add(gradesReportItem);
 
         //Help menu
         JMenu helpMenu = new JMenu("Help");

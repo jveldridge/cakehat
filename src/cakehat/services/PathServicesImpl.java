@@ -16,7 +16,8 @@ import org.joda.time.DateTime;
  */
 public class PathServicesImpl implements PathServices
 {
-    private File getCourseDir()
+    @Override
+    public File getCourseDir()
     {
         return new File("/course", Allocator.getCourseInfo().getCourse());
     }
