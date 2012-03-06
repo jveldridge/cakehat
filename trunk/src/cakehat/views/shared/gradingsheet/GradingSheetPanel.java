@@ -3,7 +3,6 @@ package cakehat.views.shared.gradingsheet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +13,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -191,59 +191,12 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     protected void addErrorMessagePanel(String message)
     {
         JPanel errorPanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
-        JLabel errorLabel = createSubheaderLabel(message, true);
-        errorLabel.setHorizontalAlignment(JLabel.CENTER);
-        errorLabel.setForeground(Color.RED);
+        JLabel errorLabel = FormattedLabel.asSubheader(message).centerHorizontally().showAsErrorMessage();
         errorPanel.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
         errorPanel.add(errorLabel, BorderLayout.CENTER);
         errorPanel.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
         
         addContent(errorPanel);
-    }
-    
-    static JLabel createHeaderLabel(String text, boolean grayOut)    
-    {
-        JLabel label = new JLabel(text);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setFont(new Font("Dialog", Font.BOLD, 16));
-        label.setForeground(grayOut ? Color.GRAY : Color.BLACK);
-        
-        return label;
-    }
-    
-    static JLabel createSubheaderLabel(String text, boolean grayOut) 
-    {
-        JLabel label = new JLabel(text);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setFont(new Font("Dialog", Font.BOLD, 14));
-        label.setForeground(grayOut ? Color.GRAY : Color.BLACK);
-        
-        return label;
-    }
-    
-    static JLabel createContentLabel(String text, boolean grayOut, boolean bold)
-    {
-        JLabel label = new JLabel()
-        {
-            @Override
-            public void setText(String text)
-            {
-                super.setText("<html>" + text + "</html>");
-            }
-        };
-        label.setText(text);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setForeground(grayOut ? Color.GRAY : Color.BLACK);
-        if(bold)
-        {
-            label.setFont(new Font("Dialog", Font.BOLD, 12));
-        }
-        else
-        {
-            label.setFont(new Font("Dialog", Font.PLAIN, 12));
-        }
-        
-        return label;
     }
     
     static JComponent createDisabledField(Double value)

@@ -11,7 +11,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,6 +44,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import support.ui.FormattedLabel;
 import support.utils.posix.NativeException;
 
 /**
@@ -112,10 +112,7 @@ class StudentPanel extends JPanel
         _scrollablePanel.setLayout(new BorderLayout(0, 0));
         _notificationRow.setVisible(false);
         
-        JLabel loadingLabel = new JLabel("Initializing...");
-        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        loadingLabel.setFont(loadingLabel.getFont().deriveFont(Font.BOLD, 16));
-        _scrollablePanel.add(loadingLabel, BorderLayout.CENTER);
+        _scrollablePanel.add(FormattedLabel.asHeader("Initializing...").centerHorizontally(), BorderLayout.CENTER);
         
         JProgressBar loadingBar = new JProgressBar();
         loadingBar.setIndeterminate(true);
@@ -198,11 +195,8 @@ class StudentPanel extends JPanel
                             _scrollablePanel.setLayout(new BorderLayout(0, 0));
 
                             //Error message
-                            JLabel errorLabel = new JLabel(e.getMessage());
-                            errorLabel.setForeground(Color.RED);
-                            errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                            errorLabel.setFont(errorLabel.getFont().deriveFont(Font.BOLD, 16));
-                            _scrollablePanel.add(errorLabel, BorderLayout.CENTER);
+                            _scrollablePanel.add(FormattedLabel.asHeader(e.getMessage()).centerHorizontally()
+                                    .showAsErrorMessage(), BorderLayout.CENTER);
                             
                             //Option to retry
                             JButton retryButton = new JButton("Retry");
@@ -504,9 +498,7 @@ class StudentPanel extends JPanel
             _worker = worker;
             _studentPanel = studentPanel;
             
-            _statusLabel = new JLabel();
-            _statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            _statusLabel.setFont(_statusLabel.getFont().deriveFont(Font.BOLD, 12));
+            _statusLabel = FormattedLabel.asContent("").centerHorizontally();
             this.add(_statusLabel, BorderLayout.CENTER);
             
             _addStudentsButton = new JButton();
@@ -676,9 +668,8 @@ class StudentPanel extends JPanel
             topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
             contentPanel.add(topPanel, BorderLayout.NORTH);
             JPanel infoPanel = new JPanel(new BorderLayout(0, 0));
-            JLabel infoLabel = new JLabel("<html>The following students will be added. Uncheck a student to prevent " +
-                    "that student from being added.</html>");
-            infoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            JLabel infoLabel = FormattedLabel.asContent("The following students will be added. Uncheck a " +
+                    "student to prevent that student from being added.").centerHorizontally();
             infoPanel.add(infoLabel, BorderLayout.CENTER);
             topPanel.add(infoPanel);
             topPanel.add(Box.createVerticalStrut(10));
@@ -747,10 +738,10 @@ class StudentPanel extends JPanel
                 });
                 studentRow.add(addCheckBox);
                 
-                studentRow.add(makeStudentLabel(student.getLogin()));
-                studentRow.add(makeStudentLabel(student.getFirstName()));
-                studentRow.add(makeStudentLabel(student.getLastName()));
-                studentRow.add(makeStudentLabel(student.getEmailAddress()));
+                studentRow.add(FormattedLabel.asContent(student.getLogin()).centerHorizontally());
+                studentRow.add(FormattedLabel.asContent(student.getFirstName()).centerHorizontally());
+                studentRow.add(FormattedLabel.asContent(student.getLastName()).centerHorizontally());
+                studentRow.add(FormattedLabel.asContent(student.getEmailAddress()).centerHorizontally());
             }
             
             //Buttons to Add or Cancel
@@ -802,18 +793,8 @@ class StudentPanel extends JPanel
         
         private JLabel makeHeaderLabel(String text, String tooltip)
         {
-            JLabel label = new JLabel(text);
+            JLabel label = FormattedLabel.asSubheader(text).centerHorizontally();
             label.setToolTipText(tooltip);
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setFont(label.getFont().deriveFont(Font.BOLD, 14));
-            
-            return label;
-        }
-        
-        private JLabel makeStudentLabel(String text)
-        {
-            JLabel label = new JLabel(text);
-            label.setHorizontalAlignment(SwingConstants.CENTER);
             
             return label;
         }
@@ -861,10 +842,8 @@ class StudentPanel extends JPanel
         
         private JLabel makeLabel(String text, String tooltip)
         {
-            JLabel label = new JLabel(text);
+            JLabel label = FormattedLabel.asSubheader(text).centerHorizontally();
             label.setToolTipText(tooltip);
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setFont(label.getFont().deriveFont(Font.BOLD, 14));
             
             return label;
         }

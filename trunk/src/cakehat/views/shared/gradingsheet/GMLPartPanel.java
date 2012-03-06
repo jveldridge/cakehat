@@ -16,12 +16,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +32,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -125,7 +122,7 @@ class GMLPartPanel extends PartPanel
         
         for(final Section section : _gml.getSections())
         {
-            addContent(createSubheaderLabel(section.getName(), false));
+            addContent(FormattedLabel.asSubheader(section.getName()));
             
             for(final Subsection subsection : section.getSubsections())
             {
@@ -144,7 +141,7 @@ class GMLPartPanel extends PartPanel
                     }
                     subsectionText += "</ul>";
                 }
-                scorePanel.add(createContentLabel(subsectionText, false, false), BorderLayout.CENTER);
+                scorePanel.add(FormattedLabel.asContent(subsectionText).usePlainFont(), BorderLayout.CENTER);
 
                 //Points panel
                 JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -193,7 +190,7 @@ class GMLPartPanel extends PartPanel
             }
             
             //Comments
-            addContent(createContentLabel("Comments", false, true));
+            addContent(FormattedLabel.asContent("Comments"));
             JTextArea commentArea = new JTextArea();
             commentArea.setRows(4);
             commentArea.setLineWrap(true);
@@ -252,10 +249,10 @@ class GMLPartPanel extends PartPanel
         }
         
         //Total
-        addContent(createSubheaderLabel("Part Total", false));
+        addContent(FormattedLabel.asSubheader("Part Total"));
         JPanel totalPanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
         addContent(totalPanel);
-        totalPanel.add(createContentLabel("Total", false, false), BorderLayout.CENTER);
+        totalPanel.add(FormattedLabel.asContent("Total").usePlainFont(), BorderLayout.CENTER);
         JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pointsPanel.setBackground(this.getBackground());
         totalPanel.add(pointsPanel, BorderLayout.EAST);

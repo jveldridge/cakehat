@@ -6,7 +6,6 @@ import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +17,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -29,6 +27,7 @@ import javax.swing.event.ListSelectionListener;
 import support.ui.DescriptionProvider;
 import support.ui.DocumentAdapter;
 import support.ui.GenericJList;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -50,10 +49,7 @@ class StudentList extends JPanel
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.Y_AXIS));
         this.add(commandPanel, BorderLayout.NORTH);
 
-        JLabel studentsLabel = new JLabel("Students");
-        studentsLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        studentsLabel.setAlignmentX(LEFT_ALIGNMENT);
-        commandPanel.add(studentsLabel);
+        commandPanel.add(FormattedLabel.asHeader("Students"));
 
         commandPanel.add(Box.createVerticalStrut(5));
 

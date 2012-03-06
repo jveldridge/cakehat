@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -56,26 +57,27 @@ class AssignmentPanel extends GradingSheetPanel
     
     private void initHeaderUI()
     {
-        addContent(createHeaderLabel(_asgn.getName(), false));
+        addContent(FormattedLabel.asHeader(_asgn.getName()));
         
         if(_group == null)
         {
-            addContent(createSubheaderLabel("Template", true));
+            addContent(FormattedLabel.asSubheader("Template").grayOut());
         }
         else
         {
             if(_group.isGroupOfOne())
             {
                 Student student = _group.getOnlyMember();
-                addContent(createSubheaderLabel("Student: " +  student.getName() + " (" + student.getLogin() + ")",
-                        true));
+                addContent(FormattedLabel.asSubheader("Student: " +  student.getName() + " (" + student.getLogin() +
+                        ")").grayOut());
             }
             else
             {
-                addContent(createSubheaderLabel("Group: " + _group.getName(), true));
+                addContent(FormattedLabel.asSubheader("Group: " + _group.getName()).grayOut());
                 for(Student member : _group)
                 {
-                    addContent(createSubheaderLabel("\t" + member.getName() + " (" + member.getLogin() + ")", true));
+                    addContent(FormattedLabel.asSubheader("\t" + member.getName() + " (" + member.getLogin() + ")")
+                            .grayOut());
                 }
             }
         }

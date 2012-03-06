@@ -12,8 +12,8 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -64,7 +64,7 @@ class DBPartPanel extends PartPanel
         addContent(scorePanel);
         
         //Text
-        scorePanel.add(createContentLabel("Earned", false, false), BorderLayout.CENTER);
+        scorePanel.add(FormattedLabel.asContent("Earned").usePlainFont(), BorderLayout.CENTER);
         
         //Points panel
         JPanel pointsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));

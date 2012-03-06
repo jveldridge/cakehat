@@ -16,7 +16,6 @@ import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.Iterables;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.apache.commons.compress.archivers.ArchiveException;
 import support.ui.ModalDialog;
+import support.ui.FormattedLabel;
 
 /**
  * A panel containing labels and buttons to showing applicable actions to be taken based on the current selection.
@@ -57,16 +57,11 @@ class ActionsPanel extends JPanel
         
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        JLabel actionsLabel = new JLabel("Actions");
-        actionsLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        actionsLabel.setAlignmentX(LEFT_ALIGNMENT);
-        this.add(actionsLabel);
+        this.add(FormattedLabel.asHeader("Actions"));
 
         this.add(Box.createVerticalStrut(5));
         
-        _noActionsAvailable = new JLabel(" - No Actions Available");
-        _noActionsAvailable.setFont(new Font("Dialog", Font.PLAIN, 11));
-        _noActionsAvailable.setAlignmentX(LEFT_ALIGNMENT);
+        _noActionsAvailable = FormattedLabel.asContent(" - No Actions Available").usePlainFont();
         _noActionsAvailable.setVisible(false);
         this.add(_noActionsAvailable);
         
@@ -120,17 +115,12 @@ class ActionsPanel extends JPanel
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
-            JLabel assignmentLabel = new JLabel("Assignment");
-            assignmentLabel.setFont(new Font("Dialog", Font.BOLD, 13));
-            assignmentLabel.setAlignmentX(LEFT_ALIGNMENT);
-            this.add(assignmentLabel);
+            this.add(FormattedLabel.asSubheader("Assignment"));
             
             this.add(Box.createVerticalStrut(5));
             
             //Label
-            _noActionsAvailable = new JLabel(" - No Actions Available");
-            _noActionsAvailable.setFont(new Font("Dialog", Font.PLAIN, 11));
-            _noActionsAvailable.setAlignmentX(LEFT_ALIGNMENT);
+            _noActionsAvailable = FormattedLabel.asContent(" - No Actions Available").usePlainFont();
             _noActionsAvailable.setVisible(false);
             this.add(_noActionsAvailable);
             
@@ -185,17 +175,12 @@ class ActionsPanel extends JPanel
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
-            JLabel gradableEventLabel = new JLabel("Gradable Event");
-            gradableEventLabel.setFont(new Font("Dialog", Font.BOLD, 13));
-            gradableEventLabel.setAlignmentX(LEFT_ALIGNMENT);
-            this.add(gradableEventLabel);
+            this.add(FormattedLabel.asSubheader("Gradable Event"));
             
             this.add(Box.createVerticalStrut(5));
             
             //Label
-            _noActionsAvailable = new JLabel(" - No Actions Available");
-            _noActionsAvailable.setFont(new Font("Dialog", Font.PLAIN, 11));
-            _noActionsAvailable.setAlignmentX(LEFT_ALIGNMENT);
+            _noActionsAvailable = FormattedLabel.asContent(" - No Actions Available").usePlainFont();
             _noActionsAvailable.setVisible(false);
             this.add(_noActionsAvailable);
             
@@ -233,10 +218,7 @@ class ActionsPanel extends JPanel
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
-            JLabel partLabel = new JLabel("Part");
-            partLabel.setFont(new Font("Dialog", Font.BOLD, 13));
-            partLabel.setAlignmentX(LEFT_ALIGNMENT);
-            this.add(partLabel);
+            this.add(FormattedLabel.asSubheader("Part"));
             
             this.add(Box.createVerticalStrut(5));
          

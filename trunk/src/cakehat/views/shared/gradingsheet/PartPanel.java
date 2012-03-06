@@ -17,6 +17,7 @@ import support.ui.GenericJComboBox;
 import support.ui.PartialDescriptionProvider;
 import support.ui.SelectionListener;
 import support.ui.SelectionListener.SelectionAction;
+import support.ui.FormattedLabel;
 
 /**
  *
@@ -56,7 +57,7 @@ abstract class PartPanel extends GradingSheetPanel
     
     private void init()
     {
-        addContent(createHeaderLabel(_part.getName(), false));
+        addContent(FormattedLabel.asHeader(_part.getName()));
         
         //Template
         if(_group == null)
@@ -85,7 +86,7 @@ abstract class PartPanel extends GradingSheetPanel
     {
         if(_group == null)
         {
-            addContent(createSubheaderLabel("Template", true));
+            addContent(FormattedLabel.asSubheader("Template").grayOut());
         }
         else
         {
@@ -94,7 +95,7 @@ abstract class PartPanel extends GradingSheetPanel
                 JPanel assignedPanel = new PreferredHeightPanel(new FlowLayout(FlowLayout.LEFT, 0, 0), this.getBackground());
                 addContent(assignedPanel);
 
-                assignedPanel.add(createSubheaderLabel("Grader:", true));
+                assignedPanel.add(FormattedLabel.asSubheader("Grader:").grayOut());
 
                 assignedPanel.add(Box.createHorizontalStrut(5));
 
@@ -150,7 +151,7 @@ abstract class PartPanel extends GradingSheetPanel
                     taText = "Grader: " + assignedTo.getName() + " (" + assignedTo.getLogin() + ")";
                 }
 
-                addContent(createSubheaderLabel(taText, true));
+                addContent(FormattedLabel.asSubheader(taText).grayOut());
             }
         }
         
