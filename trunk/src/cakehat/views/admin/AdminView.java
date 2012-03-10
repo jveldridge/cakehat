@@ -55,7 +55,7 @@ public class AdminView extends JFrame
         super("cakehat (admin)" + (isSSH ? " [ssh]" : ""));
         
         //Close operation
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.addWindowListener(new WindowAdapter()
         {
             @Override

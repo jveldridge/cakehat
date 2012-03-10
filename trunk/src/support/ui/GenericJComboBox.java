@@ -30,7 +30,7 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     
     public GenericJComboBox(DescriptionProvider<E> descriptionProvider)
     {
-        this(Collections.<E>emptyList());
+        this();
         
         this.setDescriptionProvider(descriptionProvider);
     }
@@ -38,6 +38,11 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     public GenericJComboBox(Iterable<E> items)
     {
         this.setItems(items);
+    }
+    
+    public GenericJComboBox()
+    {
+        this(Collections.<E>emptyList());
     }
 
     public void setDescriptionProvider(DescriptionProvider<E> descriptionProvider)
@@ -171,13 +176,26 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
      */
     private void setModel(GenericComboBoxModel<E> model)
     {
+        E initSelection = null;
         if(_model != null)
         {
+            initSelection = _model.getSelectedItem();
             model.transferSelectionListeners(_model);
         }
         
         _model = model;
         super.setModel(model);
+        
+        //It initial selection is in the new model maintain the selection
+        if(_model.getElements().contains(initSelection))
+        {
+            _model.setGenericSelectedItem(initSelection);
+        }
+        //Otherwise, notify listeners the selection has changed
+        else
+        {
+            _model.notifySelectionListeners(initSelection, _model.getSelectedItem(), false);
+        }
     }
 
     @Override

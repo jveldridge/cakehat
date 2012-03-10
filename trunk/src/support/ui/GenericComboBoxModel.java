@@ -77,8 +77,7 @@ import support.ui.SelectionListener.SelectionAction;
     
     private void setSelectedItemInternal(T item)
     {
-        
-        boolean cancelled = notifySelectionListeners(_selectedItem, item);
+        boolean cancelled = notifySelectionListeners(_selectedItem, item, true);
         if(!cancelled)
         {
             _selectedItem = item;
@@ -106,9 +105,9 @@ import support.ui.SelectionListener.SelectionAction;
         otherModel._listeners.clear();
     }
     
-    boolean notifySelectionListeners(T currValue, T newValue)
+    boolean notifySelectionListeners(T currValue, T newValue, boolean isCancellable)
     {
-        SelectionAction action = new SelectionAction();
+        SelectionAction action = new SelectionAction(isCancellable);
         for(SelectionListener<T> listener : _listeners)
         {
             listener.selectionPerformed(currValue, newValue, action);
