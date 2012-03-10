@@ -59,10 +59,22 @@ class AdminMenu extends JMenuBar
         //Grades menu
         JMenu gradesMenu = new JMenu("Grades");
         this.add(gradesMenu);
-
-        //CSV Export item
-        JMenuItem gradesReportItem = new JMenuItem("CSV Export");
+        
+        //Grades Report item
+        JMenuItem gradesReportItem = new JMenuItem("Send Grade Reports");
         gradesReportItem.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                GradeReportView.displayRelativeTo(_adminView);
+            }
+        });
+        gradesMenu.add(gradesReportItem);
+        
+        //CSV Export item
+        JMenuItem csvExportItem = new JMenuItem("CSV Export");
+        csvExportItem.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent ae)
@@ -71,13 +83,13 @@ class AdminMenu extends JMenuBar
                 chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
                 if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
                 {
-                    new ProgressDialog(_adminView, "CSV Export",
+                    new ProgressDialog(_adminView, _adminView, "CSV Export",
                             "<html><center><h2>Exporting student grades</h2></center></html>",
                             new CSVExportTask(chooser.getSelectedFile()));
                 }
             }
         });
-        gradesMenu.add(gradesReportItem);
+        gradesMenu.add(csvExportItem);
 
         //Help menu
         JMenu helpMenu = new JMenu("Help");

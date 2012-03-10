@@ -76,15 +76,15 @@ public class CSVExportTask extends LongRunningTask
                 }
                 catch(RuntimeException e)
                 {
-                    notifyTaskFailed(e);
+                    notifyTaskFailed(e, "Unexpected runtime exception encountered while generating CSV file");
                 }
                 catch(ServicesException e)
                 {
-                    notifyTaskFailed(e);
+                    notifyTaskFailed(e, "Unable to retrieve needed information for CSV generation");
                 }
                 catch(IOException e)
                 {
-                    notifyTaskFailed(e);
+                    notifyTaskFailed(e, "Unable to retrieve needed information for CSV generation");
                 }
                 //This isn't an exception - it is used to signal that the export was cancelled
                 catch(Cancellation cancellation)

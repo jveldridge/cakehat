@@ -114,6 +114,20 @@ public class EmailManagerImpl implements EmailManager
     }
     
     @Override
+    public InternetAddress getHeadTAsEmailAddress()
+    {
+        try
+        {
+            return new InternetAddress(Allocator.getCourseInfo().getCourse() + "headtas@" +
+                    Allocator.getConstants().getEmailDomain());
+        }
+        catch (AddressException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    @Override
     public EmailAccountStatus getEmailAccountStatus()
     {
         return _status;

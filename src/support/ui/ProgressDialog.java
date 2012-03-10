@@ -5,7 +5,7 @@ import cakehat.views.shared.ErrorView;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -38,12 +38,15 @@ public class ProgressDialog extends JDialog
      * Constructs and displays a progress dialog for the provided {@code task}.
      * 
      * @param parent the visual parent of this dialog, may be {@code null}
+     * @param displayRelativeTo  the visual to display relative to, does not need to be the same as {@code parent}, may
+     * be {@code null}
      * @param title the title of this dialog
      * @param message the message to be displayed to the user
      * @param task the task being displayed, do <strong>not</strong> call {@link LongRunningTask#start()} on it - that
      * will be done by this dialog
      */
-    public ProgressDialog(Frame parent, String title, String message, final LongRunningTask task)
+    public ProgressDialog(Window parent, Window displayRelativeTo, String title, String message,
+            final LongRunningTask task)
     {
         super(parent, title);
         
@@ -71,7 +74,7 @@ public class ProgressDialog extends JDialog
         this.pack();
         this.setMinimumSize(this.getSize());
         this.setResizable(false);
-        this.setLocationRelativeTo(parent);
+        this.setLocationRelativeTo(displayRelativeTo);
         this.setVisible(true);
         
         //Start the task
@@ -261,7 +264,7 @@ public class ProgressDialog extends JDialog
             }
 
             @Override
-            public void taskFailed(final Exception cause)
+            public void taskFailed(final Exception cause, final String msg)
             {
                 EventQueue.invokeLater(new Runnable()
                 {
@@ -277,8 +280,8 @@ public class ProgressDialog extends JDialog
                         
                         _cancelButton.setVisible(false);
                         _closeButton.setVisible(true);
-
-                        new ErrorView(cause, "Long running task failed");
+                        
+                        new ErrorView(cause, msg == null ? "Long running task failed" : msg);
                     }
                 });
             }

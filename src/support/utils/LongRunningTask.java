@@ -62,8 +62,9 @@ public abstract class LongRunningTask
          * Called to notify the listener that the task failed.
          * 
          * @param cause the exception that caused the export to fail, may be {@code null}
+         * @param msg an explanation related to the failure, may be {@code null}
          */
-        public void taskFailed(Exception cause);
+        public void taskFailed(Exception cause, String msg);
     }
 
     //Holds on to the listeners in a thread safe data structure
@@ -247,11 +248,11 @@ public abstract class LongRunningTask
      * 
      * @param cause may be {@code null} 
      */
-    protected void notifyTaskFailed(Exception cause)
+    protected void notifyTaskFailed(Exception cause, String msg)
     {
         for(ProgressListener listener : _listeners)
         {
-            listener.taskFailed(cause);
+            listener.taskFailed(cause, msg);
         }
     }
 }

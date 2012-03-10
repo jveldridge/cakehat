@@ -33,6 +33,8 @@ public interface EmailManager
     
     public InternetAddress getCakehatEmailAddress();
     
+    public InternetAddress getHeadTAsEmailAddress();
+    
     public EmailAccountStatus getEmailAccountStatus();
     
     /**
