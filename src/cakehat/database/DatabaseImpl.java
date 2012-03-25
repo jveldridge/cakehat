@@ -1302,6 +1302,7 @@ public class DatabaseImpl implements Database
             }
             
             ps.executeBatch();
+            ps.close();
             conn.commit();
         }
         catch(SQLException ex)
@@ -1321,6 +1322,7 @@ public class DatabaseImpl implements Database
         Connection conn = this.openConnection();
         try
         {
+            conn.setAutoCommit(false);
             PreparedStatement ps = conn.prepareStatement("DELETE FROM extension "
                     + "WHERE geid == ? AND agid == ?");
 
@@ -1333,6 +1335,7 @@ public class DatabaseImpl implements Database
 
             ps.executeBatch();
             ps.close();
+            conn.commit();
         }
         catch(SQLException ex)
         {
@@ -1524,51 +1527,101 @@ public class DatabaseImpl implements Database
     }
     
     @Override
-    public GradableEventOccurrenceRecord getGradableEventOccurrence(int geid, int agid) throws SQLException {
+    public Map<Integer, GradableEventOccurrenceRecord> getGradableEventOccurrences(int geId, Set<Integer> groupIds)
+            throws SQLException
+    {
+        Map<Integer, GradableEventOccurrenceRecord> records = new HashMap<Integer, GradableEventOccurrenceRecord>();
+
         Connection conn = this.openConnection();
-
-        try {
+        try
+        {
             PreparedStatement ps = conn.prepareStatement(
-                    "SELECT tid, daterecorded, time"
-                    + " FROM geoccurrence"
-                    + " WHERE geid == ? AND agid == ?");
-
-            ps.setInt(1, geid);
-            ps.setInt(2, agid);
-
+                    "SELECT agid, time, daterecorded, tid"
+                    + " FROM geoccurrence AS geo"
+                    + " WHERE geo.agid IN (" + this.groupIDsSetToString(groupIds) + ")"
+                    + " AND geo.geid == ? ");
+            ps.setInt(1, geId);
+            
             ResultSet rs = ps.executeQuery();
-
-            GradableEventOccurrenceRecord record = null;
-            if (rs.next()) {
-                int tid = rs.getInt("tid");
-                String dateRecorded = rs.getString("daterecorded");
-                String time = rs.getString("time");
-                record = new GradableEventOccurrenceRecord(geid,agid,time,dateRecorded,tid);
+            while(rs.next())
+            {
+                GradableEventOccurrenceRecord record = new GradableEventOccurrenceRecord(rs.getInt("tid"),
+                        rs.getString("daterecorded"), rs.getString("time"));
+                records.put(rs.getInt("agid"), record);
             }
-            return record;
-        } finally {
+
+            return records;
+        }
+        finally
+        {
             this.closeConnection(conn);
         }
     }
-
+    
     @Override
-    public void setGradableEventOccurrence(int geid, int agid, String time,
-                              String dateRecorded, int tid) throws SQLException{
+    public void setGradableEventOccurrences(int geid, Map<Integer, String> groupsToTime, int tid, String dateRecorded)
+            throws SQLException
+    {
         Connection conn = this.openConnection();
 
-        try {
+        try
+        {
+            conn.setAutoCommit(false);
             PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO geoccurrence (geid, agid, time, dateRecorded, tid)"
-                    + " VALUES (?, ?, ?, ?, ?)");
+                    "INSERT INTO geoccurrence (geid, agid, time, dateRecorded, tid) VALUES (?, ?, ?, ?, ?)");
 
-            ps.setInt(1, geid);
-            ps.setInt(2, agid);
-            ps.setString(3, time);
-            ps.setString(4, dateRecorded);
-            ps.setInt(5, tid);
+            for(Map.Entry<Integer, String> entry : groupsToTime.entrySet())
+            {
+                ps.setInt(1, geid);
+                ps.setInt(2, entry.getKey());
+                ps.setString(3, entry.getValue());
+                ps.setString(4, dateRecorded);
+                ps.setInt(5, tid);
+                ps.addBatch();
+            }
 
-            ps.executeUpdate();
-        } finally {
+            ps.executeBatch();
+            ps.close();
+            conn.commit();
+        }
+        catch(SQLException e)
+        {
+            conn.rollback();
+            throw e;
+        }
+        finally
+        {
+            this.closeConnection(conn);
+        }
+    }
+        
+    @Override
+    public void deleteGradableEventOccurrences(int geId, Set<Integer> groupIds) throws SQLException
+    {
+        Connection conn = this.openConnection();
+        try
+        {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM geoccurrence WHERE geid == ? AND agid == ?");
+
+            for(Integer groupId : groupIds)
+            {
+                ps.setInt(1, geId);
+                ps.setInt(2, groupId);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+            conn.commit();
+        }
+        catch(SQLException ex)
+        {
+            conn.rollback();
+            throw ex;
+        }
+        finally
+        {
             this.closeConnection(conn);
         }
     }

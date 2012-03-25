@@ -94,10 +94,12 @@ public class DataServicesTest {
         _database.putGradableEvents(ImmutableSet.of(_dbGeA, _dbGeB));
         
         _geA = createMock(GradableEvent.class);
+        expect(_geA.getAssignment()).andReturn(_asgnA).anyTimes();
         expect(_geA.getId()).andReturn(_dbGeA.getId()).anyTimes();
         replay(_geA);
         
         _geB = createMock(GradableEvent.class);
+        expect(_geB.getAssignment()).andReturn(_asgnB).anyTimes();
         expect(_geB.getId()).andReturn(_dbGeB.getId()).anyTimes();
         replay(_geB);
         
@@ -113,119 +115,72 @@ public class DataServicesTest {
     }
     
     @Test
-    public void testSetHandinTimes() throws SQLException, ServicesException, CakeHatDBIOException {
+    public void testSetGetGradableEventOccurrences() throws ServicesException
+    {
+        //Setup
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
-        DbStudent student3 = new DbStudent("sLogin3", "sFirst3", "sLast3", "sEmail3");
-        DbStudent student4 = new DbStudent("sLogin4", "sFirst4", "sLast4", "sEmail4");
-        _database.putStudents(ImmutableSet.of(student1, student2, student3, student4));
+        _dataServices.addStudents(ImmutableSet.of(student1, student2));
+        
+        DbGroup dbGroup1 = new DbGroup(_asgnA, "group 1", ImmutableSet.of(new Student(student1)));
+        DbGroup dbGroup2 = new DbGroup(_asgnA, "group 2", ImmutableSet.of(new Student(student2)));
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
+        
+        Map<Group, DateTime> occurrenceDates = new HashMap<Group, DateTime>();
+        for(Group group : groups)
+        {
+            occurrenceDates.put(group, new DateTime());
+        }
+        
+        //Set
+        _dataServices.setGradableEventOccurrences(_geA, occurrenceDates);
 
-        DbGroup dbGroup1 = new DbGroup(_asgnA, new Student(student1));
-        DbGroup dbGroup2 = new DbGroup(_asgnA, new Student(student2));
-        dbGroup2.addMember(new Student(student3));
-        DbGroup dbGroup3 = new DbGroup(_asgnA, new Student(student4));
-        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2, dbGroup3));
-
-        DateTime handinTime = new DateTime();
-
-        Map<Group, DateTime> handinTimes = new HashMap<Group, DateTime>();
-
-        //makes groups for handinTimes map
-        Set<Student> studentSet = new HashSet<Student>();
-        studentSet.add(new Student(student1));
-        Group g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
-        handinTimes.put(g, handinTime);
-
-        studentSet = new HashSet<Student>();
-        studentSet.add(new Student(student2));
-        studentSet.add(new Student(student3));
-        g = new Group(dbGroup2.getId(), _asgnA, dbGroup1.getName(), studentSet);
-        handinTimes.put(g, handinTime);
-
-        //gets only gradableEvent from DB
-        GradableEvent ge = _dataServices.getAssignments().get(0).getGradableEvents().get(0);
-
-        _dataServices.setGradableEventOccurrences(ge, handinTimes);
-
-        GradableEventOccurrenceRecord hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
-        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
-
-        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup2.getId());
-        assertHandinRecordEqual(hr, dbGroup2.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
-
-        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup3.getId());
-        assertNull(hr);
-
-
-        //Check that changing only one handin time doesn't effect other handin times
-
-        DateTime handinTime2 = new DateTime();
-        handinTime2 = handinTime.minusHours(1); //make sure the two times are different by subtracting 1 hour
-
-        handinTimes = new HashMap<Group, DateTime>();
-
-        //makes groups for handinTimes map
-        studentSet = new HashSet<Student>();
-        studentSet.add(new Student(student1));
-        g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
-
-        //add only group1 to the handinTimes
-        handinTimes.put(g, handinTime2);
-
-        _dataServices.setGradableEventOccurrences(ge, handinTimes);
-
-        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
-        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
-
-        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup2.getId());
-        assertHandinRecordEqual(hr, dbGroup2.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
+        //Get
+        Map<Group, GradableEventOccurrence> occurrences = _dataServices.getGradableEventOccurrences(_geA, groups);
+        
+        //Validate
+        assertEquals(occurrenceDates.size(), occurrences.size());
+        for(Group group : groups)
+        {
+            assertTrue(occurrences.containsKey(group));
+            
+            assertEquals(group, occurrences.get(group).getGroup());
+            assertEquals(_geA, occurrences.get(group).getGradableEvent());
+            assertEquals(occurrenceDates.get(group), occurrences.get(group).getOccurrenceDate());
+        }
     }
-
+    
     @Test
-    public void testSetHandinTime() throws SQLException, ServicesException, CakeHatDBIOException {
+    public void testSetDeleteGetGradableEventOccurrences() throws ServicesException
+    {
+        //Setup
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent student2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2");
-        DbStudent student3 = new DbStudent("sLogin3", "sFirst3", "sLast3", "sEmail3");
-        _database.putStudents(ImmutableSet.of(student1, student2, student3));
+        _dataServices.addStudents(ImmutableSet.of(student1, student2));
+        
+        DbGroup dbGroup1 = new DbGroup(_asgnA, "group 1", ImmutableSet.of(new Student(student1)));
+        DbGroup dbGroup2 = new DbGroup(_asgnA, "group 2", ImmutableSet.of(new Student(student2)));
+        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        Set<Group> groups = _dataServices.getGroups(_asgnA);
+        
+        Map<Group, DateTime> occurrenceDates = new HashMap<Group, DateTime>();
+        for(Group group : groups)
+        {
+            occurrenceDates.put(group, new DateTime());
+        }
+        
+        //Set
+        _dataServices.setGradableEventOccurrences(_geA, occurrenceDates);
 
-        DbGroup dbGroup1 = new DbGroup(_asgnA, new Student(student1));
-        DbGroup dbGroup2 = new DbGroup(_asgnA, new Student(student2));
-        dbGroup2.addMember(new Student(student3));
-        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-
-        DateTime handinTime = new DateTime();
-
-        //makes groups for handinTimes map
-        Set<Student> studentSet = new HashSet<Student>();
-        studentSet.add(new Student(student1));
-        Group g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
-
-        //gets only gradableEvent from DB
-        GradableEvent ge = _dataServices.getAssignments().get(0).getGradableEvents().get(0);
-
-        _dataServices.setGradableEventOccurrence(ge, g, handinTime);
-
-        GradableEventOccurrenceRecord hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
-        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime.toString());
-
-        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup2.getId());
-        assertNull(hr);
-
-
-        //Check that changing only one handin time doesn't effect other handin times
-
-        DateTime handinTime2 = new DateTime();
-        handinTime2 = handinTime.minusHours(1); //make sure the two times are different by subtracting 1 hour
-
-        //makes groups for handinTimes map
-        studentSet = new HashSet<Student>();
-        studentSet.add(new Student(student1));
-        g = new Group(dbGroup1.getId(), _asgnA, dbGroup1.getName(), studentSet);
-
-        _dataServices.setGradableEventOccurrence(ge, g, handinTime2);
-
-        hr = _database.getGradableEventOccurrence(ge.getId(), dbGroup1.getId());
-        assertHandinRecordEqual(hr, dbGroup1.getId(), ge.getId(), Allocator.getUserUtilities().getUserId(), handinTime2.toString());
+        //Delete
+        _dataServices.deleteGradableEventOccurrences(_geA, groups);
+        
+        //Get
+        Map<Group, GradableEventOccurrence> occurrences = _dataServices.getGradableEventOccurrences(_geA, groups);
+        
+        //Validate
+        assertTrue(occurrences.isEmpty());
     }
 
     @Test
@@ -1961,12 +1916,5 @@ public class DataServicesTest {
         assertEquals(dbpart.getName(), part.getName());
         assertEquals(dbpart.getOutOf(), part.getOutOf(), 10E-10);
         assertEquals(dbpart.getQuickName(), part.getQuickName());
-    }
-    
-    private void assertHandinRecordEqual(GradableEventOccurrenceRecord hr1, int agID, int geID, int taID, String time) {
-        assertEquals(hr1.getAsgnGroupId(), agID);
-        assertEquals(hr1.getGradeableEventId(), geID);
-        assertEquals(hr1.getTaId(), taID);
-        assertEquals(0, hr1.getTime().toString().compareTo(time));
     }
 }

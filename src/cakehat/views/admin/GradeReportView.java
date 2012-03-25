@@ -4,7 +4,6 @@ import cakehat.Allocator;
 import cakehat.database.DeadlineInfo;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.Extension;
-import cakehat.database.GradableEventOccurrence;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;
@@ -28,7 +27,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -175,30 +173,7 @@ class GradeReportView extends JDialog
                 deadlinesBuilder.put(ge, Allocator.getDataServices().getDeadlineInfo(ge));
                 
                 //Occurrence dates
-                ImmutableMap.Builder<Group, DateTime> geOccurrenceDatesBuilder = ImmutableMap.builder();
-                if(ge.hasDigitalHandins())
-                {
-                    for(Group group : groups)
-                    {
-                        File handin = ge.getDigitalHandin(group);
-                        if(handin != null)
-                        {
-                            geOccurrenceDatesBuilder.put(group, new DateTime(handin.lastModified()));
-                        }
-                    }
-                }
-                else
-                {
-                    for(Group group : groups)
-                    {
-                        GradableEventOccurrence occurrence = Allocator.getDataServices().getGradableEventOccurrence(ge, group);
-                        if(occurrence != null)
-                        {
-                            geOccurrenceDatesBuilder.put(group, occurrence.getHandinTime());
-                        }
-                    }
-                }
-                occurrenceDatesBuilder.put(ge, geOccurrenceDatesBuilder.build());
+                occurrenceDatesBuilder.put(ge, ImmutableMap.copyOf(Allocator.getGradingServices().getOccurrenceDates(ge, groups)));
                 
                 //Extensions
                 extensionsBuilder.put(ge, ImmutableMap.copyOf(Allocator.getDataServices().getExtensions(ge, groups)));
@@ -804,12 +779,10 @@ class GradeReportView extends JDialog
                     }
                     
                     //Deadline resolution
-                    DateTime occurenceDate = _occurrenceDates.get(ge).get(group);
+                    DateTime occurrenceDate = _occurrenceDates.get(ge).get(group);
                     Extension extension = _extensions.get(ge).get(group);
-                    DateTime extensionDate = (extension == null ? null : extension.getNewOnTime());
-                    Boolean shiftDates = (extension == null ? null : extension.getShiftDates());
                     DeadlineInfo deadlineInfo = _deadlines.get(ge);
-                    DeadlineResolution deadlineResolution = deadlineInfo.apply(occurenceDate, extensionDate, shiftDates);
+                    DeadlineResolution deadlineResolution = deadlineInfo.apply(occurrenceDate, extension);
                     double penaltyOrBonus = deadlineResolution.getPenaltyOrBonus(unadjustedGradableEventTotalEarned);
                     reportBuilder.append("<tr style='background: #F0F0F0'>");
                     reportBuilder.append("<td>");

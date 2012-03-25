@@ -1,5 +1,7 @@
 package cakehat.gml;
 
+import cakehat.database.Extension;
+import com.google.common.collect.ImmutableSet;
 import cakehat.database.PartGrade;
 import java.io.IOException;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
@@ -17,6 +19,7 @@ import cakehat.database.ConfigurationData;
 import cakehat.database.Group;
 import cakehat.services.PathServices;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -41,7 +44,6 @@ public class GMLGRDWriterTest {
         if(DELETE_GENERATED_FILES)
         {
             OUTPUT.delete();
-            GML_FILE.delete();
             NO_GML_OUTPUT.delete();
         }
     }
@@ -80,27 +82,28 @@ public class GMLGRDWriterTest {
         final DataServices dataServices = createMock(DataServices.class);
         
         for (GradableEvent e : asgn.getGradableEvents()) {
-            GradableEventOccurrence time = createMock(GradableEventOccurrence.class);
-            expect(time.getDateRecorded()).andReturn(new DateTime(2012, 1, 25, 6, 37, 38)).anyTimes();
-            expect(time.getGradableEvent()).andReturn(e).anyTimes();
-            expect(time.getGroup()).andReturn(group).anyTimes();
-            expect(time.getHandinTime()).andReturn(new DateTime(2012, 1, 24, 8, 9, 10)).anyTimes();
-            replay(time);
+            GradableEventOccurrence occurrence = createMock(GradableEventOccurrence.class);
+            expect(occurrence.getDateRecorded()).andReturn(new DateTime(2012, 1, 25, 6, 37, 38)).anyTimes();
+            expect(occurrence.getGradableEvent()).andReturn(e).anyTimes();
+            expect(occurrence.getGroup()).andReturn(group).anyTimes();
+            expect(occurrence.getOccurrenceDate()).andReturn(new DateTime(2012, 1, 24, 8, 9, 10)).anyTimes();
+            replay(occurrence);
             
             DeadlineInfo info = createMock(DeadlineInfo.class);
-            expect(info.getEarlyDate()).andReturn(new DateTime(2012, 1, 23, 11, 59, 59));
-            expect(info.getOnTimeDate()).andReturn(new DateTime(2012, 1, 24, 11, 59, 59));
-            expect(info.getLateDate()).andReturn(new DateTime(2012, 1, 28, 11, 59, 59));
             
             DeadlineResolution res = createMock(DeadlineResolution.class);
             expect(res.getPenaltyOrBonus(anyDouble())).andReturn(5.0).anyTimes();
             expect(res.getTimeStatus()).andReturn(DeadlineInfo.TimeStatus.LATE).anyTimes();
             replay(res);
             
-            expect(info.apply(time.getHandinTime(), null, null)).andReturn(res).anyTimes();
+            expect(info.apply(occurrence.getOccurrenceDate(), null)).andReturn(res).anyTimes();
             replay(info);
             
-            expect(dataServices.getGradableEventOccurrence(e, group)).andReturn(time).anyTimes();
+            expect(dataServices.getGradableEventOccurrences(eq(e), eq(ImmutableSet.of(group))))
+                    .andReturn(ImmutableMap.of(group, occurrence)).anyTimes();
+            expect(dataServices.getExtensions(eq(e), eq(ImmutableSet.of(group))))
+                    .andReturn(ImmutableMap.<Group, Extension>of()).anyTimes();
+            
             expect(dataServices.getDeadlineInfo(e)).andReturn(info).anyTimes();
             for (Part p : e.getParts()) {
                 PartGrade grade = createMock(PartGrade.class);
@@ -166,27 +169,28 @@ public class GMLGRDWriterTest {
         final DataServices dataServices = createMock(DataServices.class);
         
         for (GradableEvent e : asgn.getGradableEvents()) {
-            GradableEventOccurrence time = createMock(GradableEventOccurrence.class);
-            expect(time.getDateRecorded()).andReturn(new DateTime(2012, 1, 25, 6, 37, 38)).anyTimes();
-            expect(time.getGradableEvent()).andReturn(e).anyTimes();
-            expect(time.getGroup()).andReturn(group).anyTimes();
-            expect(time.getHandinTime()).andReturn(new DateTime(2012, 1, 24, 8, 9, 10)).anyTimes();
-            replay(time);
+            GradableEventOccurrence occurrence = createMock(GradableEventOccurrence.class);
+            expect(occurrence.getDateRecorded()).andReturn(new DateTime(2012, 1, 25, 6, 37, 38)).anyTimes();
+            expect(occurrence.getGradableEvent()).andReturn(e).anyTimes();
+            expect(occurrence.getGroup()).andReturn(group).anyTimes();
+            expect(occurrence.getOccurrenceDate()).andReturn(new DateTime(2012, 1, 24, 8, 9, 10)).anyTimes();
+            replay(occurrence);
             
             DeadlineInfo info = createMock(DeadlineInfo.class);
-            expect(info.getEarlyDate()).andReturn(new DateTime(2012, 1, 23, 11, 59, 59));
-            expect(info.getOnTimeDate()).andReturn(new DateTime(2012, 1, 24, 11, 59, 59));
-            expect(info.getLateDate()).andReturn(new DateTime(2012, 1, 28, 11, 59, 59));
             
             DeadlineResolution res = createMock(DeadlineResolution.class);
             expect(res.getPenaltyOrBonus(anyDouble())).andReturn(5.0).anyTimes();
             expect(res.getTimeStatus()).andReturn(DeadlineInfo.TimeStatus.LATE).anyTimes();
             replay(res);
             
-            expect(info.apply(time.getHandinTime(), null, null)).andReturn(res).anyTimes();
+            expect(info.apply(occurrence.getOccurrenceDate(), null)).andReturn(res).anyTimes();
             replay(info);
             
-            expect(dataServices.getGradableEventOccurrence(e, group)).andReturn(time).anyTimes();
+            expect(dataServices.getGradableEventOccurrences(eq(e), eq(ImmutableSet.of(group))))
+                    .andReturn(ImmutableMap.of(group, occurrence)).anyTimes();
+            expect(dataServices.getExtensions(eq(e), eq(ImmutableSet.of(group))))
+                    .andReturn(ImmutableMap.<Group, Extension>of()).anyTimes();
+            
             expect(dataServices.getDeadlineInfo(e)).andReturn(info).anyTimes();
             
         }

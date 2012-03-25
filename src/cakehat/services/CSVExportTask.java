@@ -4,7 +4,6 @@ import cakehat.Allocator;
 import cakehat.database.DeadlineInfo;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.Extension;
-import cakehat.database.GradableEventOccurrence;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;
@@ -343,12 +342,9 @@ public class CSVExportTask extends LongRunningTask
                     }
                     
                     //Deadline
-                    DeadlineInfo deadlineInfo = data._deadlines.get(ge); 
-                    Extension extension = data._extensions.get(ge).get(group);
-                    DateTime occurrenceDate = data._occurrenceDates.get(ge).get(group);
-                    DeadlineResolution resolution = deadlineInfo.apply(occurrenceDate,
-                            extension != null ? extension.getNewOnTime() : null,
-                            extension != null ? extension.getShiftDates() : null);
+                    DeadlineResolution resolution = data._deadlines.get(ge).apply(
+                            data._occurrenceDates.get(ge).get(group),
+                            data._extensions.get(ge).get(group));
                     row.add(resolution.getTimeStatus().toString());
                     row.add(Double.toString(resolution.getPenaltyOrBonus(geTotalEarned)));
                 }
@@ -437,30 +433,7 @@ public class CSVExportTask extends LongRunningTask
                     _deadlines.put(ge, Allocator.getDataServices().getDeadlineInfo(ge));
 
                     //Occurrence dates
-                    Map<Group, DateTime> geOccurrenceDates = new HashMap<Group, DateTime>();
-                    if(ge.hasDigitalHandins())
-                    {
-                        for(Group group : groups)
-                        {
-                            File handin = ge.getDigitalHandin(group);
-                            if(handin != null)
-                            {
-                                geOccurrenceDates.put(group, new DateTime(handin.lastModified()));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for(Group group : groups)
-                        {
-                            GradableEventOccurrence occurrence = Allocator.getDataServices().getGradableEventOccurrence(ge, group);
-                            if(occurrence != null)
-                            {
-                                geOccurrenceDates.put(group, occurrence.getHandinTime());
-                            }
-                        }
-                    }
-                    _occurrenceDates.put(ge, geOccurrenceDates);
+                    _occurrenceDates.put(ge, Allocator.getGradingServices().getOccurrenceDates(ge, groups));
 
                     //Extensions
                     _extensions.put(ge, Allocator.getDataServices().getExtensions(ge, groups));

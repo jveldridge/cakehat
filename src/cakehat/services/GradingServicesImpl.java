@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
+import cakehat.database.GradableEventOccurrence;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.TA;
@@ -30,6 +31,7 @@ import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.awt.Dimension;
@@ -54,6 +56,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import org.joda.time.DateTime;
 import support.ui.ModalDialog;
 import support.utils.FileCopyingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
@@ -61,6 +64,61 @@ import support.utils.FileSystemUtilities.OverwriteMode;
 
 public class GradingServicesImpl implements GradingServices
 {
+    @Override
+    public Map<Group, DateTime> getOccurrenceDates(GradableEvent ge, Set<Group> groups) throws ServicesException
+    {
+        ImmutableMap.Builder<Group, DateTime> occurrenceDates = ImmutableMap.builder();
+        
+        Map<Group, GradableEventOccurrence> occurrences = Allocator.getDataServices()
+                .getGradableEventOccurrences(ge, groups);
+        
+        //Groups which have an occurence recorded in the database but now have a digital handin will have their
+        //occurence date deleted from the database
+        Set<Group> occurencesToDelete = new HashSet<Group>();
+        
+        for(Group group : groups)
+        {
+            GradableEventOccurrence occurrence = occurrences.get(group);
+            
+            File digitalHandin = null;
+            if(ge.hasDigitalHandins())
+            {
+                try
+                {
+                    digitalHandin = ge.getDigitalHandin(group);
+                }
+                catch(IOException e)
+                {
+                    throw new ServicesException("Unable to retrieve digital handin", e);
+                }
+            }
+            
+            if(occurrence != null)
+            {
+                if(digitalHandin != null)
+                {
+                    occurencesToDelete.add(group);
+                    occurrenceDates.put(group, new DateTime(digitalHandin.lastModified()));
+                }
+                else
+                {
+                    occurrenceDates.put(group, occurrence.getOccurrenceDate());
+                }
+            }
+            else if(digitalHandin != null)
+            {
+                occurrenceDates.put(group, new DateTime(digitalHandin.lastModified()));
+            }
+        }
+        
+        if(!occurencesToDelete.isEmpty())
+        {
+            Allocator.getDataServices().deleteGradableEventOccurrences(ge, occurencesToDelete);
+        }
+        
+        return occurrenceDates.build();
+    }
+    
     @Override
     public void makeUserWorkspace() throws ServicesException
     {
@@ -119,15 +177,9 @@ public class GradingServicesImpl implements GradingServices
     private static final CITPrinter DEFAULT_PRINTER = CITPrinter.bw3;
 
     @Override
-    public CITPrinter getPrinter()
-    {
-        return this.getPrinter("Please select a printer.");
-    }
-
-    @Override
     public CITPrinter getDefaultPrinter()
     {
-        return CITPrinter.bw3;
+        return DEFAULT_PRINTER;
     }
 
     @Override
@@ -144,6 +196,12 @@ public class GradingServicesImpl implements GradingServices
         }
 
         return allowed;
+    }
+    
+    @Override
+    public CITPrinter getPrinter()
+    {
+        return this.getPrinter("Please select a printer.");
     }
 
     @Override
@@ -484,20 +542,6 @@ public class GradingServicesImpl implements GradingServices
         }
 
         return toReturn;
-    }
-
-    @Override
-    public Map<Student, Group> getGroupsForStudents(Assignment asgn) throws ServicesException {
-        Collection<Group> groups = Allocator.getDataServices().getGroups(asgn);
-
-        Map<Student, Group> studentToGroup = new HashMap<Student, Group>();
-        for (Group group : groups) {
-            for (Student member : group) {
-                studentToGroup.put(member, group);
-            }
-        }
-        
-        return studentToGroup;
     }
 
     @Override

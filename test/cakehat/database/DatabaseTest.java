@@ -14,6 +14,7 @@ import org.junit.rules.ExpectedException;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.Allocator;
 import cakehat.database.assignment.PartActionDescription.ActionType;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -932,95 +933,124 @@ public class DatabaseTest {
     }
 
     @Test
-    public void testGetSetHandinTime() throws SQLException, CakeHatDBIOException{
+    public void testSetGetGradableEventOccurrences()  throws SQLException, CakeHatDBIOException
+    {
+        //Setup
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
         _database.putAssignments(ImmutableSet.of(dbAsgn));
 
         DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
-        assertEquals(dbAsgn.getId(), ge.getAssignmentId());
-
         _database.putGradableEvents(ImmutableSet.of(ge));
-
-        Assignment asgn = createMock(Assignment.class);
-        expect(asgn.getName()).andReturn(dbAsgn.getName()).anyTimes();
-        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
-        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
-
-        replay(asgn);
         
-        int tid = 1;
+        final int tid = 1;
         _database.putTAs(ImmutableSet.of(new DbTA(tid, "ta", "The", "Grader", true, false)));
 
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
-        Student stud = new Student(_database.getStudents().iterator().next());
-
-        DbGroup toAdd = new DbGroup(asgn, stud);
-        _database.addGroups(ImmutableSet.of(toAdd));
-
-        int geid = ge.getId();
-        int agid = toAdd.getId();
-        String date = "1/28/2012";
-        String time = "10:05";
+        int studentId = _database.getStudents().iterator().next().getId();
         
-        _database.setGradableEventOccurrence(geid, agid, time, date, tid);
-
-        GradableEventOccurrenceRecord record = _database.getGradableEventOccurrence(geid, agid);
-
-        assertEquals(geid, record.getGradeableEventId());
-        assertEquals(agid, record.getAsgnGroupId());
-        assertEquals(date, record.getDateRecorded());
-        assertEquals(time, record.getTime());
-        assertEquals(tid, record.getTaId());
+        DbGroup group = new DbGroup(dbAsgn.getId(), "The Group", ImmutableSet.of(studentId));
+        _database.addGroups(ImmutableSet.of(group));
+        group.getId();
+        
+        final String occurrenceDate = "Around now";
+        final String dateRecorded = "Back in the day";
+        
+        //Set
+        _database.setGradableEventOccurrences(ge.getId(),
+                ImmutableMap.of(group.getId(), occurrenceDate), tid, dateRecorded);
+        
+        //Get
+        Map<Integer, GradableEventOccurrenceRecord> records =
+                _database.getGradableEventOccurrences(ge.getId(), ImmutableSet.of(group.getId()));
+        
+        //Validate
+        assertEquals(1, records.size());
+        assertEquals(tid, records.get(group.getId()).getTA());
+        assertEquals(dateRecorded, records.get(group.getId()).getDateRecorded());
+        assertEquals(occurrenceDate, records.get(group.getId()).getOccurrenceDate());
     }
-
+    
     @Test
-    public void testGetSetHandinTimeOverwrite() throws SQLException, CakeHatDBIOException{
+    public void testSetSetGetGradableEventOccurrences()  throws SQLException, CakeHatDBIOException
+    {
+        //Setup
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
         _database.putAssignments(ImmutableSet.of(dbAsgn));
 
         DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
-        assertEquals(dbAsgn.getId(), ge.getAssignmentId());
-
         _database.putGradableEvents(ImmutableSet.of(ge));
-
-
-        Assignment asgn = createMock(Assignment.class);
-        expect(asgn.getName()).andReturn(dbAsgn.getName()).anyTimes();
-        expect(asgn.getId()).andReturn(dbAsgn.getId()).anyTimes();
-        expect(asgn.hasGroups()).andReturn(dbAsgn.hasGroups()).anyTimes();
-
-        replay(asgn);
         
-        int tid = 1;
+        final int tid = 1;
         _database.putTAs(ImmutableSet.of(new DbTA(tid, "ta", "The", "Grader", true, false)));
-        
+
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
-        Student stud = new Student(_database.getStudents().iterator().next());
-
-
-        DbGroup toAdd = new DbGroup(asgn, stud);
-        _database.addGroups(ImmutableSet.of(toAdd));
-
-        int geid = ge.getId();
-        int agid = toAdd.getId();
-        String date1 = "1/28/2012";
-        String time1 = "10:05";
+        int studentId = _database.getStudents().iterator().next().getId();
         
+        DbGroup group = new DbGroup(dbAsgn.getId(), "The Group", ImmutableSet.of(studentId));
+        _database.addGroups(ImmutableSet.of(group));
+        group.getId();
+        
+        final String occurrenceDate = "Around now";
+        final String dateRecorded = "Back in the day";
+        
+        //Set
+        _database.setGradableEventOccurrences(ge.getId(),
+                ImmutableMap.of(group.getId(), occurrenceDate), tid, dateRecorded);
+        
+        final String newOccurrenceDate = "In a bit";
+        final String newDateRecorded = "Way back when";
+        
+        //Set - should cause overwrite
+        _database.setGradableEventOccurrences(ge.getId(),
+                ImmutableMap.of(group.getId(), newOccurrenceDate), tid, newDateRecorded);
+        
+        //Get
+        Map<Integer, GradableEventOccurrenceRecord> records =
+                _database.getGradableEventOccurrences(ge.getId(), ImmutableSet.of(group.getId()));
+        
+        //Validate
+        assertEquals(1, records.size());
+        assertEquals(tid, records.get(group.getId()).getTA());
+        assertEquals(newDateRecorded, records.get(group.getId()).getDateRecorded());
+        assertEquals(newOccurrenceDate, records.get(group.getId()).getOccurrenceDate());
+    }
+    
+    @Test
+    public void testSetDeleteGetGradableEventOccurrences()  throws SQLException, CakeHatDBIOException
+    {
+        //Setup
+        DbAssignment dbAsgn = new DbAssignment("asgn", 1);
+        _database.putAssignments(ImmutableSet.of(dbAsgn));
 
-        _database.setGradableEventOccurrence(geid, agid, time1, date1, tid);
+        DbGradableEvent ge = DbGradableEvent.build(dbAsgn, "ge", 1);
+        _database.putGradableEvents(ImmutableSet.of(ge));
+        
+        final int tid = 1;
+        _database.putTAs(ImmutableSet.of(new DbTA(tid, "ta", "The", "Grader", true, false)));
 
-        String date2 = "1/29/2012";
-        String time2 = "10:06";
-
-        _database.setGradableEventOccurrence(geid, agid, time2, date2, tid);
-
-        GradableEventOccurrenceRecord record = _database.getGradableEventOccurrence(geid, agid);
-
-        assertEquals(geid, record.getGradeableEventId());
-        assertEquals(agid, record.getAsgnGroupId());
-        assertEquals(date2, record.getDateRecorded());
-        assertEquals(time2, record.getTime());
-        assertEquals(tid, record.getTaId());
+        _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
+        int studentId = _database.getStudents().iterator().next().getId();
+        
+        DbGroup group = new DbGroup(dbAsgn.getId(), "The Group", ImmutableSet.of(studentId));
+        _database.addGroups(ImmutableSet.of(group));
+        group.getId();
+        
+        final String occurrenceDate = "Around now";
+        final String dateRecorded = "Back in the day";
+        
+        //Set
+        _database.setGradableEventOccurrences(ge.getId(),
+                ImmutableMap.of(group.getId(), occurrenceDate), tid, dateRecorded);
+        
+        //Delete
+        _database.deleteGradableEventOccurrences(ge.getId(), ImmutableSet.of(group.getId()));
+        
+        //Get
+        Map<Integer, GradableEventOccurrenceRecord> records =
+                _database.getGradableEventOccurrences(ge.getId(), ImmutableSet.of(group.getId()));
+        
+        //Validate
+        assertTrue(records.isEmpty());
     }
     
     @Test
