@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.joda.time.DateTime;
 
 /**
  * This class provides grading specific utility functions.
@@ -20,6 +21,18 @@ import java.util.Set;
  */
 public interface GradingServices
 {
+    /**
+     * Gets a mapping of group to the occurrence date. This method handles the logic of determining whether the date is
+     * coming from the database (previously manually entered by a TA) or from the file system in the case of a digital
+     * handin.
+     * 
+     * @param ge
+     * @param groups
+     * @return
+     * @throws ServicesException 
+     */
+    public Map<Group, DateTime> getOccurrenceDates(GradableEvent ge, Set<Group> groups) throws ServicesException;
+    
     /**
      * Makes the user's workspace as specified by
      * {@link PathServices#getUserWorkspace()}. If the workspace already exists,
@@ -144,22 +157,6 @@ public interface GradingServices
      */
     public Map<String, Group> getGroupsForHandins(GradableEvent ge,
                                                   Set<String> handinsToIgnore) throws ServicesException;
-
-    /**
-     * Return value maps a Student object to the Group object for that student on
-     * the given Assignment for each enabled student.  If the assignment is not a
-     * group assignment, this method guarantees that a group of one will have been
-     * created in the database for each enabled student and that the corresponding
-     * Group object will be in the returned map.
-     *
-     * Returns null if the configuration file indicates that the given Assignment
-     * has groups but no groups have been entered into the database.
-     *
-     * @param asgn
-     * @return
-     * @throws ServicesException
-     */
-    public Map<Student, Group> getGroupsForStudents(Assignment asgn) throws ServicesException;
 
     /**
      * Checks that all handins for the given GradableEvent belong to a valid student or group.

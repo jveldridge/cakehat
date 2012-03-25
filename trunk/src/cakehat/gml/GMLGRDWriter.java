@@ -10,7 +10,6 @@ import cakehat.database.assignment.Part;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.database.Group;
-import cakehat.database.GradableEventOccurrence;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;
 import cakehat.database.TA;
@@ -378,65 +377,19 @@ public class GMLGRDWriter {
         return new Score(totalScore, totalOutOf);
     }
     
-    private static void writeGradableEventScore(GradableEvent event, Group group, Score totalScore, BufferedWriter output) throws GradingSheetException {
-
-        DeadlineInfo info;
-        try {
-            info = Allocator.getDataServices().getDeadlineInfo(event);
-        } catch (ServicesException ex) {
-            throw new GradingSheetException("Could not get early bonus / late penalty for group " + group +
-                    " on gradable event " + event.getFullDisplayName(), ex);
-        }
-        
-        DateTime extensionDate = null;
-        Boolean shiftDatesForExtension = null;
-        try {
-            Extension extension = Allocator.getDataServices().getExtensions(event, ImmutableSet.of(group)).get(group);
-            if(extension != null) {
-                extensionDate = extension.getNewOnTime();
-                shiftDatesForExtension = extension.getShiftDates();
-            }
-        }
-        catch(ServicesException e) {
-            throw new GradingSheetException("Could not determine extension for group " + group + " on gradable event " +
-                    event.getFullDisplayName(), e);
-        }
+    private static void writeGradableEventScore(GradableEvent event, Group group, Score totalScore, BufferedWriter output) throws GradingSheetException {        
         
         DeadlineResolution res;
-        if (event.hasDigitalHandins()) {
-            File handin;
-            try {
-                handin = event.getDigitalHandin(group);
-            }
-            catch(IOException e) {
-                throw new GradingSheetException("Could not retrieve handin file for group " + group
-                        + " on gradable event " + event.getFullDisplayName(), e);
-            }
-            if (handin != null) {
-                res = info.apply(new DateTime(handin.lastModified()), extensionDate, shiftDatesForExtension);
-            }
-            else {
-                res = info.apply(null, null, null);
-            }
-        }
-        else {
-            GradableEventOccurrence occurrence;
-            try {
-               occurrence = Allocator.getDataServices().getGradableEventOccurrence(event, group); 
-            } catch (ServicesException ex) {
-                throw new GradingSheetException("Could not get occurrence for group " + group + " on gradable event " +
-                        event.getFullDisplayName(), ex);
-            }
-            if (occurrence != null) {
-                res = info.apply(occurrence.getHandinTime(), extensionDate, shiftDatesForExtension);
-            }
-            else {
-                res = info.apply(null, null, null);
-            }
+        try {
+            DeadlineInfo info = Allocator.getDataServices().getDeadlineInfo(event);
+            DateTime occurrenceDate = Allocator.getGradingServices().getOccurrenceDates(event, ImmutableSet.of(group)).get(group);
+            Extension extension = Allocator.getDataServices().getExtensions(event, ImmutableSet.of(group)).get(group);
+            res = info.apply(occurrenceDate, extension); 
+        } catch(ServicesException e) {
+            throw new GradingSheetException("Could not determine deadline resolution for group " + group + 
+                    " on gradable event " + event.getFullDisplayName(), e);
         }
         
-        double penalty = res.getPenaltyOrBonus(totalScore._earned);
-
         printStrongDivider(output);
 
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Parts Total: ", output);
@@ -444,6 +397,7 @@ public class GMLGRDWriter {
         printDivider(output);
 
         //Status
+        double penalty = res.getPenaltyOrBonus(totalScore._earned);
         writeStatusPoints(res, penalty, output);
 
         totalScore._earned += penalty;

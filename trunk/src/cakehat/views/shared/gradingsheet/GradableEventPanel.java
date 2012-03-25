@@ -7,7 +7,6 @@ import cakehat.database.Extension;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
-import cakehat.database.GradableEventOccurrence;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
@@ -20,8 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,31 +85,15 @@ class GradableEventPanel extends GradingSheetPanel
         {
             DeadlineInfo deadlineInfo = Allocator.getDataServices().getDeadlineInfo(_gradableEvent);
             
-            DateTime receivedDate = null;
+            DateTime occurrenceDate = null;
             Extension extension = null;
             if(_group != null)
             {
-                if(_gradableEvent.hasDigitalHandins())
-                {
-                    File digitalHandin = _gradableEvent.getDigitalHandin(_group);
-                    if(digitalHandin != null)
-                    {
-                        receivedDate = new DateTime(digitalHandin.lastModified());
-                    }
-                }
-                else
-                {
-                    GradableEventOccurrence handinTime = Allocator.getDataServices().getGradableEventOccurrence(_gradableEvent, _group);
-                    if(handinTime != null)
-                    {
-                        receivedDate = handinTime.getHandinTime();
-                    }
-                }
-                
+                occurrenceDate = Allocator.getGradingServices().getOccurrenceDates(_gradableEvent, ImmutableSet.of(_group)).get(_group);
                 extension = Allocator.getDataServices().getExtensions(_gradableEvent, ImmutableSet.of(_group)).get(_group);
             }
             
-            initUI(deadlineInfo, receivedDate, extension);
+            initUI(deadlineInfo, occurrenceDate, extension);
         }
         catch(ServicesException e)
         {
@@ -120,13 +101,6 @@ class GradableEventPanel extends GradingSheetPanel
                     "Gradable Event: " + _gradableEvent.getName() + "\n" +
                     "Group: " + _group.getName());
             addErrorMessagePanel("Unable to retrieve deadline related info");
-        }
-        catch(IOException e)
-        {
-            new ErrorView(e, "IO error when attempting to access digital handin.\n" +
-                    "Gradable Event: " + _gradableEvent.getName() + "\n" +
-                    "Group: " + _group.getName());
-            addErrorMessagePanel("Unable to access student/group's digital handin");
         }
     }
     

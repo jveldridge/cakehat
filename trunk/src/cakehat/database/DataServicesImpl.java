@@ -551,38 +551,77 @@ public class DataServicesImpl implements DataServices {
         
         return info;
     }
-
+    
     @Override
-    public GradableEventOccurrence getGradableEventOccurrence(GradableEvent gradableEvent, Group group) throws ServicesException
+    public Map<Group, GradableEventOccurrence> getGradableEventOccurrences(GradableEvent gradableEvent,
+        Set<Group> groups) throws ServicesException
     {
-        try {
-            GradableEventOccurrenceRecord record = Allocator.getDatabase().getGradableEventOccurrence(gradableEvent.getId(), group.getId());
-            TA ta = _taIdMap.get(Allocator.getUserUtilities().getUserId());
-            if (record != null) {
-                return new GradableEventOccurrence(gradableEvent, group, ta, new DateTime(), DateTime.parse(record.getTime()));
+        checkAssignmentEquality(gradableEvent.getAssignment(), groups);
+        
+        try
+        {
+            Map<Integer, GradableEventOccurrenceRecord> records = Allocator.getDatabase().getGradableEventOccurrences(
+                    gradableEvent.getId(), groupsToIdCollection(groups, new HashSet<Integer>()));
+            
+            ImmutableMap.Builder<Group, GradableEventOccurrence> occurrences = ImmutableMap.builder();
+            for(Group group : groups)
+            {
+                GradableEventOccurrenceRecord record = records.get(group.getId());
+                if(record != null)
+                {
+                    GradableEventOccurrence occurrence = new GradableEventOccurrence(gradableEvent, group,
+                            _taIdMap.get(record.getTA()), new DateTime(record.getDateRecorded()),
+                            new DateTime(record.getOccurrenceDate()));
+                    occurrences.put(group, occurrence);
+                }
             }
-            return null;
-        } catch (SQLException ex) {
-            throw new ServicesException("Unable to determine handin time for group [" + group.getName() + 
-                    "] for gradable event " + gradableEvent.getName() + ".", ex);
+            
+            return occurrences.build();
         }
-    }
-
-    @Override
-    public void setGradableEventOccurrence(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException
-    {
-        this.setGradableEventOccurrences(gradableEvent, ImmutableMap.of(group, handinTime));
+        catch(SQLException ex)
+        {
+            throw new ServicesException("Could not get gradable event occurences for given groups.", ex);
+        }
     }
     
     @Override
-    public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses) throws ServicesException {
-        try {
-            for (Group group : statuses.keySet()) {
-                Allocator.getDatabase().setGradableEventOccurrence(gradableEvent.getId(), group.getId(),
-                    statuses.get(group).toString(), new DateTime().toString(), Allocator.getUserUtilities().getUserId());
+    public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses)
+            throws ServicesException
+    {
+        checkAssignmentEquality(gradableEvent.getAssignment(), statuses.keySet());
+        
+        try
+        {
+            Map<Integer, String> dbStatuses = new HashMap<Integer, String>();
+            for(Entry<Group, DateTime> status : statuses.entrySet())
+            {
+                dbStatuses.put(status.getKey().getId(), status.getValue().toString());
             }
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not set handin statuses for given groups.", ex);
+            
+            Allocator.getDatabase().setGradableEventOccurrences(gradableEvent.getId(), dbStatuses,
+                    Allocator.getUserUtilities().getUserId(), new DateTime().toString());
+        }
+        catch(SQLException ex)
+        {
+            throw new ServicesException("Could not set gradable event occurences for given groups.", ex);
+        }
+    }
+        
+    @Override
+    public void deleteGradableEventOccurrences(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException
+    {
+        checkAssignmentEquality(gradableEvent.getAssignment(), groups);
+        
+        HashSet<Integer> groupIds = groupsToIdCollection(groups, new HashSet<Integer>());
+        
+        try
+        {
+            Allocator.getDatabase().deleteGradableEventOccurrences(gradableEvent.getId(), groupIds);
+        }
+        catch(SQLException e)
+        {
+            throw new ServicesException("Could not delete gradable event occurrences for gradable event: " +
+                    gradableEvent.getFullDisplayName() + " for groups: " + groups, e);
         }
     }
 
@@ -835,7 +874,8 @@ public class DataServicesImpl implements DataServices {
         
         for(Group group : groups)
         {
-            if(!group.getAssignment().equals(asgn))
+            //Compare on assignment id instead of the object so that mocked test objects can satisfy this constraint
+            if(group.getAssignment().getId() != asgn.getId())
             {
                 notEqual.add(group);
             }

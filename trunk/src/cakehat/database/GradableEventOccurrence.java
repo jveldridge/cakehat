@@ -4,8 +4,8 @@ import cakehat.database.assignment.GradableEvent;
 import org.joda.time.DateTime;
 
 /**
- * Stores the occurrence of a gradable event manually entered by a TA for a gradable event that does not have a
- * digital handin directory.
+ * Stores the occurrence of a gradable event manually entered by a TA for a group's gradable event that does not have a
+ * digital handin.
  *
  * @author jak2
  */
@@ -15,15 +15,38 @@ public class GradableEventOccurrence
     private final Group _group;
     private final TA _ta;
     private final DateTime _dateRecorded;
-    private final DateTime _handinTime;
+    private final DateTime _occurrenceDate;
     
-    GradableEventOccurrence(GradableEvent gradableEvent, Group group, TA ta, DateTime dateRecorded, DateTime handinTime)
+    GradableEventOccurrence(GradableEvent gradableEvent, Group group, TA ta, DateTime dateRecorded,
+            DateTime occurrenceDate)
     {
+        //Validate arguments
+        if(gradableEvent == null)
+        {
+            throw new NullPointerException("gradableEvent may not be null");
+        }
+        if(group == null)
+        {
+            throw new NullPointerException("group may not be null");
+        }
+        if(ta == null)
+        {
+            throw new NullPointerException("ta may not be null");
+        }
+        if(dateRecorded == null)
+        {
+            throw new NullPointerException("dateRecorded may not be null");
+        }
+        if(occurrenceDate == null)
+        {
+            throw new NullPointerException("occurrenceDate may not be null");
+        }
+        
         _gradableEvent = gradableEvent;
         _group = group;
         _ta = ta;
         _dateRecorded = dateRecorded;
-        _handinTime = handinTime;
+        _occurrenceDate = occurrenceDate;
     }
 
     public GradableEvent getGradableEvent()
@@ -46,8 +69,8 @@ public class GradableEventOccurrence
         return _dateRecorded;
     }
 
-    public DateTime getHandinTime()
+    public DateTime getOccurrenceDate()
     {
-        return _handinTime;
+        return _occurrenceDate;
     }
 }

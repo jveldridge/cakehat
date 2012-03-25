@@ -10,7 +10,6 @@ import java.util.Set;
 import org.joda.time.DateTime;
 import support.utils.Pair;
 
-
 /**
  *
  * @author hdrosen
@@ -371,34 +370,37 @@ public interface DataServices {
     public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException;
     
     /**
-     * Returns the gradable event occurrence for the given gradable event and group.
+     * Returns the gradable event occurrences for the given gradable events and groups. If a group does not have a
+     * recorded gradable event occurrence it will not be in the map.
      * 
      * @param gradableEvent
-     * @param part
+     * @param groups
      * @return
      * @throws ServicesException 
      */
-    public GradableEventOccurrence getGradableEventOccurrence(GradableEvent gradableEvent, Group group) throws ServicesException;
-    
+    public Map<Group, GradableEventOccurrence> getGradableEventOccurrences(GradableEvent gradableEvent,
+            Set<Group> groups) throws ServicesException;
+
     /**
-     * Sets the handin time for the given gradable event and group.
-     * 
-     * @param gradableEvent
-     * @param part
-     * @param handinTime
-     * @throws ServicesException 
-     */
-    public void setGradableEventOccurrence(GradableEvent gradableEvent, Group group, DateTime handinTime) throws ServicesException;
-    
-    /**
-     * For each entry in the given Map, stores the corresponding gradable event occurrence in
-     * the database for the corresponding Group and given Handin.  Any existing
-     * gradable event occurrences for Groups with entries in the Map will be overwritten.
+     * For each entry in the given map, stores the corresponding gradable event occurrence in the database for the
+     * corresponding Group and given GradableEvent. Any existing gradable event occurrences for groups with entries in
+     * the map will be overwritten.
      *
-     * @param handin
+     * @param gradableEvent 
      * @param statuses
      */
-    public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses) throws ServicesException;
+    public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses)
+            throws ServicesException;
+    
+    /**
+     * Deletes gradable event occurrences for the given gradable event for each group. If there is currently no gradable
+     * event for a given group there will be no effect for that group and an exception will not be thrown.
+     * 
+     * @param gradableEvent
+     * @param groups
+     * @throws ServicesException 
+     */
+    public void deleteGradableEventOccurrences(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException;
     
     /**
      * Loads Student and Group objects into memory for all students and groups in the database.

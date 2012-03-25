@@ -34,6 +34,15 @@ public class DbGroup extends DbDataItem
         }
     }
     
+    DbGroup(int asgnId, String name, Set<Integer> studentIds)
+    {
+        super(null);
+        
+        _asgnId = asgnId;
+        _name = name;
+        _studentIds = new HashSet<Integer>(studentIds);
+    }
+    
     DbGroup(int asgnId, int id, String name, Set<Integer> studentIds)
     {
         super(id);
