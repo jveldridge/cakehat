@@ -154,8 +154,6 @@ abstract class PartPanel extends GradingSheetPanel
                 addContent(FormattedLabel.asSubheader(taText).grayOut());
             }
         }
-        
-        addContent(Box.createVerticalStrut(10));
     }
     
     @Override

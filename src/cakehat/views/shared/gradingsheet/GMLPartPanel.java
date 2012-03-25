@@ -116,6 +116,9 @@ class GMLPartPanel extends PartPanel
     
     private void initNormalUI()
     {
+        //Spacing between header UI and these components
+        addContent(Box.createVerticalStrut(10));
+        
         final JTextField totalEarnedField = new JTextField(5);
         totalEarnedField.setEnabled(false);
         totalEarnedField.setHorizontalAlignment(JTextField.CENTER); 

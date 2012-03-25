@@ -223,7 +223,7 @@ public class DateTimeControl extends JPanel
             DateTime prevDateTime = _dateTime;
 
             _dateTime = new DateTime(_dateTime.getYear(), _dateTime.getMonthOfYear(), _dateTime.getDayOfMonth(),
-                    newHourOfDay, _dateTime.getHourOfDay(), _dateTime.getSecondOfMinute(),
+                    newHourOfDay, _dateTime.getMinuteOfHour(), _dateTime.getSecondOfMinute(),
                     _dateTime.getMillisOfSecond());
 
             notifyListeners(prevDateTime, _dateTime);

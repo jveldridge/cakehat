@@ -97,11 +97,11 @@ class StatisticsPanel extends JPanel
             }
 
             //Categories
-            // - Not submitted (no parts submitted or in progress)
+            // - Not started (no parts submitted or in progress)
             // - Grading in progress (some, but not all, parts submitted OR
             //                        some, including all, parts with non-submitted grades)
             // - Submitted (all parts submitted)
-            List<Group> noneSubmittedGroups = new ArrayList<Group>();
+            List<Group> notStartedGroups = new ArrayList<Group>();
             List<Group> inProgressGroups = new ArrayList<Group>();
             List<Group> allSubmittedGroups = new ArrayList<Group>();
             for(Group group : groupSelection)
@@ -132,13 +132,13 @@ class StatisticsPanel extends JPanel
                 }
                 else
                 {
-                    noneSubmittedGroups.add(group);
+                    notStartedGroups.add(group);
                 }
             }
             
             //Display
-            showGradingStatusForGroups("Not submitted", noneSubmittedGroups);
-            showGradingStatusForGroups("In progress", inProgressGroups);
+            showGradingStatusForGroups("Not Started", notStartedGroups);
+            showGradingStatusForGroups("In Progress", inProgressGroups);
             showGradingStatusForGroups("Completed", allSubmittedGroups);
         }
         catch(ServicesException e)
