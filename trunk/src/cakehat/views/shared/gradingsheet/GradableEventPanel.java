@@ -9,6 +9,7 @@ import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -423,8 +424,6 @@ class GradableEventPanel extends GradingSheetPanel
         extensionPanel.setLayout(new BoxLayout(extensionPanel, BoxLayout.Y_AXIS));
         addContent(extensionPanel);
         
-        extensionPanel.add(Box.createVerticalStrut(5));
-        
         JPanel datePanel = new PreferredHeightPanel(this.getBackground());
         datePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         extensionPanel.add(datePanel);
@@ -472,7 +471,9 @@ class GradableEventPanel extends GradingSheetPanel
     private class GroupDeadlineResolutionPanel extends JPanel
     {
         private double _currPenaltyOrBonus;
-        private final JLabel _receivedOnLabel, _resolutionStatusLabel;
+        private final JLabel _receivedLabel, _resolutionStatusLabel;
+        private final DateTimeControl _receivedControl;
+        private final JButton _receivedButton;
         private final JTextField _penaltyOrBonusField;
         
         private final DeadlineInfo _deadlineInfo;
@@ -493,7 +494,9 @@ class GradableEventPanel extends GradingSheetPanel
             _currShiftDates = shiftDates;
             
             //Create UI elements
-            _receivedOnLabel = FormattedLabel.asContent("").usePlainFont();
+            _receivedLabel = FormattedLabel.asContent("").usePlainFont();
+            _receivedControl = new DateTimeControl(receivedTime);
+            _receivedButton = new JButton();
             _resolutionStatusLabel = FormattedLabel.asContent("").usePlainFont();
             _penaltyOrBonusField = new JTextField(5);
             _penaltyOrBonusField.setEnabled(false);
@@ -503,7 +506,58 @@ class GradableEventPanel extends GradingSheetPanel
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             this.setBackground(background);
             
-            this.add(_receivedOnLabel);
+            //Add a panel to show the received date
+            JPanel receivedPanel = new PreferredHeightPanel(new FlowLayout(FlowLayout.LEFT, 0, 0), this.getBackground());
+            addContent(receivedPanel);
+            receivedPanel.add(_receivedLabel);
+            
+            //If admin, and either the gradable event does not have digital handins or the group being shown does not
+            //a digital handin then allow for modification of the gradable event occurrence date time
+            if(_isAdmin && (!_gradableEvent.hasDigitalHandins() || receivedTime == null))
+            {
+                //UI
+                //Horizontally align receivedControl with the control for the extension ate
+                receivedPanel.add(Box.createHorizontalStrut(22));
+                
+                _receivedControl.setBackground(this.getBackground());
+                _receivedControl.setAlignmentX(LEFT_ALIGNMENT);
+                receivedPanel.add(_receivedControl);
+                
+                addContent(Box.createVerticalStrut(5));
+                
+                addContent(_receivedButton);
+                
+                addContent(Box.createVerticalStrut(5));
+                
+                //Logic
+                _receivedButton.addActionListener(new ActionListener()
+                {
+                    @Override
+                    public void actionPerformed(ActionEvent ae)
+                    {
+                        receivedButtonActionPerformed();
+                    }
+                });
+                
+                _receivedControl.addDateTimeChangeListener(new DateTimeControl.DateTimeChangeListener()
+                {
+                    @Override
+                    public void dateTimeChanged(DateTime prevDateTime, DateTime newDateTime)
+                    {
+                        try
+                        {
+                            Allocator.getDataServices().setGradableEventOccurrences(_gradableEvent,
+                                    ImmutableMap.of(_group, newDateTime));
+                            updateReceived(newDateTime);
+                        }
+                        catch(ServicesException e)
+                        {
+                            _receivedControl.setDateTime(prevDateTime, true);
+                            new ErrorView(e, "Unable to set new occurrence date");
+                        }
+                    }
+                });
+            }
             
             //Add a panel to show the resolution from the deadline
             JPanel resolutionPanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
@@ -540,6 +594,32 @@ class GradableEventPanel extends GradingSheetPanel
             update(receivedTime, extensionTime, shiftDates);
         }
         
+        private void receivedButtonActionPerformed()
+        {
+            try
+            {
+                DateTime newReceivedOn;
+                if(_currReceivedTime == null)
+                {
+                    newReceivedOn = new DateTime().millisOfSecond().setCopy(0);
+                    Allocator.getDataServices().setGradableEventOccurrences(_gradableEvent,
+                            ImmutableMap.of(_group, newReceivedOn));
+                }
+                else
+                {
+                    newReceivedOn = null;
+                    Allocator.getDataServices().deleteGradableEventOccurrences(_gradableEvent, ImmutableSet.of(_group));
+                }
+                
+                _receivedControl.setDateTime(newReceivedOn, true);
+                updateReceived(newReceivedOn);
+            }
+            catch(ServicesException e)
+            {
+                new ErrorView(e, "Unable to update occurrence date");
+            }
+        }
+        
         void updateReceived(DateTime receivedTime)
         {
             _currReceivedTime = receivedTime;
@@ -558,10 +638,26 @@ class GradableEventPanel extends GradingSheetPanel
         private void update(DateTime receivedTime, DateTime extensionTime, Boolean shiftDates)
         {   
             //Show updated received on
-            DateTimeFormatter dateTimeFormatter = DateTimeFormat.shortDateTime(); 
-            String receivedOn = "<strong>Received On:</strong> " +
-                                (receivedTime == null ? "not received" : dateTimeFormatter.print(receivedTime));
-            _receivedOnLabel.setText(receivedOn);
+            if(_isAdmin)
+            {
+                _receivedLabel.setText("<strong>Received:</strong>");
+                _receivedControl.setDateTime(receivedTime, true);
+                if(receivedTime == null)
+                {
+                    _receivedButton.setText("Set");
+                }
+                else
+                {
+                    _receivedButton.setText("Remove");
+                }
+            }
+            else
+            {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormat.shortDateTime(); 
+                String receivedOnText = "<strong>Received:</strong> " +
+                         (receivedTime == null ? "Date and time unknown" : dateTimeFormatter.print(receivedTime));
+                _receivedLabel.setText(receivedOnText);
+            }
             
             //Show updated deadline resolution
             DeadlineResolution resolution = _deadlineInfo.apply(receivedTime, extensionTime, shiftDates);

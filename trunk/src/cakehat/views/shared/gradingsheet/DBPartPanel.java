@@ -59,6 +59,9 @@ class DBPartPanel extends PartPanel
     
     private void initNormalUI(PartGrade grade)
     {
+        //Spacing between header UI and these components
+        addContent(Box.createVerticalStrut(10));
+        
         //Add a panel for the user to input the score
         JPanel scorePanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
         addContent(scorePanel);
