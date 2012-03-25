@@ -45,6 +45,7 @@ public class AdminView extends JFrame
     private final AssignmentTree _assignmentTree;
     private final StudentList _studentList;
     private final ActionsPanel _actionsPanel;
+    private final StatisticsPanel _statisticsPanel;
     
     private AssignmentTreeSelection _treeSelection;
     private Set<Student> _selectedStudents; 
@@ -70,6 +71,7 @@ public class AdminView extends JFrame
         _actionsPanel = new ActionsPanel(this);
         _assignmentTree = new AssignmentTree();
         _studentList = new StudentList();
+        _statisticsPanel = new StatisticsPanel();
         this.initUI();
         this.setJMenuBar(new AdminMenu(this));
         
@@ -278,10 +280,8 @@ public class AdminView extends JFrame
             //Multiple groups have been selected
             else if(selectedGroups.size() > 1)
             {
-                String studentOrGroup = asgn.hasGroups() ? "group" : "student";
-                
-                componentToDisplay = FormattedLabel.asContent("Multi-" + studentOrGroup + " display not yet supported")
-                        .centerHorizontally();
+                _statisticsPanel.displayFor(treeSelection, selectedGroups);
+                componentToDisplay = _statisticsPanel;
             }       
             //Zero or one groups have been selected
             else if(selectedGroups.isEmpty() || selectedGroups.size() == 1)
