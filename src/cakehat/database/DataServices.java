@@ -297,28 +297,6 @@ public interface DataServices {
     public TA getTA(int taId);
     
     /**
-     * Adds the given newly created group to the database.  A ServicesException will be thrown if a group with that name
-     * already exists for the corresponding assignment, if any member of the group is already assigned to another group
-     * for the assignment, or if a database error occurred.
-     * 
-     * @param toAdd
-     * @return 
-     * @throws ServicesException 
-     */
-    public void addGroup(DbGroup toAdd) throws ServicesException;
-    
-    /**
-     * Adds the given newly created groups to the database.  If a group with the same name as any of those to be added
-     * already exists for the corresponding assignment, if a member of any group to be added is already assigned to
-     * another group for the assignment, no groups will be added and a ServicesException will be thrown. A
-     * ServicesException will also be thrown if a database error occurred.
-     * 
-     * @param toAdd
-     * @throws ServicesException 
-     */
-    public void addGroups(Set<DbGroup> toAdd) throws ServicesException;
-    
-    /**
      * Returns the Group for which the given Student is a member for the given Assignment. If the given Assignment is
      * not a group assignment and the Student does not already have a group of one, a group of one will be
      * created, stored in the database, and returned. This method returns {@code null} if no such Group exists.
@@ -344,16 +322,6 @@ public interface DataServices {
      * @throws ServicesException 
      */
     public Set<Group> getGroups(Assignment asgn) throws ServicesException;
-    
-    /**
-     * Removes from the database all groups for the given Assignment.  If no
-     * groups had been previously created, this method has no effect.
-     * 
-     * @param asgn
-     * @return
-     * @throws ServicesException 
-     */
-    public void removeGroups(Assignment asgn) throws ServicesException;
     
     /**
      * Returns an immutable ordered list of all assignment.

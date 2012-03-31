@@ -763,7 +763,7 @@ public class DatabaseTest {
         Student stud = new Student(_database.getStudents().iterator().next());
 
         DbGroup toAdd = new DbGroup(asgn, stud);
-        _database.addGroups(ImmutableSet.of(toAdd));
+        _database.putGroups(ImmutableSet.of(toAdd));
         assertNotNull(toAdd.getId());
 
         Set<DbGroup> groups = _database.getGroups();
@@ -788,15 +788,15 @@ public class DatabaseTest {
         Student stud = new Student(_database.getStudents().iterator().next());
 
         DbGroup toAdd = new DbGroup(asgn, stud);
-        _database.addGroups(ImmutableSet.of(toAdd));
+        _database.putGroups(ImmutableSet.of(toAdd));
         assertNotNull(toAdd.getId());
 
-        Set<Integer> agids = _database.getGroups(asgn.getId());
+        Set<DbGroup> agids = _database.getGroups(asgn.getId());
 
         // check that there is only 1 group1 in the database
         assertEquals(1, agids.size());
 
-        int agid = Iterables.get(agids, 0);
+        int agid = Iterables.get(agids, 0).getId();
 
         // check that the correct group is returned
         assertEquals(toAdd.getAssignmentId(), agid);
@@ -804,8 +804,8 @@ public class DatabaseTest {
 
     @Test
     public void testRemoveGroups() throws SQLException, CakeHatDBIOException {
-         Assignment asgn1 = this.createNewAssignmentInDb("asgn",1);
-         Assignment asgn2 = this.createNewAssignmentInDb("asgn",2);
+        Assignment asgn1 = this.createNewAssignmentInDb("asgn",1);
+        Assignment asgn2 = this.createNewAssignmentInDb("asgn",2);
 
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
         Student stud = new Student(_database.getStudents().iterator().next());
@@ -814,18 +814,18 @@ public class DatabaseTest {
         DbGroup group2 = new DbGroup(asgn2, stud);
         
         //add groups
-        _database.addGroups(ImmutableSet.of(group1, group2));
+        _database.putGroups(ImmutableSet.of(group1));
+        _database.putGroups(ImmutableSet.of(group2));
 
         Set<DbGroup> groups = _database.getGroups();
         assertEquals(2, groups.size());
 
-        //remove group for assignment 1
-        _database.removeGroups(asgn1.getId());
+        _database.removeGroups(ImmutableSet.of(group1));
 
         groups = _database.getGroups();
 
         //make sure one group was removed
-        assertEquals(1,groups.size());
+        assertEquals(1, groups.size());
 
         //check that it is the correct group by checking its fields
         DbGroup actualRecord = Iterables.get(groups, 0);
@@ -949,7 +949,7 @@ public class DatabaseTest {
         int studentId = _database.getStudents().iterator().next().getId();
         
         DbGroup group = new DbGroup(dbAsgn.getId(), "The Group", ImmutableSet.of(studentId));
-        _database.addGroups(ImmutableSet.of(group));
+        _database.putGroups(ImmutableSet.of(group));
         group.getId();
         
         final String occurrenceDate = "Around now";
@@ -987,7 +987,7 @@ public class DatabaseTest {
         int studentId = _database.getStudents().iterator().next().getId();
         
         DbGroup group = new DbGroup(dbAsgn.getId(), "The Group", ImmutableSet.of(studentId));
-        _database.addGroups(ImmutableSet.of(group));
+        _database.putGroups(ImmutableSet.of(group));
         group.getId();
         
         final String occurrenceDate = "Around now";
@@ -1032,7 +1032,7 @@ public class DatabaseTest {
         int studentId = _database.getStudents().iterator().next().getId();
         
         DbGroup group = new DbGroup(dbAsgn.getId(), "The Group", ImmutableSet.of(studentId));
-        _database.addGroups(ImmutableSet.of(group));
+        _database.putGroups(ImmutableSet.of(group));
         group.getId();
         
         final String occurrenceDate = "Around now";
@@ -1068,7 +1068,7 @@ public class DatabaseTest {
         
         DbGroup dbGroup1 = new DbGroup(asgn, "The Group", ImmutableSet.<Student>of());
         DbGroup dbGroup2 = new DbGroup(asgn, "Another Group", ImmutableSet.<Student>of());
-        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         Set<Integer> groupIds = ImmutableSet.of(dbGroup1.getId(), dbGroup2.getId());
         
         DbTA ta = new DbTA(57, "talogin", "FirstName", "LastName", true, true);
@@ -1105,7 +1105,7 @@ public class DatabaseTest {
         
         DbGroup dbGroup1 = new DbGroup(asgn, "The Group", ImmutableSet.<Student>of());
         DbGroup dbGroup2 = new DbGroup(asgn, "Another Group", ImmutableSet.<Student>of());
-        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         Set<Integer> groupIds = ImmutableSet.of(dbGroup1.getId(), dbGroup2.getId());
         
         DbTA ta = new DbTA(57, "talogin", "FirstName", "LastName", true, true);
@@ -1143,7 +1143,7 @@ public class DatabaseTest {
         
         DbGroup dbGroup1 = new DbGroup(asgn, "The Group", ImmutableSet.<Student>of());
         DbGroup dbGroup2 = new DbGroup(asgn, "Another Group", ImmutableSet.<Student>of());
-        _database.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         Set<Integer> groupIds = ImmutableSet.of(dbGroup1.getId(), dbGroup2.getId());
         
         DbTA ta = new DbTA(57, "talogin", "FirstName", "LastName", true, true);
@@ -1274,7 +1274,7 @@ public class DatabaseTest {
         
             _dbGroup1 = new DbGroup(asgn, new Student(student1));
             _dbGroup2 = new DbGroup(asgn, new Student(student2));
-            _database.addGroups(ImmutableSet.of(_dbGroup1, _dbGroup2));
+            _database.putGroups(ImmutableSet.of(_dbGroup1, _dbGroup2));
         }
     }
 }

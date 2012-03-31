@@ -407,14 +407,8 @@ public class DataServicesImpl implements DataServices {
     {
         return _taIdMap.get(taId);
     }
-    
-    @Override
-    public void addGroup(DbGroup toAdd) throws ServicesException {
-        this.addGroups(ImmutableSet.of(toAdd));
-    }
-    
-    @Override
-    public void addGroups(Set<DbGroup> toAdd) throws ServicesException {
+
+    private void addGroups(Set<DbGroup> toAdd) throws ServicesException {
         //ensure that no student in a group to add is already to assigned to a group for the corresponding assignment
         for (DbGroup group : toAdd) {
             for (int memberId : group.getMemberIds()) {
@@ -427,7 +421,7 @@ public class DataServicesImpl implements DataServices {
         }
         
         try {
-            Allocator.getDatabase().addGroups(toAdd);
+            Allocator.getDatabase().putGroups(toAdd);
             
             //update the cache
             for (DbGroup dbGroup : toAdd) {
@@ -443,9 +437,6 @@ public class DataServicesImpl implements DataServices {
         } catch (SQLException ex) {
             throw new ServicesException("An error occurred adding the groups to "
                     + "the database; no groups have been added.", ex);
-        } catch (CakeHatDBIOException ex) {
-            throw new ServicesException("An error occurred adding the groups to "
-                    + "the database; no groups have been added.", ex);
         }
     }
 
@@ -457,7 +448,7 @@ public class DataServicesImpl implements DataServices {
             if (!_groupsCache.get(asgn.getId()).containsKey(student.getId())) {
                 //if the assignment does not have groups, create group of one
                 if (!asgn.hasGroups()) {
-                    this.addGroup(new DbGroup(asgn, student));
+                    this.addGroups(ImmutableSet.of(new DbGroup(asgn, student)));
                 }
             }
         }
@@ -467,9 +458,9 @@ public class DataServicesImpl implements DataServices {
     
     @Override
     public Set<Group> getGroups(Assignment asgn) throws ServicesException {
-        Set<Integer> groupIDs;
+        Set<DbGroup> dbGroups;
         try {
-            groupIDs = Allocator.getDatabase().getGroups(asgn.getId());
+            dbGroups = Allocator.getDatabase().getGroups(asgn.getId());
         } catch (SQLException ex) {
             throw new ServicesException("Could not read groups for assignment from the database", ex);
         }
@@ -488,26 +479,21 @@ public class DataServicesImpl implements DataServices {
                 this.addGroups(groupsToAdd);
 
                 try {
-                    groupIDs = Allocator.getDatabase().getGroups(asgn.getId());
+                    dbGroups = Allocator.getDatabase().getGroups(asgn.getId());
                 } catch (SQLException ex) {
                     throw new ServicesException("Could not read groups for assignment from the database "
                             + "(after adding auto-groups of one for students who did not have them).", ex);
                 }
             }
         }
-        return Collections.unmodifiableSet(this.idsToGroups(groupIDs, new HashSet<Group>(groupIDs.size())));
-    }
-    
-    @Override
-    public void removeGroups(Assignment asgn) throws ServicesException {
-        try {
-            Allocator.getDatabase().removeGroups(asgn.getId());
-            
-            //if removing groups was successful, update caches
-            _groupsCache.get(asgn.getId()).clear();
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not remove groups for assignment [" + asgn + "] from the database.");
+        
+        ImmutableSet.Builder<Group> builder = ImmutableSet.builder();
+        
+        for (DbGroup group : dbGroups) {
+            builder.add(this.groupIdToGroup(group.getId()));
         }
+        
+        return builder.build();
     }
     
     @Override
