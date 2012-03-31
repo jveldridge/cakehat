@@ -115,7 +115,7 @@ public class DataServicesTest {
     }
     
     @Test
-    public void testSetGetGradableEventOccurrences() throws ServicesException
+    public void testSetGetGradableEventOccurrences() throws ServicesException, SQLException
     {
         //Setup
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
@@ -124,7 +124,7 @@ public class DataServicesTest {
         
         DbGroup dbGroup1 = new DbGroup(_asgnA, "group 1", ImmutableSet.of(new Student(student1)));
         DbGroup dbGroup2 = new DbGroup(_asgnA, "group 2", ImmutableSet.of(new Student(student2)));
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         
         Map<Group, DateTime> occurrenceDates = new HashMap<Group, DateTime>();
@@ -152,7 +152,7 @@ public class DataServicesTest {
     }
     
     @Test
-    public void testSetDeleteGetGradableEventOccurrences() throws ServicesException
+    public void testSetDeleteGetGradableEventOccurrences() throws ServicesException, SQLException
     {
         //Setup
         DbStudent student1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
@@ -161,7 +161,7 @@ public class DataServicesTest {
         
         DbGroup dbGroup1 = new DbGroup(_asgnA, "group 1", ImmutableSet.of(new Student(student1)));
         DbGroup dbGroup2 = new DbGroup(_asgnA, "group 2", ImmutableSet.of(new Student(student2)));
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         
         Map<Group, DateTime> occurrenceDates = new HashMap<Group, DateTime>();
@@ -479,7 +479,7 @@ public class DataServicesTest {
             
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
 
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1), groups);
@@ -496,8 +496,7 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataServices.addGroup(dbGroup1);
-        _dataServices.addGroup(dbGroup2);
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
@@ -515,7 +514,7 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
@@ -532,47 +531,12 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         //group doesn't exist
         assertNull(_dataServices.getGroup(_asgnA, student2));
 
         this.assertGroupEqual(dbGroup1, _dataServices.getGroup(_asgnA, student1));
-    }
-    
-    @Test
-    public void testRemoveGroups() throws SQLException, ServicesException {
-        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
-        DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
-        _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataServices.updateDataCache();
-            
-        Student student1 = new Student(dbStudent1);
-        Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-        _dataServices.removeGroups(_asgnA);
-        assertEquals(0, _dataServices.getGroups(_asgnA).size());
-    }
-    
-    @Test
-    public void testAddAfterRemoveGroups() throws SQLException, ServicesException {        
-        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
-        DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
-        _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
-        _dataServices.updateDataCache();
-            
-        Student student1 = new Student(dbStudent1);
-        Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1));
-        _dataServices.addGroups(ImmutableSet.of(dbGroup2));
-        _dataServices.removeGroups(_asgnA);        
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
-        Set<Group> groups = _dataServices.getGroups(_asgnA);
-        this.assertGroupCollectionEqual(ImmutableSet.of(dbGroup1, dbGroup2), groups);
     }
     
     @Test
@@ -607,7 +571,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -652,7 +616,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -708,7 +672,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -758,7 +722,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -807,7 +771,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -889,7 +853,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -937,8 +901,7 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataServices.addGroup(dbGroup1);
-        _dataServices.addGroup(dbGroup2);
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Group group1 = _dataServices.getGroup(asgnA, student1);
         Group group2 = _dataServices.getGroup(asgnA, student2);
@@ -1016,7 +979,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -1064,8 +1027,7 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataServices.addGroup(dbGroup1);
-        _dataServices.addGroup(dbGroup2);
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Group group1 = _dataServices.getGroup(asgnA, student1);
         Group group2 = _dataServices.getGroup(asgnA, student2);
@@ -1121,7 +1083,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -1177,8 +1139,7 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataServices.addGroup(dbGroup1);
-        _dataServices.addGroup(dbGroup2);
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Group group1 = _dataServices.getGroup(asgnA, student1);
         Group group2 = _dataServices.getGroup(asgnA, student2);
@@ -1378,7 +1339,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -1421,7 +1382,7 @@ public class DataServicesTest {
         
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Group group = _dataServices.getGroup(asgnA, student1);
         Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
@@ -1471,8 +1432,7 @@ public class DataServicesTest {
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup1 = new DbGroup(asgnA, student1);
         DbGroup dbGroup2 = new DbGroup(asgnA, student2);
-        _dataServices.addGroup(dbGroup1);
-        _dataServices.addGroup(dbGroup2);
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Group group1 = _dataServices.getGroup(asgnA, student1);
         Group group2 = _dataServices.getGroup(asgnA, student2);
@@ -1532,7 +1492,7 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
 
         Part partA = createMock(Part.class);
         expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
@@ -1557,11 +1517,11 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
         
         Student student2 = new Student(dbStudent2);
         DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
-        _dataServices.addGroup(dbGroup2);
+        _database.putGroups(ImmutableSet.of(dbGroup2));
 
         Part partA = createMock(Part.class);
         expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
@@ -1600,7 +1560,7 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
 
         Part partA = createMock(Part.class);
         expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
@@ -1624,7 +1584,7 @@ public class DataServicesTest {
 
         Student student1 = new Student(dbStudent1);
         DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _dataServices.addGroup(dbGroup1);
+        _database.putGroups(ImmutableSet.of(dbGroup1));
 
         Part partA = createMock(Part.class);
         expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
@@ -1650,11 +1610,11 @@ public class DataServicesTest {
     }
     
     @Test
-    public void testSetGetExtensions() throws ServicesException
+    public void testSetGetExtensions() throws ServicesException, SQLException
     {
         DbGroup dbGroup1 = new DbGroup(_asgnA, "The Group", ImmutableSet.<Student>of());
         DbGroup dbGroup2 = new DbGroup(_asgnA, "Another Group", ImmutableSet.<Student>of());
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         
@@ -1679,11 +1639,11 @@ public class DataServicesTest {
     }
     
     @Test
-    public void testSetDeleteGetExtensions() throws ServicesException
+    public void testSetDeleteGetExtensions() throws ServicesException, SQLException
     {
         DbGroup dbGroup1 = new DbGroup(_asgnA, "The Group", ImmutableSet.<Student>of());
         DbGroup dbGroup2 = new DbGroup(_asgnA, "Another Group", ImmutableSet.<Student>of());
-        _dataServices.addGroups(ImmutableSet.of(dbGroup1, dbGroup2));
+        _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
         Set<Group> groups = _dataServices.getGroups(_asgnA);
         

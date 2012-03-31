@@ -142,18 +142,21 @@ public interface Database
     public Set<DbGroup> getGroups() throws SQLException;
     
     /**
-     * Adds a Set of groups to the database. A SQLException will be thrown if 
-     * any group to be added has the same name as a group that already exists 
-     * for that assignment.  A CakehatDBIOException will be thrown if any member 
-     * of any group to be added is already in a group for that assignment.  In 
-     * either case, no groups will have been added to the database.
+     * Updates the groups tables in the database to match the given Set of DbGroup objects.  Any DbGroup that has a null
+     * ID will be added, and any DbGroup that has a non-null ID will be updated, which includes updating its list of
+     * students.  Any removals of students from groups will be done before any additions of students to groups.  A
+     * SQLException will be thrown if a student to be added to a group is still a member of some group in the database
+     * for the same assignment after all removals have been performed.  A SQLException will also be thrown if any group
+     * to be added has the  same name as a group that already exists for that assignment.  This means that a single
+     * putGroups(...) call cannot be used to swap the names of groups.  In either case, no changes will have been made
+     * to the database.
      * 
      * @param groups
      */
-    public void addGroups(Set<DbGroup> groups) throws SQLException, CakeHatDBIOException;
+    public void putGroups(Set<DbGroup> groups) throws SQLException;
 
     /**
-     * Returns an ImmutableSet containing the IDs of all groups that have been 
+     * Returns an ImmutableSet containing the DbGroup object for each group that has been 
      * created for the assignment with the given ID.  If no groups have yet been
      * created for the assignment or there is no assignment with the given 
      * asgnID, an empty Set will be returned.
@@ -161,16 +164,16 @@ public interface Database
      * @param asgnID
      * @return
      */
-    public Set<Integer> getGroups(int asgnID) throws SQLException;
-
+    public Set<DbGroup> getGroups(int asgnID) throws SQLException;
+    
     /**
-     * Removes from the database all groups that have been created for the assignment
-     * with the given ID.  If no groups have yet been created for the assignment,
-     * this method has no effect.
+     * Removes the given DbGroups from the database.  If any of the given DbGroups does not correspond to a group in the
+     * database, it will be ignored.
      * 
-     * @param asgnID
+     * @param groups
+     * @throws SQLException 
      */
-    public void removeGroups(int asgnID) throws SQLException;
+    public void removeGroups(Set<DbGroup> groups) throws SQLException;
     
     /**
      * Indicates whether all Parts corresponding to the part IDs in the given

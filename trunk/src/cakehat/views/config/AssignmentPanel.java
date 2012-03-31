@@ -532,7 +532,7 @@ class AssignmentPanel extends JPanel
                             public void dbCall() throws SQLException
                             {
                                 Allocator.getDatabase().putAssignments(ImmutableSet.of(_asgn));
-                                Allocator.getDatabase().removeGroups(_asgn.getId());
+                                Allocator.getDatabase().removeGroups(Allocator.getDatabase().getGroups(_asgn.getId()));
                             }
 
                             @Override
