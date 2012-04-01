@@ -111,12 +111,34 @@ public class CakehatMain
                     {
                         try
                         {
-                            Allocator.getGradingServices().makeUserWorkspace();
+                            Allocator.getFileSystemServices().makeUserWorkspace();
                         }
                         catch(ServicesException e)
                         {
                             throw new CakehatException("Unable to create user workspace directory", e);
                         }
+                    }
+                    
+                    if(_runMode.backupDatabaseOnShutdown())
+                    {
+                        Runtime.getRuntime().addShutdownHook(new Thread()
+                        {
+                            public void run()
+                            {
+                                try
+                                {
+                                    Allocator.getFileSystemServices().makeDatabaseBackup();
+                                }
+                                catch(ServicesException e)
+                                {
+                                    //Print the failure to the terminal - there's no opportunity during a shutdown
+                                    //hook to show the ErrorView (the UI thread is not necessarily running anymore)
+                                    System.err.println("Unable to backup database");
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        
                     }
 
                     //Creating the ArrayList is necessary because the list created by Arrays.asList(...) is immutable

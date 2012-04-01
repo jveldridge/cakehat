@@ -16,23 +16,26 @@ import java.util.Set;
  */
 public enum CakehatRunMode
 {
-    GRADER(     "grader",     true,  false, true),
-    ADMIN(      "admin",      true,  true,  true),
-    CONFIG(     "config",     true,  true,  false),
-    ENTER_GRADE("enterGrade", false, false, false),
-    UNKNOWN(    null,         false, false, false);
+    GRADER(     "grader",     true,  false, true,  false),
+    ADMIN(      "admin",      true,  true,  true,  true),
+    CONFIG(     "config",     true,  true,  false, true),
+    ENTER_GRADE("enterGrade", false, false, false, false),
+    UNKNOWN(    null,         false, false, false, false);
 
     private final String _terminalFlag;
     private final boolean _hasGUI;
     private final boolean _requiresAdmin;
     private final boolean _requiresWorkspaceDir;
+    private final boolean _backupDatabaseOnShutdown;
 
-    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin, boolean requiresWorkspaceDir)
+    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin, boolean requiresWorkspaceDir,
+            boolean backupDatabaseOnShutdown)
     {
         _terminalFlag = terminalFlag;
         _hasGUI = hasGUI;
         _requiresAdmin = requiresAdmin;
         _requiresWorkspaceDir = requiresWorkspaceDir;
+        _backupDatabaseOnShutdown = backupDatabaseOnShutdown;
     }
     
     boolean hasGUI()
@@ -48,6 +51,11 @@ public enum CakehatRunMode
     boolean requiresWorkspaceDir()
     {
         return _requiresWorkspaceDir;
+    }
+    
+    boolean backupDatabaseOnShutdown()
+    {
+        return _backupDatabaseOnShutdown;
     }
     
     static Set<CakehatRunMode> getValidModes()

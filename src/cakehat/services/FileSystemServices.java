@@ -56,4 +56,23 @@ public interface FileSystemServices
      */
     public List<File> copy(File src, File dst, OverwriteMode overwrite,
             boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException;
+    
+    /**
+     * Makes the user's workspace as specified by {@link PathServices#getUserWorkspace()}. If the workspace already
+     * exists, it will attempt to delete it, but if it does not succeed at this it will fail silently.
+     * <br/><br/>
+     * An attempt will be made to remove the user's workspace upon JVM shutdown; however, this may fail silently if
+     * there are issues with NFS.
+     *
+     * @throws ServicesException if unable to create directory
+     */
+    public void makeUserWorkspace() throws ServicesException;
+    
+    /**
+     * Attempts to make a backup of the database. The backup will be created in the directory returned by
+     * {@link PathServices#getDatabaseBackupDir()}. It will be named "database_backup_<current time millis>.db".
+     * 
+     * @throws ServicesException 
+     */
+    public void makeDatabaseBackup() throws ServicesException;
 }

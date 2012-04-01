@@ -76,6 +76,8 @@ import support.ui.SelectionListener.SelectionAction;
 class AssignmentPanel extends JPanel
 {
     private static final String WORKER_TAG = "ASSIGNMENT";
+    
+    private final ConfigManagerView _configManager;
     private final UniqueElementSingleThreadWorker _worker;
     
     private final DnDList<DbAssignment> _assignmentList;
@@ -89,8 +91,9 @@ class AssignmentPanel extends JPanel
      */
     private final ConcurrentMap<DbAssignment, String> _asgnDisplayName = new ConcurrentHashMap<DbAssignment, String>();
     
-    public AssignmentPanel(UniqueElementSingleThreadWorker worker)
+    public AssignmentPanel(ConfigManagerView configManager, UniqueElementSingleThreadWorker worker)
     {
+        _configManager = configManager;
         _worker = worker;
         
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -246,7 +249,7 @@ class AssignmentPanel extends JPanel
             {
                 final DbAssignment asgn = _assignmentList.getSelectedValue();
                 
-                boolean proceed = ModalDialog.showConfirmation("Delete Assignment",
+                boolean proceed = ModalDialog.showConfirmation(_configManager, "Delete Assignment",
                         "Deleting assignment " + asgn.getName() + " will delete all associated grades, " +
                         "extensions, exemptions, and groups.",
                         "Delete", "Cancel");
@@ -519,7 +522,7 @@ class AssignmentPanel extends JPanel
                 {
                     boolean selected = _hasGroupsCheckBox.isSelected();
                     
-                    boolean proceed = ModalDialog.showConfirmation("Change Groups",
+                    boolean proceed = ModalDialog.showConfirmation(_configManager, "Change Groups",
                             "Changing whether this assignment has groups will delete all grades, extensions, and " +
                             "exemptions for this assignment.",
                             "Change", "Cancel");
@@ -538,7 +541,7 @@ class AssignmentPanel extends JPanel
                             @Override
                             public String dbFailureMessage()
                             {
-                                throw new UnsupportedOperationException("Not supported yet.");
+                                return "Unable to change whether assignment " + _asgn.getName() + " has groups";
                             }
                         });
                     }
@@ -860,7 +863,7 @@ class AssignmentPanel extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent ae)
                 {
-                    boolean proceed = ModalDialog.showConfirmation("Delete Gradable Event",
+                    boolean proceed = ModalDialog.showConfirmation(_configManager, "Delete Gradable Event",
                             "Deleting this Gradable Event will delete all grades, extensions and exemptions for this " +
                             "Gradable Event.", "Delete", "Cancel");
                     
@@ -1783,7 +1786,7 @@ class AssignmentPanel extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent ae)
                 {
-                    boolean proceed = ModalDialog.showConfirmation("Delete Part",
+                    boolean proceed = ModalDialog.showConfirmation(_configManager, "Delete Part",
                             "Deleting this Part will delete all grades and distributions for this Part",
                             "Delete", "Cancel");
                     

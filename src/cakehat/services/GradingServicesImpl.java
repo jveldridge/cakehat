@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -118,57 +117,6 @@ public class GradingServicesImpl implements GradingServices
         
         return occurrenceDates.build();
     }
-    
-    @Override
-    public void makeUserWorkspace() throws ServicesException
-    {
-        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
-
-        //If the workspace already exists, attempt to delete it
-        if(workspace.exists())
-        {
-            try
-            {
-                Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(workspace));
-            }
-            //Do not do anything if this fails, because it will almost certainly
-            //be due to NFS (networked file system) issues about which nothing
-            //can be done
-            catch(IOException e) { }
-        }
-
-        //Create the workspace
-        try
-        {
-            Allocator.getFileSystemServices().makeDirectory(workspace);
-        }
-        catch(ServicesException e)
-        {
-            throw new ServicesException("Unable to create user's workspace: " +
-                    workspace.getAbsolutePath(), e);
-        }
-        
-        //Due to NFS (networked file system) behavior, the workspace might not
-        //always be succesfully deleted - there is NOTHING that can be done
-        //about this, even 'rm -rf' will fail in these situations
-        Allocator.getFileSystemUtilities().deleteFileOnExit(workspace);
-    }
-    
-    @Override
-    public void makeDatabaseBackup() throws ServicesException
-    {
-        String backupFileName =  "database_backup_" + System.currentTimeMillis() + ".db";
-        File backupFile = new File(Allocator.getPathServices().getDatabaseBackupDir(), backupFileName);
-        try
-        {
-            Allocator.getFileSystemServices().copy(Allocator.getPathServices().getDatabaseFile(), backupFile,
-                    OverwriteMode.FAIL_ON_EXISTING, false, FileCopyPermissions.READ_WRITE);
-        }
-        catch(FileCopyingException ex)
-        {
-            throw new ServicesException("Unable to make database backup.", ex);
-        }
-    }
 
     private static final List<CITPrinter> NORMALLY_ALLOWED_PRINTERS =
             Arrays.asList(CITPrinter.bw3, CITPrinter.bw4, CITPrinter.bw5);
@@ -211,31 +159,27 @@ public class GradingServicesImpl implements GradingServices
 
         Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.PRINTER);
 
-        return (CITPrinter) JOptionPane.showInputDialog(new JFrame(), message,
-                "Select Printer", JOptionPane.PLAIN_MESSAGE, icon,
-                printerChoices, DEFAULT_PRINTER);
+        return (CITPrinter) JOptionPane.showInputDialog(null, message,
+                "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, DEFAULT_PRINTER);
     }
 
-    @Override
-    public boolean isOkToDistribute(Group group, TA ta) throws ServicesException {
-        if (ta == null) {
-            return true;
-        }
-        
-        Collection<Student> blacklist = Allocator.getDataServices().getBlacklist(ta);
-
-        if (Allocator.getGeneralUtilities().containsAny(blacklist, group.getMembers())) {
-            int shouldContinue = JOptionPane.showConfirmDialog(null, "A member of group " + group + " is on TA "
-                                                    + ta.getLogin() + "'s blacklist.  Continue?",
-                                                    "Distribute Blacklisted Student?",
-                                                    JOptionPane.YES_NO_OPTION);
-            return (shouldContinue == JOptionPane.YES_OPTION);
+    public boolean isOkToDistribute(Group group, TA ta) throws ServicesException
+    {
+        boolean distribute = true;
+        if(ta != null)
+        {
+            Collection<Student> blacklist = Allocator.getDataServices().getBlacklist(ta);
+            if(Allocator.getGeneralUtilities().containsAny(blacklist, group.getMembers()))
+            {
+                distribute = ModalDialog.showConfirmation(null, "Distribute Blacklisted Student?",
+                    "A member of group " + group + " is on TA " + ta.getLogin() + "'s blacklist.",
+                    "Distribute", "Cancel");
+            }
         }
 
-        return true;
+        return distribute;
     }
-
-    @Override
+    
     public boolean isSomeGroupMemberBlacklisted(Group group, Map<TA, Collection<Student>> blacklists) throws ServicesException {
         for (TA ta : blacklists.keySet()) {
             Collection<Student> blackList = blacklists.get(ta);
@@ -291,8 +235,8 @@ public class GradingServicesImpl implements GradingServices
                 warnMsg.append(" - ").append(group).append('\n');
             }
             
-            boolean proceed  = ModalDialog.showConfirmation("Non-distributable groups", warnMsg.toString(), "Proceed",
-                                                            "Cancel");
+            boolean proceed  = ModalDialog.showConfirmation(null, "Non-distributable groups", warnMsg.toString(),
+                    "Proceed", "Cancel");
             if (!proceed) {
                 return null;
             }
@@ -325,7 +269,8 @@ public class GradingServicesImpl implements GradingServices
             }
             warnMsg.append("They will not be available for distribution.");
             
-            boolean proceed = ModalDialog.showConfirmation("Unexpected Handins", warnMsg.toString(), "Proceed", "Cancel");
+            boolean proceed = ModalDialog.showConfirmation(null, "Unexpected Handins", warnMsg.toString(),
+                    "Proceed", "Cancel");
             if (!proceed) {
                 return null;
             }
@@ -591,13 +536,13 @@ public class GradingServicesImpl implements GradingServices
         }
         else if(emailStatus == EmailAccountStatus.NOT_CONFIGURED)
         {
-            ModalDialog.showMessage("Email Unavailable", "Email has not been configured by your course");
+            ModalDialog.showMessage(null, "Email Unavailable", "Email has not been configured by your course");
         }
         else
         {
             Map<Student, File> grdFiles = generateGRDFiles(asgn, groups);
         
-            boolean proceed = ModalDialog.showConfirmation("Email Grading Sheets",
+            boolean proceed = ModalDialog.showConfirmation(null, "Email Grading Sheets",
                     "Each student will be sent an email with their grading sheet attached, do you wish to proceed?",
                     "Email Students", "Cancel");
             if(proceed)
@@ -688,7 +633,8 @@ public class GradingServicesImpl implements GradingServices
             builder.append(groupsOrStudents);
             builder.append(" will not be included, do you wish to proceed?");
             
-            proceed = ModalDialog.showConfirmation("Some Grades Not Submitted", builder.toString(), "Proceed", "Cancel");
+            proceed = ModalDialog.showConfirmation(null, "Some Grades Not Submitted", builder.toString(),
+                    "Proceed", "Cancel");
         }
         
         //Generate GRD files

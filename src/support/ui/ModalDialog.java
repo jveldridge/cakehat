@@ -1,9 +1,10 @@
 package support.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,12 +38,12 @@ public class ModalDialog
      * 
      * @return {@code true} if {@code trueChoice} was selected, {@code false} otherwise.
      */
-    public static boolean showConfirmation(String title, String message, String trueChoice, String falseChoice)
+    public static boolean showConfirmation(Window owner, String title, String message, String trueChoice, String falseChoice)
     {
         //Use this is a holder for the value to reference from the action listener a final variable is needed
         final AtomicBoolean choice = new AtomicBoolean(false);
         
-        final JDialog dialog = createDialog(title, message);
+        final JDialog dialog = createDialog(owner, title, message);
         
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
         JButton trueButton = new JButton(trueChoice);
@@ -72,14 +73,14 @@ public class ModalDialog
         return choice.get();
     }
     
-    public static void showMessage(String title, String message)
+    public static void showMessage(Window owner, String title, String message)
     {
-        showMessage(title, message, "OK");
+        showMessage(owner, title, message, "OK");
     }
     
-    public static void showMessage(String title, String message, String buttonText)   
+    public static void showMessage(Window owner, String title, String message, String buttonText)   
     {
-        final JDialog dialog = createDialog(title, message);
+        final JDialog dialog = createDialog(owner, title, message);
         
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
         JButton dismissButton = new JButton(buttonText);
@@ -96,9 +97,10 @@ public class ModalDialog
         showDialog(dialog);
     }
     
-    private static JDialog createDialog(String title, String message)
+    private static JDialog createDialog(Window owner, String title, String message)
     {
-        JDialog dialog = new JDialog((Frame) null, title, true);
+        JDialog dialog = new JDialog(owner, title, ModalityType.APPLICATION_MODAL);
+        
         dialog.setLayout(new BorderLayout(0, 0));
         
         JPanel messagePanel = new JPanel(new BorderLayout(0, 0));
@@ -134,24 +136,9 @@ public class ModalDialog
         dialog.setMinimumSize(new Dimension(600, 100));
         dialog.setSize(new Dimension(600, 200));
         dialog.setPreferredSize(new Dimension(600, 200));
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setAlwaysOnTop(true);
-        dialog.setLocationRelativeTo(getFocusedFrame());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setLocationRelativeTo(dialog.getOwner());
         dialog.setVisible(true);
-    }
-    
-    private static Frame getFocusedFrame()
-    {
-        Frame focusedFrame = null;
-        for(Frame frame : Frame.getFrames())
-        {
-            if(frame.isFocused())
-            {
-                focusedFrame = frame;
-                break;
-            }
-        }
-        
-        return focusedFrame;
     }
 }

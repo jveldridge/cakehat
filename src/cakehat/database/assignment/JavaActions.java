@@ -31,17 +31,16 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import support.ui.DocumentAdapter;
 import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
 import support.utils.ExternalProcessesUtilities;
@@ -136,7 +135,7 @@ class JavaActions implements ActionProvider
                         //Validate
                         if(!source.exists())
                         {
-                            ModalDialog.showMessage("Does not exist",
+                            ModalDialog.showMessage(null, "Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
                             return;
@@ -165,7 +164,7 @@ class JavaActions implements ActionProvider
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null)
                             {
-                                ModalDialog.showMessage("Cannot copy test file",
+                                ModalDialog.showMessage(null, "Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in " +
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
@@ -201,7 +200,7 @@ class JavaActions implements ActionProvider
                         //If none was found, inform the grader
                         if(mainToRun == null)
                         {
-                            ModalDialog.showMessage("Main not present",
+                            ModalDialog.showMessage(null, "Main not present",
                                     "The specified main class is not present.\n" +
                                     "Specified main: " + mainName);
                         }
@@ -489,7 +488,7 @@ class JavaActions implements ActionProvider
 
                         if(mainClasses.isEmpty())
                         {
-                            JOptionPane.showMessageDialog(null, "No main class is available to run.");
+                            ModalDialog.showMessage(null, "Not Available", "No main class is available to run.");
                         }
                         else
                         {
@@ -663,7 +662,7 @@ class JavaActions implements ActionProvider
                     msg += "\n";
                 }
             }
-            ModalDialog.showMessage("Compilation Failed", msg);
+            ModalDialog.showMessage(null, "Compilation Failed", msg);
         }
 
         try
@@ -772,7 +771,8 @@ class JavaActions implements ActionProvider
          */
         public ExecuteDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
         {
-            this.setTitle("Run Options");
+            super(null, "Run Options", ModalityType.APPLICATION_MODAL);
+            
             this.getContentPane().setLayout(new BorderLayout(0, 0));
 
             // Determine the number of elements that will be displayed
@@ -812,11 +812,13 @@ class JavaActions implements ActionProvider
                 _runArgsField = new JTextField();
                 
                 //Validate input
-                _runArgsField.getDocument().addDocumentListener(new DocumentListener()
+                _runArgsField.getDocument().addDocumentListener(new DocumentAdapter()
                 {
-                    public void insertUpdate(DocumentEvent de) { validateInput(); }
-                    public void removeUpdate(DocumentEvent de) { validateInput(); }
-                    public void changedUpdate(DocumentEvent de){ validateInput(); }
+                    @Override
+                    public void modificationOccurred(DocumentEvent de)
+                    {
+                        validateInput();
+                    }
                 });
                 //If enter key is pressed, close window if argument is valid
                 _runArgsField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "newline");
@@ -870,7 +872,6 @@ class JavaActions implements ActionProvider
             //Padding below the buttons
             this.getContentPane().add(Box.createRigidArea(new Dimension(TOTAL_WIDTH, PADDING)), BorderLayout.SOUTH);
 
-            this.setModal(true);
             this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             this.pack();
             this.setResizable(false);

@@ -16,10 +16,11 @@ import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -39,9 +40,8 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -55,15 +55,16 @@ import javax.swing.event.ListSelectionListener;
 import support.ui.DescriptionProvider;
 import support.ui.GenericJList;
 import support.ui.FormattedLabel;
+import support.ui.ModalDialog;
 import support.ui.PartialDescriptionProvider;
 
 /**
- * Provides an interface to allow administrators to manually distribute
- * students to TAs and reassign already distributed students.
+ * Provides an interface to allow administrators to manually distribute students to TAs and reassign already distributed
+ * students.
  *
  * @author jeldridg
  */
-class ManualDistributorView extends JFrame {
+class ManualDistributorView extends JDialog {
     
     private static final int LIST_HEIGHT = 300;
     private static final int LIST_WIDTH = 130;
@@ -93,8 +94,8 @@ class ManualDistributorView extends JFrame {
     private Set<Group> _groupsWithHandins;
     private Set<Group> _unassignedGroups;
     
-    public ManualDistributorView(Part part, Component parent) {
-        super("Manual Distributor : " + part.getFullDisplayName());
+    public ManualDistributorView(Part part, Window owner) {
+        super(owner, "Manual Distributor : " + part.getFullDisplayName(), ModalityType.MODELESS);
         
         _part = part;
 
@@ -144,7 +145,7 @@ class ManualDistributorView extends JFrame {
             this.pack();
             this.setResizable(false);
             this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            this.setLocationRelativeTo(parent);
+            this.setLocationRelativeTo(owner);
             this.setVisible(true);
 
             _studentFilterBox.requestFocus();
@@ -609,7 +610,7 @@ class ManualDistributorView extends JFrame {
                     + "without violating the blacklist.\nIf you would like to "
                     + "override the blacklist, please manually select students "
                     + "to be distributed.\n";
-            JOptionPane.showMessageDialog(ManualDistributorView.this, errMsg, "Distribution Error", JOptionPane.ERROR_MESSAGE);
+            ModalDialog.showMessage(this, "Distribution Error", errMsg);
             return;
         }
 

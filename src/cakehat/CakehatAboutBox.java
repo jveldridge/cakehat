@@ -1,23 +1,23 @@
 package cakehat;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * The about box displays information about which release of cakehat this is
- * and gives credit to the developers who have worked on it.
+ * The about box displays information about which release of cakehat this is and gives credit to the developers who have
+ * worked on it.
  *
  * @author jak2 (Joshua Kaplan)
  */
-public class CakehatAboutBox extends JFrame
+public class CakehatAboutBox extends JDialog
 {
     private static final int PANEL_HEIGHT = 200;
     private static final Dimension IMAGE_PANEL_SIZE = new Dimension(160, PANEL_HEIGHT);
@@ -26,9 +26,9 @@ public class CakehatAboutBox extends JFrame
 
     private static CakehatAboutBox _currentlyDisplayedBox;
 
-    private CakehatAboutBox()
+    private CakehatAboutBox(Window owner)
     {
-        super("About cakehat");
+        super(owner, "About cakehat", ModalityType.MODELESS);
 
         // Overall
         JPanel panel = new JPanel(new BorderLayout());
@@ -59,6 +59,7 @@ public class CakehatAboutBox extends JFrame
         panel.add(infoPanel, BorderLayout.EAST);
 
         // Display
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.pack();
         this.setResizable(false);
 
@@ -69,20 +70,20 @@ public class CakehatAboutBox extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 _currentlyDisplayedBox = null;
-                CakehatAboutBox.this.dispose();
             }
         });
     }
 
     /**
-     * Displays the about box. If the about box is already open it will be
-     * brought to the front and positioned relative to <code>relativeTo</code>.
-     *
-     * @param relativeTo The component the about box will be displayed relative
-     * to. null may be passed in, in which case the about box is centered on the
-     * screen.
+     * Displays the about box.  If the about box is not already open it will be created, owned to the provided
+     * {@code owner} and positioned relative to the {@code owner}. If the about box is already open it will be brought
+     * to the front and positioned relative to {@code owner} but its ownership will not change.
+     * 
+     * 
+     * @param owner The window the about box will be displayed relative to and potentially owned to. {@code null} may be
+     * passed in, in which case the about box is centered on the screen and has no owner.
      */
-    public static void displayRelativeTo(Component relativeTo)
+    public static void display(Window owner)
     {
         if(_currentlyDisplayedBox != null)
         {
@@ -90,9 +91,9 @@ public class CakehatAboutBox extends JFrame
         }
         else
         {
-            _currentlyDisplayedBox = new CakehatAboutBox();
+            _currentlyDisplayedBox = new CakehatAboutBox(owner);
         }
-        _currentlyDisplayedBox.setLocationRelativeTo(relativeTo);
+        _currentlyDisplayedBox.setLocationRelativeTo(owner);
         _currentlyDisplayedBox.setVisible(true);
     }
 }

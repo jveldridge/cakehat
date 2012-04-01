@@ -1,6 +1,7 @@
 package cakehat.database;
 
 import cakehat.Allocator;
+import cakehat.InitializationException;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
 import com.google.common.collect.HashMultimap;
@@ -77,16 +78,6 @@ public class DatabaseImpl implements Database
             try
             {
                 Allocator.getFileSystemServices().makeDirectory(databaseFile.getParentFile());
-            }
-            catch(ServicesException ex)
-            {
-                System.err.println("cakehat is unable to create a database. Underlying reason: ");
-                ex.printStackTrace();
-                System.exit(-1);
-            }
-
-            try
-            {
                 databaseFile.createNewFile();
                 Allocator.getFileSystemServices().sanitize(databaseFile);
 
@@ -94,21 +85,15 @@ public class DatabaseImpl implements Database
             }
             catch(SQLException ex)
             {
-                System.err.println("cakehat is unable to create a database. Underlying reason: ");
-                ex.printStackTrace();
-                System.exit(-1);
+                throw new InitializationException("cakehat is unable to create a database", ex);
             }
             catch(ServicesException ex)
             {
-                System.err.println("cakehat is unable to create a database. Underlying reason: ");
-                ex.printStackTrace();
-                System.exit(-1);
+                throw new InitializationException("cakehat is unable to create a database", ex);
             }
             catch(IOException ex)
             {
-                System.err.println("cakehat is unable to create a database. Underlying reason: ");
-                ex.printStackTrace();
-                System.exit(-1);
+                throw new InitializationException("cakehat is unable to create a database", ex);
             }
         }
     }

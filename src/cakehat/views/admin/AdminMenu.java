@@ -51,7 +51,7 @@ class AdminMenu extends JMenuBar
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                System.exit(0);
+                _adminView.dispose();
             }
         });
         fileMenu.add(quitItem);
@@ -67,7 +67,7 @@ class AdminMenu extends JMenuBar
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                GradeReportView.displayRelativeTo(_adminView);
+                GradeReportView.display(_adminView);
             }
         });
         gradesMenu.add(gradesReportItem);
@@ -83,7 +83,7 @@ class AdminMenu extends JMenuBar
                 chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
                 if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
                 {
-                    new ProgressDialog(_adminView, _adminView, "CSV Export",
+                    new ProgressDialog(_adminView, "CSV Export",
                             "<html><center><h2>Exporting student grades</h2></center></html>",
                             new CSVExportTask(chooser.getSelectedFile()));
                 }
@@ -102,7 +102,7 @@ class AdminMenu extends JMenuBar
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                CakehatAboutBox.displayRelativeTo(_adminView);
+                CakehatAboutBox.display(_adminView);
             }
         });
         helpMenu.add(aboutItem); 

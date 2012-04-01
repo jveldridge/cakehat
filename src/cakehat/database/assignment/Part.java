@@ -11,6 +11,7 @@ import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.TextViewerView;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JOptionPane;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import support.ui.ModalDialog;
@@ -404,9 +404,7 @@ public class Part implements Comparable<Part>
             }
             message += "\n\nDo you want to print the " + groupsOrStudents + " with handins?";
 
-            int result = JOptionPane.showConfirmDialog(null, message, "Missing Handins", JOptionPane.YES_NO_OPTION);
-
-            if(result == JOptionPane.YES_OPTION)
+            if(ModalDialog.showConfirmation(null, "Missing Handins", message, "Print", "Cancel"))
             {
                 ArrayList<Group> groupsWithHandins = new ArrayList<Group>(groups);
                 groupsWithHandins.removeAll(groupsWithMissingHandins);
@@ -522,7 +520,7 @@ public class Part implements Comparable<Part>
      *
      * @param group
      */
-    public void viewReadme(Group group) throws ActionException, MissingHandinException
+    public void viewReadme(Window owner, Group group) throws ActionException, MissingHandinException
     {
         Collection<File> readmes = this.getReadmes(group);
 
@@ -534,7 +532,7 @@ public class Part implements Comparable<Part>
             //If a text file
             if(!name.contains(".") || name.endsWith(".txt"))
             {
-                new TextViewerView(readme, group.getName() +"'s Readme");
+                new TextViewerView(owner, readme, group.getName() +"'s Readme");
             }
             //If a PDF
             else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
@@ -553,8 +551,8 @@ public class Part implements Comparable<Part>
             //Otherwise, the type is not supported, inform the grader
             else
             {
-                ModalDialog.showMessage("Cannot open README", "Encountered README that cannot be opened by cakehat:\n" +
-                        readme.getAbsolutePath());
+                ModalDialog.showMessage(owner, "Cannot open README",
+                        "Encountered README that cannot be opened by cakehat:\n" + readme.getAbsolutePath());
             }
         }
     }
@@ -686,20 +684,23 @@ public class Part implements Comparable<Part>
      *
      * @throws FileNotFoundException if no grading guide was specified or the specified file does not exist
      */
-    public void viewGradingGuide() throws FileNotFoundException
+    public void viewGradingGuide(Window owner) throws FileNotFoundException
     {
         if(_gradingGuide == null)
         {
             throw new FileNotFoundException("No grading guide file specified for " + this.getFullDisplayName());
         }
-        if(!_gradingGuide.exists())
+        
+        if(_gradingGuide.exists() && _gradingGuide.canRead())
         {
-            throw new FileNotFoundException("Specified grading guide for " + this.getFullDisplayName() +
-                    " does not exist.\n" +
+            new TextViewerView(owner, _gradingGuide, this.getFullDisplayName() + " Grading Guide");
+        }
+        else
+        {
+            ModalDialog.showMessage(owner, "Cannot Open", "Specified grading guide for " +
+                    this.getFullDisplayName() + " does not exist or you do not have permission to read the file.\n" +
                     "Specified file: " + _gradingGuide.getAbsolutePath());
         }
-
-        new TextViewerView(_gradingGuide, this.getFullDisplayName() + " Grading Guide");
     }
 
     /**
@@ -812,7 +813,7 @@ public class Part implements Comparable<Part>
                          "files and directories will now be included for this part so that you can find files that " +
                          "may be misnamed or placed in the wrong directory.\n\n" +
                          "The missing files and/or directories are:\n" + failureReasons;
-            ModalDialog.showMessage("Not Found", msg);
+            ModalDialog.showMessage(null, "Not Found", msg);
         }
     }
     
