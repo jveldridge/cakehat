@@ -486,13 +486,13 @@ public class DataServicesImpl implements DataServices {
                 }
             }
         }
-        
+
         ImmutableSet.Builder<Group> builder = ImmutableSet.builder();
         
         for (DbGroup group : dbGroups) {
             builder.add(this.groupIdToGroup(group.getId()));
         }
-        
+
         return builder.build();
     }
     
