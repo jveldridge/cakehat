@@ -119,8 +119,9 @@ public interface GradingServices
     public CITPrinter getPrinter(String message);
 
     /**
-     * Returns whether or not it is OK to distribute the given group to the given
-     * TA.  It is always OK to distribute the group if no member is on the TA's blacklist.
+     * Returns whether or not it is OK to distribute the given group to the given TA.  It is always OK to distribute the
+     * group if no member is on the TA's blacklist, or if the given TA is null (meaning that the group is being
+     * unassigned from another TA).
      * 
      * If a group member is on the TA's blacklist, a dialog will be shown asking
      * the user whether or not to continue.  If the user selects the continue option,

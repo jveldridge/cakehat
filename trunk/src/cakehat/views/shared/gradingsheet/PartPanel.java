@@ -120,6 +120,7 @@ abstract class PartPanel extends GradingSheetPanel
                     };
                 });
                 assignedComboBox.setPreferredSize(new Dimension(200, 20));
+                assignedComboBox.setGenericSelectedItem(assignedTo);
                 assignedComboBox.addSelectionListener(new SelectionListener<TA>()
                 {
                     @Override
@@ -127,7 +128,14 @@ abstract class PartPanel extends GradingSheetPanel
                     {   
                         try
                         {
-                            Allocator.getDataServices().setGrader(_part, _group, newValue);
+                            if (Allocator.getGradingServices().isOkToDistribute(_group, newValue))
+                            {
+                                Allocator.getDataServices().setGrader(_part, _group, newValue);
+                            }
+                            else
+                            {
+                                action.cancel();
+                            }
                         }
                         catch(ServicesException ex)
                         {
@@ -136,7 +144,6 @@ abstract class PartPanel extends GradingSheetPanel
                         }
                     }
                 });
-                assignedComboBox.setGenericSelectedItem(assignedTo);
                 assignedPanel.add(assignedComboBox);
             }
             else
