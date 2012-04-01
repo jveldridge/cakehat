@@ -14,7 +14,6 @@ import java.util.Set;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import support.ui.ModalDialog;
 
 /**
  *
@@ -144,12 +143,12 @@ public class EmailManagerImpl implements EmailManager
         }
         else if(_status == EmailAccountStatus.NOT_CONFIGURED)
         {
-            ModalDialog.showMessage("Email Unavailable", "Email has not been configured by your course");
+            throw new MessagingException("Email has not been configured by your course");
         }
         else if(_status == EmailAccountStatus.INITIALIZATION_ERROR)
         {
-            ModalDialog.showMessage("Email Unavailable", "An error occurred while initializing the email account, " +
-                    "cakehat is unable to send email. Please try restarting cakehat.");
+            throw new MessagingException("An error occurred while initializing the email account, cakehat is unable " +
+                    "to send email. Please try restarting cakehat.");
         }
         else
         {

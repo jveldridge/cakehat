@@ -1,12 +1,10 @@
 package support.utils;
 
 import java.awt.FontMetrics;
-import java.awt.Frame;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -14,21 +12,6 @@ import javax.swing.SwingConstants;
 
 public class GeneralUtilitiesImpl implements GeneralUtilities
 {
-    public Frame getFocusedFrame()
-    {
-        Frame focusedFrame = null;
-        for(Frame frame : Frame.getFrames())
-        {
-            if(frame.isFocused())
-            {
-                focusedFrame = frame;
-                break;
-            }
-        }
-        
-        return focusedFrame;
-    }
-    
     public String doubleToString(double value)
     {
         double roundedVal = round(value, 2);
@@ -83,13 +66,6 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         }
     }
 
-    /**
-     * The code inside of the runnable is run with the error stream redirected
-     * such that all calls on {@link System#err} are silenced. The error stream
-     * is restored after <code>toRun</code> is run.
-     *
-     * @param toRun
-     */
     public void runWithSilencedError(Runnable toRun)
     {
         PrintStream originalErr = System.err;

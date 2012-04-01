@@ -27,12 +27,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import matlabcontrol.MatlabConnectionException;
 import matlabcontrol.MatlabConnectionListener;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.RemoteMatlabProxy;
 import matlabcontrol.RemoteMatlabProxyFactory;
+import support.ui.DocumentAdapter;
 import support.ui.ModalDialog;
 import support.utils.FileCopyingException;
 import support.utils.FileExistsException;
@@ -120,7 +120,7 @@ class MatlabActions implements ActionProvider
                         //Validate
                         if(!source.exists())
                         {
-                            ModalDialog.showMessage("Does not exist",
+                            ModalDialog.showMessage(null, "Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
                             return;
@@ -130,7 +130,7 @@ class MatlabActions implements ActionProvider
                         {
                             if(!source.getName().endsWith(".m"))
                             {
-                                ModalDialog.showMessage("Test file not m-file",
+                                ModalDialog.showMessage(null, "Test file not m-file",
                                         "Cannot perform test because the test file is not an m-file.\n\n" +
                                         "File: " + source.getAbsoluteFile());
                                 return;
@@ -142,7 +142,7 @@ class MatlabActions implements ActionProvider
 
                             if(relativePath == null)
                             {
-                                ModalDialog.showMessage("Property not set",
+                                ModalDialog.showMessage(null, "Property not set",
                                         "Cannot perform test because the " + TEST_FILE_PROPERTY.getName() +
                                         " property was not set. It must be set when copying test files from a " +
                                         "directory.");
@@ -152,14 +152,14 @@ class MatlabActions implements ActionProvider
                             File testFile = new File(source, relativePath);
                             if(!testFile.exists())
                             {
-                                ModalDialog.showMessage("Test file does not exist",
+                                ModalDialog.showMessage(null, "Test file does not exist",
                                         "Cannot perform test because the test file does not exist.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
                                 return;
                             }
                             if(!testFile.isFile() || !testFile.getName().endsWith(".m"))
                             {
-                                ModalDialog.showMessage("Test file not m-file",
+                                ModalDialog.showMessage(null, "Test file not m-file",
                                         "Cannot perform test because the test file is not an m-file.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
                                 return;
@@ -189,7 +189,7 @@ class MatlabActions implements ActionProvider
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null)
                             {
-                                ModalDialog.showMessage("Cannot copy test file",
+                                ModalDialog.showMessage(null, "Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in "+
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
@@ -304,7 +304,7 @@ class MatlabActions implements ActionProvider
                     File demoDir = new File(properties.get(DIRECTORY_PATH_PROPERTY));
                     if(!demoDir.exists())
                     {
-                        ModalDialog.showMessage("Directory does not exist",
+                        ModalDialog.showMessage(null, "Directory does not exist",
                                 "Directory specified by '" + DIRECTORY_PATH_PROPERTY.getName() + "' does not " +
                                 "exist.\n\n" +
                                 "Directory: " + demoDir.getAbsolutePath());
@@ -312,7 +312,7 @@ class MatlabActions implements ActionProvider
                     }
                     if(!demoDir.isDirectory())
                     {
-                        ModalDialog.showMessage("Not a directory",
+                        ModalDialog.showMessage(null, "Not a directory",
                                 "Directory specified by '" + DIRECTORY_PATH_PROPERTY.getName() + "' is not a " +
                                 "directory.\n\n" +
                                 "Directory: " + demoDir.getAbsolutePath());
@@ -331,7 +331,7 @@ class MatlabActions implements ActionProvider
 
                         if(!absolutePath.exists())
                         {
-                            ModalDialog.showMessage("File does not exist",
+                            ModalDialog.showMessage(null, "File does not exist",
                                     "File specified by '" + FILE_PATH_PROPERTY.getName() + "' does not exist.\n\n" +
                                     "File: " + absolutePath.getAbsolutePath());
                             return;
@@ -357,7 +357,7 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalDialog.showMessage("Unable to demo", "There are no m-files to demo.");
+                        ModalDialog.showMessage(null, "Unable to demo", "There are no m-files to demo.");
                     }
                     else
                     {
@@ -426,7 +426,7 @@ class MatlabActions implements ActionProvider
 
                         if(!absolutePath.exists())
                         {
-                            ModalDialog.showMessage("Specified File Unavailable",
+                            ModalDialog.showMessage(null, "Specified File Unavailable",
                                     "Specified file to run does not exist.\n\n" +
                                     "Expected file: " + absolutePath.getAbsolutePath() + "\n\n" +
                                     "You will be asked to select from available m-files.");
@@ -462,7 +462,7 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalDialog.showMessage("Unable to run", "There are no m-files for this part.");
+                        ModalDialog.showMessage(null, "Unable to run", "There are no m-files for this part.");
                     }
                     else
                     {
@@ -655,11 +655,9 @@ class MatlabActions implements ActionProvider
                 evalLabel.setText(evalCmd);
             }
         };
-        argumentsField.getDocument().addDocumentListener(new DocumentListener()
+        argumentsField.getDocument().addDocumentListener(new DocumentAdapter()
         {
-            public void insertUpdate(DocumentEvent de) { updateEval.run(); }
-            public void removeUpdate(DocumentEvent de) { updateEval.run(); }
-            public void changedUpdate(DocumentEvent de){ updateEval.run(); }
+            public void modificationOccurred(DocumentEvent de) { updateEval.run(); }
         });
         functionsComboBox.addActionListener(new ActionListener()
         {
@@ -669,8 +667,7 @@ class MatlabActions implements ActionProvider
 
         Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.GO_NEXT);
         int result = JOptionPane.showConfirmDialog(null, panel,
-                "Run m-file", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE, icon);
+                "Run m-file", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, icon);
         if(result == JOptionPane.OK_OPTION)
         {
             try
@@ -696,7 +693,7 @@ class MatlabActions implements ActionProvider
                 }
                 catch(MatlabInvocationException e)
                 {
-                    ModalDialog.showMessage("Invalid MATLAB Command",
+                    ModalDialog.showMessage(null, "Invalid MATLAB Command",
                             "Invalid MATLAB command, please see MATLAB for more information.");;
                 }
             }

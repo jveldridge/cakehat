@@ -443,7 +443,7 @@ class ActionsPanel extends JPanel
     {
         try
         {
-            _treeSelection.getPart().viewGradingGuide();
+            _treeSelection.getPart().viewGradingGuide(_adminView);
         }
         catch(FileNotFoundException e)
         {
@@ -538,7 +538,7 @@ class ActionsPanel extends JPanel
                 {
                     message += group.getName() + "\n";
                 }
-                proceed = ModalDialog.showConfirmation("Handins Not Present", message, "Print Anyway", "Cancel");
+                proceed = ModalDialog.showConfirmation(_adminView, "Handins Not Present", message, "Print Anyway", "Cancel");
             }
             
             if(proceed)
@@ -563,7 +563,7 @@ class ActionsPanel extends JPanel
     {
         try
         {
-            _treeSelection.getPart().viewReadme(Iterables.get(_selectedGroups, 0));
+            _treeSelection.getPart().viewReadme(_adminView, Iterables.get(_selectedGroups, 0));
         }
         catch(ActionException e)
         {
@@ -611,7 +611,7 @@ class ActionsPanel extends JPanel
 
     private void notifyHandinMissing(MissingHandinException ex)
     {
-        ModalDialog.showMessage("Digital Handin Missing",
+        ModalDialog.showMessage(_adminView, "Digital Handin Missing",
                 "The handin for " + ex.getGroup().getName() + " can no longer be found");
         ex.getPart().getGradableEvent().clearDigitalHandinCache();
         notifySelectionChanged(_treeSelection, _selectedGroups, _selectedStudentsNotInGroups);

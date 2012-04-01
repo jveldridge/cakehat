@@ -18,9 +18,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -45,7 +47,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -79,12 +80,13 @@ class GradeReportView extends JDialog
     private static GradeReportView _currentlyDisplayedView;
     
     /**
-     * Displays this view relative to {@code relativeTo} which may be {@code null}. If this view is already displayed it
-     * will be brought to the front.
+     * Displays this view relative to {@code owner} which may be {@code null}. If this view is already displayed it
+     * will be brought to the front. If the view is not displayed it will be owned to {@code owner}, otherwise ownership
+     * will not change.
      * 
-     * @param relativeTo 
+     * @param owner 
      */
-    static void displayRelativeTo(JFrame relativeTo)
+    static void display(Window owner)
     {
         if(_currentlyDisplayedView != null)
         {
@@ -94,7 +96,7 @@ class GradeReportView extends JDialog
         {
             try
             {
-                _currentlyDisplayedView = new GradeReportView(relativeTo);
+                _currentlyDisplayedView = new GradeReportView(owner);
             }
             catch(IOException ex)
             {
@@ -117,7 +119,7 @@ class GradeReportView extends JDialog
                 }
             });
         }
-        _currentlyDisplayedView.setLocationRelativeTo(relativeTo);
+        _currentlyDisplayedView.setLocationRelativeTo(owner);
         _currentlyDisplayedView.setVisible(true);
     }
     
@@ -138,13 +140,9 @@ class GradeReportView extends JDialog
     private final EmailAddressField _alternateAddressField;
     private final JButton _sendReportsButton;
     
-    private final JFrame _parent;
-    
-    private GradeReportView(JFrame parent) throws ServicesException, IOException
+    private GradeReportView(Window owner) throws ServicesException, IOException
     {
-        super(parent, "Grade Reports");
-        
-        _parent = parent;
+        super(owner, "Grade Reports", ModalityType.MODELESS);
         
         //Load data into thread safe data structures (reports will be sent on a separate thread)
         ImmutableMap.Builder<Assignment, Map<Student, Group>> groupsBuilder = ImmutableMap.builder();
@@ -687,7 +685,7 @@ class GradeReportView extends JDialog
     private void sendReports(String message, List<Student> students, List<Assignment> assignments,
             InternetAddress alternateAddress)
     {
-        new ProgressDialog(_parent, this, "Sending Grade Reports",
+        new ProgressDialog(this, "Sending Grade Reports",
                 "<html><center><h2>Sending student grade reports</h2></center></html>", 
                 new SendReportsTask(students, assignments, message, alternateAddress));
         this.dispose();

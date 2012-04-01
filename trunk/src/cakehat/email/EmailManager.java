@@ -38,11 +38,11 @@ public interface EmailManager
     public EmailAccountStatus getEmailAccountStatus();
     
     /**
-     * Sends an email as HTML if {@link #getEmailAccountStatus()} returns {@link EmailAccountStatus#AVAILABLE}. If
-     * {@link EmailAccountStatus#NOT_CONFIGURED} is returned the user will be shown a modal message dialog that states
-     * that the course has not configured the email account information. If
-     * {@link EmailAccountStatus#INITIALIZATION_ERROR} is returned the user will be shown a modal message dialog that
-     * explains that an error has occurred.
+     * Sends an email as HTML if {@link #getEmailAccountStatus()} returns {@link EmailAccountStatus#AVAILABLE}.
+     * <br/><br/>
+     * If {@link EmailAccountStatus#NOT_CONFIGURED} or {@link EmailAccountStatus#INITIALIZATION_ERROR} is returned an
+     * exception will be thrown. Code that calls this method should first call {@link #getEmailAccountStatus()} to
+     * confirm that sending email is supported.
      *
      * @param from may not be {@code null}
      * @param to may be {@code null}

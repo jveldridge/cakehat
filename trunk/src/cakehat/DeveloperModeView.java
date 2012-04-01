@@ -40,7 +40,7 @@ class DeveloperModeView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                System.exit(0);
+                DeveloperModeView.this.dispose();
             }
         });
         menu.add(menuItem);
@@ -55,7 +55,7 @@ class DeveloperModeView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                CakehatAboutBox.displayRelativeTo(DeveloperModeView.this);
+                CakehatAboutBox.display(DeveloperModeView.this);
             }
         });
         menu.add(menuItem);
@@ -108,7 +108,7 @@ class DeveloperModeView extends JFrame
         this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
     public static void launch(String[] args)

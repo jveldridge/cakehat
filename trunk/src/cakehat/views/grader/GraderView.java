@@ -114,7 +114,7 @@ public class GraderView extends JFrame
         this.createButtonGroups();
 
         //Set up close property
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
         //Retrieve the database information
         this.loadAssignedGrading();
@@ -527,15 +527,7 @@ public class GraderView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                try
-                {
-                    Allocator.getGradingServices().makeDatabaseBackup();
-                }
-                catch(ServicesException ex)
-                {
-                    new ErrorView(ex, "Could not make database backup.");
-                }
-                System.exit(0);
+                GraderView.this.dispose();
             }
         });
         fileMenu.add(quitItem);
@@ -550,7 +542,7 @@ public class GraderView extends JFrame
         {
             public void actionPerformed(ActionEvent ae)
             {
-                CakehatAboutBox.displayRelativeTo(GraderView.this);
+                CakehatAboutBox.display(GraderView.this);
             }
         });
         helpMenu.add(aboutItem);
@@ -957,7 +949,7 @@ public class GraderView extends JFrame
     {
         final Part part = _partList.getSelectedValue();
         final Group group = _groupList.getSelectedValue();
-        GradingSheet gradingSheet = Allocator.getGradingSheetManager().showFrame(part, group, false, false);
+        GradingSheet gradingSheet = Allocator.getGradingSheetManager().showWindow(this, part, group, false, false);
         gradingSheet.addGradingSheetListener(new GradingSheet.GradingSheetListener()
         {
             @Override
@@ -1062,7 +1054,7 @@ public class GraderView extends JFrame
         Group group = _groupList.getSelectedValue();
         try
         {
-            part.viewReadme(group);
+            part.viewReadme(this, group);
         }
         catch(ActionException ex)
         {
@@ -1115,7 +1107,7 @@ public class GraderView extends JFrame
         Part part = _partList.getSelectedValue();
         try
         {
-            part.viewGradingGuide();
+            part.viewGradingGuide(this);
         }
         catch (FileNotFoundException ex)
         {
@@ -1125,7 +1117,7 @@ public class GraderView extends JFrame
 
     private void notifyHandinMissing(MissingHandinException ex)
     {
-        ModalDialog.showMessage("Digital Handin Missing",
+        ModalDialog.showMessage(this, "Digital Handin Missing",
                 "The handin for " + ex.getGroup().getName() + " can no longer be found");
         ex.getPart().getGradableEvent().clearDigitalHandinCache();
         updateButtonStates();

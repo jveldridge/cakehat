@@ -91,7 +91,7 @@ class ApplicationActions implements ActionProvider
 
                         if(!SUPPORTED.contains(application))
                         {
-                            ModalDialog.showMessage("Invalid PDF application",
+                            ModalDialog.showMessage(null, "Invalid PDF application",
                                     "The PDF application specified in the configuration file is not supported: " +
                                     application + ".\n\n" +
                                     "Supported applications: " + SUPPORTED);
@@ -115,7 +115,7 @@ class ApplicationActions implements ActionProvider
 
                     if(pdfFiles.isEmpty())
                     {
-                        ModalDialog.showMessage("No PDF files", "There are no PDF files to open.");
+                        ModalDialog.showMessage(null, "No PDF files", "There are no PDF files to open.");
                         return;
                     }
 
@@ -247,7 +247,7 @@ class ApplicationActions implements ActionProvider
 
                         if(!SUPPORTED.contains(application))
                         {
-                            ModalDialog.showMessage("Invalid PDF application",
+                            ModalDialog.showMessage(null, "Invalid PDF application",
                                     "The text editor specified in the configuration file is not supported: " + 
                                     application + ".\n\n" +
                                     "Supported applications: " + SUPPORTED);
@@ -278,7 +278,7 @@ class ApplicationActions implements ActionProvider
 
                     if(textFiles.isEmpty())
                     {
-                        ModalDialog.showMessage("No text files",
+                        ModalDialog.showMessage(null, "No text files",
                                 "There are no text files to open.\n\n" +
                                 "Extensions to open are: " + properties.get(EXTENSIONS_PROPERTY));
 

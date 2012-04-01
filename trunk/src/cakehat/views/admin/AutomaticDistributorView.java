@@ -8,16 +8,13 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import cakehat.Allocator;
 import cakehat.CakehatException;
@@ -33,12 +30,15 @@ import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import cakehat.views.shared.ErrorView;
-import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Window;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Box;
+import javax.swing.JDialog;
 import javax.swing.JSeparator;
 import support.ui.FormattedLabel;
 import support.ui.ModalDialog;
@@ -48,7 +48,7 @@ import support.ui.ModalDialog;
  * 
  * @author jeldridg
  */
-class AutomaticDistributorView extends JFrame {
+class AutomaticDistributorView extends JDialog {
 
     private static int GRADER_PANEL_WIDTH = 600;
     private static int GRADER_PANEL_HEIGHT = 25;
@@ -66,14 +66,15 @@ class AutomaticDistributorView extends JFrame {
 
     private JButton _setUpGradingButton;
 
-    public AutomaticDistributorView(GradableEvent ge, Component parent) {
+    public AutomaticDistributorView(GradableEvent ge, Window owner) {
+        super(owner, "Automatic Distributor : " + ge.getFullDisplayName(), ModalityType.MODELESS);
+        
         if (!ge.hasDigitalHandins()) {
             throw new RuntimeException("The automatic distributor can only be used for gradable events with digital "
                     + "handins.");
         }
         
         _gradableEvent = ge;
-        this.setTitle("Automatic Distributor : " + _gradableEvent.getFullDisplayName());
 
         try {
             _remainingBadHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_gradableEvent);
@@ -146,10 +147,10 @@ class AutomaticDistributorView extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (oneClickGradingSetup()) {
-                        JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Success!");
+                        ModalDialog.showMessage(AutomaticDistributorView.this, "Success", "Grading setup succeeded");
                     }
                     else {
-                        JOptionPane.showMessageDialog(AutomaticDistributorView.this, "Grading setup failed.");
+                        ModalDialog.showMessage(AutomaticDistributorView.this, "Failed", "Grading setup failed");
                     }
                 } catch (ServicesException ex) {
                     new ErrorView(ex, "Grading setup failed because a ServicesException was thrown.");
@@ -178,10 +179,10 @@ class AutomaticDistributorView extends JFrame {
             this.setIconImage(IconLoader.loadBufferedImage(IconSize.s32x32, IconImage.ACCESSORIES_TEXT_EDITOR));
         } catch (Exception e) {}
 
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.pack();
         this.setResizable(false);
-        this.setLocationRelativeTo(parent);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.setLocationRelativeTo(owner);
         this.setVisible(true);
     }
 
@@ -218,7 +219,7 @@ class AutomaticDistributorView extends JFrame {
     private boolean oneClickGradingSetup() throws ServicesException, IOException {
         
         if (!Allocator.getDataServices().isDistEmpty(_gradableEvent)) {
-            if (!ModalDialog.showConfirmation("Confirm Overwrite", "Any existing distribution will be"
+            if (!ModalDialog.showConfirmation(this, "Confirm Overwrite", "Any existing distribution will be"
                     + "overwritten, though no existing student grading sheets will be deleted or modified. "
                     + "Do you wish to continue?", "Yes", "No")) {
                 return false;
@@ -262,10 +263,8 @@ class AutomaticDistributorView extends JFrame {
         }
 
         if (!partsWithoutGraders.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "The following distributable parts do not have " +
-                                                "TAs assigned to grade them: " + partsWithoutGraders + ".  " +
-                                                "Students cannot be distributed.",
-                                                "Distribution Error", JOptionPane.ERROR_MESSAGE);
+            ModalDialog.showMessage(this, "Distribution Error", "The following parts do not have TAs assigned to " +
+                    "grade them: " + partsWithoutGraders + ". Students cannot be distributed.");
             return false;
         }
 
@@ -298,8 +297,8 @@ class AutomaticDistributorView extends JFrame {
         }
 
         if (someStudentsUndistributed) {
-            Object[] options = {"Use Distribution", "Discard Distribution"};
-            if (!ModalDialog.showConfirmation("Use distribution?", message, "Yes", "No")) {
+            if (!ModalDialog.showConfirmation(this, "Use distribution?", message,
+                    "Use Distribution", "Discard Distribution")) {
                 return false;
             }
         }

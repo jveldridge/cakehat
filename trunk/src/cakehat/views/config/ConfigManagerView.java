@@ -1,5 +1,6 @@
 package cakehat.views.config;
 
+import cakehat.views.shared.ErrorView;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.WindowAdapter;
@@ -35,9 +36,7 @@ public class ConfigManagerView extends JFrame
                 }
                 catch(InterruptedException ex)
                 {
-                    //TODO: Look into if there is anything better to be done here - this occurs after the configuration
-                    //      window has been closed
-                    ex.printStackTrace();
+                    new ErrorView(ex, "Database thread was interrupted while shutting down");
                 }
             }
         });
@@ -46,9 +45,9 @@ public class ConfigManagerView extends JFrame
         _tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         this.add(_tabbedPane);
         _tabbedPane.insertTab("TAs", null, new PaddingPanel(new TAPanel(_worker), 10), null, 0);
-        _tabbedPane.insertTab("Students", null, new PaddingPanel(new StudentPanel(_worker), 10), null, 1);
-        _tabbedPane.insertTab("Assignments", null, new PaddingPanel(new AssignmentPanel(_worker), 10), null, 2);
-        _tabbedPane.insertTab("Email", null, new PaddingPanel(new EmailPanel(_worker), 10), null, 3);
+        _tabbedPane.insertTab("Students", null, new PaddingPanel(new StudentPanel(this, _worker), 10), null, 1);
+        _tabbedPane.insertTab("Assignments", null, new PaddingPanel(new AssignmentPanel(this, _worker), 10), null, 2);
+        _tabbedPane.insertTab("Email", null, new PaddingPanel(new EmailPanel(this, _worker), 10), null, 3);
         
         //Display
         this.setMinimumSize(new Dimension(640, 360));
@@ -65,7 +64,7 @@ public class ConfigManagerView extends JFrame
         {
             public void run()
             {   
-                boolean proceed = ModalDialog.showConfirmation("Warning",
+                boolean proceed = ModalDialog.showConfirmation(null, "Warning",
                         "The cakehat configuration manager should only be run when no other instances of cakehat are " +
                         "running. Running this configuration manager while other instances of cakehat are running " +
                         "can result in your database being left in an unusable state.",

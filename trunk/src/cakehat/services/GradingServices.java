@@ -32,27 +32,6 @@ public interface GradingServices
      * @throws ServicesException 
      */
     public Map<Group, DateTime> getOccurrenceDates(GradableEvent ge, Set<Group> groups) throws ServicesException;
-    
-    /**
-     * Makes the user's workspace as specified by
-     * {@link PathServices#getUserWorkspace()}. If the workspace already exists,
-     * it will attempt to delete it, but if it does not succeed at this it will
-     * fail silently.
-     * 
-     * An attempt will be made to remove the user's workspace upon JVM shutdown;
-     * however, this may fail silently if there are issues with NFS.
-     *
-     * @throws ServicesException if unable to create directory
-     */
-    public void makeUserWorkspace() throws ServicesException;
-    
-    /**
-     * Attempts to make a backup of the database. The backup will be created in the directory returned by
-     * {@link PathServices#getDatabaseBackupDir()}. It will be named "database_backup_<current time millis>.db".
-     * 
-     * @throws ServicesException 
-     */
-    public void makeDatabaseBackup() throws ServicesException;
 
     /**
      * Returns an immutable list of the printers in the CIT that the user is
@@ -123,9 +102,8 @@ public interface GradingServices
      * group if no member is on the TA's blacklist, or if the given TA is null (meaning that the group is being
      * unassigned from another TA).
      * 
-     * If a group member is on the TA's blacklist, a dialog will be shown asking
-     * the user whether or not to continue.  If the user selects the continue option,
-     * this method returns true; otherwise, it will return false.
+     * If a group member is on the TA's blacklist, a dialog will be shown asking the user whether or not to continue. 
+     * If the user selects the continue option, this method returns true; otherwise, it will return false.
      * 
      * @param group
      * @param ta
@@ -142,7 +120,6 @@ public interface GradingServices
      * @return true if a group member is on the TA's blacklist; false otherwise
      */
     public boolean isSomeGroupMemberBlacklisted(Group group, Map<TA, Collection<Student>> blacklists) throws ServicesException;
-
 
     /**
      * Return value maps a handin name to the Group corresponding to that handin for the given gradable event and handin

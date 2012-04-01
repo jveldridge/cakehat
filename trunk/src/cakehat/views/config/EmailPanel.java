@@ -12,10 +12,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.GeneralSecurityException;
@@ -45,11 +47,13 @@ import support.ui.FormattedLabel;
 class EmailPanel extends JPanel
 {
     private static final String WORKER_TAG = "EMAIL";
+    private final ConfigManagerView _configManager;
     private final UniqueElementSingleThreadWorker _worker;
     private final JPanel _contentPanel;
     
-    EmailPanel(UniqueElementSingleThreadWorker worker)
+    EmailPanel(ConfigManagerView configManager, UniqueElementSingleThreadWorker worker)
     {
+        _configManager = configManager;
         _worker = worker;
         
         this.setLayout(new BorderLayout(0, 0));
@@ -102,7 +106,8 @@ class EmailPanel extends JPanel
                             _contentPanel.removeAll();
                             _contentPanel.setLayout(new BoxLayout(_contentPanel, BoxLayout.Y_AXIS));
                             
-                            _contentPanel.add(new CredentialsPanel(EmailPanel.this, _worker, accountProp, passwordProp));
+                            _contentPanel.add(new CredentialsPanel(EmailPanel.this, _configManager, _worker,
+                                    accountProp, passwordProp));
                             _contentPanel.add(Box.createVerticalStrut(10));
                             _contentPanel.add(new NotificationsPanel(EmailPanel.this, _worker, notifyAddresses));
                             
@@ -155,15 +160,17 @@ class EmailPanel extends JPanel
     private static class CredentialsPanel extends JPanel
     {
         private final EmailPanel _emailPanel;
+        private final ConfigManagerView _configManager;
         private final UniqueElementSingleThreadWorker _worker;
         private final DbPropertyValue<String> _accountProp, _passwordProp;
         private final JTextField _accountField, _passwordField;
         private final JButton _testButton;
         
-        CredentialsPanel(EmailPanel emailPanel, UniqueElementSingleThreadWorker worker,
+        CredentialsPanel(EmailPanel emailPanel, ConfigManagerView configManager, UniqueElementSingleThreadWorker worker,
                          DbPropertyValue<String> accountProp, DbPropertyValue<String> passwordProp)
         {
             _emailPanel = emailPanel;
+            _configManager = configManager;
             _worker = worker;
             _accountProp = accountProp;
             _passwordProp = passwordProp;
@@ -228,7 +235,7 @@ class EmailPanel extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent ae)
                 {
-                    new TestCredentialsDialog(_accountProp.getValue(), _passwordProp.getValue());
+                    new TestCredentialsDialog(_configManager, _accountProp.getValue(), _passwordProp.getValue());
                 }
             });
             buttonPanel.add(_testButton);
@@ -323,9 +330,9 @@ class EmailPanel extends JPanel
     {
         private final JPanel _contentPanel;
         
-        TestCredentialsDialog(final String account, final String password)
+        TestCredentialsDialog(Window owner, final String account, final String password)
         {
-            super(Allocator.getGeneralUtilities().getFocusedFrame(), "Test Email Credentials", true);
+            super(owner, "Test Email Credentials", ModalityType.APPLICATION_MODAL);
             
             this.setLayout(new BorderLayout(0, 0));
             this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
@@ -418,9 +425,9 @@ class EmailPanel extends JPanel
             this.setResizable(false);
             this.setSize(new Dimension(600, 225));
             this.setPreferredSize(new Dimension(600, 225));
-            this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             this.setAlwaysOnTop(true);
-            this.setLocationRelativeTo(Allocator.getGeneralUtilities().getFocusedFrame());
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            this.setLocationRelativeTo(owner);
             this.setVisible(true);   
         }
         

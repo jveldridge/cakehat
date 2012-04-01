@@ -9,9 +9,11 @@ import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -55,14 +57,17 @@ class StudentPanel extends JPanel
 {
     private static final String WORKER_TAG = "STUDENT";
     
+    private final UniqueElementSingleThreadWorker _worker;
+    private final ConfigManagerView _configManager;
+    
     private final NotificationRow _notificationRow;
     private final JPanel _scrollablePanel;
     private final JScrollBar _verticalScrollBar;
-    private final UniqueElementSingleThreadWorker _worker;
     private volatile StudentData _currentStudentData = null;
     
-    StudentPanel(UniqueElementSingleThreadWorker worker)
+    StudentPanel(ConfigManagerView configManager, UniqueElementSingleThreadWorker worker)
     {        
+        _configManager = configManager;
         _worker = worker;
         
         this.setLayout(new BorderLayout(0, 0));
@@ -87,7 +92,7 @@ class StudentPanel extends JPanel
         this.add(scrollPane, BorderLayout.CENTER);
         
         //Notification
-        _notificationRow = new NotificationRow(_worker, this);
+        _notificationRow = new NotificationRow(_configManager, _worker, this);
         this.add(_notificationRow, BorderLayout.SOUTH);
         
         //Load data
@@ -486,15 +491,18 @@ class StudentPanel extends JPanel
     private static class NotificationRow extends JPanel
     {
         private static final String STUDENT_GROUP_NAME = Allocator.getCourseInfo().getStudentGroup();
+        private final ConfigManagerView _configManager;
         private final UniqueElementSingleThreadWorker _worker;
         private final StudentPanel _studentPanel;
         private final JLabel _statusLabel;
         private final JButton _addStudentsButton;
         
-        NotificationRow(UniqueElementSingleThreadWorker worker, StudentPanel studentPanel)
+        NotificationRow(ConfigManagerView configManager, UniqueElementSingleThreadWorker worker,
+                StudentPanel studentPanel)
         {
             this.setLayout(new BorderLayout(0, 0));
             
+            _configManager = configManager;
             _worker = worker;
             _studentPanel = studentPanel;
             
@@ -595,7 +603,7 @@ class StudentPanel extends JPanel
                 }
                 
                 //Display students to be added to the user for confirmation, and allow for not adding a given student
-                Set<DbStudent> studentsToBeAdded = AddStudentsConfirmationDialog.showConfirmation(students);
+                Set<DbStudent> studentsToBeAdded = AddStudentsConfirmationDialog.showConfirmation(_configManager, students);
                 
                 //If there are students to be added - add them
                 if(!studentsToBeAdded.isEmpty())
@@ -632,7 +640,7 @@ class StudentPanel extends JPanel
     
     private static class AddStudentsConfirmationDialog extends JDialog
     {
-        static Set<DbStudent> showConfirmation(List<DbStudent> students)
+        static Set<DbStudent> showConfirmation(Window owner, List<DbStudent> students)
         {
             Set<DbStudent> studentsSet = new TreeSet<DbStudent>(new Comparator<DbStudent>()
             {
@@ -644,14 +652,14 @@ class StudentPanel extends JPanel
             });
             studentsSet.addAll(students);
             
-            AddStudentsConfirmationDialog dialog = new AddStudentsConfirmationDialog(studentsSet);
+            new AddStudentsConfirmationDialog(owner, studentsSet);
             
             return studentsSet;
         }
         
-        private AddStudentsConfirmationDialog(final Set<DbStudent> students)
+        private AddStudentsConfirmationDialog(Window owner, final Set<DbStudent> students)
         {
-            super(Allocator.getGeneralUtilities().getFocusedFrame(), "Students To Be Added", true);
+            super(owner, "Students To Be Added", ModalityType.APPLICATION_MODAL);
             
             this.setLayout(new BorderLayout(0, 0));
             
@@ -785,9 +793,9 @@ class StudentPanel extends JPanel
             this.setResizable(true);
             this.setMinimumSize(new Dimension(800, 360));
             this.setPreferredSize(new Dimension(800, 360));
-            this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             this.setAlwaysOnTop(true);
-            this.setLocationRelativeTo(Allocator.getGeneralUtilities().getFocusedFrame());
+            this.setLocationRelativeTo(owner);
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             this.setVisible(true);   
         }
         

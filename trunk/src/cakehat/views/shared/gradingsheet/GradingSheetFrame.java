@@ -8,11 +8,12 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
 import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
@@ -20,13 +21,13 @@ import javax.swing.KeyStroke;
  *
  * @author jak2
  */
-class GradingSheetFrame<T extends JComponent & GradingSheet> extends JFrame implements GradingSheet
+class GradingSheetFrame<T extends JComponent & GradingSheet> extends JDialog implements GradingSheet
 {
     private final T _gradingSheet;
     
-    GradingSheetFrame(T gradingSheet, String title)
+    GradingSheetFrame(Window owner, T gradingSheet, String title)
     {
-        super(title);
+        super(owner, title, ModalityType.MODELESS);
         
         _gradingSheet = gradingSheet;
         
@@ -41,9 +42,9 @@ class GradingSheetFrame<T extends JComponent & GradingSheet> extends JFrame impl
         
         this.setMinimumSize(new Dimension(360, 400));
         this.setPreferredSize(new Dimension(500, 640));
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.pack();
         this.setResizable(true);
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
     
     @Override

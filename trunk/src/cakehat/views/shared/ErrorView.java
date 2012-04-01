@@ -11,7 +11,6 @@ import java.io.StringWriter;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,6 +22,7 @@ import cakehat.email.EmailManager;
 import com.google.common.collect.ImmutableSet;
 import java.awt.Color;
 import javax.mail.MessagingException;
+import javax.swing.JDialog;
 
 /**
  * Displays an error that occurs during runtime. Allows for sending reporting
@@ -30,7 +30,7 @@ import javax.mail.MessagingException;
  *
  * @author jak2
  */
-public class ErrorView extends JFrame
+public class ErrorView extends JDialog
 {
     private static final int TEXT_AREA_WIDTH = 650;
     private static final int HORIZONTAL_GAP = 15;
@@ -53,7 +53,7 @@ public class ErrorView extends JFrame
      */
     public ErrorView(Throwable t, String message)
     {
-        super("[cakehat] Error Encountered");
+        super(null, "[cakehat] Error Encountered", ModalityType.MODELESS);
 
         String stackTrace = null;
         if(t != null)

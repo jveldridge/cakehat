@@ -1,6 +1,5 @@
 package cakehat.views.shared;
 
-import cakehat.CakehatException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -22,7 +21,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -38,14 +36,15 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import cakehat.Allocator;
-import cakehat.CakehatMain;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
+import java.awt.Window;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import javax.swing.JDialog;
 
 /**
  * A simpler viewer for plain text files. Allows for searching within the
@@ -56,7 +55,7 @@ import java.util.Arrays;
  * @author jak2
  * @author psastras
  */
-public class TextViewerView extends JFrame
+public class TextViewerView extends JDialog
 {
     private static final int TEXT_WIDTH = 610;
     private static final int SEARCH_HIGHLIGHTS_WIDTH = 30;
@@ -84,17 +83,18 @@ public class TextViewerView extends JFrame
     private ReferencesPanel _searchHighlightsPanel;
     private JCheckBox _matchCaseCheckBox;
 
-    public TextViewerView(File file, String title)
+    public TextViewerView(Window owner, File file, String title)
     {
-        this(loadTextFromFile(file), title);
+        this(owner, loadTextFromFile(file), title);
     }
 
-    public TextViewerView(String text, String title)
+    public TextViewerView(Window owner, String text, String title)
     {
+        super(owner, title, ModalityType.MODELESS);
+        
         this.initIcon();
         this.initMenu();
         this.initComponents();
-        this.setTitle(title);
 
         _textArea.setText(text);
         _textArea.setCaretPosition(0);
@@ -102,7 +102,7 @@ public class TextViewerView extends JFrame
 
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.pack();
-        this.setLocationRelativeTo(null);
+        this.setLocationRelativeTo(owner);
         this.setVisible(true);
     }
 
@@ -614,13 +614,5 @@ public class TextViewerView extends JFrame
         {
             super(color);
         }
-    }
-
-    public static void main(String args[]) throws CakehatException
-    {
-        CakehatMain.initializeForTesting();
-
-        File fileToView = new File("/course/cs000/grading/asgn/2010/Clock/dq_grading_guide.txt");
-        new TextViewerView(fileToView, "Test File");
     }
 }
