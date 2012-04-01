@@ -218,6 +218,10 @@ public class GradingServicesImpl implements GradingServices
 
     @Override
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException {
+        if (ta == null) {
+            return true;
+        }
+        
         Collection<Student> blacklist = Allocator.getDataServices().getBlacklist(ta);
 
         if (Allocator.getGeneralUtilities().containsAny(blacklist, group.getMembers())) {
