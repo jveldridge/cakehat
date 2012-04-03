@@ -36,6 +36,7 @@ public class ActionRepository
         
         this.addActionDescriptions(descriptionsBuilder, new JavaActions());
         this.addActionDescriptions(descriptionsBuilder, new MatlabActions());
+        this.addActionDescriptions(descriptionsBuilder, new PythonActions());
         this.addActionDescriptions(descriptionsBuilder, new PrintActions());
         this.addActionDescriptions(descriptionsBuilder, new ApplicationActions());
         this.addActionDescriptions(descriptionsBuilder, new ExternalActions());
