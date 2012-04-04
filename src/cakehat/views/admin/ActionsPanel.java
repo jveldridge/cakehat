@@ -69,9 +69,13 @@ class ActionsPanel extends JPanel
         _assignmentPanel.setAlignmentX(LEFT_ALIGNMENT);
         this.add(_assignmentPanel);
         
+        this.add(Box.createVerticalStrut(10));
+        
         _gradableEventPanel = new GradableEventPanel();
         _gradableEventPanel.setAlignmentX(LEFT_ALIGNMENT);
         this.add(_gradableEventPanel);
+        
+        this.add(Box.createVerticalStrut(10));
         
         _partPanel = new PartPanel();
         _partPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -108,16 +112,14 @@ class ActionsPanel extends JPanel
     
     private class AssignmentPanel extends JPanel
     {
-        private ActionButton _emailGradingSheetButton, _printGradingSheetButton;
-        private JLabel _noActionsAvailable;
+        private final ActionButton _emailGradingSheetButton, _printGradingSheetButton, _manageGroupsButton;
+        private final JLabel _noActionsAvailable;
         
         AssignmentPanel()
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
             this.add(FormattedLabel.asSubheader("Assignment"));
-            
-            this.add(Box.createVerticalStrut(5));
             
             //Label
             _noActionsAvailable = FormattedLabel.asContent(" - No Actions Available").usePlainFont();
@@ -135,8 +137,6 @@ class ActionsPanel extends JPanel
             });
             this.add(_emailGradingSheetButton);
             
-            this.add(Box.createVerticalStrut(5));
-            
             _printGradingSheetButton = new ActionButton("Print Grading Sheet", "Print Grading Sheets", IconImage.DOCUMENT_PRINT);
             _printGradingSheetButton.addActionListener(new ActionListener()
             {
@@ -148,18 +148,29 @@ class ActionsPanel extends JPanel
             });
             this.add(_printGradingSheetButton);
             
-            this.add(Box.createVerticalStrut(10));
+            _manageGroupsButton = new ActionButton("Manage Groups", null, IconImage.SYSTEM_USERS);
+            _manageGroupsButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ae)
+                {
+                    manageGroupsButtonActionPerformed();
+                }
+            });
+            this.add(_manageGroupsButton);
         }
         
         void notifySelectionChanged(Assignment assignment, Set<Group> selectedGroups,
                 Set<Student> selectedStudentsNotInGroups)
         {
-            boolean showButtons = !selectedGroups.isEmpty();
+            boolean showGradingSheetButtons = !selectedGroups.isEmpty();
+            boolean showManageGroupsButton = assignment != null && assignment.hasGroups();
             
-            _emailGradingSheetButton.setVisible(showButtons);
-            _printGradingSheetButton.setVisible(showButtons);
+            _emailGradingSheetButton.setVisible(showGradingSheetButtons);
+            _printGradingSheetButton.setVisible(showGradingSheetButtons);
+            _manageGroupsButton.setVisible(showManageGroupsButton);
             
-            _noActionsAvailable.setVisible(!showButtons);
+            _noActionsAvailable.setVisible(!(showGradingSheetButtons || showManageGroupsButton));
             
             _emailGradingSheetButton.updateText(selectedGroups.size() < 2);
             _printGradingSheetButton.updateText(selectedGroups.size() < 2);
@@ -168,16 +179,14 @@ class ActionsPanel extends JPanel
     
     private class GradableEventPanel extends JPanel
     {
-        private ActionButton _autoDistributorButton;
-        private JLabel _noActionsAvailable;
+        private final ActionButton _autoDistributorButton;
+        private final JLabel _noActionsAvailable;
         
         GradableEventPanel()
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
             this.add(FormattedLabel.asSubheader("Gradable Event"));
-            
-            this.add(Box.createVerticalStrut(5));
             
             //Label
             _noActionsAvailable = FormattedLabel.asContent(" - No Actions Available").usePlainFont();
@@ -195,8 +204,6 @@ class ActionsPanel extends JPanel
                 }
             });
             this.add(_autoDistributorButton);
-        
-            this.add(Box.createVerticalStrut(10));
         }
         
         void notifySelectionChanged(GradableEvent gradableEvent, Set<Group> selectedGroups,
@@ -211,16 +218,14 @@ class ActionsPanel extends JPanel
     
     private class PartPanel extends JPanel
     {
-        private ActionButton _manualDistributorButton, _viewGradingGuideButton, _demoButton, _openButton, _runButton,
-                             _testButton, _printButton, _readmeButton;
+        private final ActionButton _manualDistributorButton, _viewGradingGuideButton, _demoButton, _openButton,
+                                   _runButton, _testButton, _printButton, _readmeButton;
         
         PartPanel()
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
             this.add(FormattedLabel.asSubheader("Part"));
-            
-            this.add(Box.createVerticalStrut(5));
          
             //Buttons
             _manualDistributorButton = new ActionButton("Manual Distributor", null, IconImage.DOCUMENT_PROPERTIES);
@@ -234,8 +239,6 @@ class ActionsPanel extends JPanel
             });
             this.add(_manualDistributorButton);
             
-            this.add(Box.createVerticalStrut(5));
-            
             _viewGradingGuideButton = new ActionButton("Grading Guide", null, IconImage.TEXT_X_GENERIC);
             _viewGradingGuideButton.addActionListener(new ActionListener()
             {
@@ -246,8 +249,6 @@ class ActionsPanel extends JPanel
                 }
             });
             this.add(_viewGradingGuideButton);
-            
-            this.add(Box.createVerticalStrut(5));
             
             _demoButton = new ActionButton("Demo", null, IconImage.APPLICATIONS_SYSTEM);
             _demoButton.addActionListener(new ActionListener()
@@ -260,8 +261,6 @@ class ActionsPanel extends JPanel
             });
             this.add(_demoButton);
             
-            this.add(Box.createVerticalStrut(15));
-            
             _printButton = new ActionButton("Print Handin", "Print Handins", IconImage.PRINTER);
             _printButton.addActionListener(new ActionListener()
             {
@@ -272,8 +271,6 @@ class ActionsPanel extends JPanel
                 }
             });
             this.add(_printButton);
-            
-            this.add(Box.createVerticalStrut(5));
             
             _runButton = new ActionButton("Run Handin", null, IconImage.GO_NEXT);
             _runButton.addActionListener(new ActionListener()
@@ -286,8 +283,6 @@ class ActionsPanel extends JPanel
             });
             this.add(_runButton);
             
-            this.add(Box.createVerticalStrut(5));
-            
             _openButton = new ActionButton("Open Handin", null, IconImage.DOCUMENT_OPEN);
             _openButton.addActionListener(new ActionListener()
             {
@@ -298,8 +293,6 @@ class ActionsPanel extends JPanel
                 }
             });
             this.add(_openButton);
-            
-            this.add(Box.createVerticalStrut(5));
             
             _testButton = new ActionButton("Test Handin", null, IconImage.UTILITIES_SYSTEM_MONITOR);
             _testButton.addActionListener(new ActionListener()
@@ -312,8 +305,6 @@ class ActionsPanel extends JPanel
             });
             this.add(_testButton);
             
-            this.add(Box.createVerticalStrut(5));
-            
             _readmeButton = new ActionButton("View Readme", null, IconImage.TEXT_X_GENERIC);
             _readmeButton.addActionListener(new ActionListener()
             {
@@ -324,8 +315,6 @@ class ActionsPanel extends JPanel
                 }
             });
             this.add(_readmeButton);
-        
-            this.add(Box.createVerticalStrut(10));
         }
         
         void notifySelectionChanged(Part part, Set<Group> selectedGroups,
@@ -608,6 +597,12 @@ class ActionsPanel extends JPanel
             new ErrorView(ex);
         }
     }
+    
+    private void manageGroupsButtonActionPerformed()
+    {
+        ModalDialog.showMessage(_adminView, "Not Yet Supported", "Not Yet Supported\n\n" +
+                "Unable to show manage groups interface for " + _treeSelection.getAssignment());
+    }
 
     private void notifyHandinMissing(MissingHandinException ex)
     {
@@ -617,8 +612,9 @@ class ActionsPanel extends JPanel
         notifySelectionChanged(_treeSelection, _selectedGroups, _selectedStudentsNotInGroups);
     }
     
-    private static class ActionButton extends JButton
+    private static class ActionButton extends JPanel
     {
+        private final JButton _button;
         private final String _singleText, _pluralText;
         
         ActionButton(String singleText, String pluralText, IconImage image)
@@ -626,24 +622,36 @@ class ActionsPanel extends JPanel
             _singleText = "<html><b>" + singleText + "</b></html>";
             _pluralText = "<html><b>" + pluralText + "</b></html>";
             
-            this.setMargin(new Insets(2, 10, 2, 10));
+            this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            this.setAlignmentX(LEFT_ALIGNMENT);
             
-            this.setIcon(IconLoader.loadIcon(IconSize.s16x16, image));
+            this.add(Box.createVerticalStrut(5));
+            
+            _button = new JButton();
+            _button.setMargin(new Insets(2, 10, 2, 10));
+            _button.setIcon(IconLoader.loadIcon(IconSize.s16x16, image));
+            _button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+            _button.setIconTextGap(10);
+            this.add(_button);
+            
             this.updateText(true);
-            this.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-            this.setIconTextGap(10);
         }
         
         final void updateText(boolean showSingle)
         {
             if(showSingle)
             {
-                this.setText(_singleText);
+                _button.setText(_singleText);
             }
             else
             {
-                this.setText(_pluralText);
+                _button.setText(_pluralText);
             }
+        }
+        
+        final void addActionListener(ActionListener listener)
+        {
+            _button.addActionListener(listener);
         }
     }
 }
