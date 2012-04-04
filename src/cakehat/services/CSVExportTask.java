@@ -248,12 +248,13 @@ public class CSVExportTask extends LongRunningTask
                 }
             }
             
-            //If not the last assignment, write a blank entry for all three rows
+            //If not the last assignment, write a blank entry for first 5 rows
             if(asgnIndex != assignments.size() - 1)
             {
                 row1.add(null);
                 row2.add(null);
                 row3.add(null);
+                row5.add(null);
             }
         }
         
