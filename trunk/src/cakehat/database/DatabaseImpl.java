@@ -898,8 +898,8 @@ public class DatabaseImpl implements Database
 
         PreparedStatement ps = conn.prepareStatement("SELECT gp.agid as agid, gm.sid AS sid,"
                 + " gp.name AS groupName, gp.aid AS aid"
-                + " FROM groupmember AS gm"
-                + " INNER JOIN asgngroup AS gp"
+                + " FROM asgngroup AS gp"
+                + " LEFT JOIN groupmember AS gm" //so that the groups with no members get returned as well
                 + " ON gm.agid == gp.agid"
                 + " ORDER BY gp.agid");
 
@@ -922,10 +922,11 @@ public class DatabaseImpl implements Database
                 prevGroupId = currGroupId;
                 groupAsgnId = rs.getInt("aid");
                 groupName = rs.getString("groupName");
-                memberIDs.add(rs.getInt("sid"));
             }
-            else {                              //current row represents an additional member of the same group
-                memberIDs.add(rs.getInt("sid"));
+            
+            int memberId = rs.getInt("sid");
+            if (memberId != 0) { // add the id only when it's not null (NULL becomes 0 after getInt)
+                memberIDs.add(memberId);
             }
         }
         //create record for last group

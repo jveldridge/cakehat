@@ -1,5 +1,6 @@
 package cakehat.database;
 
+import java.util.Collections;
 import cakehat.database.assignment.Assignment;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ImmutableSet;
@@ -41,6 +42,29 @@ public class DatabaseGroupsTest {
     public void testGetAllGroupsEmpty() throws SQLException {
         Set<DbGroup> groups = _database.getGroups();
         assertEquals(0,groups.size());
+    }
+    
+    @Test
+    public void testGetGroupWithNoStudents() throws SQLException, CakeHatDBIOException {
+        Assignment asgn = DatabaseTestHelpers.createNewAssignmentInDb(_database, "asgn", 1);
+        
+        DbGroup toAdd = new DbGroup(asgn, "group", Collections.<Student>emptySet());
+        _database.putGroups(ImmutableSet.of(toAdd));
+        assertNotNull(toAdd.getId());
+        
+        Set<DbGroup> groups = _database.getGroups();
+        
+        // check that there is only 1 group in the database
+        assertEquals(1, groups.size());
+        
+        DbGroup actualRecord = Iterables.get(groups, 0);
+        
+        // check that it is the group that was added by checking each field of group record
+        assertEquals(toAdd.getId(), actualRecord.getId());
+        assertEquals(toAdd.getAssignmentId(), actualRecord.getAssignmentId());
+        assertEquals(toAdd.getName(), actualRecord.getName());
+        
+        DatabaseTestHelpers.assertSetsEqual(toAdd.getMemberIds(), actualRecord.getMemberIds());
     }
     
     @Test
