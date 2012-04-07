@@ -600,8 +600,7 @@ class ActionsPanel extends JPanel
     
     private void manageGroupsButtonActionPerformed()
     {
-        ModalDialog.showMessage(_adminView, "Not Yet Supported", "Not Yet Supported\n\n" +
-                "Unable to show manage groups interface for " + _treeSelection.getAssignment());
+        new ManageGroupsView(_adminView, _treeSelection.getAssignment());
     }
 
     private void notifyHandinMissing(MissingHandinException ex)
