@@ -90,5 +90,10 @@ public class DbGroup extends DbDataItem
             return Collections.unmodifiableSet(_studentIds);
         }
     }
+
+    @Override
+    public String toString(){
+        return _name;
+    }
     
 }
