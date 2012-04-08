@@ -329,6 +329,16 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
 
         return Collections.unmodifiableMap(map);
     }
+    
+    /**
+     * Returns the number of values selected in the list.
+     * 
+     * @return 
+     */
+    public int getSelectionSize()
+    {
+        return super.getSelectedIndices().length;
+    }
 
     /**
      * This method cannot be made typesafe.
