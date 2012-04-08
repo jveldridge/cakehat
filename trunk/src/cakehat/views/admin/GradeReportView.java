@@ -13,46 +13,46 @@ import cakehat.database.assignment.Part;
 import cakehat.email.EmailManager;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.ErrorView;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLEditorKit;
 import org.joda.time.DateTime;
@@ -60,6 +60,7 @@ import support.ui.DescriptionProvider;
 import support.ui.DocumentAdapter;
 import support.ui.FormattedLabel;
 import support.ui.GenericJComboBox;
+import support.ui.GenericJList;
 import support.ui.ProgressDialog;
 import support.ui.SelectionListener;
 import support.ui.SelectionListener.SelectionAction;
@@ -131,7 +132,7 @@ class GradeReportView extends JDialog
     private final Map<GradableEvent, Map<Group, Extension>> _extensions;
     
     //Key visual elements
-    private final AssignmentChecklist _asgnChecklist;
+    private final AssignmentList _asgnList;
     private final StudentList _studentList;
     private final JTextArea _messageArea;
     private final GenericJComboBox<Student> _studentsComboBox;
@@ -190,7 +191,7 @@ class GradeReportView extends JDialog
         _extensions = extensionsBuilder.build();
         
         //Intialize UI
-        _asgnChecklist = new AssignmentChecklist();
+        _asgnList = new AssignmentList();
         _studentList = new StudentList();
         _studentsComboBox = new GenericJComboBox<Student>();
         _previewPane = new JEditorPane();
@@ -201,8 +202,8 @@ class GradeReportView extends JDialog
         this.initUI();
         
         //Display
-        this.setMinimumSize(new Dimension(850, 450));
-        this.setPreferredSize(new Dimension(850, 450));
+        this.setMinimumSize(new Dimension(825, 450));
+        this.setPreferredSize(new Dimension(825, 450));
         this.pack();
         this.setResizable(true);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -232,19 +233,22 @@ class GradeReportView extends JDialog
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
         
         //Assignments
-        Dimension assignmentChecklistSize = new Dimension(200, Short.MAX_VALUE);
-        _asgnChecklist.setMinimumSize(assignmentChecklistSize);
-        _asgnChecklist.setPreferredSize(assignmentChecklistSize);
-        _asgnChecklist.setMaximumSize(assignmentChecklistSize);
-        _asgnChecklist.addSelectionListener(new AssignmentChecklist.AssignmentChecklistListener()
+        Dimension assignmentListSize = new Dimension(160, Short.MAX_VALUE);
+        _asgnList.setMinimumSize(assignmentListSize);
+        _asgnList.setPreferredSize(assignmentListSize);
+        _asgnList.setMaximumSize(assignmentListSize);
+        _asgnList.getList().addListSelectionListener(new ListSelectionListener()
         {
             @Override
-            public void selectionChanged(List<Assignment> selection)
+            public void valueChanged(ListSelectionEvent lse)
             {
-                notifyAssignmentSelectionChanged(selection);
+                if(!lse.getValueIsAdjusting())
+                {
+                    notifyAssignmentSelectionChanged(_asgnList.getList().getGenericSelectedValues());
+                }
             }
         });
-        contentPanel.add(_asgnChecklist);
+        contentPanel.add(_asgnList);
         
         contentPanel.add(Box.createHorizontalStrut(5));
         
@@ -393,22 +397,38 @@ class GradeReportView extends JDialog
         rightPanel.add(Box.createVerticalStrut(5));
         
         //Send
+        ButtonGroup sendGroup = new ButtonGroup();
+        JRadioButton sendToStudentsButton = new JRadioButton("Send to students");
+        sendGroup.add(sendToStudentsButton);
+        sendToStudentsButton.setSelected(true);
+        rightPanel.add(sendToStudentsButton);
+        
         JPanel sendPanel = new JPanel(new BorderLayout(5, 0));
         sendPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 30));
         sendPanel.setAlignmentX(LEFT_ALIGNMENT);
         rightPanel.add(sendPanel);
         
-        final JCheckBox alternateAddressCheckBox = new JCheckBox("Send to an alternate address");
-        alternateAddressCheckBox.addActionListener(new ActionListener()
+        final JRadioButton sendToAlternateAddressButton = new JRadioButton("Send to an alternate address");
+        sendGroup.add(sendToAlternateAddressButton);
+        sendToAlternateAddressButton.addChangeListener(new ChangeListener()
         {
             @Override
-            public void actionPerformed(ActionEvent ae)
+            public void stateChanged(ChangeEvent ce)
             {
-                _alternateAddressField.setEnabled(alternateAddressCheckBox.isSelected());
+                _alternateAddressField.setEnabled(sendToAlternateAddressButton.isSelected());
+                updateSendButtonState(_studentList.getList().getSelectionSize());
             }
         });
-        sendPanel.add(alternateAddressCheckBox, BorderLayout.WEST);
+        sendPanel.add(sendToAlternateAddressButton, BorderLayout.WEST);
         
+        _alternateAddressField.getDocument().addDocumentListener(new DocumentAdapter()
+        {
+            @Override
+            public void modificationOccurred(DocumentEvent de)
+            {
+                updateSendButtonState(_studentList.getList().getSelectionSize());
+            }
+        });
         _alternateAddressField.setEnabled(false);
         sendPanel.add(_alternateAddressField, BorderLayout.CENTER);
         
@@ -423,6 +443,7 @@ class GradeReportView extends JDialog
         });
         sendPanel.add(_sendReportsButton, BorderLayout.EAST);
         
+        
         //Set the initial text into the message area - which will generate the initial preview
         _messageArea.setText("Below are your current grades for " + Allocator.getCourseInfo().getCourse());
     }
@@ -434,7 +455,7 @@ class GradeReportView extends JDialog
      */
     private void notifyMessageChanged(String message)
     {
-        showPreview(message, _studentsComboBox.getSelectedItem(), _asgnChecklist.getSelection());
+        showPreview(message, _studentsComboBox.getSelectedItem(), _asgnList.getList().getGenericSelectedValues());
     }
     
     /**
@@ -454,7 +475,7 @@ class GradeReportView extends JDialog
      */
     private void notifyStudentComboBoxSelectionChanged(Student student)
     {
-        showPreview(_messageArea.getText(), student, _asgnChecklist.getSelection());
+        showPreview(_messageArea.getText(), student, _asgnList.getList().getGenericSelectedValues());
     }
     
     /**
@@ -481,6 +502,11 @@ class GradeReportView extends JDialog
         {
             _sendReportsButton.setEnabled(false);
             _sendReportsButton.setToolTipText("Email has not been configured by your course");
+        }
+        else if(_alternateAddressField.isEnabled() && !_alternateAddressField.isValidEmailAddress())
+        {
+            _sendReportsButton.setEnabled(false);
+            _sendReportsButton.setToolTipText("Alternate email address is not valid");
         }
         else
         {
@@ -520,7 +546,7 @@ class GradeReportView extends JDialog
      */
     private void notifySendReports()
     {
-        sendReports(_messageArea.getText(), _studentList.getSelection(), _asgnChecklist.getSelection(),
+        sendReports(_messageArea.getText(), _studentList.getSelection(), _asgnList.getList().getGenericSelectedValues(),
                 _alternateAddressField.getAddress());
     }
     
@@ -868,37 +894,35 @@ class GradeReportView extends JDialog
                 @Override
                 public void modificationOccurred(DocumentEvent de)
                 {
-                    setBackground(isTextValid() ? Color.WHITE : new Color(255, 204, 204));
+                    updateColor();
                 }
             });
             
-            this.addFocusListener(new FocusAdapter()
-            {
-                @Override
-                public void focusLost(FocusEvent fe)
-                {
-                    if(!isTextValid())
-                    {
-                        setText("");
-                    }
-                }
-            });
+            this.updateColor();
         }
         
-        private boolean isTextValid()
+        private void updateColor()
+        {
+            if(isEnabled() && !isValidEmailAddress())
+            {
+                setBackground(new Color(255, 204, 204));
+            }
+            else
+            {
+                setBackground(Color.WHITE);
+            }
+        }
+        
+        boolean isValidEmailAddress()
         {
             boolean valid = true;
-            String text = getText();
-            if(!text.isEmpty())
+            try
             {
-                try
-                {
-                    new InternetAddress(text, true);
-                }
-                catch(AddressException ex)
-                {
-                    valid = false;
-                }
+                new InternetAddress(getText(), true);
+            }
+            catch(AddressException ex)
+            {
+                valid = false;
             }
             
             return valid;
@@ -909,7 +933,7 @@ class GradeReportView extends JDialog
         {
             super.setEnabled(enabled);
             
-            this.setText("");
+            this.updateColor();
         }
         
         InternetAddress getAddress()
@@ -931,86 +955,35 @@ class GradeReportView extends JDialog
     }
     
     /**
-     * Vertically arranged check boxes - one for each assignment.
+     * Assignment list
      */
-    private static class AssignmentChecklist extends JPanel
+    private static class AssignmentList extends JPanel
     {   
-        private final List<Assignment> _selectedAssignments = new ArrayList<Assignment>();
-        private final List<AssignmentChecklistListener> _listeners = new CopyOnWriteArrayList<AssignmentChecklistListener>();
+        private final GenericJList<Assignment> _assignmentList;
         
-        static interface AssignmentChecklistListener
-        {
-            public void selectionChanged(List<Assignment> selection);
-        }
-        
-        private AssignmentChecklist()
+        private AssignmentList()
         {
             this.setLayout(new BorderLayout(0, 0));
 
-            //Header panel
+            //Header
             JPanel headerPanel = new JPanel();
             headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
             this.add(headerPanel, BorderLayout.NORTH);
-
             headerPanel.add(FormattedLabel.asHeader("Assignments"));
-
             headerPanel.add(Box.createVerticalStrut(5));
 
-            //Assignments
-            JPanel assignmentsPanel = new JPanel();
-            assignmentsPanel.setLayout(new BoxLayout(assignmentsPanel, BoxLayout.Y_AXIS));
-            assignmentsPanel.setBackground(Color.WHITE);
-            for(final Assignment asgn : Allocator.getDataServices().getAssignments())
-            {
-                final JCheckBox asgnCheckBox = new JCheckBox(asgn.getName());
-                asgnCheckBox.setBackground(Color.WHITE);
-                asgnCheckBox.addActionListener(new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed(ActionEvent ae)
-                    {
-                        notifySelectionChanged(asgn, asgnCheckBox.isSelected());
-                    }
-                });
-                assignmentsPanel.add(asgnCheckBox);
-            }
-
-            JScrollPane scrollPane = new JScrollPane(assignmentsPanel);
+            //Assignments list
+             _assignmentList = new GenericJList<Assignment>(Allocator.getDataServices().getAssignments());
+            _assignmentList.setAlignmentX(LEFT_ALIGNMENT);
+             _assignmentList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            JScrollPane scrollPane = new JScrollPane(_assignmentList);
             scrollPane.setBackground(Color.WHITE);
             this.add(scrollPane, BorderLayout.CENTER);
         }
         
-        private void notifySelectionChanged(Assignment asgn, boolean selected)
+        GenericJList<Assignment> getList()
         {
-            if(selected)
-            {
-                _selectedAssignments.add(asgn);
-            }
-            else
-            {
-                _selectedAssignments.remove(asgn);
-            }
-            
-            Collections.sort(_selectedAssignments);
-            for(AssignmentChecklistListener listener : _listeners)
-            {
-                listener.selectionChanged(_selectedAssignments);
-            }
-        }
-
-        List<Assignment> getSelection()
-        {
-            return ImmutableList.copyOf(_selectedAssignments);
-        }
-
-        void addSelectionListener(AssignmentChecklistListener listener)
-        {
-            _listeners.add(listener);
-        }
-
-        void removeSelectionListener(AssignmentChecklistListener listener)
-        {
-            _listeners.remove(listener);
+            return _assignmentList;
         }
     }
 }
