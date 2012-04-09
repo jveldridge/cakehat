@@ -54,9 +54,16 @@ public class GradingSheetManagerImpl implements GradingSheetManager
                 @Override
                 public void windowClosed(WindowEvent we)
                 {
-                    GradingSheetFrame window = _openGradingSheetWindows.get(pair);
-                    _openGradingSheetWindows.remove(pair);
-                    window.save();
+                    GradingSheetFrame window = _openGradingSheetWindows.remove(pair);
+                    
+                    //In some situations windowClosed(...) can be called twice when the window is closed - investigation
+                    //into this indicates the cause is a Java/Swing bug
+                    //To work around this issue, if the mapping no longer has a value because it was removed on the
+                    //first call then do not call save() on the window
+                    if(window != null)
+                    {
+                        window.save();
+                    }
                 }
             });
             
