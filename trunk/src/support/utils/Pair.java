@@ -1,13 +1,14 @@
 package support.utils;
 
 /**
+ * An immutable pair of two values.
  *
  * @author jak2
  */
 public class Pair<A, B>
 {
-    private A _first;
-    private B _second;
+    private final A _first;
+    private final B _second;
     
     public static <A, B>  Pair<A, B> of(A first, B second)
     {
@@ -25,50 +26,39 @@ public class Pair<A, B>
         return _first;
     }
 
-    public void setFirst(A first)
-    {
-        _first = first;
-    }
-
     public B getSecond()
     {
        return _second;
     }
 
-    public void setSecond(B second)
-    {
-        _second = second;
-    }
-
     @Override
     public boolean equals(Object obj)
     {
-        if(obj == null)
+        boolean equal = false;
+        if(obj instanceof Pair)
         {
-            return false;
+            Pair other = (Pair) obj;
+            
+            equal = ((_first == null && other._first == null) || (_first != null && _first.equals(other._first))) &&
+                    ((_second == null && other._second == null) || (_second != null && _second.equals(other._second)));
         }
-        if(getClass() != obj.getClass())
-        {
-            return false;
-        }
-        final Pair other = (Pair) obj;
-        if(this._first != other._first && (this._first == null || !this._first.equals(other._first)))
-        {
-            return false;
-        }
-        if(this._second != other._second && (this._second == null || !this._second.equals(other._second)))
-        {
-            return false;
-        }
-        return true;
+        
+        return equal;
     }
 
     @Override
     public int hashCode()
     {
         int hash = 5;
-        hash = 61 * hash + (this._first != null ? this._first.hashCode() : 0);
-        hash = 61 * hash + (this._second != null ? this._second.hashCode() : 0);
+        hash = 61 * hash + (_first != null ? _first.hashCode() : 0);
+        hash = 61 * hash + (_second != null ? _second.hashCode() : 0);
+        
         return hash;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "[" + _first + ", " + _second + "]";
     }
 }
