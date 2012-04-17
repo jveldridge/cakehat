@@ -37,13 +37,15 @@ public class ProgressDialog extends JDialog
     /**
      * Constructs and displays a progress dialog for the provided {@code task}.
      * 
-     * @param owner the visual owner of this dialog, may be {@code null}
+     * @param owner the owner of this dialog, may be {@code null}
+     * @param positionRelativeTo the window this dialog will be positioned relative to, may be {@code null}
      * @param title the title of this dialog
      * @param message the message to be displayed to the user
      * @param task the task being displayed, do <strong>not</strong> call {@link LongRunningTask#start()} on it - that
      * will be done by this dialog
      */
-    public ProgressDialog(Window owner, String title, String message, final LongRunningTask task)
+    public ProgressDialog(Window owner, Window positionRelativeTo, String title, String message,
+            final LongRunningTask task)
     {
         super(owner, title);
         
@@ -71,7 +73,7 @@ public class ProgressDialog extends JDialog
         this.pack();
         this.setMinimumSize(this.getSize());
         this.setResizable(false);
-        this.setLocationRelativeTo(owner);
+        this.setLocationRelativeTo(positionRelativeTo);
         this.setVisible(true);
         
         //Start the task

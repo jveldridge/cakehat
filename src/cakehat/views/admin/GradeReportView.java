@@ -711,7 +711,9 @@ class GradeReportView extends JDialog
     private void sendReports(String message, List<Student> students, List<Assignment> assignments,
             InternetAddress alternateAddress)
     {
-        new ProgressDialog(this, "Sending Grade Reports",
+        //Own the progress dialog to same owner as this window - if we instead owned the dialog to this window then it
+        //would close when this window closes - which will be done right after creating the dialog
+        new ProgressDialog(this.getOwner(), this, "Sending Grade Reports",
                 "<html><center><h2>Sending student grade reports</h2></center></html>", 
                 new SendReportsTask(students, assignments, message, alternateAddress));
         this.dispose();
