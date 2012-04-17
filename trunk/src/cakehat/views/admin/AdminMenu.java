@@ -83,7 +83,7 @@ class AdminMenu extends JMenuBar
                 chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
                 if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
                 {
-                    new ProgressDialog(_adminView, "CSV Export",
+                    new ProgressDialog(_adminView, _adminView, "CSV Export",
                             "<html><center><h2>Exporting student grades</h2></center></html>",
                             new CSVExportTask(chooser.getSelectedFile()));
                 }
