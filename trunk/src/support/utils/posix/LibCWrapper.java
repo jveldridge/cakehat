@@ -3,13 +3,13 @@ package support.utils.posix;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.Platform;
 
 /**
  * Java wrappers for native C functions in Linux/Unix.
  * <br/><br/>
- * <strong>Note:</strong> This code will not run properly if the underlying
- * native function library does not exist, so there may be issues of running
- * this code on non-department machines.
+ * <strong>Note:</strong> This code will not run properly if the underlying native function library does not exist, so
+ * there may be issues of running this code on non-department machines.
  * 
  * @author jak2
  */
@@ -21,6 +21,17 @@ class LibCWrapper
      */
     private static interface LibC extends Library
     {
+        //Documentation: man 2 lstat64 (on OS X)
+        public int lstat64(String filepath, OSXFileStat stat) throws LastErrorException;
+
+        //Documentation: man 2 lstat64 (on Linux)
+        //The function __lxstat64 is the function called by lstat, lstat is actually a macro.
+        //For details on the mapping of the macro to this function, see the stat header file: /usr/include/sys/stat.h
+        public int __lxstat64(int version, String filepath, LinuxFileStat stat) throws LastErrorException;
+        
+        //Per instructions in stat.h, version should always be 3 for this setup
+        public static final int LINUX_LSTAT_VERSION = 3;
+        
         //Documentation: man 2 chmod
         public int chmod(String filepath, int mode) throws LastErrorException;
 
@@ -33,6 +44,19 @@ class LibCWrapper
         //therefore LastErrorException is not to be thrown from this function.
         public NativeGroup getgrnam(String group);
 
+        //Documentation: man 3 getgrent
+        //Getting information on a group with many members will generate a native error but the group information it
+        //returns is completely accurate, therefore LastErrorException is not to be thrown from this function.
+        public NativeGroup getgrgid(int gid);
+        
+        //Documentation: man 2 getgroups
+        public int getgroups(int size, int[] list) throws LastErrorException;
+        
+        //Documentation: man 2 getgid
+        //Per the man page, this function cannot fail. Therefore
+        //LastErrorException does not need to be thrown.
+        public int getgid();
+        
         //Documentation: man 3 getpwent
         public NativeUserInformation getpwnam(String login) throws LastErrorException;
 
@@ -71,6 +95,43 @@ class LibCWrapper
     public LibCWrapper()
     {
         _libC = (LibC) Native.loadLibrary("c", LibC.class);
+    }
+    
+    /**
+     * Returns native information about the filepath.
+     *
+     * @param filepath
+     * @return
+     * @throws NativeException if an underlying error is encountered, such as the filepath not existing
+     */
+    public NativeFileStat lstat(String filepath) throws NativeException
+    {
+        try
+        {
+            NativeFileStat stat;
+            if(Platform.isLinux())
+            {
+                LinuxFileStat linuxStat = new LinuxFileStat();
+                _libC.__lxstat64(LibC.LINUX_LSTAT_VERSION, filepath, linuxStat);
+                stat = linuxStat;
+            }
+            else if(Platform.isMac())
+            {
+                OSXFileStat osXStat = new OSXFileStat();
+                _libC.lstat64(filepath, osXStat);
+                stat = osXStat;
+            }
+            else
+            {
+                throw new UnsupportedOperationException("Unsupported operating system");
+            }
+            
+            return stat;
+        }
+        catch(LastErrorException e)
+        {
+            throw new NativeException(e, "Failure to retrieve file information for: " + filepath);
+        }
     }
 
     /**
@@ -138,6 +199,58 @@ class LibCWrapper
         }
 
         return groupInfo;
+    }
+    
+    /**
+     * Gets group information using the gid of the group.
+     * 
+     * @param gid the id of the group
+     * @return group information
+     * @throws NativeException 
+     */
+    public NativeGroup getgrgid(int gid) throws NativeException
+    {
+        NativeGroup groupInfo = _libC.getgrgid(gid);
+        if(groupInfo == null)
+        {
+            String errorMsg = "Unable to obtain information for gid: " + gid;
+            throw new NativeException(errorMsg);
+        }
+
+        return groupInfo;
+    }
+    
+    /**
+     * Fills the passed in array with the group ids for the groups the user is a member of and returns the total number
+     * of groups the user is a member of. If {@code size} is 0 no group ids are inserted into {@code list}, but the
+     * number of groups the user is a member of will be returned.
+     * 
+     * @param size the length of {@code list}
+     * @param list the array that will be filled with the group ids the user is a member of
+     * @return the number of groups the user belongs to
+     * @throws NativeException 
+     */
+    public int getgroups(int size, int[] list) throws NativeException
+    {
+        try
+        {
+            return _libC.getgroups(size, list);
+        }
+        catch(LastErrorException e)
+        {
+            throw new NativeException(e, "Unable to obtain group ids for user");
+        }
+    }
+    
+    /**
+     * Gets the group id belonging to the user calling this method. The underlying native function call is guaranteed to
+     * succeed.
+     *
+     * @return
+     */
+    public int getgid()
+    {
+        return _libC.getgid();
     }
 
     /**

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
+import support.utils.posix.FilePermission;
 import support.utils.posix.NativeException;
 
 /**
@@ -20,35 +21,6 @@ import support.utils.posix.NativeException;
  */
 public interface FileSystemUtilities
 {
-    /**
-     * POSIX file permissions. These are used instead of direct use of octal
-     * values. This is for two reasons:
-     *  - There is no guaranteed way to ensure octal values are used, and
-     *    0700 and 700 have completely different values. Mistakenly using
-     *    the non-octal value could introduce a horrendous bug.
-     *  - This form is more object oriented.
-     */
-    public static enum Permission
-    {
-        //All values are octal
-        SET_USER_ID_ON_EXECUTION(04000), SET_GROUP_ID_ON_EXECUTION(02000), STICKY_BIT(01000),
-        OWNER_READ(0400), OWNER_WRITE(0200), OWNER_EXECUTE(0100),
-        GROUP_READ(0040), GROUP_WRITE(0020), GROUP_EXECUTE(0010),
-        OTHERS_READ(0004), OTHERS_WRITE(0002), OTHERS_EXECUTE(0001);
-
-        private final int _value;
-
-        private Permission(int value)
-        {
-            _value = value;
-        }
-
-        public int getValue()
-        {
-            return _value;
-        }
-    }
-
     /**
      * The permissions that will be set on files that are created in a copy
      * operation.
@@ -220,7 +192,7 @@ public interface FileSystemUtilities
      *
      * @throws NativeException
      */
-    public void chmod(File file, boolean recursive, Permission... mode) throws NativeException;
+    public void chmod(File file, boolean recursive, FilePermission... mode) throws NativeException;
 
     /**
      * Changes permissions of a file to be readable and writable by the owner
