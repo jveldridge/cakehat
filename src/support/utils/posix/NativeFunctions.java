@@ -1,8 +1,10 @@
 package support.utils.posix;
 
+import com.google.common.collect.ImmutableSet;
 import com.sun.jna.Platform;
 import java.util.List;
 import java.io.File;
+import java.util.Set;
 
 /**
  * Methods that build directly upon native functions.
@@ -16,6 +18,27 @@ public class NativeFunctions
     public NativeFunctions()
     {
         _wrapper = new LibCWrapper();
+    }
+    
+    /**
+     * Returns native information about {@code file}. Symbolic links are not followed, they are directly evaluated and
+     * as such this method can determine whether a file is a symbolic link. The information returned is a static view;
+     * updates to the file it references will not be reflected by the returned instance of {@code FileInformation}.
+     * {@code null} will be returned if the file does not exist.
+     * 
+     * @param file
+     * @return
+     * @throws NativeException if information on the file cannot be retrieved
+     */
+    public FileInformation getFileInformation(File file) throws NativeException
+    {
+        FileInformation info = null;
+        if(file.exists())
+        {
+            info = new FileInformation(_wrapper.lstat(file.getAbsolutePath()), file);
+        }
+
+        return info;
     }
 
     /**
@@ -52,7 +75,19 @@ public class NativeFunctions
 
         _wrapper.chown(file.getAbsolutePath(), uid, gid);
     }
-
+    
+    /**
+     * Returns the name of the group with group id {@code gid}.
+     * 
+     * @param gid
+     * @return
+     * @throws NativeException 
+     */
+    public String getGroupName(int gid) throws NativeException
+    {
+        return _wrapper.getgrgid(gid).getName();
+    }
+    
     /**
      * Returns all of the logins of the members of the group.
      *
@@ -63,6 +98,42 @@ public class NativeFunctions
     public List<String> getGroupMembers(String groupName) throws NativeException
     {
         return _wrapper.getgrnam(groupName).getMembers();
+    }
+    
+    /**
+     * Returns an immutable set of group ids for all of the groups the user is a member of.
+     * 
+     * @return
+     * @throws NativeException 
+     */
+    public Set<Integer> getAllUserGroupIds() throws NativeException
+    {
+        //Call getgroups with an empty array in order to get the return argument which is the total number of groups
+        int numGroups = _wrapper.getgroups(0, new int[0]);
+        
+        //Retrieve all of the group ids
+        int[] gids = new int[numGroups];
+        _wrapper.getgroups(numGroups, gids);
+        
+        //Convert array into immutable set
+        ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+        for(int gid : gids)
+        {
+            builder.add(gid);
+        }
+        
+        return builder.build();
+    }
+    
+    /**
+     * Returns the group id of the user's primary group. When a user creates a file, by default that file will be owned
+     * by this group.
+     * 
+     * @return 
+     */
+    public int getPrimaryUserGroupId()
+    {
+        return _wrapper.getgid();
     }
 
     /**
@@ -90,7 +161,7 @@ public class NativeFunctions
      * @return uid
      * @throws NativeException 
      */
-    public int getUserID(String login) throws NativeException
+    public int getUserId(String login) throws NativeException
     {
         return _wrapper.getpwnam(login).getUserId();
     }
@@ -155,7 +226,7 @@ public class NativeFunctions
         }
         catch (NativeException ex)
         {
-            throw new RuntimeException("Unable to retrieve user's login.  This should never happen, something is " +
+            throw new RuntimeException("Unable to retrieve user's login. This should never happen, something is " +
                     "very wrong with native functionality.", ex);
         }
     }

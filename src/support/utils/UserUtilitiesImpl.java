@@ -27,7 +27,7 @@ public class UserUtilitiesImpl implements UserUtilities
     
     public int getUserId(String login) throws NativeException
     {
-        return NATIVE_FUNCTIONS.getUserID(login);
+        return NATIVE_FUNCTIONS.getUserId(login);
     }
     
     public int getUserId()

@@ -17,23 +17,23 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 import support.utils.posix.NativeFunctions;
-import support.utils.FileSystemUtilities.Permission;
+import support.utils.posix.FilePermission;
 import support.utils.posix.NativeException;
 
 public class FileSystemUtilitiesImpl implements FileSystemUtilities
 {
     private static final NativeFunctions NATIVE_FUNCTIONS = new NativeFunctions();
-
-    private static final Permission[] READ_WRITE_PERMISSIONS = new Permission[]
+    
+    private static final FilePermission[] READ_WRITE_PERMISSIONS = new FilePermission[]
     {
-        Permission.OWNER_READ, Permission.OWNER_WRITE,
-        Permission.GROUP_READ, Permission.GROUP_WRITE
+        FilePermission.OWNER_READ, FilePermission.OWNER_WRITE,
+        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE
     };
 
-    private static final Permission[] READ_WRITE_EXECUTE_PERMISSIONS = new Permission[]
+    private static final FilePermission[] READ_WRITE_EXECUTE_PERMISSIONS = new FilePermission[]
     {
-        Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
-        Permission.GROUP_READ, Permission.GROUP_WRITE, Permission.GROUP_EXECUTE
+        FilePermission.OWNER_READ, FilePermission.OWNER_WRITE, FilePermission.OWNER_EXECUTE,
+        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE, FilePermission.GROUP_EXECUTE
     };
 
     @Override
@@ -534,7 +534,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
 
         //Set the specified permissions
-        Permission[] permissions;
+        FilePermission[] permissions;
         if(copyPermissions == FileCopyPermissions.READ_WRITE ||
             (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE &&
              !srcFile.canExecute()))
@@ -595,10 +595,10 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
 
     @Override
-    public void chmod(File file, boolean recursive, Permission... mode) throws NativeException
+    public void chmod(File file, boolean recursive, FilePermission... mode) throws NativeException
     {
         int modeValue = 0;
-        for(Permission permission : mode)
+        for(FilePermission permission : mode)
         {
             modeValue += permission.getValue();
         }
