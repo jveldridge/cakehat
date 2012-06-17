@@ -4,15 +4,16 @@ import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.joda.time.DateTime;
 
 /**
  * A {@code GradableEvent} belongs to an {@code Assignment} and is a collection of {@link Part}s. Conceptually a
@@ -50,7 +51,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      * with a call to {@link #getHandins()} and it may become {@code null} again when the cache is cleared by
      * {@link #clearHandinCache()}.
      */
-    private List<File> _handins = null;
+    private Set<File> _handins = null;
     
     /**
      * Constructs a GradableEvent.
@@ -181,13 +182,13 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     }
 
     /**
-     * Returns an immutable list of the {@link File}s for each digital handin for this GradableEvent. If this method has
+     * Returns an immutable set of the {@link File}s for each digital handin for this GradableEvent. If this method has
      * not been called before it will load all of the digital handins. Subsequent calls of this method will return the
      * same list unless the cache has been cleared with {@link #clearHandinCache()}.
      *
-     * @return list of digital handins
+     * @return set of digital handins
      */
-    private List<File> getDigitalHandins() throws IOException
+    private Set<File> getDigitalHandins() throws IOException
     {
         //If digital handins have not been requested yet, load them
         if(_handins == null)
@@ -198,8 +199,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
 
                 try
                 {
-                    _handins = ImmutableList.copyOf(Allocator.getFileSystemUtilities()
-                            .getFiles(_handinDirectory, handinFilter));
+                    _handins = Allocator.getFileSystemUtilities().getFiles(_handinDirectory, handinFilter);
                 }
                 catch(IOException e)
                 {
@@ -210,7 +210,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
             }
             else
             {
-                _handins = Collections.emptyList();
+                _handins = ImmutableSet.of();
             }
         }
 
@@ -237,7 +237,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
 
         //Get all handins for the group
         ArrayList<File> matchingHandins = new ArrayList<File>();
-        List<File> allHandins;
+        Set<File> allHandins;
         try
         {
             allHandins = this.getDigitalHandins();
@@ -267,8 +267,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
             {
                 mostRecentHandin = handin;
             }
-            else if(Allocator.getFileSystemUtilities().getModifiedDate(handin)
-                    .after(Allocator.getFileSystemUtilities().getModifiedDate(mostRecentHandin)))
+            else if(new DateTime(handin.lastModified()).isAfter(new DateTime(mostRecentHandin.lastModified())))
             {
                 mostRecentHandin = handin;
             }

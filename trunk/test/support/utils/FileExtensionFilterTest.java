@@ -79,8 +79,7 @@ public class FileExtensionFilterTest
 
         FileExtensionFilter filter = new FileExtensionFilter("ext");
         
-        //Should not accept a File that ends with the name of the extensions
-        //but is not actually an extension
+        //Should not accept a File that ends with the name of the extensions but is not actually an extension
         boolean accepted = filter.accept(file);
         assertEquals(false, accepted);
     }

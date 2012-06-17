@@ -3,27 +3,22 @@ package support.utils.posix;
 import com.sun.jna.Structure;
 
 /**
- * This class is for <strong>INTERNAL</strong> use only, it should never be
- * accessed from outside of this package. Due to limitations with JNA (Java
- * Native Access) this class must be public and all of its fields must be
- * public. Do not access the public fields of this class from outside of this
- * class.
+ * This class is for <strong>INTERNAL</strong> use only, it should never be accessed from outside of this package. Due
+ * to limitations with JNA (Java Native Access) this class must be public and all of its fields must be public. Do not
+ * access the public fields of this class from outside of this class.
  * <br/><br/>
- * This class stores the login records of users on the machine. Each terminal
- * counts as a login, so there is not a one to one correspondence between a
- * record existing and a user.
+ * This class stores the login records of users on the machine. Each terminal counts as a login, so there is not a one
+ * to one correspondence between a record existing and a user.
  * <br/><br/>
- * Information for this struct comes from the header files found on the
- * department machines. The basic definition of this structure can be
- * found at <code>/usr/include/utmpx.h</code> and the specifics are located at
+ * Information for this struct comes from the header files found on the department machines. The basic definition of
+ * this structure can be found at <code>/usr/include/utmpx.h</code> and the specifics are located at
  * <code>/usr/include/bits/utmpx.h</code>.
  * <br/><br/>
- * Note: This implementation will not work properly on OS X; however, there is
- * no need for this functionality when developing locally.
+ * Note: This implementation will not work properly on OS X; however, there is no need for this functionality when
+ * developing locally.
  * <br/><br/>
- * The fields of this class match the following native struct. (Implementation
- * note: native char is equivalent to a Java byte, Java char is actually an
- * unsigned short - this is done to support 16-bit Unicode.)
+ * The fields of this class match the following native struct. (Implementation note: native char is equivalent to a Java
+ * byte, Java char is actually an unsigned short - this is done to support 16-bit Unicode.)
  * <pre>
  * struct utmpx
  * {
@@ -114,12 +109,10 @@ public class NativeUTMPX extends Structure
     
     //The C struct for utmpx represents ut_addr_v6 as 4 unsigned 32-bit integers
     //However, Java's only unsigned primitive type is char, which is 16-bits
-    //So instead of using 4 unsigned 32-bit integers, this uses 8 unsignd 16-bit
-    //chars
+    //So instead of using 4 unsigned 32-bit integers, this uses 8 unsigned 16-bit chars
     public char[] ut_addr_v6 = new char[8];
 
-    //Space reserved for future space - do not bother reading whatever data is
-    //put in here (if at all)
+    //Space reserved for future space - do not bother reading whatever data is put in here (if at all)
     public byte[] __unused = new byte[20];
 
     /**
@@ -178,8 +171,7 @@ public class NativeUTMPX extends Structure
     }
 
     /**
-     * Whether the IP address associated with this entry is coming from outside
-     * of this computer.
+     * Whether the IP address associated with this entry is coming from outside of this computer.
      *
      * @return
      */
@@ -201,14 +193,13 @@ public class NativeUTMPX extends Structure
     }
 
     /**
-     * Returns the IP address associated with this entry formatted according to
-     * the standard IPv6 convention. IPv6 consists of 128 bits, with each 16-bit
-     * group represented in hexadecimal from highest bit to lowest bit.
+     * Returns the IP address associated with this entry formatted according to the standard IPv6 convention. IPv6
+     * consists of 128 bits, with each 16-bit group represented in hexadecimal from highest bit to lowest bit.
      * <br/><br/>
      * Example: <code>2001:0db8:85a3:0000:0000:8a2e:0370:7334</code>
      * <br/><br/>
-     * Note: When the IP scheme actually used is IPv4 (as is commonly the case
-     * as of 2011), then all but the last four hexadecimal values will be 0.
+     * Note: When the IP scheme actually used is IPv4 (as is commonly the case as of 2011), then all but the last four
+     * hexadecimal values will be 0.
      *
      * @return
      */
@@ -216,8 +207,8 @@ public class NativeUTMPX extends Structure
     {
         String str = "";
 
-        //Print from highest order bit to lowest order bit, 16 bits as a time
-        //interpreted as unsigned short values printed as hexadecimal
+        //Print from highest order bit to lowest order bit, 16 bits as a time interpreted as unsigned short values
+        //printed as hexadecimal
         for(int i = ut_addr_v6.length - 1; i >= 0; i--)
         {
             //Add as hex

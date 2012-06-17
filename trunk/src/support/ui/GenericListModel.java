@@ -25,16 +25,16 @@ public interface GenericListModel<T> extends ListModel
     public boolean hasElements();
 
     /**
-     * Overrides this method in <code>ListModel</code> to always return an
-     * element of type <code>T</code>.
-     *
+     * Overrides this method in {@code ListModel} to always return an element of type {@code T}.
+     * 
+     * @return
      */
     @Override
     public T getElementAt(int i);
 
     /**
-     * Fires off an event that all of the elements of this model have changed.
-     * This will result in the UI using this model to repaint the elements.
+     * Fires off an event that all of the elements of this model have changed. This will result in the UI using this
+     * model to repaint the elements.
      */
     public void notifyRefresh();
 }

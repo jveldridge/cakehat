@@ -98,12 +98,12 @@ public interface GradingServices
     public CITPrinter getPrinter(String message);
 
     /**
-     * Returns whether or not it is OK to distribute the given group to the given TA.  It is always OK to distribute the
+     * Returns whether or not it is OK to distribute the given group to the given TA. It is always OK to distribute the
      * group if no member is on the TA's blacklist, or if the given TA is null (meaning that the group is being
      * unassigned from another TA).
-     * 
-     * If a group member is on the TA's blacklist, a dialog will be shown asking the user whether or not to continue. 
-     * If the user selects the continue option, this method returns true; otherwise, it will return false.
+     * <br/><br/>
+     * If a group member is on the TA's blacklist, a dialog will be shown asking the user whether or not to continue. If
+     * the user selects the continue option, this method returns true; otherwise, it will return false.
      * 
      * @param group
      * @param ta
@@ -112,8 +112,7 @@ public interface GradingServices
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException;
 
     /**
-     * Returns whether or not some member of the given group
-     * is on any of the given TAs' blacklists.
+     * Returns whether or not some member of the given group is on any of the given TAs' blacklists.
      *
      * @param group
      * @param blacklists
@@ -138,16 +137,16 @@ public interface GradingServices
 
     /**
      * Checks that all handins for the given GradableEvent belong to a valid student or group.
-     *
-     * If the GradableEvent belongs to a group assignment, this method checks that the name of each handin
-     * is either the name of some group or the login of a member of some group.  If this is
-     * not the case for any handin, a message listing the problematic handins will be shown
-     * to the user, and the names of the problematic handins will be returned.
-     *
-     * If the Gradable Event belongs to a non-group assignment, this method checks that the name of each
-     * handin is the login of a student who is in the database and enabled.  If this is not the
-     * case for any handin, presents the user with an appropriate warning dialog through which students
-     * corresponding to these handins can either be added/enabled or ignored.
+     * <br/><br/>
+     * If the GradableEvent belongs to a group assignment, this method checks that the name of each handin is either the
+     * name of some group or the login of a member of some group. If this is not the case for any handin, a message
+     * listing the problematic handins will be shown to the user, and the names of the problematic handins will be
+     * returned.
+     * <br/><br/>
+     * If the Gradable Event belongs to a non-group assignment, this method checks that the name of each handin is the
+     * login of a student who is in the database and enabled. If this is not the case for any handin, presents the user
+     * with an appropriate warning dialog through which students corresponding to these handins can either be
+     * added/enabled or ignored.
      *
      * @param asgn
      * @return what are the remaining bad logins (null if the user clicked Cancel)

@@ -5,9 +5,9 @@ import java.util.Collection;
 
 /**
  * A convenience partial implementation of PartAction which always throws an exception if the
- * {@link #performAction(cakehat.assignment.Part, java.util.Collection) } method is invoked. This class is intended to
- * be used to simplify creating {@code PartAction}s for RUN, TEST, DEMO and OPEN modes as only the PRINT mode needs to
- * be able to take in multiple groups.
+ * {@link #performAction(Part, Collection)} method is invoked. This class is intended to be used to simplify creating
+ * {@link PartAction}s for RUN, TEST, DEMO and OPEN modes as only the PRINT mode needs to be able to take in multiple
+ * groups.
  *
  * @author jak2
  */

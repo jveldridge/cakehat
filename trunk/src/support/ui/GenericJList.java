@@ -61,9 +61,8 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * This method cannot be made type-safe due to Java's implementation of
-     * generics: setListData(Object[]) and setListData(E[]) would result in a
-     * signature clash due to type erasure.
+     * This method cannot be made type-safe due to Java's implementation of generics: setListData(Object[]) and
+     * setListData(E[]) would result in a signature clash due to type erasure.
      *
      * @see #setListData(java.lang.Iterable)
      * @see #setListData(java.lang.Iterable, boolean)
@@ -75,14 +74,12 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     @Override
     public void setListData(Object[] values)
     {
-        throw new UnsupportedOperationException("Not valid for GenericJList. " +
-                "Please use setListData(Iterable<E>)");
+        throw new UnsupportedOperationException("Not valid for GenericJList. Please use setListData(Iterable<E>)");
     }
 
     /**
-     * This method cannot be made type-safe due to Java's implementation of
-     * generics: setListData(Vector<?>) and setListData(Vector<E>) would result
-     * in a signature clash due to type erasure.
+     * This method cannot be made type-safe due to Java's implementation of generics: setListData(Vector<?>) and
+     * setListData(Vector<E>) would result in a signature clash due to type erasure.
      *
      * @see #setListData(java.lang.Iterable)
      * @see #setListData(java.lang.Iterable, boolean)
@@ -94,13 +91,12 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     @Override
     public void setListData(Vector<?> values)
     {
-        throw new UnsupportedOperationException("Not valid for GenericJList. " +
-                "Please use setListData(Iterable<E>)");
+        throw new UnsupportedOperationException("Not valid for GenericJList. Please use setListData(Iterable<E>)");
     }
 
     /**
-     * Sets the values displayed in the list. Replaces all existing values.
-     * This will result in no values being selected.
+     * Sets the values displayed in the list. Replaces all existing values. This will result in no values being
+     * selected.
      *
      * @param values
      */
@@ -112,14 +108,11 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     /**
      * Sets the values displayed in the list. Replaces all existing values.
      * <br/><br/>
-     * If <code>maintainSelected</code> is <code>true</code> then all currently
-     * selected values will be selected for the <code>values</code> passed in.
-     * This may result in no selections being made. If
-     * <code>maintainSelected</code> is <code>false</code> then no selections
-     * will be made.
+     * If {@code maintainSelected} is {@code true} then all currently selected values will be selected for the
+     * {@code values} passed in. This may result in no selections being made. If {@code maintainSelected} is
+     * {@code false} then no selections will be made.
      * <br/><br/>
-     * Unexpected behavior may arise in maintaining the selection if not all
-     * values are unique.
+     * Unexpected behavior may arise in maintaining the selection if not all values are unique.
      *
      * @param values
      * @param maintainSelected
@@ -132,7 +125,8 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
             selected = this.getGenericSelectedValues();
         }
 
-        if (_renderer != null) {
+        if(_renderer != null)
+        {
             _renderer.clearCache();
         }
         this.setModel(buildModel(values));
@@ -152,8 +146,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * This method should never be called as doing so interferes with the
-     * type-safety this class provides.
+     * This method should never be called as doing so interferes with the type-safety this class provides.
      *
      * @param model
      * @deprecated due to lack of type-safety
@@ -161,16 +154,13 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     @Override
     public void setModel(ListModel model)
     {
-        throw new UnsupportedOperationException("Not valid for GenericJList. " +
-                "Please use setListData(...)");
+        throw new UnsupportedOperationException("Not valid for GenericJList. Please use setListData(...)");
     }
 
     /**
-     * Sets the model that represents the values of the list and notifies
-     * property change listeners. Situations should not arise in which direct
-     * users of this class will require a different model. Subclasses may wish
-     * to use a different model, in that case they should override
-     * {@link #buildModel(Iterable)}.
+     * Sets the model that represents the values of the list and notifies property change listeners. Situations should
+     * not arise in which direct users of this class will require a different model. Subclasses may wish to use a
+     * different model, in that case they should override {@link #buildModel(Iterable)}.
      *
      * @param model
      */
@@ -187,8 +177,8 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * Override this method in subclasses to use a different list model. By
-     * default an immutable list model will be used.
+     * Override this method in subclasses to use a different list model. By default an immutable list model will be
+     * used.
      * 
      * @param values
      * @return
@@ -199,12 +189,12 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
     
     /**
-     * This method must be public to match a required interface; however, it is
-     * not intended for external use.
+     * This method must be public to match a required interface; however, it is not intended for external use.
      *
      * @param i
      * @return
      */
+    @Override
     public E getElementDisplayedAt(int i)
     {
         return _model.getElementAt(i);
@@ -255,8 +245,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
     
     /**
-     * Returns the first selected value in the list or <code>null</code> if no
-     * items are selected.
+     * Returns the first selected value in the list or {@code null} if no items are selected.
      *
      * @return
      */
@@ -275,10 +264,9 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * This method cannot properly be made typesafe because Java does not
-     * support generic array creation. (Casting an Object array to a generic
-     * array is possible, but problematic because the array then cannot ensure
-     * that all values of the array are of the generic type.)
+     * This method cannot properly be made type-safe because Java does not support generic array creation. (Casting an
+     * Object array to a generic array is possible, but problematic because the array then cannot ensure that all values
+     * of the array are of the generic type.)
      *
      * @see #getGenericSelectedValues()
      *
@@ -289,8 +277,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     @Override
     public Object[] getSelectedValues()
     {
-        throw new UnsupportedOperationException("Not valid for GenericJList. " +
-                "Please use getGenericSelectedValues()");
+        throw new UnsupportedOperationException("Not valid for GenericJList. Please use getGenericSelectedValues()");
     }
 
     /**
@@ -312,8 +299,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * Returns an immutable map of all the selected indices mapped to the value
-     * at that index.
+     * Returns an immutable map of all the selected indices mapped to the value at that index.
      *
      * @return
      */
@@ -341,7 +327,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * This method cannot be made typesafe.
+     * This method cannot be made type-safe.
      *
      * @param anObject
      * @param shouldScroll
@@ -351,8 +337,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     @Override
     public void setSelectedValue(Object anObject, boolean shouldScroll)
     {
-        throw new UnsupportedOperationException("Not valid for GenericJList. " +
-                "Please use setSelectedValue(...)");
+        throw new UnsupportedOperationException("Not valid for GenericJList. Please use setSelectedValue(...)");
     }
 
     /**
@@ -371,9 +356,8 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * Selects the first occurence of each specified value. If a value does not
-     * exist in the list then it will not be selected, but no problems will
-     * arise.
+     * Selects the first occurrence of each specified value. If a value does not exist in the list then it will not be
+     * selected, but no problems will arise.
      *
      * @param values
      */
@@ -423,8 +407,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
     }
 
     /**
-     * Causes the font used by the this list to be plain. By default the font
-     * is bold.
+     * Causes the font used by the this list to be plain. By default the font is bold.
      */
     public void usePlainFont()
     {

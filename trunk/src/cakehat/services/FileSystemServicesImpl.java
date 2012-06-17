@@ -16,6 +16,7 @@ import support.utils.posix.NativeException;
  */
 public class FileSystemServicesImpl implements FileSystemServices
 {
+    @Override
     public void sanitize(File file) throws ServicesException
     {
         try
@@ -24,13 +25,11 @@ public class FileSystemServicesImpl implements FileSystemServices
             Allocator.getFileSystemUtilities().chmodDefault(file, true);
 
             //Group owner
-            Allocator.getFileSystemUtilities().changeGroup(file,
-                    Allocator.getCourseInfo().getTAGroup(), true);
+            Allocator.getFileSystemUtilities().changeGroup(file, Allocator.getCourseInfo().getTAGroup(), true);
         }
         catch(NativeException e)
         {
-            throw new ServicesException("Unable to set group or permissions: " +
-                    file.getAbsolutePath(), e);
+            throw new ServicesException("Unable to set group or permissions: " + file.getAbsolutePath(), e);
         }
     }
 
@@ -38,10 +37,7 @@ public class FileSystemServicesImpl implements FileSystemServices
     {
         try
         {
-            List<File> directoriesMade = Allocator.getFileSystemUtilities()
-                    .makeDirectory(dir, Allocator.getCourseInfo().getTAGroup());
-
-            return directoriesMade;
+            return Allocator.getFileSystemUtilities().makeDirectory(dir, Allocator.getCourseInfo().getTAGroup());
         }
         catch(IOException e)
         {
@@ -50,12 +46,11 @@ public class FileSystemServicesImpl implements FileSystemServices
         }
     }
 
-    public List<File> copy(File src, File dst, OverwriteMode overwrite,
-        boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException
+    public List<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate,
+            FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        return Allocator.getFileSystemUtilities()
-                .copy(src, dst, overwrite, preserveDate,
-                      Allocator.getCourseInfo().getTAGroup(), copyPermissions);
+        return Allocator.getFileSystemUtilities().copy(src, dst, overwrite, preserveDate,
+                Allocator.getCourseInfo().getTAGroup(), copyPermissions);
     }
     
     @Override

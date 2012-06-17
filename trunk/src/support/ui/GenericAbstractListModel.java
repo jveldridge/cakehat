@@ -3,8 +3,7 @@ package support.ui;
 import javax.swing.AbstractListModel;
 
 /**
- * The generic abstract definition for the data model that provides a list
- * with its contents.
+ * The generic abstract definition for the data model that provides a list with its contents.
  *
  * @author jak2
  */
@@ -19,7 +18,13 @@ public abstract class GenericAbstractListModel<T> extends AbstractListModel impl
     @Override
     public T getElementAt(int i)
     {
-        return getElements().get(i);
+        T elem = null;
+        if(i >= 0 && i < getElements().size())
+        {
+            elem = getElements().get(i);
+        }
+        
+        return elem;
     }
 
     @Override

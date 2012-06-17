@@ -550,7 +550,7 @@ class JavaActions implements ActionProvider
     {
         try
         {
-            List<File> compiledFiles = Allocator.getFileSystemUtilities().
+            Set<File> compiledFiles = Allocator.getFileSystemUtilities().
                 getFiles(unarchiveDir, new FileExtensionFilter("class"));
             Allocator.getFileSystemUtilities().deleteFiles(compiledFiles);
         }
@@ -571,7 +571,7 @@ class JavaActions implements ActionProvider
      */
     private static String addJarsToClasspath(File unarchiveDir, String classpath) throws ActionException
     {
-        List<File> jarFiles;
+        Set<File> jarFiles;
         try
         {
             jarFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, new FileExtensionFilter("jar"));
@@ -631,7 +631,7 @@ class JavaActions implements ActionProvider
         //Get all of the Java files that are allowed by the inclusion filter
         FileFilter javaFilter = new FileExtensionFilter("java");
         
-        List<File> files;
+        Set<File> files;
         try
         {
             files = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, javaFilter);
@@ -956,11 +956,10 @@ class JavaActions implements ActionProvider
      */
     private static List<ClassInfo> getMainClasses(File unarchiveDir) throws ActionException
     {
-        List<File> classFiles;
+        Set<File> classFiles;
         try
         {
-            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
-                    new FileExtensionFilter("class"));
+            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, new FileExtensionFilter("class"));
         }
         catch(IOException e)
         {
@@ -990,11 +989,10 @@ class JavaActions implements ActionProvider
      */
     private static List<ClassInfo> getJUnitClasses(File unarchiveDir) throws ActionException
     {
-        List<File> classFiles;
+        Set<File> classFiles;
         try
         {
-            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
-                    new FileExtensionFilter("class"));
+            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, new FileExtensionFilter("class"));
         }
         catch (IOException e)
         {

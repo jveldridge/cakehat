@@ -740,14 +740,13 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Map<TA, Set<Group>> getDistribution(Part dp) throws ServicesException {
+    public Map<TA, Set<Group>> getDistribution(Part part) throws ServicesException {
         Map<TA, Set<Group>> dist = new HashMap<TA, Set<Group>>();
         SetMultimap<Integer, Integer> idDist;
         try {
-            idDist = Allocator.getDatabase().getDistribution(dp.getId());
+            idDist = Allocator.getDatabase().getDistribution(part.getId());
         } catch (SQLException ex) {
-            throw new ServicesException("Could not read distribution for part [" +
-                    dp + "] from the database.", ex);
+            throw new ServicesException("Could not read distribution for part [" + part + "] from the database.", ex);
         }
         
         for (TA ta : this.getTAs()) {
@@ -756,8 +755,7 @@ public class DataServicesImpl implements DataServices {
                 dist.put(ta, this.idsToGroups(toGrade, new HashSet<Group>(toGrade.size())));
             }
             else {
-                //for any TA who has not been assigned any groups to grade,
-                //add an empty collection to the map 
+                //for any TA who has not been assigned any groups to grade, add an empty set to the map 
                 dist.put(ta, Collections.<Group>emptySet());
             }
         }
@@ -819,8 +817,8 @@ public class DataServicesImpl implements DataServices {
             
             return toReturn;
         } catch (SQLException ex) {
-            throw new ServicesException("Could not read DPs with assigned groups "
-                    + "for TA [" + ta + "] from the database.", ex);
+            throw new ServicesException("Could not read parts with assigned groups for TA [" + ta + 
+                    "] from the database.", ex);
         }
     }
     

@@ -95,7 +95,7 @@ public class NativeFunctions
      *
      * @throws NativeException thrown if the group does not exist
      */
-    public List<String> getGroupMembers(String groupName) throws NativeException
+    public Set<String> getGroupMembers(String groupName) throws NativeException
     {
         return _wrapper.getgrnam(groupName).getMembers();
     }
@@ -232,47 +232,45 @@ public class NativeFunctions
     }
 
     /**
-     * Returns whether the user executing this code is remotely connected to
-     * the computer running cakehat.
+     * Returns whether the user executing this code is remotely connected to the computer running cakehat.
      *
      * @return
      * @throws NativeException
      */
     public boolean isUserRemotelyConnected() throws NativeException
     {
+        boolean isRemote = false;
+        
         //If the code is not running on Linux, just assume the user is running locally because determining this
         //information is not supported on non-Linux platforms
-        if(!Platform.isLinux())
+        if(Platform.isLinux())
         {
-            return false;
-        }
+            String userLogin = this.getUserLogin();
 
-        String userLogin = this.getUserLogin();
-        boolean isRemote = false;
+            //Open user account database
+            _wrapper.setutxent();
 
-        //Open user account database
-        _wrapper.setutxent();
-
-        //Just in case something fails, always close the user account database
-        try
-        {
-            NativeUTMPX utmpx = _wrapper.getutxent();
-            while(utmpx != null)
+            //Just in case something fails, always close the user account database
+            try
             {
-                //If the entry is for this user and the IP address is remote
-                if(userLogin.equals(utmpx.getUser()) && utmpx.isRemoteIP())
+                NativeUTMPX utmpx = _wrapper.getutxent();
+                while(utmpx != null)
                 {
-                    isRemote = true;
-                    break;
-                }
+                    //If the entry is for this user and the IP address is remote
+                    if(userLogin.equals(utmpx.getUser()) && utmpx.isRemoteIP())
+                    {
+                        isRemote = true;
+                        break;
+                    }
 
-                utmpx = _wrapper.getutxent();
+                    utmpx = _wrapper.getutxent();
+                }
             }
-        }
-        finally
-        {
-            //Close user account database
-            _wrapper.endutxent();
+            finally
+            {
+                //Close user account database
+                _wrapper.endutxent();
+            }
         }
 
         return isRemote;

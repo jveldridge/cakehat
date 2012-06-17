@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -200,11 +199,11 @@ public class CakehatMain
             //If there is no matching record in the database
             if(userTA == null)
             {
-                List<String> taLogins = Allocator.getUserServices().getTALogins();
+                Set<String> taLogins = Allocator.getUserServices().getTALogins();
             
                 if(taLogins.contains(userLogin))
                 {
-                    List<String> htaLogins = Allocator.getUserServices().getHTALogins(); 
+                    Set<String> htaLogins = Allocator.getUserServices().getHTALogins(); 
                     
                     //If there are already TAs in the database, add the TA currently running cakehat
                     //Otherwise do not because that means cakehat is not set up yet

@@ -224,8 +224,8 @@ class TAPanel extends JPanel
     {   
         //Get TA info out of the database and from the Linux system
         Set<DbTA> tasInDb;
-        List<String> tasOnSystem;
-        List<String> htasOnSystem;
+        Set<String> tasOnSystem;
+        Set<String> htasOnSystem;
         try
         {
             tasInDb = Allocator.getDatabase().getTAs();
@@ -529,7 +529,7 @@ class TAPanel extends JPanel
                 
                 _firstName = _ta.getFirstName();
                 _lastName = _ta.getLastName();
-                _admin = _ta.isAdmin();;
+                _admin = _ta.isAdmin();
                 _defaultGrader = _ta.isDefaultGrader();
             }
             

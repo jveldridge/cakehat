@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A listener which is informed when values are added, removed, or
- * reordered from dragging.
+ * A listener which is informed when values are added, removed, or reordered from dragging.
  *
  * @param <T>
  *
@@ -28,12 +27,11 @@ public interface DnDListener<T>
     public void valuesRemoved(List<T> removed);
 
     /**
-     * A map of the indices to values for the values reordered in this list.
-     * The indices are the current indices these values are now located at.
+     * A map of the indices to values for the values reordered in this list. The indices are the current indices these
+     * values are now located at.
      * <br/><br/>
-     * This method is called when the drag and drop occurs entirely within the
-     * same list, and so the values in the list do not change, but the order of
-     * the values do.
+     * This method is called when the drag and drop occurs entirely within the same list, and so the values in the list
+     * do not change, but the order of the values do.
      *
      * @param values the values that were reordered
      */

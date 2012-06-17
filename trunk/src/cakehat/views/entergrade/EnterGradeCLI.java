@@ -22,17 +22,14 @@ public class EnterGradeCLI {
     private EnterGradeCLI() { };
     
     /**
-     * Enters grade for a student or group for the part as specified by
-     * <code>args</code>. <code>args</code> is all but the first of the
-     * arguments passed to the cakehat mainline. The expected format
-     * of the arguments is:
+     * Enters grade for a student or group for the part as specified by {@code args}. {@code args} is all but the first
+     * of the arguments passed to the cakehat mainline. The expected format of the arguments is:
      * <br/>
      * First entry: part quick name <br/>
      * Second entry: student login <br/>
      * Third entry: points given (optional) <br/>
      * <br/>
-     * Thorough data validation occurs, so the code will respond appropriately
-     * if the data is not in the expected format.
+     * Thorough data validation occurs, so the code will respond appropriately if the data is not in the expected format
      *
      * @param args
      */
@@ -49,16 +46,15 @@ public class EnterGradeCLI {
     }
 
     /**
-     * This method is for unit testing purposes. It behaves identically to
-     * {@link #performEnterGrade(java.util.List) } except that it does not
-     * print its results to the terminal.
+     * This method is for unit testing purposes. It behaves identically to {@link #performEnterGrade(java.util.List)}
+     * except that it does not print its results to the terminal.
      *
      * @param args
      * @param interactor
-     * @throws gradesystem.views.entergrade.EnterGradeCLI.EnterGradeException
+     * @throws EnterGradeException
      */
-    static EnterGradeResult performEnterGrade(List<String> args,
-            EnterGradeInteractor interactor) throws EnterGradeException
+    static EnterGradeResult performEnterGrade(List<String> args, EnterGradeInteractor interactor)
+            throws EnterGradeException
     {
         String partName = null;
         String studentLogin = null;
@@ -80,28 +76,24 @@ public class EnterGradeCLI {
         //Illegal number of arguments
         else
         {
-            throw new EnterGradeException(
-                    "Usage: cakehat_enterGrade [quick name] [student login] OR",
-                    "       cakehat_enterGrade [quick name] [student login] [points earned]");
+            throw new EnterGradeException("Usage: cakehat_enterGrade [quick name] [student login] OR",
+                                          "       cakehat_enterGrade [quick name] [student login] [points earned]");
         }
 
         return enterPartGrade(partName, studentLogin, pointsStr, interactor);
     }
     
     /**
-     * Enters the part grade for the student. Verification is performed
-     * throughout.
+     * Enters the part grade for the student. Verification is performed throughout.
      *
      * @param quickName
      * @param studentLogin
-     * @param pointsStr may be <code>null</code>, if so the full value of the
-     * part will be used
+     * @param pointsStr may be {@code null}, if so the full value of the part will be used
      * @param interactor
      * @throws EnterGradeException
      * @return EnterGradeResult
      */
-    private static EnterGradeResult enterPartGrade(String quickName,
-            String studentLogin, String pointsStr,
+    private static EnterGradeResult enterPartGrade(String quickName, String studentLogin, String pointsStr,
             EnterGradeInteractor interactor) throws EnterGradeException
     {
         //Verify student login
@@ -119,21 +111,25 @@ public class EnterGradeCLI {
         //If no group exists for this student and assignment pairing
         if(group == null)
         {
-            //There must be group if the assignment has groups
+            //There must be a group if the assignment has groups
             if(part.getGradableEvent().getAssignment().hasGroups())
             {
                 throw new EnterGradeException("This part belongs to an assignment that requires groups. The provided "
                                         + "student login [" + student.getLogin() + "] has no group for this assignment "
                                         + "[" + part.getGradableEvent().getAssignment().getName() + "]");
             }
-            //this should never happen
-            else {
-                throw new EnterGradeException("You've found a bug in our code.");
+            //If the assignment does not have groups then an auto-group was not created, which is a cakehat bug
+            else
+            {
+                throw new EnterGradeException("cakehat failure, auto-group of one was not created\n" +
+                        "studentLogin: " + studentLogin + "\n" +
+                        "quickName: " + quickName + "\n" + 
+                        "part: " + part.getFullDisplayName());
             }
         }        
         
-        //Enter grade, but first confirm that there is either no pre-existing
-        //grade or that it is ok to overwrite the existing grade
+        //Enter grade, but first confirm that there is either no pre-existing grade or that it is ok to overwrite the
+        //existing grade
         if(shouldEnterGrade(part, group, interactor))
         {
             try
@@ -160,8 +156,7 @@ public class EnterGradeCLI {
                 interactor.println("Student login: " + student.getLogin());
             }
 
-            //If the number of points was specified, confirm number of points they
-            //gave the group
+            //If the number of points was specified, confirm number of points they gave the group
             if(pointsStr != null)
             {
                 interactor.println("Points given: " + pointsNum);
@@ -176,8 +171,8 @@ public class EnterGradeCLI {
     }
     
     /**
-     * Returns the Student object corresponding to the student login, throws a
-     * EnterGradeException if the student doesn't exist or is not enabled.
+     * Returns the Student object corresponding to the student login, throws a EnterGradeException if the student
+     * doesn't exist or is not enabled.
      *
      * @param studentLogin
      * @return
@@ -204,7 +199,7 @@ public class EnterGradeCLI {
     }
     
     /**
-     * Retrieves the part that has quick name specified by <code>quickName</code>.
+     * Retrieves the part that has quick name specified by {@code quickName}.
      *
      * @param quickName
      * @return
@@ -225,17 +220,16 @@ public class EnterGradeCLI {
 
         if(!nameToPart.containsKey(quickName))
         {
-            throw new EnterGradeException("Provided quick name [" + quickName + "] is not a valid quick name. "
-                                        + "Valid quick names are: " + nameToPart.keySet().toString());
+            throw new EnterGradeException("Provided quick name [" + quickName + "] is not a valid quick name. " +
+                                          "Valid quick names are: " + nameToPart.keySet().toString());
         }
 
         return nameToPart.get(quickName);
     }
     
     /**
-     * Parses out the value represented by <code>pointsStr</code>, and verifies
-     * that it does not exceed the points value for the part. If
-     * <code>pointsStr</code> is null, the total value of the part will be used.
+     * Parses out the value represented by {@code pointsStr}, and verifies that it does not exceed the points value for
+     * the part. If {@code pointsStr} is {@code null}, the total value of the part will be used.
      *
      * @param pointsStr
      * @param part
@@ -262,8 +256,8 @@ public class EnterGradeCLI {
 
             if(pointsNum > part.getOutOf())
             {
-                throw new EnterGradeException("Specified points value [" + pointsNum +
-                        "] exceeds part value [" +part.getOutOf() + "]");
+                throw new EnterGradeException("Specified points value [" + pointsNum + "] exceeds part value [" +
+                        part.getOutOf() + "]");
             }
         }
 
@@ -292,9 +286,8 @@ public class EnterGradeCLI {
     }
     
     /**
-     * Determines whether the grade should be entered. If no grade already
-     * exists then <code>true</code> will be returned. If a grade already exists
-     * the user will be asked whether they want to overwrite the grade.
+     * Determines whether the grade should be entered. If no grade already exists then {@code true} will be returned. If
+     * a grade already exists the user will be asked whether they want to overwrite the grade.
      *
      * @param part
      * @param group
@@ -345,8 +338,7 @@ public class EnterGradeCLI {
     }
     
     /**
-     * Interacts with the messages sent to and requests made. This is only
-     * designed to be used for testing.
+     * Interacts with the messages sent to and requests made. This is only designed to be used for testing.
      */
     static interface EnterGradeInteractor
     {
@@ -358,24 +350,25 @@ public class EnterGradeCLI {
     /**
      * The default interaction that makes use of the command prompt.
      */
-    static class DefaultInteractor implements EnterGradeInteractor
+    private static class DefaultInteractor implements EnterGradeInteractor
     {
+        @Override
         public boolean shouldOverwriteScore()
         {
             Scanner scanner = new Scanner(System.in);
             String response = scanner.nextLine();
-
-            boolean overwrite = (response.equalsIgnoreCase("yes") ||
-                    response.equalsIgnoreCase("y"));
+            boolean overwrite = (response.equalsIgnoreCase("yes") || response.equalsIgnoreCase("y"));
 
             return overwrite;
         }
 
+        @Override
         public void println(String msg)
         {
             System.out.println(msg);
         }
 
+        @Override
         public void print(String msg)
         {
             System.out.print(msg);
@@ -383,9 +376,8 @@ public class EnterGradeCLI {
     }
     
     /**
-     * An exception that occurs while entering grade for a student or group. This
-     * exception should never be interacted with outside of this class except
-     * when running unit tests against it.
+     * An exception that occurs while entering grade for a student or group. This exception should never be interacted
+     * with outside of this class except when running unit tests against it.
      *
      * @author jak2
      */

@@ -1,5 +1,7 @@
 package support.utils;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -11,11 +13,11 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import support.utils.posix.NativeFunctions;
 import support.utils.posix.FilePermission;
 import support.utils.posix.NativeException;
@@ -37,7 +39,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     };
 
     @Override
-    public File createTempFile(String prefix, String suffix) throws IOException {
+    public File createTempFile(String prefix, String suffix) throws IOException
+    {
         File tmpFile = File.createTempFile(prefix, suffix);
         tmpFile.deleteOnExit();
         
@@ -45,7 +48,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
     
     @Override
-    public File createTempFile(String prefix, String suffix, File directory) throws IOException {
+    public File createTempFile(String prefix, String suffix, File directory) throws IOException
+    {
         File tmpFile = File.createTempFile(prefix, suffix, directory);
         tmpFile.deleteOnExit();
         
@@ -53,17 +57,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
     
     @Override
-    public Calendar getModifiedDate(File file)
-    {
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTimeInMillis(file.lastModified());
-
-        return calendar;
-    }
-    
-    @Override
-    public List<File> copy(File src, File dst, OverwriteMode overwrite,
-            boolean preserveDate, String groupOwner,
+    public List<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         List<File> created;
@@ -78,21 +72,17 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
         else
         {
-            throw new FileCopyingException(false,
-                    "Source is neither a file nor a directory: " +
-                    src.getAbsolutePath());
+            throw new FileCopyingException(false, "Source is neither a file nor a directory: " + src.getAbsolutePath());
         }
 
         return created;
     }
 
     /**
-     * Recursively copies <code>srcDir</code> and all of its contents into
-     * <code>dstDir</code>. Directories will be merged such that if the
-     * destination directory or a directory in the destination directory needs
-     * to be created and already exist, it will not be deleted. If
-     * <code>overwrite</code> is <code>true</code> then files may be overwritten
-     * in the copying process.
+     * Recursively copies {@code srcDir} and all of its contents into {@code dstDir}. Directories will be merged such
+     * that if the destination directory or a directory in the destination directory needs to be created and already
+     * exist, it will not be deleted. If {@code overwrite} is {@code true} then files may be overwritten in the copying
+     * process.
      *
      * @param srcDir directory to copy
      * @param dstDir
@@ -104,32 +94,28 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      * @return all files and directories created in performing the copy
      * @throws IOException
      */
-    private List<File> copyDirectory(File srcDir, File dstDir,
-            OverwriteMode overwrite, boolean preserveDate, String groupOwner,
-            FileCopyPermissions copyPermissions) throws FileCopyingException
+    private ImmutableList<File> copyDirectory(File srcDir, File dstDir, OverwriteMode overwrite, boolean preserveDate,
+            String groupOwner, FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        ArrayList<File> created = new ArrayList<File>();
+        ImmutableList.Builder<File> created = ImmutableList.builder();
 
         //Perform validation
         
         if(!srcDir.exists())
         {
-            throw new FileCopyingException(false, "Source directory cannot be " +
-                    "copied because it does not exist.\n" +
+            throw new FileCopyingException(false, "Source directory cannot be copied because it does not exist.\n" +
                     "Source Directory: " + srcDir.getAbsolutePath());
         }
 
         if(!srcDir.isDirectory())
         {
-            throw new FileCopyingException(false, "Source is not a directory, " +
-                    "this method only copies directories.\n" +
+            throw new FileCopyingException(false, "Source is not a directory, this method only copies directories.\n" +
                     "Source directory: " + srcDir.getAbsolutePath());
         }
 
-        // If the directory exists, that is ok, the contents of the source
-        // directory will be merged into the destination directory.
-        // However if the destination directory does not exist, create it
-        // and record all directories created in the process
+        // If the directory exists, that is ok, the contents of the source directory will be merged into the destination
+        // directory. However if the destination directory does not exist, create it and record all directories created
+        // in the process
         if(!dstDir.exists())
         {
             //Create directory and parent directories (as needed)
@@ -141,8 +127,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
             catch(IOException e)
             {
-                throw this.cleanupFailedCopy(created,
-                        "Unable to create directory or parent directory.", e, srcDir, dstDir);
+                throw this.cleanupFailedCopy(created, "Unable to create directory or parent directory.", e, srcDir, dstDir);
             }
 
             if(preserveDate)
@@ -151,8 +136,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 {
                     if(!dirCreated.setLastModified(srcDir.lastModified()))
                     {
-                        throw this.cleanupFailedCopy(dirsCreated,
-                                "Unable to preserve modification date", null, srcDir, dstDir);
+                        throw this.cleanupFailedCopy(dirsCreated, "Unable to preserve modification date", null, srcDir, dstDir);
                     }
                 }
             }
@@ -173,8 +157,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 }
                 catch(FileCopyingException e)
                 {
-                    throw this.cleanupFailedCopy(created,
-                            "Unable to copy file contained in directory", e, srcDir, dstDir);
+                    throw this.cleanupFailedCopy(created, "Unable to copy file contained in directory", e, srcDir, dstDir);
                 }
             }
             else if(entry.isDirectory())
@@ -185,42 +168,38 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 }
                 catch(IOException e)
                 {
-                    throw this.cleanupFailedCopy(created,
-                            "Unable to copy directory contained in directory", e, srcDir, dstDir);
+                    throw this.cleanupFailedCopy(created, "Unable to copy directory contained in directory", e, srcDir, dstDir);
                 }
             }
         }
 
-        return created;
+        return created.build();
     }
 
     /**
-     * Helper method used by copy methods to delete files if an issue has been
-     * encountered in copying. This should be used when a copy has failed and
-     * an exception must be thrown, but before doing so all of the files created
-     * so far in the copy should be deleted. The exception to be thrown will be
-     * generated and its contents will differ depending on the success of
-     * deleting the files.
+     * Helper method used by copy methods to delete files if an issue has been encountered in copying. This should be
+     * used when a copy has failed and an exception must be thrown, but before doing so all of the files created
+     * so far in the copy should be deleted. The exception to be thrown will be generated and its contents will differ
+     * depending on the success of deleting the files.
      *
      * @param toDelete files that need to be deleted
      * @param message explanation of what went wrong
-     * @param cause the reason that the copy is being aborted, may be <code>null</code>
+     * @param cause the reason that the copy is being aborted, may be {@code null}
      * @param srcFile
      * @param dstFile
      *
-     * @returns FileCopyingException an exception built from the parameters
-     * passed and whether deleting the files succeeded
+     * @returns FileCopyingException an exception built from the parameters passed and whether deleting the files
+     * succeeded
      */
-    private FileCopyingException cleanupFailedCopy(List<File> toDelete,
-            String message, Throwable cause, File srcFile, File dstFile)
+    private FileCopyingException cleanupFailedCopy(List<File> toDelete, String message, Throwable cause, File srcFile,
+            File dstFile)
     {
         try
         {
             this.deleteFiles(toDelete);
 
             return new FileCopyingException(false, message + " "  +
-                "The files and/or directories created in the copy have been" +
-                "deleted.\n" +
+                "The files and/or directories created in the copy have been deleted.\n" +
                 "Source File: " + srcFile + "\n" +
                 "Destination File: " + dstFile, cause);
         }
@@ -231,6 +210,12 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 "Source File: " + srcFile + "\n" +
                 "Destination File: " + dstFile, cause);
         }
+    }
+    
+    private FileCopyingException cleanupFailedCopy(ImmutableList.Builder<File> toDelete, String message,
+            Throwable cause, File srcFile, File dstFile)
+    {
+        return cleanupFailedCopy(toDelete.build(), message, cause, srcFile, dstFile);
     }
 
     @Override
@@ -261,7 +246,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             StringBuilder failedToDeleteBuilder = new StringBuilder();
             for(File nonDeleted : failedToDelete)
             {
-                failedToDeleteBuilder.append("\n" + nonDeleted.getAbsolutePath());
+                failedToDeleteBuilder.append("\n");
+                failedToDeleteBuilder.append(nonDeleted.getAbsolutePath());
             }
 
             throw new IOException("Unable to delete:" + failedToDeleteBuilder.toString());
@@ -269,15 +255,14 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
 
     /**
-     * Helper method that attempts to delete all the <code>files</code>. Those
-     * files which could not be deleted were returned.
+     * Helper method that attempts to delete all the {@code files}. The files which could not be deleted are returned.
      *
      * @param files
      * @return files that could not be deleted
      */
     private List<File> deleteFilesHelper(Iterable<File> files)
     {
-        ArrayList<File> failedToDelete = new ArrayList<File>();
+        ImmutableList.Builder<File> failedToDelete = ImmutableList.builder();
 
         for(File file : files)
         {
@@ -294,12 +279,10 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
             else if(file.isDirectory())
             {
-                //To delete a directory succesfully, all of contents must first
-                //be deleted
+                //To delete a directory succesfully, all of contents must first be deleted
                 File[] entries = file.listFiles();
 
-                //This can occur if the permission to see the directory's
-                //entries was not given
+                //This can occur if the permission to see the directory's entries was not given
                 if(entries == null)
                 {
                     failedToDelete.add(file);
@@ -317,8 +300,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                             failedToDelete.add(file);
                         }
                     }
-                    //Not all contents were deleted, so it will not be possible
-                    //to delete this directory
+                    //Not all contents were deleted, so it will not be possible to delete this directory
                     else
                     {
                         failedToDelete.addAll(nonDeletedEntries);
@@ -332,13 +314,13 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
         }
 
-        return failedToDelete;
+        return failedToDelete.build();
     }
 
     @Override
     public List<File> makeDirectory(File dir, String groupOwner) throws IOException
     {
-        ArrayList<File> dirsCreated = new ArrayList<File>();
+        ImmutableList.Builder<File> dirsCreated = ImmutableList.builder();
 
         if(dir != null && !dir.exists())
         {
@@ -356,20 +338,19 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
             catch(NativeException e)
             {
-                throw new IOException("Unable to set correct permissions and " +
-                        "ownership for directory: " + dir.getAbsolutePath(), e);
+                throw new IOException("Unable to set correct permissions and ownership for directory: " +
+                        dir.getAbsolutePath(), e);
             }
 
             dirsCreated.add(dir);
         }
 
-        return dirsCreated;
+        return dirsCreated.build();
     }
 
     /**
-     * Copies <code>srcFile</code> to <code>dstDir</code>. If
-     * <code>dstDir</code> exists and <code>overWrite</code> is
-     * <code>false</code> then an exception will be thrown.
+     * Copies {@code srcFile} to {@code dstDir}. If {@code dstDir} exists and {@code overWrite} is {@code false} then an
+     * exception will be thrown.
      *
      * @param srcFile
      * @param dstFile
@@ -382,25 +363,22 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      *
      * @return
      */
-    private List<File> copyFile(File srcFile, File dstFile,
-            OverwriteMode overwrite, boolean preserveDate, String groupOwner,
-            FileCopyPermissions copyPermissions) throws FileCopyingException
+    private ImmutableList<File> copyFile(File srcFile, File dstFile, OverwriteMode overwrite, boolean preserveDate,
+            String groupOwner, FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        ArrayList<File> created = new ArrayList<File>();
+        ImmutableList.Builder<File> created = ImmutableList.builder();
 
         //Perform validation
         
         if(!srcFile.exists())
         {
-            throw new FileCopyingException(false, "Source file cannot be copied " +
-                    "because it does not exist.\n" +
+            throw new FileCopyingException(false, "Source file cannot be copied because it does not exist.\n" +
                     "Source File: " + srcFile.getAbsolutePath());
         }
 
         if(!srcFile.isFile())
         {
-            throw new FileCopyingException(false, "Source is not a file, this " +
-                    "method only copies files.\n" +
+            throw new FileCopyingException(false, "Source is not a file, this method only copies files.\n" +
                     "Source file: " + srcFile.getAbsolutePath());
         }
 
@@ -410,8 +388,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             {
                 if(!dstFile.delete())
                 {
-                    throw new FileCopyingException(false, "Cannot overwrite " +
-                            "destination file; unable to delete it.\n" +
+                    throw new FileCopyingException(false, "Cannot overwrite destination file; unable to delete it.\n" +
                             "Destination file: " + dstFile.getAbsolutePath());
                 }
             }
@@ -421,12 +398,11 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
             else if(overwrite == OverwriteMode.KEEP_EXISTING)
             {
-                return created;
+                return created.build();
             }
             else
             {
-                throw new FileCopyingException(false, "Invalid "
-                        + OverwriteMode.class.getCanonicalName() + ": " +
+                throw new FileCopyingException(false, "Invalid " + OverwriteMode.class.getCanonicalName() + ": " +
                         overwrite + ".");
             }
         }
@@ -440,8 +416,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
             catch(IOException e)
             {
-                throw new FileCopyingException(false, "Unable to create the " +
-                        "necessary directories in order to perform the copy.", e);
+                throw new FileCopyingException(false, "Unable to create the necessary directories in order to " +
+                        "perform the copy.", e);
             }
         }
 
@@ -472,14 +448,12 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 created.add(dstFile);
             }
 
-            this.cleanupFailedCopy(created,
-                    "Error occurred during copying the file.", e, srcFile, dstFile);
+            this.cleanupFailedCopy(created, "Error occurred during copying the file.", e, srcFile, dstFile);
         }
         finally
         {
-            //Attempt to close the streams and channels, but if it fails that
-            //does not actually mean anything went wrong with copying, so there
-            //is no need to do anything about it
+            //Attempt to close the streams and channels, but if it fails that does not actually mean anything went wrong
+            //with copying, so there is no need to do anything about it
             try
             {
                 if(output != null)
@@ -508,8 +482,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         //If failed to copy the entire file
         if(srcFile.length() != dstFile.length())
         {
-            throw this.cleanupFailedCopy(created,
-                    "Unable to copy the full content of the file.", null, srcFile, dstFile);
+            throw this.cleanupFailedCopy(created, "Unable to copy the full content of the file.", null, srcFile, dstFile);
         }
 
         //If requested, set the destination's modified date to that of the source
@@ -517,8 +490,7 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         {
             if(!dstFile.setLastModified(srcFile.lastModified()))
             {
-                throw this.cleanupFailedCopy(created,
-                        "Unable to preserve the modification date.", null, srcFile, dstFile);
+                throw this.cleanupFailedCopy(created, "Unable to preserve the modification date.", null, srcFile, dstFile);
             }
         }
 
@@ -529,31 +501,27 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
         catch(NativeException e)
         {
-            throw this.cleanupFailedCopy(created,
-                    "Unable to set the group owner.", e, srcFile, dstFile);
+            throw this.cleanupFailedCopy(created, "Unable to set the group owner.", e, srcFile, dstFile);
         }
 
         //Set the specified permissions
         FilePermission[] permissions;
         if(copyPermissions == FileCopyPermissions.READ_WRITE ||
-            (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE &&
-             !srcFile.canExecute()))
+            (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE && !srcFile.canExecute()))
         {
             permissions = READ_WRITE_PERMISSIONS;
         }
         else if(copyPermissions == FileCopyPermissions.READ_WRITE_EXECUTE ||
-                 (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE &&
-                  srcFile.canExecute()))
+                 (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE && srcFile.canExecute()))
         {
             permissions = READ_WRITE_EXECUTE_PERMISSIONS;
         }
-        //This should never arise, but if another FileCopyPermission enum value
-        //was added and this code was not updated then this block could be reached
+        //This should never arise, but if another FileCopyPermission enum value was added and this code was not updated
+        //then this block could be reached
         else
         {
-            throw this.cleanupFailedCopy(created,
-                    "Invalid " + FileCopyPermissions.class.getCanonicalName() +
-                    ": " + copyPermissions + ".", null, srcFile, dstFile);
+            throw this.cleanupFailedCopy(created, "Invalid " + FileCopyPermissions.class.getCanonicalName() + ": " +
+                    copyPermissions + ".", null, srcFile, dstFile);
         }
 
         try
@@ -562,14 +530,13 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
         catch(NativeException e)
         {
-            throw this.cleanupFailedCopy(created,
-                    "Unable to set permissions: " + Arrays.toString(permissions) + ".",
+            throw this.cleanupFailedCopy(created, "Unable to set permissions: " + Arrays.toString(permissions) + ".",
                     e, srcFile, dstFile);
         }
 
         created.add(dstFile);
 
-        return created;
+        return created.build();
     }
 
     @Override
@@ -628,8 +595,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
 
     /**
-     * Changes the permissions of a file. The user <strong>must</strong> be the
-     * owner of the file or else a {@link NativeException} will be thrown.
+     * Changes the permissions of a file. The user <strong>must</strong> be the owner of the file or else a
+     * {@link NativeException} will be thrown.
      *
      * @param file
      * @param recursive
@@ -664,9 +631,9 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
     }
 
     @Override
-    public List<File> getFiles(File file, FileFilter filter) throws IOException
+    public Set<File> getFiles(File file, FileFilter filter) throws IOException
     {
-        ArrayList<File> acceptedFiles = new ArrayList<File>();
+        ImmutableSet.Builder<File> acceptedFiles = ImmutableSet.builder();
 
         if(filter.accept(file))
         {
@@ -679,9 +646,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
             if(entries == null)
             {
-                throw new IOException("Unable to retrieve contents of " +
-                        "directory: " + file.getAbsoluteFile() + ".\nThis " +
-                        "is likely due to a permissions issue or an IO error.");
+                throw new IOException("Unable to retrieve contents of directory: " + file.getAbsoluteFile() + ".\n" +
+                        "This is likely due to a permissions issue or an IO error.");
             }
 
             for(File entry : entries)
@@ -690,14 +656,15 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
         }
 
-        return acceptedFiles;
+        return acceptedFiles.build();
     }
 
     @Override
     public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException
     {
-        List<File> files = this.getFiles(file, filter);
+        List<File> files = new ArrayList<File>(this.getFiles(file, filter));
         Collections.sort(files, comparator);
+        files = ImmutableList.copyOf(files);
 
         return files;
     }

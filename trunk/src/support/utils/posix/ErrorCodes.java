@@ -1,11 +1,9 @@
 package support.utils.posix;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Native Error Codes, source:
- * http://www.barricane.com/c-error-codes-include-errno
+ * Native Error Codes, source: http://www.barricane.com/c-error-codes-include-errno
  *
  * @author jak2 (Joshua Kaplan)
  */
@@ -166,17 +164,17 @@ class ErrorCodes
         }
     }
 
-    private static final Map<Integer, NativeError> ERRORS = getErrorMapping();
+    private static final ImmutableMap<Integer, NativeError> ERRORS = getErrorMapping();
 
-    private static Map<Integer, NativeError> getErrorMapping()
+    private static ImmutableMap<Integer, NativeError> getErrorMapping()
     {
-        HashMap<Integer, NativeError> map = new HashMap<Integer, NativeError>();
+        ImmutableMap.Builder<Integer, NativeError> mapBuilder = ImmutableMap.builder();
         for(NativeError error : NativeError.values())
         {
-            map.put(error.getErrorCode(), error);
+            mapBuilder.put(error.getErrorCode(), error);
         }
 
-        return map;
+        return mapBuilder.build();
     }
 
     /**

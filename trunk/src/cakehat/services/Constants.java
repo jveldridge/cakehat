@@ -8,8 +8,8 @@ package cakehat.services;
 public interface Constants
 {
     /**
-     * The email domain of student and TA logins
-     * <br/><br/>
+     * The email domain for Brown CS.
+     * 
      * <pre>
      * {@code
      * cs.brown.edu

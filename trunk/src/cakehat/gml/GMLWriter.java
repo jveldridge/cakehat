@@ -77,8 +77,9 @@ public class GMLWriter {
             
             return builder.newDocument();
         }
-        catch(ParserConfigurationException e) {
+        catch (ParserConfigurationException e) {
             throw new GradingSheetException("Unable to create XML document", e);
+
         }
     }
     
@@ -93,8 +94,7 @@ public class GMLWriter {
             transformer = TransformerFactory.newInstance().newTransformer();
         }
         catch (TransformerConfigurationException e) {
-            throw new GradingSheetException("Unable to save GML file.\n" +
-                    "GML location: " + gmlFile.getAbsolutePath(), e);
+            throw new GradingSheetException("Unable to save GML file.\nGML location: " + gmlFile.getAbsolutePath(), e);
         }
 
         // properties
@@ -107,7 +107,7 @@ public class GMLWriter {
             Allocator.getFileSystemServices().makeDirectory(gmlFile.getParentFile());
         }
         catch(ServicesException e) {
-            throw new GradingSheetException("Unable to make directory to save GML file in. \n" +
+            throw new GradingSheetException("Unable to make directory to save GML file in.\n" +
                     "GML location is: " + gmlFile.getAbsolutePath(), e);
         }
 
@@ -121,15 +121,13 @@ public class GMLWriter {
                     "GML location: " + gmlFile.getAbsolutePath(), e);
         }
 
-        // if the file was just created by this user, then ensure it has the
-        // correct permissions and group
+        // if the file was just created by this user, then ensure it has the correct permissions and group
         if(willCreateFile) {
             try {
                 Allocator.getFileSystemServices().sanitize(gmlFile);
             }
             catch(ServicesException e) {
-                throw new GradingSheetException("Unable to set correct permissions and " +
-                        "group for GML file.", e);
+                throw new GradingSheetException("Unable to set correct permissions and group for GML file.", e);
             }
         }
     }

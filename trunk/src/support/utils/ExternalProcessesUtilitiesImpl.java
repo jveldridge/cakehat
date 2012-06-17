@@ -1,5 +1,6 @@
 package support.utils;
 
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,6 +14,7 @@ import java.util.List;
 
 public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilities
 {
+    @Override
     public void executeInVisibleTerminal(String title, String cmd, File dir) throws IOException
     {
         ArrayList<String> arguments = new ArrayList<String>();
@@ -38,16 +40,13 @@ public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilitie
         builder.start();
     }
 
-    public void executeAsynchronously(String cmd) throws IOException
-    {
-        this.executeAsynchronously(cmd, new File("/bin"));
-    }
-
+    @Override
     public void executeAsynchronously(String cmd, File dir) throws IOException
     {
-        this.executeAsynchronously(Arrays.asList(new String[] { cmd }), dir);
+        this.executeAsynchronously(Arrays.asList(cmd), dir);
     }
 
+    @Override
     public void executeAsynchronously(Iterable<String> cmds, File dir) throws IOException
     {
 	Process proc = Runtime.getRuntime().exec("/bin/bash", null, dir);
@@ -67,15 +66,17 @@ public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilitie
 	}
     }
     
+    @Override
     public ProcessResponse executeSynchronously(String cmd, File dir) throws IOException
     {
-        return this.executeSynchronously(Arrays.asList(new String[] { cmd }), dir);
+        return this.executeSynchronously(Arrays.asList(cmd), dir);
     }
 
+    @Override
     public ProcessResponse executeSynchronously(Iterable<String> cmds, File dir) throws IOException
     {
-        List<String> normalOutput = new ArrayList<String>();
-        List<String> errorOutput = new ArrayList<String>();
+        ImmutableList.Builder<String> normalOutput = ImmutableList.builder();
+        ImmutableList.Builder<String> errorOutput = ImmutableList.builder();
 
 	Process proc = Runtime.getRuntime().exec("/bin/bash", null, dir);
         if (proc == null)
@@ -125,47 +126,40 @@ public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilitie
             proc.destroy();
 	}
 
-	return new ProcessResponse(normalOutput, errorOutput);
+	return new ProcessResponse(normalOutput.build(), errorOutput.build());
     }
 
-    /* See the javadoc comment in the interface for the larger picture, the
-     * following explains how what is described there is accomplished.
+    /* See the javadoc comment in the interface for the larger picture, the following explains how what is described
+     * there is accomplished.
      *
-     * To check that the string will not cause the terminal to prompt for
-     * another line of input, the following must happen:
+     * To check that the string will not cause the terminal to prompt for another line of input, the following must
+     * happen:
      *  - Single quote marks must occur in pairs
      *  - Double quote marks must occur in pairs
      *  - The string cannot terminate with a backslash
      *
-     * The complications to this are that single quote marks, double quote
-     * marks, and backslashes all interact with one another.
+     * The complications to this are that single quote marks, double quote marks, and backslashes all interact with one
+     * another.
      *
      * --Backslashes--
-     * A backslash occuring before a slash, single quote mark, or double quote
-     * mark will act as an escape. In that case if one of those is following the
-     * slash it does not count as it normally does it, it is interpreted
-     * literally. The exception to this rule is that backslashes inside of
-     * single quotation marks are interpreted literally, they do not act as
-     * escapes.
+     * A backslash occuring before a slash, single quote mark, or double quote mark will act as an escape. In that case
+     * if one of those is following the slash it does not count as it normally does it, it is interpreted literally. The
+     * exception to this rule is that backslashes inside of single quotation marks are interpreted literally, they do
+     * not act as escapes.
      *
      * --Single Quote Marks--
-     * Text inside of single quote marks are interpreted literally. There is
-     * no way to have a single quote mark inside of a single quote block. Any
-     * backslashes or double quote marks inside of a single quote block is
-     * interpreted literally.
+     * Text inside of single quote marks are interpreted literally. There is no way to have a single quote mark inside
+     * of a single quote block. Any backslashes or double quote marks inside of a single quote block is interpreted
+     * literally.
      *
      * --Double Quote Marks--
-     * Single quote marks are automatically escaped inside of double quote
-     * blocks. Backslashes are not escaped inside of double quote blocks.
-     * Double quote marks may be escaped inside of double quote blocks by use
-     * of a backslash.
+     * Single quote marks are automatically escaped inside of double quote blocks. Backslashes are not escaped inside of
+     * double quote blocks. Double quote marks may be escaped inside of double quote blocks by use of a backslash.
      *
-     * To accomplish this, the string is iterated over one character at a time.
-     * It keeps track of if previous character was an escape character, if
-     * currently inside of a single quote block, or if inside of a double quote
-     * block. The number of times that non-escaped single and double quotes
-     * occur is tracked to ensure that they occur an even number of times,
-     * meaning there is a pair.
+     * To accomplish this, the string is iterated over one character at a time. It keeps track of if previous character
+     * was an escape character, if currently inside of a single quote block, or if inside of a double quote block. The
+     * number of times that non-escaped single and double quotes occur is tracked to ensure that they occur an even
+     * number of times, meaning there is a pair.
      */
     public TerminalStringValidity checkTerminalValidity(String str)
     {
@@ -235,9 +229,6 @@ public class ExternalProcessesUtilitiesImpl implements ExternalProcessesUtilitie
         //Cannot end with an escape
         boolean terminatesProperly = !previousWasEscape;
 
-        TerminalStringValidity validity = new TerminalStringValidity(singleValid,
-                doubleValid, terminatesProperly);
-        
-        return validity;
+        return new TerminalStringValidity(singleValid, doubleValid, terminatesProperly);
     }
 }

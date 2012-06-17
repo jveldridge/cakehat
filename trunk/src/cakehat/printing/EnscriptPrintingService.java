@@ -8,8 +8,7 @@ import java.io.Writer;
 import cakehat.Allocator;
 
 /**
- * Uses enscript to print the PrintRequest in landscape with a small font, and
- * two columns per page.
+ * Uses enscript to print the PrintRequest in landscape with a small font, and two columns per page.
  *
  * @author jak2
  */
@@ -31,13 +30,16 @@ public class EnscriptPrintingService extends PrintingService
             File tmpFile = convertRequest(request);
 
             //Build command
-            String cmd = String.format("enscript %s --header='%s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
-                    dontPrintCoverSheet, request.getHeaderString(), request.getTA(), PAGE_NUMBER_FORMATTING, printer.getPrinterName(), tmpFile.getAbsolutePath());
+            String cmd = String.format(
+                    "enscript %s --header='%s |ta: %s |%s' --header-font=Courier8 -q -P%s -2 -r --ps-level=1 %s; ",
+                    dontPrintCoverSheet, request.getHeaderString(), request.getTA(), PAGE_NUMBER_FORMATTING,
+                    printer.getPrinterName(), tmpFile.getAbsolutePath());
 
             //Execute command
             fullCommand = fullCommand + cmd;
 
-            dontPrintCoverSheet = "--no-job-header ";  //prevent future jobs in the batch from having a cover sheet
+            //Prevent future jobs in the batch from having a cover sheet
+            dontPrintCoverSheet = "--no-job-header ";  
         }
 
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();
@@ -53,9 +55,8 @@ public class EnscriptPrintingService extends PrintingService
     private File convertRequest(PrintRequest request) throws IOException
     {
         //Create temp file that combines the entire request into one file
-        File tmpFile = Allocator.getFileSystemUtilities().createTempFile("request",
-                                                                         null,
-                                                                         Allocator.getPathServices().getUserWorkspaceDir());
+        File tmpFile = Allocator.getFileSystemUtilities().createTempFile("request", null,
+                Allocator.getPathServices().getUserWorkspaceDir());
 
         //Confirm the temporary file was created
         if(tmpFile == null)
@@ -76,8 +77,7 @@ public class EnscriptPrintingService extends PrintingService
     }
 
     /**
-     * Combines the entire PrintRequest into one String with each file having
-     * a header before it.
+     * Combines the entire PrintRequest into one String with each file having a header before it.
      *
      * @param request
      * @return

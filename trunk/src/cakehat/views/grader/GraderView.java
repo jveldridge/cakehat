@@ -81,7 +81,7 @@ public class GraderView extends JFrame
                     _submitGradingButton, _readmeButton, _openButton,
                     _testButton, _printButton, _gradeButton,
                     _runButton;
-    private JButton[] _allButtons, _groupButtons;
+    private JButton[] _allButtons;
     
     private final Map<Part, Map<Group, GroupStatus>> _assignedGroups = new HashMap<Part, Map<Group, GroupStatus>>();
     
@@ -136,17 +136,9 @@ public class GraderView extends JFrame
     {
         //Build group of buttons so they can be enabled/disabled appropriately
         _allButtons = new JButton[] {
-                                      _demoButton, _gradingGuideButton,
-                                      _printAllButton,_submitGradingButton,
-                                      _readmeButton, _openButton,
-                                      _testButton, _printButton,
-                                      _gradeButton, _runButton
+                                      _demoButton, _gradingGuideButton, _printAllButton,_submitGradingButton,
+                                      _readmeButton, _openButton, _testButton, _printButton, _gradeButton, _runButton
                                     };
-        _groupButtons = new JButton[] {
-                                        _readmeButton, _openButton,
-                                        _printButton, _testButton,
-                                        _runButton, _gradeButton
-                                      };
     }
 
     /**

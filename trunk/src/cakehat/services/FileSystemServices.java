@@ -8,19 +8,18 @@ import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
- * A service that interacts with the file system. Implementations make use of
- * course specific information, such as the course's TA group. This is the
- * distinction between methods in FileSystemServices and FileSystemUtilities.
+ * A service that interacts with the file system. Implementations make use of course specific information, such as the
+ * course's TA group. This is the distinction between methods in FileSystemServices and FileSystemUtilities.
  *
  * @author jak2
  */
 public interface FileSystemServices
 {
     /**
-     * Sets the correct permissions and group owner of <code>file</code>.
+     * Sets the correct permissions and group owner of {@code file}.
      * <br/><br/>
-     * If <code>file</code> is a directory this will be applied recursively
-     * for all files and directories inside of the directory.
+     * If {@code file} is a directory this will be applied recursively for all files and directories inside of the
+     * directory.
      *
      * @param file
      * @throws ServicesException
@@ -28,9 +27,8 @@ public interface FileSystemServices
     public void sanitize(File file) throws ServicesException;
 
     /**
-     * If the directory already exists no action is taken. If the directory does
-     * not exist it is created, the permissions are set appropriately and the
-     * TA group is set as the group owner. Any directories above the directory
+     * If the directory already exists no action is taken. If the directory does not exist it is created, the
+     * permissions are set appropriately and the TA group is set as the group owner. Any directories above the directory
      * to be created that do not exist are also created in the same manner.
      *
      * @param dir
@@ -42,7 +40,7 @@ public interface FileSystemServices
     /**
      * This method is identical to
      * {@link FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.CopyFilePermissionMode)}
-     * with the TA group set as the <code>groupOwner</code>.
+     * with the TA group set as the {@code groupOwner}.
      *
      * @param src
      * @param dst

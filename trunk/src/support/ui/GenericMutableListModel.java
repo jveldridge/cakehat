@@ -27,13 +27,12 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     @Override
     public List<T> getElements()
     {
-        //Return the elements as immutable, because changes that occur to the
-        //data need to have events fired off
+        //Return the elements as immutable, because changes that occur to the data need to have events fired off
         return Collections.unmodifiableList(_elements);
     }
 
     /**
-     * Inserts the <code>element</code> at <code>index</code>.
+     * Inserts the {@code element} at {@code index}.
      *
      * @param element
      * @param index
@@ -47,7 +46,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     }
 
     /**
-     * Inserts the <code>elements</code> starting at <code>startIndex</code>.
+     * Inserts the {@code elements} starting at {@code startIndex}.
      *
      * @param elements
      * @param startIndex
@@ -67,7 +66,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     }
 
     /**
-     * Inserts the <code>element</code> at the end of the list model.
+     * Inserts the {@code element} at the end of the list model.
      *
      * @param element
      */
@@ -77,7 +76,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     }
 
     /**
-     * Removes the element at the specified <code>index</code>.
+     * Removes the element at the specified {@code index}.
      *
      * @param index
      *
@@ -90,9 +89,8 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     }
 
     /**
-     * Removes all of the elements specified by <code>indices</code>. Properly
-     * handles elements shifting position as elements at the specified indices
-     * are removed.
+     * Removes all of the elements specified by {@code indices}. Properly handles elements shifting position as elements
+     * at the specified indices are removed.
      *
      * @param indices <strong>must</strong> be unique
      *
@@ -100,15 +98,14 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
      */
     public void removeElementsAt(int[] indices)
     {
-        //Since arrays are passed by reference, copy the array to avoid
-        //sorting caller's array
+        //Since arrays are passed by reference, copy the array to avoid sorting caller's array
         indices = Arrays.copyOf(indices, indices.length);
 
         //Sort the array from lowest to highest
         Arrays.sort(indices);
         
-        //Iterate over the indices from highest to lowest so that removing them
-        //in that order does not cause the indices to remove to shift
+        //Iterate over the indices from highest to lowest so that removing them in that order does not cause the indices
+        //to remove to shift
         for(int i = indices.length - 1; i >= 0; i--)
         {
             this.removeElementAt(indices[i]);
@@ -116,8 +113,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     }
 
     /**
-     * Removes the first occurence of <code>element</code> if it exists in
-     * the model.
+     * Removes the first occurrence of {@code element} if it exists in the model.
      *
      * @param element
      */
@@ -141,7 +137,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     }
 
     /**
-     * Sorts all elements in the list according to the <code>comparator</code>.
+     * Sorts all elements in the list according to the {@code comparator}.
      *
      * @param comparator
      */

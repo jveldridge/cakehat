@@ -48,9 +48,8 @@ public interface DataServices {
     public void addStudents(Set<DbStudent> students) throws ServicesException;
     
     /**
-     * Sets the given Student's enabled status.  Students are enabled by default,
-     * but students who have dropped the course should be disabled.  Disabled students
-     * will not be sent grade reports.
+     * Sets the given Student's enabled status.  Students are enabled by default, but students who have dropped the
+     * course should be disabled. Disabled students will not be sent grade reports.
      *
      * @param student
      * @param enabled
@@ -59,9 +58,8 @@ public interface DataServices {
     public void setStudentEnabled(Student student, boolean enabled) throws ServicesException;
     
     /**
-     * Adds all the students in the given Set to the blacklist of the given TA, 
-     * if not already blacklisted. This ensures that this TA will not be distributed
-     * any of these students to grade. If a student was already blacklisted, that 
+     * Adds all the students in the given Set to the blacklist of the given TA, if not already blacklisted. This ensures
+     * that this TA will not be distributed any of these students to grade. If a student was already blacklisted, that 
      * student will not be added again.
      *
      * @param students
@@ -71,9 +69,8 @@ public interface DataServices {
     public void blacklistStudents(Set<Student> students, TA ta) throws ServicesException;
     
     /**
-     * For each Student in the given Set, removes the student from the given
-     * TA's blacklist if the student was previously blacklisted.  This method has
-     * no effect for students who were not previously on the TA's blacklist.
+     * For each Student in the given Set, removes the student from the given TA's blacklist if the student was
+     * previously blacklisted.  This method has no effect for students who were not previously on the TA's blacklist.
      *
      * @param students
      * @param ta
@@ -82,9 +79,8 @@ public interface DataServices {
     public void unBlacklistStudents(Set<Student> students, TA ta) throws ServicesException;
     
     /**
-     * Returns a Collection containing the Student object representing each student
-     * who has been blacklisted by some TA.  If no students have been blacklisted,
-     * an empty Collection will be returned.
+     * Returns a Set containing the Student object representing each student who has been blacklisted by some TA. If no
+     * students have been blacklisted, an empty Set will be returned.
      * 
      * @return
      * @throws ServicesException 
@@ -92,9 +88,8 @@ public interface DataServices {
     public Set<Student> getBlacklistedStudents() throws ServicesException;
     
     /**
-     * Returns a Collection containing the Student object representing each student
-     * who has been blacklisted by the given TA.  If the TA has not blacklisted any
-     * students, an empty Collection will be returned.
+     * Returns a Set containing the Student object representing each student who has been blacklisted by the given TA.
+     * If the TA has not blacklisted any students, an empty Set will be returned.
      * 
      * @param ta
      * @return
@@ -103,8 +98,8 @@ public interface DataServices {
     public Set<Student> getBlacklist(TA ta) throws ServicesException;
     
     /**
-     * Indicates whether the gradable event has a distribution.  Returns true if
-     * the gradable event currently has no distribution, and false if it does.
+     * Indicates whether the gradable event has a distribution. Returns true if the gradable event currently has no
+     * distribution, and false if it does.
      *
      * @param asgn
      * @return
@@ -113,20 +108,18 @@ public interface DataServices {
     public boolean isDistEmpty(GradableEvent ge) throws ServicesException;
     
     /**
-     * Returns a map that maps a TA to a Collection of Groups that TA has been
-     * assigned to grade for the given DistributablePart.  There will be an entry
-     * in the map for each TA; if a TA has not been assigned any groups to grade,
-     * the value for that TA's entry in the map will be an empty Collection.
+     * Returns a map that maps a TA to a Set of Groups that TA has been assigned to grade for the given Part. There will
+     * be an entry in the map for each TA; if a TA has not been assigned any groups to grade, the value for that TA's
+     * entry in the map will be an empty Set.
      * 
-     * @param dp
+     * @param part
      * @return
      * @throws ServicesException 
      */
-    public Map<TA, Set<Group>> getDistribution(Part dp) throws ServicesException;
+    public Map<TA, Set<Group>> getDistribution(Part part) throws ServicesException;
     
     /**
-     * Assigns Groups for each TA to grade for each Part.  Any existing
-     * distributions will be overwritten.
+     * Assigns Groups for each TA to grade for each Part. Any existing distributions will be overwritten.
      *
      * @param distribution
      * @throws ServicesException 
@@ -134,10 +127,8 @@ public interface DataServices {
     public void setDistribution(Map<Part, Map<TA, Set<Group>>> distribution) throws ServicesException;
 
     /**
-     * Returns a Collection of Groups that the given TA is assigned to grade for
-     * the given Part part.  Returns an empty Collection if no groups are assigned 
-     * to the TA for the given Part or if there is no distribution for the Part 
-     * in the database.
+     * Returns a Set of Groups that the given TA is assigned to grade for the given Part part. Returns an empty Set if
+     * no groups are assigned to the TA for the given Part or if there is no distribution for the Part in the database.
      *
      * @param part
      * @param ta
@@ -147,10 +138,9 @@ public interface DataServices {
     public Set<Group> getAssignedGroups(Part part, TA ta) throws ServicesException;
 
     /**
-     * Returns a Collection of Groups that have been assigned to any TA
-     * to grade for the given Part.  This can be used to find students who
-     * have not been assigned to any TA to grade.  If no distribution exists
-     * yet, an empty Collection will be returned.
+     * Returns a Set of Groups that have been assigned to any TA to grade for the given Part. This can be used to find
+     * students who have not been assigned to any TA to grade.  If no distribution exists yet, an empty Set will be
+     * returned.
      *
      * @param part
      * @return
@@ -159,8 +149,7 @@ public interface DataServices {
     public Set<Group> getAssignedGroups(Part part) throws ServicesException;
     
     /**
-     * Returns a Collection of Parts for which the given TA has been
-     * assigned at least one Group to grade.
+     * Returns a Set of Parts for which the given TA has been assigned at least one Group to grade.
      *
      * @param ta
      * @return
@@ -181,7 +170,7 @@ public interface DataServices {
 
     /**
      * Sets the TA who has been assigned to grade the given Group and  Part. Pass {@code ta} as {@code null} to
-     * have the given group and part be unassigned.  This overwrites any existing assignment for the group for the part.
+     * have the given group and part be unassigned. This overwrites any existing assignment for the group for the part.
      * <br/><br/>
      * For efficiency reasons this method should not be used create an initial automated distribution. For that purpose,
      * use {@link #setDistribution(java.util.Map)}.
@@ -220,8 +209,8 @@ public interface DataServices {
     public Map<Group, Extension> getExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException;
 
     /**
-     * Deletes extensions for each group in {@code groups} for the {@code gradableEvent}. The groups must belong
-     * to the same assignment that the gradable event belongs to, an exception will be thrown if not.
+     * Deletes extensions for each group in {@code groups} for the {@code gradableEvent}. The groups must belong to the
+     * same assignment that the gradable event belongs to, an exception will be thrown if not.
      * 
      * @param gradableEvent
      * @param groups
@@ -291,15 +280,23 @@ public interface DataServices {
     
     /**
      * Returns an immutable set of the TAs who are default graders.
+     * 
+     * @return
      */
     public Set<TA> getDefaultGraders();
     
+    /**
+     * Returns the TA with the corresponding id.
+     * 
+     * @param taId
+     * @return 
+     */
     public TA getTA(int taId);
     
     /**
      * Returns the Group for which the given Student is a member for the given Assignment. If the given Assignment is
-     * not a group assignment and the Student does not already have a group of one, a group of one will be
-     * created, stored in the database, and returned. This method returns {@code null} if no such Group exists.
+     * not a group assignment and the Student does not already have a group of one, a group of one will be created,
+     * stored in the database, and returned. This method returns {@code null} if no such Group exists.
      *
      * @param asgn
      * @param student
@@ -309,12 +306,10 @@ public interface DataServices {
     public Group getGroup(Assignment asgn, Student student) throws ServicesException;
     
     /**
-     * Returns all Groups that have been created for the given Assignment.  A
-     * ServicesException will be thrown if an invalid group ID is present in the
-     * database or if a database error occurred.  If the given Assignment is not
-     * a group assignment, groups of one will be created and stored in the database
-     * for each student who does not already have a group of one.  Returns an 
-     * empty Set if the given Assignment is a group Assignment and no groups
+     * Returns all Groups that have been created for the given Assignment. A ServicesException will be thrown if an
+     * invalid group ID is present in the database or if a database error occurred.  If the given Assignment is not
+     * a group assignment, groups of one will be created and stored in the database for each student who does not
+     * already have a group of one. Returns an empty Set if the given Assignment is a group Assignment and no groups
      * have yet been created for it.
      * 
      * @param asgn
@@ -325,6 +320,8 @@ public interface DataServices {
     
     /**
      * Returns an immutable ordered list of all assignment.
+     * 
+     * @return
      */
     public List<Assignment> getAssignments();
     
@@ -356,6 +353,7 @@ public interface DataServices {
      *
      * @param gradableEvent 
      * @param statuses
+     * @throws ServicesException
      */
     public void setGradableEventOccurrences(GradableEvent gradableEvent, Map<Group, DateTime> statuses)
             throws ServicesException;
@@ -378,21 +376,21 @@ public interface DataServices {
     public void updateDataCache() throws ServicesException;
     
     /**
-     * Returns the Student object corresponding to the given studentLogin.
-     * If no such student exists in the database, <code>null</code> will be
-     * returned.
+     * Returns the Student object corresponding to the given studentLogin. If no such student exists in the database,
+     * {@code null} will be returned.
      *
      * @param studentLogin
      * @return
+     * @throws ServicesException
      */
     public Student getStudentFromLogin(String studentLogin) throws ServicesException;
 
     /**
-     * Returns whether or not the given student login corresponds to
-     * a valid Student object.
+     * Returns whether or not the given student login corresponds to a valid Student object.
      * 
      * @param studentLogin
      * @return
+     * @throws ServicesException
      */
     public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException;
 }

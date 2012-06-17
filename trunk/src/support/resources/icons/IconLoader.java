@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -333,7 +334,7 @@ public class IconLoader
         for(IconSize size : IconSize.values())
         {
             File iconSizeDir = new File(iconDir, size.dirName);
-            List<File> iconSizeFiles = Allocator.getFileSystemUtilities().getFiles(iconSizeDir, imgExtFilter);
+            Set<File> iconSizeFiles = Allocator.getFileSystemUtilities().getFiles(iconSizeDir, imgExtFilter);
 
             List<String> iconsForSize = new ArrayList<String>();
             for(File iconFile : iconSizeFiles)

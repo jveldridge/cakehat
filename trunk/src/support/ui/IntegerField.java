@@ -13,9 +13,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * A field that only accepts integer values. Depending on how this class is
- * constructed, a minimum and maximum value can be enforced.  Note that a leading
- * '+' symbol is permitted.
+ * A field that only accepts integer values. Depending on how this class is constructed, a minimum and maximum value can
+ * be enforced.  Note that a leading '+' symbol is permitted.
  *
  * @author jak2
  */
@@ -63,8 +62,7 @@ public class IntegerField extends JFormattedTextField
     }
 
     /**
-     * Restricts the allowable range between <code>min</code> and
-     * <code>max</code> inclusive.
+     * Restricts the allowable range between {@code min} and {@code max} inclusive.
      *
      * @param min
      * @param max
@@ -171,10 +169,8 @@ public class IntegerField extends JFormattedTextField
     }
 
     /**
-     * If <code>show</code> is <code>true</code> then when the integer is
-     * between <code>0</code> and <code>9</code> inclusive it will be displayed
-     * with a leading <code>0</code>. For example the value <code>3</code> will
-     * be displayed as <code>03</code>.
+     * If {@code show} is {@code true} then when the integer is between {@code 0} and {@code 9} inclusive it will be
+     * displayed with a leading {@code 0}. For example the value {@code 3} will be displayed as {@code 03}.
      *
      * @param show
      */
@@ -187,8 +183,8 @@ public class IntegerField extends JFormattedTextField
     }
 
     /**
-     * A formatter that allows only integers, but does allow a leading '+' sign,
-     * unlike the formatter provided by {@link NumberFormat#getIntegerInstance()}.
+     * A formatter that allows only integers, but does allow a leading '+' sign, unlike the formatter provided by
+     * {@link NumberFormat#getIntegerInstance()}.
      */
     private static class IntegerFormat extends Format
     {

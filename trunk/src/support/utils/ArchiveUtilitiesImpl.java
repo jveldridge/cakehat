@@ -18,17 +18,16 @@ import org.apache.commons.compress.utils.IOUtils;
 
 public class ArchiveUtilitiesImpl implements ArchiveUtilities
 {
+    @Override
     public FileFilter getSupportedFormatsFilter()
     {
         return new FileExtensionFilter("zip", "tar", "tgz", "tar.gz");
     }
 
     /**
-     * Gets the appropriate stream depending the file extension of
-     * <code>archivePath</code>.
+     * Gets the appropriate stream depending the file extension of {@code archivePath}.
      * <br><br>
-     * Supported extensions: zip, tar, tgz, tar.gz. Unsupported extensions will
-     * result in an exception being throw.
+     * Supported extensions: zip, tar, tgz, tar.gz. Unsupported extensions will result in an exception being throw.
      *
      * @param archivePath
      * @return
@@ -50,8 +49,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
             }
             catch(IOException e)
             {
-                throw new ArchiveException("Unable to create input stream for: " +
-                        archive.getAbsolutePath(), e);
+                throw new ArchiveException("Unable to create input stream for: " + archive.getAbsolutePath(), e);
             }
         }
         else if(lowerCaseSrcFile.endsWith(".tar"))
@@ -63,8 +61,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
             }
             catch(IOException e)
             {
-                throw new ArchiveException("Unable to create input stream for: " +
-                        archive.getAbsolutePath(), e);
+                throw new ArchiveException("Unable to create input stream for: " + archive.getAbsolutePath(), e);
             }
         }
         else if(lowerCaseSrcFile.endsWith(".tgz") || lowerCaseSrcFile.endsWith(".tar.gz"))
@@ -76,19 +73,18 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
             }
             catch(IOException e)
             {
-                throw new ArchiveException("Unable to create input stream for: " +
-                        archive.getAbsolutePath(), e);
+                throw new ArchiveException("Unable to create input stream for: " + archive.getAbsolutePath(), e);
             }
         }
         else
         {
-            throw new ArchiveException("Unsupported file extension. " +
-                    "Supported extensions are: zip, tar, tgz, & tar.gz");
+            throw new ArchiveException("Unsupported file extension. Supported extensions are: zip, tar, tgz, & tar.gz");
         }
 
         return new ArchiveStreamFactory().createArchiveInputStream(format, is);
     }
 
+    @Override
     public Collection<ArchiveEntry> getArchiveContents(File archive) throws ArchiveException
     {
         ArrayList<ArchiveEntry> contents = new ArrayList<ArchiveEntry>();
@@ -103,8 +99,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
             }
             catch(IOException e)
             {
-                throw new ArchiveException("Unable to retrieve next archive entry for: " +
-                        archive.getAbsolutePath(), e);
+                throw new ArchiveException("Unable to retrieve next archive entry for: " + archive.getAbsolutePath(), e);
             }
 
             if(entry == null)
@@ -120,13 +115,13 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         }
         catch(IOException e)
         {
-            throw new ArchiveException("Unable to close input stream for archive: " +
-                    archive.getAbsolutePath(), e);
+            throw new ArchiveException("Unable to close input stream for archive: " + archive.getAbsolutePath(), e);
         }
 
         return contents;
     }
 
+    @Override
     public void extractArchive(File archive, File dstDir, FileFilter filter) throws ArchiveException
     {
         ArchiveInputStream in = getArchiveInputStream(archive);
@@ -139,8 +134,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
             }
             catch(IOException e)
             {
-                throw new ArchiveException("Unable to retrieve next archive entry for: " +
-                        archive.getAbsolutePath(), e);
+                throw new ArchiveException("Unable to retrieve next archive entry for: " + archive.getAbsolutePath(), e);
             }
 
             if(entry == null)
@@ -155,8 +149,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
                 {
                     if(!file.mkdirs())
                     {
-                        throw new ArchiveException("Unable to make directory: " +
-                                file.getAbsolutePath());
+                        throw new ArchiveException("Unable to make directory: " + file.getAbsolutePath());
                     }
                 }
                 else
@@ -168,9 +161,8 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
                         {
                             if(!parentDir.mkdirs())
                             {
-                                throw new ArchiveException("Unable to make directory: " +
-                                        parentDir.getAbsolutePath() + "\n" +
-                                        "For file: " + file.getAbsolutePath());
+                                throw new ArchiveException("Unable to make directory: " + parentDir.getAbsolutePath() +
+                                        "\nFor file: " + file.getAbsolutePath());
                             }
                         }
 
@@ -180,9 +172,8 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
                     }
                     catch(IOException e)
                     {
-                        throw new ArchiveException("Unable to unarchive file to: \n" +
-                                file.getAbsolutePath() + "\n" +
-                                "For archive: \n" + archive.getAbsolutePath(), e);
+                        throw new ArchiveException("Unable to unarchive file to: " + file.getAbsolutePath() + "\n" +
+                                "For archive: " + archive.getAbsolutePath(), e);
                     }
                 }
             }
@@ -194,8 +185,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         }
         catch(IOException e)
         {
-            throw new ArchiveException("Unable to close input stream for archive: " +
-                    archive.getAbsolutePath(), e);
+            throw new ArchiveException("Unable to close input stream for archive: " + archive.getAbsolutePath(), e);
         }
     }
 }
