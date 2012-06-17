@@ -1,4 +1,3 @@
-
 package cakehat.database.assignment;
 
 import java.io.File;

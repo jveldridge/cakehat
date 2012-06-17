@@ -1,5 +1,7 @@
 package cakehat.views.config;
 
+import cakehat.CakehatSession;
+import cakehat.CakehatSession.ConnectionType;
 import cakehat.logging.ErrorReporter;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -19,9 +21,10 @@ public class ConfigManagerView extends JFrame
     private final JTabbedPane _tabbedPane;
     private final UniqueElementSingleThreadWorker _worker = UniqueElementSingleThreadWorker.newInstance();
     
-    private ConfigManagerView(boolean isSSH)
+    private ConfigManagerView()
     {
-        super("cakehat (configuration manager)" + (isSSH ? " [ssh]" : ""));
+        super("cakehat (configuration manager)" +
+                (CakehatSession.getUserConnectionType() == ConnectionType.REMOTE ? " [ssh]" : ""));
         
         //On close, save any remaining changes and shut down the worker
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -58,7 +61,7 @@ public class ConfigManagerView extends JFrame
         this.setVisible(true);
     }
     
-    public static void launch(final boolean isSSH)
+    public static void launch()
     {   
         EventQueue.invokeLater(new Runnable()
         {
@@ -71,7 +74,7 @@ public class ConfigManagerView extends JFrame
                         "Proceed", "Cancel");
                 if(proceed)
                 {
-                    new ConfigManagerView(isSSH);
+                    new ConfigManagerView();
                 }
             }
         });

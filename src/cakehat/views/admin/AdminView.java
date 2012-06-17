@@ -1,6 +1,8 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatSession;
+import cakehat.CakehatSession.ConnectionType;
 import cakehat.CakehatReleaseInfo;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
@@ -51,9 +53,9 @@ public class AdminView extends JFrame
     private Set<Student> _selectedStudents; 
     private GradingSheet _currentlyDisplayedSheet;
     
-    private AdminView(boolean isSSH)
+    private AdminView()
     {
-        super("cakehat (admin)" + (isSSH ? " [ssh]" : ""));
+        super("cakehat (admin)" + (CakehatSession.getUserConnectionType() == ConnectionType.REMOTE ? " [ssh]" : ""));
         
         //Close operation
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -444,14 +446,14 @@ public class AdminView extends JFrame
         });
     }
     
-    public static void launch(final boolean isSSH)
+    public static void launch()
     {   
         EventQueue.invokeLater(new Runnable()
         {
             @Override
             public void run()
             {   
-                new AdminView(isSSH).setVisible(true);
+                new AdminView().setVisible(true);
             }
         });
     }

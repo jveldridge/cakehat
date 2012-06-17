@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
+import cakehat.CakehatSession;
+import cakehat.TestCakehatSessionProvider;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
@@ -23,7 +25,6 @@ import java.util.Set;
 import org.joda.time.Period;
 import org.junit.Before;
 import org.junit.Test;
-import support.utils.UserUtilities;
 import static org.junit.Assert.*;
 import static org.easymock.EasyMock.*;
 
@@ -54,19 +55,12 @@ public class DataServicesTest {
             };
         _database.resetDatabase();
         
-        final UserUtilities userUtils = createMock(UserUtilities.class);
-        expect(userUtils.getUserId()).andReturn(USER_TA_UID).anyTimes();
-        replay(userUtils);
-        SingletonAllocation<UserUtilities> userUtilsAlloc =
-            new SingletonAllocation<UserUtilities>()
-            {
-                protected UserUtilities allocate() { return userUtils; };
-            };
+        new Allocator.Customizer().setDatabase(dbioAlloc).customize();
         
-        new Allocator.Customizer().setDatabase(dbioAlloc).setUserUtils(userUtilsAlloc).customize(); 
+        CakehatSession.setSessionProviderForTesting(new TestCakehatSessionProvider(USER_TA_UID)); 
         
         //set-up tas
-        _dbUserTA = new DbTA(Allocator.getUserUtilities().getUserId(), "taLogin1", "taFirst1", "taLast1", true, false);
+        _dbUserTA = new DbTA(USER_TA_UID, "taLogin1", "taFirst1", "taLast1", true, false);
         _dbTA2 = new DbTA(137, "taLogin2", "taFirst2", "taLast2", true, false);
         _database.putTAs(ImmutableSet.of(_dbUserTA, _dbTA2));
         

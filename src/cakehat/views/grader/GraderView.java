@@ -2,6 +2,8 @@ package cakehat.views.grader;
 
 import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
+import cakehat.CakehatSession;
+import cakehat.CakehatSession.ConnectionType;
 import cakehat.database.assignment.ActionException;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.MissingHandinException;
@@ -71,7 +73,6 @@ public class GraderView extends JFrame
 {
     private final TA USER = Allocator.getUserServices().getUser();
 
-    private final boolean _isSSH;
     private GenericJList<Part> _partList;
     private GenericJList<Group> _groupList;
     private JLabel _groupListLabel;
@@ -85,24 +86,22 @@ public class GraderView extends JFrame
     
     private final Map<Part, Map<Group, GroupStatus>> _assignedGroups = new HashMap<Part, Map<Group, GroupStatus>>();
     
-    public static void launch(final boolean isSSH)
+    public static void launch()
     {   
         EventQueue.invokeLater(new Runnable()
         {
             @Override
             public void run()
             {   
-                new GraderView(isSSH).setVisible(true);
+                new GraderView().setVisible(true);
             }
         });
     }
     
-    private GraderView(boolean isSSH)
+    private GraderView()
     {
         //Frame title
-        super("cakehat" + (isSSH ? " [ssh]" : ""));
-
-        _isSSH = isSSH;
+        super("cakehat" + (CakehatSession.getUserConnectionType() == ConnectionType.REMOTE ? " [ssh]" : ""));
 
         //Initialize GUI components necessary to show database information
         this.initializeComponents();
@@ -588,7 +587,7 @@ public class GraderView extends JFrame
         // Draw a rounded rectangle with the top part off the top of the screen
         int cornerRadius = 40;
         int shadingPadding = 10;
-        if(_isSSH)
+        if(CakehatSession.getUserConnectionType() == ConnectionType.REMOTE)
         {
             imageGraphics.setColor(new Color(144, 144, 144));
         }
@@ -630,7 +629,7 @@ public class GraderView extends JFrame
         overlayPanel.setPreferredSize(overlayPanelSize);
         disablePanel.add(overlayPanel, BorderLayout.CENTER);
 
-        if(_isSSH)
+        if(CakehatSession.getUserConnectionType() == ConnectionType.REMOTE)
         {
             overlayPanel.setBackground(new Color(144, 144, 144));
         }

@@ -2,6 +2,7 @@ package cakehat.database.assignment;
 
 import support.utils.AlphabeticFileComparator;
 import cakehat.Allocator;
+import cakehat.CakehatSession;
 import support.ui.GenericJComboBox;
 import support.ui.ShadowJTextField;
 import cakehat.database.Group;
@@ -39,7 +40,6 @@ import support.utils.FileExistsException;
 import support.utils.FileExtensionFilter;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
-import support.utils.posix.NativeException;
 
 /**
  * Actions that interact with MATLAB. These actions make use of the matlabcontrol library to launch and interact with
@@ -594,16 +594,9 @@ class MatlabActions implements ActionProvider
             //Have a timeout of 90000 milliseconds = 1.5 minutes
             //If over ssh, double the timeout to 3 minutes
             long timeout = 90000;
-            try
+            if(CakehatSession.getUserConnectionType() == CakehatSession.ConnectionType.REMOTE)
             {
-                if(Allocator.getUserUtilities().isUserRemotelyConnected())
-                {
-                    timeout *= 2;
-                }
-            }
-            catch(NativeException e)
-            {
-                throw new ActionException("Unable to determine if connected over ssh", e);
+                timeout *= 2;
             }
 
             _proxy = factory.getProxy(timeout);

@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import cakehat.Allocator;
-import cakehat.CakehatMain;
+import cakehat.CakehatSession;
 import cakehat.database.GradableEventOccurrence;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
@@ -130,7 +130,7 @@ public class GradingServicesImpl implements GradingServices
     public List<CITPrinter> getAllowedPrinters()
     {
         List<CITPrinter> allowed;
-        if(CakehatMain.isDeveloperMode())
+        if(CakehatSession.isDeveloperMode())
         {
             allowed = DEVELOPER_ALLOWED_PRINTERS;
         }

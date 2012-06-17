@@ -68,17 +68,9 @@ public class UserUtilitiesImpl implements UserUtilities
         return this.getMembers(group).contains(login);
     }
 
-    //Cache the result of this method as the value will not change and it is expensive (~100 milliseconds) to compute
-    private volatile Boolean _isRemote = null;
-    
     @Override
     public boolean isUserRemotelyConnected() throws NativeException
     {
-        if(_isRemote == null)
-        {
-            _isRemote = NATIVE_FUNCTIONS.isUserRemotelyConnected();
-        }
-
-        return _isRemote;
+        return NATIVE_FUNCTIONS.isUserRemotelyConnected();
     }
 }
