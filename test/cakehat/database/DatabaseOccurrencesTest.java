@@ -40,7 +40,7 @@ public class DatabaseOccurrencesTest {
     }
     
     @Test
-    public void testSetGetGradableEventOccurrences() throws SQLException, CakeHatDBIOException {
+    public void testSetGetGradableEventOccurrences() throws SQLException {
         //Setup
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
         _database.putAssignments(ImmutableSet.of(dbAsgn));
@@ -77,7 +77,7 @@ public class DatabaseOccurrencesTest {
     }
 
     @Test
-    public void testSetSetGetGradableEventOccurrences() throws SQLException, CakeHatDBIOException {
+    public void testSetSetGetGradableEventOccurrences() throws SQLException {
         //Setup
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
         _database.putAssignments(ImmutableSet.of(dbAsgn));
@@ -121,7 +121,7 @@ public class DatabaseOccurrencesTest {
     }
 
     @Test
-    public void testSetDeleteGetGradableEventOccurrences() throws SQLException, CakeHatDBIOException {
+    public void testSetDeleteGetGradableEventOccurrences() throws SQLException {
         //Setup
         DbAssignment dbAsgn = new DbAssignment("asgn", 1);
         _database.putAssignments(ImmutableSet.of(dbAsgn));
@@ -158,7 +158,7 @@ public class DatabaseOccurrencesTest {
     }
 
     @Test
-    public void testSetGetExtensions() throws SQLException, CakeHatDBIOException {
+    public void testSetGetExtensions() throws SQLException {
         //Set up
         DbAssignment dbAsgn = new DbAssignment("The Asgn", 27);
         DbGradableEvent dbEvent = DbGradableEvent.build(dbAsgn, "The Event", 42);
@@ -193,7 +193,7 @@ public class DatabaseOccurrencesTest {
     }
 
     @Test
-    public void testSetSetGetExtensions() throws SQLException, CakeHatDBIOException {
+    public void testSetSetGetExtensions() throws SQLException {
         //Set up
         DbAssignment dbAsgn = new DbAssignment("The Asgn", 27);
         DbGradableEvent dbEvent = DbGradableEvent.build(dbAsgn, "The Event", 42);
@@ -229,7 +229,7 @@ public class DatabaseOccurrencesTest {
     }
 
     @Test
-    public void testSetDeleteGetExtensions() throws SQLException, CakeHatDBIOException {
+    public void testSetDeleteGetExtensions() throws SQLException {
         //Set up
         DbAssignment dbAsgn = new DbAssignment("The Asgn", 27);
         DbGradableEvent dbEvent = DbGradableEvent.build(dbAsgn, "The Event", 42);

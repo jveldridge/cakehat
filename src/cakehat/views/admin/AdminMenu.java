@@ -2,6 +2,7 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.CSVExportTask;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -83,9 +84,17 @@ class AdminMenu extends JMenuBar
                 chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
                 if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
                 {
-                    new ProgressDialog(_adminView, _adminView, "CSV Export",
-                            "<html><center><h2>Exporting student grades</h2></center></html>",
-                            new CSVExportTask(chooser.getSelectedFile()));
+                    ProgressDialog.ExceptionReporter excReporter = new ProgressDialog.ExceptionReporter()
+                    {
+                        @Override
+                        public void report(String message, Exception exception)
+                        {
+                            ErrorReporter.report(message, exception);
+                        }
+                    };
+                    CSVExportTask exportTask = new CSVExportTask(chooser.getSelectedFile());
+                    ProgressDialog.show(_adminView, _adminView, "CSV Export",
+                            "<html><center><h2>Exporting student grades</h2></center></html>", exportTask, excReporter);
                 }
             }
         });

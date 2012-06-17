@@ -82,7 +82,7 @@ public class DatabaseTestHelpers {
         }
     }
     
-    static Assignment createNewAssignmentInDb(Database db, String name, int order) throws SQLException, CakeHatDBIOException {
+    static Assignment createNewAssignmentInDb(Database db, String name, int order) throws SQLException {
 
         DbAssignment dbAsgn = new DbAssignment(name, order);
         db.putAssignments(ImmutableSet.of(dbAsgn));
@@ -113,7 +113,7 @@ public class DatabaseTestHelpers {
         int _taId1, _taId2;
         DbGroup _dbGroup1, _dbGroup2;
         
-        public DatabaseContentWrapper(Database db) throws SQLException, CakeHatDBIOException {
+        public DatabaseContentWrapper(Database db) throws SQLException {
             DbAssignment dbAsgn = new DbAssignment("asgn", 1);
             db.putAssignments(ImmutableSet.of(dbAsgn));
         

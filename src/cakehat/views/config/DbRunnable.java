@@ -1,7 +1,7 @@
 package cakehat.views.config;
 
 import cakehat.database.DbDataItem;
-import cakehat.views.shared.ErrorView;
+import cakehat.logging.ErrorReporter;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -55,7 +55,7 @@ abstract class DbRunnable implements Runnable
                     {
                         public void run()
                         {
-                            new ErrorView(e, "Database call failed");
+                            ErrorReporter.report("Database call failed", e);
                             onDbCallFailure();
                         }
                     });
@@ -69,7 +69,7 @@ abstract class DbRunnable implements Runnable
                     {
                         public void run()
                         {
-                            new ErrorView(e, "Database call failed");
+                            ErrorReporter.report("Database call failed", e);
                             onFinalFailureLater();
                         }
                     });
@@ -83,7 +83,7 @@ abstract class DbRunnable implements Runnable
                     {
                         public void run()
                         {
-                            new ErrorView(e, "Database call failed");
+                            ErrorReporter.report("Database call failed", e);
                             onFinalFailureLater();
                         }
                     });

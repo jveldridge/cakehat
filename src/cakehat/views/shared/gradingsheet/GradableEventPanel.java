@@ -7,8 +7,8 @@ import cakehat.database.Extension;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
@@ -98,9 +98,9 @@ class GradableEventPanel extends GradingSheetPanel
         }
         catch(ServicesException e)
         {
-            new ErrorView(e, "Unable to retrieve deadline, occurrence time, or extension info.\n" +
+            ErrorReporter.report("Unable to retrieve deadline, occurrence time, or extension info.\n" +
                     "Gradable Event: " + _gradableEvent.getName() + "\n" +
-                    "Group: " + _group.getName());
+                    "Group: " + _group.getName(), e);
             addErrorMessagePanel("Unable to retrieve deadline related info");
         }
     }
@@ -331,7 +331,7 @@ class GradableEventPanel extends GradingSheetPanel
                     }
                     catch(ServicesException e)
                     {
-                        new ErrorView(e, "Could not grant extension");
+                        ErrorReporter.report("Could not grant extension", e);
                     }
                 }
                 //In this state the extension button says 'Revoke Extension'
@@ -352,7 +352,7 @@ class GradableEventPanel extends GradingSheetPanel
                     }
                     catch(ServicesException e)
                     {
-                        new ErrorView(e, "Could not revoke extension");
+                        ErrorReporter.report("Could not revoke extension", e);
                     }
                 }
             }
@@ -372,7 +372,7 @@ class GradableEventPanel extends GradingSheetPanel
                 catch(ServicesException e)
                 {
                     dateTimeControl.setDateTime(prevDateTime, true);
-                    new ErrorView(e, "Unable to update extension to new date and time");
+                    ErrorReporter.report("Unable to update extension to new date and time", e);
                 }
             }
         });
@@ -393,7 +393,7 @@ class GradableEventPanel extends GradingSheetPanel
                 catch(ServicesException e)
                 {
                     shiftDatesCheckBox.setSelected(selected);
-                    new ErrorView(e, "Unable to update extension shift dates property");
+                    ErrorReporter.report("Unable to update extension shift dates property", e);
                 }
             }
         });
@@ -413,7 +413,7 @@ class GradableEventPanel extends GradingSheetPanel
                 catch(ServicesException e)
                 {
                     noteArea.setText(note);
-                    new ErrorView(e, "Unable to update extension note");
+                    ErrorReporter.report("Unable to update extension note", e);
                 }
             }
         });
@@ -553,7 +553,7 @@ class GradableEventPanel extends GradingSheetPanel
                         catch(ServicesException e)
                         {
                             _receivedControl.setDateTime(prevDateTime, true);
-                            new ErrorView(e, "Unable to set new occurrence date");
+                            ErrorReporter.report("Unable to set new occurrence date", e);
                         }
                     }
                 });
@@ -616,7 +616,7 @@ class GradableEventPanel extends GradingSheetPanel
             }
             catch(ServicesException e)
             {
-                new ErrorView(e, "Unable to update occurrence date");
+                ErrorReporter.report("Unable to update occurrence date", e);
             }
         }
         

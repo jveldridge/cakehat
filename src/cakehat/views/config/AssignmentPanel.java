@@ -12,8 +12,8 @@ import cakehat.database.DbAssignment;
 import cakehat.database.DbGradableEvent;
 import cakehat.database.DbPart;
 import cakehat.database.DbPartAction;
+import cakehat.logging.ErrorReporter;
 import cakehat.views.config.ValidationResult.ValidationState;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
@@ -372,14 +372,7 @@ class AssignmentPanel extends JPanel
         
         initialize();
         
-        //TODO: Improve this so no need to individually wrap ErrorView calls
-        EventQueue.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                new ErrorView(t, msg);
-            }
-        });
+        ErrorReporter.report(msg, t);
     }
     
     private void initialize()
@@ -429,7 +422,7 @@ class AssignmentPanel extends JPanel
                             AssignmentPanel.this.repaint();
                             AssignmentPanel.this.revalidate();
                             
-                            new ErrorView(e);
+                            ErrorReporter.report(e);
                         }
                     });
                 }

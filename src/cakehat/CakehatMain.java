@@ -1,6 +1,7 @@
 package cakehat;
 
 import cakehat.database.DbTA;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;
@@ -29,7 +30,7 @@ public class CakehatMain
     {
         _didStartNormally = true;
 
-        CakehatUncaughtExceptionHandler.registerHandler();
+        ErrorReporter.initialize();
         
         //Causes the allocator to create an instance of itself when cakehat is running on a single thread ensuring that
         //only one of it will ever be created (stores itself in a volatile variable)

@@ -13,9 +13,9 @@ import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
 import org.w3c.dom.Element;
 import java.io.File;
-import cakehat.views.shared.ErrorView;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import static cakehat.gml.GMLConstants.*;
 
@@ -70,17 +70,16 @@ public class GMLWriter {
         saveXMLFile(document, gmlFile);
     }
     
-    private static Document createXMLDocument() {
-        Document document = null;
+    private static Document createXMLDocument() throws GradingSheetException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.newDocument();
+            
+            return builder.newDocument();
         }
-        catch (Exception e) {
-            new ErrorView(e);
+        catch(ParserConfigurationException e) {
+            throw new GradingSheetException("Unable to create XML document", e);
         }
-        return document;
     }
     
     private static void saveXMLFile(Document document, File gmlFile) throws GradingSheetException {

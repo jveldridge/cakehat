@@ -7,9 +7,9 @@ import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
-import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.gradingsheet.GradingSheet;
 import com.google.common.collect.Iterables;
 import java.awt.AWTKeyStroke;
@@ -203,7 +203,7 @@ public class AdminView extends JFrame
             {
                 selectedGroups.clear();
                 selectedStudentsNotInGroups.clear();
-                new ErrorView(e, "Unable to retrieve a group for a student");
+                ErrorReporter.report("Unable to retrieve a group for a student", e);
             }
         }
         
@@ -272,7 +272,7 @@ public class AdminView extends JFrame
                     componentToDisplay = FormattedLabel.asHeader("Internal Failure - autogroups of one were not created")
                             .showAsErrorMessage().centerHorizontally();
                     
-                    new ErrorView("Missing autogroups of one\n" +
+                    ErrorReporter.report("Missing autogroups of one\n" +
                             "Assignment: " + asgn + "\n" +
                             "Students: " + selectedStudentsNotInGroups);
                 }
@@ -323,20 +323,21 @@ public class AdminView extends JFrame
     
     void refresh()
     {
-        saveDisplayedGradingSheet();
-        
         //Get most recent student and group information from the database
         try
         {
             Allocator.getDataServices().updateDataCache();
+            
+            saveDisplayedGradingSheet();
+            
+            //Reapply the filter on the student list which will cause any additions or changes to students to be
+            //reflected
+            _studentList.applyFilterTerm();
         }
         catch(ServicesException e)
         {
-            new ErrorView(e, "Unable to refresh");
+            ErrorReporter.report("Unable to refresh", e);
         }
-        
-        //Reapply the filter on the student list which will cause any additions or changes to students to be reflected
-        _studentList.applyFilterTerm();
     }
     
     private void initFocusTraversalPolicy()

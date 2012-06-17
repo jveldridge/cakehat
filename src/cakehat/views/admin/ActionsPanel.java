@@ -8,13 +8,13 @@ import cakehat.database.assignment.MissingHandinException;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.logging.ErrorReporter;
 import cakehat.printing.CITPrinter;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.Iterables;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -355,10 +355,10 @@ class ActionsPanel extends JPanel
                     }
                     catch(IOException e)
                     {
-                        new ErrorView(e, "Unable to determine if a digital handin exists\n" +
+                        ErrorReporter.report("Unable to determine if a digital handin exists\n" +
                                 "Gradable Event: " + part.getGradableEvent().getAssignment().getName() + " - " +
                                                      part.getGradableEvent().getName() + "\n" +
-                                "Group: " + group.getName());
+                                "Group: " + group.getName(), e);
                     }
 
                     if(hasDigitalHandin)
@@ -374,21 +374,21 @@ class ActionsPanel extends JPanel
                         }
                         catch(ActionException e)
                         {
-                            new ErrorView(e, "Unable to determine if a readme exists\n" +
+                            ErrorReporter.report("Unable to determine if a readme exists\n" +
                                 "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group.getName());
+                                "Group: " + group.getName(), e);
                         }
                         catch(MissingHandinException e)
                         {
-                            new ErrorView(e, "Unable to determine if a readme exists\n" +
+                            ErrorReporter.report("Unable to determine if a readme exists\n" +
                                 "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group.getName());
+                                "Group: " + group.getName(), e);
                         }
                         catch(ArchiveException e)
                         {
-                            new ErrorView(e, "Unable to determine if a readme exists\n" +
+                            ErrorReporter.report("Unable to determine if a readme exists\n" +
                                 "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group.getName());
+                                "Group: " + group.getName(), e);
                         }
                     }
                 }
@@ -406,10 +406,10 @@ class ActionsPanel extends JPanel
                         }
                         catch(IOException e)
                         {
-                            new ErrorView(e, "Unable to determine if a digital handin exists\n" +
+                            ErrorReporter.report("Unable to determine if a digital handin exists\n" +
                                     "Gradable Event: " + part.getGradableEvent().getAssignment().getName() +
                                                " - " +   part.getGradableEvent().getName() + "\n" +
-                                    "Group: " + group.getName());
+                                    "Group: " + group.getName(), e);
                         }
                     }
                     _printButton.setEnabled(atLeastOneDigitalHandin);
@@ -436,7 +436,7 @@ class ActionsPanel extends JPanel
         }
         catch(FileNotFoundException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(e);
         }
     }
 
@@ -448,7 +448,7 @@ class ActionsPanel extends JPanel
         }
         catch(ActionException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(e);
         }
     }
     
@@ -460,7 +460,7 @@ class ActionsPanel extends JPanel
         }
         catch(ActionException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(e);
         }
         catch(MissingHandinException e)
         {
@@ -476,7 +476,7 @@ class ActionsPanel extends JPanel
         }
         catch(ActionException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(e);
         }
         catch(MissingHandinException e)
         {
@@ -492,7 +492,7 @@ class ActionsPanel extends JPanel
         }
         catch(ActionException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(e);
         }
         catch(MissingHandinException e)
         {
@@ -538,13 +538,13 @@ class ActionsPanel extends JPanel
                 }
                 catch(ActionException e)
                 {
-                    new ErrorView(e);
+                    ErrorReporter.report(null, e);
                 }
             }
         }
         catch(IOException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(null, e);
         }
     }
     
@@ -556,7 +556,7 @@ class ActionsPanel extends JPanel
         }
         catch(ActionException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report(e);
         }
         catch(MissingHandinException e)
         {
@@ -578,7 +578,7 @@ class ActionsPanel extends JPanel
             }
             catch(ServicesException ex)
             {
-                new ErrorView(ex);
+                ErrorReporter.report(ex);
             }
         }
     }
@@ -594,7 +594,7 @@ class ActionsPanel extends JPanel
         }
         catch(ServicesException ex)
         {
-            new ErrorView(ex);
+            ErrorReporter.report(ex);
         }
     }
     

@@ -1,7 +1,7 @@
 package cakehat.email;
 
-import com.google.common.collect.ImmutableSet;
 import java.io.File;
+import java.util.Set;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
@@ -23,12 +23,7 @@ public interface EmailManager
         /**
          * The account has not been configured.
          */
-        NOT_CONFIGURED,
-        
-        /**
-         * The account could not be created due to an initialization error. This is not user error.
-         */
-        INITIALIZATION_ERROR;
+        NOT_CONFIGURED
     }
     
     public InternetAddress getCakehatEmailAddress();
@@ -40,9 +35,8 @@ public interface EmailManager
     /**
      * Sends an email as HTML if {@link #getEmailAccountStatus()} returns {@link EmailAccountStatus#AVAILABLE}.
      * <br/><br/>
-     * If {@link EmailAccountStatus#NOT_CONFIGURED} or {@link EmailAccountStatus#INITIALIZATION_ERROR} is returned an
-     * exception will be thrown. Code that calls this method should first call {@link #getEmailAccountStatus()} to
-     * confirm that sending email is supported.
+     * If {@link EmailAccountStatus#NOT_CONFIGURED} is returned an exception will be thrown. Code that calls this method
+     * should first call {@link #getEmailAccountStatus()} to confirm that sending email is supported.
      *
      * @param from may not be {@code null}
      * @param to may be {@code null}
@@ -64,5 +58,5 @@ public interface EmailManager
      * 
      * @return addresses
      */
-    public ImmutableSet<InternetAddress> getNotifyAddresses();
+    public Set<InternetAddress> getNotifyAddresses();
 }

@@ -11,8 +11,8 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.email.EmailManager;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
@@ -101,12 +101,12 @@ class GradeReportView extends JDialog
             }
             catch(IOException ex)
             {
-                new ErrorView(ex, "Failed to retrieve data needed by this view");
+                ErrorReporter.report("Failed to retrieve data needed by this view", ex);
                 return;
             }
             catch(ServicesException ex)
             {
-                new ErrorView(ex, "Failed to retrieve data needed by this view");
+                ErrorReporter.report("Failed to retrieve data needed by this view", ex);
                 return;
             }
             
@@ -493,12 +493,7 @@ class GradeReportView extends JDialog
         _sendReportsButton.setText(numSelectedStudents == 1 ? "Send Report" : "Send Reports");
         
         //Set button enabled state based on if the email account is configured and initialized
-        if(Allocator.getEmailManager().getEmailAccountStatus() == EmailManager.EmailAccountStatus.INITIALIZATION_ERROR)
-        {
-            _sendReportsButton.setEnabled(false);
-            _sendReportsButton.setToolTipText("Unable to initialize email account");
-        }
-        else if(Allocator.getEmailManager().getEmailAccountStatus() == EmailManager.EmailAccountStatus.NOT_CONFIGURED)
+        if(Allocator.getEmailManager().getEmailAccountStatus() == EmailManager.EmailAccountStatus.NOT_CONFIGURED)
         {
             _sendReportsButton.setEnabled(false);
             _sendReportsButton.setToolTipText("Email has not been configured by your course");
@@ -711,11 +706,21 @@ class GradeReportView extends JDialog
     private void sendReports(String message, List<Student> students, List<Assignment> assignments,
             InternetAddress alternateAddress)
     {
+        ProgressDialog.ExceptionReporter excReporter = new ProgressDialog.ExceptionReporter()
+        {
+            @Override
+            public void report(String message, Exception exception)
+            {
+                ErrorReporter.report(message, exception);
+            }
+        };
+        SendReportsTask sendTask = new SendReportsTask(students, assignments, message, alternateAddress);
+        
         //Own the progress dialog to same owner as this window - if we instead owned the dialog to this window then it
         //would close when this window closes - which will be done right after creating the dialog
-        new ProgressDialog(this.getOwner(), this, "Sending Grade Reports",
-                "<html><center><h2>Sending student grade reports</h2></center></html>", 
-                new SendReportsTask(students, assignments, message, alternateAddress));
+        ProgressDialog.show(this.getOwner(), this, "Sending Grade Reports",
+                "<html><center><h2>Sending student grade reports</h2></center></html>", sendTask, excReporter);
+        
         this.dispose();
     }
     

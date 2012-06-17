@@ -1,6 +1,6 @@
 package cakehat.views.config;
 
-import cakehat.views.shared.ErrorView;
+import cakehat.logging.ErrorReporter;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.WindowAdapter;
@@ -36,7 +36,7 @@ public class ConfigManagerView extends JFrame
                 }
                 catch(InterruptedException ex)
                 {
-                    new ErrorView(ex, "Database thread was interrupted while shutting down");
+                    ErrorReporter.report("Database thread was interrupted while shutting down", ex);
                 }
             }
         });

@@ -40,7 +40,7 @@ public class DatabaseDistributionTest {
     }
     
     @Test
-    public void testDistribution() throws SQLException, CakeHatDBIOException {
+    public void testDistribution() throws SQLException {
         DatabaseContentWrapper wrapper = new DatabaseContentWrapper(_database);
         
         assertEquals(true, _database.isDistEmpty(wrapper._partIDs));
@@ -64,7 +64,7 @@ public class DatabaseDistributionTest {
     }
     
     @Test
-    public void testAssignGroup() throws SQLException, CakeHatDBIOException{
+    public void testAssignGroup() throws SQLException {
         DatabaseContentWrapper wrapper = new DatabaseContentWrapper(_database);
         
         _database.assignGroup(wrapper._dbGroup1.getId(), 

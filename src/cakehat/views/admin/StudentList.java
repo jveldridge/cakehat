@@ -2,8 +2,8 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.database.Student;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -107,7 +107,7 @@ class StudentList extends JPanel
         }
         catch(ServicesException e)
         {
-            new ErrorView(e, "Unable to retrieve list of students");
+            ErrorReporter.report("Unable to retrieve list of students", e);
         }
         _students = students;
 

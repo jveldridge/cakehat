@@ -2,14 +2,13 @@ package cakehat.views.config;
 
 import cakehat.Allocator;
 import cakehat.database.DbStudent;
+import cakehat.logging.ErrorReporter;
 import cakehat.views.config.ValidationResult.ValidationState;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
@@ -225,7 +224,7 @@ class StudentPanel extends JPanel
                             _scrollablePanel.revalidate();
                             
                             //Show error report
-                            new ErrorView(e);
+                            ErrorReporter.report(e);
                         }
                     });
                 }
@@ -594,7 +593,7 @@ class StudentPanel extends JPanel
                     }
                     catch(NativeException e)
                     {
-                        new ErrorView(e, "Unable to retrieve name for student with login " + login);
+                        ErrorReporter.report("Unable to retrieve name for student with login " + login, e);
 
                         firstName = "[Unknown]";
                         lastName = "[Unknown]";
@@ -614,7 +613,7 @@ class StudentPanel extends JPanel
                     }
                     catch(SQLException e)
                     {
-                        new ErrorView("Failed to add students to the database");
+                        ErrorReporter.report("Failed to add students to the database", e);
                     }
                     
                     //Re-initialize to show all of the added students

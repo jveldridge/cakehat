@@ -2,10 +2,9 @@ package cakehat.views.config;
 
 import cakehat.Allocator;
 import cakehat.database.DbTA;
-import cakehat.views.shared.ErrorView;
+import cakehat.logging.ErrorReporter;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
@@ -202,7 +201,7 @@ class TAPanel extends JPanel
                             _contentPanel.revalidate();
                             
                             //Show error report
-                            new ErrorView(e);
+                            ErrorReporter.report(e);
                         }
                     });
                 }

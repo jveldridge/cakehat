@@ -1,11 +1,11 @@
 package cakehat.email;
 
 import cakehat.Allocator;
+import cakehat.InitializationException;
 import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.database.DbNotifyAddress;
 import cakehat.database.DbPropertyValue;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -27,13 +27,6 @@ public class EmailManagerImpl implements EmailManager
     
     public EmailManagerImpl()
     {
-        //It's necessary to assign to local variables and then assign to the final instance variables due to the Java
-        //compiler being unable to statically determine if the instance variables will be set due to the try/catch
-        //blocks
-        
-        //Email account & status
-        EmailAccount account;
-        EmailAccountStatus status;
         try
         {
             DbPropertyValue<String> accountProp = Allocator.getDatabase().getPropertyValue(DbPropertyKey.EMAIL_ACCOUNT);
@@ -43,37 +36,30 @@ public class EmailManagerImpl implements EmailManager
                     
             if(emailLogin == null || emailLogin.isEmpty() || emailPassword == null || emailPassword.isEmpty())
             {
-                account = null;
-                status = EmailAccountStatus.NOT_CONFIGURED;
+                _account = null;
+                _status = EmailAccountStatus.NOT_CONFIGURED;
             }
             else
             {
                 try
                 {
-                    account = new EmailAccount(emailLogin, emailPassword);
-                    status = EmailAccountStatus.AVAILABLE;
+                    _account = new EmailAccount(emailLogin, emailPassword);
+                    _status = EmailAccountStatus.AVAILABLE;
                 }
                 catch(GeneralSecurityException ex)
                 {
-                    account = null;
-                    status = EmailAccountStatus.INITIALIZATION_ERROR;
-
-                    new ErrorView(ex, "Unable to create the email account. cakehat will be unable to send email");
+                    throw new InitializationException("Unable to create the email account. " +
+                            "cakehat will be unable to send email", ex);
                 }
             }
         }
         catch(SQLException ex)
         {
-            account = null;
-            status = EmailAccountStatus.INITIALIZATION_ERROR;
-            
-            new ErrorView(ex, "Unable to create the email account. cakehat will be unable to send email");
+            throw new InitializationException("Unable to create the email account. " +
+                            "cakehat will be unable to send email", ex);
         }
-        _account = account;
-        _status = status;
         
         //Notify addresses
-        ImmutableSet<InternetAddress> addresses;
         try
         {
             Set<DbNotifyAddress> dbAddresses = Allocator.getDatabase().getNotifyAddresses();
@@ -89,26 +75,29 @@ public class EmailManagerImpl implements EmailManager
                 }
                 catch(AddressException ex)
                 {
-                    new ErrorView(ex, "Unable to construct an email address from: " + address.getAddress());
+                    throw new InitializationException("Unable to construct an email address from: " +
+                            address.getAddress() + "\n" +
+                            "Please contact the cakehat team - your course's database has become corrupted.", ex);
                 }
             }
-            addresses = addressesBuilder.build();
+            _addresses = addressesBuilder.build();
         }
         catch(SQLException ex)
         {
-            addresses = ImmutableSet.<InternetAddress>of();
-            
-            new ErrorView(ex, "Unable to retrieve notify addresses from database");
+            throw new InitializationException("Unable to retrieve notify addresses from database", ex);
         }
-        _addresses = addresses;
     }
     
     @Override
-    public InternetAddress getCakehatEmailAddress() {
-        try {
+    public InternetAddress getCakehatEmailAddress()
+    {
+        try
+        {
             return new InternetAddress("cakehat@cs.brown.edu");
-        } catch (AddressException ex) {
-            throw new RuntimeException(ex);
+        }
+        catch(AddressException ex)
+        {
+            throw new RuntimeException("Unable to construct email address for cakehat@cs.brown.edu", ex);
         }
     }
     
@@ -145,11 +134,6 @@ public class EmailManagerImpl implements EmailManager
         {
             throw new MessagingException("Email has not been configured by your course");
         }
-        else if(_status == EmailAccountStatus.INITIALIZATION_ERROR)
-        {
-            throw new MessagingException("An error occurred while initializing the email account, cakehat is unable " +
-                    "to send email. Please try restarting cakehat.");
-        }
         else
         {
             throw new IllegalStateException("Illegal email account status state: " + _status);
@@ -157,7 +141,7 @@ public class EmailManagerImpl implements EmailManager
     }
     
     @Override
-    public ImmutableSet<InternetAddress> getNotifyAddresses()
+    public Set<InternetAddress> getNotifyAddresses()
     {
         return _addresses;
     }

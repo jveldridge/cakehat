@@ -6,13 +6,12 @@ import cakehat.email.EmailAccount;
 import cakehat.database.DbNotifyAddress;
 import cakehat.database.DbPropertyValue;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
+import cakehat.logging.ErrorReporter;
 import cakehat.views.config.ValidationResult.ValidationState;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -149,7 +148,7 @@ class EmailPanel extends JPanel
                             _contentPanel.revalidate();
 
                             //Show error report
-                            new ErrorView(e);
+                            ErrorReporter.report(e);
                         }
                     });
                 }
@@ -391,13 +390,13 @@ class EmailPanel extends JPanel
                     catch(GeneralSecurityException ex)
                     {
                         emailSent("A cakehat issue prevented the email from being sent", false);
-                        new ErrorView(ex, "A cakehat issue prevented the email from being sent");
+                        ErrorReporter.report("A cakehat issue prevented the email from being sent", ex);
                     }
                     //cakehat issue
                     catch(AddressException ex)
                     {
                         emailSent("A cakehat issue prevented the email from being sent", false);
-                        new ErrorView(ex, "A cakehat issue prevented the email from being sent");
+                        ErrorReporter.report("A cakehat issue prevented the email from being sent", ex);
                     }
                     //Bad credentials
                     catch(MessagingException e)

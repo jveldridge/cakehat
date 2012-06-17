@@ -38,7 +38,7 @@ public enum CakehatRunMode
         _backupDatabaseOnShutdown = backupDatabaseOnShutdown;
     }
     
-    boolean hasGUI()
+    public boolean hasGUI()
     {
         return _hasGUI;
     }

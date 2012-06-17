@@ -1,5 +1,6 @@
 package cakehat.views.config;
 
+import cakehat.logging.ErrorReporter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,7 +99,10 @@ class UniqueElementSingleThreadWorker
                     }
                     catch(InterruptedException ex) { }
                     //Catch run time exceptions that the runnable might throw so that the thread does not die
-                    catch(RuntimeException ex) { ex.printStackTrace(); } //TODO: Log/report this somehow
+                    catch(RuntimeException ex)
+                    {
+                        ErrorReporter.reportUncaughtException(ex);
+                    }
                 }
                 
                 _state = ActivityState.SHUT_DOWN;

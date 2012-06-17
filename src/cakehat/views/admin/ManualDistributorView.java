@@ -6,17 +6,15 @@ import cakehat.CakehatMain;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.database.TA;
+import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -150,9 +148,9 @@ class ManualDistributorView extends JDialog {
 
             _studentFilterBox.requestFocus();
         } catch (ServicesException ex) {
-            new ErrorView(ex, "An error occurred while initializing the interface. "
+            ErrorReporter.report("An error occurred while initializing the interface. "
                     + "This view will now close.  If this problem "
-                    + "persists, please send an error report.");
+                    + "persists, please send an error report.", ex);
             ManualDistributorView.this.dispose();
         }
     }
@@ -188,9 +186,9 @@ class ManualDistributorView extends JDialog {
                 try {
                     updateFromList();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. "
+                    ErrorReporter.report("An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
-                            + "persists, please send an error report.");
+                            + "persists, please send an error report.", ex);
                     ManualDistributorView.this.dispose();
                 }
             }
@@ -325,14 +323,11 @@ class ManualDistributorView extends JDialog {
                 try {
                     handleAssignButtonClick();
                 } catch (SQLException ex) {
-                    new ErrorView(ex, "An error occurred during assignment. "
-                            + "No changes have been made.");
+                    ErrorReporter.report("An error occurred during assignment. "
+                            + "No changes have been made.", ex);
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred during assignment. "
-                            + "No changes have been made.");
-                } catch (CakeHatDBIOException ex) {
-                    new ErrorView(ex, "An error occurred during assignment. "
-                            + "No changes have been made.");
+                    ErrorReporter.report("An error occurred during assignment. "
+                            + "No changes have been made.", ex);
                 }
             }
         });
@@ -385,9 +380,9 @@ class ManualDistributorView extends JDialog {
                 try {
                     updateToList();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "An error occurred while updating the interface. "
+                    ErrorReporter.report("An error occurred while updating the interface. "
                             + "This view will now close.  If this problem "
-                            + "persists, please send an error report.");
+                            + "persists, please send an error report.", ex);
                     ManualDistributorView.this.dispose();
                 }
             }
@@ -496,7 +491,7 @@ class ManualDistributorView extends JDialog {
         _toGroupList.setListData(groupsToDisplay);
     }
 
-    private void handleAssignButtonClick() throws SQLException, ServicesException, CakeHatDBIOException {
+    private void handleAssignButtonClick() throws SQLException, ServicesException {
         if (!_fromRandom.isSelectionEmpty()) {
             this.handleRandomAssignButtonClick();
         } else {
@@ -505,7 +500,7 @@ class ManualDistributorView extends JDialog {
         this.refreshTALists();
     }
 
-    private void handleSelectedAssignButtonClick() throws ServicesException, CakeHatDBIOException {
+    private void handleSelectedAssignButtonClick() throws ServicesException {
         Collection<Group> groups = new ArrayList<Group>(_fromGroupList.getGenericSelectedValues());
 
         //assigning a student who was previously assigned to UNASSIGNED
@@ -558,7 +553,7 @@ class ManualDistributorView extends JDialog {
         _studentFilterBox.requestFocus();
     }
 
-    private void handleRandomAssignButtonClick() throws ServicesException, CakeHatDBIOException {
+    private void handleRandomAssignButtonClick() throws ServicesException {
         TA toTA = _toTAList.getSelectedValue();
         TA fromTA = _fromTAList.getSelectedValue();
 
@@ -655,7 +650,7 @@ class ManualDistributorView extends JDialog {
             try {
                 groups = Allocator.getDataServices().getAssignedGroups(_part, selectedTA);
             } catch (ServicesException ex) {
-                new ErrorView(ex, "Unable to filter student/group list");
+                ErrorReporter.report("Unable to filter student/group list", ex);
                 return;
             }
 
@@ -727,9 +722,9 @@ class ManualDistributorView extends JDialog {
             try {
                 _distribution = Allocator.getDataServices().getDistribution(_part);
             } catch (ServicesException ex) {
-                new ErrorView(ex, "Unable to distribution data. The user " +
+                ErrorReporter.report("Unable to distribution data. The user " +
                         "interface will be unable to display the number of" +
-                        "students/groups assigned to each TA.");
+                        "students/groups assigned to each TA.", ex);
             }
         }
 

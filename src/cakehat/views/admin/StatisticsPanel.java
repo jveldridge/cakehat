@@ -6,9 +6,9 @@ import cakehat.database.PartGrade;
 import cakehat.database.Student;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
-import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -143,7 +143,7 @@ class StatisticsPanel extends JPanel
         }
         catch(ServicesException e)
         {
-            new ErrorView(e, "Unable to determine grading status");
+            ErrorReporter.report("Unable to determine grading status", e);
             _contentPanel.add(FormattedLabel.asSubheader("Unable to load grades").showAsErrorMessage()
                     .centerHorizontally());
         }

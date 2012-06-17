@@ -4,8 +4,8 @@ import cakehat.Allocator;
 import cakehat.database.DbGroup;
 import cakehat.database.Student;
 import cakehat.database.assignment.Assignment;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -159,7 +159,7 @@ class DnDGroupTree extends JPanel {
                 //newly added group will be the last item in the tree
                 _groupTree.setSelectionRow(_groupTree.getRowCount() - 1); 
             } catch (SQLException e) {
-                new ErrorView(e, "Unable to add new group to the database");
+                ErrorReporter.report("Could not get enabled students from database", e);
             }
         }
     }
@@ -195,12 +195,12 @@ class DnDGroupTree extends JPanel {
             for (Student s: students) {
                 g.removeStudent(s);
             }
-            new ErrorView(e, "Unable to add students to group");
+            ErrorReporter.report("Unable to add students to group", e);
         }
     }
     
     /**
-     * Removes students from the groups and update the UI.
+     * Removes students from the groups and updates the UI.
      * 
      * @param studentsToRemove 
      */
@@ -222,7 +222,7 @@ class DnDGroupTree extends JPanel {
                     group.addStudent(student);
                 }
             }
-            new ErrorView(e, "Unable to remove student from groups");
+            ErrorReporter.report("Unable to remove students from group", e);
         }
     }
 
@@ -239,7 +239,7 @@ class DnDGroupTree extends JPanel {
                     this.updateTreeUI();
                 } catch (SQLException e) {
                     g.getDbGroup().setName(oldName);
-                    new ErrorView(e, "Unable to change group name");
+                    ErrorReporter.report("Unable to change group name", e);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Please select a unique group name");
@@ -269,7 +269,8 @@ class DnDGroupTree extends JPanel {
                     DbGroupWrapper group = (DbGroupWrapper) path.getLastPathComponent();
                     groupWrappersToRemove.add(group);
                     groupsToRemove.add(group.getDbGroup());
-                } else if (path.getLastPathComponent() instanceof Student) {
+                }
+                else if (path.getLastPathComponent() instanceof Student) {
                     DbGroupWrapper group = (DbGroupWrapper) path.getParentPath().getLastPathComponent();
                     Student student = (Student) path.getLastPathComponent();
                     studentGroupToRemove.put(student, group);
@@ -300,7 +301,7 @@ class DnDGroupTree extends JPanel {
                 for (Student s : studentsToAddBack){
                     studentGroupToRemove.get(s).addStudent(s);
                 }
-                new ErrorView(ex, "Unable to remove items");
+                ErrorReporter.report("Unable to remove items", ex);
             }
             _groupTree.clearSelection();
             this.updateTreeUI();
@@ -482,7 +483,8 @@ class DnDGroupTree extends JPanel {
             Object child = null;
             if (o == ROOT) {
                 child = _groups.get(i);
-            } else if (o instanceof DbGroupWrapper) {
+            }
+            else if (o instanceof DbGroupWrapper) {
                 child = ((DbGroupWrapper) o).get(i);
             }
             
@@ -494,7 +496,8 @@ class DnDGroupTree extends JPanel {
             int count = 0;
             if (o == ROOT) {
                 count = _groups.size();
-            } else if (o instanceof DbGroupWrapper) {
+            }
+            else if (o instanceof DbGroupWrapper) {
                 count = ((DbGroupWrapper) o).getNumStudents();
             }
 
@@ -511,7 +514,8 @@ class DnDGroupTree extends JPanel {
             int index = -1;
             if (parent == ROOT) {
                 index = _groups.indexOf(child);
-            } else if (parent instanceof DbGroupWrapper) {
+            }
+            else if (parent instanceof DbGroupWrapper) {
                 index = ((DbGroupWrapper) parent).getStudentIndex((Student) child);
             }
 
