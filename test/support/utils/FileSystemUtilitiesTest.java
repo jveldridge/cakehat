@@ -34,8 +34,7 @@ public class FileSystemUtilitiesTest
         {
             public boolean accept(File file) { return true; }
         };
-        Collection<File> response =
-                new FileSystemUtilitiesImpl().getFiles(rootFile, acceptAllFilter);
+        Collection<File> response = new FileSystemUtilitiesImpl().getFiles(rootFile, acceptAllFilter);
 
         //Check all of the files are returned and there are no duplicates
         assertEquals("Should contain exactly 3 Files", 3, response.size());

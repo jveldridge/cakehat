@@ -25,15 +25,14 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import support.ui.AlphaJPanel;
 import support.ui.AlphaJScrollPane;
+import support.ui.DocumentAdapter;
 import support.ui.GenericJList;
 import support.ui.ShadowJTextField;
 
 /**
- * Panel which allows for blacklisting and unblacklisting of students for the
- * TA running cakehat.
+ * Panel which allows for blacklisting and unblacklisting of students for the TA running cakehat.
  *
  * @author jak2
  */
@@ -50,8 +49,7 @@ class BlacklistPanel extends AlphaJPanel
      *
      * @param size
      * @param background
-     * @throws SQLException if the data needed for the initial state cannot
-     * be retrieved from the database
+     * @throws SQLException if the data needed for the initial state cannot be retrieved from the database
      */
     public BlacklistPanel(Dimension size, Color background) throws SQLException, ServicesException
     {
@@ -220,11 +218,13 @@ class BlacklistPanel extends AlphaJPanel
         nonblacklistPanel.add(nonblacklistLabel);
 
         int filterFieldHeight = 20;
-        _filterField.getDocument().addDocumentListener(new DocumentListener()
+        _filterField.getDocument().addDocumentListener(new DocumentAdapter()
         {
-            public void insertUpdate(DocumentEvent de) { applyFilterField(); }
-            public void removeUpdate(DocumentEvent de) { applyFilterField(); }
-            public void changedUpdate(DocumentEvent de){ applyFilterField(); }
+            @Override
+            public void modificationOccurred(DocumentEvent de)
+            {
+                applyFilterField();
+            }
         });
         _filterField.setPreferredSize(new Dimension(listPanelWidth, filterFieldHeight));
         nonblacklistPanel.add(_filterField);
@@ -238,8 +238,8 @@ class BlacklistPanel extends AlphaJPanel
     }
 
     /**
-     * Applies the text in the filter field to the nonblacklisted students and
-     * then displays this in the nonblacklisted jlist.
+     * Applies the text in the filter field to the nonblacklisted students and then displays this in the nonblacklisted
+     * jlist.
      */
     private void applyFilterField()
     {

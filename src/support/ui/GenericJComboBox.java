@@ -55,8 +55,8 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     /**
      * For internal use <strong>only</strong>.
      * <br/><br/>
-     * This method must be public in order to interact properly with
-     * {@link JComboBox}; however, it should not be called from other classes.
+     * This method must be public in order to interact properly with {@link JComboBox}; however, it should not be called
+     * from other classes.
      *
      * @param obj
      *
@@ -115,14 +115,11 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     @Override
     public E getItemAt(int index)
     {
-        if (index < 0 || index >= _model.getSize()) {
-            return null;
-        }
         return _model.getElementAt(index);
     }
 
     /**
-     * Replaces all existing data with <code>items</code>.
+     * Replaces all existing data with {@code items}.
      *
      * @param items
      */
@@ -144,9 +141,8 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     /**
      * This method cannot ensure type safety.
      * <br/><br/>
-     * The no argument super constructor will call this method with an empty
-     * <code>model</code>, this behavior will be allowed, but the model provided
-     * will not be used.
+     * The no argument super constructor will call this method with an empty {@code model}, this behavior will be
+     * allowed, but the model provided will not be used.
      *
      * @param model
      * @deprecated
@@ -160,17 +156,16 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
         {
             this.setModel(new GenericComboBoxModel<E>());
         }
-        //Due to type-erasure, it is not possible to verify that the elements
-        //of the model are of type E, so do not allow this behavior
+        //Due to type-erasure, it is not possible to verify that the elements of the model are of type E, so do not
+        //allow this behavior
         else
         {
-            throw new UnsupportedOperationException("Not valid for " +
-                    "GenericJComboBox. Please use setItems(...)");
+            throw new UnsupportedOperationException("Not valid for GenericJComboBox. Please use setItems(...)");
         }
     }
 
     /**
-     * Sets the model in a typesafe manner.
+     * Sets the model in a type-safe manner.
      *
      * @param model
      */
@@ -205,18 +200,17 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     }
     
     /**
-     * This method must be public to match a required interface; however, it is
-     * not intended for external use.
+     * This method must be public to match a required interface; however, it is not intended for external use.
      *
      * @param i
      * @return
      */
+    @Override
     public E getElementDisplayedAt(int i)
     {
         E elem;
 
-        //For a JComboBox -1 indicates the popup is closed and it is rendering
-        //the selected item
+        //For a JComboBox -1 indicates the popup is closed and it is rendering the selected item
         if(i == -1)
         {
             elem = getSelectedItem();
@@ -282,5 +276,5 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     public void removeItemAt(int anIndex)
     {
         throw new UnsupportedOperationException("Mutation not supported");
-    }    
+    }
 }

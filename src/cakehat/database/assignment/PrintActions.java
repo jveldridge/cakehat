@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,8 +97,16 @@ class PrintActions implements ActionProvider
                             List<File> filesToPrint;
                             try
                             {
-                                filesToPrint = Allocator.getFileSystemUtilities()
-                                        .getFiles(unarchiveDir, extensionsFilter);
+                                Comparator<File> fileComparator = new Comparator<File>()
+                                {
+                                    @Override
+                                    public int compare(File f1, File f2)
+                                    {
+                                        return f1.compareTo(f2);
+                                    }
+                                };
+                                filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
+                                        extensionsFilter, fileComparator);
                             }
                             catch(IOException e)
                             {
@@ -106,7 +115,6 @@ class PrintActions implements ActionProvider
 
                             try
                             {
-                                Collections.sort(filesToPrint);
                                 PrintRequest request = new PrintRequest(filesToPrint, unarchiveDir,
                                         Allocator.getUserServices().getUser(), group);
                                 requests.add(request);

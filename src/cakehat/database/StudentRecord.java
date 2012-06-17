@@ -1,9 +1,8 @@
 package cakehat.database;
 
 /**
- * Represents information about a student as stored in the database.  Unlike the
- * {@link Student} object, instances of this class are not managed and are not 
- * guaranteed to be valid.  This class should used only as a return type for
+ * Represents information about a student as stored in the database. Unlike the {@link Student} object, instances of
+ * this class are not managed and are not guaranteed to be valid. This class should used only as a return type for
  * {@link Database} methods supporting {@link DataServices} methods.
  * 
  * @author jeldridg
@@ -14,8 +13,8 @@ class StudentRecord {
     private final String _login, _firstName, _lastName, _email;
     private final boolean _isEnabled, _hasCollab;
 
-    StudentRecord(int dbId, String login, String firstName, String lastName, 
-                    String email, boolean isEnabled, boolean hasCollab) {
+    StudentRecord(int dbId, String login, String firstName, String lastName, String email, boolean isEnabled,
+            boolean hasCollab) {
         _dbId = dbId;
         _login = login;
         _firstName = firstName;
@@ -51,7 +50,5 @@ class StudentRecord {
     
     public boolean hasCollab() {
         return _hasCollab;
-    }
-    
+    }   
 }
-

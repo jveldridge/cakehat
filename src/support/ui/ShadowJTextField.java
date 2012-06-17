@@ -6,8 +6,8 @@ import java.awt.event.FocusListener;
 import javax.swing.JTextField;
 
 /**
- * A JTextField which shows shadow text when this field not in focus and has no
- * input text in it. Shadow text is displayed in light gray.
+ * A JTextField which shows shadow text when this field not in focus and has no input text in it. Shadow text is
+ * displayed in light gray.
  *
  * @author jak2
  */

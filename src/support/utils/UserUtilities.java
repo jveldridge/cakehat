@@ -1,6 +1,6 @@
 package support.utils;
 
-import java.util.List;
+import java.util.Set;
 import support.utils.posix.NativeException;
 
 /**
@@ -16,7 +16,7 @@ public interface UserUtilities
      *
      * @throws NativeException thrown if the group does not exist
      */
-    public List<String> getMembers(String group) throws NativeException;
+    public Set<String> getMembers(String group) throws NativeException;
 
     /**
      * Returns the POSIX user id that corresponds with {@code login}. If the login does not exist then an exception will
@@ -72,9 +72,8 @@ public interface UserUtilities
     public boolean isLoginValid(String login);
 
     /**
-     * Returns whether or not the user specified by <code>login</code> is a
-     * member of the group specified by <code>group</code>. If the user is a
-     * member of the group true is returned.
+     * Returns whether or not the user specified by {@code login} is a member of the group specified by {@code group}.
+     * If the user is a member of the group true is returned.
      *
      * @return if a member of the group
      *
@@ -83,8 +82,7 @@ public interface UserUtilities
     public boolean isMemberOfGroup(String login, String group) throws NativeException;
 
     /**
-     * Returns whether or not the user is remotely connected (such as over ssh)
-     * to the computer running cakehat.
+     * Returns whether or not the user is remotely connected (such as over ssh) to the computer running cakehat.
      *
      * @return
      * @throws NativeException

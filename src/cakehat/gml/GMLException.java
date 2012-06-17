@@ -19,8 +19,8 @@ public class GMLException extends GradingSheetException {
     }
 
     /**
-     * Constructs a message that a given parent only allows for certain
-     * supported children and that this node is not supported.
+     * Constructs a message that a given parent only allows for certain supported children and that this node is not
+     * supported.
      *
      * @param parentTag
      * @param node unsupported node
@@ -29,7 +29,6 @@ public class GMLException extends GradingSheetException {
     public GMLException(String parentTag, Node node, String... supportedTags)
     {
         super("Unsupported " + parentTag + " child: " + node.getNodeName() + ", only " +
-              Arrays.toString(supportedTags) +
-              (supportedTags.length == 1 ? " is" : " are") + " supported.");
+              Arrays.toString(supportedTags) + (supportedTags.length == 1 ? " is" : " are") + " supported.");
     }
 }

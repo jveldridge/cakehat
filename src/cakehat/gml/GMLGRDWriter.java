@@ -19,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Iterator;
 import org.joda.time.DateTime;
 
@@ -322,9 +323,7 @@ public class GMLGRDWriter {
     }
     
     private static void printEnd(double earned, double outOf, BufferedWriter output) throws GradingSheetException {
-        printEnd(Allocator.getGeneralUtilities().doubleToString(earned),
-                 Allocator.getGeneralUtilities().doubleToString(outOf),
-                 output);
+        printEnd(doubleToString(earned), doubleToString(outOf), output);
     }
     
     private static void printEnd(String score, String outOf, BufferedWriter output) throws GradingSheetException {
@@ -433,24 +432,24 @@ public class GMLGRDWriter {
     
     private static void printEndPlusMinus(double score, double outOf, BufferedWriter output) throws GradingSheetException {
         if (score > 0) {
-            printEnd("+" + Allocator.getGeneralUtilities().doubleToString(score), "+" + Allocator.getGeneralUtilities().doubleToString(outOf), output);
+            printEnd("+" + doubleToString(score), "+" + doubleToString(outOf), output);
         }
         else if (score < 0) {
-            printEnd(Allocator.getGeneralUtilities().doubleToString(score), Allocator.getGeneralUtilities().doubleToString(outOf), output);
+            printEnd(doubleToString(score), doubleToString(outOf), output);
         }
         else {
             if (outOf < 0) {
-                printEnd(Allocator.getGeneralUtilities().doubleToString(score), Allocator.getGeneralUtilities().doubleToString(outOf), output);
+                printEnd(doubleToString(score), doubleToString(outOf), output);
             }
             else {
-                printEnd(Allocator.getGeneralUtilities().doubleToString(score), "+" + Allocator.getGeneralUtilities().doubleToString(outOf), output);
+                printEnd(doubleToString(score), "+" + doubleToString(outOf), output);
             }
         }
     }
     
     private static void printPartTotal(double earned, double outOf, BufferedWriter output) throws GradingSheetException {
         printWithinBounds(0, SECTION_TEXT_WIDTH, "Part Total:", output);
-        printEnd(Allocator.getGeneralUtilities().doubleToString(earned), Allocator.getGeneralUtilities().doubleToString(outOf), output);
+        printEnd(doubleToString(earned), doubleToString(outOf), output);
     }
     
     private static void printSectionTotal(double score, double outOf, BufferedWriter output) throws GradingSheetException {
@@ -537,6 +536,21 @@ public class GMLGRDWriter {
         catch (IOException e) {
             throw new GradingSheetException("Line \"" + s + "\" could not be written.", e);
         }
+    }
+    
+    private static String doubleToString(double value) {
+        double roundedVal;
+        
+        if(Double.isNaN(value)) {
+            roundedVal = Double.NaN;
+        }
+        else {
+            BigDecimal bd = new BigDecimal(Double.toString(value));
+            bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+            roundedVal = bd.doubleValue();
+        }
+
+        return Double.toString(roundedVal);
     }
     
     private static class Score {

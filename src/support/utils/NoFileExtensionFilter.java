@@ -10,10 +10,9 @@ import java.io.FileFilter;
  */
 public class NoFileExtensionFilter implements FileFilter
 {
+    @Override
     public boolean accept(File file)
     {
-        boolean accept = file.isFile() && !file.getName().contains(".");
-
-        return accept;
+        return file.isFile() && !file.getName().contains(".");
     }
 }

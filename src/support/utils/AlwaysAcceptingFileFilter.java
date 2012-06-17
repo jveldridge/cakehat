@@ -10,6 +10,7 @@ import java.io.FileFilter;
  */
 public class AlwaysAcceptingFileFilter implements FileFilter
 {
+    @Override
     public boolean accept(File file)
     {
         return true;

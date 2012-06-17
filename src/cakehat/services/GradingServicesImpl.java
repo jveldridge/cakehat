@@ -155,10 +155,11 @@ public class GradingServicesImpl implements GradingServices
 
         Icon icon = IconLoader.loadIcon(IconSize.s32x32, IconImage.PRINTER);
 
-        return (CITPrinter) JOptionPane.showInputDialog(null, message,
-                "Select Printer", JOptionPane.PLAIN_MESSAGE, icon, printerChoices, DEFAULT_PRINTER);
+        return (CITPrinter) JOptionPane.showInputDialog(null, message, "Select Printer", JOptionPane.PLAIN_MESSAGE,
+                icon, printerChoices, DEFAULT_PRINTER);
     }
 
+    @Override
     public boolean isOkToDistribute(Group group, TA ta) throws ServicesException
     {
         boolean distribute = true;
@@ -176,6 +177,7 @@ public class GradingServicesImpl implements GradingServices
         return distribute;
     }
     
+    @Override
     public boolean isSomeGroupMemberBlacklisted(Group group, Map<TA, Collection<Student>> blacklists) throws ServicesException {
         for (TA ta : blacklists.keySet()) {
             Collection<Student> blackList = blacklists.get(ta);
@@ -314,12 +316,10 @@ public class GradingServicesImpl implements GradingServices
         warningPanel.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
-        JLabel explainationText = new JLabel("<html><p>The following students are"
-                + " <font color=red>not</font> in the database or are disabled and they"
-                + " have handins for: <font color=blue><i>" + ge.getFullDisplayName() + "</i></font>."
-                + " You should consider adding them to the database or enabling them."
-                + " If you do not their handins will <font color=red>not</font> be distributed to"
-                + " a TA for grading.</p></html>");
+        JLabel explainationText = new JLabel("<html><p>The following students are <font color=red>not</font> in the " +
+                "database or are disabled and they have handins for: <font color=blue><i>" + ge.getFullDisplayName() +
+                "</i></font>. You should consider adding them to the database or enabling them. If you do not their " +
+                "handins will <font color=red>not</font> be distributed to a TA for grading.</p></html>");
         explainationText.setPreferredSize(new Dimension(175, 100));
 
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -400,7 +400,8 @@ public class GradingServicesImpl implements GradingServices
 
         JButton ignoreAllButton = new JButton("Ignore All");
         ignoreAllButton.addActionListener(new ActionListener() {
-
+            
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (IssueResolutionPanel notInDBPanel : notInDBPanels) {
                     notInDBPanel.setAction2Ignore();

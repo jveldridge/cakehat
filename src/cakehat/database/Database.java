@@ -88,45 +88,38 @@ public interface Database
     public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     
     /**
-     * For each student ID in the given Set, adds the corresponding student
-     * to the blacklist of the TA with the given ID.  This ensures that the TA
-     * will not be distributed a group to grade that includes any of these students.
-     * If a student was already blacklisted by this TA, its entry in the blacklist
-     * table will not be duplicated.  If any of the IDs in the Set do not
-     * correspond to student records in the database, a SQLException will be thrown
-     * and no students will have been added to the TA's blacklist.
+     * For each student ID in the given Set, adds the corresponding student to the blacklist of the TA with the given
+     * ID. This ensures that the TA will not be distributed a group to grade that includes any of these students. If a
+     * student was already blacklisted by this TA, its entry in the blacklist table will not be duplicated. If any of
+     * the IDs in the Set do not correspond to student records in the database, a SQLException will be thrown and no
+     * students will have been added to the TA's blacklist.
      *
      * @param studentIDs
      * @param taID
      */
-    public void blacklistStudents(Set<Integer> studentIDs, int taID) 
-                                                            throws SQLException;
+    public void blacklistStudents(Set<Integer> studentIDs, int taID) throws SQLException;
+    
     /**
-     * For each student ID in the given Set, removes the corresponding
-     * student from the blacklist of the TA with the given ID.  This has no
-     * effect for any student IDs that correspond to students not currently
-     * blacklisted by the TA or that do not correspond to student records in
-     * the database.
+     * For each student ID in the given Set, removes the corresponding student from the blacklist of the TA with the
+     * given ID. This has no effect for any student IDs that correspond to students not currently blacklisted by the TA
+     * or that do not correspond to student records in the database.
      *
      * @param studentIDs
      * @param taID
      */
-    public void unBlacklistStudents(Set<Integer> studentIDs, int taID) 
-                                                            throws SQLException;
+    public void unBlacklistStudents(Set<Integer> studentIDs, int taID) throws SQLException;
 
     /**
-     * Returns an ImmutableSet containing the IDs of all students who are on 
-     * some TA's blacklist.  If no students have been blacklisted, an empty Set 
-     * will be returned.
+     * Returns an ImmutableSet containing the IDs of all students who are on some TA's blacklist. If no students have
+     * been blacklisted, an empty Set will be returned.
      *
      * @return
      */
     public Set<Integer> getBlacklistedStudents() throws SQLException;
 
     /**
-     * Returns an ImmutableSet containing the IDs of all students who are on 
-     * the blacklist of the TA with the given ID. If the TA has not blacklisted 
-     * any students, an empty Set will be returned.
+     * Returns an ImmutableSet containing the IDs of all students who are on the blacklist of the TA with the given ID.
+     * If the TA has not blacklisted any students, an empty Set will be returned.
      * 
      * @param taID
      * @return
@@ -134,8 +127,8 @@ public interface Database
     public Set<Integer> getBlacklist(int taID) throws SQLException;
     
     /**
-     * Returns an ImmutableSet containing a GroupRecord object for each group in
-     * the database. If the database contains no groups, an empty Set is returned.
+     * Returns an ImmutableSet containing a GroupRecord object for each group in the database. If the database contains
+     * no groups, an empty Set is returned.
      *
      * @return
      */
@@ -156,9 +149,8 @@ public interface Database
     public void putGroups(Set<DbGroup> groups) throws SQLException;
 
     /**
-     * Returns an ImmutableSet containing the DbGroup object for each group that has been 
-     * created for the assignment with the given ID.  If no groups have yet been
-     * created for the assignment or there is no assignment with the given 
+     * Returns an ImmutableSet containing the DbGroup object for each group that has been created for the assignment
+     * with the given ID. If no groups have yet been created for the assignment or there is no assignment with the given 
      * asgnID, an empty Set will be returned.
      * 
      * @param asgnID
@@ -167,7 +159,7 @@ public interface Database
     public Set<DbGroup> getGroups(int asgnID) throws SQLException;
     
     /**
-     * Removes the given DbGroups from the database.  If any of the given DbGroups does not correspond to a group in the
+     * Removes the given DbGroups from the database. If any of the given DbGroups does not correspond to a group in the
      * database, it will be ignored.
      * 
      * @param groups
@@ -176,13 +168,12 @@ public interface Database
     public void removeGroups(Set<DbGroup> groups) throws SQLException;
     
     /**
-     * Indicates whether all Parts corresponding to the part IDs in the given
-     * Set have no distribution.  This is intended to be used to determine
-     * if an distribution has been set for any Parts of an Assignment; however,
-     * this does not need to be the case.
-     * 
-     * Returns true if the distribution is empty for all of the parts, and false
-     * if it is non-empty for at least one of them.
+     * Indicates whether all Parts corresponding to the part IDs in the given Set have no distribution. This is intended
+     * to be used to determine if a distribution has been set for any Parts of an Assignment; however, this does not
+     * need to be the case.
+     * <br/><br/>
+     * Returns true if the distribution is empty for all of the parts, and false if it is non-empty for at least one of
+     * them.
      *
      * @param partIDs
      * @return
@@ -190,11 +181,10 @@ public interface Database
     public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException;
     
     /**
-     * Returns the distribution for the Part with the given ID.  The SetMultimap 
-     * returned maps a TA's ID to a Set of group IDs representing the
-     * groups that TA has been assigned to grade for the Part. The SetMultiap returned
-     * contains entries only for those TAs who have groups assigned to them.
-     * If no distribution has yet been set, an empty SetMultimap is returned.
+     * Returns the distribution for the Part with the given ID. The SetMultimap returned maps a TA's ID to a Set of
+     * group IDs representing the groups that TA has been assigned to grade for the Part. The SetMultiap returned
+     * contains entries only for those TAs who have groups assigned to them. If no distribution has yet been set, an
+     * empty SetMultimap is returned.
      * 
      * @param partID
      * @return
@@ -202,30 +192,24 @@ public interface Database
     public SetMultimap<Integer, Integer> getDistribution(int partID) throws SQLException;
     
     /**
-     * Stores a distribution in the database.  The given Map maps the ID of a 
-     * Part to a Map that maps a TA's ID to a Set of group IDs representing
-     * groups that TA has been assigned to grade for that Part.
-     * Any existing distribution for the Part will be overwritten. The
-     * distribution will either be set in its entirety or not at all; if the
-     * new distribution is not successfully set in its entirety, the database
-     * table will be in whatever state it was in before this method was called.
+     * Stores a distribution in the database.  The given Map maps the ID of a Part to a Map that maps a TA's ID to a Set
+     * of group IDs representing groups that TA has been assigned to grade for that Part. Any existing distribution for
+     * the Part will be overwritten. The distribution will either be set in its entirety or not at all; if the new
+     * distribution is not successfully set in its entirety, the database table will be in whatever state it was in
+     * before this method was called.
      *
      * @param distribution
      */
-    public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) 
-                                                        throws SQLException;
+    public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) throws SQLException;
 
     /**
-     * Assigns the group corresponding to the given group ID to the TA with the
-     * given ID to grade for the Part corresponding to the given partID.
-     * If the group is already assigned to the TA for the Part, this method 
-     * has no effect.  The group will be unassigned from any TA to which it was
-     * previously assigned for this Part. If the groupID is invalid, a 
-     * SQLException will be thrown.
-     *
-     * NOTE: This method should not be used to create an initial distribution
-     *       for a project; it should be used only to reassign grading.
-     *       To create an initial distribution, use setDistribution(...), above.
+     * Assigns the group corresponding to the given group ID to the TA with the given ID to grade for the Part
+     * corresponding to the given partID. If the group is already assigned to the TA for the Part, this method has no
+     * effect. The group will be unassigned from any TA to which it was previously assigned for this Part. If the
+     * groupID is invalid, a SQLException will be thrown.
+     * <br/><br/>
+     * <strong>Note:</strong> This method should not be used to create an initial distribution for a project; it should
+     * be used only to reassign grading.To create an initial distribution, use {@link #setDistribution(java.util.Map)}.
      *
      * @param groupID
      * @param partID
@@ -234,8 +218,7 @@ public interface Database
     public void assignGroup(int groupID, int partID, int taID) throws SQLException;
 
     /**
-     * Unassigns the group with the given ID from the TA with the given ID
-     * on the Part with the given part ID.
+     * Unassigns the group with the given ID from the TA with the given ID on the Part with the given part ID.
      *
      * @param groupID
      * @param partID
@@ -244,23 +227,20 @@ public interface Database
     public void unassignGroup(int groupID, int partID) throws SQLException;
 
     /**
-     * Returns an ImmutableSet of IDs for the groups that the given TA has been 
-     * assigned to grade for the Part with the given ID.  Returns an empty Set 
-     * if no groups are assigned to the TA for the Part or if there is no 
-     * distribution for the Part in the database. 
+     * Returns an ImmutableSet of IDs for the groups that the given TA has been assigned to grade for the Part with the
+     * given ID. Returns an empty Set if no groups are assigned to the TA for the Part or if there is no distribution
+     * for the Part in the database. 
      *
      * @param partID
      * @param taID
      * @return
      */
-    public Set<Integer> getAssignedGroups(int partID, int taID) 
-                                                        throws SQLException;
+    public Set<Integer> getAssignedGroups(int partID, int taID) throws SQLException;
 
     /**
-     * Returns an ImmutableSet of IDs for groups that have been assigned to any 
-     * TA to grade for the given Part.  This can be used to find students who 
-     * have not been assigned to any TA to grade. If no distribution exists yet,
-     * an empty Set will be returned.
+     * Returns an ImmutableSet of IDs for groups that have been assigned to any TA to grade for the given Part. This can
+     * be used to find students who have not been assigned to any TA to grade. If no distribution exists yet, an empty
+     * Set will be returned.
      *
      * @param partID
      * @return
@@ -268,9 +248,8 @@ public interface Database
     public Set<Integer> getAssignedGroups(int partID) throws SQLException;
 
     /**
-     * Returns an ImmutableSet of part IDs representing Parts for which at least
-     * one group has been assigned to the TA with the given ID for grading. If
-     * the TA has not been assigned any groups to grade, an empty Set will be
+     * Returns an ImmutableSet of part IDs representing Parts for which at least one group has been assigned to the TA
+     * with the given ID for grading. If the TA has not been assigned any groups to grade, an empty Set will be
      * returned.
      *
      * @param taID
@@ -279,9 +258,8 @@ public interface Database
     public Set<Integer> getPartsWithAssignedGroups(int taID) throws SQLException;
     
     /**
-     * Returns the ID of the TA who has been assigned to grade the group with
-     * the given ID for the Part with the given ID.  If no such TA exists, or 
-     * the groupID is invalid, <code>null</code> will be returned.
+     * Returns the ID of the TA who has been assigned to grade the group with the given ID for the Part with the given
+     * ID. If no such TA exists, or the groupID is invalid, {@code null} will be returned.
      * 
      * @param partID
      * @param groupID
@@ -303,8 +281,8 @@ public interface Database
      * @param groupIds
      * @throws SQLException if thrown no changes to extensions will have occurred
      */
-    public void setExtensions(int geId, String ontime, boolean shiftDates, String note, String dateRecorded,
-            int taId, Set<Integer> groupIds) throws SQLException;
+    public void setExtensions(int geId, String ontime, boolean shiftDates, String note, String dateRecorded, int taId,
+            Set<Integer> groupIds) throws SQLException;
     
     /**
      * Deletes extensions for the groups specified by {@code groupIds} for gradable event {@code geId}. The groups
@@ -329,8 +307,8 @@ public interface Database
     public Map<Integer, ExtensionRecord> getExtensions(int geId, Set<Integer> groupIds) throws SQLException;
     
     /**
-     * Assigns a grade of score to the group with the given group ID on the part
-     * with the given part ID. If the group ID is invalid then a SQLException is thrown.
+     * Assigns a grade of score to the group with the given group ID on the part with the given part ID. If the group ID
+     * is invalid then a SQLException is thrown.
      *
      * @param groupID
      * @param partID
@@ -341,8 +319,8 @@ public interface Database
      * @param dateRecorded
      * 
      */
-    public void setEarned(int groupID, int partID, int taID, Double earned,
-                    boolean submitted, String dateRecorded) throws SQLException;
+    public void setEarned(int groupID, int partID, int taID, Double earned, boolean submitted, String dateRecorded)
+            throws SQLException;
     
     public void setEarned(int partId, int taId, String dateRecorded, Map<Integer, Pair<Double, Boolean>> earned)
             throws SQLException;
@@ -351,9 +329,8 @@ public interface Database
             throws SQLException;
 
     /**
-     * Returns a GradeRecord object containing the grade information of the 
-     * group with the given group ID on the part with the given part ID, or 
-     * null if no such grade information is stored in the database.
+     * Returns a GradeRecord object containing the grade information of the group with the given group ID on the part
+     * with the given part ID, or null if no such grade information is stored in the database.
      *
      * @param groupID
      * @param partID
@@ -362,11 +339,10 @@ public interface Database
     public GradeRecord getEarned(int groupID, int partID) throws SQLException;
 
     /**
-     * Returns a Map that maps a group ID to the GradeRecord object representing 
-     * the grade information for that group on the part corresponding to the 
-     * given partID for each group ID in the given Set. Any Groups with no score
-     * stored in the database will not have an entry in the returned Map. 
-     * Invalid groups will also not have an entry in the returned Map.
+     * Returns a Map that maps a group ID to the GradeRecord object representing the grade information for that group on
+     * the part corresponding to the given partID for each group ID in the given Set. Any Groups with no score stored in
+     * the database will not have an entry in the returned Map. Invalid groups will also not have an entry in the
+     * returned Map.
      *
      * @param partID
      * @param groupIDs
@@ -381,11 +357,11 @@ public interface Database
     public void setGradableEventOccurrences(int geid, Map<Integer, String> groupsToTime, int tid, String dateRecorded)
             throws SQLException;
     
-    
     public void deleteGradableEventOccurrences(int geId, Set<Integer> groupIds) throws SQLException;
     
     /**
-     * Null will be returned if no such geid exists in database
+     * {@code null} will be returned if no such geid exists in database
+     * 
      * @param geid
      * @return 
      */

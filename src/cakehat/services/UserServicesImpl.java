@@ -2,7 +2,7 @@ package cakehat.services;
 
 import cakehat.Allocator;
 import cakehat.database.TA;
-import java.util.List;
+import java.util.Set;
 import support.utils.posix.NativeException;
 
 public class UserServicesImpl implements UserServices
@@ -20,19 +20,19 @@ public class UserServicesImpl implements UserServices
     }
 
     @Override
-    public List<String> getStudentLogins() throws NativeException
+    public Set<String> getStudentLogins() throws NativeException
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getStudentGroup());
     }
     
     @Override
-    public List<String> getTALogins() throws NativeException
+    public Set<String> getTALogins() throws NativeException
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getTAGroup());
     }
     
     @Override
-    public List<String> getHTALogins() throws NativeException
+    public Set<String> getHTALogins() throws NativeException
     {
         return Allocator.getUserUtilities().getMembers(Allocator.getCourseInfo().getHTAGroup());
     }

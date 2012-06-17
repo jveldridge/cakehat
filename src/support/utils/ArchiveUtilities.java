@@ -7,17 +7,17 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 /**
- * Utility methods for interacting with archive files with the following
- * extensions:
- *  - zip
- *  - tar
- *  - tgz / tar.gz
+ * Utility methods for interacting with archive files with the following extensions:
+ * <ul>
+ * <li>zip</li>
+ * <li>tar</li>
+ * <li>tgz / tar.gz</li>
+ * </ul>
  */
 public interface ArchiveUtilities
 {
     /**
-     * Returns a listing of the files and directories in the archive file
-     * without extracting the file.
+     * Returns a listing of the files and directories in the archive file without extracting the file.
      * <br><br>
      * Supports: zip, tar, tgz/tar.gz
      *
@@ -28,9 +28,8 @@ public interface ArchiveUtilities
     public Collection<ArchiveEntry> getArchiveContents(File archive) throws ArchiveException;
 
     /**
-     * Extracts an archive file. Each file and directory to be created will be
-     * checked against the <code>filter</code>. Only if it accepts will the file
-     * be unarchived.
+     * Extracts an archive file. Each file and directory to be created will be checked against the {@code filter}. Only
+     * if it accepts will the file be unarchived.
      * <br/><br/>
      * Supported extensions: zip, tar, tgz, tar.gz
      *
@@ -42,8 +41,7 @@ public interface ArchiveUtilities
     public void extractArchive(File archive, File dstDir, FileFilter filter) throws ArchiveException;
 
     /**
-     * Returns a FileFilter which only accepts files that ArchiveUtilities
-     * is able to unarchive.
+     * Returns a FileFilter which only accepts files that ArchiveUtilities is able to unarchive.
      *
      * @return
      */

@@ -12,6 +12,7 @@ import java.io.IOException;
  */
 public class LprPrintingService extends PrintingService
 {
+    @Override
     public void print(Iterable<PrintRequest> requests, PhysicalPrinter printer) throws IOException
     {
         //Build command
@@ -29,9 +30,8 @@ public class LprPrintingService extends PrintingService
         File workspace = Allocator.getPathServices().getUserWorkspaceDir();
         Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, workspace);
 
-        //If in developer mode, print out the command so it can be verified as
-        //the developer will quite possibly not be on a department machine
-        //where printing could actually occur
+        //If in developer mode, print out the command so it can be verified as the developer will quite possibly not be
+        //on a department machine where printing could actually occur
         if(CakehatMain.isDeveloperMode())
         {
             System.out.println("lpr command:");

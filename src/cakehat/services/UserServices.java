@@ -1,7 +1,7 @@
 package cakehat.services;
 
 import cakehat.database.TA;
-import java.util.List;
+import java.util.Set;
 import support.utils.posix.NativeException;
 
 /**
@@ -19,11 +19,11 @@ public interface UserServices
     public TA getUser();
 
     /**
-     * Returns whether or not the student with given login studentLogin is a
-     * member of the course's student group.
+     * Returns whether or not the student with given login {@code studentLogin} is a member of the course's student
+     * group.
      *
-     * @return true if the student with login studentLogin is a member of the
-     *         course's student group; false otherwise
+     * @return {@code true} if the student with login {@code studentLogin} is a member of the course's student group;
+     * {@code false} otherwise
      *
      * @throws NativeException thrown if the student group does not exist
      */
@@ -35,21 +35,21 @@ public interface UserServices
      * @return
      * @throws NativeException thrown if the student group does not exist
      */
-    public List<String> getStudentLogins() throws NativeException;
-    
+    public Set<String> getStudentLogins() throws NativeException;
+
     /**
      * Returns the logins of all members in the course's TA group.
      *
      * @return
      * @throws NativeException thrown if the TA group does not exist
      */
-    public List<String> getTALogins() throws NativeException;
-    
+    public Set<String> getTALogins() throws NativeException;
+
     /**
      * Returns the logins of all members in the course's HTA group.
      *
      * @return 
      * @throws NativeException thrown if the HTA group does not exist
      */
-    public List<String> getHTALogins() throws NativeException;
+    public Set<String> getHTALogins() throws NativeException;
 }

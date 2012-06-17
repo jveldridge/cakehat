@@ -148,9 +148,8 @@ public class Group implements Comparable<Group>, Iterable<Student>
     }
     
     /**
-     * Updates the fields of this Group object to have the given values.
-     * This method should be called only by {@link DataServices} to ensure
-     * consistency with the database.
+     * Updates the fields of this Group object to have the given values. This method should be called only by
+     * {@link DataServices} to ensure consistency with the database.
      * 
      * @param name
      * @param members

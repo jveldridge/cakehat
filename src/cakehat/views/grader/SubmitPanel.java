@@ -461,8 +461,7 @@ class SubmitPanel extends AlphaJPanel
                 "Grade sheets for multipart assignments may only<br/>" +
                 "be printed and emailed by administrators.<br/>" +
                 "<br/>" + 
-                "(Generating the grading sheets requires the " +
-                "grades for all parts.)" +
+                "(Generating the grading sheets requires the grades for all parts.)" +
                 "</center></html>");
         label.setAlignmentX(CENTER_ALIGNMENT);
         label.setHorizontalAlignment(JLabel.CENTER);

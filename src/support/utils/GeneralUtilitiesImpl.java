@@ -1,10 +1,6 @@
 package support.utils;
 
 import java.awt.FontMetrics;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.math.BigDecimal;
 import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -12,31 +8,7 @@ import javax.swing.SwingConstants;
 
 public class GeneralUtilitiesImpl implements GeneralUtilities
 {
-    public String doubleToString(double value)
-    {
-        double roundedVal = round(value, 2);
-
-        return Double.toString(roundedVal);
-    }
-
-    public double round(double d, int decimalPlace)
-    {
-        double roundedValue;
-
-        if(Double.isNaN(d))
-        {
-            roundedValue = Double.NaN;
-        }
-        else
-        {
-            BigDecimal bd = new BigDecimal(Double.toString(d));
-            bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
-            roundedValue = bd.doubleValue();
-        }
-
-        return roundedValue;
-    }
-
+    @Override
     public <T> boolean containsAny(Collection<T> col1, Collection<T> col2)
     {
         for (T item : col2)
@@ -50,6 +22,7 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         return false;
     }
 
+    @Override
     public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass)
     {
         if(throwable == null)
@@ -66,30 +39,8 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
         }
     }
 
-    public void runWithSilencedError(Runnable toRun)
-    {
-        PrintStream originalErr = System.err;
-
-        //In case a runtime exception is thrown, restore the error stream in finally
-        try
-        {
-            PrintStream silentErr = new PrintStream(new OutputStream()
-            {
-                @Override
-                public void write(int i) throws IOException { }
-            });
-            System.setErr(silentErr);
-
-            toRun.run();
-        }
-        finally
-        {
-            System.setErr(originalErr);
-        }
-    }
-
-    public JButton createTextCenteredButton(String text, Icon icon,
-            int buttonWidth, boolean iconOnLeft)
+    @Override
+    public JButton createTextCenteredButton(String text, Icon icon, int buttonWidth, boolean iconOnLeft)
     {
         JButton button = new JButton(text, icon);
 

@@ -1,10 +1,8 @@
 package cakehat.database;
 
 /**
- * Represents information about a grade record as stored in the database.  
- * This class should used only as a return type for {@link DatabaseV5} methods 
- * supporting {@link DataServicesV5} methods.
- * 
+ * Represents information about a grade record as stored in the database. This class should used only as a return type
+ * for {@link Database} methods supporting {@link DataServices} methods.
  * 
  * @author yf6
  */

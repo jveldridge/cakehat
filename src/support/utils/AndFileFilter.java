@@ -1,8 +1,8 @@
 package support.utils;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Arrays;
 
 /**
  * A FileFilter which requires that all FileFilters it is composed of accept the File.
@@ -15,14 +15,15 @@ public class AndFileFilter implements FileFilter
 
     public AndFileFilter(FileFilter... filters)
     {
-        this(Arrays.asList(filters));
+        _filters = ImmutableSet.copyOf(filters);
     }
 
     public AndFileFilter(Iterable<FileFilter> filters)
     {
-        _filters = filters;
+        _filters = ImmutableSet.copyOf(filters);
     }
 
+    @Override
     public boolean accept(File file)
     {
         for(FileFilter filter : _filters)

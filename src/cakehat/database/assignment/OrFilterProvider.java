@@ -1,5 +1,6 @@
 package cakehat.database.assignment;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ class OrFilterProvider implements FilterProvider
 
     public OrFilterProvider(Iterable<FilterProvider> providers)
     {
-        _providers = providers;
+        _providers = ImmutableSet.copyOf(providers);
     }
 
     @Override

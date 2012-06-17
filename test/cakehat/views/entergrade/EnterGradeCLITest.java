@@ -22,9 +22,8 @@ import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 /**
- * Basic tests for {@link EnterGradeCLI} to verify that check off works when
- * supplied with the correct arguments. As of now, there are no JUnit tests for
- * improper input.
+ * Basic tests for {@link EnterGradeCLI} to verify that check off works when supplied with the correct arguments. As of
+ * now, there are no JUnit tests for improper input.
  *
  * @author hdrosen
  */
@@ -219,7 +218,5 @@ public class EnterGradeCLITest {
 
         EnterGradeCLI.EnterGradeResult result = EnterGradeCLI.performEnterGrade(args, interactor);
         assertEquals(EnterGradeCLI.EnterGradeResult.SUCCEEDED, result); 
-        
     }
-    
 }

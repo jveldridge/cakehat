@@ -8,9 +8,8 @@ import javax.swing.ComboBoxModel;
 import support.ui.SelectionListener.SelectionAction;
 
 /**
- * A generic data storage used by {@link GenericJComboBox}. By having this class
- * be generic, it allows for accessing the data with type safety and no need to
- * cast.
+ * A generic data storage used by {@link GenericJComboBox}. By having this class be generic, it allows for accessing the
+ * data with type safety and no need to cast.
  *
  * @author jak2
  */
