@@ -4,6 +4,8 @@ import org.joda.time.DateTime;
 import cakehat.database.assignment.Part;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
+import cakehat.CakehatSession;
+import cakehat.TestCakehatSessionProvider;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.Group;
@@ -12,7 +14,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
-import support.utils.UserUtilities;
 
 import static org.junit.Assert.*;
 import static org.easymock.EasyMock.*;
@@ -74,20 +75,10 @@ public class PathServicesTest
                 public CourseInfo allocate() { return courseInfo; };
             };
 
-        //Mock out user utilities
-        final UserUtilities userUtil = createMock(UserUtilities.class);
-        expect(userUtil.getUserId()).andReturn(TA_ID).anyTimes();
-        replay(userUtil);
-        SingletonAllocation<UserUtilities> userUtilAlloc =
-            new SingletonAllocation<UserUtilities>()
-            {
-                public UserUtilities allocate() { return userUtil; };
-            };
         
-        new Allocator.Customizer()
-                .setCourseInfo(courseInfoAlloc)
-                .setUserUtils(userUtilAlloc)
-                .customize();
+        new Allocator.Customizer().setCourseInfo(courseInfoAlloc).customize();
+        
+        CakehatSession.setSessionProviderForTesting(new TestCakehatSessionProvider(TA_ID));
 
         _service = Allocator.getPathServices();
     }

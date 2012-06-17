@@ -1,6 +1,6 @@
 package cakehat.services;
 
-import cakehat.CakehatMain;
+import cakehat.CakehatSession;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,7 +27,7 @@ public class CourseInfoImpl implements CourseInfo
         String course = getCourseFromPath(codeLocation);
         if(course == null)
         {
-            if(CakehatMain.isDeveloperMode() || !CakehatMain.didStartNormally())
+            if(CakehatSession.isDeveloperMode() || !CakehatSession.didStartNormally())
             {
                 System.out.println("Using hard-coded test value for course: " + TESTING_COURSE);
                 course = TESTING_COURSE;

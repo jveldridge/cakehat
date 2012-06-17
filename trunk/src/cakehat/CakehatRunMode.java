@@ -88,19 +88,19 @@ public enum CakehatRunMode
         return matchingMode;
     }
     
-    void run(List<String> args, boolean isSSH)
+    void run(List<String> args)
     {
         if(this == GRADER)
         {
-            GraderView.launch(isSSH);
+            GraderView.launch();
         }
         else if(this == ADMIN)
         {
-            AdminView.launch(isSSH);
+            AdminView.launch();
         }
         else if(this == CONFIG)
         {
-            ConfigManagerView.launch(isSSH);
+            ConfigManagerView.launch();
         }
         else if(this == ENTER_GRADE)
         {

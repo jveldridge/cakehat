@@ -1,5 +1,7 @@
 package cakehat;
 
+import cakehat.CakehatSession.CakehatSessionProvider;
+import cakehat.CakehatSession.ConnectionType;
 import cakehat.database.DbTA;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
@@ -19,66 +21,33 @@ import support.utils.posix.NativeException;
  */
 public class CakehatMain
 {
-    private volatile static boolean _isDeveloperMode = false;
-    private volatile static boolean _didStartNormally = false;
-    private volatile static CakehatRunMode _runMode = CakehatRunMode.UNKNOWN;
-    
+    private volatile static CakehatMainSessionProvider _sessionProvider;
     private volatile static boolean _hasSetRunMode = false;
-
+    
     public static void main(String[] args)
     {
-        _didStartNormally = true;
-
+        //Setup the cakehat session provider
+        boolean isDeveloperMode = (args.length == 0);
+        _sessionProvider = new CakehatMainSessionProvider(isDeveloperMode);
+        CakehatSession.setSessionProvider(_sessionProvider);
+        
         ErrorReporter.initialize();
         
         //Causes the allocator to create an instance of itself when cakehat is running on a single thread ensuring that
         //only one of it will ever be created (stores itself in a volatile variable)
         Allocator.getInstance();
         
-        if(args.length == 0)
+        if(isDeveloperMode)
         {
             applyLookAndFeel();
-            _isDeveloperMode = true;
             DeveloperModeView.launch(args);
         }
         else
-        {       
+        {
             setRunMode(CakehatRunMode.getFromTerminalFlag(args[0]), args);
         }
     }
     
-    /**
-     * If the application was run in developer mode, meaning the developer was able to select the grader, admin, or
-     * config view.
-     *
-     * @return
-     */
-    public static boolean isDeveloperMode()
-    {
-        return _isDeveloperMode;
-    }
-
-    /**
-     * Whether or not this class's main method was run. This should be the case during normal operation, but will not be
-     * the case during a test.
-     * 
-     * @return
-     */
-    public static boolean didStartNormally()
-    {
-        return _didStartNormally;
-    }
-
-    /**
-     * The mode in which cakehat is running.
-     *
-     * @return
-     */
-    public static CakehatRunMode getRunMode()
-    {
-        return _runMode;
-    }
-
     /**
      * Sets the mode that cakehat is running in. This method may only be called once.
      *
@@ -92,22 +61,28 @@ public class CakehatMain
             throw new IllegalStateException("cakehat's run mode may only be set once");
         }
         _hasSetRunMode = true;
-        _runMode = runMode;
+        _sessionProvider.setRunMode(runMode);
         
-        if(_runMode != CakehatRunMode.UNKNOWN)
+        if(runMode != CakehatRunMode.UNKNOWN)
         {
             try
             {
-                if(validateUser(_runMode))
+                if(validateUser(runMode))
                 {
-                    boolean isSSH = false;
-                    if(_runMode.hasGUI())
+                    if(runMode.hasGUI())
                     {
                         applyLookAndFeel();
-                        isSSH = adjustIfRemote();
+                        if(adjustIfRemote())
+                        {
+                            _sessionProvider.setUserConnectionType(ConnectionType.REMOTE);
+                        }
+                        else
+                        {
+                            _sessionProvider.setUserConnectionType(ConnectionType.LOCAL);
+                        }
                     }
                     
-                    if(_runMode.requiresWorkspaceDir())
+                    if(runMode.requiresWorkspaceDir())
                     {
                         try
                         {
@@ -119,7 +94,7 @@ public class CakehatMain
                         }
                     }
                     
-                    if(_runMode.backupDatabaseOnShutdown())
+                    if(runMode.backupDatabaseOnShutdown())
                     {
                         Runtime.getRuntime().addShutdownHook(new Thread()
                         {
@@ -149,7 +124,7 @@ public class CakehatMain
                         argList.remove(0); 
                     }
 
-                    _runMode.run(argList, isSSH);
+                    runMode.run(argList);
                 }
             }
             catch(CakehatException e)
@@ -350,5 +325,58 @@ public class CakehatMain
     public static void initializeForTesting() throws CakehatException
     {
         applyLookAndFeel();  
+    }
+    
+    private static class CakehatMainSessionProvider implements CakehatSessionProvider
+    {
+        private final boolean _isDeveloperMode;
+        private volatile CakehatRunMode _runMode = CakehatRunMode.UNKNOWN;
+        private volatile CakehatSession.ConnectionType _connectionType = CakehatSession.ConnectionType.UNKNOWN;
+        private final int USER_ID = Allocator.getUserUtilities().getUserId();
+        
+        private CakehatMainSessionProvider(boolean isDeveloperMode)
+        {
+            _isDeveloperMode = isDeveloperMode;
+        }
+        
+        @Override
+        public boolean didStartNormally()
+        {
+            return true;
+        }
+        
+        @Override
+        public boolean isDeveloperMode()
+        {
+            return _isDeveloperMode;
+        }
+        
+        private void setRunMode(CakehatRunMode runMode)
+        {
+            _runMode = runMode;
+        }
+
+        @Override
+        public CakehatRunMode getRunMode()
+        {
+            return _runMode;
+        }
+
+        @Override
+        public int getUserId()
+        {
+            return USER_ID;
+        }
+
+        private void setUserConnectionType(ConnectionType connectionType)
+        {
+            _connectionType = connectionType;
+        }
+        
+        @Override
+        public ConnectionType getUserConnectionType()
+        {
+            return _connectionType;
+        }
     }
 }

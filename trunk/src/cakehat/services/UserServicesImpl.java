@@ -1,6 +1,7 @@
 package cakehat.services;
 
 import cakehat.Allocator;
+import cakehat.CakehatSession;
 import cakehat.database.TA;
 import java.util.Set;
 import support.utils.posix.NativeException;
@@ -10,7 +11,7 @@ public class UserServicesImpl implements UserServices
     @Override
     public TA getUser() 
     {
-        return Allocator.getDataServices().getTA(Allocator.getUserUtilities().getUserId());
+        return Allocator.getDataServices().getTA(CakehatSession.getUserId());
     }
 
     @Override

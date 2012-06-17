@@ -1,8 +1,8 @@
 package cakehat.services;
 
 import cakehat.Allocator;
+import cakehat.CakehatSession;
 import cakehat.CakehatRunMode;
-import cakehat.CakehatMain;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
@@ -64,10 +64,10 @@ public class PathServicesImpl implements PathServices
     public File getUserWorkspaceDir()
     {
         File parent = new File(getCakehatDir(), "workspaces");
-        String userId = Integer.toString(Allocator.getUserUtilities().getUserId());
+        String userId = Integer.toString(CakehatSession.getUserId());
         File workspace;
 
-        CakehatRunMode mode = CakehatMain.getRunMode();
+        CakehatRunMode mode = CakehatSession.getRunMode();
         if(mode == CakehatRunMode.GRADER)
         {
             workspace = new File(parent, userId);
@@ -76,16 +76,16 @@ public class PathServicesImpl implements PathServices
         {
             workspace = new File(parent, userId + "-admin");
         }
-        else if(mode == CakehatRunMode.UNKNOWN && !CakehatMain.didStartNormally())
+        else if(mode == CakehatRunMode.UNKNOWN && !CakehatSession.didStartNormally())
         {
             workspace = new File(parent, userId + "-test");
         }
         else
         {
-            throw new IllegalStateException("Cannot provide path to user's  workspace directory due to unexpected " +
+            throw new IllegalStateException("Cannot provide path to user's workspace directory due to unexpected " +
                     "run state.\n" +
                     "Run mode: " + mode + "\n" +
-                    "Did start normally? " + CakehatMain.didStartNormally());
+                    "Did start normally? " + CakehatSession.didStartNormally());
         }
 
         return workspace;

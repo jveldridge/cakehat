@@ -3,6 +3,7 @@ package cakehat.logging;
 import cakehat.Allocator;
 import cakehat.CakehatMain;
 import cakehat.CakehatReleaseInfo;
+import cakehat.CakehatSession;
 import com.google.common.collect.ImmutableSet;
 import java.awt.GraphicsEnvironment;
 import java.io.PrintWriter;
@@ -39,7 +40,7 @@ public class ErrorReporter
     {
         printThrowableIfDeveloper(error);
         
-        if(GraphicsEnvironment.isHeadless() || !CakehatMain.getRunMode().hasGUI())
+        if(GraphicsEnvironment.isHeadless() || !CakehatSession.getRunMode().hasGUI())
         {
             ErrorDisplayCLI.display(message, error);
         }
@@ -85,7 +86,7 @@ public class ErrorReporter
     {
         //If cakehat is running in developer mode or cakehat is not running normally, then print the stack trace to aid
         //debugging (most IDEs allow for clicking inside the stack trace to navigate to the corresponding file and line)
-        if(CakehatMain.isDeveloperMode() || !CakehatMain.didStartNormally())
+        if(CakehatSession.isDeveloperMode() || !CakehatSession.didStartNormally())
         {
             System.err.println("Throwable encountered. During normal operation cakehat will not print the stack " +
                     "trace to the terminal.");
@@ -136,8 +137,8 @@ public class ErrorReporter
             appendToBody(body, "Stack Trace", getStackTraceAsString(error));
         }
         appendToBody(body, "Course", Allocator.getCourseInfo().getCourse());
-        appendToBody(body, "Run Mode", CakehatMain.getRunMode().toString());
-        appendToBody(body, "Developer Mode", Boolean.toString(CakehatMain.isDeveloperMode()));
+        appendToBody(body, "Run Mode", CakehatSession.getRunMode().toString());
+        appendToBody(body, "Developer Mode", Boolean.toString(CakehatSession.isDeveloperMode()));
         appendToBody(body, "Version", CakehatReleaseInfo.getVersion());
         appendToBody(body, "Release Commit Number", CakehatReleaseInfo.getReleaseCommitNumber());
         appendToBody(body, "Release Date", CakehatReleaseInfo.getReleaseDate());

@@ -1,7 +1,7 @@
 package cakehat.printing;
 
 import cakehat.Allocator;
-import cakehat.CakehatMain;
+import cakehat.CakehatSession;
 import java.io.File;
 import java.io.IOException;
 
@@ -32,7 +32,7 @@ public class LprPrintingService extends PrintingService
 
         //If in developer mode, print out the command so it can be verified as the developer will quite possibly not be
         //on a department machine where printing could actually occur
-        if(CakehatMain.isDeveloperMode())
+        if(CakehatSession.isDeveloperMode())
         {
             System.out.println("lpr command:");
             System.out.println(cmd);

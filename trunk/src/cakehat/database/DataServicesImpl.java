@@ -1,6 +1,7 @@
 package cakehat.database;
 
 import cakehat.Allocator;
+import cakehat.CakehatSession;
 import cakehat.InitializationException;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.AssignmentsBuilder;
@@ -232,7 +233,7 @@ public class DataServicesImpl implements DataServices {
         try
         {
             Allocator.getDatabase().setExtensions(gradableEvent.getId(), ontime.toString(), shiftDates, 
-                    note, new DateTime().toString(), Allocator.getUserUtilities().getUserId(), groupIds);
+                    note, new DateTime().toString(), CakehatSession.getUserId(), groupIds);
         }
         catch(SQLException e)
         {
@@ -340,7 +341,7 @@ public class DataServicesImpl implements DataServices {
     @Override
     public void setEarned(Group group, Part part, Double earned, boolean matchesGml) throws ServicesException
     {
-        int taId = Allocator.getUserUtilities().getUserId();
+        int taId = CakehatSession.getUserId();
         try {
             Allocator.getDatabase().setEarned(group.getId(), part.getId(), taId, earned, matchesGml, new DateTime().toString());
         } catch (SQLException ex) {
@@ -360,7 +361,7 @@ public class DataServicesImpl implements DataServices {
         
         try
         {
-            Allocator.getDatabase().setEarned(part.getId(), Allocator.getUserUtilities().getUserId(),
+            Allocator.getDatabase().setEarned(part.getId(), CakehatSession.getUserId(),
                     new DateTime().toString(), earnedWithIds);
         }
         catch(SQLException e)
@@ -381,7 +382,7 @@ public class DataServicesImpl implements DataServices {
         
         try
         {
-            Allocator.getDatabase().setEarnedSubmitted(part.getId(), Allocator.getUserUtilities().getUserId(),
+            Allocator.getDatabase().setEarnedSubmitted(part.getId(), CakehatSession.getUserId(),
                     new DateTime().toString(), submittedWithIds);
         }
         catch(SQLException e)
@@ -585,7 +586,7 @@ public class DataServicesImpl implements DataServices {
             }
             
             Allocator.getDatabase().setGradableEventOccurrences(gradableEvent.getId(), dbStatuses,
-                    Allocator.getUserUtilities().getUserId(), new DateTime().toString());
+                    CakehatSession.getUserId(), new DateTime().toString());
         }
         catch(SQLException ex)
         {
