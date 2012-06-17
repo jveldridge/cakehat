@@ -1,7 +1,5 @@
 package support.ui;
 
-import cakehat.CakehatMain;
-import cakehat.views.shared.ErrorView;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -26,13 +24,17 @@ import support.utils.LongRunningTask;
  */
 public class ProgressDialog extends JDialog
 {   
+    public static interface ExceptionReporter
+    {
+        public void report(String message, Exception exception);
+    }
+    
+    private final ExceptionReporter _exceptionReporter;
     private final JProgressBar _progressBar;
     private final JLabel _progressStatusLabel;
     private final JLabel _stepDescriptionLabel;
     private final JButton _cancelButton;
     private final JButton _closeButton;
-    
-    private volatile long _startedAtTime;
     
     /**
      * Constructs and displays a progress dialog for the provided {@code task}.
@@ -43,13 +45,21 @@ public class ProgressDialog extends JDialog
      * @param message the message to be displayed to the user
      * @param task the task being displayed, do <strong>not</strong> call {@link LongRunningTask#start()} on it - that
      * will be done by this dialog
+     * @param exceptionReporter exceptions encountered while running the task will be provided to this reporter
      */
-    public ProgressDialog(Window owner, Window positionRelativeTo, String title, String message,
-            final LongRunningTask task)
+    public static void show(Window owner, Window positionRelativeTo, String title, String message, LongRunningTask task,
+            ExceptionReporter exceptionReporter)
+    {
+        new ProgressDialog(owner, positionRelativeTo, title, message, task, exceptionReporter);
+    }
+    
+    private ProgressDialog(Window owner, Window positionRelativeTo, String title, String message,
+            final LongRunningTask task, ExceptionReporter exceptionReporter)
     {
         super(owner, title);
         
         //Initialize
+        _exceptionReporter = exceptionReporter;
         _progressBar = new JProgressBar();
         _progressStatusLabel = new JLabel();
         _stepDescriptionLabel = new JLabel();
@@ -163,8 +173,7 @@ public class ProgressDialog extends JDialog
                 {
                     @Override
                     public void run()
-                    {   
-                        _startedAtTime = System.currentTimeMillis();
+                    {
                         _progressBar.setIndeterminate(true);
                     }
                 });
@@ -223,15 +232,7 @@ public class ProgressDialog extends JDialog
                         _stepDescriptionLabel.setText(" ");
                         _progressBar.setVisible(false);
                         
-                        long duration = System.currentTimeMillis() - _startedAtTime;
-                        if(CakehatMain.isDeveloperMode())
-                        {
-                            _progressStatusLabel.setText("Complete (" + duration + "ms)");
-                        }
-                        else
-                        {
-                            _progressStatusLabel.setText("Complete");
-                        }
+                        _progressStatusLabel.setText("Complete");
                         _progressStatusLabel.setForeground(new Color(0, 179, 0));
                         _progressStatusLabel.setVisible(true);
                         
@@ -280,7 +281,7 @@ public class ProgressDialog extends JDialog
                         _cancelButton.setVisible(false);
                         _closeButton.setVisible(true);
                         
-                        new ErrorView(cause, msg == null ? "Long running task failed" : msg);
+                        _exceptionReporter.report(msg == null ? "Long running task failed" : msg, cause);
                     }
                 });
             }

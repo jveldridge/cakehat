@@ -16,9 +16,9 @@ import cakehat.gml.GradingSheetException;
 import cakehat.gml.InMemoryGML;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
+import cakehat.logging.ErrorReporter;
 import cakehat.printing.CITPrinter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -301,12 +301,12 @@ class SubmitPanel extends AlphaJPanel
                     }
                     catch(GradingSheetException ex)
                     {
-                        new ErrorView(ex, "Unable to submit grade for part [" +_part.getFullDisplayName() + "]");
+                        ErrorReporter.report("Unable to submit grade for part [" +_part.getFullDisplayName() + "]", ex);
                         return;
                     }
                     catch(ServicesException ex)
                     {
-                        new ErrorView(ex, "Unable to submit grade for part [" + _part.getFullDisplayName() + "]");
+                        ErrorReporter.report("Unable to submit grade for part [" +_part.getFullDisplayName() + "]", ex);
                         return;
                     }
                 }
@@ -324,7 +324,8 @@ class SubmitPanel extends AlphaJPanel
                     }
                     catch(ServicesException ex)
                     {
-                        new ErrorView(ex, "Unable to set submit status for part [" + _part.getFullDisplayName() + "]");
+                        ErrorReporter.report("Unable to set submit status for part [" +_part.getFullDisplayName() + "]",
+                                ex);
                         return;
                     }
                 }
@@ -365,11 +366,7 @@ class SubmitPanel extends AlphaJPanel
                     {
                         _emailButton.setEnabled(false);
 
-                        if(accountStatus == EmailAccountStatus.INITIALIZATION_ERROR)
-                        {
-                            _emailButton.setToolTipText("An error occurred while initializing the email account");
-                        }
-                        else if(accountStatus == EmailAccountStatus.NOT_CONFIGURED)
+                        if(accountStatus == EmailAccountStatus.NOT_CONFIGURED)
                         {
                             _emailButton.setToolTipText("Your course has not configured its email account");
                         }
@@ -514,7 +511,7 @@ class SubmitPanel extends AlphaJPanel
                 }
                 catch(ServicesException ex)
                 {
-                    new ErrorView(ex, "Unable to print grading sheets");
+                    ErrorReporter.report("Unable to print grading sheets", ex);
                 }
             }
         });
@@ -564,8 +561,8 @@ class SubmitPanel extends AlphaJPanel
         }
         catch(SQLException e)
         {
-            new ErrorView(e, "Unable to retrieve database value for whether grading sheets should be attached by "
-                    + "default");
+            ErrorReporter.report("Unable to retrieve database value for whether grading sheets should be attached by " +
+                    "default", e);
         }
         attachGradesBox.setSelected(attachGradingSheets);
         attachGradesPanel.add(attachGradesBox);
@@ -651,7 +648,7 @@ class SubmitPanel extends AlphaJPanel
             }
             catch(ServicesException ex)
             {
-                new ErrorView(ex, "Unable to generate grading sheet file attachments");
+                ErrorReporter.report("Unable to generate grading sheet file attachments", ex);
                 return;
             }
         }
@@ -683,7 +680,7 @@ class SubmitPanel extends AlphaJPanel
                     }
                     catch(MessagingException e)
                     {
-                        new ErrorView(e, "Unable to send an email to student " + student);
+                        ErrorReporter.report("Unable to send an email to student " + student, e);
                     }
                 }
             }
@@ -721,7 +718,7 @@ class SubmitPanel extends AlphaJPanel
             }
             catch(MessagingException e)
             {
-                new ErrorView(e, "Unable to send an email to the notify addresses");
+                ErrorReporter.report("Unable to send an email to the notify addresses", e);
             }
         }
     }

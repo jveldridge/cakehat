@@ -287,7 +287,6 @@ public interface Database
      * @param groupID
      * @return
      * @throws SQLException
-     * @throws CakeHatDBIOException 
      */
     public Integer getGrader(Integer partID, int groupID) throws SQLException;
 

@@ -45,7 +45,7 @@ public class DatabaseGroupsTest {
     }
     
     @Test
-    public void testGetGroupWithNoStudents() throws SQLException, CakeHatDBIOException {
+    public void testGetGroupWithNoStudents() throws SQLException {
         Assignment asgn = DatabaseTestHelpers.createNewAssignmentInDb(_database, "asgn", 1);
         
         DbGroup toAdd = new DbGroup(asgn, "group", Collections.<Student>emptySet());
@@ -68,7 +68,7 @@ public class DatabaseGroupsTest {
     }
     
     @Test
-    public void testGetAllGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
+    public void testGetAllGroupsWithOneGroup() throws SQLException {
         Assignment asgn = DatabaseTestHelpers.createNewAssignmentInDb(_database, "asgn", 1);
 
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
@@ -93,7 +93,7 @@ public class DatabaseGroupsTest {
     }
 
     @Test
-    public void testGetGroupsWithOneGroup() throws SQLException, CakeHatDBIOException {
+    public void testGetGroupsWithOneGroup() throws SQLException {
         Assignment asgn = DatabaseTestHelpers.createNewAssignmentInDb(_database, "asgn",1);
 
         _database.putStudents(ImmutableSet.of(new DbStudent("alinc", "abraham", "lincoln", "alinc@cs.brown.edu")));
@@ -115,7 +115,7 @@ public class DatabaseGroupsTest {
     }
 
     @Test
-    public void testRemoveGroups() throws SQLException, CakeHatDBIOException {
+    public void testRemoveGroups() throws SQLException {
         Assignment asgn1 = DatabaseTestHelpers.createNewAssignmentInDb(_database, "asgn",1);
         Assignment asgn2 = DatabaseTestHelpers.createNewAssignmentInDb(_database, "asgn",2);
 

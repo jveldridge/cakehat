@@ -1,11 +1,11 @@
 package cakehat.views.shared.gradingsheet;
 
 import cakehat.Allocator;
-import cakehat.views.shared.ErrorView;
 import java.awt.FlowLayout;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -50,8 +50,8 @@ class DBPartPanel extends PartPanel
             }
             catch(ServicesException e)
             {
-                new ErrorView(e, "Unable to retrieve database info for " + _part.getFullDisplayName() + " for group " +
-                        _group);
+                ErrorReporter.report("Unable to retrieve database info for " + _part.getFullDisplayName() +
+                        " for group " + _group, e);
                 addErrorMessagePanel("Unable to retrieve needed grade data");
             }
         }
@@ -125,7 +125,8 @@ class DBPartPanel extends PartPanel
             }
             catch(ServicesException ex)
             {
-                new ErrorView(ex, "Unable to save grade for part " + _part.getFullDisplayName() + " for group " + _group);
+                ErrorReporter.report("Unable to save grade for part " + _part.getFullDisplayName() +
+                        " for group " + _group, ex);
             }
         }
     }

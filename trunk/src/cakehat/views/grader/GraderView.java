@@ -10,11 +10,11 @@ import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;
 import cakehat.database.TA;
+import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.gradingsheet.GradingSheet;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -253,7 +253,7 @@ public class GraderView extends JFrame
             }
             catch(IOException e)
             {
-                new ErrorView(e, "Unable to determine if a digtial handin exists");
+                ErrorReporter.report("Unable to determine if a digtial handin exists", e);
             }
 
             if(selectedGroupHasHandin)
@@ -264,11 +264,11 @@ public class GraderView extends JFrame
                 }
                 catch(ArchiveException ex)
                 {
-                    new ErrorView(ex, "Could not determine if " + selectedGroup + " has a readme");
+                    ErrorReporter.report("Could not determine if " + selectedGroup + " has a readme", ex);
                 }
                 catch(ActionException ex)
                 {
-                    new ErrorView(ex, "Could not determine if " + selectedGroup + " has a readme");
+                    ErrorReporter.report("Could not determine if " + selectedGroup + " has a readme", ex);
                 }
                 catch(MissingHandinException ex)
                 {
@@ -506,12 +506,12 @@ public class GraderView extends JFrame
                         }
                         catch(SQLException e)
                         {
-                            new ErrorView(e, "Unable to launch modify blacklist view");
+                            ErrorReporter.report("Unable to launch modify blacklist view", e);
                             showNormalContentInFrame();
                         }
                         catch(ServicesException e)
                         {
-                            new ErrorView(e, "Unable to launch modify blacklist view");
+                            ErrorReporter.report("Unable to launch modify blacklist view", e);
                             showNormalContentInFrame();
                         }
                     }
@@ -868,7 +868,7 @@ public class GraderView extends JFrame
                 catch(ServicesException e)
                 {
                     showNormalContentInFrame();
-                    new ErrorView(e, "Unable to show submit grading view due to database issues");
+                    ErrorReporter.report("Unable to show submit grading view due to database issues", e);
                 }
             }
         });
@@ -899,7 +899,7 @@ public class GraderView extends JFrame
 
         message += ".";
 
-        new ErrorView(cause, message);
+        ErrorReporter.report(message, cause);
     }
     
     
@@ -1148,7 +1148,7 @@ public class GraderView extends JFrame
 
         message += ".";
 
-        new ErrorView(cause, message);
+        ErrorReporter.report(message, cause);
     }
     
     final void loadAssignedGrading()
@@ -1172,7 +1172,7 @@ public class GraderView extends JFrame
         catch(ServicesException e)
         {
             _assignedGroups.clear();
-            new ErrorView(e, "Unable to load assigned grading");
+            ErrorReporter.report("Unable to load assigned grading", e);
         }
         
         //Parts list

@@ -50,7 +50,7 @@ public class DatabaseGradesTest {
     
     
     @Test
-    public void testEarned() throws SQLException, CakeHatDBIOException{
+    public void testEarned() throws SQLException {
         DatabaseContentWrapper wrapper = new DatabaseContentWrapper(_database);
         
         GradeRecord gradeRecord1 = new GradeRecord("date1", wrapper._taId1, 42.0, true);

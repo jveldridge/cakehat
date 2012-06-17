@@ -2,8 +2,8 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.database.assignment.Assignment;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -38,7 +38,7 @@ class ManageGroupsView extends JDialog {
                 try {
                     Allocator.getDataServices().updateDataCache();
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "Unable to update data in cache.");
+                    ErrorReporter.report("Unable to update data in cache.", ex);
                 }
             }
         });
@@ -50,9 +50,9 @@ class ManageGroupsView extends JDialog {
             _studentList.setGroupTree(_groupTree);
             _groupTree.setStudentList(_studentList);
         } catch (SQLException e) {
-            new ErrorView(e, "Unable to get data to create ui");
+            ErrorReporter.report("Unable to get data to create UI", e);
         } catch (ServicesException e) {
-            new ErrorView(e, "Unable to get data to create ui");
+            ErrorReporter.report("Unable to get data to create UI", e);
         }
         
         //Setup UI

@@ -4,8 +4,8 @@ import cakehat.Allocator;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.TA;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -75,8 +75,8 @@ abstract class PartPanel extends GradingSheetPanel
             }
             catch(ServicesException e)
             {
-                new ErrorView(e, "Unable to retrieve TA info from the database for " + _part.getFullDisplayName() +
-                        " for group " + _group.getName());
+                ErrorReporter.report("Unable to retrieve TA info from the database for " + _part.getFullDisplayName() +
+                        " for group " + _group.getName(), e);
                 addErrorMessagePanel("Unable to retrieve needed TA data");
             }
         }
@@ -140,7 +140,7 @@ abstract class PartPanel extends GradingSheetPanel
                         catch(ServicesException ex)
                         {
                             action.cancel();
-                            new ErrorView(ex, "Unable to assign new grader");
+                            ErrorReporter.report("Unable to assign new grader", ex);
                         }
                     }
                 });

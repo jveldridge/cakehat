@@ -36,6 +36,7 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Utilities;
 import cakehat.Allocator;
+import cakehat.logging.ErrorReporter;
 import cakehat.printing.CITPrinter;
 import cakehat.printing.PrintRequest;
 import java.awt.Window;
@@ -45,6 +46,7 @@ import support.resources.icons.IconLoader.IconSize;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import javax.swing.JDialog;
+import javax.swing.text.BadLocationException;
 
 /**
  * A simpler viewer for plain text files. Allows for searching within the
@@ -115,13 +117,9 @@ public class TextViewerView extends JDialog
             {
                 text = Allocator.getFileSystemUtilities().readFile(file);
             }
-            catch (FileNotFoundException ex)
-            {
-                new ErrorView(ex, "TextViewerView cannot read file, file does not exist: " + file.getAbsolutePath());
-            }
             catch (IOException ex)
             {
-                new ErrorView(ex, "TextViewerView cannot read file: " + file.getAbsolutePath());
+                ErrorReporter.report("Cannot read file: " + file.getAbsolutePath(), ex);
             }
         }
 
@@ -459,9 +457,9 @@ public class TextViewerView extends JDialog
                 _textArea.setCaretPosition(t.indexOf(text, 0));
             }
         }
-        catch (Exception e)
+        catch (BadLocationException e)
         {
-            new ErrorView(e);
+            ErrorReporter.report("Unable to highlight text", e);
         }
         _searchHighlightsPanel.repaint();
     }
@@ -513,7 +511,6 @@ public class TextViewerView extends JDialog
 
     private void printMenuItemActionPerformed(ActionEvent ae)
     {
-        PrintRequest request = null;
         try
         {
             File tmpFile = Allocator.getFileSystemUtilities().createTempFile(".tvv", ".tmp",
@@ -521,26 +518,26 @@ public class TextViewerView extends JDialog
             PrintWriter writer = new PrintWriter(tmpFile);
             writer.print(_textArea.getText());
             writer.close();
-            request = new PrintRequest(Arrays.asList(tmpFile));
+            PrintRequest request = new PrintRequest(Arrays.asList(tmpFile));
+            
+            //printer will be null if user cancels printing
+            CITPrinter printer = Allocator.getGradingServices().getPrinter();
+
+            if(printer != null)
+            {
+                try
+                {
+                    Allocator.getPortraitPrintingService().print(request, printer);
+                }
+                catch(IOException e)
+                {
+                    ErrorReporter.report("Unable to print", e);
+                }
+            }
         }
         catch(IOException e)
         {
-            new ErrorView(e, "Unable to create temporary file used for printing");
-            return;
-        }
-
-        //printer will be null if user cancels printing
-        CITPrinter printer = Allocator.getGradingServices().getPrinter();
-
-        if (printer != null) {
-            try
-            {
-                Allocator.getPortraitPrintingService().print(request, printer);
-            }
-            catch(IOException e)
-            {
-                new ErrorView(e, "Unable to print");
-            }
+            ErrorReporter.report("Unable to create temporary file used for printing", e);
         }
     }
 

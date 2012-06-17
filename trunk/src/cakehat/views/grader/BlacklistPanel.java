@@ -3,9 +3,9 @@ package cakehat.views.grader;
 import cakehat.Allocator;
 import cakehat.database.TA;
 import cakehat.database.Student;
+import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import cakehat.views.shared.StudentDescriptionProvider;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
@@ -168,7 +168,7 @@ class BlacklistPanel extends AlphaJPanel
                 }
                 catch(ServicesException ex)
                 {
-                    new ErrorView(ex, "Unable to blacklist students");
+                    ErrorReporter.report("Unable to blacklist students", ex);
                 }
             }
         });
@@ -204,7 +204,7 @@ class BlacklistPanel extends AlphaJPanel
                 }
                 catch(ServicesException ex)
                 {
-                    new ErrorView(ex, "Unable to unblacklist students");
+                    ErrorReporter.report("Unable to unblacklist students", ex);
                 }
             }
         });

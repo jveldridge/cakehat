@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.database.assignment.Part;
-import cakehat.database.CakeHatDBIOException;
 import cakehat.database.ConfigurationData;
 import cakehat.database.Group;
 import java.io.File;
@@ -22,7 +21,7 @@ public class GMLParserTest {
     private double DELTA = .00001;
     
     @Test
-    public void testParseValidGMLFile() throws GradingSheetException, SQLException, CakeHatDBIOException {
+    public void testParseValidGMLFile() throws GradingSheetException, SQLException {
         Part part = ConfigurationData.generatePartWithNoAttributes();
         Group group = ConfigurationData.generateGroupWithNoAttributes();
         InMemoryGML validGML = GMLParser.parse(new File("test/cakehat/gml/ValidGMLFile.gml"), part, group);

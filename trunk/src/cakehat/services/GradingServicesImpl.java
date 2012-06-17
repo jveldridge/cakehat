@@ -28,7 +28,6 @@ import cakehat.printing.PrintRequest;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
-import cakehat.views.shared.ErrorView;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -57,9 +56,6 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import org.joda.time.DateTime;
 import support.ui.ModalDialog;
-import support.utils.FileCopyingException;
-import support.utils.FileSystemUtilities.FileCopyPermissions;
-import support.utils.FileSystemUtilities.OverwriteMode;
 
 public class GradingServicesImpl implements GradingServices
 {
@@ -441,12 +437,8 @@ public class GradingServicesImpl implements GradingServices
             for (IssueResolutionPanel disabledPanel : disabledPanels) {
                 if (disabledPanel.isChangeSelected()) {
                     String studentLogin = disabledPanel.getStudentLogin();
-                    try {
-                        Allocator.getDataServices().setStudentEnabled(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
-                        handinsDisabled.remove(studentLogin);
-                    } catch (ServicesException e) {
-                        new ErrorView(e, "Student " + studentLogin + " could not be enabled.");
-                    }
+                    Allocator.getDataServices().setStudentEnabled(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
+                    handinsDisabled.remove(studentLogin);
                 }
             }
 
@@ -530,11 +522,7 @@ public class GradingServicesImpl implements GradingServices
     public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
     {
         EmailAccountStatus emailStatus = Allocator.getEmailManager().getEmailAccountStatus();
-        if(emailStatus == EmailAccountStatus.INITIALIZATION_ERROR)
-        {
-            throw new ServicesException("The email account could not initialize properly");
-        }
-        else if(emailStatus == EmailAccountStatus.NOT_CONFIGURED)
+        if(emailStatus == EmailAccountStatus.NOT_CONFIGURED)
         {
             ModalDialog.showMessage(null, "Email Unavailable", "Email has not been configured by your course");
         }

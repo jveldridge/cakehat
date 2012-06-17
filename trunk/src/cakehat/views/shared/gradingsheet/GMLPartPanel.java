@@ -9,8 +9,8 @@ import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.database.Group;
 import cakehat.gml.GMLWriter;
+import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.ErrorView;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -65,7 +65,7 @@ class GMLPartPanel extends PartPanel
             if(!gmlFile.canRead())
             {
                 addErrorMessagePanel("Unable to read GML file");
-                new ErrorView("A permissions issue has arisen - unable to read GML file.\n" +
+                ErrorReporter.report("A permissions issue has arisen - unable to read GML file.\n" +
                     "Part: " + _part.getFullDisplayName() + "\n" +
                     "Group: " + _group.getName() + "\n" +
                     "Path: " + gmlFile.getAbsolutePath());
@@ -80,7 +80,7 @@ class GMLPartPanel extends PartPanel
                 catch(GradingSheetException ex)
                 {
                     addErrorMessagePanel("GML file has been corrupted");
-                    new ErrorView(ex, "GML file has been corrupted:" + gmlFile.getAbsolutePath());
+                    ErrorReporter.report("GML file has been corrupted: " + gmlFile.getAbsolutePath(), ex);
                 }
             }
         }
@@ -106,9 +106,6 @@ class GMLPartPanel extends PartPanel
                 catch(GradingSheetException ex)
                 {
                     addErrorMessagePanel("GML template has invalid format");
-                    
-                    //TODO: Have a way to indicate this is user error
-                    new ErrorView(ex, "GML template has invalid format: " + gmlFile.getAbsolutePath());
                 }
             }
         }
@@ -292,16 +289,16 @@ class GMLPartPanel extends PartPanel
             }
             catch(GradingSheetException e)
             {
-                new ErrorView(e, "Unable to save GML file\n" +
+                ErrorReporter.report("Unable to save GML file\n" +
                         "Part: " + _part.getFullDisplayName() + "\n" +
                         "Group: " + _group.getName() + "\n" + 
-                        "File: " + gmlFile.getAbsolutePath());
+                        "File: " + gmlFile.getAbsolutePath(), e);
             }
             catch(ServicesException e)
             {
-                new ErrorView(e, "Unable to record changes in database\n" +
+                ErrorReporter.report("Unable to record changes in database\n" +
                         "Part: " + _part.getFullDisplayName() + "\n" +
-                        "Group: " + _group.getName());
+                        "Group: " + _group.getName(), e);
             }
         }
     }

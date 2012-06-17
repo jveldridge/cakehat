@@ -26,11 +26,10 @@ import support.ui.GenericJComboBox;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.database.TA;
+import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
-import cakehat.views.shared.ErrorView;
-import java.awt.Dialog;
 import java.awt.Window;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -79,7 +78,7 @@ class AutomaticDistributorView extends JDialog {
         try {
             _remainingBadHandins = Allocator.getGradingServices().resolveUnexpectedHandins(_gradableEvent);
         } catch (ServicesException ex) {
-            new ErrorView(ex);
+            ErrorReporter.report(ex);
             this.dispose();
             return;
         }
@@ -153,9 +152,9 @@ class AutomaticDistributorView extends JDialog {
                         ModalDialog.showMessage(AutomaticDistributorView.this, "Failed", "Grading setup failed");
                     }
                 } catch (ServicesException ex) {
-                    new ErrorView(ex, "Grading setup failed because a ServicesException was thrown.");
+                    ErrorReporter.report("Grading setup failed because a ServicesException was thrown.", ex);
                 } catch (IOException ex) {
-                    new ErrorView(ex, "Grading setup failed because an IOException was thrown.");
+                    ErrorReporter.report("Grading setup failed because an IOException was thrown.", ex);
                 }
             }
         });
