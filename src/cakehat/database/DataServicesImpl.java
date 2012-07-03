@@ -682,8 +682,17 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public void setStudentEnabled(Student student, boolean enabled) throws ServicesException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setStudentsAreEnabled(Map<Student, Boolean> studentsToUpdate) throws ServicesException {
+        try {
+            Map<Integer, Boolean> idMap = new HashMap<Integer, Boolean>();
+            for (Student student : studentsToUpdate.keySet()) {
+                idMap.put(student.getId(), studentsToUpdate.get(student));
+            }
+            
+            Allocator.getDatabase().setStudentsAreEnabled(idMap);
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not update enabled statuses for students " + studentsToUpdate.keySet());
+        }
     }
 
     @Override
