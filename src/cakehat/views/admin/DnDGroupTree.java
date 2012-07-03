@@ -150,11 +150,14 @@ class DnDGroupTree extends JPanel {
     private void createNewGroup() {
         String groupName = promptUserForName();
         if (groupName != null && !groupName.isEmpty()) {
-            DbGroup group = new DbGroup(_asgn, groupName, new HashSet<Student>());
+            List<Student> students = _studentList.getSelectedStudents();
+            DbGroup group = new DbGroup(_asgn, groupName, new HashSet<Student>(students));
             try {
                 Allocator.getDatabase().putGroups(ImmutableSet.of(group));
-                _model.addGroup(group);
+                _studentList.removeSelectedStudents();
+                _model.addGroup(group, students);
                 this.updateTreeUI();
+                this.expandTree();
                 
                 //newly added group will be the last item in the tree
                 _groupTree.setSelectionRow(_groupTree.getRowCount() - 1); 
@@ -522,9 +525,9 @@ class DnDGroupTree extends JPanel {
             return index;
         }
 
-        public void addGroup(DbGroup group) {
+        public void addGroup(DbGroup group, List<Student> students) {
             _groupNames.add(group.getName());
-            _groups.add(new DbGroupWrapper(group, new ArrayList<Student>()));
+            _groups.add(new DbGroupWrapper(group, new ArrayList<Student>(students)));
             this.sortGroups();
         }
 

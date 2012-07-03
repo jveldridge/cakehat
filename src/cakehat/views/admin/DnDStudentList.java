@@ -111,7 +111,7 @@ class DnDStudentList extends JPanel {
         _studentList.setListData(newListData);
     }
 
-    private void removeSelectedStudents() {
+    void removeSelectedStudents() {
         List<Student> newListData = new ArrayList<Student>(_studentList.getListData());
         newListData.removeAll(_studentList.getGenericSelectedValues());
         _studentList.setListData(newListData);
