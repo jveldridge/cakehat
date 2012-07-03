@@ -1,0 +1,49 @@
+#summary Proposed schema for storing grading sheets in the database.
+
+gradingsheet
+ * gs-id INTEGER PRIMARY KEY AUTOINCREMENT
+ * pid INTEGER NOT NULL
+ * FOREIGN KEY pid REFERENCES part(pid)
+
+gradingsheetsection
+ * gs-sid INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs-id INTEGER NOT NULL
+ * name VARCHAR NOT NULL
+ * FOREIGN KEY gs-id REFERENCES gradingsheet(gs-id) ON DELETE CASCADE
+ * CONSTRAINT uniquenames UNIQUE (gs-id, gs-sid, name) ON CONFLICT ROLLBACK
+
+gradingsheetsubsection
+ * gs-ssid INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs-sid INTEGER NOT NULL
+ * name VARCHAR NOT NULL
+ * outof DOUBLE //may be null - will mean grading sheet visualization shows no red/yellow
+ * FOREIGN KEY gs-sid REFERENCES gradingsheetsection(gs-sid) ON DELETE CASCADE
+ * CONSTRAINT uniquenames UNIQUE (gs-sid, gs-ssid, name) ON CONFLICT ROLLBACK
+
+gradingsheetdetail
+ * gs-did INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs-ssid INTEGER NOT NULL
+ * text VARCHAR NOT NULL
+ * FOREIGN KEY gs-ssid REFERENCES gradingsheetsubsection ON DELETE CASCADE
+
+studentgradingsheetsubsection
+ * sid INTEGER NOT NULL
+ * gs-ssid INTEGER NOT NULL
+ * earned DOUBLE
+ * tid INTEGER NOT NULL
+ * daterecorded VARCHAR NOT NULL
+ * FOREIGN KEY sid REFERENCES student(sid) ON DELETE CASCADE
+ * FOREIGN KEY gs-ssid REFERENCES gradingsheetsubsection(gs-ssid) ON DELETE CASCADE
+ * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
+ * CONSTRAINT onepersubsectionperstudent UNIQUE (sid, gs-ssid) ON CONFLICT REPLACE
+
+studentgradingsheetcomments
+ * sid INTEGER NOT NULL
+ * gs-sid INTEGER NOT NULL
+ * comments VARCHAR NOT NULL
+ * tid INTEGER NOT NULL
+ * daterecorded VARCHAR NOT NULL
+ * FOREIGN KEY sid REFERENCES student(sid) ON DELETE CASCADE
+ * FOREIGN KEY gs-sid REFERENCES gradingsheetsection(gs-sid) ON DELETE CASCADE
+ * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
+ * CONSTRAINT onepersectionperstudent UNIQUE (sid, gs-sid) ON CONFLICT REPLACE
