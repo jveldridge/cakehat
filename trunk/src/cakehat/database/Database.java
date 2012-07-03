@@ -88,6 +88,18 @@ public interface Database
     public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     
     /**
+     * Sets the enabled status of the student corresponding to each student ID in the key set of
+     * the given map to the corresponding boolean value.
+     * 
+     * This has no effect for any entry where the key does not correspond to a valid student ID in the database. If any
+     * of the values in the map are null, a NullPointerException will be thrown and the enabled status will not have
+     * been updated for any students.
+     * 
+     * @param studentsToUpdate 
+     */
+    public void setStudentsAreEnabled(Map<Integer, Boolean> studentsToUpdate) throws SQLException;
+    
+    /**
      * For each student ID in the given Set, adds the corresponding student to the blacklist of the TA with the given
      * ID. This ensures that the TA will not be distributed a group to grade that includes any of these students. If a
      * student was already blacklisted by this TA, its entry in the blacklist table will not be duplicated. If any of

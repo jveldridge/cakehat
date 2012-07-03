@@ -435,13 +435,16 @@ public class GradingServicesImpl implements GradingServices
                 Allocator.getDataServices().addStudentsByLogin(loginsToAdd);
             }
 
+            Map<Student, Boolean> studentsToEnable = new HashMap<Student, Boolean>();
             for (IssueResolutionPanel disabledPanel : disabledPanels) {
                 if (disabledPanel.isChangeSelected()) {
                     String studentLogin = disabledPanel.getStudentLogin();
-                    Allocator.getDataServices().setStudentEnabled(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
-                    handinsDisabled.remove(studentLogin);
+                    studentsToEnable.put(Allocator.getDataServices().getStudentFromLogin(studentLogin), true);
                 }
             }
+            
+            Allocator.getDataServices().setStudentsAreEnabled(studentsToEnable);
+            handinsDisabled.removeAll(studentsToEnable.keySet());
 
             //create a list of the remaining bad handin names
             Set<String> badHandinNames = new HashSet<String>();

@@ -795,6 +795,34 @@ public class DatabaseImpl implements Database
     }
     
     @Override
+    public void setStudentsAreEnabled(Map<Integer, Boolean> studentsToUpdate) throws SQLException {
+        if (studentsToUpdate.values().contains(null)) {
+            throw new NullPointerException("Enabled value may not be set to null.");
+        }
+        
+        Connection conn = this.openConnection();
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("UPDATE student SET enabled = ? WHERE sid = ?");
+            
+            for (Integer studentID : studentsToUpdate.keySet()) {
+                ps.setBoolean(1, studentsToUpdate.get(studentID));
+                ps.setInt(2, studentID);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
     public void blacklistStudents(Set<Integer> studentIDs, int taID) 
                                                         throws SQLException {
         Connection conn = this.openConnection();

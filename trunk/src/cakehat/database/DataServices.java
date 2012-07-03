@@ -48,14 +48,14 @@ public interface DataServices {
     public void addStudents(Set<DbStudent> students) throws ServicesException;
     
     /**
-     * Sets the given Student's enabled status.  Students are enabled by default, but students who have dropped the
-     * course should be disabled. Disabled students will not be sent grade reports.
-     *
-     * @param student
-     * @param enabled
-     * @throws ServicesException
+     * Sets the enabled status of teach student in the key set of the given map to the corresponding boolean value.
+     * 
+     * If any of the values in the map are null, a NullPointerException will be thrown and the enabled status will not
+     * have been updated for any students.
+     * 
+     * @param studentsToUpdate 
      */
-    public void setStudentEnabled(Student student, boolean enabled) throws ServicesException;
+    public void setStudentsAreEnabled(Map<Student, Boolean> studentsToUpdate) throws ServicesException;
     
     /**
      * Adds all the students in the given Set to the blacklist of the given TA, if not already blacklisted. This ensures

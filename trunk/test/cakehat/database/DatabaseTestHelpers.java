@@ -107,6 +107,31 @@ public class DatabaseTestHelpers {
         return String.format("%s.%s may not be NULL", tableName, fieldName);
     }
     
+    /**
+     * Creates a student in the database with the given parameters and returns the ID of the newly created row.
+     * 
+     * @param login
+     * @param first
+     * @param last
+     * @param email
+     * @return 
+     */
+    static int createStudent(Database db, String login, String first, String last, String email) throws SQLException {
+        DbStudent student = new DbStudent(login, first, last, email);
+        db.putStudents(ImmutableSet.of(student));
+        return student.getId();
+    }
+    
+    static <T extends DbDataItem> T getDbDataItemFromIterableById(Iterable<T> iterable, int idToFind) {      
+        for (T curr : iterable) {
+            if (curr.getId() == idToFind) {
+                return curr;
+            }
+        }
+        
+        return null;
+    }
+    
     static class DatabaseContentWrapper {
         Set<Integer> _partIDs;
         DbPart _part1, _part2;
