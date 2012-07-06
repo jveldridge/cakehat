@@ -16,7 +16,7 @@ gradingsheetsection
 gradingsheetsubsection
  * gs-ssid INTEGER PRIMARY KEY AUTOINCREMENT
  * gs-sid INTEGER NOT NULL
- * name VARCHAR NOT NULL
+ * text VARCHAR NOT NULL
  * outof DOUBLE //may be null - will mean grading sheet visualization shows no red/yellow
  * FOREIGN KEY gs-sid REFERENCES gradingsheetsection(gs-sid) ON DELETE CASCADE
  * CONSTRAINT uniquenames UNIQUE (gs-sid, gs-ssid, name) ON CONFLICT ROLLBACK
