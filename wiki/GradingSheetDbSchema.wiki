@@ -9,6 +9,7 @@ gradingsheetsection
  * gs-sid INTEGER PRIMARY KEY AUTOINCREMENT
  * gs-id INTEGER NOT NULL
  * name VARCHAR NOT NULL
+ * outof DOUBLE //may be null; if not null, used for subtractive grading as earned and out of
  * FOREIGN KEY gs-id REFERENCES gradingsheet(gs-id) ON DELETE CASCADE
  * CONSTRAINT uniquenames UNIQUE (gs-id, gs-sid, name) ON CONFLICT ROLLBACK
 
