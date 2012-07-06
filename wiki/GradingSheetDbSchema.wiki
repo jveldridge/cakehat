@@ -29,33 +29,33 @@ gradingsheetdetail
 
 groupgradingsheet
  * gs-id INTEGER NOT NULL
- * gpid INTEGER NOT NULL
+ * agid INTEGER NOT NULL
  * submitted INTEGER NOT NULL DEFAULT 0
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
  * FOREIGN KEY gs-id REFERENCES gradingsheet(gs-id) ON DELETE CASCADE
- * FOREIGN KEY gpid REFERENCES asgngroup(gpid) ON DELETE CASCADE
+ * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepergroup UNIQUE(gs-id, gpid) ON CONFLICT REPLACE
+ * CONSTRAINT onepergroup UNIQUE(gs-id, agid) ON CONFLICT REPLACE
 
 groupgradingsheetsubsection
- * gpid INTEGER NOT NULL
+ * agid INTEGER NOT NULL
  * gs-ssid INTEGER NOT NULL
  * earned DOUBLE
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
- * FOREIGN KEY gpid REFERENCES asgngroup(gpid) ON DELETE CASCADE
+ * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY gs-ssid REFERENCES gradingsheetsubsection(gs-ssid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepersubsectionpergroup UNIQUE (gpid, gs-ssid) ON CONFLICT REPLACE
+ * CONSTRAINT onepersubsectionpergroup UNIQUE (agid, gs-ssid) ON CONFLICT REPLACE
 
 groupgradingsheetcomments
- * gpid INTEGER NOT NULL
+ * agid INTEGER NOT NULL
  * gs-sid INTEGER NOT NULL
  * comments VARCHAR
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
- * FOREIGN KEY gpid REFERENCES asgngroup(gpid) ON DELETE CASCADE
+ * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY gs-sid REFERENCES gradingsheetsection(gs-sid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepersectionpergroup UNIQUE (gpid, gs-sid) ON CONFLICT REPLACE
+ * CONSTRAINT onepersectionpergroup UNIQUE (agid, gs-sid) ON CONFLICT REPLACE
