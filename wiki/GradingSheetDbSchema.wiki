@@ -52,7 +52,7 @@ groupgradingsheetsubsection
 groupgradingsheetcomments
  * gpid INTEGER NOT NULL
  * gs-sid INTEGER NOT NULL
- * comments VARCHAR NOT NULL
+ * comments VARCHAR
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
  * FOREIGN KEY gpid REFERENCES asgngroup(gpid) ON DELETE CASCADE
