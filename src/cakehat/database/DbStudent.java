@@ -12,7 +12,7 @@ public class DbStudent extends DbDataItem
     private volatile String _lastName;
     private volatile String _emailAddress;
     private volatile boolean _enabled;
-    private volatile boolean _hasCollabPolicy;
+    private volatile boolean _hasCollabContract;
     
     public DbStudent(String login, String firstName, String lastName, String emailAddress)
     {
@@ -23,11 +23,11 @@ public class DbStudent extends DbDataItem
         _lastName = lastName;
         _emailAddress = emailAddress;
         _enabled = true;
-        _hasCollabPolicy = false;
+        _hasCollabContract = false;
     }
     
     DbStudent(int id, String login, String firstName, String lastName, String emailAddress, boolean enabled,
-              boolean hasCollabPolicy)
+              boolean hasCollabContract)
     {
         super(id);
         
@@ -36,7 +36,7 @@ public class DbStudent extends DbDataItem
         _lastName = lastName;
         _emailAddress = emailAddress;
         _enabled = enabled;
-        _hasCollabPolicy = hasCollabPolicy;
+        _hasCollabContract = hasCollabContract;
     }
     
     public void setLogin(String login)
@@ -64,9 +64,9 @@ public class DbStudent extends DbDataItem
         _enabled = enabled;
     }
     
-    public void setHasCollabPolicy(boolean hasCollabPolicy)
+    public void setHasCollabContract(boolean hasCollabContract)
     {
-        _hasCollabPolicy = hasCollabPolicy;
+        _hasCollabContract = hasCollabContract;
     }
 
     public String getLogin()
@@ -94,8 +94,8 @@ public class DbStudent extends DbDataItem
         return _enabled;
     }
 
-    public boolean hasCollabPolicy()
+    public boolean hasCollabContract()
     {
-        return _hasCollabPolicy;
+        return _hasCollabContract;
     }
 }

@@ -706,7 +706,44 @@ public class DataServicesImpl implements DataServices {
             throw new ServicesException("Could not update enabled statuses for students " + studentsToUpdate.keySet());
         }
     }
+    
+    @Override
+    public void setStudentsHasCollaborationContract(Map<Student, Boolean> studentsToUpdate) throws ServicesException {
+        Map<Integer, Boolean> idMap = new HashMap<Integer, Boolean>();
+        for(Entry<Student, Boolean> entry : studentsToUpdate.entrySet()) {
+            idMap.put(entry.getKey().getId(), entry.getValue());
+        }
+        
+        try {
+            Allocator.getDatabase().setStudentsHasCollaborationContract(idMap);
+        } catch (SQLException e) {
+            throw new ServicesException("Unable to set collaboration contracts for " + studentsToUpdate, e);
+        }
+    }
 
+    @Override
+    public Set<Student> getStudentsWithCollaborationContracts() throws ServicesException {
+        try {
+            ImmutableSet.Builder<Student> studentsWithCollabContract = ImmutableSet.builder();
+            
+            Set<DbStudent> students = Allocator.getDatabase().getStudents();
+            for(DbStudent student : students) {
+                if(student.hasCollabContract()) {
+                    if(!_studentIdMap.containsKey(student.getId())) {
+                        this.updateDataCache();
+                    }
+                        
+                    studentsWithCollabContract.add(_studentIdMap.get(student.getId()));
+                }
+            }
+            
+            return studentsWithCollabContract.build();
+        } catch (SQLException e) {
+            throw new ServicesException("Students could not be retrieved from the database", e);
+        }
+    }
+            
+    
     @Override
     public void blacklistStudents(Set<Student> students, TA ta) throws ServicesException {
         try {

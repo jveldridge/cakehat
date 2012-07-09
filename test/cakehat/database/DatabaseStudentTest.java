@@ -52,7 +52,7 @@ public class DatabaseStudentTest {
             assertEquals(s1.getLastName(), s2.getLastName());
             assertEquals(s1.getEmailAddress(), s2.getEmailAddress());
             assertEquals(s1.isEnabled(), s2.isEnabled());
-            assertEquals(s1.hasCollabPolicy(), s2.hasCollabPolicy());
+            assertEquals(s1.hasCollabContract(), s2.hasCollabContract());
         }
     };
     
@@ -72,7 +72,7 @@ public class DatabaseStudentTest {
     public void testUpdateSingleStudent() throws SQLException {
         DbStudent student = new DbStudent("login", "first", "last", "email");
         assertTrue(student.isEnabled());
-        assertFalse(student.hasCollabPolicy());
+        assertFalse(student.hasCollabContract());
         
         _database.putStudents(ImmutableSet.of(student));
         Integer id = student.getId();
@@ -82,7 +82,7 @@ public class DatabaseStudentTest {
         DatabaseTestHelpers.assertSetContainsGivenElements(STUDENT_EQC, students, student);
         
         student.setLogin("different");
-        student.setHasCollabPolicy(true);
+        student.setHasCollabContract(true);
         
         _database.putStudents(ImmutableSet.of(student));
         assertEquals(id, student.getId());
@@ -179,6 +179,103 @@ public class DatabaseStudentTest {
         _database.setStudentsAreEnabled(toUpdate);
         assertTrue(DatabaseTestHelpers.getDbDataItemFromIterableById(_database.getStudents(), student1Id).isEnabled());
         assertTrue(DatabaseTestHelpers.getDbDataItemFromIterableById(_database.getStudents(), student2Id).isEnabled());
+    }
+    
+    @Test
+    public void testSingleStudentHasCollabTrue() throws SQLException {       
+        int studentId = DatabaseTestHelpers.createStudentGetStudent(_database);
+        
+        _database.setStudentsHasCollaborationContract(ImmutableMap.of(studentId, true));
+        assertTrue(DatabaseTestHelpers.getDbDataItemFromIterableById(_database.getStudents(), studentId)
+                .hasCollabContract());
+    }
+    
+    @Test
+    public void testSingleStudentHasCollabFalseAfterHasCollabTrue() throws SQLException {
+        int studentId = DatabaseTestHelpers.createStudentGetStudent(_database);
+        
+        _database.setStudentsHasCollaborationContract(ImmutableMap.of(studentId, true));
+        _database.setStudentsHasCollaborationContract(ImmutableMap.of(studentId, false));
+        assertFalse(DatabaseTestHelpers.getDbDataItemFromIterableById(_database.getStudents(), studentId)
+                .hasCollabContract());
+    }
+    
+    @Test
+    public void testMultipleStudentHasCollab() throws SQLException {
+        Map<Integer, Boolean> toUpdate = ImmutableMap.of(
+                DatabaseTestHelpers.createStudentGetStudent(_database), false,
+                DatabaseTestHelpers.createStudentGetStudent(_database), true,
+                DatabaseTestHelpers.createStudentGetStudent(_database), true,
+                DatabaseTestHelpers.createStudentGetStudent(_database), false);
+        
+        _database.setStudentsHasCollaborationContract(toUpdate);
+        Set<DbStudent> students = _database.getStudents();
+        for(int id : toUpdate.keySet())
+        {
+            assertEquals(toUpdate.get(id), 
+                DatabaseTestHelpers.getDbDataItemFromIterableById(students, id).hasCollabContract());
+        }
+    }
+    
+    @Test
+    public void testHasCollabInvalidStudentHasNoEffect() throws SQLException {
+        //no exception should be thrown for invalid student id of -1
+        _database.setStudentsAreEnabled(ImmutableMap.of(-1, false));
+    }
+    
+    @Test
+    public void testHasCollabInvalidStudentHasNoEffectAndOtherStudentsAreUpdatedCorrectly() throws SQLException {
+        int badStudentId = -1;
+        int student1Id = DatabaseTestHelpers.createStudentGetStudent(_database);
+        int student2Id = DatabaseTestHelpers.createStudentGetStudent(_database);
+        
+        _database.setStudentsHasCollaborationContract(
+                ImmutableMap.of(student1Id, true, badStudentId, false, student2Id, true));
+        
+        Set<DbStudent> students = _database.getStudents();
+        assertTrue(DatabaseTestHelpers.getDbDataItemFromIterableById(students, student1Id).hasCollabContract());
+        assertTrue(DatabaseTestHelpers.getDbDataItemFromIterableById(students, student2Id).hasCollabContract());
+    }    
+    
+    @Test
+    public void testNullHasCollabKeyThrowsException() throws SQLException {
+        _thrown.expect(NullPointerException.class);
+        _thrown.expectMessage("Collaboration contract map may not contain null key or value");
+        
+        Map<Integer, Boolean> toUpdate = new HashMap<Integer, Boolean>();
+        toUpdate.put(null, true);
+        _database.setStudentsHasCollaborationContract(toUpdate);
+    }
+    
+    @Test
+    public void testNullHasCollabValueThrowsException() throws SQLException {
+        _thrown.expect(NullPointerException.class);
+        _thrown.expectMessage("Collaboration contract map may not contain null key or value");
+        
+        int studentId = DatabaseTestHelpers.createStudentGetStudent(_database);
+        
+        Map<Integer, Boolean> toUpdate = new HashMap<Integer, Boolean>();
+        toUpdate.put(studentId, null);
+        _database.setStudentsHasCollaborationContract(toUpdate);
+    }
+    
+    @Test
+    public void testNoStudentsHasCollabUpdatedWhenNullValueGiven() throws SQLException {
+        _thrown.expect(NullPointerException.class);
+        _thrown.expectMessage("Collaboration contract map may not contain null key or value");
+        
+        int student1Id = DatabaseTestHelpers.createStudentGetStudent(_database);
+        int student2Id = DatabaseTestHelpers.createStudentGetStudent(_database);
+        
+        Map<Integer, Boolean> toUpdate = new HashMap<Integer, Boolean>();
+        toUpdate.put(student1Id, true);
+        toUpdate.put(student2Id, null);
+        
+        _database.setStudentsHasCollaborationContract(toUpdate);
+        assertFalse(DatabaseTestHelpers.getDbDataItemFromIterableById(_database.getStudents(), student1Id)
+                .hasCollabContract());
+        assertFalse(DatabaseTestHelpers.getDbDataItemFromIterableById(_database.getStudents(), student2Id)
+                .hasCollabContract());
     }
     
     @Test

@@ -88,8 +88,8 @@ public interface Database
     public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     
     /**
-     * Sets the enabled status of the student corresponding to each student ID in the key set of
-     * the given map to the corresponding boolean value.
+     * Sets the enabled status of the student corresponding to each student ID in the key set of the given map to the
+     * corresponding boolean value.
      * 
      * This has no effect for any entry where the key does not correspond to a valid student ID in the database. If any
      * of the values in the map are null, a NullPointerException will be thrown and the enabled status will not have
@@ -98,6 +98,19 @@ public interface Database
      * @param studentsToUpdate 
      */
     public void setStudentsAreEnabled(Map<Integer, Boolean> studentsToUpdate) throws SQLException;
+    
+    /**
+     * Sets for each student in {@code studentsToUpdate} if they have a collaboration contract (mapped to {@code true}
+     * or not (mapped to {@code false}).
+     * 
+     * This has no effect for any entry where the key does not correspond to valid student ID in the database. If any
+     * of the values in the map are {@code null}, a {@code NullPointerException} will be thrown and no students in the
+     * map will have the state of having a collaboration contract updated.
+     * 
+     * @param studentsToUpdate
+     * @throws SQLException 
+     */
+    public void setStudentsHasCollaborationContract(Map<Integer, Boolean> studentsToUpdate) throws SQLException;
     
     /**
      * For each student ID in the given Set, adds the corresponding student to the blacklist of the TA with the given
