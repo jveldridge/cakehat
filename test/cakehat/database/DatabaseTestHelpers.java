@@ -1,6 +1,7 @@
 package cakehat.database;
 
 import cakehat.database.assignment.Assignment;
+import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -116,10 +117,18 @@ public class DatabaseTestHelpers {
      * @param email
      * @return 
      */
-    static int createStudent(Database db, String login, String first, String last, String email) throws SQLException {
+    static int createStudentGetId(Database db, String login, String first, String last, String email) throws SQLException {
         DbStudent student = new DbStudent(login, first, last, email);
         db.putStudents(ImmutableSet.of(student));
         return student.getId();
+    }
+    
+    static Student createStudentGetStudent(DataServices ds, Database db, String login, String first, String last,
+                                             String email) throws SQLException, ServicesException {
+        DbStudent student = new DbStudent(login, first, last, email);
+        db.putStudents(ImmutableSet.of(student));
+        ds.updateDataCache();
+        return ds.getStudentFromLogin(login);
     }
     
     static <T extends DbDataItem> T getDbDataItemFromIterableById(Iterable<T> iterable, int idToFind) {      

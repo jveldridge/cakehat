@@ -14,6 +14,7 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
@@ -51,6 +52,7 @@ public class DataServicesTest {
         SingletonAllocation<Database> dbioAlloc =
             new SingletonAllocation<Database>()
             {
+            @Override
                 public Database allocate() { return _database; };
             };
         _database.resetDatabase();
@@ -245,6 +247,23 @@ public class DataServicesTest {
         Collection<Student> students = _dataServices.getEnabledStudents();
 
         this.assertDbStudentCollectionEqual(ImmutableSet.of(dbstudent1, dbstudent2), students);
+    }
+    
+    @Test
+    public void testSetStudentsEnabledForSingleStudent() throws SQLException, ServicesException {
+        Student student = DatabaseTestHelpers.createStudentGetStudent(_dataServices, _database, "login1", "first1",
+                                                                      "last1", "email1");
+        _dataServices.setStudentsAreEnabled(ImmutableMap.of(student, false));
+        assertFalse(_dataServices.getEnabledStudents().contains(student));
+    }
+    
+    @Test
+    public void testEnableAfterDisableForSingleStudent() throws SQLException, ServicesException {
+        Student student = DatabaseTestHelpers.createStudentGetStudent(_dataServices, _database, "login1", "first1",
+                                                                      "last1", "email1");
+        _dataServices.setStudentsAreEnabled(ImmutableMap.of(student, false));
+        _dataServices.setStudentsAreEnabled(ImmutableMap.of(student, true));
+        assertTrue(_dataServices.getEnabledStudents().contains(student));
     }
     
     @Test

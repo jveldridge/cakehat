@@ -684,12 +684,24 @@ public class DataServicesImpl implements DataServices {
     @Override
     public void setStudentsAreEnabled(Map<Student, Boolean> studentsToUpdate) throws ServicesException {
         try {
+            Set<Student> toEnable = new HashSet<Student>();
+            Set<Student> toDisable = new HashSet<Student>();
             Map<Integer, Boolean> idMap = new HashMap<Integer, Boolean>();
             for (Student student : studentsToUpdate.keySet()) {
-                idMap.put(student.getId(), studentsToUpdate.get(student));
+                boolean enable = studentsToUpdate.get(student);
+                idMap.put(student.getId(), enable);
+                
+                if (enable)  {
+                    toEnable.add(student);
+                }
+                else {
+                    toDisable.add(student);
+                }
             }
             
             Allocator.getDatabase().setStudentsAreEnabled(idMap);
+            _enabledStudents.addAll(toEnable);
+            _enabledStudents.removeAll(toDisable);
         } catch (SQLException ex) {
             throw new ServicesException("Could not update enabled statuses for students " + studentsToUpdate.keySet());
         }
