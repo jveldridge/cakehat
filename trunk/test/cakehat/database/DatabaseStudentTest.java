@@ -93,7 +93,7 @@ public class DatabaseStudentTest {
     
     @Test
     public void testDisableSingleStudent() throws SQLException {       
-        int studentId = DatabaseTestHelpers.createStudent(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
+        int studentId = DatabaseTestHelpers.createStudentGetId(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
 
         _database.setStudentsAreEnabled(ImmutableMap.of(studentId, false));
         
@@ -102,7 +102,7 @@ public class DatabaseStudentTest {
     
     @Test
     public void testEnableSingleStudentAfterDisabling() throws SQLException {
-        int studentId = DatabaseTestHelpers.createStudent(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
+        int studentId = DatabaseTestHelpers.createStudentGetId(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
         
         _database.setStudentsAreEnabled(ImmutableMap.of(studentId, false));
         _database.setStudentsAreEnabled(ImmutableMap.of(studentId, true));
@@ -112,10 +112,10 @@ public class DatabaseStudentTest {
     
     @Test
     public void testEnablingAndDisablingMultipleStudents() throws SQLException {
-        int student1Id = DatabaseTestHelpers.createStudent(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
-        int student2Id = DatabaseTestHelpers.createStudent(_database, "sLogin2", "sFirst2", "sLast2", "sEmail2");
-        int student3Id = DatabaseTestHelpers.createStudent(_database, "sLogin3", "sFirst3", "sLast3", "sEmail3");
-        int student4Id = DatabaseTestHelpers.createStudent(_database, "sLogin4", "sFirst4", "sLast4", "sEmail4");
+        int student1Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
+        int student2Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin2", "sFirst2", "sLast2", "sEmail2");
+        int student3Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin3", "sFirst3", "sLast3", "sEmail3");
+        int student4Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin4", "sFirst4", "sLast4", "sEmail4");
         
         Map<Integer, Boolean> toUpdate = new HashMap<Integer, Boolean>();
         toUpdate.put(student1Id, false);
@@ -141,9 +141,9 @@ public class DatabaseStudentTest {
     
     @Test
     public void testDisabledInvalidStudentHasNoEffectAndOtherStudentsAreStillDisabled() throws SQLException {
-        int badStudentId = DatabaseTestHelpers.createStudent(_database, "badLogin", "badFirst", "badLast", "badEmail");
-        int student1Id = DatabaseTestHelpers.createStudent(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
-        int student2Id = DatabaseTestHelpers.createStudent(_database, "sLogin2", "sFirst2", "sLast2", "sEmail2");
+        int badStudentId = DatabaseTestHelpers.createStudentGetId(_database, "badLogin", "badFirst", "badLast", "badEmail");
+        int student1Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
+        int student2Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin2", "sFirst2", "sLast2", "sEmail2");
         
         _database.setStudentsAreEnabled(ImmutableMap.of(student1Id, false, badStudentId, false, student2Id, false));
         
@@ -157,7 +157,7 @@ public class DatabaseStudentTest {
         _thrown.expect(NullPointerException.class);
         _thrown.expectMessage("Enabled value may not be set to null.");
         
-        int studentId = DatabaseTestHelpers.createStudent(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
+        int studentId = DatabaseTestHelpers.createStudentGetId(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
         
         Map<Integer, Boolean> toUpdate = new HashMap<Integer, Boolean>();
         toUpdate.put(studentId, null);
@@ -169,8 +169,8 @@ public class DatabaseStudentTest {
         _thrown.expect(NullPointerException.class);
         _thrown.expectMessage("Enabled value may not be set to null.");
         
-        int student1Id = DatabaseTestHelpers.createStudent(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
-        int student2Id = DatabaseTestHelpers.createStudent(_database, "sLogin2", "sFirst2", "sLast2", "sEmail2");
+        int student1Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin1", "sFirst1", "sLast1", "sEmail1");
+        int student2Id = DatabaseTestHelpers.createStudentGetId(_database, "sLogin2", "sFirst2", "sLast2", "sEmail2");
         
         Map<Integer, Boolean> toUpdate = new HashMap<Integer, Boolean>();
         toUpdate.put(student1Id, false);
