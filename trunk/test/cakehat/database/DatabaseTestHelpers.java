@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -121,6 +122,15 @@ public class DatabaseTestHelpers {
         DbStudent student = new DbStudent(login, first, last, email);
         db.putStudents(ImmutableSet.of(student));
         return student.getId();
+    }
+    
+    static int createStudentGetStudent(Database db) throws SQLException {
+        DbStudent student = new DbStudent(UUID.randomUUID().toString(), UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        db.putStudents(ImmutableSet.of(student));
+        
+        return student.getId();
+        
     }
     
     static Student createStudentGetStudent(DataServices ds, Database db, String login, String first, String last,

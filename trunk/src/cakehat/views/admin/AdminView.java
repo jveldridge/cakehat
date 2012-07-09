@@ -48,6 +48,7 @@ public class AdminView extends JFrame
     private final StudentList _studentList;
     private final ActionsPanel _actionsPanel;
     private final StatisticsPanel _statisticsPanel;
+    private final StudentInfoPanel _studentInfoPanel;
     
     private AssignmentTreeSelection _treeSelection;
     private Set<Student> _selectedStudents; 
@@ -74,6 +75,7 @@ public class AdminView extends JFrame
         _assignmentTree = new AssignmentTree();
         _studentList = new StudentList();
         _statisticsPanel = new StatisticsPanel();
+        _studentInfoPanel = new StudentInfoPanel();
         this.initUI();
         this.setJMenuBar(new AdminMenu(this));
         
@@ -237,8 +239,8 @@ public class AdminView extends JFrame
             }
             else
             {
-                componentToDisplay = FormattedLabel.asHeader("Student info display not yet supported")
-                        .centerHorizontally();
+                _studentInfoPanel.displayFor(selectedStudentsNotInGroups);
+                componentToDisplay = _studentInfoPanel;
             }
         }
         else
@@ -382,7 +384,7 @@ public class AdminView extends JFrame
                 }
                 else if(cmpnt == _studentList.getList())
                 {
-                    if(_studentList.getList().hasSelectedValue())
+                    if(_studentList.getList().hasSelectedValue() && _currentlyDisplayedSheet != null)
                     {
                         next = _currentlyDisplayedSheet.getFirstComponent();
                     }

@@ -32,8 +32,27 @@ public interface DataServices {
      *
      * @return
      */
-    public Set<Student> getEnabledStudents() throws ServicesException;
+    public Set<Student> getEnabledStudents() throws ServicesException;    
     
+    /**
+     * Returns the set of students who have collaboration contracts.
+     * 
+     * @return
+     * @throws ServicesException 
+     */
+    public Set<Student> getStudentsWithCollaborationContracts() throws ServicesException;
+    
+    /**
+     * Sets for each student in {@code studentsToUpdate} if they have a collaboration contract (mapped to {@code true}
+     * or not (mapped to {@code false}).
+     * 
+     * If any value or key in the map is {@code null}, a {@code NullPointerException} will be thrown.
+     * 
+     * @param studentsToUpdate
+     * @throws ServicesException 
+     */
+    public void setStudentsHasCollaborationContract(Map<Student, Boolean> studentsToUpdate) throws ServicesException;
+
     /**
      * For each login in the given Set of student logins, adds the corresponding student to the database.  Each
      * student's name will be determined by (@link UserUtilities#getUserName(java.lang.String)}, and each student's
@@ -46,9 +65,9 @@ public interface DataServices {
     public void addStudentsByLogin(Set<String> studentLogins) throws ServicesException;
     
     public void addStudents(Set<DbStudent> students) throws ServicesException;
-    
+
     /**
-     * Sets the enabled status of teach student in the key set of the given map to the corresponding boolean value.
+     * Sets the enabled status of each student in the key set of the given map to the corresponding boolean value.
      * 
      * If any of the values in the map are null, a NullPointerException will be thrown and the enabled status will not
      * have been updated for any students.

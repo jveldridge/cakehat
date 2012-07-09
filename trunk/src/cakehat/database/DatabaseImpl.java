@@ -291,7 +291,7 @@ public class DatabaseImpl implements Database
             ps.setString(3, item.getLastName());
             ps.setString(4, item.getEmailAddress());
             ps.setBoolean(5, item.isEnabled());
-            ps.setBoolean(6, item.hasCollabPolicy());
+            ps.setBoolean(6, item.hasCollabContract());
             return 7;
         }
     };
@@ -811,6 +811,34 @@ public class DatabaseImpl implements Database
                 ps.addBatch();
             }
 
+            ps.executeBatch();
+            ps.close();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    @Override
+    public void setStudentsHasCollaborationContract(Map<Integer, Boolean> studentsToUpdate) throws SQLException {   
+        if(studentsToUpdate.keySet().contains(null) || studentsToUpdate.values().contains(null)) {
+            throw new NullPointerException("Collaboration contract map may not contain null key or value");
+        }
+        
+        Connection conn = this.openConnection();
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement("UPDATE student SET hascollab = ? WHERE sid == ?");
+            
+            for(Entry<Integer, Boolean> entry : studentsToUpdate.entrySet()) {
+                ps.setBoolean(1, entry.getValue());
+                ps.setInt(2, entry.getKey());
+                ps.addBatch();
+            }
+            
             ps.executeBatch();
             ps.close();
             conn.commit();
