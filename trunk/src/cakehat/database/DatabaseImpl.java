@@ -493,7 +493,7 @@ public class DatabaseImpl implements Database
 
     private final DbDataItemPutOperation<DbPart> PART_PUT_OP = new DbDataItemPutOperation<DbPart>(
             "INSERT INTO PART (geid, name, ordering, gmltemplate, outof, quickname, gradingguide) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            "UPDATE part SET geid = ?, name = ?, ordering = ?, gmltemplate = ?, outof = ?, quickname = ?, gradingguide = ? "
+            "UPDATE part SET geid = ?, name = ?, ordering = ?, gmltemplate = ?, outof = ?, quickname = ? "
             + "WHERE pid == ?") {
 
         @Override
@@ -504,8 +504,7 @@ public class DatabaseImpl implements Database
             setObjectAsStringNullSafe(ps, 4, item.getGmlTemplate());
             setDouble(ps, 5, item.getOutOf());
             ps.setString(6, item.getQuickName());
-            setObjectAsStringNullSafe(ps, 7, item.getGradingGuide());
-            return 8;
+            return 7;
         }
     };
     
@@ -1753,7 +1752,6 @@ public class DatabaseImpl implements Database
                     + " gmltemplate VARCHAR,"
                     + " outof DOUBLE,"
                     + " quickname VARCHAR,"
-                    + " gradingguide VARCHAR,"
                     + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE)");
             conn.createStatement().executeUpdate("CREATE TABLE partaction (paid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " pid INTEGER NOT NULL,"

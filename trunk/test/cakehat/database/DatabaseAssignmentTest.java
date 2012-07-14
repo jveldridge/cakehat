@@ -77,7 +77,6 @@ public class DatabaseAssignmentTest {
             assertEquals(t1.getGmlTemplate(), t2.getGmlTemplate());
             assertEquals(t1.getOutOf(), t2.getOutOf());
             assertEquals(t1.getQuickName(), t2.getQuickName());
-            assertEquals(t1.getGradingGuide(), t2.getGradingGuide());
             DatabaseTestHelpers.assertSetsEqual(INCLUSION_FILTER_EQC, t1.getInclusionFilters(), t2.getInclusionFilters());
             DatabaseTestHelpers.assertSetsEqual(PART_ACTION_EQC, t1.getActions(), t2.getActions());
         }

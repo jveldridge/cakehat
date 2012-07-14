@@ -21,11 +21,13 @@ import support.utils.FileExtensionFilter;
  */
 class ApplicationActions implements ActionProvider
 {
+    @Override
     public String getNamespace()
     {
         return "applications";
     }
 
+    @Override
     public Set<? extends PartActionDescription> getActionDescriptions()
     {
         return ImmutableSet.of(new PDFViewer(), new TextEditor(), new Terminal());
@@ -54,6 +56,7 @@ class ApplicationActions implements ActionProvider
             super(ApplicationActions.this, "pdf-viewer");
         }
 
+        @Override
         public String getDescription()
         {
             return "Opens all pdf files that belong to this part in a PDF viewer. By default the PDF viewer is " +
@@ -61,26 +64,31 @@ class ApplicationActions implements ActionProvider
                     APPLICATION_PROPERTY.getName() + " property.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(APPLICATION_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.OPEN);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.OPEN, ActionType.RUN, ActionType.TEST);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
                     String application = DEFAULT;
 
@@ -91,15 +99,16 @@ class ApplicationActions implements ActionProvider
 
                         if(!SUPPORTED.contains(application))
                         {
-                            ModalDialog.showMessage(null, "Invalid PDF application",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Invalid PDF application",
                                     "The PDF application specified in the configuration file is not supported: " +
                                     application + ".\n\n" +
                                     "Supported applications: " + SUPPORTED);
-                            return;
+                            
+                            return ActionResult.NO_CHANGES;
                         }
                     }
 
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
                     FileFilter pdfFilter = new FileExtensionFilter("pdf");
 
                     List<File> pdfFiles;
@@ -115,8 +124,10 @@ class ApplicationActions implements ActionProvider
 
                     if(pdfFiles.isEmpty())
                     {
-                        ModalDialog.showMessage(null, "No PDF files", "There are no PDF files to open.");
-                        return;
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "No PDF files",
+                                "There are no PDF files to open.");
+                            
+                        return ActionResult.NO_CHANGES;
                     }
 
                     //Build commands
@@ -152,6 +163,8 @@ class ApplicationActions implements ActionProvider
                         throw new ActionException("Unable to open PDF viewer: " + application + " for " +
                                 group.getName() + "'s handin.", e);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -197,32 +210,38 @@ class ApplicationActions implements ActionProvider
             super(ApplicationActions.this, "text-editor");
         }
 
+        @Override
         public String getDescription()
         {
             return "Opens plain text files in a text editor. This text editor may be specified by the " +
                    APPLICATION_PROPERTY.getName() + " property. By default, " + DEFAULT + " is used.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(APPLICATION_PROPERTY, ENV_PROPERTY, EXTENSIONS_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.OPEN);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.OPEN, ActionType.RUN, ActionType.TEST);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
                     String application = null;
 
@@ -247,11 +266,12 @@ class ApplicationActions implements ActionProvider
 
                         if(!SUPPORTED.contains(application))
                         {
-                            ModalDialog.showMessage(null, "Invalid PDF application",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Invalid PDF application",
                                     "The text editor specified in the configuration file is not supported: " + 
                                     application + ".\n\n" +
                                     "Supported applications: " + SUPPORTED);
-                            return;
+                            
+                            return ActionResult.NO_CHANGES;
                         }
                     }
 
@@ -261,7 +281,7 @@ class ApplicationActions implements ActionProvider
                     }
 
                     //Get files to open
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
 
                     FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
 
@@ -278,11 +298,11 @@ class ApplicationActions implements ActionProvider
 
                     if(textFiles.isEmpty())
                     {
-                        ModalDialog.showMessage(null, "No text files",
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "No text files",
                                 "There are no text files to open.\n\n" +
                                 "Extensions to open are: " + properties.get(EXTENSIONS_PROPERTY));
 
-                        return;
+                        return ActionResult.NO_CHANGES;
                     }
 
                     //Build run command
@@ -321,6 +341,8 @@ class ApplicationActions implements ActionProvider
                                 "'s handin.", e);
                         }
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -335,33 +357,39 @@ class ApplicationActions implements ActionProvider
             super(ApplicationActions.this, "terminal");
         }
 
+        @Override
         public String getDescription()
         {
             return "Opens a terminal that is in the root directory of the unarchived handin.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of();
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.RUN, ActionType.OPEN);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST);
+            return true;
         }
 
+        @Override
         public PartAction getAction(Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
 
                     String terminalName = group.getName() + "'s " + part.getFullDisplayName();
                     try
@@ -373,6 +401,8 @@ class ApplicationActions implements ActionProvider
                     {
                         throw new ActionException("Unable to open terminal for " + group.getName(), e);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 

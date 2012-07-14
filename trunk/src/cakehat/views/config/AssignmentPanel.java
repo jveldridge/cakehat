@@ -1639,7 +1639,7 @@ class AssignmentPanel extends JPanel
         private final DbPart _part;
         
         private final JButton _upButton, _downButton;
-        private final ValidatingTextField _nameField, _gradingGuideField, _gmlField, _outOfField, _quickNameField;
+        private final ValidatingTextField _nameField, _gmlField, _outOfField, _quickNameField;
         
         private final JPanel _partActionsPanel;
         
@@ -1844,68 +1844,6 @@ class AssignmentPanel extends JPanel
                 }
             };            
             headlinePanel.add(_nameField, BorderLayout.CENTER);
-            
-            contentPanel.add(Box.createVerticalStrut(10));
-            
-            JLabel gradingGuideLabel = FormattedLabel.asSubheader("Grading Guide");
-            gradingGuideLabel.setToolTipText("A plain text file viewable by TAs to assist in grading a Part");
-            contentPanel.add(gradingGuideLabel);
-            
-            _gradingGuideField = new ValidatingTextField()
-            {
-                @Override
-                protected String getDbValue()
-                {
-                    return _part.getGradingGuide() == null ? "" : _part.getGradingGuide().getAbsolutePath();
-                }
-
-                @Override
-                protected ValidationResult validate(String value)
-                {
-                    ValidationResult result = ValidationResult.NO_ISSUE;
-                    if(!value.isEmpty())
-                    {
-                        File file = new File(value);
-                        
-                        if(!file.exists())
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified path does not exist");
-                        }
-                        else if(!file.isFile())
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified path is not a file");
-                        }
-                        else if(!file.canRead())
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified file cannot be read");
-                        }
-                        else if(!value.endsWith(".txt"))
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified file does not end in " +
-                                    ".txt, only plain text files are supported");
-                        }
-                    }
-                    
-                    return result;
-                }
-
-                @Override
-                protected void applyChange(String newValue)
-                {
-                    if(newValue.isEmpty())
-                    {
-                        _part.setGradingGuide(null);
-                    }
-                    else
-                    {
-                        _part.setGradingGuide(new File(newValue));
-                    }
-                    _worker.submit(WORKER_TAG, new PartRunnable());
-                }
-            };
-            _gradingGuideField.setAlignmentX(LEFT_ALIGNMENT);
-            _gradingGuideField.setMaximumSize(new Dimension(Short.MAX_VALUE, 25));
-            contentPanel.add(_gradingGuideField);
             
             contentPanel.add(Box.createVerticalStrut(10));
             
@@ -2154,7 +2092,7 @@ class AssignmentPanel extends JPanel
             
             for(ActionType type : ActionType.values())
             {
-                if(type.requiresDigitalHandin() && !hasDirectory)
+                if((type.requiresDigitalHandin() && !hasDirectory) || !type.isUserConfigurable())
                 {
                     continue;
                 }
@@ -2230,8 +2168,7 @@ class AssignmentPanel extends JPanel
                 
                 this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
                 
-                String name = _type.name().charAt(0) + _type.name().substring(1, _type.name().length()).toLowerCase();
-                this.add(FormattedLabel.asSubheader(name));
+                this.add(FormattedLabel.asSubheader(_type.getUserFriendlyName()));
                 
                 //Text pane to display description info
                 final JLabel descriptionLabel = FormattedLabel.asContent("No action will be taken");
@@ -2242,11 +2179,19 @@ class AssignmentPanel extends JPanel
                 List<PartActionDescription> compatibleNotSuggestedDescriptions = new ArrayList<PartActionDescription>();
                 for(PartActionDescription desc : ActionRepository.get().getActionDescriptions().values())
                 {
+                    //If this type is one suggested by the description for the part action
                     if(desc.getSuggestedTypes().contains(_type))
                     {
                         suggestedDescriptions.add(desc);
                     }
-                    else if(desc.getCompatibleTypes().contains(_type))
+                    //Else if this type requires a digital handin, then all other part actions are compatible
+                    else if(_type.requiresDigitalHandin())
+                    {
+                        compatibleNotSuggestedDescriptions.add(desc);
+                    }
+                    //Else if this type does not require a digital handin, then only part actions which do not require
+                    //a digital handin are compatible
+                    else if(!_type.requiresDigitalHandin() && !desc.requiresDigitalHandin())
                     {
                         compatibleNotSuggestedDescriptions.add(desc);
                     }

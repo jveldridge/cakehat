@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -27,7 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import support.ui.DocumentAdapter;
 import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
 import support.ui.ShadowJTextField;
@@ -46,10 +47,12 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  */
 public class PythonActions implements ActionProvider {
     
+    @Override
     public String getNamespace() {
         return "python";
     }
 
+    @Override
     public Set<? extends PartActionDescription> getActionDescriptions() {
         return ImmutableSet.of(new CopyTest(), new RunFile());
     }
@@ -73,28 +76,35 @@ public class PythonActions implements ActionProvider {
             super(PythonActions.this, "run-file");
         }
 
+        @Override
         public String getDescription() {
             return "Runs a single Python file with grader provided arguments. The grader will either be allowed to " +
                    "select which Python file to run from a list of all Python files that are part of this part or the " +
                    "grader will only be able to run the Python file specified by " + FILE_PATH_PROPERTY.getName() + ".";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties() {
             return ImmutableSet.of(FILE_PATH_PROPERTY, EXTENSIONS_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes() {
             return ImmutableSet.of(ActionType.RUN);
         }
-
-        public Set<ActionType> getCompatibleTypes() {
-            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
+        
+        @Override
+        public boolean requiresDigitalHandin() {
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties) {
-            PartAction action = new StandardPartAction() {
-                public void performAction(Part part, Group group) throws ActionException {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+            PartAction action = new SingleGroupPartAction() {
+                
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException {
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
                     String terminalName = group.getName() + "'s " + part.getFullDisplayName();
                     
                     //If a specific set of file extentions was specified, retrieve the Python files with those 
@@ -117,7 +127,7 @@ public class PythonActions implements ActionProvider {
                         File absolutePath = new File(unarchiveDir, relativePath);
 
                         if(!absolutePath.exists()) {
-                            ModalDialog.showMessage(null, "Specified File Unavailable",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Specified File Unavailable",
                                     "Specified file to run does not exist.\n\n" +
                                     "Expected file: " + absolutePath.getAbsolutePath() + "\n\n" +
                                     "You will be asked to select from available Python files.");
@@ -146,14 +156,18 @@ public class PythonActions implements ActionProvider {
                     }
 
                     if(pythonFiles.isEmpty()) {
-                        ModalDialog.showMessage(null, "Unable to run", "There are no Python files for this part.");
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "Unable to run",
+                                "There are no Python files for this part.");
                     }
                     else {
-                        RunPythonFilesDialog dialog = new RunPythonFilesDialog(pythonFiles, unarchiveDir);
+                        RunPythonFilesDialog dialog = new RunPythonFilesDialog(context.getGraphicalOwner(),
+                                pythonFiles, unarchiveDir);
                         if (dialog.shouldRun()) {
                             runPythonFile(terminalName, dialog.getPythonFile(), dialog.getRunArgs());
                         }
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -179,31 +193,37 @@ public class PythonActions implements ActionProvider {
             super(PythonActions.this, "copy-test");
         }
 
+        @Override
         public String getDescription() {
             return "Copies the specified file or contents of the directory into the root of the unarchived handin. " +
                    "Then runs the specified Python file. Once the copy occurs, it remains, and therefore any " +
                    "other actions may interact with the copied files.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties() {
             return ImmutableSet.of(COPY_PATH_PROPERTY, TEST_FILE_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes() {
             return ImmutableSet.of(ActionType.TEST);
         }
-
-        public Set<ActionType> getCompatibleTypes() {
-            return ImmutableSet.of(ActionType.TEST, ActionType.OPEN, ActionType.RUN);
+        
+        @Override
+        public boolean requiresDigitalHandin() {
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties) {
-            PartAction action = new StandardPartAction() {
+            PartAction action = new SingleGroupPartAction() {
                 //Keeps track of the groups that have already had the files copied
                 private HashSet<Group> _testedGroups = new HashSet<Group>();
 
-                public void performAction(Part part, Group group) throws ActionException {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException {
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
                     String terminalName = group.getName() + "'s " + part.getFullDisplayName();
                     
                     //Copy if necessary
@@ -212,35 +232,35 @@ public class PythonActions implements ActionProvider {
 
                         //Validate
                         if(!source.exists()) {
-                            ModalDialog.showMessage(null, "Does not exist",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
-                            return;
+                            return ActionResult.NO_CHANGES;
                         }
 
                         if(source.isDirectory()) {
                             String relativePath = properties.get(TEST_FILE_PROPERTY);
 
                             if(relativePath == null) {
-                                ModalDialog.showMessage(null, "Property not set",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Property not set",
                                         "Cannot perform test because the " + TEST_FILE_PROPERTY.getName() +
                                         " property was not set. It must be set when copying test files from a " +
                                         "directory.");
-                                return;
+                                return ActionResult.NO_CHANGES;
                             }
 
                             File testFile = new File(source, relativePath);
                             if(!testFile.exists()) {
-                                ModalDialog.showMessage(null, "Test file does not exist",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file does not exist",
                                         "Cannot perform test because the test file does not exist.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
-                                return;
+                                return ActionResult.NO_CHANGES;
                             }
                             if(!testFile.isFile()) {
-                                ModalDialog.showMessage(null, "Test file not a file",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file not a file",
                                         "Cannot perform test because the test file is not a file.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
-                                return;
+                                return ActionResult.NO_CHANGES;
                             }
                         }
 
@@ -264,12 +284,12 @@ public class PythonActions implements ActionProvider {
                             FileExistsException existsException =
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null) {
-                                ModalDialog.showMessage(null, "Cannot copy test file",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in "+
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
                                     "Handin File: " + existsException.getDestinationFile().getAbsolutePath());
-                                return;
+                                return ActionResult.NO_CHANGES;
                             }
 
                             throw new ActionException("Unable to perform copy necessary for testing.", e);
@@ -288,6 +308,8 @@ public class PythonActions implements ActionProvider {
                         
                     //Run test file
                     runPythonFile(terminalName, testFile, null);
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -327,9 +349,9 @@ public class PythonActions implements ActionProvider {
         private static final int TOTAL_WIDTH = 450;
         private static final int TOTAL_HEIGHT = 30*6+2*PADDING;
         
-        public RunPythonFilesDialog(List<File> pythonFiles, File containingDir) {
-            super();
-            this.setTitle("Run Options");
+        public RunPythonFilesDialog(Window owner, List<File> pythonFiles, File containingDir) {
+            super(owner, "Run Options");
+            
             this.getContentPane().setLayout(new BorderLayout(0, 0));
             this.getContentPane().setPreferredSize(new Dimension(TOTAL_WIDTH, TOTAL_HEIGHT));
             
@@ -426,10 +448,11 @@ public class PythonActions implements ActionProvider {
                 }
             };
             
-            _argsField.getDocument().addDocumentListener(new DocumentListener() {
-                public void insertUpdate(DocumentEvent de) { validateInput.run(); }
-                public void removeUpdate(DocumentEvent de) { validateInput.run(); }
-                public void changedUpdate(DocumentEvent de) { validateInput.run(); }
+            _argsField.getDocument().addDocumentListener(new DocumentAdapter() {
+                @Override
+                public void modificationOccurred(DocumentEvent de) {
+                    validateInput.run();
+                }
             });
             validateInput.run();
             

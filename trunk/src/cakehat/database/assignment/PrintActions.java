@@ -10,9 +10,6 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +22,13 @@ import java.util.Set;
  */
 class PrintActions implements ActionProvider
 {
+    @Override
     public String getNamespace()
     {
         return "printing";
     }
 
+    @Override
     public Set<? extends PartActionDescription> getActionDescriptions()
     {
         return ImmutableSet.of(new Landscape());
@@ -50,36 +49,38 @@ class PrintActions implements ActionProvider
             super(PrintActions.this, "landscape");
         }
 
+        @Override
         public String getDescription()
         {
             return "Prints plain text files in a space-saving landscape orientation with two columns.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(EXTENSIONS_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.PRINT);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.PRINT, ActionType.RUN, ActionType.TEST, ActionType.OPEN);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new PartAction()
+            PartAction action = new MultiGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
-                {
-                    performAction(part, Arrays.asList(new Group[] { group }));
-                }
-
-                public void performAction(Part part, Collection<Group> groups) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Set<Group> groups)
+                        throws ActionException
                 {
                     CITPrinter printer = Allocator.getGradingServices().getPrinter();
                     
@@ -90,9 +91,10 @@ class PrintActions implements ActionProvider
 
                         for(Group group : groups)
                         {
-                            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                            File unarchiveDir = context.getUnarchiveHandinDir(group);
 
-                            FileFilter extensionsFilter = ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
+                            FileFilter extensionsFilter =
+                                    ActionUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
 
                             List<File> filesToPrint;
                             try
@@ -136,6 +138,8 @@ class PrintActions implements ActionProvider
                             throw new ActionException("Unable to issue print command", e);
                         }
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
