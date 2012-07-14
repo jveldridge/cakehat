@@ -9,6 +9,7 @@ import cakehat.database.DbInclusionFilter.FilterType;
 import cakehat.database.DbPart;
 import cakehat.database.DbPartAction;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,7 +65,7 @@ public class AssignmentsBuilder
         Collections.sort(sortedDbGradableEvents);
         for(DbGradableEvent dbGradableEvent : sortedDbGradableEvents)
         {
-            List<Part> parts = buildParts(dbGradableEvent.getParts());
+            List<Part> parts = buildParts(dbGradableEvent.getParts(), dbGradableEvent.getDirectory() != null);
             
             GradableEvent gradableEvent = new GradableEvent(
                     dbGradableEvent.getId(),
@@ -83,7 +84,7 @@ public class AssignmentsBuilder
         return gradableEventsBuilder.build();
     }
     
-    private ImmutableList<Part> buildParts(Set<DbPart> dbParts)
+    private ImmutableList<Part> buildParts(Set<DbPart> dbParts, boolean hasDigitalHandinDirectory)
     {
         ImmutableList.Builder<Part> partsBuilder = ImmutableList.builder();
         
@@ -98,13 +99,8 @@ public class AssignmentsBuilder
                     dbPart.getOutOf(),
                     dbPart.getGmlTemplate(),
                     dbPart.getQuickName(),
-                    dbPart.getGradingGuide(),
                     buildFilterProvider(dbPart.getInclusionFilters()),
-                    buildPartAction(ActionType.RUN, dbPart.getAction(ActionType.RUN)),
-                    buildPartAction(ActionType.DEMO, dbPart.getAction(ActionType.DEMO)),
-                    buildPartAction(ActionType.TEST, dbPart.getAction(ActionType.TEST)),
-                    buildPartAction(ActionType.OPEN, dbPart.getAction(ActionType.OPEN)),
-                    buildPartAction(ActionType.PRINT, dbPart.getAction(ActionType.PRINT)));
+                    buildPartActions(dbPart, hasDigitalHandinDirectory));
             partsBuilder.add(part);
         }
         
@@ -138,20 +134,37 @@ public class AssignmentsBuilder
         return provider;
     }
     
-    private PartAction buildPartAction(PartActionDescription.ActionType type, DbPartAction dbPartAction)
+    private Map<ActionType, PartAction> buildPartActions(DbPart dbPart, boolean hasDigitalHandinDirectory)
     {
-        PartAction action = null;
-        if(dbPartAction != null)
+        ImmutableMap.Builder<ActionType, PartAction> actionsBuilder = ImmutableMap.builder();
+        
+        for(ActionType type : ActionType.values())
         {
-            Map<String, String> properties = new HashMap<String, String>();
-            for(DbActionProperty property : dbPartAction.getActionProperties())
+            //README is treated specially
+            if(type == ActionType.README)
             {
-                properties.put(property.getKey(), property.getValue());
+                if(hasDigitalHandinDirectory)
+                {
+                    actionsBuilder.put(ActionType.README, new ReadmeAction());
+                }
             }
-            
-            action = ActionRepository.get().getAction(type, dbPartAction.getName(), properties);
+            else
+            {
+                DbPartAction dbPartAction = dbPart.getAction(type);
+                if(dbPartAction != null)
+                {
+                    Map<String, String> properties = new HashMap<String, String>();
+                    for(DbActionProperty property : dbPartAction.getActionProperties())
+                    {
+                        properties.put(property.getKey(), property.getValue());
+                    }
+
+                    PartAction action = ActionRepository.get().getAction(type, dbPartAction.getName(), properties);
+                    actionsBuilder.put(type, action);
+                }
+            }
         }
         
-        return action;
+        return actionsBuilder.build();
     }
 }

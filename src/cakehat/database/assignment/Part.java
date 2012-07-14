@@ -4,22 +4,25 @@ import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;
 import support.utils.OrFileFilter;
 import cakehat.database.Group;
+import cakehat.database.assignment.PartActionDescription.ActionType;
 import cakehat.gml.GMLParser;
 import cakehat.gml.GradingSheetException;
 import cakehat.gml.InMemoryGML;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.TextViewerView;
+import com.google.common.collect.ImmutableMap;
 import java.awt.Window;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import support.ui.ModalDialog;
@@ -32,11 +35,12 @@ import support.ui.ModalDialog;
  * to an assigned problem. How a course chooses to divide a {@link GradableEvent} into {@code Part}s is entirely up to
  * them. In many cases a {@link GradableEvent} will only have one {@code Part}.
  * <br/><br/>
- * When a {@code Part} belongs to a {@code GradableEvent} that specifies a digital handin directory then a {@code Part}
- * may specify run, test, open, and print actions which operate on a {@link Group}'s digital handin. A {@code Part} may
- * always specify a demo action and grading guide. Either a GML template or an amount of points this part of may be
- * specified, but not both. If a number of points is specified then a quick name may be specified which allows a TA to
- * enter a grade for a part for a given group using a command line interface.
+ * A {@code Part} contains a map of {@link PartAction}s that represent the course's chosen implementation for each
+ * {@link ActionType}.
+ * <br/><br/>
+ * Either a GML template or an amount of points this part is out of may be specified, but not both. If a number of
+ * points is specified then a quick name may be specified which allows a TA to enter a grade for a part for a given
+ * group using a command line interface.
  *
  * @author jak2
  */
@@ -57,15 +61,9 @@ public class Part implements Comparable<Part>
     private final File _gmlTemplate;
     private final String _quickName;
     
-    private final File _gradingGuide;
-    
     private final FilterProvider _filterProvider;
 
-    private final PartAction _runAction;
-    private final PartAction _demoAction;
-    private final PartAction _testAction;
-    private final PartAction _openAction;
-    private final PartAction _printAction;
+    private final Map<ActionType, PartAction> _actions;
     
      /**
      * This value will be set after construction because the gradable event object will not be constructed until after
@@ -75,25 +73,9 @@ public class Part implements Comparable<Part>
     private volatile GradableEvent _gradableEvent;
     
     /**
-     * Only groups that have had their digital handins unarchived are included.
-     * <br/>
-     * <strong>Key</strong>: Group
-     * <br/>
-     * <strong>Value</strong>: a description of the files and directories that are supposed to exist for this part, but
-     * do not.
+     * Groups that have had their digital handins unarchived.
      */
-    private final Map<Group, String> _unarchivedGroups = new HashMap<Group, String>();
-
-    /**
-     * Keeps track of which groups have readmes so this only needs to be determined once. If a group is not in the map
-     * then it has not yet been determined if the group has a readme or not.
-     */
-    private final Map<Group, Boolean> _groupsWithReadme = new HashMap<Group, Boolean>();
-
-    /**
-     * Keeps track of the files that are readmes for each group.
-     */
-    private final Map<Group, Collection<File>> _readmes = new HashMap<Group, Collection<File>>();
+    private final Set<Group> _unarchivedGroups = new HashSet<Group>();
     
     /**
      * Constructs a Part.
@@ -105,13 +87,8 @@ public class Part implements Comparable<Part>
      * @param outOf must be {@code null} if {@code gmlTemplate} is not {@code null}, otherwise may not be {@code null}
      * @param gmlTemplate must be {@code null} if {@code outOf} is not {@code null}, otherwise must not be {@code null}
      * @param quickName must be {@code null} if {@code gmlTemplate} is not {@code null}
-     * @param gradingGuide may be {@code null}, does not have to point to a valid file location
      * @param filterProvider may be {@code null}
-     * @param runAction may be {@code null}
-     * @param demoAction may be {@code null}
-     * @param testAction may be {@code null}
-     * @param openAction may be {@code null}
-     * @param printAction may be {@code null}
+     * @param actions mapping from {@link ActionType} to {@link PartAction}, may be {@code null}
      */
     Part(int id,
          String name,
@@ -119,13 +96,8 @@ public class Part implements Comparable<Part>
          Double outOf,
          File gmlTemplate,
          String quickName,
-         File gradingGuide,
          FilterProvider filterProvider,
-         PartAction runAction,
-         PartAction demoAction,
-         PartAction testAction,
-         PartAction openAction,
-         PartAction printAction)
+         Map<ActionType, PartAction> actions)
     {
         //Validation
         if(name == null)
@@ -153,15 +125,9 @@ public class Part implements Comparable<Part>
         _gmlTemplate = gmlTemplate;
         _quickName = quickName;
         
-        _gradingGuide = gradingGuide;
-        
         _filterProvider = (filterProvider == null ? new AlwaysAcceptingFilterProvider() : filterProvider);
         
-        _runAction = runAction;
-        _demoAction = demoAction;
-        _testAction = testAction;
-        _openAction = openAction;
-        _printAction = printAction;
+        _actions = (actions == null ? ImmutableMap.<ActionType, PartAction>of() : actions);
     }
     
     /**
@@ -297,411 +263,6 @@ public class Part implements Comparable<Part>
                this.getGradableEvent().getName() + " - " +
                this.getName();
     }
-    
-    /**
-     * If there is a specified run mode for this part.
-     *
-     * @return
-     */
-    public boolean hasRun()
-    {
-        return (_runAction != null);
-    }
-
-    /**
-     * Invokes the run mode for this part.
-     *
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     */
-    public void run(Group group) throws ActionException, MissingHandinException
-    {
-        if(_runAction == null)
-        {
-            throw this.createActionException("run");
-        }
-
-        this.unarchive(group);
-        _runAction.performAction(this, group);
-    }
-
-    /**
-     * If there is a specified demo mode for this part.
-     *
-     * @return
-     */
-    public boolean hasDemo()
-    {
-        return (_demoAction != null);
-    }
-
-    /**
-     * Invokes the demo mode for this part.
-     *
-     * @throws ActionException
-     *
-     * @param group
-     */
-    public void demo() throws ActionException
-    {
-        if(_demoAction == null)
-        {
-            throw this.createActionException("demo");
-        }
-
-        _demoAction.performAction(this, (Group) null);
-    }
-
-    /**
-     * If there is a specified print mode for this part.
-     *
-     * @return
-     */
-    public boolean hasPrint()
-    {
-        return (_printAction != null);
-    }
-
-    /**
-     * Invokes the print mode for this part.
-     *
-     * @throws ActionException
-     *
-     * @param group
-     */
-    public void print(Collection<Group> groups) throws ActionException
-    {
-        if(_printAction == null)
-        {
-            throw this.createActionException("print");
-        }
-
-        //Unarchive each group's handin, keep track of those with missing handins
-        ArrayList<Group> groupsWithMissingHandins = new ArrayList<Group>();
-        for(Group group : groups)
-        {
-            try
-            {
-                this.unarchive(group);
-            }
-            catch(MissingHandinException e)
-            {
-                groupsWithMissingHandins.add(e.getGroup());
-            }
-        }
-
-        //If some groups have missing handins
-        if(!groupsWithMissingHandins.isEmpty())
-        {
-            String groupsOrStudents = (this.getGradableEvent().getAssignment().hasGroups() ? "groups" : "students");
-
-            String message = "The following " + groupsOrStudents + " are missing handins:";
-            for(Group group : groupsWithMissingHandins)
-            {
-                message += "\n • " + group.getName();
-            }
-            message += "\n\nDo you want to print the " + groupsOrStudents + " with handins?";
-
-            if(ModalDialog.showConfirmation(null, "Missing Handins", message, "Print", "Cancel"))
-            {
-                ArrayList<Group> groupsWithHandins = new ArrayList<Group>(groups);
-                groupsWithHandins.removeAll(groupsWithMissingHandins);
-                _printAction.performAction(this, groupsWithHandins);
-            }
-        }
-        else
-        {
-            _printAction.performAction(this, groups);
-        }
-    }
-
-    /**
-     * Invokes the print mode for this DistributablePart.
-     *
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     */
-    public void print(Group group) throws ActionException, MissingHandinException
-    {
-        if(_printAction == null)
-        {
-            throw this.createActionException("print");
-        }
-
-        this.unarchive(group);
-        _printAction.performAction(this, group);
-    }
-
-    /**
-     * If there is a specified open mode for this part.
-     *
-     * @return
-     */
-    public boolean hasOpen()
-    {
-        return (_openAction != null);
-    }
-
-    /**
-     * Invokes the open mode for this part.
-     * 
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     */
-    public void open(Group group) throws ActionException, MissingHandinException
-    {
-        if(_openAction == null)
-        {
-            throw this.createActionException("open");
-        }
-
-        this.unarchive(group);
-        _openAction.performAction(this, group);
-    }
-
-    /**
-     * If there is a specified test mode for this part.
-     *
-     * @return
-     */
-    public boolean hasTest()
-    {
-        return (_testAction != null);
-    }
-
-    /**
-     * Invokes the test mode for this part.
-     * 
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     */
-    public void test(Group group) throws ActionException, MissingHandinException
-    {
-        if(_testAction == null)
-        {
-            throw this.createActionException("test");
-        }
-
-        this.unarchive(group);
-        _testAction.performAction(this, group);
-    }
-
-    /**
-     * Create an {@link ActionException} for a {@link PartAction} that does not exist.
-     * <br/><br/>
-     * Message will read:
-     * <br/>
-     * No {@code dneAction} action exists for {@code [Assignment Name] - [Gradable Event Name ] - [Part Name]}
-     *
-     * @param dneAction
-     * @return exception
-     */
-    private ActionException createActionException(String dneAction)
-    {
-        return new ActionException("No " + dneAction + " action exists for " + this.getFullDisplayName());
-    }
-
-    /**
-     * Views all readme files in the handin. Hidden files and files that end in ~ will be ignored. Files that have no
-     * file extension or end in txt will be interpreted as text files. Files that end in pdf will be interpreted
-     * as pdf files and will be opened with evince. If a readme of another file extension is found, the grader will be
-     * informed the file cannot be opened by cakehat.
-     *
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     */
-    public void viewReadme(Window owner, Group group) throws ActionException, MissingHandinException
-    {
-        Collection<File> readmes = this.getReadmes(group);
-
-        //For each readme
-        for(File readme : readmes)
-        {
-            String name = readme.getName().toLowerCase();
-
-            //If a text file
-            if(!name.contains(".") || name.endsWith(".txt"))
-            {
-                new TextViewerView(owner, readme, group.getName() +"'s Readme");
-            }
-            //If a PDF
-            else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
-            {
-                try
-                {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(this, group);
-                    Allocator.getExternalProcessesUtilities().executeAsynchronously("evince '" +
-                            readme.getAbsolutePath() + "'", unarchiveDir);
-                }
-                catch(IOException e)
-                {
-                    throw new ActionException("Unable to open readme in evince: " + readme.getAbsolutePath(), e);
-                }
-            }
-            //Otherwise, the type is not supported, inform the grader
-            else
-            {
-                ModalDialog.showMessage(owner, "Cannot open README",
-                        "Encountered README that cannot be opened by cakehat:\n" + readme.getAbsolutePath());
-            }
-        }
-    }
-
-    /**
-     * Returns files that begin with "readme" (case insensitive), do not end with ~, and are not hidden.
-     *
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     * @return
-     */
-    private Collection<File> getReadmes(Group group) throws ActionException, MissingHandinException
-    {
-        if(!_readmes.containsKey(group))
-        {
-            this.unarchive(group);
-
-            //Get all of the readmes
-            FileFilter filter = new FileFilter()
-            {
-                public boolean accept(File file)
-                {
-                    boolean accept = !file.isHidden() &&
-                            file.getName().toUpperCase().startsWith("README") &&
-                            !file.getName().endsWith("~");
-
-                    return accept;
-                }
-            };
-
-            try
-            {
-                Collection<File> readmes = Allocator.getFileSystemUtilities()
-                    .getFiles(Allocator.getPathServices().getUnarchiveHandinDir(this, group), filter);
-                _readmes.put(group, readmes);
-            }
-            catch(IOException e)
-            {
-                throw new ActionException("Unable to access READMEs", e);
-            }
-        }
-
-        return _readmes.get(group);
-    }
-
-    /**
-     * Determines if a readme exists for the group without unarchiving the handin.
-     *
-     * @throws ActionException
-     * @throws MissingHandinException
-     *
-     * @param group
-     * @return
-     */
-    public boolean hasReadme(Group group) throws ActionException, MissingHandinException, ArchiveException
-    {
-        if(!_groupsWithReadme.containsKey(group))
-        {
-            boolean hasReadme = false;
-
-            File handin;
-            try
-            {
-                handin = _gradableEvent.getDigitalHandin(group);
-            }
-            catch(IOException e)
-            {
-                throw new ActionException(e);
-            }
-
-            //Because the handins are cached, check it still exists
-            if(handin == null || !handin.exists())
-            {
-                throw new MissingHandinException(group, this);
-            }
-            else
-            {
-                //Get contents of archive
-                Collection<ArchiveEntry> contents;
-                try
-                {
-                    contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
-
-                    //For each entry (file and directory) in the handin
-                    for(ArchiveEntry entry : contents)
-                    {
-                        String path = entry.getName();
-
-                        //Extract the file name
-                        String filename = path.substring(path.lastIndexOf("/")+1);
-
-                        //See if the file name begins with README, regardless of case and doesn't end with ~
-                        if(!entry.isDirectory() &&
-                           filename.toUpperCase().startsWith("README") &&
-                           !filename.endsWith("~"))
-                        {
-                            hasReadme = true;
-                            break;
-                        }
-                    }
-                }
-                catch (ArchiveException e)
-                {
-                    throw new ActionException("Cannot determine if a readme " +
-                            "exists; unable to get archive contents.", e);
-                }
-            }
-
-            _groupsWithReadme.put(group, hasReadme);
-        }
-
-        return _groupsWithReadme.get(group);
-    }
-
-    /**
-     * If there is a grading guide specified for this Part. The specified grading guide does not necessarily exist.
-     *
-     * @return
-     */
-    public boolean hasGradingGuide()
-    {
-        return _gradingGuide != null;
-    }
-
-    /**
-     * Displays to the grader the grading guide for this DistributablePart.
-     *
-     * @throws FileNotFoundException if no grading guide was specified or the specified file does not exist
-     */
-    public void viewGradingGuide(Window owner) throws FileNotFoundException
-    {
-        if(_gradingGuide == null)
-        {
-            throw new FileNotFoundException("No grading guide file specified for " + this.getFullDisplayName());
-        }
-        
-        if(_gradingGuide.exists() && _gradingGuide.canRead())
-        {
-            new TextViewerView(owner, _gradingGuide, this.getFullDisplayName() + " Grading Guide");
-        }
-        else
-        {
-            ModalDialog.showMessage(owner, "Cannot Open", "Specified grading guide for " +
-                    this.getFullDisplayName() + " does not exist or you do not have permission to read the file.\n" +
-                    "Specified file: " + _gradingGuide.getAbsolutePath());
-        }
-    }
 
     /**
      * If a GML template was specified for this part. Just because a GML template was specified does not mean the
@@ -723,80 +284,204 @@ public class Part implements Comparable<Part>
     {
         return _gmlTemplate;
     }
+    
+    /**
+     * Whether the action for this part that is specified for {@code type} is supported for the specified
+     * {@code groups}.
+     * 
+     * @param type
+     * @param groups
+     * @return
+     * @throws ActionException 
+     */
+    public boolean isActionSupported(ActionType type, Set<Group> groups) throws ActionException
+    {
+        boolean supported = false;
+        PartAction action = _actions.get(type);
+        if(action != null)
+        {
+            Set<Group> groupsWithHandins = new HashSet<Group>();
+            for(Group group : groups)
+            {
+                try
+                {
+                    if(_gradableEvent.hasDigitalHandin(group))
+                    {
+                        groupsWithHandins.add(group);
+                    }
+                }
+                catch(IOException e)
+                {
+                    throw new ActionException("Unable to determine if a digital handin exists\n" +
+                            "Part: " + this.getFullDisplayName() + "\n" +
+                            "Group: " + group, e);
+                }
+            }
+            
+            supported = action.isActionSupported(this, groupsWithHandins);
+        }
+        
+        return supported;
+    }
+    
+    /**
+     * Performs the action associated with {@code type} for this part. An action should not be performed if
+     * {@link #isActionSupported(ActionType, Set<Group>)} returns {@code false}.
+     * 
+     * @param graphicalOwner
+     * @param type
+     * @param groups
+     * @throws ActionException 
+     */
+    public void performAction(Window graphicalOwner, ActionType type, Set<Group> groups) throws ActionException
+    {
+        PartAction action = _actions.get(type);
+        if(action == null)
+        {
+            throw new IllegalArgumentException(this.getFullDisplayName() + " has no action for type " + type);
+        }
+        
+        boolean proceed = true;
+        Set<Group> performActionGroups = groups;
+        
+        //Unarchive each group's handin, keep track of those with missing handins
+        if(type.requiresDigitalHandin())
+        {
+            Set<Group> groupsWithMissingHandins = new HashSet<Group>();
+            for(Group group : groups)
+            {
+                try
+                {
+                    if(!_gradableEvent.hasDigitalHandin(group))
+                    {
+                        groupsWithMissingHandins.add(group);
+                    }
+                    else
+                    {
+                        this.unarchive(graphicalOwner, group);
+                    }
+                }
+                catch(IOException e)
+                {
+                    throw new ActionException("Unable to determine if a digital handin exists\n" +
+                            "Part: " + this.getFullDisplayName() + "\n" +
+                         "Group: " + group, e);
+                }
+            }
+            
+            if(!groupsWithMissingHandins.isEmpty())
+            {
+                proceed = resolveMissingHandins(graphicalOwner, this, groupsWithMissingHandins);
+                if(proceed)
+                {   
+                    performActionGroups = new HashSet<Group>();
+                    performActionGroups.addAll(groups);
+                    performActionGroups.removeAll(groupsWithMissingHandins);
+                }
+            }
+        }
+        
+        if(proceed)
+        {
+            //Check the action is supported before running it
+            if(!action.isActionSupported(this, performActionGroups))
+            {
+                throw new IllegalArgumentException(this.getFullDisplayName() + " does not support action of type " +
+                        type + " for groups " + performActionGroups);
+            }
+            
+            action.performAction(new ActionContext(this, graphicalOwner), this, performActionGroups);
+        }
+        
+    }
+    
+    private boolean resolveMissingHandins(Window owner, Part part, Set<Group> groupsWithMissingHandins)
+    {
+        String groupsOrStudents = (part.getGradableEvent().getAssignment().hasGroups() ? "groups" : "students");
+
+        String message = "The following " + groupsOrStudents + " are missing handins:";
+        List<Group> sortedGroupsWithMissingHandins = new ArrayList<Group>(groupsWithMissingHandins);
+        Collections.sort(sortedGroupsWithMissingHandins);
+        for(Group group : sortedGroupsWithMissingHandins)
+        {
+            message += "\n • " + group.getName();
+        }
+        message += "\n\nDo you want to proceed for the " + groupsOrStudents + " with handins?";
+
+        return ModalDialog.showConfirmation(owner, "Missing Handins", message, "Proceed", "Cancel");
+    }
 
     /**
      * Unarchives a group's most recent digital handin for the gradable event this part belongs to.
      *
      * @throws ActionException
-     * @throws MissingHandinException
      *
      * @param group
+     * @param owner the graphical owner of any dialogs shown while unarchiving
      */
-    private void unarchive(Group group) throws ActionException, MissingHandinException
+    private void unarchive(Window owner, Group group) throws ActionException
     {
-        if(!_unarchivedGroups.containsKey(group))
+        if(!_unarchivedGroups.contains(group))
         {
-            //Create an empty folder for grading compiled student code
             try
             {
+                //Create an empty folder for the unarchived handin
                 File groupDir = Allocator.getPathServices().getUnarchiveHandinDir(this, group);
                 Allocator.getFileSystemServices().makeDirectory(groupDir);
 
-                //Determine if all of the files and directories that are expected are present
-                File handin;
                 try
                 {
-                    handin = _gradableEvent.getDigitalHandin(group);
-                }
-                catch(IOException e)
-                {
-                    throw new ActionException(e);
-                }
-
-                //Because the handins are cached, check it still exists
-                if(handin == null || !handin.exists())
-                {
-                    throw new MissingHandinException(group, this);
-                }
-
-                try
-                {
+                    //Access the digital handin
+                    File handin;
+                    try
+                    {
+                        handin = _gradableEvent.getDigitalHandin(group);
+                        
+                        if(handin == null || !handin.exists())
+                        {
+                            throw new ActionException("Expected to be able to access digital handin\n" +
+                                    "Group: " + group + "\n" +
+                                    "Part: " + this.getFullDisplayName());
+                        }
+                    }
+                    catch(IOException e)
+                    {
+                        throw new ActionException("Unable to access digital handin\n" +
+                                "Group: " + group + "\n" +
+                                "Part: " + this.getFullDisplayName(), e);
+                    }
+                    
                     //Determine if all of files and directories that belong to this part are present in the archive
                     Collection<ArchiveEntry> contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
                     StringBuilder builder = new StringBuilder();
 
                     //Build a filter that only accepts files belonging to this part and readmes
-                    //If not all required files are present, then accept all
                     FileFilter filter;
                     if(_filterProvider.areFilteredFilesPresent(contents, builder))
                     {
-                        FileFilter inclusionFilter = _filterProvider.getFileFilter(groupDir);
-                        FileFilter readmeFilter = new FileFilter()
-                        {
-                            public boolean accept(File file)
-                            {
-                                return file.isFile() &&
-                                       file.getName().toUpperCase().startsWith("README") &&
-                                       !file.getName().endsWith("~");
-                            }
-                        };
-
-                        filter = new OrFileFilter(inclusionFilter, readmeFilter);
+                        filter = new OrFileFilter(_filterProvider.getFileFilter(groupDir), ReadmeAction.README_FILTER);
                     }
+                    //If not all required files are present, then accept all and notify user
                     else
                     {
                         filter = new AlwaysAcceptingFileFilter();
+                        
+                        //Show a message to the user that not all expected filers/directories were present
+                        String msg = "Not all files and/or directories this part expected were found in the digital " +
+                                "handin. All files and directories will now be included for this part so that you " +
+                                "can find files that may be misnamed or placed in the wrong directory.\n\n" +
+                                "The missing files and/or directories are:\n" + builder.toString();
+                        ModalDialog.showMessage(owner, group + "'s Digital Handin - Missing Expected Contents", msg);
                     }
 
                     //Extract
                     Allocator.getArchiveUtilities().extractArchive(handin, groupDir, filter);
 
-                    _unarchivedGroups.put(group, builder.toString());
+                    _unarchivedGroups.add(group);
                 }
                 catch (ArchiveException e)
                 {
-                    throw new ActionException("Unable to extract handin for group: " +
-                            group.getName(), e);
+                    throw new ActionException("Unable to extract handin for group: " + group.getName(), e);
                 }
             }
             catch(ServicesException e)
@@ -804,16 +489,6 @@ public class Part implements Comparable<Part>
                 throw new ActionException("Unable to create directory to unarchive the handin for group: " +
                         group.getName(), e);
             }
-        }
-
-        String failureReasons = _unarchivedGroups.get(group);
-        if(!failureReasons.isEmpty())
-        {
-            String msg = "Not all files and/or directories this part expected were found in the digital handin. All " +
-                         "files and directories will now be included for this part so that you can find files that " +
-                         "may be misnamed or placed in the wrong directory.\n\n" +
-                         "The missing files and/or directories are:\n" + failureReasons;
-            ModalDialog.showMessage(null, "Not Found", msg);
         }
     }
     

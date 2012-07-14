@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -43,7 +44,6 @@ import javax.tools.ToolProvider;
 import support.ui.DocumentAdapter;
 import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
-import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilities.TerminalStringValidity;
 import support.utils.FileCopyingException;
 import support.utils.FileExistsException;
@@ -60,11 +60,13 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  */
 class JavaActions implements ActionProvider
 {
+    @Override
     public String getNamespace()
     {
         return "java";
     }
     
+    @Override
     public Set<? extends PartActionDescription> getActionDescriptions()
     {
         return ImmutableSet.of(new RunMain(), new JarDemo(), new ClassDemo(), new CopyTest());
@@ -93,6 +95,7 @@ class JavaActions implements ActionProvider
             super(JavaActions.this, "copy-compile-run");
         }
 
+        @Override
         public String getDescription()
         {
             return "Copies the specified file or contents of the directory into  the root of the unarchived handin. " +
@@ -101,31 +104,36 @@ class JavaActions implements ActionProvider
                    "with them.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(COPY_PATH_PROPERTY, MAIN_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.TEST);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.TEST, ActionType.OPEN, ActionType.RUN);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
                 //Keeps track of the groups that have already had the files copied
                 private HashSet<Group> _testedGroups = new HashSet<Group>();
                 
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
 
                     //Copy if necessary
                     if(!_testedGroups.contains(group))
@@ -135,10 +143,11 @@ class JavaActions implements ActionProvider
                         //Validate
                         if(!source.exists())
                         {
-                            ModalDialog.showMessage(null, "Does not exist",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
-                            return;
+                            
+                            return ActionResult.NO_CHANGES;
                         }
                         try
                         {
@@ -164,12 +173,13 @@ class JavaActions implements ActionProvider
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null)
                             {
-                                ModalDialog.showMessage(null, "Cannot copy test file",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in " +
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
                                     "Handin File: " + existsException.getDestinationFile().getAbsolutePath());;
-                                return;
+                                
+                                return ActionResult.NO_CHANGES;
                             }
 
                             throw new ActionException("Unable to perform copy necessary for testing.", e);
@@ -200,7 +210,7 @@ class JavaActions implements ActionProvider
                         //If none was found, inform the grader
                         if(mainToRun == null)
                         {
-                            ModalDialog.showMessage(null, "Main not present",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Main not present",
                                     "The specified main class is not present.\n" +
                                     "Specified main: " + mainName);
                         }
@@ -216,6 +226,8 @@ class JavaActions implements ActionProvider
                                      unarchiveDir);
                         }
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -249,14 +261,10 @@ class JavaActions implements ActionProvider
             super(JavaActions.this, actionName);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.DEMO);
-        }
-
-        public Set<ActionType> getCompatibleTypes()
-        {
-            return ImmutableSet.of(ActionType.DEMO, ActionType.RUN, ActionType.TEST, ActionType.OPEN);
         }
 
         //cmdEnd must not be null
@@ -296,8 +304,7 @@ class JavaActions implements ActionProvider
                 }
                 catch (IOException e)
                 {
-                    throw new ActionException("Unable to run demo in " +
-                            "visible terminal for assignment: " +
+                    throw new ActionException("Unable to run demo in visible terminal for part: " +
                             part.getFullDisplayName(), e);
                 }
             }
@@ -309,8 +316,7 @@ class JavaActions implements ActionProvider
                 }
                 catch(IOException e)
                 {
-                    throw new ActionException("Unable to run demo for " +
-                            "assignment: " + part.getFullDisplayName(), e);
+                    throw new ActionException("Unable to run demo for part: " + part.getFullDisplayName(), e);
                 }
             }
         }
@@ -327,23 +333,33 @@ class JavaActions implements ActionProvider
             super("demo-jar");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs a Java jar file.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(LOCATION_PROPERTY, SHOW_TERMINAL_PROPERTY,
                     TERMINAL_TITLE_PROPERTY, CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY,
                     RUN_ARGS_PROPERTY);
         }
+        
+        @Override
+        public boolean requiresDigitalHandin()
+        {
+            return false;
+        }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new NoGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part) throws ActionException
                 {
                     String cmdEnd = " -jar " + properties.get(LOCATION_PROPERTY);
                     
@@ -354,7 +370,7 @@ class JavaActions implements ActionProvider
                     boolean provideArgs = "TRUE".equalsIgnoreCase(properties.get(RUN_ARGS_PROPERTY));
                     if(provideArgs)
                     {
-                        ExecuteDialog dialog = new ExecuteDialog();
+                        ExecuteDialog dialog = new ExecuteDialog(context.getGraphicalOwner());
                         shouldRun = dialog.shouldRun();
                         cmdEnd += " " + dialog.getRunArguments();
                     }
@@ -363,6 +379,8 @@ class JavaActions implements ActionProvider
                     {
                         runDemo(properties, properties.get(CLASS_PATH_PROPERTY), part, cmdEnd);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -384,22 +402,32 @@ class JavaActions implements ActionProvider
             super("demo-class");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs compiled Java class files.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(LOCATION_PROPERTY, MAIN_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY,
                 CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY, RUN_ARGS_PROPERTY);
         }
+        
+        @Override
+        public boolean requiresDigitalHandin()
+        {
+            return false;
+        }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new NoGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part) throws ActionException
                 {
                     String classpath = properties.get(LOCATION_PROPERTY);
                     if(properties.containsKey(CLASS_PATH_PROPERTY))
@@ -416,7 +444,7 @@ class JavaActions implements ActionProvider
                     boolean provideArgs = "TRUE".equalsIgnoreCase(properties.get(RUN_ARGS_PROPERTY));
                     if(provideArgs)
                     {
-                        ExecuteDialog dialog = new ExecuteDialog();
+                        ExecuteDialog dialog = new ExecuteDialog(context.getGraphicalOwner());
                         shouldRun = dialog.shouldRun();
                         cmdEnd += " " + dialog.getRunArguments();
                     }
@@ -425,6 +453,8 @@ class JavaActions implements ActionProvider
                     {
                         runDemo(properties, classpath, part, cmdEnd);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -450,33 +480,39 @@ class JavaActions implements ActionProvider
             super(JavaActions.this, "compile-and-run");
         }
 
+        @Override
         public String getDescription()
         {
             return "Compiles and runs Java code using a visible terminal the grader can interact with.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(CLASS_PATH_PROPERTY, LIBRARY_PATH_PROPERTY, RUN_ARGS_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.RUN);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
 
                     //Deleted any already compiled files
                     deleteCompiledFiles(unarchiveDir);
@@ -488,7 +524,8 @@ class JavaActions implements ActionProvider
 
                         if(mainClasses.isEmpty())
                         {
-                            ModalDialog.showMessage(null, "Not Available", "No main class is available to run.");
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Not Available",
+                                    "No main class is available to run.");
                         }
                         else
                         {
@@ -510,7 +547,8 @@ class JavaActions implements ActionProvider
                             // Prompt user for the main class and run arguments
                             else
                             {
-                                ExecuteDialog dialog = new ExecuteDialog(mainClasses, provideArgs);
+                                ExecuteDialog dialog = new ExecuteDialog(context.getGraphicalOwner(), mainClasses,
+                                        provideArgs);
                                 shouldRun = dialog.shouldRun();
                                 mainToRun = dialog.getSelectedMain();
                                 runArgs = dialog.getRunArguments();
@@ -529,6 +567,8 @@ class JavaActions implements ActionProvider
                             }
                         }
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -536,9 +576,9 @@ class JavaActions implements ActionProvider
         }
     }
 
-    /**************************************************************************\
-    |*                             Shared Methods                             *|
-    \**************************************************************************/
+    /******************************************************************************************************************\
+    |*                                                 Shared Methods                                                 *|
+    \******************************************************************************************************************/
 
     /**
      * Deletes all compiled files in a group's project. It is safe to run even if there are no compiled files in the
@@ -755,23 +795,23 @@ class JavaActions implements ActionProvider
         private static final int PADDING = 10;
         
         /**
-         * Constructor for creating an ExecuteDialog that only allows providing run
-         * arguments, not selecting a main class.
+         * Constructor for creating an ExecuteDialog that only allows providing run arguments, not selecting a main
+         * class.
          */
-        public ExecuteDialog()
+        public ExecuteDialog(Window owner)
         {
-            this(null, true);
+            this(owner, null, true);
         }
         
         /**
-         * @param mainClasses- if not null, the dialog will include a drop-down to
+         * @param mainClasses if not null, the dialog will include a drop-down to
          *                     select the main class that should be run
          * @param provideRunArgs- if true, the dialog will include a text field for
          *                        entering run arguments
          */
-        public ExecuteDialog(List<ClassInfo> mainClasses, boolean provideRunArgs)
+        public ExecuteDialog(Window owner, List<ClassInfo> mainClasses, boolean provideRunArgs)
         {
-            super(null, "Run Options", ModalityType.APPLICATION_MODAL);
+            super(owner, "Run Options", ModalityType.APPLICATION_MODAL);
             
             this.getContentPane().setLayout(new BorderLayout(0, 0));
 

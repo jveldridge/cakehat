@@ -6,12 +6,12 @@ import cakehat.CakehatSession;
 import cakehat.CakehatSession.ConnectionType;
 import cakehat.database.assignment.ActionException;
 import cakehat.database.assignment.GradableEvent;
-import cakehat.database.assignment.MissingHandinException;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
 import cakehat.database.Student;
 import cakehat.database.TA;
+import cakehat.database.assignment.PartActionDescription.ActionType;
 import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
@@ -33,19 +33,18 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -62,11 +61,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.apache.commons.compress.archivers.ArchiveException;
 import support.ui.AlphaJPanel;
 import support.ui.DescriptionProvider;
 import support.ui.GenericJList;
-import support.ui.ModalDialog;
 import support.ui.PartialDescriptionProvider;
 
 public class GraderView extends JFrame
@@ -78,13 +75,13 @@ public class GraderView extends JFrame
     private JLabel _groupListLabel;
     private CurrentlyGradingLabel _currentlyGradingLabel;
     private JLabel _selectedGroupCommandsLabel;
-    private JButton _demoButton, _gradingGuideButton, _printAllButton,
-                    _submitGradingButton, _readmeButton, _openButton,
-                    _testButton, _printButton, _gradeButton,
-                    _runButton;
-    private JButton[] _allButtons;
     
     private final Map<Part, Map<Group, GroupStatus>> _assignedGroups = new HashMap<Part, Map<Group, GroupStatus>>();
+    
+    //Buttons
+    private JButton _submitGradingButton,  _gradeButton;
+    private final Map<ActionType, JButton> _actionButtons = new EnumMap<ActionType, JButton>(ActionType.class);
+    private final Set<JButton> _allButtons = new HashSet<JButton>();
     
     public static void launch()
     {   
@@ -109,9 +106,6 @@ public class GraderView extends JFrame
         //Initialize more GUI components
         this.initializeMenuBar();
 
-        //Set up logical grouping of buttons
-        this.createButtonGroups();
-
         //Set up close property
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
@@ -126,18 +120,6 @@ public class GraderView extends JFrame
         this.setLocationRelativeTo(null);
         this.setResizable(false);
         this.setVisible(true);
-    }
-
-    /**
-     * Set up the groups of buttons that will be enabled or disabled.
-     */
-    private void createButtonGroups()
-    {
-        //Build group of buttons so they can be enabled/disabled appropriately
-        _allButtons = new JButton[] {
-                                      _demoButton, _gradingGuideButton, _printAllButton,_submitGradingButton,
-                                      _readmeButton, _openButton, _testButton, _printButton, _gradeButton, _runButton
-                                    };
     }
 
     /**
@@ -199,7 +181,7 @@ public class GraderView extends JFrame
     }
     
     /**
-     * Enable or disable buttons based on the part selected.
+     * Enable or disable buttons based on the part and groups selected.
      */
     private void updateButtonStates()
     {
@@ -212,71 +194,34 @@ public class GraderView extends JFrame
             {
                 button.setEnabled(false);
             }
-            return;
         }
-
-        //General commands
-        _demoButton.setEnabled(part.hasDemo());
-        _gradingGuideButton.setEnabled(part.hasGradingGuide());
-        _submitGradingButton.setEnabled(true);
-        
-        //Group buttons
-        Group selectedGroup = _groupList.getSelectedValue();
-        _gradeButton.setEnabled(selectedGroup != null);
-        boolean selectedGroupHasHandin = false;
-        boolean anyGroupsHaveHandins = false;
-        boolean selectedGroupHasReadme = false;
-
-        //Determine if this group and any groups currently displayed have digital handins
-        if(part.getGradableEvent().hasDigitalHandins())
+        else
         {
-            try
+            Set<Group> selectedGroups = new HashSet<Group>(_groupList.getGenericSelectedValues());
+            
+            //If there is a part selected, grading can always be submitted
+            _submitGradingButton.setEnabled(true);
+            
+            //If any groups are selected, they can be graded
+            _gradeButton.setEnabled(!selectedGroups.isEmpty());
+            
+            //Action buttons - enable/disable each action as supported
+            for(Entry<ActionType, JButton> actionButtonEntry : _actionButtons.entrySet())
             {
-                for(Group group : _groupList.getListData())
-                {
-                    boolean hasHandin = part.getGradableEvent().hasDigitalHandin(group);
-                    anyGroupsHaveHandins = anyGroupsHaveHandins || hasHandin;
-                    if(group == selectedGroup)
-                    {
-                        selectedGroupHasHandin = hasHandin;
-                    }
-                }
-            }
-            catch(IOException e)
-            {
-                ErrorReporter.report("Unable to determine if a digtial handin exists", e);
-            }
-
-            if(selectedGroupHasHandin)
-            {
+                boolean enable = false;
                 try
                 {
-                    selectedGroupHasReadme = part.hasReadme(selectedGroup);
+                    enable = part.isActionSupported(actionButtonEntry.getKey(), selectedGroups);
                 }
-                catch(ArchiveException ex)
+                catch(ActionException e)
                 {
-                    ErrorReporter.report("Could not determine if " + selectedGroup + " has a readme", ex);
+                    ErrorReporter.report("Could not determine if action is supported\n" +
+                            "Part: " + part.getFullDisplayName() + "\n" +
+                            "Groups: " + selectedGroups, e);
                 }
-                catch(ActionException ex)
-                {
-                    ErrorReporter.report("Could not determine if " + selectedGroup + " has a readme", ex);
-                }
-                catch(MissingHandinException ex)
-                {
-                    this.notifyHandinMissing(ex);
-                }
+                actionButtonEntry.getValue().setEnabled(enable);
             }
         }
-        
-        //Enable Print All if any groups for this part have handins and the part has print
-        _printAllButton.setEnabled(anyGroupsHaveHandins && part.hasPrint());
-        
-        //Group buttons
-        _testButton.setEnabled(selectedGroupHasHandin && part.hasTest());
-        _runButton.setEnabled(selectedGroupHasHandin && part.hasRun());
-        _openButton.setEnabled(selectedGroupHasHandin && part.hasOpen());
-        _printButton.setEnabled(selectedGroupHasHandin && part.hasPrint());
-        _readmeButton.setEnabled(selectedGroupHasReadme);
     }
 
     /**
@@ -313,6 +258,7 @@ public class GraderView extends JFrame
         _partList.usePlainFont();
         _partList.addListSelectionListener(new ListSelectionListener()
         {
+            @Override
             public void valueChanged(ListSelectionEvent lse)
             {
                 if(!lse.getValueIsAdjusting())
@@ -344,6 +290,7 @@ public class GraderView extends JFrame
         _groupList.usePlainFont();
         _groupList.addListSelectionListener(new ListSelectionListener()
         {
+            @Override
             public void valueChanged(ListSelectionEvent lse)
             {
                 if(!lse.getValueIsAdjusting())
@@ -363,11 +310,9 @@ public class GraderView extends JFrame
         contentPanel.add(groupPanel);
 
         //When the left key is pressed, switch focus to the distributable part list
-        _groupList.addKeyListener(new KeyListener()
+        _groupList.addKeyListener(new KeyAdapter()
         {
-            public void keyTyped(KeyEvent ke) {}
-            public void keyReleased(KeyEvent ke) {}
-
+            @Override
             public void keyPressed(KeyEvent ke)
             {
                 if(KeyEvent.VK_LEFT == ke.getKeyCode())
@@ -377,11 +322,9 @@ public class GraderView extends JFrame
             }
         });
         //When the right key is pressed, switch focus to the group list
-        _partList.addKeyListener(new KeyListener()
+        _partList.addKeyListener(new KeyAdapter()
         {
-            public void keyTyped(KeyEvent ke) {}
-            public void keyReleased(KeyEvent ke) {}
-
+            @Override
             public void keyPressed(KeyEvent ke)
             {
                 if(KeyEvent.VK_RIGHT == ke.getKeyCode())
@@ -468,6 +411,7 @@ public class GraderView extends JFrame
         refreshItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
         refreshItem.addActionListener(new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent ae)
             {
                 loadAssignedGrading();
@@ -480,6 +424,7 @@ public class GraderView extends JFrame
         blacklistItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
         blacklistItem.addActionListener(new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent ae)
             {
                 // Invoke later so that the menu has time to dismiss
@@ -516,6 +461,7 @@ public class GraderView extends JFrame
         quitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
         quitItem.addActionListener(new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent ae)
             {
                 GraderView.this.dispose();
@@ -531,6 +477,7 @@ public class GraderView extends JFrame
         JMenuItem aboutItem = new JMenuItem("About cakehat");
         aboutItem.addActionListener(new ActionListener()
         {
+            @Override
             public void actionPerformed(ActionEvent ae)
             {
                 CakehatAboutBox.display(GraderView.this);
@@ -707,16 +654,7 @@ public class GraderView extends JFrame
     private void initializeGeneralCommandButtons(JPanel generalButtonsPanel)
     {
         //Demo
-        _demoButton = createButton(IconImage.APPLICATIONS_SYSTEM, "Demo");
-        _demoButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                demoButtonActionPerformed();
-            }
-
-        });
-        generalButtonsPanel.add(_demoButton);
+        generalButtonsPanel.add(createActionButton(IconImage.APPLICATIONS_SYSTEM, ActionType.DEMO));
 
         //Submit Grading
         _submitGradingButton = createButton(IconImage.DOCUMENT_SAVE, "Submit Grading");
@@ -731,28 +669,7 @@ public class GraderView extends JFrame
         generalButtonsPanel.add(_submitGradingButton);
 
         //Grading Guide
-        _gradingGuideButton = createButton(IconImage.TEXT_X_GENERIC, "Grading Guide");
-        _gradingGuideButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                gradingGuideButtonActionPerformed();
-            }
-
-        });
-        generalButtonsPanel.add(_gradingGuideButton);
-
-        //Print All
-        _printAllButton = createButton(IconImage.PRINTER, "Print All");
-        _printAllButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                printAllButtonActionPerformed();
-            }
-
-        });
-        generalButtonsPanel.add(_printAllButton);
+        generalButtonsPanel.add(createActionButton(IconImage.TEXT_X_GENERIC, ActionType.GRADING_GUIDE));
     }
 
     /**
@@ -763,52 +680,16 @@ public class GraderView extends JFrame
     private void initializeGroupCommandButtons(JPanel groupButtonsPanel)
     {
         //Run
-        _runButton = createButton(IconImage.GO_NEXT, "Run");
-        _runButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                runButtonActionPerformed();
-            }
-
-        });
-        groupButtonsPanel.add(_runButton);
+        groupButtonsPanel.add(createActionButton(IconImage.GO_NEXT, ActionType.RUN));
 
         //Test
-        _testButton = createButton(IconImage.UTILITIES_SYSTEM_MONITOR, "Test");
-        _testButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                testButtonActionPerformed();
-            }
-
-        });
-        groupButtonsPanel.add(_testButton);
+        groupButtonsPanel.add(createActionButton(IconImage.UTILITIES_SYSTEM_MONITOR, ActionType.TEST));
 
         //Open
-        _openButton = createButton(IconImage.DOCUMENT_OPEN, "Open");
-        _openButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                openButtonActionPerformed();
-            }
-
-        });
-        groupButtonsPanel.add(_openButton);
+        groupButtonsPanel.add(createActionButton(IconImage.DOCUMENT_OPEN, ActionType.OPEN));
 
         //Readme
-        _readmeButton = createButton(IconImage.DOCUMENT_PROPERTIES, "Readme");
-        _readmeButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                readmeButtonActionPerformed();
-            }
-
-        });
-        groupButtonsPanel.add(_readmeButton);
+        groupButtonsPanel.add(createActionButton(IconImage.DOCUMENT_PROPERTIES, ActionType.README));
 
         //Grade
         _gradeButton = createButton(IconImage.FONT_X_GENERIC, "Grade");
@@ -823,16 +704,7 @@ public class GraderView extends JFrame
         groupButtonsPanel.add(_gradeButton);
 
         //Print
-        _printButton = createButton(IconImage.PRINTER, "Print");
-        _printButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent ae)
-            {
-                printButtonActionPerformed();
-            }
-
-        });
-        groupButtonsPanel.add(_printButton);
+        groupButtonsPanel.add(createActionButton(IconImage.PRINTER, ActionType.PRINT));
     }
     
     /**
@@ -863,40 +735,102 @@ public class GraderView extends JFrame
                 }
             }
         });
-    }    
+    }  
     
     /**
-     * Creates an {@link ErrorView} with the message "Could not {@code msgInsert} for group {@code group} on part
-     * {@link Part#getFullDisplayName()}" and the given {@code cause}.
-     *
-     * @param msgInsert
-     * @param group
-     * @param part
-     * @param cause
+     * Called when the grade assignment button is clicked.
      */
-    private void generateErrorView(String msgInsert, Group group, Part part, Exception cause)
+    private void gradeButtonActionPerformed()
     {
-        String message = "Could not " + msgInsert;
-
-        if(group != null)
+        final Part part = _partList.getSelectedValue();
+        List<Group> groups = _groupList.getGenericSelectedValues();
+        for(final Group group : groups)
         {
-            message += " for group " + group;
-        }
+            GradingSheet gradingSheet = Allocator.getGradingSheetManager().showWindow(this, part, group, false, false);
+            gradingSheet.addGradingSheetListener(new GradingSheet.GradingSheetListener()
+            {
+                @Override
+                public void earnedChanged(double prevEarned, double currEarned) { }
 
-        if(part != null)
+                @Override
+                public void saveChanged(boolean hasUnsavedChanges)
+                {
+                    Map<Group, GroupStatus> statuses = _assignedGroups.get(part);
+
+                    //Could be null if the grader had saved a grading sheet that had been reassigned and they no longer
+                    //had any assigned groups in that part and then they refreshed the grader interface
+                    if(statuses != null)
+                    {
+                        //Check if null due to possible reassignment
+                        GroupStatus status = statuses.get(group);
+                        if(status != null)
+                        {
+                            status.setModified(true);
+
+                            //If this part is currently being displayed, visually update the group list to reflect the
+                            //grading sheet modification
+                            if(_partList.getSelectedValue() == part)
+                            {
+                                populateGroupsList();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }  
+    
+    private void actionButtonActionPerformed(ActionType type)
+    {
+        Part part = _partList.getSelectedValue();
+        Set<Group> groups = new HashSet<Group>(_groupList.getGenericSelectedValues());
+        try
         {
-            message += " on part " + part.getFullDisplayName();
+            part.performAction(this, type, groups);
         }
+        catch(ActionException ex)
+        {   
+            String message = "Could not " + type;
+            if(groups.isEmpty())
+            {
+                message += " for group(s) " + groups;
+            }
+            if(part != null)
+            {
+                message += " on part " + part.getFullDisplayName();
+            }
+            message += ".";
 
-        message += ".";
+            ErrorReporter.report(message, ex);
+        }
+    }
 
-        ErrorReporter.report(message, cause);
+    /**
+     * Creates a button with an {@code image} on the left side and bolded text on the right side. The text on the button
+     * is determined from {@code type}.
+     * 
+     * @param image
+     * @param type
+     * @return 
+     */
+    private JButton createActionButton(IconImage image, final ActionType type)    
+    {
+        JButton button = createButton(image, type.getUserFriendlyName());
+        _actionButtons.put(type, button);
+        button.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                actionButtonActionPerformed(type);
+            }
+        });
+        
+        return button;
     }
     
-    
     /**
-     * Creates a button with an image on the left side and bolded text on the
-     * right side.
+     * Creates a button with an image on the left side and bolded text on the right side.
      *
      * @param image
      * @param text
@@ -908,238 +842,9 @@ public class GraderView extends JFrame
         JButton button = new JButton("<html><b><font size=3>" + text +"</font></b></html>", icon);
         button.setHorizontalAlignment(SwingConstants.LEFT);
         button.setIconTextGap(10);
-
+        _allButtons.add(button);
+        
         return button;
-    }
-
-    /**
-     * Called when the run button is clicked.
-     */
-    private void runButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        Group group = _groupList.getSelectedValue();
-        try
-        {
-            part.run(group);
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorView("run", group, part, ex);
-        }
-        catch(MissingHandinException ex)
-        {
-            this.notifyHandinMissing(ex);
-        }
-    }
-
-    /**
-     * Called when the grade assignment button is clicked.
-     */
-    private void gradeButtonActionPerformed()
-    {
-        final Part part = _partList.getSelectedValue();
-        final Group group = _groupList.getSelectedValue();
-        GradingSheet gradingSheet = Allocator.getGradingSheetManager().showWindow(this, part, group, false, false);
-        gradingSheet.addGradingSheetListener(new GradingSheet.GradingSheetListener()
-        {
-            @Override
-            public void earnedChanged(double prevEarned, double currEarned) { }
-
-            @Override
-            public void saveChanged(boolean hasUnsavedChanges)
-            {
-                Map<Group, GroupStatus> statuses = _assignedGroups.get(part);
-                
-                //Could be null if the grader had saved a grading sheet that had been reassigned and they no longer had
-                //any assigned groups in that part and then they refreshed the grader interface
-                if(statuses != null)
-                {
-                    //Check if null due to possible reassignment
-                    GroupStatus status = statuses.get(group);
-                    if(status != null)
-                    {
-                        status.setModified(true);
-                        
-                        //If this part is currently being displayed, visually update the group list to reflect the
-                        //grading sheet modification
-                        if(_partList.getSelectedValue() == part)
-                        {
-                            populateGroupsList();
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Called when the print button is clicked.
-     */
-    private void printButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        Group group = _groupList.getSelectedValue();
-        try
-        {
-            part.print(group);
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorView("print", group, part, ex);
-        }
-        catch(MissingHandinException ex)
-        {
-            this.notifyHandinMissing(ex);
-        }
-    }
-
-    /**
-     * Called when the test button is clicked.
-     */
-    private void testButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        Group group = _groupList.getSelectedValue();
-        try
-        {
-            part.test(group);
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorView("test", group, part, ex);
-        }
-        catch(MissingHandinException ex)
-        {
-            this.notifyHandinMissing(ex);
-        }
-    }
-
-    /**
-     * Called when the open button is clicked.
-     */
-    private void openButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        Group group = _groupList.getSelectedValue();
-        try
-        {
-            part.open(group);
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorView("open", group, part, ex);
-        }
-        catch(MissingHandinException ex)
-        {
-            this.notifyHandinMissing(ex);
-        }
-    }
-
-    /**
-     * Called when the readme button is clicked.
-     */
-    private void readmeButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        Group group = _groupList.getSelectedValue();
-        try
-        {
-            part.viewReadme(this, group);
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorView("view readme", group, part, ex);
-        }
-        catch(MissingHandinException ex)
-        {
-            this.notifyHandinMissing(ex);
-        }
-    }
-
-    /**
-     * Called when the demo button is clicked.
-     */
-    private void demoButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        try
-        {
-            part.demo();
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorView("demo", null, part, ex);
-        }
-    }
-
-    /**
-     * Called when the print all button is clicked.
-     */
-    private void printAllButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        Collection<Group> groups = _groupList.getListData();
-        try
-        {
-            part.print(groups);
-        }
-        catch(ActionException ex)
-        {
-            this.generateErrorViewMultiple("print", groups, part, ex);
-        }
-    }
-
-    /**
-     * Called when the grading guide button is clicked.
-     */
-    private void gradingGuideButtonActionPerformed()
-    {
-        Part part = _partList.getSelectedValue();
-        try
-        {
-            part.viewGradingGuide(this);
-        }
-        catch (FileNotFoundException ex)
-        {
-            this.generateErrorView("view grading guide", null, part, ex);
-        }
-    }
-
-    private void notifyHandinMissing(MissingHandinException ex)
-    {
-        ModalDialog.showMessage(this, "Digital Handin Missing",
-                "The handin for " + ex.getGroup().getName() + " can no longer be found");
-        ex.getPart().getGradableEvent().clearDigitalHandinCache();
-        updateButtonStates();
-    }
-
-    /**
-     * Creates an {@link ErrorView} with the message "Could not {@code msgInsert} for groups {@code groups} on part
-     * {@link Part#getFullDisplayName()}" and the given {@code cause}.
-     *
-     * @param msgInsert
-     * @param groups
-     * @param part
-     * @param cause
-     */
-    private void generateErrorViewMultiple(String msgInsert, Collection<Group> groups, Part part, Exception cause)
-    {
-        String message = "Could not " + msgInsert;
-
-        if(!groups.isEmpty())
-        {
-            message += " for groups " + groups;
-        }
-
-        if(part != null)
-        {
-            message += " on part " + part.getFullDisplayName();
-        }
-
-        message += ".";
-
-        ErrorReporter.report(message, cause);
     }
     
     final void loadAssignedGrading()

@@ -49,11 +49,13 @@ import support.utils.FileSystemUtilities.OverwriteMode;
  */
 class MatlabActions implements ActionProvider
 {
+    @Override
     public String getNamespace()
     {
         return "matlab";
     }
 
+    @Override
     public Set<? extends PartActionDescription> getActionDescriptions()
     {
         return ImmutableSet.of(new CopyTest(), new DemoFile(), new OpenFiles(), new RunFile());
@@ -79,6 +81,7 @@ class MatlabActions implements ActionProvider
             super(MatlabActions.this, "copy-test");
         }
 
+        @Override
         public String getDescription()
         {
             return "Copies the specified file or contents of the directory into the root of the unarchived handin. " +
@@ -86,31 +89,36 @@ class MatlabActions implements ActionProvider
                    "other actions may interact with the copied files.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(COPY_PATH_PROPERTY, TEST_FILE_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.TEST);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.TEST, ActionType.OPEN, ActionType.RUN);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
                 //Keeps track of the groups that have already had the files copied
                 private HashSet<Group> _testedGroups = new HashSet<Group>();
 
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
 
                     //Copy if necessary
                     if(!_testedGroups.contains(group))
@@ -120,20 +128,22 @@ class MatlabActions implements ActionProvider
                         //Validate
                         if(!source.exists())
                         {
-                            ModalDialog.showMessage(null, "Does not exist",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Does not exist",
                                     "Cannot perform test because the directory or file to copy does not exist.\n\n" +
                                     "Source: " + source.getAbsoluteFile());
-                            return;
+                            
+                            return ActionResult.NO_CHANGES;
                         }
 
                         if(source.isFile())
                         {
                             if(!source.getName().endsWith(".m"))
                             {
-                                ModalDialog.showMessage(null, "Test file not m-file",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file not m-file",
                                         "Cannot perform test because the test file is not an m-file.\n\n" +
                                         "File: " + source.getAbsoluteFile());
-                                return;
+                                
+                                return ActionResult.NO_CHANGES;
                             }
                         }
                         else if(source.isDirectory())
@@ -142,27 +152,30 @@ class MatlabActions implements ActionProvider
 
                             if(relativePath == null)
                             {
-                                ModalDialog.showMessage(null, "Property not set",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Property not set",
                                         "Cannot perform test because the " + TEST_FILE_PROPERTY.getName() +
                                         " property was not set. It must be set when copying test files from a " +
                                         "directory.");
-                                return;
+                                
+                                return ActionResult.NO_CHANGES;
                             }
 
                             File testFile = new File(source, relativePath);
                             if(!testFile.exists())
                             {
-                                ModalDialog.showMessage(null, "Test file does not exist",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file does not exist",
                                         "Cannot perform test because the test file does not exist.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
-                                return;
+                                
+                                return ActionResult.NO_CHANGES;
                             }
                             if(!testFile.isFile() || !testFile.getName().endsWith(".m"))
                             {
-                                ModalDialog.showMessage(null, "Test file not m-file",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file not m-file",
                                         "Cannot perform test because the test file is not an m-file.\n\n" +
                                         "File: " + testFile.getAbsoluteFile());
-                                return;
+                                
+                                return ActionResult.NO_CHANGES;
                             }
                         }
 
@@ -189,12 +202,13 @@ class MatlabActions implements ActionProvider
                                     Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
                             if(existsException != null)
                             {
-                                ModalDialog.showMessage(null, "Cannot copy test file",
+                                ModalDialog.showMessage(context.getGraphicalOwner(), "Cannot copy test file",
                                     "Cannot perform test because a file to be copied for the test already exists in "+
                                     "the unarchived handin.\n\n" +
                                     "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
                                     "Handin File: " + existsException.getDestinationFile().getAbsolutePath());
-                                return;
+                                
+                                return ActionResult.NO_CHANGES;
                             }
 
                             throw new ActionException("Unable to perform copy necessary for testing.", e);
@@ -246,6 +260,8 @@ class MatlabActions implements ActionProvider
                     {
                         throw new ActionException(e);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -272,6 +288,7 @@ class MatlabActions implements ActionProvider
             super(MatlabActions.this, "demo-file");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs a single m-file with grader provided arguments. The grader will either be allowed to select " +
@@ -279,44 +296,51 @@ class MatlabActions implements ActionProvider
                    "is specified then only the file specified by that property.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(DIRECTORY_PATH_PROPERTY, FILE_PATH_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.DEMO);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.DEMO, ActionType.RUN, ActionType.TEST, ActionType.OPEN);
+            return false;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new NoGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part) throws ActionException
                 {
                     //Ensure specified directory is valid
                     File demoDir = new File(properties.get(DIRECTORY_PATH_PROPERTY));
                     if(!demoDir.exists())
                     {
-                        ModalDialog.showMessage(null, "Directory does not exist",
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "Directory does not exist",
                                 "Directory specified by '" + DIRECTORY_PATH_PROPERTY.getName() + "' does not " +
                                 "exist.\n\n" +
                                 "Directory: " + demoDir.getAbsolutePath());
-                        return;
+                        
+                        return ActionResult.NO_CHANGES;
                     }
                     if(!demoDir.isDirectory())
                     {
-                        ModalDialog.showMessage(null, "Not a directory",
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "Not a directory",
                                 "Directory specified by '" + DIRECTORY_PATH_PROPERTY.getName() + "' is not a " +
                                 "directory.\n\n" +
                                 "Directory: " + demoDir.getAbsolutePath());
-                        return;
+                        
+                        return ActionResult.NO_CHANGES;
                     }
                     
                     //Build list of m-files that are to be demo
@@ -331,10 +355,11 @@ class MatlabActions implements ActionProvider
 
                         if(!absolutePath.exists())
                         {
-                            ModalDialog.showMessage(null, "File does not exist",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "File does not exist",
                                     "File specified by '" + FILE_PATH_PROPERTY.getName() + "' does not exist.\n\n" +
                                     "File: " + absolutePath.getAbsolutePath());
-                            return;
+                            
+                            return ActionResult.NO_CHANGES;
                         }
                         else
                         {
@@ -357,12 +382,15 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalDialog.showMessage(null, "Unable to demo", "There are no m-files to demo.");
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "Unable to demo",
+                                "There are no m-files to demo.");
                     }
                     else
                     {
                         runMFiles(mFiles, demoDir);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -383,6 +411,7 @@ class MatlabActions implements ActionProvider
             super(MatlabActions.this, "run-file");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs a single m-file with grader provided arguments. The grader will either be allowed to select " +
@@ -390,29 +419,34 @@ class MatlabActions implements ActionProvider
                    "only be able to run the m-file specified by " + FILE_PATH_PROPERTY.getName() + ".";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(FILE_PATH_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.RUN);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
                     //Retrieve the m-files belonging to this part
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
                     FileFilter mFilter = new FileExtensionFilter("m");
                     List<File> mFiles;
 
@@ -426,7 +460,7 @@ class MatlabActions implements ActionProvider
 
                         if(!absolutePath.exists())
                         {
-                            ModalDialog.showMessage(null, "Specified File Unavailable",
+                            ModalDialog.showMessage(context.getGraphicalOwner(), "Specified File Unavailable",
                                     "Specified file to run does not exist.\n\n" +
                                     "Expected file: " + absolutePath.getAbsolutePath() + "\n\n" +
                                     "You will be asked to select from available m-files.");
@@ -462,12 +496,15 @@ class MatlabActions implements ActionProvider
 
                     if(mFiles.isEmpty())
                     {
-                        ModalDialog.showMessage(null, "Unable to run", "There are no m-files for this part.");
+                        ModalDialog.showMessage(context.getGraphicalOwner(), "Unable to run",
+                                "There are no m-files for this part.");
                     }
                     else
                     {
                         runMFiles(mFiles, unarchiveDir);
                     }
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -490,31 +527,37 @@ class MatlabActions implements ActionProvider
             super(MatlabActions.this, "open");
         }
 
+        @Override
         public String getDescription()
         {
             return "Opens all files in the part in MATLAB.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(EXTENSIONS_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
             return ImmutableSet.of(ActionType.OPEN);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.TEST, ActionType.OPEN);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
                     try
                     {
@@ -527,7 +570,7 @@ class MatlabActions implements ActionProvider
                         proxy.eval("com.mathworks.mlservices.MLEditorServices.getEditorApplication.closeNoPrompt");
 
                         //Change to root directory of handin
-                        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                        File unarchiveDir = context.getUnarchiveHandinDir(group);
                         proxy.feval("cd", new String[] { unarchiveDir.getAbsolutePath() });
 
                         //Determine which files to open in MATLAB
@@ -559,6 +602,8 @@ class MatlabActions implements ActionProvider
                             openPaths[i] = filesToOpen.get(i).getAbsolutePath();
                         }
                         proxy.feval("edit", openPaths);
+                    
+                        return ActionResult.NO_CHANGES;
                     }
                     catch(MatlabConnectionException e)
                     {

@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,14 +18,16 @@ import java.util.Set;
  */
 class ExternalActions implements ActionProvider
 {
+    @Override
     public String getNamespace()
     {
         return "external";
     }
 
+    @Override
     public Set<? extends PartActionDescription> getActionDescriptions()
     {
-        return ImmutableSet.of(new DigitalHandinCommand(), new DemoCommand(), new PrintCommand());
+        return ImmutableSet.of(new NoGroupCommand(), new SingleGroupCommand(), new MultiGroupCommand());
     }
 
     //Replacement sequences
@@ -40,7 +40,7 @@ class ExternalActions implements ActionProvider
             GRADABLE_EVENT_NAME = "^gradable_event_name^",
             PART_NAME = "^part_name^";
 
-    private class PrintCommand extends Command
+    private class MultiGroupCommand extends Command
     {
         private final PartActionProperty COMMAND_PROPERTY =
             new PartActionProperty("command",
@@ -60,11 +60,12 @@ class ExternalActions implements ActionProvider
             "\"unarchive_dir\":\"/course/cs000/.cakehat/workspaces/ta_login/asgn/gradable_event/part/the_group/\"}",
             true);
 
-        private PrintCommand()
+        private MultiGroupCommand()
         {
-            super("print-command");
+            super("multi-group-command");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs a specified command with cakehat supplied information. This is intended to be used for " +
@@ -73,38 +74,41 @@ class ExternalActions implements ActionProvider
                    "executed in the grader's temporary grading directory.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableSet.of(ActionType.PRINT);
+            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST, ActionType.PRINT);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.PRINT, ActionType.RUN, ActionType.OPEN, ActionType.TEST);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new PartAction()
+            PartAction action = new MultiGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
-                {
-                    this.performAction(part, Arrays.asList(new Group[] { group }));
-                }
-
-                public void performAction(Part part, Collection<Group> groups) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Set<Group> groups)
+                        throws ActionException
                 {
                     String command = properties.get(COMMAND_PROPERTY);
                     command = replaceAssignmentSequences(command, part);
-                    command = replaceGroupInfoSequences(command, part, new ArrayList<Group>(groups));
+                    command = replaceGroupInfoSequences(command, context, new ArrayList<Group>(groups));
 
                     File workspace = Allocator.getPathServices().getUserWorkspaceDir();
                     runCommand(command, workspace, part, properties);
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -112,7 +116,7 @@ class ExternalActions implements ActionProvider
         }
     }
 
-    private class DigitalHandinCommand extends Command
+    private class SingleGroupCommand extends Command
     {
         private final PartActionProperty COMMAND_PROPERTY =
             new PartActionProperty("command",
@@ -131,11 +135,12 @@ class ExternalActions implements ActionProvider
             "Array: [\"jak2\",\"jeldridg\"]",
             true);
 
-        private DigitalHandinCommand()
+        private SingleGroupCommand()
         {
-            super("digital-handin-command");
+            super("single-group-command");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs a specified command with cakehat supplied information. Information pertains to the " +
@@ -144,33 +149,40 @@ class ExternalActions implements ActionProvider
                    "contents of the digital handin that belong to this part.";
         }
         
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST);
+            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST, ActionType.PRINT);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.OPEN, ActionType.TEST);
+            return true;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new SingleGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part, Group group) throws ActionException
                 {
                     String command = properties.get(COMMAND_PROPERTY);
                     command = replaceAssignmentSequences(command, part);
-                    command = replaceDigitalHandinSequences(command, part, group);
+                    command = replaceDigitalHandinSequences(command, context, group);
 
-                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+                    File unarchiveDir = context.getUnarchiveHandinDir(group);
                     runCommand(command, unarchiveDir, part, properties);
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -178,7 +190,7 @@ class ExternalActions implements ActionProvider
         }
     }
 
-    private class DemoCommand extends Command
+    private class NoGroupCommand extends Command
     {
         private final PartActionProperty COMMAND_PROPERTY =
             new PartActionProperty("command",
@@ -192,11 +204,12 @@ class ExternalActions implements ActionProvider
             "String value: \"An Assignment Name\" \n",
             true);
         
-        private DemoCommand()
+        private NoGroupCommand()
         {
-            super("demo-command");
+            super("no-group-command");
         }
 
+        @Override
         public String getDescription()
         {
             return "Runs a specified command with cakehat supplied information. Information is limited to that of " +
@@ -205,32 +218,39 @@ class ExternalActions implements ActionProvider
                    "directory.";
         }
 
+        @Override
         public Set<PartActionProperty> getProperties()
         {
             return ImmutableSet.of(COMMAND_PROPERTY, SHOW_TERMINAL_PROPERTY, TERMINAL_TITLE_PROPERTY);
         }
 
+        @Override
         public Set<ActionType> getSuggestedTypes()
         {
-            return ImmutableSet.of(ActionType.DEMO);
+            return ImmutableSet.of(ActionType.DEMO, ActionType.GRADING_GUIDE);
         }
-
-        public Set<ActionType> getCompatibleTypes()
+        
+        @Override
+        public boolean requiresDigitalHandin()
         {
-            return ImmutableSet.of(ActionType.RUN, ActionType.DEMO, ActionType.OPEN, ActionType.TEST);
+            return false;
         }
 
+        @Override
         public PartAction getAction(final Map<PartActionProperty, String> properties)
         {
-            PartAction action = new StandardPartAction()
+            PartAction action = new NoGroupPartAction()
             {
-                public void performAction(Part part, Group group) throws ActionException
+                @Override
+                public ActionResult performAction(ActionContext context, Part part) throws ActionException
                 {
                     String command = properties.get(COMMAND_PROPERTY);
                     command = replaceAssignmentSequences(command, part);
 
                     File workspace = Allocator.getPathServices().getUserWorkspaceDir();
                     runCommand(command, workspace, part, properties);
+                    
+                    return ActionResult.NO_CHANGES;
                 }
             };
 
@@ -320,11 +340,11 @@ class ExternalActions implements ActionProvider
      * directories for the groups provided.
      *
      * @param command
-     * @param part
+     * @param context
      * @param groups
      * @return
      */
-    static String replaceGroupInfoSequences(String command, Part part, List<Group> groups)
+    static String replaceGroupInfoSequences(String command, ActionContext context, List<Group> groups)
     {
         if(command.contains(GROUPS_INFO))
         {
@@ -332,7 +352,7 @@ class ExternalActions implements ActionProvider
             List<String> jsonGroups = new ArrayList<String>();
             for(Group group : groups)
             {
-                jsonGroups.add(buildJSONGroupMap(part, group));
+                jsonGroups.add(buildJSONGroupMap(context, group));
             }
             String groupsInfo = buildJSONArray(jsonGroups, false);
 
@@ -346,16 +366,16 @@ class ExternalActions implements ActionProvider
      * Builds a JSON map for the {@code group} that contains the name, members (student logins), and unarchive directory
      * for the group.
      *
-     * @param part
+     * @param context
      * @param group
      * @return
      */
-    private static String buildJSONGroupMap(Part part, Group group)
+    private static String buildJSONGroupMap(ActionContext context, Group group)
     {
         String jsonInfo = "{" + quote("name") + ":" + quote(jsonEscape(group.getName())) + ",";
         jsonInfo += quote("members") + ":" + buildJSONArray(getMemberLogins(group), true) + ",";
 
-        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+        File unarchiveDir = context.getUnarchiveHandinDir(group);
         jsonInfo += quote("unarchive_dir") + ":" + quote(jsonEscape(unarchiveDir.getAbsolutePath())) + "}";
 
         return jsonInfo;
@@ -371,11 +391,11 @@ class ExternalActions implements ActionProvider
      * Package private for testing purposes.
      *
      * @param command
-     * @param part
+     * @param context
      * @param group
      * @return
      */
-    static String replaceDigitalHandinSequences(String command, Part part, Group group)
+    static String replaceDigitalHandinSequences(String command, ActionContext context, Group group)
     {
         if(command.contains(STUDENT_LOGINS))
         {
@@ -387,7 +407,7 @@ class ExternalActions implements ActionProvider
         }
         if(command.contains(UNARCHIVE_DIR))
         {
-            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
+            File unarchiveDir = context.getUnarchiveHandinDir(group);
 
             command = replace(command, UNARCHIVE_DIR, unarchiveDir.getAbsolutePath());
         }

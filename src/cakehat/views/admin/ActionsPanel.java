@@ -4,10 +4,10 @@ import cakehat.Allocator;
 import cakehat.database.assignment.ActionException;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
-import cakehat.database.assignment.MissingHandinException;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.database.assignment.PartActionDescription.ActionType;
 import cakehat.logging.ErrorReporter;
 import cakehat.printing.CITPrinter;
 import support.resources.icons.IconLoader;
@@ -15,22 +15,18 @@ import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
-import com.google.common.collect.Iterables;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashSet;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.apache.commons.compress.archivers.ArchiveException;
-import support.ui.ModalDialog;
 import support.ui.FormattedLabel;
 
 /**
@@ -112,7 +108,7 @@ class ActionsPanel extends JPanel
     
     private class AssignmentPanel extends JPanel
     {
-        private final ActionButton _emailGradingSheetButton, _printGradingSheetButton, _manageGroupsButton;
+        private final StandardButton _emailGradingSheetButton, _printGradingSheetButton, _manageGroupsButton;
         private final JLabel _noActionsAvailable;
         
         AssignmentPanel()
@@ -126,7 +122,7 @@ class ActionsPanel extends JPanel
             _noActionsAvailable.setVisible(false);
             this.add(_noActionsAvailable);
             
-            _emailGradingSheetButton = new ActionButton("Email Grading Sheet", "Email Grading Sheets", IconImage.MAIL_FORWARD);
+            _emailGradingSheetButton = new StandardButton("Email Grading Sheet", "Email Grading Sheets", IconImage.MAIL_FORWARD);
             _emailGradingSheetButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -137,7 +133,7 @@ class ActionsPanel extends JPanel
             });
             this.add(_emailGradingSheetButton);
             
-            _printGradingSheetButton = new ActionButton("Print Grading Sheet", "Print Grading Sheets", IconImage.DOCUMENT_PRINT);
+            _printGradingSheetButton = new StandardButton("Print Grading Sheet", "Print Grading Sheets", IconImage.DOCUMENT_PRINT);
             _printGradingSheetButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -148,7 +144,7 @@ class ActionsPanel extends JPanel
             });
             this.add(_printGradingSheetButton);
             
-            _manageGroupsButton = new ActionButton("Manage Groups", null, IconImage.SYSTEM_USERS);
+            _manageGroupsButton = new StandardButton("Manage Groups", null, IconImage.SYSTEM_USERS);
             _manageGroupsButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -179,7 +175,7 @@ class ActionsPanel extends JPanel
     
     private class GradableEventPanel extends JPanel
     {
-        private final ActionButton _autoDistributorButton;
+        private final StandardButton _autoDistributorButton;
         private final JLabel _noActionsAvailable;
         
         GradableEventPanel()
@@ -194,7 +190,7 @@ class ActionsPanel extends JPanel
             this.add(_noActionsAvailable);
             
             //Buttons
-            _autoDistributorButton = new ActionButton("Auto Distributor", null, IconImage.DOCUMENT_SAVE_AS);
+            _autoDistributorButton = new StandardButton("Auto Distributor", null, IconImage.DOCUMENT_SAVE_AS);
             _autoDistributorButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -218,8 +214,9 @@ class ActionsPanel extends JPanel
     
     private class PartPanel extends JPanel
     {
-        private final ActionButton _manualDistributorButton, _viewGradingGuideButton, _demoButton, _openButton,
-                                   _runButton, _testButton, _printButton, _readmeButton;
+        private final StandardButton _manualDistributorButton;
+        private final Map<ActionType, StandardButton> _actionButtons =
+                new EnumMap<ActionType, StandardButton>(ActionType.class);
         
         PartPanel()
         {
@@ -227,8 +224,8 @@ class ActionsPanel extends JPanel
             
             this.add(FormattedLabel.asSubheader("Part"));
          
-            //Buttons
-            _manualDistributorButton = new ActionButton("Manual Distributor", null, IconImage.DOCUMENT_PROPERTIES);
+            //Manual distributor button
+            _manualDistributorButton = new StandardButton("Manual Distributor", null, IconImage.DOCUMENT_PROPERTIES);
             _manualDistributorButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -239,181 +236,83 @@ class ActionsPanel extends JPanel
             });
             this.add(_manualDistributorButton);
             
-            _viewGradingGuideButton = new ActionButton("Grading Guide", null, IconImage.TEXT_X_GENERIC);
-            _viewGradingGuideButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    viewGradingGuideButtonActionPerformed();
-                }
-            });
-            this.add(_viewGradingGuideButton);
-            
-            _demoButton = new ActionButton("Demo", null, IconImage.APPLICATIONS_SYSTEM);
-            _demoButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    demoButtonActionPerformed();
-                }
-            });
-            this.add(_demoButton);
-            
-            _printButton = new ActionButton("Print Handin", "Print Handins", IconImage.PRINTER);
-            _printButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    printButtonActionPerformed();
-                }
-            });
-            this.add(_printButton);
-            
-            _runButton = new ActionButton("Run Handin", null, IconImage.GO_NEXT);
-            _runButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    runButtonActionPerformed();
-                }
-            });
-            this.add(_runButton);
-            
-            _openButton = new ActionButton("Open Handin", null, IconImage.DOCUMENT_OPEN);
-            _openButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    openButtonActionPerformed();
-                }
-            });
-            this.add(_openButton);
-            
-            _testButton = new ActionButton("Test Handin", null, IconImage.UTILITIES_SYSTEM_MONITOR);
-            _testButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    testButtonActionPerformed();
-                }
-            });
-            this.add(_testButton);
-            
-            _readmeButton = new ActionButton("View Readme", null, IconImage.TEXT_X_GENERIC);
-            _readmeButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    viewReadmeButtonActionPerformed();
-                }
-            });
-            this.add(_readmeButton);
+            //Action buttons
+            this.add(createActionButton("Grading Guide", "Grading Guide", IconImage.TEXT_X_GENERIC,
+                    ActionType.GRADING_GUIDE));
+            this.add(createActionButton("Demo", "Demo", IconImage.APPLICATIONS_SYSTEM,
+                    ActionType.DEMO));
+            this.add(createActionButton("Print Handin", "Print Handins", IconImage.PRINTER, ActionType.PRINT));
+            this.add(createActionButton("Run Handin", "Run Handins", IconImage.GO_NEXT, ActionType.RUN));
+            this.add(createActionButton("Open Handin", "Open Handins", IconImage.DOCUMENT_OPEN, ActionType.OPEN));
+            this.add(createActionButton("Test Handin", "Test Handins", IconImage.UTILITIES_SYSTEM_MONITOR,
+                    ActionType.TEST));
+            this.add(createActionButton("View Readme", "View Readmes", IconImage.TEXT_X_GENERIC,
+                    ActionType.README));
         }
         
-        void notifySelectionChanged(Part part, Set<Group> selectedGroups,
-            Set<Student> selectedStudentsNotInGroups)
+        private StandardButton createActionButton(String singleText, String pluralText, IconImage image,
+                final ActionType type)
         {
-            _manualDistributorButton.setEnabled(part != null);
-            _viewGradingGuideButton.setEnabled(part != null && part.hasGradingGuide());
-            _demoButton.setEnabled(part != null && part.hasDemo());
-            
-            boolean showDigitalHandinOptions = part != null && part.getGradableEvent().hasDigitalHandins() &&
-                                               !selectedGroups.isEmpty();
-            _runButton.setVisible(showDigitalHandinOptions && selectedGroups.size() == 1);
-            _openButton.setVisible(showDigitalHandinOptions && selectedGroups.size() == 1);
-            _testButton.setVisible(showDigitalHandinOptions && selectedGroups.size() == 1);
-            _readmeButton.setVisible(showDigitalHandinOptions && selectedGroups.size() == 1);
-            _printButton.setVisible(showDigitalHandinOptions);
-            
-            _printButton.updateText(selectedGroups.size() < 2);
-            
-            if(part != null && part.getGradableEvent().hasDigitalHandins() && !selectedGroups.isEmpty())
+            StandardButton button = new StandardButton(singleText, pluralText, image);
+            _actionButtons.put(type, button);
+            button.addActionListener(new ActionListener()
             {
-                //Disable the digital handin related buttons and then re-enable them if conditions allow
-                _runButton.setEnabled(false);
-                _openButton.setEnabled(false);
-                _testButton.setEnabled(false);
-                _readmeButton.setEnabled(false);
-                _printButton.setEnabled(false);
-                
-                //Run, open, test, and view readme require exactly one selected group that has a digital handin on disk
-                if(selectedGroups.size() == 1)
+                @Override
+                public void actionPerformed(ActionEvent ae)
                 {
-                    Group group = selectedGroups.iterator().next();
+                    actionButtonActionPerformed(type);
+                }
+            });
 
-                    boolean hasDigitalHandin = false;
+            return button;
+        }
+        
+        void notifySelectionChanged(Part part, Set<Group> selectedGroups, Set<Student> selectedStudentsNotInGroups)
+        {
+            if(part == null)
+            {
+                _manualDistributorButton.setEnabled(false);
+                for(StandardButton button : _actionButtons.values())
+                {
+                    button.setEnabled(false);
+                }
+            }
+            else
+            {
+                _manualDistributorButton.setEnabled(true);
+                
+                for(Entry<ActionType, StandardButton> entry : _actionButtons.entrySet())
+                {
+                    boolean enable = false;
                     try
                     {
-                        hasDigitalHandin = part.getGradableEvent().hasDigitalHandin(group);
+                        enable = part.isActionSupported(entry.getKey(), selectedGroups);
                     }
-                    catch(IOException e)
+                    catch(ActionException e)
                     {
-                        ErrorReporter.report("Unable to determine if a digital handin exists\n" +
-                                "Gradable Event: " + part.getGradableEvent().getAssignment().getName() + " - " +
-                                                     part.getGradableEvent().getName() + "\n" +
-                                "Group: " + group.getName(), e);
+                        ErrorReporter.report("Could not determine if action is supported\n" +
+                                "Part: " + part.getFullDisplayName() + "\n" +
+                                "Groups: " + selectedGroups, e);
                     }
-
-                    if(hasDigitalHandin)
-                    {
-                        _runButton.setEnabled(part.hasRun());
-                        _openButton.setEnabled(part.hasOpen());
-                        _testButton.setEnabled(part.hasTest());
-
-                        //Determine if a readme exists for the group in their digital handin
-                        try
-                        {
-                           _readmeButton.setEnabled(part.hasReadme(group));
-                        }
-                        catch(ActionException e)
-                        {
-                            ErrorReporter.report("Unable to determine if a readme exists\n" +
-                                "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group.getName(), e);
-                        }
-                        catch(MissingHandinException e)
-                        {
-                            ErrorReporter.report("Unable to determine if a readme exists\n" +
-                                "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group.getName(), e);
-                        }
-                        catch(ArchiveException e)
-                        {
-                            ErrorReporter.report("Unable to determine if a readme exists\n" +
-                                "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group.getName(), e);
-                        }
-                    }
+                    entry.getValue().setEnabled(enable);
                 }
-                        
-                //Print requires at least one group with a digital handin on disk
-                if(part.hasPrint())
+            }
+            
+            //Determine whether to show buttons that act on digital handins
+            boolean showDigitalHandinOptions = part != null && part.getGradableEvent().hasDigitalHandins() &&
+                                               !selectedGroups.isEmpty();
+            for(Entry<ActionType, StandardButton> entry : _actionButtons.entrySet())
+            {
+                if(entry.getKey().requiresDigitalHandin())
                 {
-                    boolean atLeastOneDigitalHandin = false;
-                    for(Group group : selectedGroups)
-                    {
-                        try
-                        {
-                            atLeastOneDigitalHandin = part.getGradableEvent().hasDigitalHandin(group);
-                            break;
-                        }
-                        catch(IOException e)
-                        {
-                            ErrorReporter.report("Unable to determine if a digital handin exists\n" +
-                                    "Gradable Event: " + part.getGradableEvent().getAssignment().getName() +
-                                               " - " +   part.getGradableEvent().getName() + "\n" +
-                                    "Group: " + group.getName(), e);
-                        }
-                    }
-                    _printButton.setEnabled(atLeastOneDigitalHandin);
+                    entry.getValue().setVisible(showDigitalHandinOptions);
                 }
+            }
+            
+            //Determine the pluralization of the action buttons
+            for(StandardButton button : _actionButtons.values())
+            {
+                button.updateText(selectedGroups.size() == 1);
             }
         }
     }
@@ -426,142 +325,6 @@ class ActionsPanel extends JPanel
     private void manualDistributorButtonActionPerformed()
     {
         new ManualDistributorView(_treeSelection.getPart(), _adminView);
-    }
-
-    private void viewGradingGuideButtonActionPerformed()
-    {
-        try
-        {
-            _treeSelection.getPart().viewGradingGuide(_adminView);
-        }
-        catch(FileNotFoundException e)
-        {
-            ErrorReporter.report(e);
-        }
-    }
-
-    private void demoButtonActionPerformed()
-    {
-        try
-        {
-            _treeSelection.getPart().demo();
-        }
-        catch(ActionException e)
-        {
-            ErrorReporter.report(e);
-        }
-    }
-    
-    private void openButtonActionPerformed()
-    {
-        try
-        {
-            _treeSelection.getPart().open(Iterables.get(_selectedGroups, 0));
-        }
-        catch(ActionException e)
-        {
-            ErrorReporter.report(e);
-        }
-        catch(MissingHandinException e)
-        {
-            notifyHandinMissing(e);
-        }
-    }
-
-    private void runButtonActionPerformed()
-    {
-        try
-        {
-            _treeSelection.getPart().run(Iterables.get(_selectedGroups, 0));
-        }
-        catch(ActionException e)
-        {
-            ErrorReporter.report(e);
-        }
-        catch(MissingHandinException e)
-        {
-            notifyHandinMissing(e);
-        }
-    }
-
-    private void testButtonActionPerformed()
-    {
-        try
-        {
-            _treeSelection.getPart().test(Iterables.get(_selectedGroups, 0));
-        }
-        catch(ActionException e)
-        {
-            ErrorReporter.report(e);
-        }
-        catch(MissingHandinException e)
-        {
-            notifyHandinMissing(e);
-        }
-    }
-
-    private void printButtonActionPerformed()
-    {
-        try
-        {
-            Set<Group> groupsWithHandin = new HashSet<Group>();
-            Set<Group> groupsWithoutHandin = new HashSet<Group>();
-            for(Group group : _selectedGroups)
-            {
-                File handin = _treeSelection.getGradableEvent().getDigitalHandin(group);
-                if(handin == null)
-                {
-                    groupsWithoutHandin.add(group);
-                }
-                else
-                {
-                    groupsWithHandin.add(group);
-                }
-            }
-            
-            boolean proceed = true;
-            if(!groupsWithoutHandin.isEmpty())
-            {
-                String message = "The following groups do not have handins; thus, their handins cannot be printed:\n";
-                for(Group group : groupsWithoutHandin)
-                {
-                    message += group.getName() + "\n";
-                }
-                proceed = ModalDialog.showConfirmation(_adminView, "Handins Not Present", message, "Print Anyway", "Cancel");
-            }
-            
-            if(proceed)
-            {
-                try
-                {
-                    _treeSelection.getPart().print(groupsWithHandin);
-                }
-                catch(ActionException e)
-                {
-                    ErrorReporter.report(null, e);
-                }
-            }
-        }
-        catch(IOException e)
-        {
-            ErrorReporter.report(null, e);
-        }
-    }
-    
-    private void viewReadmeButtonActionPerformed()
-    {
-        try
-        {
-            _treeSelection.getPart().viewReadme(_adminView, Iterables.get(_selectedGroups, 0));
-        }
-        catch(ActionException e)
-        {
-            ErrorReporter.report(e);
-        }
-        catch(MissingHandinException e)
-        {
-            notifyHandinMissing(e);
-        }
     }
     
     private void printGradingSheetButtonActionPerformed()
@@ -602,21 +365,38 @@ class ActionsPanel extends JPanel
     {
         new ManageGroupsView(_adminView, _treeSelection.getAssignment());
     }
-
-    private void notifyHandinMissing(MissingHandinException ex)
+    
+    private void actionButtonActionPerformed(ActionType type)
     {
-        ModalDialog.showMessage(_adminView, "Digital Handin Missing",
-                "The handin for " + ex.getGroup().getName() + " can no longer be found");
-        ex.getPart().getGradableEvent().clearDigitalHandinCache();
-        notifySelectionChanged(_treeSelection, _selectedGroups, _selectedStudentsNotInGroups);
+        Part part = _treeSelection.getPart();
+        Set<Group> groups = _selectedGroups;
+        try
+        {
+            part.performAction(_adminView, type, groups);
+        }
+        catch(ActionException ex)
+        {   
+            String message = "Could not " + type;
+            if(groups.isEmpty())
+            {
+                message += " for group(s) " + groups;
+            }
+            if(part != null)
+            {
+                message += " on part " + part.getFullDisplayName();
+            }
+            message += ".";
+
+            ErrorReporter.report(message, ex);
+        }
     }
     
-    private static class ActionButton extends JPanel
+    private static class StandardButton extends JPanel
     {
         private final JButton _button;
         private final String _singleText, _pluralText;
         
-        ActionButton(String singleText, String pluralText, IconImage image)
+        StandardButton(String singleText, String pluralText, IconImage image)
         {
             _singleText = "<html><b>" + singleText + "</b></html>";
             _pluralText = "<html><b>" + pluralText + "</b></html>";
@@ -651,6 +431,11 @@ class ActionsPanel extends JPanel
         final void addActionListener(ActionListener listener)
         {
             _button.addActionListener(listener);
+        }
+        
+        public void setEnabled(boolean enable)
+        {
+            _button.setEnabled(enable);
         }
     }
 }

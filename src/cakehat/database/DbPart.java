@@ -22,7 +22,6 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     private volatile File _gmlTemplate;
     private volatile Double _outOf;
     private volatile String _quickName;
-    private volatile File _gradingGuide;
     private final Set<DbPartAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
     
@@ -77,7 +76,6 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         _gmlTemplate = gmlTemplate == null ? null : new File(gmlTemplate);
         _outOf = outOf;
         _quickName = quickName;
-        _gradingGuide = gradingGuide == null ? null : new File(gradingGuide);
         _actions = new HashSet<DbPartAction>(actions);
         _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
     }
@@ -130,16 +128,6 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     public String getQuickName()
     {
         return _quickName;
-    }
-
-    public void setGradingGuide(File gradingGuide)
-    {
-        _gradingGuide = gradingGuide;
-    }
-    
-    public File getGradingGuide()
-    {
-        return _gradingGuide;
     }
     
     public Set<DbPartAction> getActions()

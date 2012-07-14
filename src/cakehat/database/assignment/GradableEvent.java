@@ -285,7 +285,15 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      */
     public boolean hasDigitalHandin(Group group) throws IOException
     {
-        return (this.getDigitalHandin(group) != null);
+        File handin = this.getDigitalHandin(group);
+        
+        //If the handin does not exist, then the cache is out of sync
+        if(handin != null && !handin.exists())
+        {
+            clearDigitalHandinCache();
+        }
+        
+        return handin != null && handin.exists();
     }
 
     /**

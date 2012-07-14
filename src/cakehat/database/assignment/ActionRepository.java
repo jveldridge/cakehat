@@ -40,6 +40,7 @@ public class ActionRepository
         this.addActionDescriptions(descriptionsBuilder, new PrintActions());
         this.addActionDescriptions(descriptionsBuilder, new ApplicationActions());
         this.addActionDescriptions(descriptionsBuilder, new ExternalActions());
+        this.addActionDescriptions(descriptionsBuilder, new GradingGuideActions());
         
         _descriptions = descriptionsBuilder.build();
     }
@@ -72,22 +73,14 @@ public class ActionRepository
      *
      * @return action
      *
-     * @throws ActionRespositoryException thrown if there is no action by the name of {@code actionName}, the action is
-     * incompatible with {@code intendedType}, or if the properties map is lacking required properties or includes
-     * nonexistent properties for the action
+     * @throws ActionRespositoryException thrown if there is no action by the name of {@code actionName}, or if the
+     * properties map is lacking required properties or includes nonexistent properties for the action
      */
     PartAction getAction(ActionType intendendType, String actionName, Map<String, String> parsedProperties)
     {
         if(_descriptions.containsKey(actionName))
         {
             PartActionDescription description = _descriptions.get(actionName);
-
-            if(!description.getCompatibleTypes().contains(intendendType))
-            {
-                throw new ActionRepositoryException(description.getFullName() + " is not compatible with type: " +
-                        intendendType + "\n" + "Compatible types: " + description.getCompatibleTypes());
-            }
-
             PartAction action = description.getAction(this.convertProperties(description, parsedProperties));
 
             return action;
