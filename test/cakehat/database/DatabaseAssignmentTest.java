@@ -6,6 +6,7 @@ import org.junit.Test;
 import cakehat.database.DatabaseTestHelpers.EqualityAsserter;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
+import cakehat.database.assignment.ActionDescription;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.Before;
@@ -288,7 +289,7 @@ public class DatabaseAssignmentTest {
         filter.setPath("/path/to/file");
         _database.putInclusionFilters(ImmutableSet.of(filter));
         
-        DbAction action = DbAction.build(part, "Run", null, 1);
+        DbAction action = DbAction.build(part, ActionDescription.RUN.toString(), ActionDescription.RUN.getIcon(), 1);
         action.setTask("java:compile-and-run");
         _database.putActions(ImmutableSet.of(action));
         
@@ -309,7 +310,7 @@ public class DatabaseAssignmentTest {
         DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
-        DbAction action = DbAction.build(part, "Run", null, 1);
+        DbAction action = DbAction.build(part, ActionDescription.RUN.toString(), ActionDescription.RUN.getIcon(), 1);
         action.setTask("java:compile-and-run");
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
@@ -341,7 +342,7 @@ public class DatabaseAssignmentTest {
         filter.setPath("/path/to/file");
         _database.putInclusionFilters(ImmutableSet.of(filter));
         
-        DbAction action = DbAction.build(part, "Run", null, 1);
+        DbAction action = DbAction.build(part, ActionDescription.RUN.toString(), ActionDescription.RUN.getIcon(), 1);
         action.setTask("java:compile-and-run");
         _database.putActions(ImmutableSet.of(action));
         
