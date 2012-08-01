@@ -1,6 +1,5 @@
 package cakehat.database;
 
-import cakehat.database.assignment.PartActionDescription;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     private volatile File _gmlTemplate;
     private volatile Double _outOf;
     private volatile String _quickName;
-    private final Set<DbPartAction> _actions;
+    private final Set<DbAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
     
     public static DbPart build(DbGradableEvent gradableEvent, String name, int order) {
@@ -47,7 +46,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         _name = name;
         _order = order;
         
-        _actions = new HashSet<DbPartAction>();
+        _actions = new HashSet<DbAction>();
         _inclusionFilters = new HashSet<DbInclusionFilter>();
     }
     
@@ -61,12 +60,11 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
      * @param gmlTemplate
      * @param outOf
      * @param quickName
-     * @param gradingGuide
      * @param actions
      * @param inclusionFilters 
      */
     DbPart(int gradableEventId, int id, String name, int order, String gmlTemplate, Double outOf, String quickName,
-           String gradingGuide, Set<DbPartAction> actions, Set<DbInclusionFilter> inclusionFilters)
+            Set<DbAction> actions, Set<DbInclusionFilter> inclusionFilters)
     {
         super(id);
         
@@ -76,7 +74,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         _gmlTemplate = gmlTemplate == null ? null : new File(gmlTemplate);
         _outOf = outOf;
         _quickName = quickName;
-        _actions = new HashSet<DbPartAction>(actions);
+        _actions = new HashSet<DbAction>(actions);
         _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
     }
     
@@ -130,7 +128,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         return _quickName;
     }
     
-    public Set<DbPartAction> getActions()
+    public Set<DbAction> getActions()
     {
         synchronized (_actions)
         {
@@ -138,20 +136,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         }
     }
     
-    public DbPartAction getAction(PartActionDescription.ActionType type)
-    {
-        synchronized (_actions) {
-            for (DbPartAction action : _actions) {
-                if (action.getType() == type) {
-                    return action;
-                }
-            }
-            
-            return null;
-        }
-    }
-    
-    void addAction(DbPartAction action)
+    void addAction(DbAction action)
     {
         synchronized (_actions)
         {
@@ -159,7 +144,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         }
     }
     
-    public void removeAction(DbPartAction action)
+    public void removeAction(DbAction action)
     {
         synchronized (_actions)
         {

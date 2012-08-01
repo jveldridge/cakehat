@@ -1,34 +1,34 @@
 package cakehat.database;
 
 /**
- * Represents an action property of a part action as it is represented in the database and configuration manager.
+ * Represents an action property of an action as it is represented in the database and configuration manager.
  * 
  * @author jak2
  * @author jeldridg
  */
 public class DbActionProperty extends DbDataItem
 {   
-    private volatile Integer _partActionId;
+    private volatile Integer _actionId;
     private final String _key;
     private volatile String _value;
     
-    public static DbActionProperty build(DbPartAction partAction, String key) {
-        DbActionProperty property = new DbActionProperty(partAction, key);
-        partAction.addActionProperty(property);
+    public static DbActionProperty build(DbAction action, String key) {
+        DbActionProperty property = new DbActionProperty(action, key);
+        action.addActionProperty(property);
         
         return property;
     }
     
     /**
-     * Constructor to be used by the configuration manager to create a new part action property for a part action.
+     * Constructor to be used by the configuration manager to create a new action property for an action.
      * 
-     * @param partAction 
+     * @param action 
      */
-    private DbActionProperty(DbPartAction partAction, String key)
+    private DbActionProperty(DbAction action, String key)
     {
         super(null);
         
-        _partActionId = partAction.getId();
+        _actionId = action.getId();
         _key = key;
         _value = "";
     }
@@ -36,16 +36,16 @@ public class DbActionProperty extends DbDataItem
     /**
      * Constructor to be used by the database to load action property data into memory.
      * 
-     * @param partAction 
+     * @param actionId
      * @param id
      * @param key
      * @param value 
      */
-    DbActionProperty(int partActionId, int id, String key, String value)
+    DbActionProperty(int actionId, int id, String key, String value)
     {
         super(id);
         
-        _partActionId = partActionId;
+        _actionId = actionId;
         _key = key;
         _value = value;
     }
@@ -65,12 +65,12 @@ public class DbActionProperty extends DbDataItem
         return _value;
     }
     
-    Integer getPartActionId() {
-        return _partActionId;
+    Integer getActionId() {
+        return _actionId;
     }
     
     @Override
     void setParentId(Integer id) {
-        _partActionId = id;
+        _actionId = id;
     }
 }

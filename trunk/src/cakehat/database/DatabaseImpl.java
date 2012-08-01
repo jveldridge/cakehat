@@ -368,11 +368,11 @@ public class DatabaseImpl implements Database
     private SetMultimap<Integer, DbPart> getParts(Connection conn) throws SQLException {
         ImmutableSetMultimap.Builder<Integer, DbPart> parts = ImmutableSetMultimap.builder();
         
-        SetMultimap<Integer, DbPartAction> partActions = this.getPartActions(conn);
+        SetMultimap<Integer, DbAction> actions = this.getActions(conn);
         SetMultimap<Integer, DbInclusionFilter> inclusionFilters = this.getInclusionFilters(conn);
         
-        PreparedStatement ps = conn.prepareStatement("SELECT pid, geid, name, ordering, gmltemplate, outof, quickname, "
-                + "gradingguide FROM part");
+        PreparedStatement ps = conn.prepareStatement("SELECT pid, geid, name, ordering, gmltemplate, outof, quickname "
+                + " FROM part");
      
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
@@ -380,8 +380,8 @@ public class DatabaseImpl implements Database
             int partId = rs.getInt("pid");
             parts.put(gradableEventId, new DbPart(gradableEventId, partId, rs.getString("name"), rs.getInt("ordering"),
                                                   rs.getString("gmltemplate"), getDouble(rs, "outof"),
-                                                  rs.getString("quickname"), rs.getString("gradingguide"),
-                                                  partActions.get(partId), inclusionFilters.get(partId)));
+                                                  rs.getString("quickname"), actions.get(partId),
+                                                  inclusionFilters.get(partId)));
         }
 
         return parts.build();
@@ -402,32 +402,33 @@ public class DatabaseImpl implements Database
         return filters.build();
     }
     
-    private SetMultimap<Integer, DbPartAction> getPartActions(Connection conn) throws SQLException {
-        ImmutableSetMultimap.Builder<Integer, DbPartAction> properties = ImmutableSetMultimap.builder();
+    private SetMultimap<Integer, DbAction> getActions(Connection conn) throws SQLException {
+        ImmutableSetMultimap.Builder<Integer, DbAction> actions = ImmutableSetMultimap.builder();
         
-        SetMultimap<Integer, DbActionProperty> partActionProperties = this.getPartActionProperties(conn);
+        SetMultimap<Integer, DbActionProperty> actionProperties = this.getActionProperties(conn);
         
-        PreparedStatement ps = conn.prepareStatement("SELECT paid, pid, type, name FROM partaction");
+        PreparedStatement ps = conn.prepareStatement("SELECT acid, pid, name, icon, ordering, task FROM action");
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             int partId = rs.getInt("pid");
-            int partActionId = rs.getInt("paid");
-            properties.put(partId, new DbPartAction(partId, partActionId, rs.getString("type"), rs.getString("name"),
-                                                    partActionProperties.get(partActionId)));
+            int actionId = rs.getInt("acid");
+            
+            actions.put(partId, new DbAction(partId, actionId, rs.getString("name"), rs.getString("icon"),
+                    rs.getInt("ordering"), rs.getString("task"), actionProperties.get(actionId)));
         }
 
-        return properties.build();
+        return actions.build();
     }
     
-    private SetMultimap<Integer, DbActionProperty> getPartActionProperties(Connection conn) throws SQLException {
+    private SetMultimap<Integer, DbActionProperty> getActionProperties(Connection conn) throws SQLException {
         ImmutableSetMultimap.Builder<Integer, DbActionProperty> properties = ImmutableSetMultimap.builder();
 
-        PreparedStatement ps = conn.prepareStatement("SELECT apid, paid, key, value FROM actionproperty");
+        PreparedStatement ps = conn.prepareStatement("SELECT apid, acid, key, value FROM actionproperty");
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int partActionId = rs.getInt("paid");
+            int partActionId = rs.getInt("acid");
             properties.put(partActionId, new DbActionProperty(partActionId, rs.getInt("apid"), rs.getString("key"),
                                                               rs.getString("value")));
         }
@@ -492,7 +493,7 @@ public class DatabaseImpl implements Database
     }
 
     private final DbDataItemPutOperation<DbPart> PART_PUT_OP = new DbDataItemPutOperation<DbPart>(
-            "INSERT INTO PART (geid, name, ordering, gmltemplate, outof, quickname, gradingguide) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO PART (geid, name, ordering, gmltemplate, outof, quickname) VALUES (?, ?, ?, ?, ?, ?)",
             "UPDATE part SET geid = ?, name = ?, ordering = ?, gmltemplate = ?, outof = ?, quickname = ? "
             + "WHERE pid == ?") {
 
@@ -518,36 +519,38 @@ public class DatabaseImpl implements Database
         this.removeDbDataItems("part", "pid", parts);
     }
 
-    private final DbDataItemPutOperation<DbPartAction> PART_ACTION_PUT_OP = new DbDataItemPutOperation<DbPartAction>(
-            "INSERT INTO partaction (pid, type, name) VALUES (?, ?, ?)", 
-            "UPDATE partaction SET pid = ?, type = ?, name = ? WHERE paid == ?") {
+    private final DbDataItemPutOperation<DbAction> ACTION_PUT_OP = new DbDataItemPutOperation<DbAction>(
+            "INSERT INTO action (pid, name, icon, ordering, task) VALUES (?, ?, ?, ?, ?)", 
+            "UPDATE action SET pid = ?, name = ?, icon = ?, ordering = ?, task = ? WHERE acid == ?") {
 
         @Override
-        int setFields(PreparedStatement ps, DbPartAction item) throws SQLException {
+        int setFields(PreparedStatement ps, DbAction item) throws SQLException {
             ps.setInt(1, item.getPartId());
-            setObjectAsStringNullSafe(ps, 2, item.getType());
-            ps.setString(3, item.getName());
-            return 4;
+            ps.setString(2, item.getName());
+            ps.setString(3, item.getIcon().toString());
+            ps.setInt(4, item.getOrder());
+            setObjectAsStringNullSafe(ps, 5, item.getTask());
+            return 6;
         }
     };
     
     @Override
-    public void putPartActions(Set<DbPartAction> partActions) throws SQLException {
-        this.putDbDataItems(partActions, PART_ACTION_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
+    public void putActions(Set<DbAction> partActions) throws SQLException {
+        this.putDbDataItems(partActions, ACTION_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
     }
 
     @Override
-    public void removePartActions(Set<DbPartAction> partActions) throws SQLException {
-        this.removeDbDataItems("partaction", "paid", partActions);
+    public void removeActions(Set<DbAction> partActions) throws SQLException {
+        this.removeDbDataItems("action", "acid", partActions);
     }
     
     private final DbDataItemPutOperation<DbActionProperty> ACTION_PROPERTY_PUT_OP = new DbDataItemPutOperation<DbActionProperty>(
-            "INSERT INTO actionproperty (paid, key, value) VALUES (?, ?, ?)", 
-            "UPDATE actionproperty SET paid = ?, key = ?, value = ? WHERE apid == ?") {
+            "INSERT INTO actionproperty (acid, key, value) VALUES (?, ?, ?)", 
+            "UPDATE actionproperty SET acid = ?, key = ?, value = ? WHERE apid == ?") {
 
         @Override
         int setFields(PreparedStatement ps, DbActionProperty item) throws SQLException {
-            ps.setInt(1, item.getPartActionId());
+            ps.setInt(1, item.getActionId());
             ps.setString(2, item.getKey());
             ps.setString(3, item.getValue());
             return 4;
@@ -555,12 +558,12 @@ public class DatabaseImpl implements Database
     };
     
     @Override
-    public void putPartActionProperties(Set<DbActionProperty> actionProperties) throws SQLException {
+    public void putActionProperties(Set<DbActionProperty> actionProperties) throws SQLException {
         this.putDbDataItems(actionProperties, ACTION_PROPERTY_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
     }
 
     @Override
-    public void removePartActionProperties(Set<DbActionProperty> actionProperties) throws SQLException {
+    public void removeActionProperties(Set<DbActionProperty> actionProperties) throws SQLException {
         this.removeDbDataItems("actionproperty", "apid", actionProperties);
     }
     
@@ -1690,7 +1693,7 @@ public class DatabaseImpl implements Database
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS partaction");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS action");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS part");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradableevent");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS assignment");
@@ -1753,18 +1756,19 @@ public class DatabaseImpl implements Database
                     + " outof DOUBLE,"
                     + " quickname VARCHAR,"
                     + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE)");
-            conn.createStatement().executeUpdate("CREATE TABLE partaction (paid INTEGER PRIMARY KEY AUTOINCREMENT,"
+            conn.createStatement().executeUpdate("CREATE TABLE action (acid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " pid INTEGER NOT NULL,"
-                    + " type VARCHAR NOT NULL,"
                     + " name VARCHAR NOT NULL,"
-                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
-                    + " CONSTRAINT pidtypeunique UNIQUE (pid, name) ON CONFLICT ROLLBACK)");
+                    + " icon VARCHAR NOT NULL,"
+                    + " ordering INTEGER NOT NULL,"
+                    + " task VARCHAR,"
+                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE)");
             conn.createStatement().executeUpdate("CREATE TABLE actionproperty (apid INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + " paid INTEGER NOT NULL,"
+                    + " acid INTEGER NOT NULL,"
                     + " key VARCHAR NOT NULL,"
                     + " value VARCHAR NOT NULL,"
-                    + " FOREIGN KEY (paid) REFERENCES partaction(paid) ON DELETE CASCADE,"
-                    + " CONSTRAINT paidkeyunique UNIQUE (paid, key) ON CONFLICT ROLLBACK)");
+                    + " FOREIGN KEY (acid) REFERENCES action(acid) ON DELETE CASCADE,"
+                    + " CONSTRAINT acidkeyunique UNIQUE (acid, key) ON CONFLICT ROLLBACK)");
             conn.createStatement().executeUpdate("CREATE TABLE inclusionfilter (ifid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " pid INTEGER NOT NULL,"
                     + " type VARCHAR NOT NULL,"

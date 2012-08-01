@@ -1,17 +1,16 @@
 package cakehat.views.config;
 
-import support.ui.DocumentAdapter;
 import cakehat.Allocator;
-import cakehat.database.assignment.ActionRepository;
-import cakehat.database.DeadlineInfo;
-import cakehat.database.assignment.PartActionDescription;
-import cakehat.database.assignment.PartActionDescription.ActionType;
-import cakehat.database.assignment.PartActionProperty;
+import cakehat.database.DbAction;
 import cakehat.database.DbActionProperty;
+import cakehat.database.DeadlineInfo;
 import cakehat.database.DbAssignment;
 import cakehat.database.DbGradableEvent;
 import cakehat.database.DbPart;
-import cakehat.database.DbPartAction;
+import cakehat.database.assignment.ActionDescription;
+import cakehat.database.assignment.Task;
+import cakehat.database.assignment.TaskProperty;
+import cakehat.database.assignment.TaskRepository;
 import cakehat.logging.ErrorReporter;
 import cakehat.views.config.ValidationResult.ValidationState;
 import com.google.common.collect.ImmutableList;
@@ -30,7 +29,6 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,24 +42,33 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import support.resources.icons.IconLoader;
+import support.resources.icons.IconLoader.IconImage;
+import support.resources.icons.IconLoader.IconSize;
 import support.ui.DateTimeControl;
 import support.ui.DescriptionProvider;
+import support.ui.DocumentAdapter;
 import support.ui.DnDList;
 import support.ui.DnDListener;
-import support.ui.GenericJComboBox;
 import support.ui.FormattedLabel;
+import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
 import support.ui.PaddingPanel;
 import support.ui.PartialDescriptionProvider;
@@ -1023,14 +1030,6 @@ class AssignmentPanel extends JPanel
                             }
                         });
                     }
-                    
-                    if((newValue.isEmpty() && !currValue.isEmpty()) || (!newValue.isEmpty() && currValue.isEmpty()))
-                    {
-                        for(PartPanel panel : _partPanels.values())
-                        {
-                            panel.notifyChangeHasDigitalHandinDirectory(!newValue.isEmpty());
-                        }
-                    }
                 }
             };
             _directoryField.setAlignmentX(LEFT_ALIGNMENT);
@@ -1641,7 +1640,9 @@ class AssignmentPanel extends JPanel
         private final JButton _upButton, _downButton;
         private final ValidatingTextField _nameField, _gmlField, _outOfField, _quickNameField;
         
-        private final JPanel _partActionsPanel;
+        private final Map<DbAction, ActionPanel> _actionPanels = new HashMap<DbAction, ActionPanel>();
+        private final JPanel _actionsPanel;
+        private final JButton _addActionButton;
         
         private PartPanel(GradableEventPanel gePanel, DbPart part)
         {
@@ -2045,72 +2046,125 @@ class AssignmentPanel extends JPanel
             };
             quickNamePanel.add(_quickNameField);
             
-            _partActionsPanel = new JPanel();
-            _partActionsPanel.setLayout(new BoxLayout(_partActionsPanel, BoxLayout.Y_AXIS));
-            _partActionsPanel.setAlignmentX(LEFT_ALIGNMENT);
-            _partActionsPanel.setBackground(contentPanel.getBackground());
-            contentPanel.add(_partActionsPanel);
-            this.notifyChangeHasDigitalHandinDirectory(_gePanel._gradableEvent.getDirectory() != null);
-        }
-        
-        void notifyChangeHasDigitalHandinDirectory(final boolean hasDirectory)
-        {
-            //If there is no longer a digital handin directory, remove actions that require a digital handin directory
-            if(!hasDirectory)
+            contentPanel.add(Box.createVerticalStrut(5));
+            
+            JLabel actionsLabel = FormattedLabel.asSubheader("Actions");
+            actionsLabel.setToolTipText("An Action is a task performed for a part, which can include acting on a " +
+                    "digital handin");
+            contentPanel.add(actionsLabel);
+            
+            _addActionButton = new JButton("Add Action");
+            _addActionButton.setAlignmentX(LEFT_ALIGNMENT);
+            _addActionButton.addActionListener(new ActionListener()
             {
-                ImmutableSet.Builder<DbPartAction> toRemoveBuilder = ImmutableSet.builder();
-                for(DbPartAction partAction : _part.getActions())
+                @Override
+                public void actionPerformed(ActionEvent ae)
                 {
-                    if(partAction.getType().requiresDigitalHandin())
+                    //Determine the order and the default name for the new action
+                    int maxOrder = -1;
+                    HashSet<String> actionNames = new HashSet<String>();
+
+                    for(DbAction action : _part.getActions())
                     {
-                        toRemoveBuilder.add(partAction);
-                    }
-                }
-                final ImmutableSet<DbPartAction> toRemove = toRemoveBuilder.build();
-                for(DbPartAction actionToRemove : toRemove)
-                {
-                    _part.removeAction(actionToRemove);
-                }
-                
-                _worker.submit(WORKER_TAG, new ReinitializeRunnable()
-                {
-                    @Override
-                    public void dbCall() throws SQLException
-                    {
-                        Allocator.getDatabase().removePartActions(toRemove);
+                        maxOrder = Math.max(maxOrder, action.getOrder());
+                        actionNames.add(action.getName());
                     }
 
-                    @Override
-                    public String dbFailureMessage()
+                    int actionOrder = maxOrder + 1;
+                    
+                    String actionName;
+                    IconImage actionIcon;
+                    List<ActionDescription> availableSuggestedDescriptions = new ArrayList<ActionDescription>();
+                    for(ActionDescription description : ActionDescription.getDefaultDescriptions())
                     {
-                        return "Unable to remove part actions as a result of removing digital handin directory";
+                        if(!actionNames.contains(description.getName()))
+                        {
+                            availableSuggestedDescriptions.add(description);
+                        }
                     }
-                });
-            }
+                    if(availableSuggestedDescriptions.isEmpty())
+                    {
+                        actionName = ActionDescription.CUSTOM.getName();
+                        actionIcon = ActionDescription.CUSTOM.getIcon();
+                    }
+                    else
+                    {
+                        ActionDescription description = availableSuggestedDescriptions.get(0);
+                        actionName = description.getName();
+                        actionIcon = description.getIcon();
+                    }
+                    
+                    final DbAction action = DbAction.build(_part, actionName, actionIcon, actionOrder);
+                    
+                    ActionPanel panel = new ActionPanel(PartPanel.this, action);
+                    _actionPanels.put(action, panel);
+                    updateDisplayedActionPanels();
+                    
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            Allocator.getDatabase().putActions(ImmutableSet.of(action));
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to update or insert action " + action.getName();
+                        }
+                    });
+                }
+            });
             
-            _partActionsPanel.removeAll();
+            _actionsPanel = new JPanel();
+            _actionsPanel.setBackground(this.getBackground());
+            _actionsPanel.setLayout(new BoxLayout(_actionsPanel, BoxLayout.Y_AXIS));
+            _actionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+            contentPanel.add(_actionsPanel);
             
-            for(ActionType type : ActionType.values())
+            List<DbAction> actions = new ArrayList<DbAction>(_part.getActions());
+            Collections.sort(actions);
+            for(DbAction action : actions)
             {
-                if((type.requiresDigitalHandin() && !hasDirectory) || !type.isUserConfigurable())
-                {
-                    continue;
-                }
-                
-                _partActionsPanel.add(Box.createVerticalStrut(10));
-                
-                DbPartAction partAction = _part.getAction(type);
-                if(partAction == null)
-                {
-                    partAction = DbPartAction.build(_part, type);
-                }
-                PartActionPanel panel = new PartActionPanel(partAction, _partActionsPanel.getBackground());
-                panel.setAlignmentX(LEFT_ALIGNMENT);
-                _partActionsPanel.add(panel);
+                ActionPanel panel = new ActionPanel(this, action);
+                _actionPanels.put(action, panel);
+            }
+            this.updateDisplayedActionPanels();
+        }
+        
+        void updateDisplayedActionPanels()
+        {
+            _actionsPanel.removeAll();
+            
+            List<DbAction> actions = new ArrayList<DbAction>(_part.getActions());
+            Collections.sort(actions);
+            
+            for(DbAction action : actions)
+            {
+                ActionPanel panel = _actionPanels.get(action);
+                _actionsPanel.add(panel);
+                _actionsPanel.add(Box.createVerticalStrut(5));
+                panel.reorderOccurred();
             }
             
-            _partActionsPanel.repaint();
-            _partActionsPanel.revalidate();
+            JPanel addPanel = new JPanel(new BorderLayout(0, 0))
+            {
+                @Override
+                public Dimension getMaximumSize()
+                {
+                    Dimension size = getPreferredSize();
+                    size.width = Short.MAX_VALUE;
+
+                    return size;
+                }
+            };
+            addPanel.add(_addActionButton, BorderLayout.CENTER);
+            _actionsPanel.add(addPanel);
+            
+            //Force visual update to reflect these changes
+            _actionsPanel.repaint();
+            _actionsPanel.revalidate();
         }
         
         @Override
@@ -2152,371 +2206,560 @@ class AssignmentPanel extends JPanel
                 return "Unable to insert or update part " + _part.getName();
             }
         }
+    }
+    
+    private class ActionPanel extends JPanel
+    {
+        private final PartPanel _partPanel;
+        private final DbAction _action;
         
-        private class PartActionPanel extends JPanel
+        private final JButton _upButton, _downButton;
+        private final JComboBox _iconComboBox;
+        private final JComboBox _nameComboBox;
+        private final GenericJComboBox<Task> _taskComboBox;
+        private final JPanel _propertiesPanel;
+        
+        ActionPanel(PartPanel partPanel, DbAction action)
         {
-            private final ActionType _type;
-            private final GenericJComboBox<PartActionDescription> _actionComboBox;
-            private final DbPartAction _partAction;
-            private final JPanel _requiredPropsPanel, _optionalPropsPanel;
+            _partPanel = partPanel;
+            _action = action;
             
-            PartActionPanel(DbPartAction partAction, Color background)
+            this.setBackground(new Color(200, 200, 200));
+            this.setBorder(BorderFactory.createEtchedBorder());
+            
+            this.setLayout(new BorderLayout(0, 0));
+            
+            JPanel contentPanel = new JPanel();
+            contentPanel.setBackground(this.getBackground());
+            contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+            PaddingPanel paddingPanel = new PaddingPanel(contentPanel, 5);
+            paddingPanel.setBackground(this.getBackground());
+            this.add(paddingPanel, BorderLayout.CENTER);
+            
+            
+            JPanel headlinePanel = new JPanel(new BorderLayout(0, 0))
             {
-                _type = partAction.getType();
-                _partAction = partAction;
-                this.setBackground(background);
+                @Override
+                public Dimension getMaximumSize()
+                {
+                    Dimension size = getPreferredSize();
+                    size.width = Short.MAX_VALUE;
+
+                    return size;
+                }
+            };            
+            headlinePanel.setAlignmentX(LEFT_ALIGNMENT);
+            headlinePanel.setBackground(this.getBackground());
+            contentPanel.add(headlinePanel);
+            
+            JPanel controlPanel = new JPanel();
+            controlPanel.setBackground(this.getBackground());
+            headlinePanel.add(controlPanel, BorderLayout.EAST);
+            controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
+            
+            controlPanel.add(Box.createHorizontalStrut(3));
+            
+            _upButton = new JButton("⇑");
+            _upButton.setEnabled(false);
+            _upButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ae)
+                {
+                    _action.setOrder(_action.getOrder() - 1);
+                    
+                    ImmutableSet.Builder<DbAction> reorderedBuilder = ImmutableSet.builder();
+                    reorderedBuilder.add(_action);
+                    for(DbAction action : _partPanel._part.getActions())
+                    {
+                        if(action != _action && action.getOrder() == _action.getOrder())
+                        {
+                            action.setOrder(action.getOrder() + 1);
+                            reorderedBuilder.add(action);
+                        }
+                    }
+                    final ImmutableSet<DbAction> reorderedActions = reorderedBuilder.build();
+                    
+                    _partPanel.updateDisplayedActionPanels();
+                    
+                    //Reorder actions on the worker thread
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            Allocator.getDatabase().putActions(reorderedActions);
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to reorder action: " + _action.getName();
+                        }
+                    });
+                }
+            });
+            controlPanel.add(_upButton);
+            
+            controlPanel.add(Box.createHorizontalStrut(3));
+            
+            _downButton = new JButton("⇓");
+            _downButton.setEnabled(false);
+            _downButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ae)
+                {
+                    _action.setOrder(_action.getOrder() + 1);
+                    
+                    ImmutableSet.Builder<DbAction> reorderedBuilder = ImmutableSet.builder();
+                    reorderedBuilder.add(_action);
+                    for(DbAction action : _partPanel._part.getActions())
+                    {
+                        if(_action != action && action.getOrder() == _action.getOrder())
+                        {
+                            action.setOrder(action.getOrder() - 1);
+                            reorderedBuilder.add(action);
+                        }
+                    }
+                    final ImmutableSet<DbAction> reorderedActions = reorderedBuilder.build();
+                    
+                    _partPanel.updateDisplayedActionPanels();
+                    
+                    //Reorder actions on the worker thread
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            Allocator.getDatabase().putActions(reorderedActions);
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to reorder action: " + _action.getName();
+                        }
+                    });
+                }
+            });
+            controlPanel.add(_downButton);
+            
+            this.reorderOccurred();
+            
+            controlPanel.add(Box.createHorizontalStrut(3));
+            
+            JButton deleteButton = new JButton("Delete");
+            deleteButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ae)
+                {
+                    _partPanel._part.removeAction(_action);
+                    ImmutableSet.Builder<DbAction> reorderedBuilder = ImmutableSet.builder();
+                    for(DbAction action : _partPanel._part.getActions())
+                    {
+                        if(action.getOrder() > _action.getOrder())
+                        {
+                            action.setOrder(action.getOrder() - 1);
+                            reorderedBuilder.add(action);
+                        }
+                    }
+                    final ImmutableSet<DbAction> reorderedActions = reorderedBuilder.build();
+
+                    _partPanel.updateDisplayedActionPanels();
+
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            Allocator.getDatabase().removeActions(ImmutableSet.of(_action));
+
+                            //This absolutely needs to occur after the delete call so in case that fails this
+                            //code will not execute
+                            Allocator.getDatabase().putActions(reorderedActions);
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to delete action: " + _action.getName();
+                        }
+                    });
+                }
+            });
+            controlPanel.add(deleteButton);
+            
+            JPanel nameAndIconPanel = new JPanel(new BorderLayout(0, 0));
+            nameAndIconPanel.setBackground(headlinePanel.getBackground());
+            headlinePanel.add(nameAndIconPanel, BorderLayout.CENTER);
+            
+            _iconComboBox = new JComboBox(IconImage.values());
+            _iconComboBox.setSelectedItem(_action.getIcon());
+            _iconComboBox.setPreferredSize(new Dimension(40, 25));
+            _iconComboBox.setRenderer(new ListCellRenderer()
+            {
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus)
+                {
+                    Icon icon = null;
+                    if(value instanceof IconImage)
+                    {
+                        icon = IconLoader.loadIcon(IconSize.s16x16, (IconImage) value);
+                    }
+                    
+                    JLabel label = new JLabel("", icon, SwingConstants.LEFT);
+                    
+                    if(isSelected)
+                    {
+                        label.setBackground(list.getSelectionBackground());
+                        label.setForeground(list.getSelectionForeground());
+                    }
+                    else
+                    {
+                        label.setBackground(list.getBackground());
+                        label.setForeground(list.getForeground());
+                    }
+                    
+                    return label;
+                }
+            });
+            _iconComboBox.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ae)
+                {
+                    final IconImage icon;
+                    //This should always be true, but check just in case
+                    if(_iconComboBox.getSelectedItem() instanceof IconImage)
+                    {
+                        icon = (IconImage) _iconComboBox.getSelectedItem();
+                    }
+                    else
+                    {
+                        icon = null;
+                    }
+                    
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            _action.setIcon(icon);
+                            Allocator.getDatabase().putActions(ImmutableSet.of(_action));
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to modify action name: " + _action.getName();
+                        }
+                    });
+                }
+            });
+            nameAndIconPanel.add(_iconComboBox, BorderLayout.WEST);
+            
+            _nameComboBox = new JComboBox(ActionDescription.getDefaultDescriptions().toArray());
+            _nameComboBox.setEditable(true);
+            _nameComboBox.setSelectedItem(_action.getName());
+            _nameComboBox.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ae)
+                {
+                    final String name = _nameComboBox.getSelectedItem().toString();
+                    
+                    if(_nameComboBox.getSelectedItem() instanceof ActionDescription)
+                    {
+                        ActionDescription description = (ActionDescription) _nameComboBox.getSelectedItem();
+                        _iconComboBox.setSelectedItem(description.getIcon());
+                    }
+                    
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            _action.setName(name);
+                            Allocator.getDatabase().putActions(ImmutableSet.of(_action));
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to modify action name from " + _action.getName() + " to " + name;
+                        }
+                    });
+                }
+            });
+            
+            nameAndIconPanel.add(_nameComboBox, BorderLayout.CENTER);
+            
+            contentPanel.add(Box.createVerticalStrut(10));
+            
+            contentPanel.add(FormattedLabel.asHeader("Task"));
+            
+            final FormattedLabel digitalHandinRequiredLabel = FormattedLabel.asContent("This task requires a digital " +
+                    "handin to operate");
+            final FormattedLabel taskDescriptionLabel = FormattedLabel.asContent("").usePlainFont();
+            JPanel propertyIndentPanel = new JPanel();
+            propertyIndentPanel.setBackground(contentPanel.getBackground());
+            _propertiesPanel = new JPanel();
+            _propertiesPanel.setBackground(propertyIndentPanel.getBackground());
+            _propertiesPanel.setLayout(new BoxLayout(_propertiesPanel, BoxLayout.Y_AXIS));
+            
+            _taskComboBox = new GenericJComboBox<Task>(TaskRepository.getTasks().values(),
+            new DescriptionProvider<Task>()
+            {
+                @Override
+                public String getDisplayText(Task task)
+                {
+                    String displayText = "";
+                    if(task != null)
+                    {
+                        displayText = task.getFullName();
+                    }
+                    
+                    return displayText;
+                }
+
+                @Override
+                public String getToolTipText(Task task)
+                {
+                    String toolTip = "";
+                    if(task != null)
+                    {
+                        toolTip = task.getDescription();
+                    }
+                    
+                    return toolTip;
+                }
+            });
+            Task task = TaskRepository.getTasks().get(_action.getTask());
+            _taskComboBox.setGenericSelectedItem(task);
+            //If there is a task stored in the database, load up the properties
+            if(task != null)
+            {
+                digitalHandinRequiredLabel.setVisible(task.requiresDigitalHandin());
+                taskDescriptionLabel.setText(task.getDescription().replaceAll("\n", "<br/>"));
                 
+                //Required        
+                Set<DbActionProperty> requiredProperties = new HashSet<DbActionProperty>();
+                for(TaskProperty property : task.getRequiredProperties())
+                {
+                    for(DbActionProperty propertyValue : _action.getActionProperties())
+                    {
+                        if(property.getName().equals(propertyValue.getKey()))
+                        {
+                            requiredProperties.add(propertyValue);
+                        }
+                    }
+                }
+                if(!task.getRequiredProperties().isEmpty())
+                {
+                    _propertiesPanel.add(Box.createVerticalStrut(5));
+                    PropertiesPanel panel = new PropertiesPanel("Required Properties",
+                            task.getRequiredProperties(), requiredProperties);
+                    panel.setBackground(_propertiesPanel.getBackground());
+                    _propertiesPanel.add(panel);
+                }
+
+                //Optional
+                Set<DbActionProperty> optionalProperties = new HashSet<DbActionProperty>();
+                if(!task.getOptionalProperties().isEmpty())
+                {
+                    _propertiesPanel.add(Box.createVerticalStrut(5));
+                    PropertiesPanel panel = new PropertiesPanel("Optional Properties",
+                            task.getOptionalProperties(), optionalProperties);
+                    panel.setBackground(_propertiesPanel.getBackground());
+                    _propertiesPanel.add(panel);
+                }
+                for(TaskProperty property : task.getOptionalProperties())
+                {
+                    for(DbActionProperty propertyValue : _action.getActionProperties())
+                    {
+                        if(property.getName().equals(propertyValue.getKey()))
+                        {
+                            optionalProperties.add(propertyValue);
+                        }
+                    }
+                }
+            }
+            
+            _taskComboBox.addSelectionListener(new SelectionListener<Task>()
+            {
+                @Override
+                public void selectionPerformed(Task currTask, Task newTask, SelectionAction action)
+                {
+                    _propertiesPanel.removeAll();
+                    
+                    final String taskName;
+                    if(newTask == null)
+                    {
+                        taskName = null;
+                        digitalHandinRequiredLabel.setVisible(false);
+                        taskDescriptionLabel.setText("No task selected");
+                    }
+                    else
+                    {
+                        taskName = newTask.getFullName();
+                        digitalHandinRequiredLabel.setVisible(newTask.requiresDigitalHandin());
+                        taskDescriptionLabel.setText(newTask.getDescription().replaceAll("\n", "<br/>"));
+                        
+                        if(!newTask.getRequiredProperties().isEmpty())
+                        {
+                            _propertiesPanel.add(Box.createVerticalStrut(5));
+                            PropertiesPanel panel = new PropertiesPanel("Required Properties",
+                                    newTask.getRequiredProperties(), ImmutableSet.<DbActionProperty>of());
+                            panel.setBackground(_propertiesPanel.getBackground());
+                            _propertiesPanel.add(panel);
+                        }
+                        if(!newTask.getOptionalProperties().isEmpty())
+                        {
+                            _propertiesPanel.add(Box.createVerticalStrut(5));
+                            PropertiesPanel panel = new PropertiesPanel("Optional Properties",
+                                    newTask.getOptionalProperties(), ImmutableSet.<DbActionProperty>of());
+                            panel.setBackground(_propertiesPanel.getBackground());
+                            _propertiesPanel.add(panel);
+                        }
+                    }
+                    
+                    _propertiesPanel.repaint();
+                    _propertiesPanel.revalidate();
+                    
+                    //Remove the no longer valid properties, as they belong to a different task
+                    final Set<DbActionProperty> properties = ImmutableSet.copyOf(_action.getActionProperties());
+
+                    _worker.submit(WORKER_TAG, new ReinitializeRunnable()
+                    {
+                        @Override
+                        public void dbCall() throws SQLException
+                        {
+                            _action.setTask(taskName);
+                            Allocator.getDatabase().putActions(ImmutableSet.of(_action));
+                            Allocator.getDatabase().removeActionProperties(properties);
+                        }
+
+                        @Override
+                        public String dbFailureMessage()
+                        {
+                            return "Unable to set action's task to: " + taskName;
+                        }
+                    });
+                }
+            });
+            _taskComboBox.setAlignmentX(LEFT_ALIGNMENT);
+            
+            contentPanel.add(_taskComboBox);
+            contentPanel.add(digitalHandinRequiredLabel);
+            contentPanel.add(taskDescriptionLabel);
+            
+            propertyIndentPanel.setAlignmentX(LEFT_ALIGNMENT);
+            propertyIndentPanel.setLayout(new BoxLayout(propertyIndentPanel, BoxLayout.X_AXIS));
+            propertyIndentPanel.add(Box.createHorizontalStrut(10));
+            propertyIndentPanel.add(_propertiesPanel);
+            contentPanel.add(propertyIndentPanel);
+        }
+        
+        private class PropertiesPanel extends JPanel
+        {
+            PropertiesPanel(String title, Set<TaskProperty> properties, Set<DbActionProperty> propertiesValues)
+            {   
                 this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+                this.add(FormattedLabel.asSubheader(title));
                 
-                this.add(FormattedLabel.asSubheader(_type.getUserFriendlyName()));
-                
-                //Text pane to display description info
-                final JLabel descriptionLabel = FormattedLabel.asContent("No action will be taken");
-                descriptionLabel.setAlignmentX(LEFT_ALIGNMENT);
-                
-                //List of descriptions
-                List<PartActionDescription> suggestedDescriptions = new ArrayList<PartActionDescription>();
-                List<PartActionDescription> compatibleNotSuggestedDescriptions = new ArrayList<PartActionDescription>();
-                for(PartActionDescription desc : ActionRepository.get().getActionDescriptions().values())
+                for(final TaskProperty property : properties)
                 {
-                    //If this type is one suggested by the description for the part action
-                    if(desc.getSuggestedTypes().contains(_type))
+                    this.add(Box.createVerticalStrut(3));
+                    this.add(FormattedLabel.asContent(property.getName()));
+                    this.add(FormattedLabel.asContent(property.getDescription().replaceAll("\n", "<br/>"))
+                            .usePlainFont());
+                    
+                    //Find the existing value in the database, if it does not exist - make one
+                    DbActionProperty propertyValue = null;
+                    for(DbActionProperty value : propertiesValues)
                     {
-                        suggestedDescriptions.add(desc);
-                    }
-                    //Else if this type requires a digital handin, then all other part actions are compatible
-                    else if(_type.requiresDigitalHandin())
-                    {
-                        compatibleNotSuggestedDescriptions.add(desc);
-                    }
-                    //Else if this type does not require a digital handin, then only part actions which do not require
-                    //a digital handin are compatible
-                    else if(!_type.requiresDigitalHandin() && !desc.requiresDigitalHandin())
-                    {
-                        compatibleNotSuggestedDescriptions.add(desc);
-                    }
-                }
-                Comparator<PartActionDescription> descriptionNameComparator = new Comparator<PartActionDescription>()
-                {
-                    @Override
-                    public int compare(PartActionDescription d1, PartActionDescription d2)
-                    {
-                        return d1.getFullName().compareTo(d2.getFullName());
-                    }
-                };
-                Collections.sort(suggestedDescriptions, descriptionNameComparator);
-                Collections.sort(compatibleNotSuggestedDescriptions, descriptionNameComparator);
-                
-                List<PartActionDescription> compatibleDescriptions = new ArrayList<PartActionDescription>();
-                compatibleDescriptions.add(null);
-                compatibleDescriptions.addAll(suggestedDescriptions);
-                compatibleDescriptions.addAll(compatibleNotSuggestedDescriptions);
-                
-                _actionComboBox = new GenericJComboBox<PartActionDescription>(compatibleDescriptions,
-                        new DescriptionProvider<PartActionDescription>()
-                {
-                    @Override
-                    public String getDisplayText(PartActionDescription item)
-                    {
-                        String display = "No Action";
-                        if(item != null)
+                        if(property.getName().equals(value.getKey()))
                         {
-                            display = item.getFullName();
+                            propertyValue = value;
                         }
-                        
-                        return display;
                     }
+                    if(propertyValue == null)
+                    {
+                        propertyValue = DbActionProperty.build(_action, property.getName());
+                    }
+                    final DbActionProperty dbPropertyValue = propertyValue;
+                    
+                    ValidatingTextField propertyField = new ValidatingTextField()
+                    {
+                        @Override
+                        protected String getDbValue()
+                        {
+                            return dbPropertyValue.getValue() == null ? "" : dbPropertyValue.getValue();
+                        }
 
-                    @Override
-                    public String getToolTipText(PartActionDescription item)
-                    {
-                        String tooltip = null;
-                        if(item != null)
+                        @Override
+                        protected ValidationResult validate(String value)
                         {
-                            tooltip = item.getDescription();
-                        }
-                        
-                        return tooltip;
-                    }
-                });
-                _actionComboBox.addSelectionListener(new SelectionListener<PartActionDescription>()
-                {
-                    @Override
-                    public void selectionPerformed(PartActionDescription currValue, PartActionDescription newValue,
-                        SelectionAction selectionAction)
-                    {
-                        final PartActionDescription action = newValue;
-                        
-                        
-                        //Display updated text in the description label
-                        String description = (action == null ? "No action will be taken" : action.getDescription());
-                        descriptionLabel.setText(description);
-                        
-                        //Hacky way of not causing this method not to cause database writes if this already matches the
-                        //database - this case occurs when the initial programmatic selection is made
-                        if( (action == null && _partAction.getName() == null) ||
-                            (action != null && action.getFullName().equals(_partAction.getName())) )
-                        {
-                            return;
-                        }
-                        
-                        if(action != null)
-                        {   
-                            //Remove existing properties, set new name, and add all required properties
-                            
-                            final ImmutableSet<DbActionProperty> propsToRemove =
-                                    ImmutableSet.copyOf(_partAction.getActionProperties());
-                            _partAction.removeAllActionProperties();
-                            
-                            _partAction.setName(action.getFullName());
-                            
-                            for(PartActionProperty prop : action.getProperties())
+                            ValidationResult result = ValidationResult.NO_VALIDATION;
+                            if(property.isRequired() && (value == null || value.isEmpty()))
                             {
-                                if(prop.isRequired())
-                                {
-                                    DbActionProperty.build(_partAction, prop.getName());
-                                }
+                                result = new ValidationResult(ValidationState.ERROR, "This property is required");
                             }
-                            final ImmutableSet<DbActionProperty> propsToAdd =
-                                    ImmutableSet.copyOf(_partAction.getActionProperties());
                             
-                            updatePropertiesPanels();
+                            return result;
+                        }
 
+                        @Override
+                        protected void applyChange(final String newValue)
+                        {
+                            dbPropertyValue.setValue(newValue);
                             _worker.submit(WORKER_TAG, new ReinitializeRunnable()
                             {
                                 @Override
                                 public void dbCall() throws SQLException
                                 {
-                                    Allocator.getDatabase().removePartActionProperties(propsToRemove);
-                                    Allocator.getDatabase().putPartActions(ImmutableSet.of(_partAction));
-                                    Allocator.getDatabase().putPartActionProperties(propsToAdd);
+                                    if(newValue == null || newValue.isEmpty())
+                                    {
+                                        Allocator.getDatabase().removeActionProperties(
+                                                ImmutableSet.of(dbPropertyValue));
+                                    }
+                                    else
+                                    {
+                                        Allocator.getDatabase().putActionProperties(ImmutableSet.of(dbPropertyValue));
+                                    }
                                 }
 
                                 @Override
                                 public String dbFailureMessage()
                                 {
-                                    return "Unable to set new part action";
+                                    return "Unable to update property: " + property.getName();
                                 }
                             });
                         }
-                        else
-                        {   
-                            _partAction.setName(null);
-                            _partAction.removeAllActionProperties();
-                            
-                            updatePropertiesPanels();
-                            
-                            _worker.submit(WORKER_TAG, new ReinitializeRunnable()
-                            {
-                                @Override
-                                public void dbCall() throws SQLException
-                                {
-                                    Allocator.getDatabase().removePartActions(ImmutableSet.of(_partAction));;
-                                }
-
-                                @Override
-                                public String dbFailureMessage()
-                                {
-                                    return "Unable to remove part action and associated part action properties";
-                                }
-                            });
-                        }
-                    }
-                });
-                _actionComboBox.setAlignmentX(LEFT_ALIGNMENT);
-                PartActionDescription currDesc = null;
-                if(_partAction != null)
-                {
-                    currDesc = ActionRepository.get().getActionDescriptions().get(_partAction.getName());
-                    _actionComboBox.setGenericSelectedItem(currDesc);
+                    };
+                    propertyField.setAlignmentX(LEFT_ALIGNMENT);
+                    this.add(propertyField);
                 }
-                this.add(_actionComboBox);
-                
-                //Visually add description label
-                this.add(descriptionLabel);
-                
-                JPanel propertiesPanel = new JPanel();
-                propertiesPanel.setBackground(this.getBackground());
-                propertiesPanel.setLayout(new BoxLayout(propertiesPanel, BoxLayout.Y_AXIS));
-                PaddingPanel paddingPanel = new PaddingPanel(propertiesPanel, 5);
-                paddingPanel.setAlignmentX(LEFT_ALIGNMENT);
-                paddingPanel.setBackground(this.getBackground());
-                this.add(paddingPanel);
-                
-                _requiredPropsPanel = new JPanel();
-                _requiredPropsPanel.setBackground(this.getBackground());
-                _requiredPropsPanel.setLayout(new BoxLayout(_requiredPropsPanel, BoxLayout.Y_AXIS));
-                _requiredPropsPanel.setAlignmentX(LEFT_ALIGNMENT);
-                propertiesPanel.add(_requiredPropsPanel);
-                
-                propertiesPanel.add(Box.createVerticalStrut(5));
-                
-                _optionalPropsPanel = new JPanel();
-                _optionalPropsPanel.setBackground(this.getBackground());
-                _optionalPropsPanel.setLayout(new BoxLayout(_optionalPropsPanel, BoxLayout.Y_AXIS));
-                _optionalPropsPanel.setAlignmentX(LEFT_ALIGNMENT);
-                propertiesPanel.add(_optionalPropsPanel);
-                
-                this.updatePropertiesPanels();
             }
+        }
+        
+        void reorderOccurred()
+        {
+            _upButton.setEnabled(_action.getOrder() != 0);
             
-            private void updatePropertiesPanels()
+            boolean isLastAction = true;
+            for(DbAction action : _partPanel._part.getActions())
             {
-                _requiredPropsPanel.removeAll();
-                _optionalPropsPanel.removeAll();;
-                
-                PartActionDescription action = null;
-                if(_partAction.getName() != null)
+                if(_action.getOrder() < action.getOrder())
                 {
-                    action = ActionRepository.get().getActionDescriptions().get(_partAction.getName());
+                    isLastAction = false;
+                    break;
                 }
-                
-                if(action != null && !action.getRequiredProperties().isEmpty())
-                {
-                    _requiredPropsPanel.add(FormattedLabel.asSubheader("Required Properties"));
-                    
-                    for(final PartActionProperty prop : action.getRequiredProperties())
-                    {
-                        DbActionProperty dbProp = null;
-                        for(DbActionProperty propInDb : _partAction.getActionProperties())
-                        {
-                            if(prop.getName().equals(propInDb.getKey()))
-                            {
-                                dbProp = propInDb;
-                                break;
-                            }
-                        }
-                        final DbActionProperty propInDb = dbProp;
-                        
-                        _requiredPropsPanel.add(Box.createVerticalStrut(3));
-                        _requiredPropsPanel.add(FormattedLabel.asSubheader(prop.getName()));
-                        _requiredPropsPanel.add(FormattedLabel.asContent(prop.getDescription()
-                                .replaceAll("\n", "<br/>")));
-                        ValidatingTextField valueField = new ValidatingTextField()
-                        {
-                            @Override
-                            protected String getDbValue()
-                            {
-                                return propInDb.getValue() == null ?  "" : propInDb.getValue();
-                            }
-
-                            @Override
-                            protected ValidationResult validate(String value)
-                            {
-                                return ValidationResult.NO_VALIDATION;
-                            }
-
-                            @Override
-                            protected void applyChange(String newValue)
-                            {
-                                propInDb.setValue(newValue);
-                                
-                                _worker.submit(WORKER_TAG, new ReinitializeRunnable()
-                                {
-                                    @Override
-                                    public void dbCall() throws SQLException
-                                    {
-                                        Allocator.getDatabase().putPartActionProperties(ImmutableSet.of(propInDb));
-                                    }
-
-                                    @Override
-                                    public String dbFailureMessage()
-                                    {
-                                        return "Unable to update part action property";
-                                    }
-                                });
-                            }
-                        };
-                        valueField.setAlignmentX(LEFT_ALIGNMENT);
-                        _requiredPropsPanel.add(valueField);
-                    }
-                }
-                
-                if(action != null && !action.getOptionalProperties().isEmpty())
-                {
-                    _optionalPropsPanel.add(FormattedLabel.asSubheader("Optional Properties"));
-                    
-                    for(final PartActionProperty prop : action.getOptionalProperties())
-                    {
-                        DbActionProperty dbProp = null;
-                        for(DbActionProperty propInDb : _partAction.getActionProperties())
-                        {
-                            if(prop.getName().equals(propInDb.getKey()))
-                            {
-                                dbProp = propInDb;
-                                break;
-                            }
-                        }
-                        if(dbProp == null)
-                        {
-                            dbProp = DbActionProperty.build(_partAction, prop.getName());
-                        }
-                        final DbActionProperty propInDb = dbProp;
-                        
-                        _optionalPropsPanel.add(Box.createVerticalStrut(3));
-                        _optionalPropsPanel.add(FormattedLabel.asSubheader(prop.getName()));
-                        _optionalPropsPanel.add(FormattedLabel.asContent(prop.getDescription()
-                                .replaceAll("\n", "<br/>")));
-                        ValidatingTextField valueField = new ValidatingTextField()
-                        {
-                            @Override
-                            protected String getDbValue()
-                            {
-                                return propInDb.getValue() == null ?  "" : propInDb.getValue();
-                            }
-
-                            @Override
-                            protected ValidationResult validate(String value)
-                            {
-                                return ValidationResult.NO_VALIDATION;
-                            }
-
-                            @Override
-                            protected void applyChange(String newValue)
-                            {
-                                if(newValue.isEmpty())
-                                {
-                                    _partAction.removeActionProperty(propInDb);
-                                }
-                                else
-                                {
-                                    propInDb.setValue(newValue);
-                                }
-                                
-                                _worker.submit(WORKER_TAG, new ReinitializeRunnable()
-                                {
-                                    @Override
-                                    public void dbCall() throws SQLException
-                                    {
-                                        if(propInDb.getValue().isEmpty())
-                                        {
-                                            Allocator.getDatabase().removePartActionProperties(ImmutableSet.of(propInDb));
-                                        }
-                                        else
-                                        {
-                                            Allocator.getDatabase().putPartActionProperties(ImmutableSet.of(propInDb));
-                                        }
-                                    }
-
-                                    @Override
-                                    public String dbFailureMessage()
-                                    {
-                                        return "Unable to update part action property";
-                                    }
-                                });
-                            }
-                        };
-                        valueField.setAlignmentX(LEFT_ALIGNMENT);
-                        _optionalPropsPanel.add(valueField);
-                    }
-                }
-                
-                _requiredPropsPanel.repaint();
-                _requiredPropsPanel.revalidate();
-                
-                _optionalPropsPanel.repaint();
-                _optionalPropsPanel.revalidate();
             }
+            _downButton.setEnabled(!isLastAction);
         }
     }
 }

@@ -223,7 +223,6 @@ public class IconLoader
         PRINTER_ERROR("printer-error.png"),
         PRINTER("printer.png"),
         PROCESS_STOP("process-stop.png"),
-        PROCESS_WORKING("process-working.png"),
         SOFTWARE_UPDATE_AVAILABLE("software-update-available.png"),
         SOFTWARE_UPDATE_URGENT("software-update-urgent.png"),
         START_HERE("start-here.png"),

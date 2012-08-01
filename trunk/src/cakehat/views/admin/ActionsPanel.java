@@ -1,13 +1,13 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
-import cakehat.database.assignment.ActionException;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
-import cakehat.database.assignment.PartActionDescription.ActionType;
+import cakehat.database.assignment.Action;
+import cakehat.database.assignment.TaskException;
 import cakehat.logging.ErrorReporter;
 import cakehat.printing.CITPrinter;
 import support.resources.icons.IconLoader;
@@ -18,9 +18,6 @@ import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -213,20 +210,22 @@ class ActionsPanel extends JPanel
     }
     
     private class PartPanel extends JPanel
-    {
-        private final StandardButton _manualDistributorButton;
-        private final Map<ActionType, StandardButton> _actionButtons =
-                new EnumMap<ActionType, StandardButton>(ActionType.class);
+    {   
+        private final JPanel _builtinButtonsPanel, _nonHandinActionsPanel, _handinActionsPanel;
         
         PartPanel()
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             
             this.add(FormattedLabel.asSubheader("Part"));
-         
-            //Manual distributor button
-            _manualDistributorButton = new StandardButton("Manual Distributor", null, IconImage.DOCUMENT_PROPERTIES);
-            _manualDistributorButton.addActionListener(new ActionListener()
+            
+            //Panel that contains buttons which are not user configured
+            _builtinButtonsPanel = new JPanel();
+            _builtinButtonsPanel.setLayout(new BoxLayout(_builtinButtonsPanel, BoxLayout.Y_AXIS));
+            _builtinButtonsPanel.setAlignmentX(LEFT_ALIGNMENT);
+            StandardButton manualDistributorButton = new StandardButton("Manual Distributor", null,
+                        IconImage.DOCUMENT_PROPERTIES);
+            manualDistributorButton.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed(ActionEvent ae)
@@ -234,86 +233,84 @@ class ActionsPanel extends JPanel
                     manualDistributorButtonActionPerformed();
                 }
             });
-            this.add(_manualDistributorButton);
+            _builtinButtonsPanel.add(manualDistributorButton);
+            this.add(_builtinButtonsPanel);
             
-            //Action buttons
-            this.add(createActionButton("Grading Guide", "Grading Guide", IconImage.TEXT_X_GENERIC,
-                    ActionType.GRADING_GUIDE));
-            this.add(createActionButton("Demo", "Demo", IconImage.APPLICATIONS_SYSTEM,
-                    ActionType.DEMO));
-            this.add(createActionButton("Print Handin", "Print Handins", IconImage.PRINTER, ActionType.PRINT));
-            this.add(createActionButton("Run Handin", "Run Handins", IconImage.GO_NEXT, ActionType.RUN));
-            this.add(createActionButton("Open Handin", "Open Handins", IconImage.DOCUMENT_OPEN, ActionType.OPEN));
-            this.add(createActionButton("Test Handin", "Test Handins", IconImage.UTILITIES_SYSTEM_MONITOR,
-                    ActionType.TEST));
-            this.add(createActionButton("View Readme", "View Readmes", IconImage.TEXT_X_GENERIC,
-                    ActionType.README));
+            //Panel for course configured actions that do not rely on a digital handin
+            _nonHandinActionsPanel = new JPanel();
+            _nonHandinActionsPanel.setLayout(new BoxLayout(_nonHandinActionsPanel, BoxLayout.Y_AXIS));
+            _nonHandinActionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+            this.add(_nonHandinActionsPanel);
+            
+            //Panel for course configured actions that rely on a digital handin
+            _handinActionsPanel = new JPanel();
+            _handinActionsPanel.setLayout(new BoxLayout(_handinActionsPanel, BoxLayout.Y_AXIS));
+            _handinActionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+            this.add(_handinActionsPanel);
         }
         
-        private StandardButton createActionButton(String singleText, String pluralText, IconImage image,
-                final ActionType type)
+        void notifySelectionChanged(final Part part, final Set<Group> selectedGroups,
+                Set<Student> selectedStudentsNotInGroups)
         {
-            StandardButton button = new StandardButton(singleText, pluralText, image);
-            _actionButtons.put(type, button);
-            button.addActionListener(new ActionListener()
+            _builtinButtonsPanel.setVisible(part != null);
+            _nonHandinActionsPanel.removeAll();
+            _handinActionsPanel.removeAll();
+            
+            if(part != null)
             {
-                @Override
-                public void actionPerformed(ActionEvent ae)
+                for(final Action action : part.getActions())
                 {
-                    actionButtonActionPerformed(type);
-                }
-            });
+                    StandardButton actionButton = new StandardButton(action.getName(), null, action.getIcon());
 
-            return button;
-        }
-        
-        void notifySelectionChanged(Part part, Set<Group> selectedGroups, Set<Student> selectedStudentsNotInGroups)
-        {
-            if(part == null)
-            {
-                _manualDistributorButton.setEnabled(false);
-                for(StandardButton button : _actionButtons.values())
-                {
-                    button.setEnabled(false);
-                }
-            }
-            else
-            {
-                _manualDistributorButton.setEnabled(true);
-                
-                for(Entry<ActionType, StandardButton> entry : _actionButtons.entrySet())
-                {
-                    boolean enable = false;
+                    //Determine if it should be enabled
+                    boolean enableButton = false;
                     try
                     {
-                        enable = part.isActionSupported(entry.getKey(), selectedGroups);
+                        enableButton = action.isTaskSupported(selectedGroups);
                     }
-                    catch(ActionException e)
+                    catch(TaskException e)
                     {
                         ErrorReporter.report("Could not determine if action is supported\n" +
-                                "Part: " + part.getFullDisplayName() + "\n" +
-                                "Groups: " + selectedGroups, e);
+                                    "Action: " + action.getName() + "\n" +
+                                    "Part: " + part.getFullDisplayName() + "\n" +
+                                    "Groups: " + selectedGroups, e);
                     }
-                    entry.getValue().setEnabled(enable);
+                    actionButton.setEnabled(enableButton);
+
+                    //Wire up action
+                    actionButton.addActionListener(new ActionListener()
+                    {
+                        @Override
+                        public void actionPerformed(ActionEvent ae)
+                        {
+                            try
+                            {
+                                action.performTask(_adminView, selectedGroups);
+                            }
+                            catch(TaskException e)
+                            {
+                                ErrorReporter.report("Could not peform action\n" +
+                                    "Action: " + action.getName() + "\n" +
+                                    "Part: " + part.getFullDisplayName() + "\n" +
+                                    "Groups: " + selectedGroups, e);
+                            }
+                        }
+                    });
+                    
+                    if(!action.requiresDigitalHandin())
+                    {
+                        _nonHandinActionsPanel.add(actionButton);
+                    }
+                    else if(!selectedGroups.isEmpty())
+                    {
+                        _handinActionsPanel.add(actionButton);
+                    }
                 }
             }
             
-            //Determine whether to show buttons that act on digital handins
-            boolean showDigitalHandinOptions = part != null && part.getGradableEvent().hasDigitalHandins() &&
-                                               !selectedGroups.isEmpty();
-            for(Entry<ActionType, StandardButton> entry : _actionButtons.entrySet())
-            {
-                if(entry.getKey().requiresDigitalHandin())
-                {
-                    entry.getValue().setVisible(showDigitalHandinOptions);
-                }
-            }
-            
-            //Determine the pluralization of the action buttons
-            for(StandardButton button : _actionButtons.values())
-            {
-                button.updateText(selectedGroups.size() == 1);
-            }
+            //Force visual update to reflect these changes
+            this.repaint();
+            this.revalidate();
         }
     }
     
@@ -364,31 +361,6 @@ class ActionsPanel extends JPanel
     private void manageGroupsButtonActionPerformed()
     {
         new ManageGroupsView(_adminView, _treeSelection.getAssignment());
-    }
-    
-    private void actionButtonActionPerformed(ActionType type)
-    {
-        Part part = _treeSelection.getPart();
-        Set<Group> groups = _selectedGroups;
-        try
-        {
-            part.performAction(_adminView, type, groups);
-        }
-        catch(ActionException ex)
-        {   
-            String message = "Could not " + type;
-            if(groups.isEmpty())
-            {
-                message += " for group(s) " + groups;
-            }
-            if(part != null)
-            {
-                message += " on part " + part.getFullDisplayName();
-            }
-            message += ".";
-
-            ErrorReporter.report(message, ex);
-        }
     }
     
     private static class StandardButton extends JPanel

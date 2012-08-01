@@ -74,14 +74,14 @@ public interface Database
     
     public void removeParts(Set<DbPart> parts) throws SQLException;
     
-    public void putPartActions(Set<DbPartAction> partActions) throws SQLException;
+    public void putActions(Set<DbAction> actions) throws SQLException;
     
     //cascades
-    public void removePartActions(Set<DbPartAction> partActions) throws SQLException;
+    public void removeActions(Set<DbAction> actions) throws SQLException;
     
-    public void putPartActionProperties(Set<DbActionProperty> actionProperties) throws SQLException;
+    public void putActionProperties(Set<DbActionProperty> actionProperties) throws SQLException;
     
-    public void removePartActionProperties(Set<DbActionProperty> actionProperties) throws SQLException;
+    public void removeActionProperties(Set<DbActionProperty> actionProperties) throws SQLException;
     
     public void putInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     

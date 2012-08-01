@@ -1,13 +1,12 @@
 package cakehat.database.assignment;
 
-import cakehat.database.assignment.PartActionDescription.ActionType;
+import cakehat.database.DbAction;
 import cakehat.database.DbActionProperty;
 import cakehat.database.DbAssignment;
 import cakehat.database.DbGradableEvent;
 import cakehat.database.DbInclusionFilter;
 import cakehat.database.DbInclusionFilter.FilterType;
 import cakehat.database.DbPart;
-import cakehat.database.DbPartAction;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
@@ -65,7 +64,7 @@ public class AssignmentsBuilder
         Collections.sort(sortedDbGradableEvents);
         for(DbGradableEvent dbGradableEvent : sortedDbGradableEvents)
         {
-            List<Part> parts = buildParts(dbGradableEvent.getParts(), dbGradableEvent.getDirectory() != null);
+            List<Part> parts = buildParts(dbGradableEvent.getParts());
             
             GradableEvent gradableEvent = new GradableEvent(
                     dbGradableEvent.getId(),
@@ -84,7 +83,7 @@ public class AssignmentsBuilder
         return gradableEventsBuilder.build();
     }
     
-    private ImmutableList<Part> buildParts(Set<DbPart> dbParts, boolean hasDigitalHandinDirectory)
+    private ImmutableList<Part> buildParts(Set<DbPart> dbParts)
     {
         ImmutableList.Builder<Part> partsBuilder = ImmutableList.builder();
         
@@ -92,6 +91,8 @@ public class AssignmentsBuilder
         Collections.sort(sortedDbParts);
         for(DbPart dbPart : sortedDbParts)
         {
+            List<Action> actions = buildActions(dbPart.getActions());
+            
             Part part = new Part(
                     dbPart.getId(),
                     dbPart.getName(),
@@ -100,8 +101,13 @@ public class AssignmentsBuilder
                     dbPart.getGmlTemplate(),
                     dbPart.getQuickName(),
                     buildFilterProvider(dbPart.getInclusionFilters()),
-                    buildPartActions(dbPart, hasDigitalHandinDirectory));
+                    actions);
             partsBuilder.add(part);
+            
+            for(Action action : actions)
+            {
+                action.setPart(part);
+            }
         }
         
         return partsBuilder.build();
@@ -134,37 +140,43 @@ public class AssignmentsBuilder
         return provider;
     }
     
-    private Map<ActionType, PartAction> buildPartActions(DbPart dbPart, boolean hasDigitalHandinDirectory)
+    private ImmutableList<Action> buildActions(Set<DbAction> dbActions)
     {
-        ImmutableMap.Builder<ActionType, PartAction> actionsBuilder = ImmutableMap.builder();
+        ImmutableList.Builder<Action> actionsBuilder = ImmutableList.builder();
         
-        for(ActionType type : ActionType.values())
-        {
-            //README is treated specially
-            if(type == ActionType.README)
-            {
-                if(hasDigitalHandinDirectory)
-                {
-                    actionsBuilder.put(ActionType.README, new ReadmeAction());
-                }
-            }
-            else
-            {
-                DbPartAction dbPartAction = dbPart.getAction(type);
-                if(dbPartAction != null)
-                {
-                    Map<String, String> properties = new HashMap<String, String>();
-                    for(DbActionProperty property : dbPartAction.getActionProperties())
-                    {
-                        properties.put(property.getKey(), property.getValue());
-                    }
-
-                    PartAction action = ActionRepository.get().getAction(type, dbPartAction.getName(), properties);
-                    actionsBuilder.put(type, action);
-                }
-            }
+        List<DbAction> sortedDbActions = new ArrayList<DbAction>(dbActions);
+        Collections.sort(sortedDbActions);
+        for(DbAction dbAction : sortedDbActions)
+        {   
+            Task task = TaskRepository.getTask(dbAction.getTask());
+            
+            Action action = new Action(
+                    dbAction.getId(),
+                    dbAction.getName(),
+                    dbAction.getIcon(),
+                    dbAction.getOrder(),
+                    task,
+                    buildActionProperties(task, dbAction.getActionProperties()));
+            actionsBuilder.add(action);
         }
         
         return actionsBuilder.build();
+    }
+    
+    private Map<TaskProperty, String> buildActionProperties(Task task, Set<DbActionProperty> dbActionProperties)
+    {
+        ImmutableMap.Builder<TaskProperty, String> convertedProperties = ImmutableMap.builder();
+        for(TaskProperty actualProperty : task.getProperties())
+        {
+            for(DbActionProperty dbActionProperty : dbActionProperties)
+            {
+                if(actualProperty.getName().equals(dbActionProperty.getKey()))
+                {
+                    convertedProperties.put(actualProperty, dbActionProperty.getValue());
+                }
+            }
+        }
+
+        return convertedProperties.build();
     }
 }
