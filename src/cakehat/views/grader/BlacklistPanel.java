@@ -6,7 +6,6 @@ import cakehat.database.TA;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Collections;

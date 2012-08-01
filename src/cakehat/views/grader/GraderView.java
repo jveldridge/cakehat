@@ -40,12 +40,6 @@ import support.ui.FormattedLabel;
  */
 public class GraderView extends JFrame
 {
-    public static void main(String[] args) throws Throwable
-    {
-        CakehatMain.initializeForTesting();
-        launch();
-    }
-    
     public static void launch()
     {   
         EventQueue.invokeLater(new Runnable()
