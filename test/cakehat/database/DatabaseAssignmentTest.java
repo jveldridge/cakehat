@@ -1,6 +1,5 @@
 package cakehat.database;
 
-import cakehat.database.assignment.PartActionDescription.ActionType;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.junit.Test;
@@ -78,17 +77,19 @@ public class DatabaseAssignmentTest {
             assertEquals(t1.getOutOf(), t2.getOutOf());
             assertEquals(t1.getQuickName(), t2.getQuickName());
             DatabaseTestHelpers.assertSetsEqual(INCLUSION_FILTER_EQC, t1.getInclusionFilters(), t2.getInclusionFilters());
-            DatabaseTestHelpers.assertSetsEqual(PART_ACTION_EQC, t1.getActions(), t2.getActions());
+            DatabaseTestHelpers.assertSetsEqual(ACTION_EQC, t1.getActions(), t2.getActions());
         }
     };
     
-    private final EqualityAsserter<DbPartAction> PART_ACTION_EQC = new EqualityAsserter<DbPartAction>() {
+    private final EqualityAsserter<DbAction> ACTION_EQC = new EqualityAsserter<DbAction>() {
         @Override
-        public void assertEqual(DbPartAction t1, DbPartAction t2) {
+        public void assertEqual(DbAction t1, DbAction t2) {
             assertEquals(t1.getId(), t2.getId());
             assertEquals(t1.getPartId(), t2.getPartId());
-            assertEquals(t1.getType(), t2.getType());
             assertEquals(t1.getName(), t2.getName());
+            assertEquals(t1.getIcon(), t2.getIcon());
+            assertEquals(t1.getTask(), t2.getTask());
+            assertEquals(t1.getOrder(), t2.getOrder());
             DatabaseTestHelpers.assertSetsEqual(ACTION_PROPERTY_EQC, t1.getActionProperties(), t2.getActionProperties());
         }
     };
@@ -97,7 +98,7 @@ public class DatabaseAssignmentTest {
         @Override
         public void assertEqual(DbActionProperty t1, DbActionProperty t2) {
             assertEquals(t1.getId(), t2.getId());
-            assertEquals(t1.getPartActionId(), t2.getPartActionId());
+            assertEquals(t1.getActionId(), t2.getActionId());
             assertEquals(t1.getKey(), t2.getKey());
             assertEquals(t1.getValue(), t2.getValue());
         }
@@ -287,13 +288,13 @@ public class DatabaseAssignmentTest {
         filter.setPath("/path/to/file");
         _database.putInclusionFilters(ImmutableSet.of(filter));
         
-        DbPartAction action = DbPartAction.build(part, ActionType.RUN);
-        action.setName("java:compile-and-run");
-        _database.putPartActions(ImmutableSet.of(action));
+        DbAction action = DbAction.build(part, "Run", null, 1);
+        action.setTask("java:compile-and-run");
+        _database.putActions(ImmutableSet.of(action));
         
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
-        _database.putPartActionProperties(ImmutableSet.of(actionProperty));
+        _database.putActionProperties(ImmutableSet.of(actionProperty));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -308,8 +309,8 @@ public class DatabaseAssignmentTest {
         DbInclusionFilter filter = DbInclusionFilter.build(part);
         filter.setType(DbInclusionFilter.FilterType.FILE);
         filter.setPath("/path/to/file");
-        DbPartAction action = DbPartAction.build(part, ActionType.RUN);
-        action.setName("java:compile-and-run");
+        DbAction action = DbAction.build(part, "Run", null, 1);
+        action.setTask("java:compile-and-run");
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
         
@@ -317,8 +318,8 @@ public class DatabaseAssignmentTest {
         _database.putGradableEvents(ImmutableSet.of(ge));
         _database.putParts(ImmutableSet.of(part));
         _database.putInclusionFilters(ImmutableSet.of(filter));
-        _database.putPartActions(ImmutableSet.of(action));
-        _database.putPartActionProperties(ImmutableSet.of(actionProperty));
+        _database.putActions(ImmutableSet.of(action));
+        _database.putActionProperties(ImmutableSet.of(actionProperty));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -340,13 +341,13 @@ public class DatabaseAssignmentTest {
         filter.setPath("/path/to/file");
         _database.putInclusionFilters(ImmutableSet.of(filter));
         
-        DbPartAction action = DbPartAction.build(part, ActionType.RUN);
-        action.setName("java:compile-and-run");
-        _database.putPartActions(ImmutableSet.of(action));
+        DbAction action = DbAction.build(part, "Run", null, 1);
+        action.setTask("java:compile-and-run");
+        _database.putActions(ImmutableSet.of(action));
         
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
-        _database.putPartActionProperties(ImmutableSet.of(actionProperty));
+        _database.putActionProperties(ImmutableSet.of(actionProperty));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -362,7 +363,7 @@ public class DatabaseAssignmentTest {
         assertNull(action.getId());
         assertNull(action.getPartId());
         assertNull(actionProperty.getId());
-        assertNull(actionProperty.getPartActionId());
+        assertNull(actionProperty.getActionId());
         
         assignments = _database.getAssignments();
         assertEquals(0, assignments.size());

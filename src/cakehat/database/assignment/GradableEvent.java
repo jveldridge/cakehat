@@ -184,7 +184,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     /**
      * Returns an immutable set of the {@link File}s for each digital handin for this GradableEvent. If this method has
      * not been called before it will load all of the digital handins. Subsequent calls of this method will return the
-     * same list unless the cache has been cleared with {@link #clearHandinCache()}.
+     * same list unless the cache has been cleared with {@link #clearDigitalHandinCache()}.
      *
      * @return set of digital handins
      */
@@ -333,7 +333,13 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     @Override
     public int compareTo(GradableEvent ge)
     {
-        return ((Integer)this._order).compareTo(ge._order);
+        int comparison = this.getAssignment().compareTo(ge.getAssignment());
+        if(comparison == 0)
+        {
+            comparison = ((Integer)this._order).compareTo(ge._order);
+        }
+        
+        return comparison;
     }
 
     @Override
