@@ -1,5 +1,7 @@
 package cakehat.database;
 
+import java.util.Collections;
+
 /**
  * Represents an action property of an action as it is represented in the database and configuration manager.
  * 
@@ -8,7 +10,7 @@ package cakehat.database;
  */
 public class DbActionProperty extends DbDataItem
 {   
-    private volatile Integer _actionId;
+    private volatile DbAction _action;
     private final String _key;
     private volatile String _value;
     
@@ -28,7 +30,7 @@ public class DbActionProperty extends DbDataItem
     {
         super(null);
         
-        _actionId = action.getId();
+        _action = action;
         _key = key;
         _value = "";
     }
@@ -36,16 +38,16 @@ public class DbActionProperty extends DbDataItem
     /**
      * Constructor to be used by the database to load action property data into memory.
      * 
-     * @param actionId
+     * @param action
      * @param id
      * @param key
      * @param value 
      */
-    DbActionProperty(int actionId, int id, String key, String value)
+    DbActionProperty(DbAction action, int id, String key, String value)
     {
         super(id);
-        
-        _actionId = actionId;
+
+        _action = action;
         _key = key;
         _value = value;
     }
@@ -65,12 +67,17 @@ public class DbActionProperty extends DbDataItem
         return _value;
     }
     
-    Integer getActionId() {
-        return _actionId;
+    DbAction getAction() {
+        return _action;
+    }
+
+    @Override
+    void setParentNull() {
+        _action = null;
     }
     
     @Override
-    void setParentId(Integer id) {
-        _actionId = id;
+    Iterable<? extends DbDataItem> getChildren() {
+        return Collections.emptyList();
     }
 }

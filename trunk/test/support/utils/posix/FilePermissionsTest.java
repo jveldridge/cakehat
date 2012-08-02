@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -15,7 +16,6 @@ import org.junit.runners.Parameterized.Parameters;
 import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilities.ProcessResponse;
 import support.utils.ExternalProcessesUtilitiesImpl;
-import static org.junit.Assert.*;
 
 /**
  * 

@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class DbPart extends DbDataItem implements Comparable<DbPart>
 {
-    private volatile Integer _gradableEventId;
+    private volatile DbGradableEvent _gradableEvent;
     private volatile String _name;
     private volatile int _order;
     private volatile File _gmlTemplate;
@@ -41,7 +41,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     {
         super(null);
         
-        _gradableEventId = gradableEvent.getId();
+        _gradableEvent = gradableEvent;
         
         _name = name;
         _order = order;
@@ -60,22 +60,20 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
      * @param gmlTemplate
      * @param outOf
      * @param quickName
-     * @param actions
-     * @param inclusionFilters 
      */
-    DbPart(int gradableEventId, int id, String name, int order, String gmlTemplate, Double outOf, String quickName,
-            Set<DbAction> actions, Set<DbInclusionFilter> inclusionFilters)
+    DbPart(DbGradableEvent gradableEvent, int id, String name, int order, String gmlTemplate, Double outOf,
+           String quickName)
     {
         super(id);
         
-        _gradableEventId = gradableEventId;
+        _gradableEvent = gradableEvent;
         _name = name;
         _order = order;
         _gmlTemplate = gmlTemplate == null ? null : new File(gmlTemplate);
         _outOf = outOf;
         _quickName = quickName;
-        _actions = new HashSet<DbAction>(actions);
-        _inclusionFilters = new HashSet<DbInclusionFilter>(inclusionFilters);
+        _actions = new HashSet<DbAction>();
+        _inclusionFilters = new HashSet<DbInclusionFilter>();
     }
     
     public void setName(String name)
@@ -176,14 +174,14 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         }
     }
     
-    Integer getGradableEventId()
+    DbGradableEvent getGradableEvent()
     {
-        return _gradableEventId;
+        return _gradableEvent;
     }
-
+    
     @Override
-    void setParentId(Integer id) {
-        _gradableEventId = id;
+    void setParentNull() {
+        _gradableEvent = null;
     }
     
     @Override
