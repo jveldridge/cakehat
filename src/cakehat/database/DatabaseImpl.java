@@ -6,7 +6,6 @@ import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
 import java.io.File;
@@ -17,9 +16,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +48,7 @@ public class DatabaseImpl implements Database
     public DatabaseImpl(final File dbFile) {
         _connProvider = new ConnectionProvider() {
 
+            @Override
             public Connection createConnection() throws SQLException {
                 try {
                     Class.forName("org.sqlite.JDBC");
@@ -61,6 +61,7 @@ public class DatabaseImpl implements Database
                 }
             }
 
+            @Override
             public void closeConnection(Connection c) throws SQLException {
                 if (c != null) {
                     c.close();
@@ -300,142 +301,141 @@ public class DatabaseImpl implements Database
     public void putStudents(Set<DbStudent> students) throws SQLException {
         this.putDbDataItems(students, STUDENT_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
     }
-
+    
     //TODO look at factoring out repetitive assignment get code
     @Override
     public Set<DbAssignment> getAssignments() throws SQLException {
-        ImmutableSet.Builder<DbAssignment> asgns = ImmutableSet.builder();
-        
+        Map<Integer, DbAssignment> asgns = new HashMap<Integer, DbAssignment>();
         Connection conn = this.openConnection();
+        
         try {
-            SetMultimap<Integer, DbGradableEvent> gradableEvents = this.getGradableEvents(conn);
-            
             PreparedStatement ps = conn.prepareStatement("SELECT aid, name, ordering, hasgroups FROM assignment");
             
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 int asgnId = rs.getInt("aid");
-                asgns.add(new DbAssignment(asgnId, rs.getString("name"), rs.getInt("ordering"), rs.getBoolean("hasgroups"),
-                                           gradableEvents.get(asgnId)));
+                asgns.put(asgnId, new DbAssignment(asgnId, rs.getString("name"), rs.getInt("ordering"),
+                                                   rs.getBoolean("hasgroups")));
             }
-        
-            return asgns.build();
+            
+            this.loadGradableEvents(conn, asgns);
+            
+            return ImmutableSet.copyOf(asgns.values());
         } finally {
             this.closeConnection(conn);
         }
     }
     
     @Override
-    public DbGradableEvent getDbGradableEvent(int geid) throws SQLException {
+    public DbGradableEvent getDbGradableEvent(int geid) throws SQLException {      
         Connection conn = this.openConnection();
+        DbGradableEvent gradableEvent = null;
 
         try {
-            Collection<DbGradableEvent> gradableEvents = this.getGradableEvents(conn).values();
-            for (DbGradableEvent ge : gradableEvents) {
-                if (ge.getId() == geid) {
-                    return ge;
-                }
+            PreparedStatement ps = conn.prepareStatement("SELECT aid, name, ordering, directory, deadlinetype,"
+                + "earlydate, earlypoints, ontimedate, latedate, latepoints, lateperiod FROM gradableevent"
+                + " WHERE geid == ?");
+            ps.setInt(1, geid);
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                gradableEvent =  new DbGradableEvent(null, geid, rs.getString("name"), rs.getInt("ordering"),
+                                                     rs.getString("directory"), rs.getString("deadlinetype"),
+                                                     rs.getString("earlydate"), getDouble(rs, "earlypoints"),
+                                                     rs.getString("ontimedate"), rs.getString("latedate"),
+                                                     getDouble(rs, "latepoints"), rs.getString("lateperiod"));
             }
-            return null;
+            
+            return gradableEvent;
         } finally {
             this.closeConnection(conn);
         }
     }
     
-    private SetMultimap<Integer, DbGradableEvent> getGradableEvents(Connection conn) throws SQLException {
-        ImmutableSetMultimap.Builder<Integer, DbGradableEvent> gradableEvents = ImmutableSetMultimap.builder();
-        
-        SetMultimap<Integer, DbPart> parts = this.getParts(conn);
+    private void loadGradableEvents(Connection conn, Map<Integer, DbAssignment> asgns) throws SQLException {     
+        Map<Integer, DbGradableEvent> gradableEvents = new HashMap<Integer, DbGradableEvent>();
         
         PreparedStatement ps = conn.prepareStatement("SELECT geid, aid, name, ordering, directory, deadlinetype,"
                 + "earlydate, earlypoints, ontimedate, latedate, latepoints, lateperiod FROM gradableevent");
         
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int asgnId = rs.getInt("aid");
+            DbAssignment asgn = asgns.get(rs.getInt("aid"));
             int gradableEventId = rs.getInt("geid");
-            gradableEvents.put(asgnId, new DbGradableEvent(asgnId, gradableEventId, rs.getString("name"),
-                                                           rs.getInt("ordering"), rs.getString("directory"),
-                                                           rs.getString("deadlinetype"), rs.getString("earlydate"),
-                                                           getDouble(rs, "earlypoints"), rs.getString("ontimedate"),
-                                                           rs.getString("latedate"), getDouble(rs, "latepoints"),
-                                                           rs.getString("lateperiod"), parts.get(gradableEventId)));
+            DbGradableEvent gradableEvent = new DbGradableEvent(asgn, gradableEventId, rs.getString("name"),
+                                                                rs.getInt("ordering"), rs.getString("directory"),
+                                                                rs.getString("deadlinetype"), rs.getString("earlydate"),
+                                                                getDouble(rs, "earlypoints"), rs.getString("ontimedate"),
+                                                                rs.getString("latedate"), getDouble(rs, "latepoints"),
+                                                                rs.getString("lateperiod"));
+            gradableEvents.put(gradableEventId, gradableEvent);
+            asgn.addGradableEvent(gradableEvent);
         }
         
-        return gradableEvents.build();
+        this.loadParts(conn, gradableEvents);
     }
     
-    private SetMultimap<Integer, DbPart> getParts(Connection conn) throws SQLException {
-        ImmutableSetMultimap.Builder<Integer, DbPart> parts = ImmutableSetMultimap.builder();
-        
-        SetMultimap<Integer, DbAction> actions = this.getActions(conn);
-        SetMultimap<Integer, DbInclusionFilter> inclusionFilters = this.getInclusionFilters(conn);
+    private void loadParts(Connection conn, Map<Integer, DbGradableEvent> gradableEvents) throws SQLException {
+        Map<Integer, DbPart> parts = new HashMap<Integer, DbPart>();
         
         PreparedStatement ps = conn.prepareStatement("SELECT pid, geid, name, ordering, gmltemplate, outof, quickname "
                 + " FROM part");
      
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int gradableEventId = rs.getInt("geid");
+            DbGradableEvent gradableEvent = gradableEvents.get(rs.getInt("geid"));
             int partId = rs.getInt("pid");
-            parts.put(gradableEventId, new DbPart(gradableEventId, partId, rs.getString("name"), rs.getInt("ordering"),
+            DbPart part = new DbPart(gradableEvent, partId, rs.getString("name"), rs.getInt("ordering"),
                                                   rs.getString("gmltemplate"), getDouble(rs, "outof"),
-                                                  rs.getString("quickname"), actions.get(partId),
-                                                  inclusionFilters.get(partId)));
+                                                  rs.getString("quickname"));
+            parts.put(partId, part);
+            gradableEvent.addPart(part);
         }
-
-        return parts.build();
+        
+        this.loadInclusionFilters(conn, parts);
+        this.loadActions(conn, parts);
     }
     
-    private SetMultimap<Integer, DbInclusionFilter> getInclusionFilters(Connection conn) throws SQLException {
-        ImmutableSetMultimap.Builder<Integer, DbInclusionFilter> filters = ImmutableSetMultimap.builder();
-
+    private void loadInclusionFilters(Connection conn, Map<Integer, DbPart> parts) throws SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT ifid, pid, type, path FROM inclusionfilter");
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int partId = rs.getInt("pid");
-            filters.put(partId, new DbInclusionFilter(partId, rs.getInt("ifid"), rs.getString("type"),
-                                                      rs.getString("path")));
+            DbPart part = parts.get(rs.getInt("pid"));
+            part.addInclusionFilter(new DbInclusionFilter(part, rs.getInt("ifid"), rs.getString("type"),
+                                                          rs.getString("path")));
         }
-
-        return filters.build();
     }
     
-    private SetMultimap<Integer, DbAction> getActions(Connection conn) throws SQLException {
-        ImmutableSetMultimap.Builder<Integer, DbAction> actions = ImmutableSetMultimap.builder();
-        
-        SetMultimap<Integer, DbActionProperty> actionProperties = this.getActionProperties(conn);
+    private void loadActions(Connection conn, Map<Integer, DbPart> parts) throws SQLException {
+        Map<Integer, DbAction> actions = new HashMap<Integer, DbAction>();
         
         PreparedStatement ps = conn.prepareStatement("SELECT acid, pid, name, icon, ordering, task FROM action");
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int partId = rs.getInt("pid");
+            DbPart part = parts.get(rs.getInt("pid"));
             int actionId = rs.getInt("acid");
-            
-            actions.put(partId, new DbAction(partId, actionId, rs.getString("name"), rs.getString("icon"),
-                    rs.getInt("ordering"), rs.getString("task"), actionProperties.get(actionId)));
+            DbAction action = new DbAction(part, actionId, rs.getString("name"), rs.getString("icon"),
+                                           rs.getInt("ordering"), rs.getString("task"));
+            actions.put(actionId, action);
+            part.addAction(action);
         }
-
-        return actions.build();
+        
+        this.loadActionProperties(conn, actions);
     }
     
-    private SetMultimap<Integer, DbActionProperty> getActionProperties(Connection conn) throws SQLException {
-        ImmutableSetMultimap.Builder<Integer, DbActionProperty> properties = ImmutableSetMultimap.builder();
-
+    private void loadActionProperties(Connection conn, Map<Integer, DbAction> actions) throws SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT apid, acid, key, value FROM actionproperty");
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int partActionId = rs.getInt("acid");
-            properties.put(partActionId, new DbActionProperty(partActionId, rs.getInt("apid"), rs.getString("key"),
-                                                              rs.getString("value")));
+            DbAction action = actions.get(rs.getInt("acid"));
+            action.addActionProperty(new DbActionProperty(action, rs.getInt("apid"), rs.getString("key"),
+                                                          rs.getString("value")));
         }
-
-        return properties.build();
     }
-    
+
     private final DbDataItemPutOperation<DbAssignment> ASGN_PUT_OP = new DbDataItemPutOperation<DbAssignment>(
             "INSERT INTO assignment (name, ordering, hasgroups) VALUES (?, ?, ?)",
             "UPDATE assignment SET name = ?, ordering = ?, hasgroups = ? WHERE aid == ?") {
@@ -467,7 +467,7 @@ public class DatabaseImpl implements Database
 
         @Override
         int setFields(PreparedStatement ps, DbGradableEvent item) throws SQLException {
-            ps.setInt(1, item.getAssignmentId());
+            ps.setInt(1, item.getAssignment().getId());
             ps.setString(2, item.getName());
             ps.setInt(3, item.getOrder());
             setObjectAsStringNullSafe(ps, 4, item.getDirectory());
@@ -499,7 +499,7 @@ public class DatabaseImpl implements Database
 
         @Override
         int setFields(PreparedStatement ps, DbPart item) throws SQLException {
-            ps.setInt(1, item.getGradableEventId());
+            ps.setInt(1, item.getGradableEvent().getId());
             ps.setString(2, item.getName());
             ps.setInt(3, item.getOrder());
             setObjectAsStringNullSafe(ps, 4, item.getGmlTemplate());
@@ -525,7 +525,7 @@ public class DatabaseImpl implements Database
 
         @Override
         int setFields(PreparedStatement ps, DbAction item) throws SQLException {
-            ps.setInt(1, item.getPartId());
+            ps.setInt(1, item.getPart().getId());
             ps.setString(2, item.getName());
             ps.setString(3, item.getIcon().toString());
             ps.setInt(4, item.getOrder());
@@ -550,7 +550,7 @@ public class DatabaseImpl implements Database
 
         @Override
         int setFields(PreparedStatement ps, DbActionProperty item) throws SQLException {
-            ps.setInt(1, item.getActionId());
+            ps.setInt(1, item.getAction().getId());
             ps.setString(2, item.getKey());
             ps.setString(3, item.getValue());
             return 4;
@@ -573,7 +573,7 @@ public class DatabaseImpl implements Database
 
         @Override
         int setFields(PreparedStatement ps, DbInclusionFilter item) throws SQLException {
-            ps.setInt(1, item.getPartId());
+            ps.setInt(1, item.getPart().getId());
             setObjectAsStringNullSafe(ps, 2, item.getType());
             ps.setString(3, item.getPath());
             return 4;
@@ -745,10 +745,6 @@ public class DatabaseImpl implements Database
                     DbDataItem item = items.get(i);
                     item.setId(lastID);
                     
-                    for (DbDataItem child : item.getChildren()) {
-                        child.setParentId(lastID);
-                    }
-                    
                     lastID--;
                 }
 
@@ -779,7 +775,7 @@ public class DatabaseImpl implements Database
     
     private void setChildIdsNull(Iterable<? extends DbDataItem> children) {
         for (DbDataItem child : children) {
-            child.setParentId(null);
+            child.setParentNull();
             child.setId(null);
             this.setChildIdsNull(child.getChildren());
         }

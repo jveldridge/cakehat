@@ -3,6 +3,7 @@ package cakehat.database;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 
 /**
  * A single value stored in the database's property table.
@@ -35,6 +36,16 @@ public class DbPropertyValue<T> extends DbDataItem
     public T getValue()
     {
         return _value;
+    }
+
+    @Override
+    void setParentNull() {
+        throw new UnsupportedOperationException("This data item type has no parent.");
+    }
+    
+    @Override
+    Iterable<? extends DbDataItem> getChildren() {
+        return Collections.emptyList();
     }
     
     /**
@@ -105,7 +116,7 @@ public class DbPropertyValue<T> extends DbDataItem
          * @throws SQLException 
          */
         abstract void setValue(PreparedStatement ps, int parameterIndex, T value) throws SQLException;
-        
+
         
         // Versions for specific data types
         

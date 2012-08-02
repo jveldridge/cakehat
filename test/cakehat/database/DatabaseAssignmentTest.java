@@ -1,16 +1,16 @@
 package cakehat.database;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
-import org.junit.Test;
-import cakehat.database.DatabaseTestHelpers.EqualityAsserter;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
+import cakehat.database.DatabaseTestHelpers.EqualityAsserter;
 import cakehat.database.assignment.ActionDescription;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.sql.SQLException;
-import org.junit.Before;
+import java.util.Set;
 import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for {@link Database} methods related to assignments and their constituent parts.
@@ -52,7 +52,7 @@ public class DatabaseAssignmentTest {
         @Override
         public void assertEqual(DbGradableEvent t1, DbGradableEvent t2) {
             assertEquals(t1.getId(), t2.getId());
-            assertEquals(t1.getAssignmentId(), t2.getAssignmentId());
+            assertEquals(t1.getAssignment().getId(), t2.getAssignment().getId());
             assertEquals(t1.getName(), t2.getName());
             assertEquals(t1.getDirectory(), t2.getDirectory());
             assertEquals(t1.getDeadlineType(), t2.getDeadlineType());
@@ -71,7 +71,7 @@ public class DatabaseAssignmentTest {
         @Override
         public void assertEqual(DbPart t1, DbPart t2) {
             assertEquals(t1.getId(), t2.getId());
-            assertEquals(t1.getGradableEventId(), t2.getGradableEventId());
+            assertEquals(t1.getGradableEvent().getId(), t2.getGradableEvent().getId());
             assertEquals(t1.getName(), t2.getName());
             assertEquals(t1.getOrder(), t2.getOrder());
             assertEquals(t1.getGmlTemplate(), t2.getGmlTemplate());
@@ -86,7 +86,7 @@ public class DatabaseAssignmentTest {
         @Override
         public void assertEqual(DbAction t1, DbAction t2) {
             assertEquals(t1.getId(), t2.getId());
-            assertEquals(t1.getPartId(), t2.getPartId());
+            assertEquals(t1.getPart().getId(), t2.getPart().getId());
             assertEquals(t1.getName(), t2.getName());
             assertEquals(t1.getIcon(), t2.getIcon());
             assertEquals(t1.getTask(), t2.getTask());
@@ -99,7 +99,7 @@ public class DatabaseAssignmentTest {
         @Override
         public void assertEqual(DbActionProperty t1, DbActionProperty t2) {
             assertEquals(t1.getId(), t2.getId());
-            assertEquals(t1.getActionId(), t2.getActionId());
+            assertEquals(t1.getAction().getId(), t2.getAction().getId());
             assertEquals(t1.getKey(), t2.getKey());
             assertEquals(t1.getValue(), t2.getValue());
         }
@@ -109,7 +109,7 @@ public class DatabaseAssignmentTest {
         @Override
         public void assertEqual(DbInclusionFilter t1, DbInclusionFilter t2) {
             assertEquals(t1.getId(), t2.getId());
-            assertEquals(t1.getPartId(), t2.getPartId());
+            assertEquals(t1.getPart().getId(), t2.getPart().getId());
             assertEquals(t1.getType(), t2.getType());
             assertEquals(t1.getPath(), t2.getPath());
         }
@@ -179,7 +179,7 @@ public class DatabaseAssignmentTest {
         _database.putAssignments(ImmutableSet.of(asgn));
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
-        assertEquals(asgn.getId(), ge.getAssignmentId());
+        assertEquals(asgn.getId(), ge.getAssignment().getId());
         
         _database.putGradableEvents(ImmutableSet.of(ge));
         assertNotNull(ge.getId());
@@ -193,12 +193,12 @@ public class DatabaseAssignmentTest {
         DbAssignment asgn = new DbAssignment("asgn", 1);
         
         DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
-        assertEquals(asgn.getId(), ge.getAssignmentId());
+        assertEquals(asgn.getId(), ge.getAssignment().getId());
         
         _database.putAssignments(ImmutableSet.of(asgn));
         _database.putGradableEvents(ImmutableSet.of(ge));
         assertNotNull(asgn.getId());
-        assertEquals(asgn.getId(), ge.getAssignmentId());
+        assertEquals(asgn.getId(), ge.getAssignment().getId());
         assertNotNull(ge.getId());
         
         Set<DbAssignment> assignments = _database.getAssignments();
@@ -217,8 +217,8 @@ public class DatabaseAssignmentTest {
         assertNotNull(ge1.getId());
         assertNotNull(ge2.getId());
         assertFalse(ge1.getId() == ge2.getId());
-        assertEquals(asgn.getId(), ge1.getAssignmentId());
-        assertEquals(asgn.getId(), ge2.getAssignmentId());
+        assertEquals(asgn.getId(), ge1.getAssignment().getId());
+        assertEquals(asgn.getId(), ge2.getAssignment().getId());
         
         DbGradableEvent ge3 = DbGradableEvent.build(asgn, "ge3", 3);
         DbGradableEvent ge4 = DbGradableEvent.build(asgn, "ge4", 4);
@@ -228,8 +228,8 @@ public class DatabaseAssignmentTest {
         assertFalse(ge1.getId() == ge3.getId() || ge1.getId() == ge4.getId());
         assertFalse(ge2.getId() == ge3.getId() || ge2.getId() == ge4.getId());
         assertFalse(ge3.getId() == ge4.getId());
-        assertEquals(asgn.getId(), ge3.getAssignmentId());
-        assertEquals(asgn.getId(), ge4.getAssignmentId());
+        assertEquals(asgn.getId(), ge3.getAssignment().getId());
+        assertEquals(asgn.getId(), ge4.getAssignment().getId());
         
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -246,7 +246,7 @@ public class DatabaseAssignmentTest {
         DbPart part = DbPart.build(ge, "part", 1);
         _database.putParts(ImmutableSet.of(part));
         assertNotNull(part.getId());
-        assertEquals(ge.getId(), part.getGradableEventId());
+        assertEquals(ge.getId(), part.getGradableEvent().getId());
         
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -263,7 +263,7 @@ public class DatabaseAssignmentTest {
         DbPart part = DbPart.build(ge, "part", 1);
         _database.putParts(ImmutableSet.of(part));
         assertNotNull(part.getId());
-        assertEquals(ge.getId(), part.getGradableEventId());
+        assertEquals(ge.getId(), part.getGradableEvent().getId());
         
         part.setOutOf(15.0);
         part.setQuickName("lab");
@@ -356,15 +356,15 @@ public class DatabaseAssignmentTest {
         _database.removeAssignments(ImmutableSet.of(asgn));
         assertNull(asgn.getId());
         assertNull(ge.getId());
-        assertNull(ge.getAssignmentId());
+        assertNull(ge.getAssignment());
         assertNull(part.getId());
-        assertNull(part.getGradableEventId());
+        assertNull(part.getGradableEvent());
         assertNull(filter.getId());
-        assertNull(filter.getPartId());
+        assertNull(filter.getPart());
         assertNull(action.getId());
-        assertNull(action.getPartId());
+        assertNull(action.getPart());
         assertNull(actionProperty.getId());
-        assertNull(actionProperty.getActionId());
+        assertNull(actionProperty.getAction());
         
         assignments = _database.getAssignments();
         assertEquals(0, assignments.size());

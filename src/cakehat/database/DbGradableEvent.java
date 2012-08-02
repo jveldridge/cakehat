@@ -16,7 +16,7 @@ import org.joda.time.Period;
  */
 public class DbGradableEvent extends DbDataItem implements Comparable<DbGradableEvent>
 {
-    private volatile Integer _asgnId;
+    private volatile DbAssignment _asgn;
     private volatile String _name;
     private volatile int _order;
     private volatile File _directory;
@@ -46,7 +46,7 @@ public class DbGradableEvent extends DbDataItem implements Comparable<DbGradable
     {
         super(null);
         
-        _asgnId = asgn.getId();
+        _asgn = asgn;
         _name = name;
         _order = order;
         _parts = new HashSet<DbPart>();
@@ -67,15 +67,14 @@ public class DbGradableEvent extends DbDataItem implements Comparable<DbGradable
      * @param lateDate
      * @param latePoints
      * @param latePeriod
-     * @param parts 
-     */
-    DbGradableEvent(int asgnId, int id, String name, int order, String directory, String deadlineType,
+     */    
+    DbGradableEvent(DbAssignment asgn, int id, String name, int order, String directory, String deadlineType,
                     String earlyDate, Double earlyPoints, String onTimeDate, String lateDate, Double latePoints,
-                    String latePeriod, Set<DbPart> parts)
+                    String latePeriod)
     {
         super(id);
         
-        _asgnId = asgnId;
+        _asgn = asgn;
         _name = name;
         _order = order;
         _directory = directory == null ? null : new File(directory);
@@ -86,7 +85,7 @@ public class DbGradableEvent extends DbDataItem implements Comparable<DbGradable
         _lateDate = lateDate == null ? null : new DateTime(lateDate);
         _latePoints = latePoints;
         _latePeriod = latePeriod == null ? null : new Period(latePeriod);
-        _parts = new HashSet<DbPart>(parts);
+        _parts = new HashSet<DbPart>();
     }
     
     public void setName(String name)
@@ -213,14 +212,14 @@ public class DbGradableEvent extends DbDataItem implements Comparable<DbGradable
         return _latePeriod;
     }
     
-    Integer getAssignmentId()
+    DbAssignment getAssignment()
     {
-        return _asgnId;
+        return _asgn;
     }
-
+    
     @Override
-    void setParentId(Integer id) {
-        _asgnId = id;
+    void setParentNull() {
+        _asgn = null;
     }
     
     @Override

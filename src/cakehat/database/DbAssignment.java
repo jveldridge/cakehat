@@ -33,22 +33,13 @@ public class DbAssignment extends DbDataItem implements Comparable<DbAssignment>
         _gradableEvents = new HashSet<DbGradableEvent>();
     }
     
-    /**
-     * Constructor to be used by the database to load assignment data into memory.
-     * 
-     * @param id
-     * @param name
-     * @param order
-     * @param hasGroups
-     * @param gradableEvents 
-     */
-    DbAssignment(int id, String name, int order, boolean hasGroups, Set<DbGradableEvent> gradableEvents)
+    DbAssignment(int id, String name, int order, boolean hasGroups)
     {
         super(id);
         _name = name;
         _order = order;
         _hasGroups = hasGroups;
-        _gradableEvents = new HashSet<DbGradableEvent>(gradableEvents);
+        _gradableEvents = new HashSet<DbGradableEvent>();
     }
     
     public void setName(final String name)
@@ -103,6 +94,11 @@ public class DbAssignment extends DbDataItem implements Comparable<DbAssignment>
         {
             return ImmutableSet.copyOf(_gradableEvents);
         }
+    }
+    
+    @Override
+    void setParentNull() {
+        throw new UnsupportedOperationException("This data item type has no parent.");
     }
     
     @Override

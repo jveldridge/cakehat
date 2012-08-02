@@ -13,7 +13,7 @@ import support.resources.icons.IconLoader.IconImage;
  */
 public class DbAction extends DbDataItem implements Comparable<DbAction>
 {   
-    private volatile Integer _partId;
+    private volatile DbPart _part;
     private volatile String _name;
     private volatile IconImage _icon;
     private volatile int _order;
@@ -39,7 +39,7 @@ public class DbAction extends DbDataItem implements Comparable<DbAction>
     {
         super(null);
         
-        _partId = part.getId();
+        _part = part;
         _name = name;
         _icon = icon;
         _order = order;
@@ -49,25 +49,24 @@ public class DbAction extends DbDataItem implements Comparable<DbAction>
     /**
      * Constructor to be used by the database to load action data into memory.
      * 
-     * @param partId
+     * @param part
      * @param id
      * @param name
      * @param icon
      * @param order
      * @param task
-     * @param properties
      */
-    DbAction(int partId, int id, String name, String icon, int order, String task, Set<DbActionProperty> properties)
+    DbAction(DbPart part, int id, String name, String icon, int order, String task)
     {
         super(id);
         
-        _partId = partId;
+        _part = part;
         
         _name = name;
         _icon = icon == null ? null : IconImage.valueOf(icon);
         _order = order;
         _task = task;
-        _properties = new HashSet<DbActionProperty>(properties);
+        _properties = new HashSet<DbActionProperty>();
     }
     
     public void setName(String name)
@@ -142,15 +141,15 @@ public class DbAction extends DbDataItem implements Comparable<DbAction>
         }
     }
     
-    Integer getPartId()
+    DbPart getPart()
     {
-        return _partId;
+        return _part;
     }
 
     @Override
-    void setParentId(Integer id)
+    void setParentNull()
     {
-        _partId = id;
+        _part = null;
     }
     
     @Override

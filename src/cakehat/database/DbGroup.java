@@ -90,6 +90,16 @@ public class DbGroup extends DbDataItem
             return Collections.unmodifiableSet(_studentIds);
         }
     }
+    
+    @Override
+    void setParentNull() {
+        throw new UnsupportedOperationException("This data item type has no parent.");
+    }
+    
+    @Override
+    Iterable<? extends DbDataItem> getChildren() {
+        return Collections.emptyList();
+    }
 
     @Override
     public String toString(){

@@ -385,6 +385,11 @@ public interface Database
     public void deleteGradableEventOccurrences(int geId, Set<Integer> groupIds) throws SQLException;
     
     /**
+     * This method is used to retrieve deadline information from the database.  Note that the DbAssignment field of
+     * the returned DbGradableEvent will not be set properly (it is simply {@code null}).
+     * 
+     * This design should be reconsidered in the future.
+     * 
      * {@code null} will be returned if no such geid exists in database
      * 
      * @param geid

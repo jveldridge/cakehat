@@ -27,11 +27,7 @@ public abstract class DbDataItem
         return _id;
     }
     
-    void setParentId(Integer id) {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
+    abstract void setParentNull();
     
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
+    abstract Iterable<? extends DbDataItem> getChildren();
 }

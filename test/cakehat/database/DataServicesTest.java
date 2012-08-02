@@ -1183,7 +1183,7 @@ public class DataServicesTest {
         double latePoints = -5.0;
         
         DbGradableEvent event = createMock(DbGradableEvent.class);
-        expect(event.getAssignmentId()).andReturn(_dbAsgnA.getId()).anyTimes();
+        expect(event.getAssignment()).andReturn(_dbAsgnA).anyTimes();
         expect(event.getDeadlineType()).andReturn(DeadlineInfo.Type.FIXED).anyTimes();
         expect(event.getEarlyDate()).andReturn(early).anyTimes();
         expect(event.getOnTimeDate()).andReturn(onTime).anyTimes();
@@ -1225,7 +1225,7 @@ public class DataServicesTest {
         double latePoints = -5.0;
         
         DbGradableEvent event = createMock(DbGradableEvent.class);
-        expect(event.getAssignmentId()).andReturn(_dbAsgnA.getId()).anyTimes();
+        expect(event.getAssignment()).andReturn(_dbAsgnA).anyTimes();
         expect(event.getDeadlineType()).andReturn(DeadlineInfo.Type.VARIABLE).anyTimes();
         expect(event.getEarlyDate()).andReturn(null).anyTimes();
         expect(event.getOnTimeDate()).andReturn(onTime).anyTimes();
@@ -1259,7 +1259,7 @@ public class DataServicesTest {
     @Test
     public void testGetDeadlineInfoForNoDeadline() throws ServicesException, SQLException {
         DbGradableEvent event = createMock(DbGradableEvent.class);
-        expect(event.getAssignmentId()).andReturn(_dbAsgnA.getId()).anyTimes();
+        expect(event.getAssignment()).andReturn(_dbAsgnA).anyTimes();
         expect(event.getDeadlineType()).andReturn(DeadlineInfo.Type.NONE).anyTimes();
         expect(event.getEarlyDate()).andReturn(null).anyTimes();
         expect(event.getOnTimeDate()).andReturn(null).anyTimes();
@@ -1281,7 +1281,7 @@ public class DataServicesTest {
         _database.putGradableEvents(ImmutableSet.of(event));
         
         DeadlineInfo info = _dataServices.getDeadlineInfo(eventA);
-        assertEquals(DeadlineInfo.Type.NONE, info.getType()); 
+        assertEquals(DeadlineInfo.Type.NONE, info.getType());
         assertNull(info.getEarlyDate());
         assertNull(info.getOnTimeDate());
         assertNull(info.getLateDate());

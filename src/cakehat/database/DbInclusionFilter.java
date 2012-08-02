@@ -1,5 +1,7 @@
 package cakehat.database;
 
+import java.util.Collections;
+
 /**
  * Represents an inclusion filter for a part as it is represented in the database and configuration manager.
  * 
@@ -10,7 +12,7 @@ public class DbInclusionFilter extends DbDataItem
 {
     public static enum FilterType {FILE, DIRECTORY};
 
-    private volatile Integer _partId;
+    private volatile DbPart _part;
     private volatile FilterType _type;
     private volatile String _path;
     
@@ -30,7 +32,7 @@ public class DbInclusionFilter extends DbDataItem
     {
         super(null);
         
-        _partId = part.getId();
+        _part = part;
     }
 
     /**
@@ -41,11 +43,11 @@ public class DbInclusionFilter extends DbDataItem
      * @param type
      * @param path 
      */
-    DbInclusionFilter(int partId, int id, String type, String path)
+    DbInclusionFilter(DbPart part, int id, String type, String path)
     {
         super(id);
         
-        _partId = partId;
+        _part = part;
         _type = FilterType.valueOf(type);
         _path = path;
     }
@@ -70,13 +72,18 @@ public class DbInclusionFilter extends DbDataItem
         return _path;
     }
     
-    Integer getPartId() {
-        return _partId;
+    DbPart getPart() {
+        return _part;
     }
     
     @Override
-    void setParentId(Integer id) {
-        _partId = id;
+    void setParentNull() {
+        _part = null;
+    }
+    
+    @Override
+    Iterable<? extends DbDataItem> getChildren() {
+        return Collections.emptyList();
     }
 
 }
