@@ -1,65 +1,65 @@
 #summary Proposed schema for storing grading sheets in the database.
 
 gradingsheet
- * gs-id INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs_id INTEGER PRIMARY KEY AUTOINCREMENT
  * pid INTEGER NOT NULL
  * FOREIGN KEY pid REFERENCES part(pid) ON DELETE CASCADE
- * CONSTRAINT oneperpart UNIQUE(PID) ON DELETE CASCADE
+ * CONSTRAINT oneperpart UNIQUE(PID) ON CONFLICT ROLLBACK
 
 gradingsheetsection
- * gs-sid INTEGER PRIMARY KEY AUTOINCREMENT
- * gs-id INTEGER NOT NULL
+ * gs_sid INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs_id INTEGER NOT NULL
  * name VARCHAR NOT NULL
- * order INTEGER NOT NULL
+ * ordering INTEGER NOT NULL
  * outof DOUBLE //may be null; if not null, used for subtractive grading as earned and out of
- * FOREIGN KEY gs-id REFERENCES gradingsheet(gs-id) ON DELETE CASCADE
- * CONSTRAINT uniquenames UNIQUE (gs-id, gs-sid, name) ON CONFLICT ROLLBACK
+ * FOREIGN KEY gs_id REFERENCES gradingsheet(gs_id) ON DELETE CASCADE
+ * CONSTRAINT uniquenames UNIQUE (gs_id, gs_sid, name) ON CONFLICT ROLLBACK
 
 gradingsheetsubsection
- * gs-ssid INTEGER PRIMARY KEY AUTOINCREMENT
- * gs-sid INTEGER NOT NULL
+ * gs_ssid INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs_sid INTEGER NOT NULL
  * text VARCHAR NOT NULL
- * order INTEGER NOT NULL
- * outof DOUBLE //may be null - will mean grading sheet visualization shows no red/yellow
- * FOREIGN KEY gs-sid REFERENCES gradingsheetsection(gs-sid) ON DELETE CASCADE
- * CONSTRAINT uniquenames UNIQUE (gs-sid, gs-ssid, name) ON CONFLICT ROLLBACK
+ * ordering INTEGER NOT NULL
+ * outof DOUBLE //may be null; will mean grading sheet visualization shows no red/yellow
+ * FOREIGN KEY gs_sid REFERENCES gradingsheetsection(gs_sid) ON DELETE CASCADE
+ * CONSTRAINT uniquenames UNIQUE (gs_sid, gs_ssid, name) ON CONFLICT ROLLBACK
 
 gradingsheetdetail
- * gs-did INTEGER PRIMARY KEY AUTOINCREMENT
- * gs-ssid INTEGER NOT NULL
+ * gs_did INTEGER PRIMARY KEY AUTOINCREMENT
+ * gs_ssid INTEGER NOT NULL
  * text VARCHAR NOT NULL
- * order INTEGER NOT NULL
- * FOREIGN KEY gs-ssid REFERENCES gradingsheetsubsection ON DELETE CASCADE
+ * ordering INTEGER NOT NULL
+ * FOREIGN KEY gs_ssid REFERENCES gradingsheetsubsection CONFLICT ROLLBACK
 
 groupgradingsheet
- * gs-id INTEGER NOT NULL
+ * gs_id INTEGER NOT NULL
  * agid INTEGER NOT NULL
  * submitted INTEGER NOT NULL DEFAULT 0
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
- * FOREIGN KEY gs-id REFERENCES gradingsheet(gs-id) ON DELETE CASCADE
+ * FOREIGN KEY gs_id REFERENCES gradingsheet(gs_id) ON DELETE CASCADE
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepergroup UNIQUE(gs-id, agid) ON CONFLICT REPLACE
+ * CONSTRAINT onepergroup UNIQUE(gs_id, agid) ON CONFLICT REPLACE
 
 groupgradingsheetsubsection
  * agid INTEGER NOT NULL
- * gs-ssid INTEGER NOT NULL
+ * gs_ssid INTEGER NOT NULL
  * earned DOUBLE
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
- * FOREIGN KEY gs-ssid REFERENCES gradingsheetsubsection(gs-ssid) ON DELETE CASCADE
+ * FOREIGN KEY gs_ssid REFERENCES gradingsheetsubsection(gs_ssid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepersubsectionpergroup UNIQUE (agid, gs-ssid) ON CONFLICT REPLACE
+ * CONSTRAINT onepersubsectionpergroup UNIQUE (agid, gs_ssid) ON CONFLICT REPLACE
 
 groupgradingsheetcomments
  * agid INTEGER NOT NULL
- * gs-sid INTEGER NOT NULL
+ * gs_sid INTEGER NOT NULL
  * comments VARCHAR
  * tid INTEGER NOT NULL
  * daterecorded VARCHAR NOT NULL
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
- * FOREIGN KEY gs-sid REFERENCES gradingsheetsection(gs-sid) ON DELETE CASCADE
+ * FOREIGN KEY gs_sid REFERENCES gradingsheetsection(gs_sid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepersectionpergroup UNIQUE (agid, gs-sid) ON CONFLICT REPLACE
+ * CONSTRAINT onepersectionpergroup UNIQUE (agid, gs_sid) ON CONFLICT REPLACE
