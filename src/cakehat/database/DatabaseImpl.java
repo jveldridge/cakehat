@@ -5,6 +5,7 @@ import cakehat.InitializationException;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.services.ServicesException;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
@@ -302,7 +303,6 @@ public class DatabaseImpl implements Database
         this.putDbDataItems(students, STUDENT_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
     }
     
-    //TODO look at factoring out repetitive assignment get code
     @Override
     public Set<DbAssignment> getAssignments() throws SQLException {
         Map<Integer, DbAssignment> asgns = new HashMap<Integer, DbAssignment>();
@@ -318,7 +318,7 @@ public class DatabaseImpl implements Database
                                                    rs.getBoolean("hasgroups")));
             }
             
-            this.loadGradableEvents(conn, asgns);
+            loadDbDataItem(conn, asgns, GRADABLE_EVENT_LOAD_OP);
             
             return ImmutableSet.copyOf(asgns.values());
         } finally {
@@ -352,89 +352,99 @@ public class DatabaseImpl implements Database
         }
     }
     
-    private void loadGradableEvents(Connection conn, Map<Integer, DbAssignment> asgns) throws SQLException {     
-        Map<Integer, DbGradableEvent> gradableEvents = new HashMap<Integer, DbGradableEvent>();
-        
-        PreparedStatement ps = conn.prepareStatement("SELECT geid, aid, name, ordering, directory, deadlinetype,"
-                + "earlydate, earlypoints, ontimedate, latedate, latepoints, lateperiod FROM gradableevent");
-        
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            DbAssignment asgn = asgns.get(rs.getInt("aid"));
-            int gradableEventId = rs.getInt("geid");
-            DbGradableEvent gradableEvent = new DbGradableEvent(asgn, gradableEventId, rs.getString("name"),
-                                                                rs.getInt("ordering"), rs.getString("directory"),
-                                                                rs.getString("deadlinetype"), rs.getString("earlydate"),
-                                                                getDouble(rs, "earlypoints"), rs.getString("ontimedate"),
-                                                                rs.getString("latedate"), getDouble(rs, "latepoints"),
-                                                                rs.getString("lateperiod"));
-            gradableEvents.put(gradableEventId, gradableEvent);
-            asgn.addGradableEvent(gradableEvent);
-        }
-        
-        this.loadParts(conn, gradableEvents);
-    }
-    
-    private void loadParts(Connection conn, Map<Integer, DbGradableEvent> gradableEvents) throws SQLException {
-        Map<Integer, DbPart> parts = new HashMap<Integer, DbPart>();
-        
-        PreparedStatement ps = conn.prepareStatement("SELECT pid, geid, name, ordering, gmltemplate, outof, quickname "
-                + " FROM part");
-     
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            DbGradableEvent gradableEvent = gradableEvents.get(rs.getInt("geid"));
-            int partId = rs.getInt("pid");
-            DbPart part = new DbPart(gradableEvent, partId, rs.getString("name"), rs.getInt("ordering"),
-                                                  rs.getString("gmltemplate"), getDouble(rs, "outof"),
-                                                  rs.getString("quickname"));
-            parts.put(partId, part);
-            gradableEvent.addPart(part);
-        }
-        
-        this.loadInclusionFilters(conn, parts);
-        this.loadActions(conn, parts);
-    }
-    
-    private void loadInclusionFilters(Connection conn, Map<Integer, DbPart> parts) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT ifid, pid, type, path FROM inclusionfilter");
+    private final DbDataItemLoadOperation<DbGradableEvent, DbAssignment> GRADABLE_EVENT_LOAD_OP =
+            new DbDataItemLoadOperation<DbGradableEvent, DbAssignment>(
+            "SELECT geid, aid, name, ordering, directory, deadlinetype, earlydate, earlypoints, ontimedate, latedate, "
+            + "latepoints, lateperiod FROM gradableevent", "geid", "aid") {
 
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            DbPart part = parts.get(rs.getInt("pid"));
-            part.addInclusionFilter(new DbInclusionFilter(part, rs.getInt("ifid"), rs.getString("type"),
-                                                          rs.getString("path")));
+        @Override
+        DbGradableEvent getDbDataItem(DbAssignment parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradableEvent(parent, id, rs.getString("name"), rs.getInt("ordering"),
+                                       rs.getString("directory"), rs.getString("deadlinetype"), rs.getString("earlydate"),
+                                       getDouble(rs, "earlypoints"), rs.getString("ontimedate"), rs.getString("latedate"),
+                                       getDouble(rs, "latepoints"), rs.getString("lateperiod"));
         }
-    }
-    
-    private void loadActions(Connection conn, Map<Integer, DbPart> parts) throws SQLException {
-        Map<Integer, DbAction> actions = new HashMap<Integer, DbAction>();
-        
-        PreparedStatement ps = conn.prepareStatement("SELECT acid, pid, name, icon, ordering, task FROM action");
 
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            DbPart part = parts.get(rs.getInt("pid"));
-            int actionId = rs.getInt("acid");
-            DbAction action = new DbAction(part, actionId, rs.getString("name"), rs.getString("icon"),
-                                           rs.getInt("ordering"), rs.getString("task"));
-            actions.put(actionId, action);
-            part.addAction(action);
+        @Override
+        public void addToParent(DbAssignment parent, DbGradableEvent child) {
+            parent.addGradableEvent(child);
         }
-        
-        this.loadActionProperties(conn, actions);
-    }
-    
-    private void loadActionProperties(Connection conn, Map<Integer, DbAction> actions) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT apid, acid, key, value FROM actionproperty");
 
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            DbAction action = actions.get(rs.getInt("acid"));
-            action.addActionProperty(new DbActionProperty(action, rs.getInt("apid"), rs.getString("key"),
-                                                          rs.getString("value")));
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbGradableEvent> items) throws SQLException {
+            loadDbDataItem(conn, items, PART_LOAD_OP);
         }
-    }
+    };
+    
+    private final DbDataItemLoadOperation<DbPart, DbGradableEvent> PART_LOAD_OP = new DbDataItemLoadOperation<DbPart, DbGradableEvent>(
+            "SELECT pid, geid, name, ordering, gmltemplate, outof, quickname FROM part",
+            "pid", "geid") {
+
+        @Override
+        DbPart getDbDataItem(DbGradableEvent parent, int id, ResultSet rs) throws SQLException {
+            return new DbPart(parent, id, rs.getString("name"), rs.getInt("ordering"), rs.getString("gmltemplate"),
+                              getDouble(rs, "outof"), rs.getString("quickname"));
+        }
+
+        @Override
+        public void addToParent(DbGradableEvent parent, DbPart child) {
+            parent.addPart(child);
+        }
+
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbPart> items) throws SQLException {
+            loadDbDataItem(conn, items, INCLUSION_FILTER_LOAD_OP);
+            loadDbDataItem(conn, items, ACTION_LOAD_OP);
+        }
+    };
+    
+    private final DbDataItemLoadOperation<DbInclusionFilter, DbPart> INCLUSION_FILTER_LOAD_OP = new ChildlessDbDataItemLoadOperation<DbInclusionFilter, DbPart>(
+            "SELECT ifid, pid, type, path FROM inclusionfilter", "ifid", "pid") {
+
+        @Override
+        DbInclusionFilter getDbDataItem(DbPart parent, int id, ResultSet rs) throws SQLException {
+            return new DbInclusionFilter(parent, id, rs.getString("type"), rs.getString("path"));
+        }
+
+        @Override
+        public void addToParent(DbPart parent, DbInclusionFilter child) {
+           parent.addInclusionFilter(child);
+        }
+    };
+    
+    private final DbDataItemLoadOperation<DbAction, DbPart> ACTION_LOAD_OP = new DbDataItemLoadOperation<DbAction, DbPart>(
+            "SELECT acid, pid, name, icon, ordering, task FROM action", "acid", "pid") {
+
+        @Override
+        DbAction getDbDataItem(DbPart parent, int id, ResultSet rs) throws SQLException {
+            return new DbAction(parent, id, rs.getString("name"), rs.getString("icon"), rs.getInt("ordering"),
+                                rs.getString("task"));
+        }
+
+        @Override
+        public void addToParent(DbPart parent, DbAction child) {
+            parent.addAction(child);
+        }
+
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbAction> items) throws SQLException {
+            loadDbDataItem(conn, items, ACTION_PROPERTY_LOAD_OP);
+        }
+    };
+
+    private final DbDataItemLoadOperation<DbActionProperty, DbAction> ACTION_PROPERTY_LOAD_OP = new ChildlessDbDataItemLoadOperation<DbActionProperty, DbAction>(
+            "SELECT apid, acid, key, value FROM actionproperty", "apid", "acid") {
+
+        @Override
+        DbActionProperty getDbDataItem(DbAction parent, int id, ResultSet rs) throws SQLException {
+            return new DbActionProperty(parent, id, rs.getString("key"), rs.getString("value"));
+        }
+
+        @Override
+        public void addToParent(DbAction parent, DbActionProperty child) {
+            parent.addActionProperty(child);
+        }
+    };
 
     private final DbDataItemPutOperation<DbAssignment> ASGN_PUT_OP = new DbDataItemPutOperation<DbAssignment>(
             "INSERT INTO assignment (name, ordering, hasgroups) VALUES (?, ?, ?)",
@@ -590,6 +600,182 @@ public class DatabaseImpl implements Database
         this.removeDbDataItems("inclusionfilter", "ifid", inclusionFilters);
     }
     
+    private final DbDataItemPutOperation<DbGradingSheet> GRADING_SHEET_PUT_OP = new DbDataItemPutOperation<DbGradingSheet>(
+            "INSERT INTO gradingsheet (pid) VALUES (?)",
+            "UPDATE gradingsheet SET pid = ? WHERE gs_id == ?") {
+
+        @Override
+        int setFields(PreparedStatement ps, DbGradingSheet item) throws SQLException {
+            ps.setInt(1, item.getPart().getId());
+            return 2;
+        }
+    };
+    
+    @Override
+    public void putGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException {
+        this.putDbDataItems(gradingSheets, GRADING_SHEET_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
+    }
+    
+    private final DbDataItemPutOperation<DbGradingSheetSection> GRADING_SHEET_SECTION_PUT_OP = new DbDataItemPutOperation<DbGradingSheetSection>(
+            "INSERT INTO gradingsheetsection (gs_id, name, ordering, outof) VALUES (?, ?, ?, ?)",
+            "UPDATE gradingsheetsection SET gs_id = ?, name = ?, ordering = ?, outof = ? WHERE gs_sid == ?") {
+
+        @Override
+        int setFields(PreparedStatement ps, DbGradingSheetSection item) throws SQLException {
+            ps.setInt(1, item.getGradingSheet().getId());
+            ps.setString(2, item.getName());
+            ps.setInt(3, item.getOrder());
+            setDouble(ps, 4, item.getOutOf());
+            return 5;
+        }
+    };
+
+    @Override
+    public void putGradingSheetSections(Set<DbGradingSheetSection> gradingSheetSections) throws SQLException {
+        this.putDbDataItems(gradingSheetSections, GRADING_SHEET_SECTION_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
+    }
+    
+    private final DbDataItemPutOperation<DbGradingSheetSubsection> GRADING_SHEET_SUBSECTION_PUT_OP = new DbDataItemPutOperation<DbGradingSheetSubsection>(
+            "INSERT INTO gradingsheetsubsection (gs_sid, text, ordering, outof) VALUES (?, ?, ?, ?)",
+            "UPDATE gradingsheetsubsection SET gs_sid = ?, text = ?, ordering = ?, outof = ? WHERE gs_ssid == ?") {
+
+        @Override
+        int setFields(PreparedStatement ps, DbGradingSheetSubsection item) throws SQLException {
+            ps.setInt(1, item.getSection().getId());
+            ps.setString(2, item.getText());
+            ps.setInt(3, item.getOrder());
+            setDouble(ps, 4, item.getOutOf());
+            return 5;
+        }
+    };
+
+    @Override
+    public void putGradingSheetSubsections(Set<DbGradingSheetSubsection> gradingSheetSubsections) throws SQLException {
+        this.putDbDataItems(gradingSheetSubsections, GRADING_SHEET_SUBSECTION_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
+    }
+    
+    private final DbDataItemPutOperation<DbGradingSheetDetail> GRADING_SHEET_DETAIL_PUT_OP = new DbDataItemPutOperation<DbGradingSheetDetail>(
+            "INSERT INTO gradingsheetdetail (gs_ssid, text, ordering) VALUES (?, ?, ?)",
+            "UPDATE gradingsheetdetail SET gs_ssid = ?, text = ?, ordering = ? WHERE gs_did = ?") {
+
+        @Override
+        int setFields(PreparedStatement ps, DbGradingSheetDetail item) throws SQLException {
+            ps.setInt(1, item.getSubsection().getId());
+            ps.setString(2, item.getText());
+            ps.setInt(3, item.getOrder());
+            return 4;
+        }
+    };
+
+    @Override
+    public void putGradingSheetDetails(Set<DbGradingSheetDetail> gradingSheetDetails) throws SQLException {
+        this.putDbDataItems(gradingSheetDetails, GRADING_SHEET_DETAIL_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
+    }
+    
+    @Override
+    public DbGradingSheet getGradingSheet(DbPart part) throws SQLException {
+        DbGradingSheet gradingSheet = null;
+        Connection conn = this.openConnection();
+        
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT gs_id FROM gradingsheet WHERE pid == ?");
+            ps.setInt(1, part.getId());
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int id = rs.getInt("gs_id");
+                gradingSheet = new DbGradingSheet(part, id);
+                loadDbDataItem(conn, ImmutableMap.of(id, gradingSheet), new GradingSheetSectionLoadOp(id));
+            }
+
+            return gradingSheet;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    private class GradingSheetSectionLoadOp extends DbDataItemLoadOperation<DbGradingSheetSection, DbGradingSheet> {
+        
+        private GradingSheetSectionLoadOp(int gradingSheetId) {
+            super("SELECT gs_sid, gs_id, name, ordering, outof FROM gradingsheetsection", "gs_sid", "gs_id", gradingSheetId);
+        }
+        
+        @Override
+        DbGradingSheetSection getDbDataItem(DbGradingSheet parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradingSheetSection(parent, id, rs.getString("name"), rs.getInt("ordering"), getDouble(rs, "outof"));
+        }
+
+        @Override
+        void addToParent(DbGradingSheet parent, DbGradingSheetSection child) {
+            parent.addSection(child);
+        }
+
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbGradingSheetSection> items) throws SQLException {
+            loadDbDataItem(conn, items, new GradingSheetSubsectionLoadOp(_parentId));
+        }
+    }
+    
+    private class GradingSheetSubsectionLoadOp extends DbDataItemLoadOperation<DbGradingSheetSubsection, DbGradingSheetSection> {
+
+        private GradingSheetSubsectionLoadOp(int gradingSheetId) {
+            super("SELECT gs_ssid, gs_sid, text, ordering, outof FROM gradingsheetsubsection", "gs_ssid", "gs_sid", gradingSheetId);
+        }
+        
+        @Override
+        DbGradingSheetSubsection getDbDataItem(DbGradingSheetSection parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradingSheetSubsection(parent, id, rs.getString("text"), rs.getInt("ordering"), getDouble(rs, "outof"));
+        }
+
+        @Override
+        void addToParent(DbGradingSheetSection parent, DbGradingSheetSubsection child) {
+            parent.addSubsection(child);
+        }
+
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbGradingSheetSubsection> items) throws SQLException {
+            loadDbDataItem(conn, items, new GradingSheetDetailLoadOp(_parentId));
+        }
+        
+    }
+    
+    private class GradingSheetDetailLoadOp extends ChildlessDbDataItemLoadOperation<DbGradingSheetDetail, DbGradingSheetSubsection> {
+
+        private GradingSheetDetailLoadOp(int gradingSheetSubsectionId) {
+            super("SELECT gs_did, gs_ssid, text, ordering FROM gradingsheetdetail", "gs_did", "gs_ssid", gradingSheetSubsectionId);
+        }
+        
+        @Override
+        DbGradingSheetDetail getDbDataItem(DbGradingSheetSubsection parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradingSheetDetail(parent, id, rs.getString("text"), rs.getInt("ordering"));
+        }
+
+        @Override
+        void addToParent(DbGradingSheetSubsection parent, DbGradingSheetDetail child) {
+            parent.addDetail(child);
+        } 
+    }
+    
+    @Override
+    public void removeGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException {
+        this.removeDbDataItems("gradingsheet", "gs_id", gradingSheets);
+    }
+
+    @Override
+    public void removeGradingSheetSections(Set<DbGradingSheetSection> gradingSheetSections) throws SQLException {
+        this.removeDbDataItems("gradingsheetsection", "gs_sid", gradingSheetSections);
+    }
+
+    @Override
+    public void removeGradingSheetSubsections(Set<DbGradingSheetSubsection> gradingSheetSubsections) throws SQLException {
+        this.removeDbDataItems("gradingsheetsubsection", "gs_ssid", gradingSheetSubsections);
+    }
+
+    @Override
+    public void removeGradingSheetDetails(Set<DbGradingSheetDetail> gradingSheetDetails) throws SQLException {
+        this.removeDbDataItems("gradingsheetdetail", "gs_did", gradingSheetDetails);
+    }
+    
     private Double getDouble(ResultSet rs, String field) throws SQLException {
         Double d = rs.getDouble(field);
         if (rs.wasNull()) {
@@ -640,6 +826,89 @@ public class DatabaseImpl implements Database
         } finally {
             this.closeConnection(conn);
         }
+    }
+    
+    private abstract class DbDataItemLoadOperation<ChildT extends DbDataItem, ParentT extends DbDataItem> {
+        
+        private final String _selectCommand, _idColName, _parentIdColName;
+        protected final Integer _parentId;
+        
+        private DbDataItemLoadOperation(String selectCommand, String idColName, String parentIdColName) {
+            this(selectCommand, idColName, parentIdColName, null);
+        }
+        
+        /**
+         * If parentId is not null, only load DbDataItems that have the given parent ID
+         * 
+         * @param selectCommand
+         * @param idColName
+         * @param parentIdColName
+         * @param parentId 
+         */
+        private DbDataItemLoadOperation(String selectCommand, String idColName, String parentIdColName, Integer parentId) {
+            _selectCommand = selectCommand;
+            _idColName = idColName;
+            _parentIdColName = parentIdColName;
+            _parentId = parentId;
+        }
+        
+        abstract ChildT getDbDataItem(ParentT parent, int id, ResultSet rs) throws SQLException;
+        
+        abstract void addToParent(ParentT parent, ChildT child);
+        
+        abstract void loadChildren(Connection conn, Map<Integer, ChildT> items) throws SQLException;
+        
+    }
+    
+    private abstract class ChildlessDbDataItemLoadOperation<ChildT extends DbDataItem, ParentT extends DbDataItem> extends DbDataItemLoadOperation<ChildT, ParentT> {
+        
+        private ChildlessDbDataItemLoadOperation(String selectCommand, String idColName, String parentIdColName) {
+            this(selectCommand, idColName, parentIdColName, null);
+        }
+        
+        /**
+         * If parentId is not null, only load DbDataItems that have the given parent ID
+         * 
+         * @param selectCommand
+         * @param idColName
+         * @param parentIdColName
+         * @param parentId 
+         */
+        private ChildlessDbDataItemLoadOperation(String selectCommand, String idColName, String parentIdColName, Integer parentId) {
+            super(selectCommand, idColName, parentIdColName);
+        }
+        
+        @Override
+        void loadChildren(Connection conn, Map<Integer, ChildT> items) throws SQLException {
+            //no children - do nothing
+        }
+    }
+    
+    private <ChildT extends DbDataItem, ParentT extends DbDataItem> void loadDbDataItem(Connection conn,
+                                                                                        Map<Integer, ParentT> parents,
+                                                                                        DbDataItemLoadOperation<ChildT, ParentT> op) throws SQLException {
+        Map<Integer, ChildT> items = new HashMap<Integer, ChildT>();
+        
+        String selectCommand = op._selectCommand;
+        if (op._parentId != null) {
+            selectCommand += " WHERE " + op._parentIdColName + " == ?";
+        }
+        
+        PreparedStatement ps = conn.prepareStatement(selectCommand);
+        if (op._parentId != null) {
+            ps.setInt(1, op._parentId);
+        }
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            ParentT parent = parents.get((rs.getInt(op._parentIdColName)));
+            int id = rs.getInt(op._idColName);
+            ChildT item = op.getDbDataItem(parent, id, rs);
+            items.put(id, item);
+            op.addToParent(parent, item);
+        }
+        
+        op.loadChildren(conn, items);
     }
 
     private abstract class DbDataItemPutOperation<T extends DbDataItem> {
@@ -1687,6 +1956,10 @@ public class DatabaseImpl implements Database
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS geoccurrence");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupmember");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS asgngroup");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheetdetail");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheetsubsection");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheetsection");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheet");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS action");
@@ -1771,6 +2044,29 @@ public class DatabaseImpl implements Database
                     + " path VARCHAR NOT NULL,"
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " CONSTRAINT pidpathunique UNIQUE (pid, path) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE gradingsheet (gs_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " pid INTEGER NOT NULL,"
+                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
+                    + " CONSTRAINT oneperpart UNIQUE(pid) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE gradingsheetsection (gs_sid INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " gs_id INTEGER NOT NULL,"
+                    + " name VARCHAR NOT NULL,"
+                    + " ordering INTEGER NOT NULL,"
+                    + " outof DOUBLE," //may be null; if not null, used for subtractive grading as earned and out of
+                    + " FOREIGN KEY (gs_id) REFERENCES gradingsheet(gs_id) ON DELETE CASCADE,"
+                    + " CONSTRAINT uniquenames UNIQUE(gs_id, gs_sid, name) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE gradingsheetsubsection (gs_ssid INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " gs_sid INTEGER NOT NULL,"
+                    + " text VARCHAR NOT NULL,"
+                    + " ordering INTEGER NOT NULL,"
+                    + " outof DOUBLE," //may be null; will mean grading sheet visualization shows no red/yellow
+                    + " FOREIGN KEY (gs_sid) REFERENCES gradingsheetsection(gs_sid) ON DELETE CASCADE,"
+                    + " CONSTRAINT uniquetext UNIQUE(gs_sid, gs_ssid, text) ON CONFLICT ROLLBACK)");
+            conn.createStatement().executeUpdate("CREATE TABLE gradingsheetdetail (gs_did INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " gs_ssid INTEGER NOT NULL,"
+                    + " text VARCHAR NOT NULL,"
+                    + " ordering INTEGER NOT NULL,"
+                    + " FOREIGN KEY (gs_ssid) REFERENCES gradingsheetsubsection(gs_ssid) ON DELETE CASCADE)");
             conn.createStatement().executeUpdate("CREATE TABLE asgngroup (agid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " aid INTEGER NOT NULL,"
                     + " name VARCHAR NOT NULL,"
