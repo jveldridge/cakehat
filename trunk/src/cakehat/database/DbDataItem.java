@@ -1,7 +1,5 @@
 package cakehat.database;
 
-import java.util.Collections;
-
 /**
  * Represents a piece of data that is or will be stored in the database.
  * 

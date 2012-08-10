@@ -65,7 +65,7 @@ public class DbGradingSheetDetail extends DbDataItem implements Comparable<DbGra
         return _order;
     }
     
-    DbGradingSheetSubsection getSubection() {
+    DbGradingSheetSubsection getSubsection() {
         return _gradingSheetSubsection;
     }
     

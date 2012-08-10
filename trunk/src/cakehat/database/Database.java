@@ -87,6 +87,24 @@ public interface Database
     
     public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     
+    public void putGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException;
+    
+    public void removeGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException;
+    
+    public void putGradingSheetSections(Set<DbGradingSheetSection> gradingSheetSections) throws SQLException;
+    
+    public void removeGradingSheetSections(Set<DbGradingSheetSection> gradingSheetSections) throws SQLException;
+    
+    public void putGradingSheetSubsections(Set<DbGradingSheetSubsection> gradingSheetSubsections) throws SQLException;
+    
+    public void removeGradingSheetSubsections(Set<DbGradingSheetSubsection> gradingSheetSubsections) throws SQLException;
+    
+    public void putGradingSheetDetails(Set<DbGradingSheetDetail> gradingSheetDetails) throws SQLException;
+    
+    public void removeGradingSheetDetails(Set<DbGradingSheetDetail> gradingSheetDetails) throws SQLException;
+    
+    public DbGradingSheet getGradingSheet(DbPart part) throws SQLException;
+    
     /**
      * Sets the enabled status of the student corresponding to each student ID in the key set of the given map to the
      * corresponding boolean value.
