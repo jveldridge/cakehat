@@ -2503,6 +2503,7 @@ class AssignmentPanel extends JPanel
             
             final FormattedLabel digitalHandinRequiredLabel = FormattedLabel.asContent("This task requires a digital " +
                     "handin to operate");
+            digitalHandinRequiredLabel.setVisible(false);
             final FormattedLabel taskDescriptionLabel = FormattedLabel.asContent("").usePlainFont();
             JPanel propertyIndentPanel = new JPanel();
             propertyIndentPanel.setBackground(contentPanel.getBackground());
@@ -2543,7 +2544,7 @@ class AssignmentPanel extends JPanel
             if(task != null)
             {
                 digitalHandinRequiredLabel.setVisible(task.requiresDigitalHandin());
-                taskDescriptionLabel.setText(task.getDescription().replaceAll("\n", "<br/>"));
+                taskDescriptionLabel.setText(task.getDescription());
                 
                 //Required        
                 Set<DbActionProperty> requiredProperties = new HashSet<DbActionProperty>();
@@ -2568,14 +2569,6 @@ class AssignmentPanel extends JPanel
 
                 //Optional
                 Set<DbActionProperty> optionalProperties = new HashSet<DbActionProperty>();
-                if(!task.getOptionalProperties().isEmpty())
-                {
-                    _propertiesPanel.add(Box.createVerticalStrut(5));
-                    PropertiesPanel panel = new PropertiesPanel("Optional Properties",
-                            task.getOptionalProperties(), optionalProperties);
-                    panel.setBackground(_propertiesPanel.getBackground());
-                    _propertiesPanel.add(panel);
-                }
                 for(TaskProperty property : task.getOptionalProperties())
                 {
                     for(DbActionProperty propertyValue : _action.getActionProperties())
@@ -2585,6 +2578,14 @@ class AssignmentPanel extends JPanel
                             optionalProperties.add(propertyValue);
                         }
                     }
+                }
+                if(!task.getOptionalProperties().isEmpty())
+                {
+                    _propertiesPanel.add(Box.createVerticalStrut(5));
+                    PropertiesPanel panel = new PropertiesPanel("Optional Properties",
+                            task.getOptionalProperties(), optionalProperties);
+                    panel.setBackground(_propertiesPanel.getBackground());
+                    _propertiesPanel.add(panel);
                 }
             }
             
@@ -2606,7 +2607,7 @@ class AssignmentPanel extends JPanel
                     {
                         taskName = newTask.getFullName();
                         digitalHandinRequiredLabel.setVisible(newTask.requiresDigitalHandin());
-                        taskDescriptionLabel.setText(newTask.getDescription().replaceAll("\n", "<br/>"));
+                        taskDescriptionLabel.setText(newTask.getDescription());
                         
                         if(!newTask.getRequiredProperties().isEmpty())
                         {

@@ -513,7 +513,7 @@ public class TextViewerView extends JDialog
         try
         {
             File tmpFile = Allocator.getFileSystemUtilities().createTempFile(".tvv", ".tmp",
-                    Allocator.getPathServices().getUserWorkspaceDir());
+                    Allocator.getPathServices().getTempDir());
             PrintWriter writer = new PrintWriter(tmpFile);
             writer.print(_textArea.getText());
             writer.close();

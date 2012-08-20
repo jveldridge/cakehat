@@ -1,14 +1,14 @@
 package cakehat.services;
 
 import cakehat.Allocator;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 import support.utils.FileCopyingException;
+import support.utils.FileDeletingException;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
-import support.utils.posix.NativeException;
 
 /**
  *
@@ -27,13 +27,13 @@ public class FileSystemServicesImpl implements FileSystemServices
             //Group owner
             Allocator.getFileSystemUtilities().changeGroup(file, Allocator.getCourseInfo().getTAGroup(), true);
         }
-        catch(NativeException e)
+        catch(IOException e)
         {
             throw new ServicesException("Unable to set group or permissions: " + file.getAbsolutePath(), e);
         }
     }
 
-    public List<File> makeDirectory(File dir) throws ServicesException
+    public Set<File> makeDirectory(File dir) throws ServicesException
     {
         try
         {
@@ -41,12 +41,11 @@ public class FileSystemServicesImpl implements FileSystemServices
         }
         catch(IOException e)
         {
-            throw new ServicesException("Unable to create directory: " +
-                    dir.getAbsolutePath(), e);
+            throw new ServicesException("Unable to create directory: " + dir.getAbsolutePath(), e);
         }
     }
 
-    public List<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate,
+    public Set<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
         return Allocator.getFileSystemUtilities().copy(src, dst, overwrite, preserveDate,
@@ -54,35 +53,35 @@ public class FileSystemServicesImpl implements FileSystemServices
     }
     
     @Override
-    public void makeUserWorkspace() throws ServicesException
+    public void makeTempDir() throws ServicesException
     {
-        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
+        File tempDir = Allocator.getPathServices().getTempDir();
 
-        //If the workspace already exists, attempt to delete it
-        if(workspace.exists())
+        //If the temporary directory already exists, attempt to delete it
+        if(tempDir.exists())
         {
             try
             {
-                Allocator.getFileSystemUtilities().deleteFiles(Arrays.asList(workspace));
+                Allocator.getFileSystemUtilities().deleteFiles(ImmutableSet.of(tempDir));
             }
             //Do not do anything if this fails, because it will almost certainly be due to NFS (networked file system)
             //issues about which nothing can be done
-            catch(IOException e) { }
+            catch(FileDeletingException e) { }
         }
 
-        //Create the workspace
+        //Create the temporary directory
         try
         {
-            Allocator.getFileSystemServices().makeDirectory(workspace);
+            Allocator.getFileSystemServices().makeDirectory(tempDir);
         }
         catch(ServicesException e)
         {
-            throw new ServicesException("Unable to create user's workspace: " + workspace.getAbsolutePath(), e);
+            throw new ServicesException("Unable to create user's temp directory: " + tempDir.getAbsolutePath(), e);
         }
         
-        //Due to NFS (networked file system) behavior, the workspace might not always be succesfully deleted - there is
+        //Due to NFS (networked file system) behavior, the directory might not always be succesfully deleted - there is
         //NOTHING that can be done about this, even 'rm -rf' will fail in these situations
-        Allocator.getFileSystemUtilities().deleteFileOnExit(workspace);
+        Allocator.getFileSystemUtilities().deleteFilesOnExit(ImmutableSet.of(tempDir));
     }
     
     @Override

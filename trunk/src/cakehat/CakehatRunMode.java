@@ -25,16 +25,16 @@ public enum CakehatRunMode
     private final String _terminalFlag;
     private final boolean _hasGUI;
     private final boolean _requiresAdmin;
-    private final boolean _requiresWorkspaceDir;
+    private final boolean _requiresTempDir;
     private final boolean _backupDatabaseOnShutdown;
 
-    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin, boolean requiresWorkspaceDir,
+    private CakehatRunMode(String terminalFlag, boolean hasGUI, boolean requiresAdmin, boolean requiresTempDir,
             boolean backupDatabaseOnShutdown)
     {
         _terminalFlag = terminalFlag;
         _hasGUI = hasGUI;
         _requiresAdmin = requiresAdmin;
-        _requiresWorkspaceDir = requiresWorkspaceDir;
+        _requiresTempDir = requiresTempDir;
         _backupDatabaseOnShutdown = backupDatabaseOnShutdown;
     }
     
@@ -48,9 +48,9 @@ public enum CakehatRunMode
         return _requiresAdmin;
     }
     
-    boolean requiresWorkspaceDir()
+    boolean requiresTempDir()
     {
-        return _requiresWorkspaceDir;
+        return _requiresTempDir;
     }
     
     boolean backupDatabaseOnShutdown()

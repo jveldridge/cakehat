@@ -1,5 +1,8 @@
 package cakehat.services;
 
+import cakehat.CakehatRunMode;
+import cakehat.database.Student;
+import cakehat.database.assignment.Action;
 import org.joda.time.DateTime;
 import cakehat.database.assignment.Part;
 import cakehat.Allocator;
@@ -31,24 +34,35 @@ public class PathServicesTest
     private static final int ASSIGNMENT_ID = 13;
     private static final int GRADABLE_EVENT_ID = 27;
     private static final int PART_ID = 39;
+    private static final int ACTION_ID = 53;
     private static final int TA_ID = 501;
     private static final int GROUP_ID = 42;
+    private static final String STUDENT_LOGIN = "jak2";
 
+    private Student _student;
     private Group _group;
     private Assignment _assignment;
     private GradableEvent _gradableEvent;
     private Part _part;
+    private Action _action;
     private PathServices _service;
+    
+    private CakehatRunMode _runMode;
 
     @Before
     public void setup() throws ServicesException, IOException, SQLException
     {
+        //Mock student
+        _student = createMock(Student.class);
+        expect(_student.getLogin()).andReturn(STUDENT_LOGIN).anyTimes();
+        replay(_student);
+        
         //Mock group
         _group = createMock(Group.class);
         expect(_group.getId()).andReturn(GROUP_ID).anyTimes();
         replay(_group);
 
-        //Create mocked assignment, gradable event, and part objects
+        //Create mocked assignment, gradable event, part, and action objects
         _assignment = createMock(Assignment.class);
         expect(_assignment.getId()).andReturn(ASSIGNMENT_ID).anyTimes();
         
@@ -61,9 +75,14 @@ public class PathServicesTest
         expect(_part.getGradableEvent()).andReturn(_gradableEvent).anyTimes();
         expect(_part.getAssignment()).andReturn(_assignment).anyTimes();
 
+        _action = createMock(Action.class);
+        expect(_action.getId()).andReturn(ACTION_ID).anyTimes();
+        expect(_action.getPart()).andReturn(_part).anyTimes();
+        
         replay(_assignment);
         replay(_gradableEvent);
         replay(_part);
+        replay(_action);
         
         //Mock out course information
         final CourseInfo courseInfo = createMock(CourseInfo.class);
@@ -78,20 +97,21 @@ public class PathServicesTest
         
         new Allocator.Customizer().setCourseInfo(courseInfoAlloc).customize();
         
-        CakehatSession.setSessionProviderForTesting(new TestCakehatSessionProvider(TA_ID));
+        CakehatSession.CakehatSessionProvider provider = new TestCakehatSessionProvider(TA_ID);
+        _runMode = provider.getRunMode();
+        CakehatSession.setSessionProviderForTesting(provider);
 
         _service = Allocator.getPathServices();
     }
     
     @Test
-    public void testGroupGMLFile()
+    public void testGetCourseDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/gml/" + ASSIGNMENT_ID + "/" +
-                GRADABLE_EVENT_ID + "/" + PART_ID + "/" + GROUP_ID + ".gml");
-
-        assertEquals(expected, _service.getGroupGMLFile(_part, _group));
+        File expected = new File("/course/" + COURSE);
+        
+        assertEquals(expected, _service.getCourseDir());
     }
-
+    
     @Test
     public void testGetDatabaseFile()
     {
@@ -107,21 +127,66 @@ public class PathServicesTest
 
         assertEquals(expected, _service.getDatabaseBackupDir());
     }
-
+    
     @Test
-    public void testGetUserWorkspaceDir()
+    public void testGetTempDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" + TA_ID + "-test");
-
-        assertEquals(expected, _service.getUserWorkspaceDir());
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/temp/" + TA_ID + "-" + _runMode);
+        
+        assertEquals(expected, _service.getTempDir());
+    }   
+    
+    @Test
+    public void testGetActionTempDir()
+    {
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/temp/" + TA_ID + "-" + _runMode + "/" +
+                ASSIGNMENT_ID + "/" + GRADABLE_EVENT_ID + "/" +  PART_ID + "/" + ACTION_ID);
+        
+        assertEquals(expected, _service.getActionTempDir(_action));
     }
-
+    
+    @Test
+    public void testGetActionTempDir_GroupNotNull()
+    {
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/temp/" + TA_ID + "-" + _runMode + "/" +
+                ASSIGNMENT_ID + "/" + GRADABLE_EVENT_ID + "/" +  PART_ID + "/" + ACTION_ID + "/" + GROUP_ID);
+        
+        assertEquals(expected, _service.getActionTempDir(_action, _group));
+    }
+    
+    @Test
+    public void testGetActionTempDir_GroupNull()
+    {
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/temp/" + TA_ID + "-" + _runMode + "/" +
+                ASSIGNMENT_ID + "/" + GRADABLE_EVENT_ID + "/" +  PART_ID + "/" + ACTION_ID + "/nogroup");
+        
+        assertEquals(expected, _service.getActionTempDir(_action, null));
+    }
+    
     @Test
     public void testGetUnarchiveHandinDir()
     {
-        File expected = new File("/course/" + COURSE + "/.cakehat/workspaces/" +  TA_ID + "-test/" + ASSIGNMENT_ID +
-                "/" + GRADABLE_EVENT_ID + "/" + PART_ID + "/" + GROUP_ID);
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/handin/" + ASSIGNMENT_ID + "/" +
+                GRADABLE_EVENT_ID + "/" + PART_ID + "/" + GROUP_ID);
 
         assertEquals(expected, _service.getUnarchiveHandinDir(_part, _group));
+    }
+    
+    @Test
+    public void testGroupGMLFile()
+    {
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/gml/" + ASSIGNMENT_ID + "/" +
+                GRADABLE_EVENT_ID + "/" + PART_ID + "/" + GROUP_ID + ".gml");
+
+        assertEquals(expected, _service.getGroupGMLFile(_part, _group));
+    }
+    
+    @Test
+    public void testGetStudentGRDFile()
+    {
+        File expected = new File("/course/" + COURSE + "/.cakehat/" + YEAR + "/temp/" + TA_ID + "-" + _runMode + "/" +
+                ASSIGNMENT_ID + "/" + STUDENT_LOGIN + ".txt");
+        
+        assertEquals(expected, _service.getStudentGRDFile(_assignment, _student));
     }
 }

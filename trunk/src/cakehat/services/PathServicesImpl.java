@@ -2,7 +2,7 @@ package cakehat.services;
 
 import cakehat.Allocator;
 import cakehat.CakehatSession;
-import cakehat.CakehatRunMode;
+import cakehat.database.assignment.Action;
 import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
@@ -21,18 +21,18 @@ public class PathServicesImpl implements PathServices
     {
         return new File("/course", Allocator.getCourseInfo().getCourse());
     }
-
-    private File getCakehatDir()
+    
+    private File getCakehatCurrentYearDir()
     {
-        return new File(getCourseDir(), ".cakehat");
+        return new File(new File(getCourseDir(), ".cakehat"),
+                Integer.toString(new DateTime().getYear()));
     }
 
     @Override
     public File getDatabaseFile()
     {
-        return new File(new File(new File(
-                getCakehatDir(),
-                Integer.toString(new DateTime().getYear())),
+        return new File(new File(
+                getCakehatCurrentYearDir(),
                 "database"),
                 "database.db");
     }
@@ -40,74 +40,70 @@ public class PathServicesImpl implements PathServices
     @Override
     public File getDatabaseBackupDir()
     {
-        return new File(new File(new File(
-                getCakehatDir(),
-                Integer.toString(new DateTime().getYear())),
+        return new File(new File(
+                getCakehatCurrentYearDir(),
                 "database"),
                 "backups");
     }
     
     @Override
+    public File getTempDir()
+    {
+        return new File(new File(
+                getCakehatCurrentYearDir(),
+                "temp"),
+                CakehatSession.getUserId() + "-" + CakehatSession.getRunMode().toString());
+    }
+
+    @Override
+    public File getActionTempDir(Action action)
+    {
+        return new File(new File(new File(new File(
+                getTempDir(),
+                Integer.toString(action.getPart().getGradableEvent().getAssignment().getId())),
+                Integer.toString(action.getPart().getGradableEvent().getId())),
+                Integer.toString(action.getPart().getId())),
+                Integer.toString(action.getId()));
+    }
+
+    @Override
+    public File getActionTempDir(Action action, Group group)
+    {
+        return new File(
+                getActionTempDir(action),
+                group == null ? "nogroup" : Integer.toString(group.getId()));
+    }
+
+    @Override
+    public File getUnarchiveHandinDir(Part part, Group group)
+    {
+        return new File(new File(new File(new File(new File(
+                getCakehatCurrentYearDir(),
+                "handin"),
+                Integer.toString(part.getGradableEvent().getAssignment().getId())),
+                Integer.toString(part.getGradableEvent().getId())),
+                Integer.toString(part.getId())),
+                Integer.toString(group.getId()));
+    }
+    
+    @Override
     public File getGroupGMLFile(Part part, Group group)
     {
-        return new File(new File(new File(new File(new File(new File(
-                getCakehatDir(),
-                Integer.toString(new DateTime().getYear())),
+        return new File(new File(new File(new File(new File(
+                getCakehatCurrentYearDir(),
                 "gml"),
                 Integer.toString(part.getGradableEvent().getAssignment().getId())),
                 Integer.toString(part.getGradableEvent().getId())),
                 Integer.toString(part.getId())),
                 Integer.toString(group.getId()) + ".gml");
     }
-
-    @Override
-    public File getUserWorkspaceDir()
-    {
-        File parent = new File(getCakehatDir(), "workspaces");
-        String userId = Integer.toString(CakehatSession.getUserId());
-        File workspace;
-
-        CakehatRunMode mode = CakehatSession.getRunMode();
-        if(mode == CakehatRunMode.GRADER)
-        {
-            workspace = new File(parent, userId);
-        }
-        else if(mode == CakehatRunMode.ADMIN)
-        {
-            workspace = new File(parent, userId + "-admin");
-        }
-        else if(mode == CakehatRunMode.UNKNOWN && !CakehatSession.didStartNormally())
-        {
-            workspace = new File(parent, userId + "-test");
-        }
-        else
-        {
-            throw new IllegalStateException("Cannot provide path to user's workspace directory due to unexpected " +
-                    "run state.\n" +
-                    "Run mode: " + mode + "\n" +
-                    "Did start normally? " + CakehatSession.didStartNormally());
-        }
-
-        return workspace;
-    }
     
     @Override
     public File getStudentGRDFile(Assignment asgn, Student student)
     {
         return new File(new File(
-                getUserWorkspaceDir(),
+                getTempDir(),
                 Integer.toString(asgn.getId())),
                 student.getLogin() + ".txt");
-    }
-    
-    @Override
-    public File getUnarchiveHandinDir(Part part, Group group)
-    {
-        return new File(new File(new File(new File(
-                getUserWorkspaceDir(),
-                Integer.toString(part.getGradableEvent().getAssignment().getId())),
-                Integer.toString(part.getGradableEvent().getId())),
-                Integer.toString(part.getId())),
-                Integer.toString(group.getId()));
     }
 }

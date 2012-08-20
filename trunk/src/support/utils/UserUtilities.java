@@ -42,7 +42,6 @@ public interface UserUtilities
      */
     public String getUserLogin();
     
-    
     /**
      * Returns the login corresponding to the POSIX user id {@code uid}. If the {@code uid} does not exist then an
      * exception will be thrown.

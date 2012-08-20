@@ -18,7 +18,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,11 +34,7 @@ import matlabcontrol.RemoteMatlabProxy;
 import matlabcontrol.RemoteMatlabProxyFactory;
 import support.ui.DocumentAdapter;
 import support.ui.ModalDialog;
-import support.utils.FileCopyingException;
-import support.utils.FileExistsException;
 import support.utils.FileExtensionFilter;
-import support.utils.FileSystemUtilities.FileCopyPermissions;
-import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Tasks that interact with MATLAB. These tasks make use of the matlabcontrol library to launch and interact with
@@ -65,16 +60,15 @@ class MatlabTasks implements TaskProvider
     {
         private final TaskProperty COPY_PATH_PROPERTY =
             new TaskProperty("copy-path",
-            "The fully qualified path to the directory whose entire contents will be copied into the root of the " +
-            "unarchived handin directory.",
-            true);
-
+            "The absolute path to the file or directory whose entire contents will be copied into the root of a copy " +
+            "of the unarchived handin directory. If a directory is specified then the entire contents of the " +
+            "directory will be copied, but not the directory itself.", true);
+        
         private final TaskProperty TEST_FILE_PROPERTY =
-            new TaskProperty("test-file",
-            "This property must be specified if a directory is provided for the " + COPY_PATH_PROPERTY.getName() +
-            " property. The m-file that will be run. The path must be relative to directory specified by the " +
-            COPY_PATH_PROPERTY.getName() + " property.",
-            false);
+                new TaskProperty("test-file",
+                "This property must be specified if a directory is provided for the " + COPY_PATH_PROPERTY.getName() +
+                " property. The absolute path to the m-file that will be run. This file must be contained in " +
+                "the directory provided for the " + COPY_PATH_PROPERTY.getName() + " property.", false);
 
         private CopyTest()
         {
@@ -84,9 +78,8 @@ class MatlabTasks implements TaskProvider
         @Override
         public String getDescription()
         {
-            return "Copies the specified file or contents of the directory into the root of the unarchived handin. " +
-                   "Then runs the specified m-file in MATLAB. Once the copy occurs, it remains, and therefore any " +
-                   "other tasks may interact with the copied files.";
+            return "Copies the specified file or contents of the directory into the root of a copy of the unarchived " +
+                   "handin. Then runs the specified m-file in MATLAB.";
         }
 
         @Override
@@ -107,160 +100,92 @@ class MatlabTasks implements TaskProvider
             return true;
         }
         
-        //Keeps track of the groups that have already had the files copied
-        //private HashSet<Group> _testedGroups = new HashSet<Group>();
-
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
+                throws TaskException, TaskConfigurationIssue
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-
-            File source = new File(properties.get(COPY_PATH_PROPERTY));
-                
-            //Copy if necessary
-            TaskResult result;
-            if(!context.getFilesAddedForTask(group).isEmpty())
+            File copyPath = new File(properties.get(COPY_PATH_PROPERTY));
+            
+            //Validate
+            if(copyPath.isDirectory())
             {
-                //Validate
-                if(!source.exists())
+                if(!properties.containsKey(TEST_FILE_PROPERTY))
                 {
-                    ModalDialog.showMessage(context.getGraphicalOwner(), "Does not exist",
-                            "Cannot perform test because the directory or file to copy does not exist.\n\n" +
-                            "Source: " + source.getAbsoluteFile());
-                    result = TaskResult.NO_CHANGES;
-                }
-                else
-                {
-                    if(source.isFile())
-                    {
-                        if(!source.getName().endsWith(".m"))
-                        {
-                            ModalDialog.showMessage(context.getGraphicalOwner(), "Test file not m-file",
-                                    "Cannot perform test because the test file is not an m-file.\n\n" +
-                                    "File: " + source.getAbsoluteFile());
-                            result = TaskResult.NO_CHANGES;
-                        }
-                    }
-                    else if(source.isDirectory())
-                    {
-                        String relativePath = properties.get(TEST_FILE_PROPERTY);
-
-                        if(relativePath == null)
-                        {
-                            ModalDialog.showMessage(context.getGraphicalOwner(), "Property not set",
-                                    "Cannot perform test because the " + TEST_FILE_PROPERTY.getName() +
-                                    " property was not set. It must be set when copying test files from a " +
-                                    "directory.");
-                            result = TaskResult.NO_CHANGES;
-                        }
-                        else
-                        {
-                            File testFile = new File(source, relativePath);
-                            if(!testFile.exists())
-                            {
-                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file does not exist",
-                                        "Cannot perform test because the test file does not exist.\n\n" +
-                                        "File: " + testFile.getAbsoluteFile());
-                                result = TaskResult.NO_CHANGES;
-                            }
-                            else if(!testFile.isFile() || !testFile.getName().endsWith(".m"))
-                            {
-                                ModalDialog.showMessage(context.getGraphicalOwner(), "Test file not m-file",
-                                        "Cannot perform test because the test file is not an m-file.\n\n" +
-                                        "File: " + testFile.getAbsoluteFile());
-                                result = TaskResult.NO_CHANGES;
-                            }
-                        }
-                    }
+                    throw new TaskConfigurationIssue(COPY_PATH_PROPERTY.getName() + " property is configured to a " + 
+                            "directory and the " + TEST_FILE_PROPERTY.getName() + " is not set.\n" + 
+                            COPY_PATH_PROPERTY.getName() + ": " + copyPath.getAbsolutePath());
                 }
                 
-
-                try
+                File testFile = new File(properties.get(TEST_FILE_PROPERTY));
+                if(!testFile.isFile())
                 {
-                    File destination;
-                    if(source.isFile())
-                    {
-                        destination = new File(unarchiveDir, source.getName());
-                    }
-                    else
-                    {
-                        destination = unarchiveDir;
-                    }
-
-                    List<File> filesAdded = Allocator.getFileSystemServices().copy(source, destination,
-                            OverwriteMode.FAIL_ON_EXISTING, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
-                    result = new TaskResult(group, new HashSet<File>(filesAdded));
+                    throw new TaskConfigurationIssue(TEST_FILE_PROPERTY.getName() + " property is not configured to " +
+                            "be a file.\n" + 
+                            TEST_FILE_PROPERTY.getName() + ": " + testFile.getAbsolutePath());
                 }
-                catch(FileCopyingException e)
+                
+                if(!testFile.getAbsolutePath().startsWith(copyPath.getAbsolutePath()))
                 {
-                    //If a file that already exists would be overwritten
-                    FileExistsException existsException =
-                            Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
-                    if(existsException != null)
-                    {
-                        ModalDialog.showMessage(context.getGraphicalOwner(), "Cannot copy test file",
-                            "Cannot perform test because a file to be copied for the test already exists in "+
-                            "the unarchived handin.\n\n" +
-                            "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
-                            "Handin File: " + existsException.getDestinationFile().getAbsolutePath());
-                        result = TaskResult.NO_CHANGES;
-                    }
-
-                    throw new TaskException("Unable to perform copy necessary for testing.", e);
+                    throw new TaskConfigurationIssue(TEST_FILE_PROPERTY.getName() + " property is not configured to " +
+                            "be contained in the directory specified by the " + COPY_PATH_PROPERTY.getName() + ".\n" +
+                            COPY_PATH_PROPERTY.getName() + ": " + copyPath.getAbsolutePath() + "\n" + 
+                            TEST_FILE_PROPERTY.getName() + ": " + testFile.getAbsolutePath());
                 }
             }
-            else
+            
+            TaskUtilities.copyUnarchivedHandinToTemp(action, group);
+            if(TaskUtilities.copyForTest(copyPath, context, action, group))
             {
-                result = TaskResult.NO_CHANGES;
-            }
-
-            try
-            {
-                RemoteMatlabProxy proxy = getMatlabProxy();
-
                 //Determine the location of the test file once it has been copied
-                File testFile;
-                if(source.isFile())
+                File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
+                File dstTestFile;
+                if(copyPath.isDirectory())
                 {
-                    testFile = new File(unarchiveDir, source.getName());
+                    File srcTestFile = new File(properties.get(TEST_FILE_PROPERTY));
+                    String relativeTestFile = srcTestFile.getAbsolutePath()
+                            .replaceFirst(copyPath.getAbsolutePath(), "");
+                    dstTestFile = new File(tempDir, relativeTestFile);
                 }
                 else
                 {
-                    testFile = new File(unarchiveDir, properties.get(TEST_FILE_PROPERTY));
-                }
-
-                //Move to test file's directory
-                String testDir = testFile.getParent();
-                try
-                {
-                    proxy.feval("cd", new String[] { testDir });
-                }
-                catch(MatlabInvocationException e)
-                {
-                    throw new TaskException("Unable to make MATLAB change directory: " + testDir, e);
+                    dstTestFile = new File(tempDir, copyPath.getName());
                 }
 
                 //Run test file
-                String testFunction = testFile.getName().split("\\.")[0];
                 try
                 {
-                    proxy.eval(testFunction);
-                }
-                //This exception might be because the of an issue communicating with MATLAB but it also could
-                //arise from calling the function wrong (for instance, the function is expected to take no
-                //arguments, but if it requires them that would cause an exception)
-                catch(MatlabInvocationException e)
-                {
-                    throw new TaskException("Unable to run test function: " + testFunction, e);
-                }
-            }
-            catch(MatlabConnectionException e)
-            {
-                throw new TaskException(e);
-            }
+                    RemoteMatlabProxy proxy = getMatlabProxy();
 
-            return result;
+                    //Move to test file's directory
+                    String testDir = dstTestFile.getParent();
+                    try
+                    {
+                        proxy.feval("cd", new String[] { testDir });
+                    }
+                    catch(MatlabInvocationException e)
+                    {
+                        throw new TaskException("Unable to make MATLAB change directory: " + testDir, e);
+                    }
+
+                    //Run test file
+                    String testFunction = dstTestFile.getName().split("\\.")[0];
+                    try
+                    {
+                        proxy.eval(testFunction);
+                    }
+                    //This exception might be because the of an issue communicating with MATLAB but it also could arise
+                    //from calling the function wrong (for instance, the function is expected to take no arguments, but
+                    //if it requires them that would cause an exception)
+                    catch(MatlabInvocationException e)
+                    {
+                        throw new TaskException("Unable to run test function: " + testFunction, e);
+                    }
+                }
+                catch(MatlabConnectionException e)
+                {
+                    throw new TaskException("Unable to connect to MATLAB", e);
+                }
+            }
         }
     }
 
@@ -288,7 +213,7 @@ class MatlabTasks implements TaskProvider
         {
             return "Runs a single m-file with grader provided arguments. The grader will either be allowed to select " +
                    "which m-file to run from a list of all m-files in the demo, or if " + FILE_PATH_PROPERTY.getName() +
-                   "is specified then only the file specified by that property.";
+                   " is specified then only the file specified by that property.";
         }
 
         @Override
@@ -310,8 +235,7 @@ class MatlabTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action) throws TaskException
         {
             //Ensure specified directory is valid
             File demoDir = new File(properties.get(DIRECTORY_PATH_PROPERTY));
@@ -322,7 +246,7 @@ class MatlabTasks implements TaskProvider
                         "exist.\n\n" +
                         "Directory: " + demoDir.getAbsolutePath());
 
-                return TaskResult.NO_CHANGES;
+                return;
             }
             if(!demoDir.isDirectory())
             {
@@ -331,7 +255,7 @@ class MatlabTasks implements TaskProvider
                         "directory.\n\n" +
                         "Directory: " + demoDir.getAbsolutePath());
 
-                return TaskResult.NO_CHANGES;
+                return;
             }
 
             //Build list of m-files that are to be demo
@@ -350,7 +274,7 @@ class MatlabTasks implements TaskProvider
                             "File specified by '" + FILE_PATH_PROPERTY.getName() + "' does not exist.\n\n" +
                             "File: " + absolutePath.getAbsolutePath());
 
-                    return TaskResult.NO_CHANGES;
+                    return;
                 }
                 else
                 {
@@ -380,8 +304,6 @@ class MatlabTasks implements TaskProvider
             {
                 runMFiles(mFiles, demoDir);
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -390,7 +312,7 @@ class MatlabTasks implements TaskProvider
         private final TaskProperty FILE_PATH_PROPERTY =
             new TaskProperty("file-path",
             "Specifies the path relative to handin of the m-file to run.  If this property is not specified or the " +
-            "file specified does not exist in the handin then the grader will be asked to select which  file to run.",
+            "file specified does not exist in the handin then the grader will be asked to select which file to run.",
             false);
 
         private RunFile()
@@ -425,11 +347,11 @@ class MatlabTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
                 throws TaskException
         {
             //Retrieve the m-files belonging to this part
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
+            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
             FileFilter mFilter = new FileExtensionFilter("m");
             List<File> mFiles;
 
@@ -486,8 +408,6 @@ class MatlabTasks implements TaskProvider
             {
                 runMFiles(mFiles, unarchiveDir);
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -496,9 +416,9 @@ class MatlabTasks implements TaskProvider
         private final TaskProperty EXTENSIONS_PROPERTY =
             new TaskProperty("extensions",
             "The extensions of the files in this part that will be opened. To open files that do not have file " +
-            "extensions use an underscore. If this property is not specified then only m-files will be opened.\n" +
-            "List extensions in the following format (without quotation marks):\n" +
-            "single extension - 'm'\n" +
+            "extensions use an underscore. If this property is not specified then only m-files will be opened.<br>" +
+            "List extensions in the following format (without quotation marks):<br>" +
+            "single extension - 'm'<br>" +
             "multiple extensions - 'm, csv'", false);
 
         private OpenFiles()
@@ -531,7 +451,7 @@ class MatlabTasks implements TaskProvider
         }
         
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
                 throws TaskException
         {
             try
@@ -545,7 +465,7 @@ class MatlabTasks implements TaskProvider
                 proxy.eval("com.mathworks.mlservices.MLEditorServices.getEditorApplication.closeNoPrompt");
 
                 //Change to root directory of handin
-                File unarchiveDir = context.getUnarchiveHandinDir(group);
+                File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
                 proxy.feval("cd", new String[] { unarchiveDir.getAbsolutePath() });
 
                 //Determine which files to open in MATLAB
@@ -577,12 +497,10 @@ class MatlabTasks implements TaskProvider
                     openPaths[i] = filesToOpen.get(i).getAbsolutePath();
                 }
                 proxy.feval("edit", openPaths);
-
-                return TaskResult.NO_CHANGES;
             }
             catch(MatlabConnectionException e)
             {
-                throw new TaskException(e);
+                throw new TaskException("Unable to have MATLAB open handin for group: " + group.getName(), e);
             }
             catch(MatlabInvocationException e)
             {

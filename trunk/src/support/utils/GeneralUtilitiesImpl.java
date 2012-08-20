@@ -23,23 +23,6 @@ public class GeneralUtilitiesImpl implements GeneralUtilities
     }
 
     @Override
-    public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass)
-    {
-        if(throwable == null)
-        {
-            return null;
-        }
-        else if(throwableClass.isInstance(throwable))
-        {
-            return throwableClass.cast(throwable);
-        }
-        else
-        {
-            return findInStack(throwable.getCause(), throwableClass);
-        }
-    }
-
-    @Override
     public JButton createTextCenteredButton(String text, Icon icon, int buttonWidth, boolean iconOnLeft)
     {
         JButton button = new JButton(text, icon);

@@ -16,9 +16,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,17 +42,14 @@ import javax.tools.ToolProvider;
 import support.ui.DocumentAdapter;
 import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
+import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilities.TerminalStringValidity;
-import support.utils.FileCopyingException;
-import support.utils.FileExistsException;
 import support.utils.FileExtensionFilter;
-import support.utils.FileSystemUtilities.FileCopyPermissions;
-import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Tasks for the Java programming language. Compilation of Java is done via the {@link javax.tools.JavaCompiler}
- * provided by {@link javax.tools.ToolProvider}. Analysis of Java class files is done using javassist (Java
- * Programming Assistant).
+ * provided by {@link javax.tools.ToolProvider}. Analysis of Java class files is done using javassist (Java Programming
+ * Assistant).
  *
  * @author jak2
  */
@@ -76,12 +71,12 @@ class JavaTasks implements TaskProvider
     {
         private final TaskProperty COPY_PATH_PROPERTY =
             new TaskProperty("copy-path",
-            "The fully qualified path to the file or directory that will be copied into the root of the unarchived " +
-            "handin directory. If it is a directory the entire contents of the directory will be copied, but not the "+
-            "directory itself.", true);
+            "The absolute path to the file or directory whose entire contents will be copied into the root of a copy " +
+            "of the unarchived handin directory. If a directory is specified then the entire contents of the " +
+            "directory will be copied, but not the directory itself.", true);
         private final TaskProperty MAIN_PROPERTY =
             new TaskProperty("test-main",
-            "The full path to the main class including package: ex. cakehat.gui.Main\n" +
+            "The full path to the main class including package: ex. cakehat.gui.Main<br>" +
             "It is expected that this class will be a class copied into the handin, but that is not required.", true);
         private final TaskProperty CLASS_PATH_PROPERTY =
             new TaskProperty("classpath",
@@ -92,16 +87,14 @@ class JavaTasks implements TaskProvider
 
         private CopyTest()
         {
-            super(JavaTasks.this, "copy-compile-run");
+            super(JavaTasks.this, "copy-test");
         }
 
         @Override
         public String getDescription()
         {
-            return "Copies the specified file or contents of the directory into  the root of the unarchived handin. " +
-                   "Recompiles the code and  then runs the specified main in a visible terminal. Once  the copy " +
-                   "occurs, the copied files and directories remain, and therefore any other tasks may interact " +
-                   "with them.";
+            return "Copies the specified file or contents of the directory into the root of a copy of the unarchived " +
+                   "handin. Compiles the code and then runs the specified main in a visible terminal.";
         }
 
         @Override
@@ -122,116 +115,48 @@ class JavaTasks implements TaskProvider
             return true;
         }
 
-        //Keeps track of the groups that have already had the files copied
-        //private HashSet<Group> _testedGroups = new HashSet<Group>();
-        
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
+                throws TaskException, TaskConfigurationIssue
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-
-            //Copy if necessary
-            TaskResult result;
-            if(!context.getFilesAddedForTask(group).isEmpty())
+            TaskUtilities.copyUnarchivedHandinToTemp(action, group);
+            
+            if(TaskUtilities.copyForTest(new File(properties.get(COPY_PATH_PROPERTY)), context, action, group))
             {
-                File source = new File(properties.get(COPY_PATH_PROPERTY));
+                File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
 
-                //Validate
-                if(!source.exists())
+                //Compile, compilation will fail if the code has compilation errors
+                if(compileJava(context.getGraphicalOwner(), tempDir, properties.get(CLASS_PATH_PROPERTY)))
                 {
-                    ModalDialog.showMessage(context.getGraphicalOwner(), "Does not exist",
-                            "Cannot perform test because the directory or file to copy does not exist.\n\n" +
-                            "Source: " + source.getAbsoluteFile());
-                    result = TaskResult.NO_CHANGES;
-                }
-                else
-                {
-                    try
-                    {
-                        File destination;
-                        if(source.isFile())
-                        {
-                            destination = new File(unarchiveDir, source.getName());
-                        }
-                        else
-                        {
-                            destination = unarchiveDir;
-                        }
+                    //Get all of the main classes
+                    List<ClassInfo> mainClasses = getMainClasses(tempDir);
 
-                        List<File> filesAdded = Allocator.getFileSystemServices().copy(source, destination,
-                                OverwriteMode.FAIL_ON_EXISTING, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
-                        result = new TaskResult(group, new HashSet<File>(filesAdded));
-                    }
-                    catch(FileCopyingException e)
+                    //Find the specified test main
+                    String mainName = properties.get(MAIN_PROPERTY);
+                    ClassInfo mainToRun = null;
+                    for(ClassInfo info : mainClasses)
                     {
-                        //If a file that already exists would be overwritten
-                        FileExistsException existsException =
-                                Allocator.getGeneralUtilities().findInStack(e, FileExistsException.class);
-                        
-                        if(existsException == null)
+                        if(info.getClassName().equals(mainName))
                         {
-                            throw new TaskException("Unable to perform copy necessary for testing.", e);
-                        }
-                        else
-                        {
-                            ModalDialog.showMessage(context.getGraphicalOwner(), "Cannot copy test file",
-                                "Cannot perform test because a file to be copied for the test already exists in " +
-                                "the unarchived handin.\n\n" +
-                                "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
-                                "Handin File: " + existsException.getDestinationFile().getAbsolutePath());
-                            result = TaskResult.NO_CHANGES;
+                            mainToRun = info;
+                            break;
                         }
                     }
-                }
-            }
-            else
-            {
-                result = TaskResult.NO_CHANGES;
-            }
 
-            //Deleted any already compiled files
-            deleteCompiledFiles(unarchiveDir);
-
-            //Compile, compilation will fail if the code has compilation errors
-            if(compileJava(unarchiveDir, properties.get(CLASS_PATH_PROPERTY)))
-            {
-                //Get all of the main classes
-                List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
-
-                //Check if the main specified actually exists
-                String mainName = properties.get(MAIN_PROPERTY);
-                ClassInfo mainToRun = null;
-                for(ClassInfo info : mainClasses)
-                {
-                    if(info.getClassName().equals(mainName))
+                    //If main specified in the configuration was not found
+                    if(mainToRun == null)
                     {
-                        mainToRun = info;
-                        break;
+                        throw new TaskConfigurationIssue("Main class specified for " + MAIN_PROPERTY.getName() +
+                                " property does not exist.\n" +
+                                "Specified main: " + mainToRun);
                     }
-                }
-
-                //If none was found, inform the grader
-                if(mainToRun == null)
-                {
-                    ModalDialog.showMessage(context.getGraphicalOwner(), "Main not present",
-                            "The specified main class is not present.\n" +
-                            "Specified main: " + mainName);
-                }
-                //Run main class
-                else
-                {
-                    String terminalName = "Testing " + group.getName() + "'s " + part.getFullDisplayName();
-                    executeJavaInVisibleTerminal(mainToRun,
-                             properties.get(CLASS_PATH_PROPERTY),
-                             properties.get(LIBRARY_PATH_PROPERTY),
-                             terminalName,
-                             null,
-                             unarchiveDir);
+                    
+                    //Run main class
+                    String terminalName = "Testing " + group.getName() + "'s " + action.getPart().getFullDisplayName();
+                    executeJavaInVisibleTerminal(mainToRun, properties.get(CLASS_PATH_PROPERTY),
+                            properties.get(LIBRARY_PATH_PROPERTY), terminalName, null, tempDir);
                 }
             }
-
-            return result;
         }
     }
 
@@ -268,7 +193,7 @@ class JavaTasks implements TaskProvider
         }
 
         //cmdEnd must not be null
-        protected void runDemo(Map<TaskProperty, String> properties, String classpath, Part part, String cmdEnd)
+        protected void runDemo(Map<TaskProperty, String> properties, String classpath, Action action, String cmdEnd)
                 throws TaskException
         {
             //Build command
@@ -289,34 +214,33 @@ class JavaTasks implements TaskProvider
             cmd += cmdEnd;
 
             //Determine if this should be run in a visible terminal or not
-            File workspace = Allocator.getPathServices().getUserWorkspaceDir();
+            File tempDir = Allocator.getPathServices().getActionTempDir(action, null);
             if(properties.containsKey(SHOW_TERMINAL_PROPERTY) &&
                properties.get(SHOW_TERMINAL_PROPERTY).equalsIgnoreCase("true"))
             {
-                String title = part.getFullDisplayName() + " Demo";
+                String title = action.getPart().getFullDisplayName() + " Demo";
                 if(properties.containsKey(TERMINAL_TITLE_PROPERTY))
                 {
                     title = properties.get(TERMINAL_TITLE_PROPERTY);
                 }
                 try
                 {
-                    Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, cmd, workspace);
+                    Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(title, cmd, tempDir);
                 }
                 catch (IOException e)
                 {
-                    throw new TaskException("Unable to run demo in visible terminal for part: " +
-                            part.getFullDisplayName(), e);
+                    throw new TaskException("Unable to demo for action: " + action.getDebugName(), e);
                 }
             }
             else
             {
                 try
                 {
-                    Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, workspace);
+                    Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, tempDir);
                 }
                 catch(IOException e)
                 {
-                    throw new TaskException("Unable to run demo for part: " + part.getFullDisplayName(), e);
+                    throw new TaskException("Unable to demo for action: " + action.getDebugName(), e);
                 }
             }
         }
@@ -354,8 +278,7 @@ class JavaTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action) throws TaskException
         {
             String cmdEnd = " -jar " + properties.get(LOCATION_PROPERTY);
                     
@@ -373,10 +296,8 @@ class JavaTasks implements TaskProvider
 
             if(shouldRun)
             {
-                runDemo(properties, properties.get(CLASS_PATH_PROPERTY), part, cmdEnd);
+                runDemo(properties, properties.get(CLASS_PATH_PROPERTY), action, cmdEnd);
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -413,10 +334,8 @@ class JavaTasks implements TaskProvider
             return false;
         }
         
-        
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action) throws TaskException
         {
             String classpath = properties.get(LOCATION_PROPERTY);
             if(properties.containsKey(CLASS_PATH_PROPERTY))
@@ -440,10 +359,8 @@ class JavaTasks implements TaskProvider
 
             if(shouldRun)
             {
-                runDemo(properties, classpath, part, cmdEnd);
+                runDemo(properties, classpath, action, cmdEnd);
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -462,7 +379,7 @@ class JavaTasks implements TaskProvider
 
         private RunMain()
         {
-            super(JavaTasks.this, "compile-and-run");
+            super(JavaTasks.this, "run-main");
         }
 
         @Override
@@ -490,18 +407,17 @@ class JavaTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
                 throws TaskException
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
+            TaskUtilities.copyUnarchivedHandinToTemp(action, group);
+            
+            File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
 
-            //Deleted any already compiled files
-            deleteCompiledFiles(unarchiveDir);
-
-            //Compile, compilation will fail if the code has compilation errors
-            if(compileJava(unarchiveDir, properties.get(CLASS_PATH_PROPERTY)))
+            //Compile, compilation will fail (return false) if the code has compilation errors
+            if(compileJava(context.getGraphicalOwner(), tempDir, properties.get(CLASS_PATH_PROPERTY)))
             {
-                List<ClassInfo> mainClasses = getMainClasses(unarchiveDir);
+                List<ClassInfo> mainClasses = getMainClasses(tempDir);
 
                 if(mainClasses.isEmpty())
                 {
@@ -528,8 +444,7 @@ class JavaTasks implements TaskProvider
                     // Prompt user for the main class and run arguments
                     else
                     {
-                        ExecuteDialog dialog = new ExecuteDialog(context.getGraphicalOwner(), mainClasses,
-                                provideArgs);
+                        ExecuteDialog dialog = new ExecuteDialog(context.getGraphicalOwner(), mainClasses, provideArgs);
                         shouldRun = dialog.shouldRun();
                         mainToRun = dialog.getSelectedMain();
                         runArgs = dialog.getRunArguments();
@@ -538,18 +453,16 @@ class JavaTasks implements TaskProvider
                     // Run compiled code
                     if(shouldRun)
                     {
-                        String terminalName = group.getName() + "'s " + part.getFullDisplayName();
+                        String terminalName = group.getName() + "'s " + action.getPart().getFullDisplayName();
                         executeJavaInVisibleTerminal(mainToRun,
                                  properties.get(CLASS_PATH_PROPERTY),
                                  properties.get(LIBRARY_PATH_PROPERTY),
                                  terminalName,
                                  runArgs,
-                                 unarchiveDir);
+                                 tempDir);
                     }
                 }
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -558,40 +471,20 @@ class JavaTasks implements TaskProvider
     \******************************************************************************************************************/
 
     /**
-     * Deletes all compiled files in a group's project. It is safe to run even if there are no compiled files in the
-     * project.
+     * Returns a classpath with all of the jars that are in {@code dir} appended to {@code classpath}. If there are no
+     * jars in {@code dir} then unaltered classpath will be returned.
      *
-     * @param unarchiveDir
-     */
-    private static void deleteCompiledFiles(File unarchiveDir) throws TaskException
-    {
-        try
-        {
-            Set<File> compiledFiles = Allocator.getFileSystemUtilities().
-                getFiles(unarchiveDir, new FileExtensionFilter("class"));
-            Allocator.getFileSystemUtilities().deleteFiles(compiledFiles);
-        }
-        catch(IOException e)
-        {
-            throw new TaskException("Unable to delete existing class files", e);
-        }
-    }
-
-    /**
-     * Returns a classpath with all of the jars that are in {@code unarchiveDir} appended to {@code classpath}. If there
-     * are no jars in {@code unarchiveDir} then unaltered classpath will be returned.
-     *
-     * @param unarchiveDir
+     * @param dir
      * @param classpath may be {@code null}
      * @return
      * @throws TaskException
      */
-    private static String addJarsToClasspath(File unarchiveDir, String classpath) throws TaskException
+    private static String addJarsToClasspath(File dir, String classpath) throws TaskException
     {
         Set<File> jarFiles;
         try
         {
-            jarFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, new FileExtensionFilter("jar"));
+            jarFiles = Allocator.getFileSystemUtilities().getFiles(dir, new FileExtensionFilter("jar"));
         }
         catch(IOException e)
         {
@@ -621,44 +514,45 @@ class JavaTasks implements TaskProvider
      * Failure to compile code does not indicate an issue with this method, it may be that code contains errors that
      * prevent it from compiling. If this is the case {@code false} will be returned but no exception will be thrown.
      *
-     * @param unarchiveDir Java files in this directory and subdirectories will be compiled
+     * @param graphicalOwner graphical owner of any windows created
+     * @param dir Java files in this directory and subdirectories will be compiled
      * @param classpath the classpath to compile this code with, may be null
      *
      * @return success of compilation
      */
-    private static boolean compileJava(File unarchiveDir, String classpath) throws TaskException
+    private static boolean compileJava(Window graphicalOwner, File dir, String classpath) throws TaskException
     {
         //Get java compiler and file manager
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 
         //Add any jars in the part to the classpath
-        classpath = addJarsToClasspath(unarchiveDir, classpath);
+        classpath = addJarsToClasspath(dir, classpath);
 
-        //Tell the compiler to use the classpath if one is present
-        Collection<String> options = null;
+        Collection<String> options = new ArrayList<String>();
+        options.add("-d");
+        options.add(dir.getAbsolutePath());
+        
         if(classpath != null)
         {
-            options = Arrays.asList("-classpath", classpath);
+            options.add("-classpath");
+            options.add(classpath);
         }
 
-        //Listens to errors
-        DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<JavaFileObject>();
-
-        //Get all of the Java files that are allowed by the inclusion filter
-        FileFilter javaFilter = new FileExtensionFilter("java");
-        
-        Set<File> files;
+        //Get all of the Java files to compile
+        Iterable<? extends JavaFileObject> compilationUnits;
         try
         {
-            files = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, javaFilter);
+            Set<File> files = Allocator.getFileSystemUtilities().getFiles(dir, new FileExtensionFilter("java"));
+            compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
         }
         catch(IOException e)
         {
             throw new TaskException("Unable to access java files", e);
         }
 
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
+        //Listens to errors
+        DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<JavaFileObject>();
 
         //Compile
         Boolean successObj = compiler.getTask(null, fileManager, collector, options, null, compilationUnits).call();
@@ -679,7 +573,7 @@ class JavaTasks implements TaskProvider
                     msg += "\n";
                 }
             }
-            ModalDialog.showMessage(null, "Compilation Failed", msg);
+            ModalDialog.showMessage(graphicalOwner, "Compilation Failed", msg);
         }
 
         try
@@ -688,7 +582,7 @@ class JavaTasks implements TaskProvider
         }
         catch(IOException e)
         {
-            throw new TaskException("Unable to close file manager used by Java  compiler. Please try again, this " +
+            throw new TaskException("Unable to close file manager used by Java compiler. Please try again, this " +
                     "may be a result of issues with the network file system.", e);
         }
 
@@ -696,17 +590,17 @@ class JavaTasks implements TaskProvider
     }
 
     /**
-     * Executes Java code in a seperate visible terminal. The code must first be compiled.
+     * Executes Java code in a separate visible terminal. The code must first be compiled.
      *
      * @param mainClass information about the main class
      * @param classpath the classpath to run this code with respect to, may be {@code null}
      * @param libraryPath the library path to run this code with respect to, may be {@code null}
      * @param termName the title bar displayed by the terminal
      * @param runArgs the arguments provided to the Java program, may be {@code null}
-     * @param unarchiveDir the directory the part was unarchived into
+     * @param dir the directory containing the code to run
      */
     private static void executeJavaInVisibleTerminal(ClassInfo mainClass, String classpath, String libraryPath,
-            String termName, String runArgs, File unarchiveDir) throws TaskException
+            String termName, String runArgs, File dir) throws TaskException
     {
         //Build java.library.path component if an argument was passed in
         String javaLibrary = "";
@@ -726,7 +620,7 @@ class JavaTasks implements TaskProvider
         }
         
         //Append to classpath all jars in the part
-        classpath = addJarsToClasspath(unarchiveDir, classpath);
+        classpath = addJarsToClasspath(dir, classpath);
 
         //Build classpath argument of the java command
         String javaClassPath = " -classpath " + "'" + classpath + "'";
@@ -746,7 +640,7 @@ class JavaTasks implements TaskProvider
 
         try
         {
-            Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, javaCmd, unarchiveDir);
+            Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(termName, javaCmd, dir);
         }
         catch(IOException e)
         {
@@ -967,16 +861,16 @@ class JavaTasks implements TaskProvider
      * <br/><br/>
      * <strong>Note:</strong> no main classes will be returned if the code is not compiled
      *
-     * @param unarchiveDir
+     * @param dir
      * @return
      * @throws TaskException
      */
-    private static List<ClassInfo> getMainClasses(File unarchiveDir) throws TaskException
+    private static List<ClassInfo> getMainClasses(File dir) throws TaskException
     {
         Set<File> classFiles;
         try
         {
-            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, new FileExtensionFilter("class"));
+            classFiles = Allocator.getFileSystemUtilities().getFiles(dir, new FileExtensionFilter("class"));
         }
         catch(IOException e)
         {
@@ -1000,16 +894,16 @@ class JavaTasks implements TaskProvider
     /**
      * Returns information on all non-nested classes that have methods annotated with JUnit's {@code org.junit.Test}.
      *
-     * @param unarchiveDir
+     * @param dir
      * @return
      * @throws TaskException
      */
-    private static List<ClassInfo> getJUnitClasses(File unarchiveDir) throws TaskException
+    private static List<ClassInfo> getJUnitClasses(File dir) throws TaskException
     {
         Set<File> classFiles;
         try
         {
-            classFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, new FileExtensionFilter("class"));
+            classFiles = Allocator.getFileSystemUtilities().getFiles(dir, new FileExtensionFilter("class"));
         }
         catch (IOException e)
         {

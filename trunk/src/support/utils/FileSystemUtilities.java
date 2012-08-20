@@ -106,24 +106,24 @@ public interface FileSystemUtilities
      * @return all files and directories created during the copy
      * @throws FileCopyingException
      */
-    public List<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate, String groupOwner,
+    public Set<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException;
 
     /**
-     * Deletes a file or directory on exit.
+     * Runs {@link #deleteFiles(java.lang.Iterable)} during JVM shutdown. Failure will occur silently.
      * 
      * @param file
      */
-    public void deleteFileOnExit(File file);
+    public void deleteFilesOnExit(Iterable<File> file);
 
     /**
      * Deletes the {@code files}. Attempts to delete all files, and will continue even if unable to delete one or more
      * files.
      *
      * @param files
-     * @throws IOException If unable to delete one or more files. Documents all files that could not be deleted.
+     * @throws FileDeletingException if unable to delete one or more files
      */
-    public void deleteFiles(Iterable<File> files) throws IOException;
+    public void deleteFiles(Iterable<File> files) throws FileDeletingException;
 
     /**
      * Creates a directory, recursively creating parent directories as necessary. This is similar to
@@ -136,9 +136,10 @@ public interface FileSystemUtilities
      * @param groupOwner the group owner of the directory
      *
      * @return directories created
-     * @throws IOException thrown if unable to create any of the necessary directories in order for {@code dir} to exist
+     * @throws DirectoryCreationException if unable to create any of the necessary directories in order for {@code dir}
+     * to exist
      */
-    public List<File> makeDirectory(File dir, String groupOwner) throws IOException;
+    public Set<File> makeDirectory(File dir, String groupOwner) throws DirectoryCreationException;
 
     /**
      * Reads a text file into a String.
@@ -150,7 +151,7 @@ public interface FileSystemUtilities
 
     /**
      * Changes the permissions on a file or directory. The user <b>must</b> be the owner of the files and/or
-     * directories, if the user is not, the native call will fail and a {@link NativeException} will be thrown.
+     * directories, if the user is not, the native call will fail and a {@link IOException} will be thrown.
      * <br/><br/>
      * If changing the permissions on a directory and {@code recursive} is {@code true} then the permissions of the
      * files and directories within the directory provided will also have their permissions changed.
@@ -159,29 +160,29 @@ public interface FileSystemUtilities
      * @param recursive
      * @param mode
      *
-     * @throws NativeException
+     * @throws IOException
      */
-    public void chmod(File file, boolean recursive, FilePermission... mode) throws NativeException;
+    public void chmod(File file, boolean recursive, Set<FilePermission> mode) throws IOException;
 
     /**
      * Changes permissions of a file to be readable and writable by the owner and group. Changes the permissions of a
      * directory to be readable, writable, and accessible by the owner and group. All files are made readable and
      * writable by the owner and group. The user <b>must</b> be the owner of the files and/or directories, if the user
-     * is not, the native call will fail and a {@link NativeException} will be thrown.
+     * is not, the native call will fail and an {@link IOException} will be thrown.
      * <br/><br/>
      * If {@code recursive} is {@code true}, then all subdirectories and files are given the same permissions.
      *
      * @param file
      * @param recursive
      *
-     * @throws NativeException
+     * @throws IOException
      */
-    public void chmodDefault(File file, boolean recursive) throws NativeException;
+    public void chmodDefault(File file, boolean recursive) throws IOException;
 
     /**
      * Changes the specified file or directory's group. The user calling this method must own the file or directory in
-     * order to successfully change the group. If the user is not, the native call will fail and a
-     * {@link NativeException} will be thrown.
+     * order to successfully change the group. If the user is not, the native call will fail and an {@link IOException}
+     * will be thrown.
      *
      * @param file
      * @param group the name of the group, such as cs000ta
@@ -189,7 +190,7 @@ public interface FileSystemUtilities
      *
      * @throws NativeException
      */
-    public void changeGroup(File file, String group, boolean recursive) throws NativeException;
+    public void changeGroup(File file, String group, boolean recursive) throws IOException;
 
     /**
      * Returns all files that satisfy the filter. If {@code file} is a directory, the directory will be recursively

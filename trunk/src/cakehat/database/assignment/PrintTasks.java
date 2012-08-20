@@ -38,10 +38,10 @@ class PrintTasks implements TaskProvider
     {
         private final TaskProperty EXTENSIONS_PROPERTY =
             new TaskProperty("extensions",
-            "The extensions of the files in this part that will be printed.  To open files that do not have file " +
+            "The extensions of the files in this part that will be printed. To open files that do not have file " +
             "extensions use an underscore. Regardless of extension, the files must be plain text files. List " +
-            "extensions in the following format (without quotation marks): \n" +
-            "single extension - 'java' \n" +
+            "extensions in the following format (without quotation marks):<br>" +
+            "single extension - 'java'<br>" +
             "multiple extensions - 'cpp, h'", true);
 
         private Landscape()
@@ -74,7 +74,7 @@ class PrintTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Set<Group> groups)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
                 throws TaskException
         {
             CITPrinter printer = Allocator.getGradingServices().getPrinter();
@@ -86,7 +86,7 @@ class PrintTasks implements TaskProvider
 
                 for(Group group : groups)
                 {
-                    File unarchiveDir = context.getUnarchiveHandinDir(group);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
 
                     FileFilter extensionsFilter =
                             TaskUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
@@ -102,8 +102,8 @@ class PrintTasks implements TaskProvider
                                 return f1.compareTo(f2);
                             }
                         };
-                        filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
-                                extensionsFilter, fileComparator);
+                        filesToPrint = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, extensionsFilter,
+                                fileComparator);
                     }
                     catch(IOException e)
                     {
@@ -116,10 +116,9 @@ class PrintTasks implements TaskProvider
                                 Allocator.getUserServices().getUser(), group);
                         requests.add(request);
                     }
-                    catch (FileNotFoundException e)
+                    catch(FileNotFoundException e)
                     {
-                        throw new TaskException("Unable to generate print request for group: " +
-                                group.getName(), e);
+                        throw new TaskException("Unable to generate print request for group: " + group.getName(), e);
                     }
                 }
 
@@ -128,13 +127,11 @@ class PrintTasks implements TaskProvider
                 {
                     Allocator.getLandscapePrintingService().print(requests, printer);
                 }
-                catch (IOException e)
+                catch(IOException e)
                 {
                     throw new TaskException("Unable to issue print command", e);
                 }
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 }

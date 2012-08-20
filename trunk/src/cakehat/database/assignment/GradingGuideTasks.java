@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
-import support.ui.ModalDialog;
 
 /**
  * Tasks for displaying grading guides.
@@ -30,7 +29,7 @@ public class GradingGuideTasks implements TaskProvider
     {
         private final TaskProperty FILE_PATH_PROPERTY =
             new TaskProperty("file-path",
-            "The absolute path to a plain text file that will be displayed to a TA to assist in grading the part",
+            "The absolute path to a plain text file that will be displayed to a TA to assist in grading the part.",
             true);
 
         private TextFile()
@@ -63,25 +62,19 @@ public class GradingGuideTasks implements TaskProvider
         }
         
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action) throws TaskException,
+            TaskConfigurationIssue
         {
             File gradingGuide = new File(properties.get(FILE_PATH_PROPERTY));
             
-            if(gradingGuide.exists() && gradingGuide.canRead())
+            if(!gradingGuide.exists() || !gradingGuide.canRead())
             {
-                new TextViewerView(context.getGraphicalOwner(), gradingGuide,
-                    part.getFullDisplayName() + " Grading Guide");
-            }
-            else
-            {
-                ModalDialog.showMessage(context.getGraphicalOwner(), "Grading Guide Unavailable",
-                        "The specified grading guide does not exist or cannot be read\n" +
+                throw new TaskConfigurationIssue("The specified grading guide does not exist or cannot be read\n" +
                         "File: " + gradingGuide.getAbsolutePath());
             }
-
-
-            return TaskResult.NO_CHANGES;
+            
+            new TextViewerView(context.getGraphicalOwner(), gradingGuide, action.getPart().getFullDisplayName() +
+                    " Grading Guide");
         }
     }
 }

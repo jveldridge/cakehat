@@ -37,41 +37,42 @@ class ExternalTasks implements TaskProvider
             STUDENT_LOGINS = "^student_logins^",
             GROUP_NAME = "^group_name^",
             UNARCHIVE_DIR = "^unarchive_dir^",
+            TEMP_DIR = "^temp_dir^",
             ASSIGNMENT_NAME = "^assignment_name^",
             GRADABLE_EVENT_NAME = "^gradable_event_name^",
-            PART_NAME = "^part_name^";
+            PART_NAME = "^part_name^",
+            ACTION_NAME = "^action_name^";
 
-    private class MultiGroupCommand extends Command
+    private class NoGroupCommand extends Command
     {
         private final TaskProperty COMMAND_PROPERTY =
             new TaskProperty("command",
             "The command that will be executed. Special character sequences placed in the command will be replaced " +
-            "with cakehat supplied information.\n" +
-            "Character sequences: \n" +
-            GROUPS_INFO         + " - Information about the groups. This will be an array of maps that include the " +
-                                  "group name, student logins in the group and the fully qualified path to the " +
-                                  "directory the handin has been unarchived into.\n" +
-            ASSIGNMENT_NAME     + " - The name of the assignment.\n" +
-            GRADABLE_EVENT_NAME + " - The name of the gradable event.\n" +
-            PART_NAME           + " - The name of the part.\n\n" +
-            "Information will be provided as JSON values, JSON maps, and JSON arrays.\n" +
-            "String value: \"An Assignment Name\" \n" +
-            "Array: [\"jak2\",\"jeldridg\"] \n" +
-            "Map: {\"name\":\"the group\",\"members\":[\"jak2\",\"jeldridg\"]," +
-            "\"unarchive_dir\":\"/course/cs000/.cakehat/workspaces/ta_login/asgn/gradable_event/part/the_group/\"}",
+            "with cakehat supplied information.<br>" +
+            "Character sequences:<br>" +
+            ASSIGNMENT_NAME     + " - The name of the assignment.<br>" +
+            GRADABLE_EVENT_NAME + " - The name of the gradable event.<br>" +
+            PART_NAME           + " - The name of the part.<br>" +
+            ACTION_NAME         + " - The name of the action.<br>" +
+            TEMP_DIR            + " - The fully qualified path to a temporary directory that may be used while " +
+                                  "running this command. This directory will be empty each time the command is " +
+                                  "run.<br><br>" +
+            "Information will be provided as JSON.<br>" +
+            "String value: \"An Assignment Name\"",
             true);
-
-        private MultiGroupCommand()
+        
+        private NoGroupCommand()
         {
-            super("multi-group-command");
+            super("no-group-command");
         }
 
         @Override
         public String getDescription()
         {
-            return "Runs a specified command with cakehat supplied information. Information pertains to the " +
-                   "assignment, gradable event, part, groups, students, and the directory the handins have been " +
-                   "unarchived into. The command will be executed in the grader's temporary grading directory.";
+            return "Runs a specified command with cakehat supplied information. Information is limited to that of " +
+                   "the assignment, gradable event, and part; no information will be provided about students, " +
+                   "groups, or digital handins. The command will be executed in a temporary directory that will be " +
+                   "empty each time this task is run.";
         }
 
         @Override
@@ -83,45 +84,47 @@ class ExternalTasks implements TaskProvider
         @Override
         public boolean requiresDigitalHandin()
         {
+            return false;
+        }
+
+        @Override
+        boolean isTaskSupported(Action action, Set<Group> groups) throws TaskException
+        {
             return true;
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Set<Group> groups) throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
+                throws TaskException
         {
             String command = properties.get(COMMAND_PROPERTY);
-            command = replaceAssignmentSequences(command, part);
-            command = replaceGroupInfoSequences(command, context, new ArrayList<Group>(groups));
+            command = replaceAssignmentSequences(command, action);
 
-            File workspace = Allocator.getPathServices().getUserWorkspaceDir();
-            runCommand(command, workspace, part, properties);
-
-            return TaskResult.NO_CHANGES;
-        }
-
-        @Override
-        boolean isTaskSupported(Part part, Set<Group> groups) throws TaskException
-        {
-            return !groups.isEmpty();
+            File tempDir = Allocator.getPathServices().getActionTempDir(action, null);
+            runCommand(command, tempDir, action, properties);
         }
     }
-
+    
     private class SingleGroupCommand extends Command
     {
         private final TaskProperty COMMAND_PROPERTY =
             new TaskProperty("command",
             "The command that will be executed. Special character sequences placed in the command will be replaced " +
-            "with cakehat supplied information.\n" +
-            "Character sequences: \n" +
-            GROUP_NAME          + " - The name of the group.\n" +
-            STUDENT_LOGINS      + " - The logins of all students in the group.\n" +
-            UNARCHIVE_DIR       + " - The fully qualified path to the directory the the handin has been unarchived " +
-                                  "into.\n" +
-            ASSIGNMENT_NAME     + " - The name of the assignment.\n" +
-            GRADABLE_EVENT_NAME + " - The name of the gradable event.\n" +
-            PART_NAME           + " - The name of the part.\n\n" +
-            "Information will be provided as a JSON value or a JSON array. \n" +
-            "String value: \"An Assignment Name\" \n" +
+            "with cakehat supplied information.<br>" +
+            "Character sequences:<br>" +
+            GROUP_NAME          + " - The name of the group.<br>" +
+            STUDENT_LOGINS      + " - The logins of all students in the group.<br>" +
+            UNARCHIVE_DIR       + " - The fully qualified path to the directory that the handin has been unarchived " +
+                                  "into.<br>" +
+            TEMP_DIR            + " - The fully qualified path to a temporary directory that may be used while " +
+                                  "running this command. This directory will be empty each time the command is " +
+                                  "run.<br>" +
+            ASSIGNMENT_NAME     + " - The name of the assignment.<br>" +
+            GRADABLE_EVENT_NAME + " - The name of the gradable event.<br>" +
+            PART_NAME           + " - The name of the part.<br>" +
+            ACTION_NAME         + " - The name of the action.<br><br>" + 
+            "Information will be provided as a JSON value or a JSON array.<br>" +
+            "String value: \"An Assignment Name\"<br>" +
             "Array: [\"jak2\",\"jeldridg\"]",
             true);
 
@@ -134,9 +137,9 @@ class ExternalTasks implements TaskProvider
         public String getDescription()
         {
             return "Runs a specified command with cakehat supplied information. Information pertains to the " +
-                   "assignment, gradable event, part, group, students, and the directory the handin have been " +
-                   "unarchived into. The  command will be executed in the directory containing the unarchived " +
-                   "contents of the digital handin that belong to this part.";
+                   "assignment, gradable event, part, group, students, the directory the handin has been unarchived " +
+                   "into, and a temporary directory. The command will be executed in a temporary directory that will " +
+                   "be empty each time this task is run.";
         }
         
         @Override
@@ -152,13 +155,13 @@ class ExternalTasks implements TaskProvider
         }
 
         @Override
-        boolean isTaskSupported(Part part, Set<Group> groups) throws TaskException
+        boolean isTaskSupported(Action action, Set<Group> groups) throws TaskException
         {
             return groups.size() == 1;
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Set<Group> groups)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
                 throws TaskException
         {
             //Enforce that the set passed in only has one group
@@ -176,42 +179,49 @@ class ExternalTasks implements TaskProvider
             
             //Perform task
             String command = properties.get(COMMAND_PROPERTY);
-            command = replaceAssignmentSequences(command, part);
-            command = replaceDigitalHandinSequences(command, context, group);
+            command = replaceAssignmentSequences(command, action);
+            command = replaceDigitalHandinSequences(command, action, group);
 
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-            runCommand(command, unarchiveDir, part, properties);
-
-            return TaskResult.NO_CHANGES;
+            File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
+            runCommand(command, tempDir, action, properties);
         }
     }
-
-    private class NoGroupCommand extends Command
+    
+    private class MultiGroupCommand extends Command
     {
         private final TaskProperty COMMAND_PROPERTY =
             new TaskProperty("command",
             "The command that will be executed. Special character sequences placed in the command will be replaced " +
-            "with cakehat supplied information.\n" +
-            "Character sequences:\n" +
-            ASSIGNMENT_NAME     + " - The name of the assignment.\n" +
-            GRADABLE_EVENT_NAME + " - The name of the gradable event.\n" +
-            PART_NAME           + " - The name of the part.\n" +
-            "Information will be provided as a JSON value. \n" +
-            "String value: \"An Assignment Name\" \n",
+            "with cakehat supplied information.<br>" +
+            "Character sequences:<br>" +
+            GROUPS_INFO         + " - Information about the groups. This will be an array of maps that include the " +
+                                  "group name, student logins in the group, the fully qualified path to the " +
+                                  "directory the handin has been unarchived into, and the fully qualified path to " +
+                                  "the temporary directory for the task and group.<br>" +
+            ASSIGNMENT_NAME     + " - The name of the assignment.<br>" +
+            GRADABLE_EVENT_NAME + " - The name of the gradable event.<br>" +
+            PART_NAME           + " - The name of the part.<br>" +
+            ACTION_NAME         + " - The name of the action.<br><br>" + 
+            "Information will be provided as JSON values, JSON maps, and JSON arrays.<br>" +
+            "String value: \"An Assignment Name\"<br>" +
+            "Array: [\"jak2\",\"jeldridg\"]<br>" +
+            "Map: {\"name\":\"the group\",\"members\":[\"jak2\",\"jeldridg\"]," +
+            "\"unarchive_dir\":\"/course/cs000/.cakehat/handin/4/1/2/94/\"," +
+            "\"temp_dir\":\"/course/cs000/.cakehat/temp/4/1/2/5/94/\"}",
             true);
-        
-        private NoGroupCommand()
+
+        private MultiGroupCommand()
         {
-            super("no-group-command");
+            super("multi-group-command");
         }
 
         @Override
         public String getDescription()
         {
-            return "Runs a specified command with cakehat supplied information. Information is limited to that of " +
-                   "the assignment, gradable event, and part; no information will be provided about students, " +
-                   "groups, or digital handins. The command will be executed in the grader's temporary grading " +
-                   "directory.";
+            return "Runs a specified command with cakehat supplied information. Information pertains to the " +
+                   "assignment, gradable event, part, action, groups, students, the directory the handins have been " +
+                   "unarchived into, and temporary directories. The command will be executed in the temporary " + 
+                   "directory for this task.";
         }
 
         @Override
@@ -223,29 +233,28 @@ class ExternalTasks implements TaskProvider
         @Override
         public boolean requiresDigitalHandin()
         {
-            return false;
-        }
-
-        @Override
-        boolean isTaskSupported(Part part, Set<Group> groups) throws TaskException
-        {
             return true;
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Set<Group> groups)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
                 throws TaskException
         {
             String command = properties.get(COMMAND_PROPERTY);
-            command = replaceAssignmentSequences(command, part);
+            command = replaceAssignmentSequences(command, action);
+            command = replaceGroupInfoSequences(command, action, new ArrayList<Group>(groups));
 
-            File workspace = Allocator.getPathServices().getUserWorkspaceDir();
-            runCommand(command, workspace, part, properties);
+            File tempDir = Allocator.getPathServices().getActionTempDir(action);
+            runCommand(command, tempDir, action, properties);
+        }
 
-            return TaskResult.NO_CHANGES;
+        @Override
+        boolean isTaskSupported(Action action, Set<Group> groups) throws TaskException
+        {
+            return !groups.isEmpty();
         }
     }
-
+    
     private abstract class Command extends Task
     {
         protected final TaskProperty SHOW_TERMINAL_PROPERTY =
@@ -272,13 +281,12 @@ class ExternalTasks implements TaskProvider
             return ImmutableSet.<ActionDescription>of();
         }
 
-        protected void runCommand(String command, File directory, Part part, Map<TaskProperty, String> properties)
+        protected void runCommand(String command, File directory, Action action, Map<TaskProperty, String> properties)
                 throws TaskException
         {
             command = consoleEscape(command);
 
-            if(properties.containsKey(SHOW_TERMINAL_PROPERTY) &&
-                    properties.get(SHOW_TERMINAL_PROPERTY).equalsIgnoreCase("TRUE"))
+            if("TRUE".equalsIgnoreCase(properties.get(SHOW_TERMINAL_PROPERTY)))
             {
                 String title;
 
@@ -288,7 +296,7 @@ class ExternalTasks implements TaskProvider
                 }
                 else
                 {
-                    title = part.getFullDisplayName();
+                    title = action.getPart().getFullDisplayName();
                 }
                 try
                 {
@@ -312,7 +320,6 @@ class ExternalTasks implements TaskProvider
             }
         }
     }
-
 
     /******************************************************************************************************************\
     |*                                                Helper methods                                                  *|
@@ -338,7 +345,7 @@ class ExternalTasks implements TaskProvider
      * @param groups
      * @return
      */
-    static String replaceGroupInfoSequences(String command, TaskContext context, List<Group> groups)
+    static String replaceGroupInfoSequences(String command, Action action, List<Group> groups)
     {
         if(command.contains(GROUPS_INFO))
         {
@@ -346,7 +353,7 @@ class ExternalTasks implements TaskProvider
             List<String> jsonGroups = new ArrayList<String>();
             for(Group group : groups)
             {
-                jsonGroups.add(buildJSONGroupMap(context, group));
+                jsonGroups.add(buildJSONGroupMap(action, group));
             }
             String groupsInfo = buildJSONArray(jsonGroups, false);
 
@@ -360,17 +367,20 @@ class ExternalTasks implements TaskProvider
      * Builds a JSON map for the {@code group} that contains the name, members (student logins), and unarchive directory
      * for the group.
      *
-     * @param context
+     * @param action
      * @param group
      * @return
      */
-    private static String buildJSONGroupMap(TaskContext context, Group group)
+    private static String buildJSONGroupMap(Action action, Group group)
     {
         String jsonInfo = "{" + quote("name") + ":" + quote(jsonEscape(group.getName())) + ",";
         jsonInfo += quote("members") + ":" + buildJSONArray(getMemberLogins(group), true) + ",";
 
-        File unarchiveDir = context.getUnarchiveHandinDir(group);
-        jsonInfo += quote("unarchive_dir") + ":" + quote(jsonEscape(unarchiveDir.getAbsolutePath())) + "}";
+        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
+        jsonInfo += quote("unarchive_dir") + ":" + quote(jsonEscape(unarchiveDir.getAbsolutePath())) + ",";
+        
+        File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
+        jsonInfo += quote("temp_dir") + ":" + quote(jsonEscape(tempDir.getAbsolutePath())) + "}";
 
         return jsonInfo;
     }
@@ -381,15 +391,16 @@ class ExternalTasks implements TaskProvider
      * <li>^student_logins^</li>
      * <li>^group_name^</li>
      * <li>^unarchive_dir^</li>
+     * <li>^temp_dir^</li>
      * </ul>
      * Package private for testing purposes.
      *
      * @param command
-     * @param context
+     * @param action
      * @param group
      * @return
      */
-    static String replaceDigitalHandinSequences(String command, TaskContext context, Group group)
+    static String replaceDigitalHandinSequences(String command, Action action, Group group)
     {
         if(command.contains(STUDENT_LOGINS))
         {
@@ -401,9 +412,13 @@ class ExternalTasks implements TaskProvider
         }
         if(command.contains(UNARCHIVE_DIR))
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-
+            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
             command = replace(command, UNARCHIVE_DIR, unarchiveDir.getAbsolutePath());
+        }
+        if(command.contains(TEMP_DIR))
+        {
+            File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
+            command = replace(command, TEMP_DIR, tempDir.getAbsolutePath());
         }
 
         return command;
@@ -415,6 +430,7 @@ class ExternalTasks implements TaskProvider
      * <li>^assignment_name^</li>
      * <li>^gradable_event_name</li>
      * <li>^part_name^</li>
+     * <li>^action_name^</li>
      * </ul>
      * Package private for testing purposes.
      *
@@ -422,19 +438,23 @@ class ExternalTasks implements TaskProvider
      * @param part
      * @return
      */
-    static String replaceAssignmentSequences(String command, Part part)
+    static String replaceAssignmentSequences(String command, Action action)
     {
         if(command.contains(ASSIGNMENT_NAME))
         {
-            command = replace(command, ASSIGNMENT_NAME, part.getGradableEvent().getAssignment().getName());
+            command = replace(command, ASSIGNMENT_NAME, action.getPart().getGradableEvent().getAssignment().getName());
         }
         if(command.contains(GRADABLE_EVENT_NAME))
         {
-            command = replace(command, GRADABLE_EVENT_NAME, part.getGradableEvent().getName());
+            command = replace(command, GRADABLE_EVENT_NAME, action.getPart().getGradableEvent().getName());
         }
         if(command.contains(PART_NAME))
         {
-            command = replace(command, PART_NAME, part.getName());
+            command = replace(command, PART_NAME, action.getPart().getName());
+        }
+        if(command.contains(ACTION_NAME))
+        {
+            command = replace(command, ACTION_NAME, action.getName());
         }
 
         return command;

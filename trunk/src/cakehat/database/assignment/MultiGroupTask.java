@@ -4,8 +4,8 @@ import cakehat.database.Group;
 import java.util.Set;
 
 /**
- * A convenience partial implementation of {@code Task} for tasks which support operating on one or more groups
- * at a time.
+ * A convenience partial implementation of {@code Task} for tasks which support operating on one or more groups at a
+ * time.
  *
  * @author jak2
  */
@@ -17,7 +17,7 @@ abstract class MultiGroupTask extends Task
     }
     
     @Override
-    public boolean isTaskSupported(Part part, Set<Group> groups)
+    public boolean isTaskSupported(Action action, Set<Group> groups)
     {
         return !groups.isEmpty();
     }

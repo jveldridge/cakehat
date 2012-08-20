@@ -238,7 +238,12 @@ public class Allocator
         if(customizer._archiveUtils == null)
         {
             _archiveUtils = new SingletonAllocation<ArchiveUtilities>()
-                            { public ArchiveUtilities allocate() { return new ArchiveUtilitiesImpl(); } };
+            {
+                public ArchiveUtilities allocate()
+                {
+                    return new ArchiveUtilitiesImpl(Allocator.getFileSystemUtilities());
+                }
+            };
         }
         else
         {

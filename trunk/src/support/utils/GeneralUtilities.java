@@ -20,18 +20,6 @@ public interface GeneralUtilities
     public <T> boolean containsAny(Collection<T> col1, Collection<T> col2);
 
     /**
-     * Returns the first instance of a class by the type of {@codethrowableClass} that exists in the causal hierarchy.
-     * This hierarchy starts at {@code throwable} and continues until {@link Throwable#getCause()} returns {@code null}.
-     * If no {@link Throwable} is found of type {@code throwableClass} then {@code null} is returned.
-     * 
-     * @param <E>
-     * @param throwable
-     * @param throwableClass
-     * @return the first matching {@link Throwable} or {@code null} if no match is found
-     */
-    public <E extends Throwable> E findInStack(Throwable throwable, Class<E> throwableClass);
-
-    /**
      * Creates a button with an icon that has centered text.
      * <br/><br/>
      * This is done by calculating the necessary gap space between the icon and the text. There is no built-in way to

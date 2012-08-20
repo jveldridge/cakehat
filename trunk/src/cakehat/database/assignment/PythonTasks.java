@@ -15,7 +15,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,16 +33,13 @@ import support.ui.ModalDialog;
 import support.ui.ShadowJTextField;
 import support.utils.AlphabeticFileComparator;
 import support.utils.ExternalProcessesUtilities.TerminalStringValidity;
-import support.utils.FileCopyingException;
-import support.utils.FileExistsException;
 import support.utils.FileExtensionFilter;
-import support.utils.FileSystemUtilities.FileCopyPermissions;
-import support.utils.FileSystemUtilities.OverwriteMode;
 
 /**
  * Tasks that interact with Python
  * 
  * @author Yudi
+ * @author jak2
  */
 class PythonTasks implements TaskProvider
 {
@@ -70,9 +66,9 @@ class PythonTasks implements TaskProvider
                 new TaskProperty("extensions",
                 "The extensions of the files to run in this part. To run files that do not have file extensions use " +
                 "an underscore. Regardless of extension, the files must be Python files. List extensions in the " +
-                "following format (without quotation marks):\n " +
-                "single extension - 'py' \n" +
-                "multiple extensions - 'py, pyc' \n" +
+                "following format (without quotation marks):<br>" +
+                "single extension - 'py'<br>" +
+                "multiple extensions - 'py, pyc'<br>" +
                 "If this property is not specified, .py files will be picked by default", false);
 
         private RunFile()
@@ -108,14 +104,14 @@ class PythonTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
                 throws TaskException
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-            String terminalName = group.getName() + "'s " + part.getFullDisplayName();
+            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
+            String terminalName = group.getName() + "'s " + action.getPart().getFullDisplayName();
 
-            //If a specific set of file extentions was specified, retrieve the Python files with those 
-            //extentions; otherwise retrieve .py files belonging to this part.
+            //If a specific set of file extentions was specified, retrieve the Python files with those extentions;
+            //otherwise retrieve .py files belonging to this part.
             FileFilter extensionsFilter;
             if(properties.containsKey(EXTENSIONS_PROPERTY))
             {
@@ -128,9 +124,8 @@ class PythonTasks implements TaskProvider
 
             List<File> pythonFiles;
 
-            //If a specific file to run was specified, attempt to run
-            //that file, but if it does not exist inform the user and
-            //then continue as if the file was not specified
+            //If a specific file to run was specified, attempt to run that file, but if it does not exist inform the
+            //user and then continue as if the file was not specified
             if(properties.containsKey(FILE_PATH_PROPERTY))
             {
                 String relativePath = properties.get(FILE_PATH_PROPERTY);
@@ -145,8 +140,8 @@ class PythonTasks implements TaskProvider
 
                     try
                     {
-                        pythonFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir,
-                                extensionsFilter, new AlphabeticFileComparator());
+                        pythonFiles = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, extensionsFilter,
+                                new AlphabeticFileComparator());
                     }
                     catch(IOException e)
                     {
@@ -179,29 +174,28 @@ class PythonTasks implements TaskProvider
             }
             else
             {
-                RunPythonFilesDialog dialog = new RunPythonFilesDialog(context.getGraphicalOwner(),
-                        pythonFiles, unarchiveDir);
+                RunPythonFilesDialog dialog = new RunPythonFilesDialog(context.getGraphicalOwner(), pythonFiles,
+                        unarchiveDir);
                 if(dialog.shouldRun())
                 {
                     runPythonFile(terminalName, dialog.getPythonFile(), dialog.getRunArgs());
                 }
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
     private class CopyTest extends SingleGroupTask
     {
         private final TaskProperty COPY_PATH_PROPERTY =
-                new TaskProperty("copy-path",
-                "The fully qualified path to the directory whose entire contents will be copied into the root of the " +
-                "unarchived handin directory.", true);
+            new TaskProperty("copy-path",
+            "The absolute path to the file or directory whose entire contents will be copied into the root of a copy " +
+            "of the unarchived handin directory. If a directory is specified then the entire contents of the " +
+            "directory will be copied, but not the directory itself.", true);
         private final TaskProperty TEST_FILE_PROPERTY =
                 new TaskProperty("test-file",
                 "This property must be specified if a directory is provided for the " + COPY_PATH_PROPERTY.getName() +
-                " property. The Python file that will be run. The path must be relative to directory specified by " +
-                "the " + COPY_PATH_PROPERTY.getName() + " property.", false);
+                " property. The absolute path to the Python file that will be run. This file must be contained in " +
+                "the directory provided for the " + COPY_PATH_PROPERTY.getName() + " property.", false);
 
         private CopyTest()
         {
@@ -211,9 +205,8 @@ class PythonTasks implements TaskProvider
         @Override
         public String getDescription()
         {
-            return "Copies the specified file or contents of the directory into the root of the unarchived handin. " +
-                   "Then runs the specified Python file. Once the copy occurs, it remains, and therefore any other " +
-                   "tasks may interact with the copied files.";
+            return "Copies the specified file or contents of the directory into the root of a copy of the unarchived " +
+                    "handin. Then runs the specified Python file in a visible terminal.";
         }
 
         @Override
@@ -234,118 +227,60 @@ class PythonTasks implements TaskProvider
             return true;
         }
 
-        //Keeps track of the groups that have already had the files copied
-        //private HashSet<Group> _testedGroups = new HashSet<Group>();
-
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
-                throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
+                throws TaskException, TaskConfigurationIssue
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-            String terminalName = group.getName() + "'s " + part.getFullDisplayName();
-
-            File source = new File(properties.get(COPY_PATH_PROPERTY));
+            File copyPath = new File(properties.get(COPY_PATH_PROPERTY));
+            
+            //Validate
+            if(copyPath.isDirectory())
+            {
+                if(!properties.containsKey(TEST_FILE_PROPERTY))
+                {
+                    throw new TaskConfigurationIssue(COPY_PATH_PROPERTY.getName() + " property is configured to a " + 
+                            "directory and the " + TEST_FILE_PROPERTY.getName() + " is not set.\n" + 
+                            COPY_PATH_PROPERTY.getName() + ": " + copyPath.getAbsolutePath());
+                }
                 
-            //Copy if necessary
-            TaskResult result;
-            if(!context.getFilesAddedForTask(group).isEmpty())
-            {
-                //Validate
-                if(!source.exists())
+                File testFile = new File(properties.get(TEST_FILE_PROPERTY));
+                if(!testFile.isFile())
                 {
-                    ModalDialog.showMessage(context.getGraphicalOwner(), "Does not exist",
-                            "Cannot perform test because the directory or file to copy does not exist.\n\n" +
-                            "Source: " + source.getAbsoluteFile());
-                    result = TaskResult.NO_CHANGES;
+                    throw new TaskConfigurationIssue(TEST_FILE_PROPERTY.getName() + " property is not configured to " +
+                            "be a file.\n" + 
+                            TEST_FILE_PROPERTY.getName() + ": " + testFile.getAbsolutePath());
                 }
-                else if(source.isDirectory())
+                
+                if(!testFile.getAbsolutePath().startsWith(copyPath.getAbsolutePath()))
                 {
-                    String relativePath = properties.get(TEST_FILE_PROPERTY);
-
-                    if(relativePath == null)
-                    {
-                        ModalDialog.showMessage(context.getGraphicalOwner(), "Property not set",
-                                "Cannot perform test because the " + TEST_FILE_PROPERTY.getName() +
-                                " property was not set. It must be set when copying test files from a " +
-                                "directory.");
-                        result = TaskResult.NO_CHANGES;
-                    }
-                    else
-                    {
-                        File testFile = new File(source, relativePath);
-                        if(!testFile.exists())
-                        {
-                            ModalDialog.showMessage(context.getGraphicalOwner(), "Test file does not exist",
-                                    "Cannot perform test because the test file does not exist.\n\n" +
-                                    "File: " + testFile.getAbsoluteFile());
-                            result = TaskResult.NO_CHANGES;
-                        }
-                        else if(!testFile.isFile())
-                        {
-                            ModalDialog.showMessage(context.getGraphicalOwner(), "Test file not a file",
-                                    "Cannot perform test because the test file is not a file.\n\n" +
-                                    "File: " + testFile.getAbsoluteFile());
-                            result = TaskResult.NO_CHANGES;
-                        }
-                    }
-                }
-
-                try
-                {
-                    File destination;
-                    if(source.isFile())
-                    {
-                        destination = new File(unarchiveDir, source.getName());
-                    }
-                    else
-                    {
-                        destination = unarchiveDir;
-                    }
-
-                    List<File> filesAdded = Allocator.getFileSystemServices().copy(source, destination,
-                            OverwriteMode.FAIL_ON_EXISTING, false, FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE);
-                    result = new TaskResult(group, new HashSet<File>(filesAdded));
-                }
-                catch(FileCopyingException e)
-                {
-                    //If a file that already exists would be overwritten
-                    FileExistsException existsException = Allocator.getGeneralUtilities()
-                            .findInStack(e, FileExistsException.class);
-                    if(existsException == null)
-                    {
-                        throw new TaskException("Unable to perform copy necessary for testing.", e);
-                    }
-                    else
-                    {
-                        ModalDialog.showMessage(context.getGraphicalOwner(), "Cannot copy test file",
-                                "Cannot perform test because a file to be copied for the test already exists " +
-                                "in the unarchived handin.\n\n" +
-                                "Test File: " + existsException.getSourceFile().getAbsolutePath() + "\n" +
-                                "Handin File: " + existsException.getDestinationFile().getAbsolutePath());
-                        result = TaskResult.NO_CHANGES;
-                    }
+                    throw new TaskConfigurationIssue(TEST_FILE_PROPERTY.getName() + " property is not configured to " +
+                            "be contained in the directory specified by the " + COPY_PATH_PROPERTY.getName() + ".\n" +
+                            COPY_PATH_PROPERTY.getName() + ": " + copyPath.getAbsolutePath() + "\n" + 
+                            TEST_FILE_PROPERTY.getName() + ": " + testFile.getAbsolutePath());
                 }
             }
-            else
+            
+            TaskUtilities.copyUnarchivedHandinToTemp(action, group);
+            if(TaskUtilities.copyForTest(copyPath, context, action, group))
             {
-                result = TaskResult.NO_CHANGES;
-            }
+                //Determine the location of the test file once it has been copied
+                File tempDir = Allocator.getPathServices().getActionTempDir(action, group);
+                File dstTestFile;
+                if(copyPath.isDirectory())
+                {
+                    File srcTestFile = new File(properties.get(TEST_FILE_PROPERTY));
+                    String relativeTestFile = srcTestFile.getAbsolutePath()
+                            .replaceFirst(copyPath.getAbsolutePath(), "");
+                    dstTestFile = new File(tempDir, relativeTestFile);
+                }
+                else
+                {
+                    dstTestFile = new File(tempDir, copyPath.getName());
+                }
 
-            //Determine the location of the test file once it has been copied
-            File testFile;
-            if(source.isFile())
-            {
-                testFile = new File(unarchiveDir, source.getName());
+                //Run test file
+                runPythonFile(group.getName() + "'s " + action.getPart().getFullDisplayName(), dstTestFile, null);
             }
-            else
-            {
-                testFile = new File(unarchiveDir, properties.get(TEST_FILE_PROPERTY));
-            }
-
-            //Run test file
-            runPythonFile(terminalName, testFile, null);
-
-            return result;
         }
     }
 
@@ -466,7 +401,8 @@ class PythonTasks implements TaskProvider
                     {
                         String runArgs = _argsField.getText();
 
-                        TerminalStringValidity validity = Allocator.getExternalProcessesUtilities().checkTerminalValidity(runArgs);
+                        TerminalStringValidity validity = Allocator.getExternalProcessesUtilities()
+                                .checkTerminalValidity(runArgs);
 
                         valid = validity.isValid();
 
@@ -475,13 +411,16 @@ class PythonTasks implements TaskProvider
                             if(!validity.isTerminatedProperly())
                             {
                                 problemMessage = "Cannot end with an unescaped backslash (\\)";
-                            } else if(!validity.isSingleQuotedProperly())
+                            }
+                            else if(!validity.isSingleQuotedProperly())
                             {
                                 problemMessage = "Single quotation (') marks must match or be escaped";
-                            } else if(!validity.isDoubleQuotedProperly())
+                            }
+                            else if(!validity.isDoubleQuotedProperly())
                             {
                                 problemMessage = "Double quotation (\") marks must match or be escaped";
-                            } else
+                            }
+                            else
                             {
                                 problemMessage = "The argument provided is not a valid string in a terminal";
                             }
