@@ -62,7 +62,8 @@ class ReadmeTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Set<Group> groups) throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
+                throws TaskException
         {
             Set<Group> groupsWithoutReadmes = new HashSet<Group>();
             Set<Group> groupsWithUnsupportedReadmes = new HashSet<Group>();
@@ -82,13 +83,13 @@ class ReadmeTasks implements TaskProvider
                         }
                     };
 
-                    readmes = Allocator.getFileSystemUtilities().getFiles(context.getUnarchiveHandinDir(group),
-                            readmeFilter);
+                    File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
+                    readmes = Allocator.getFileSystemUtilities().getFiles(unarchiveDir, readmeFilter);
                 }
                 catch(IOException e)
                 {
                     throw new TaskException("Unable to access READMEs\n" +
-                            "Part: " + part.getFullDisplayName() + "\n" +
+                            "Part: " + action.getPart().getFullDisplayName() + "\n" +
                             "Group: " + group, e);
                 }
 
@@ -106,22 +107,22 @@ class ReadmeTasks implements TaskProvider
                         //If a text file
                         if(!name.contains(".") || name.endsWith(".txt"))
                         {
-                            new TextViewerView(context.getGraphicalOwner(), readme,
-                                    group.getName() +"'s Readme");
+                            new TextViewerView(context.getGraphicalOwner(), readme, group.getName() +"'s Readme");
                         }
                         //If a PDF
                         else if(readme.getAbsolutePath().toLowerCase().endsWith(".pdf"))
                         {
                             try
                             {
-                                File unarchiveDir = context.getUnarchiveHandinDir(group);
+                                File unarchiveDir = Allocator.getPathServices()
+                                        .getUnarchiveHandinDir(action.getPart(), group);
                                 Allocator.getExternalProcessesUtilities().executeAsynchronously("evince '" +
                                         readme.getAbsolutePath() + "'", unarchiveDir);
                             }
                             catch(IOException e)
                             {
-                                throw new TaskException("Unable to open readme in evince: " +
-                                        readme.getAbsolutePath(), e);
+                                throw new TaskException("Unable to open readme in evince: " + readme.getAbsolutePath(),
+                                        e);
                             }
                         }
                         //Otherwise, the type is not supported, inform the grader
@@ -136,7 +137,7 @@ class ReadmeTasks implements TaskProvider
             //Show notification as needed
             if(!groupsWithoutReadmes.isEmpty() && !groupsWithUnsupportedReadmes.isEmpty())
             {
-                String groupsOrStudents = part.getAssignment().hasGroups() ? "Groups" : "Students";
+                String groupsOrStudents = action.getPart().getAssignment().hasGroups() ? "Groups" : "Students";
 
                 StringBuilder messageBuilder = new StringBuilder("<html>");
 
@@ -176,11 +177,8 @@ class ReadmeTasks implements TaskProvider
 
                 messageBuilder.append("</html>");
 
-                ModalDialog.showMessage(context.getGraphicalOwner(), "READMEs Not Shown",
-                        messageBuilder.toString());
+                ModalDialog.showMessage(context.getGraphicalOwner(), "READMEs Not Shown", messageBuilder.toString());
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 }

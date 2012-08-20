@@ -42,24 +42,14 @@ public class ActionDescription
         return _name;
     }
     
-    public String toString()
-    {
-        return _name;
-    }
-    
     public static List<ActionDescription> getDefaultDescriptions()
     {
         return DEFAULT_DESCRIPTIONS;
     }
     
-    public static List<String> getDefaultDescriptionNames()
+    @Override
+    public String toString()
     {
-        ImmutableList.Builder<String> namesBuilder = ImmutableList.builder();
-        for(ActionDescription description : DEFAULT_DESCRIPTIONS)
-        {
-            namesBuilder.add(description.getName());
-        }
-        
-        return namesBuilder.build();
+        return _name;
     }
 }

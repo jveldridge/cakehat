@@ -1,8 +1,9 @@
 package cakehat.database.assignment;
 
+import cakehat.Allocator;
 import cakehat.database.Group;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
+import cakehat.services.ServicesException;
+import com.google.common.collect.ImmutableSet;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import support.resources.icons.IconLoader.IconImage;
 import support.ui.ModalDialog;
+import support.utils.FileDeletingException;
 
 /**
  *
@@ -38,8 +40,6 @@ public class Action implements Comparable<Action>
     private final Task _task;
     private final Map<TaskProperty, String> _taskProperties;
     private final boolean _requiredPropertiesPresent;
-    
-    private final SetMultimap<Group, File> _filesAdded = HashMultimap.create();
     
     /**
      * This value will be set after construction because the part object will not be constructed until after the
@@ -155,6 +155,25 @@ public class Action implements Comparable<Action>
     }
     
     /**
+     * Returns a string for use in debugging and exception messages. Format is:
+     * [Assignment Name] - [Gradable Event Name] - [Part Name] - [Action Name] ([Assignment Id] - [Gradable Event Id] -
+     * [Part Id] - [Action Id])
+     * 
+     * @return 
+     */
+    String getDebugName()
+    {
+        return this.getPart().getAssignment().getName() + " - " +
+               this.getPart().getGradableEvent().getName() + " - " +
+               this.getPart().getName() + " - " +
+               this.getName() + " (" +
+               this.getPart().getAssignment().getId() + " - " +
+               this.getPart().getGradableEvent().getId() + " - " +
+               this.getPart().getId() + " - " +
+               this.getId() + ")";
+    }
+    
+    /**
      * Whether the task supports the specified {@code groups}.
      * 
      * @param groups
@@ -185,7 +204,7 @@ public class Action implements Comparable<Action>
                 }
             }
 
-            supported = _task.isTaskSupported(this.getPart(), groupsWithHandins);
+            supported = _task.isTaskSupported(this, groupsWithHandins);
         }
         
         return supported;
@@ -246,7 +265,7 @@ public class Action implements Comparable<Action>
 
                 if(!groupsWithMissingHandins.isEmpty())
                 {
-                    proceed = resolveMissingHandins(graphicalOwner, this.getPart(), groupsWithMissingHandins);
+                    proceed = resolveMissingHandins(graphicalOwner, groupsWithMissingHandins);
                     if(proceed)
                     {   
                         taskGroups = new HashSet<Group>();
@@ -259,22 +278,29 @@ public class Action implements Comparable<Action>
             if(proceed)
             {
                 //Check the task is supported before running it
-                if(!_task.isTaskSupported(this.getPart(), taskGroups))
+                if(!_task.isTaskSupported(this, taskGroups))
                 {
                     throw new IllegalArgumentException(this.getPart().getFullDisplayName() + " does not support " +
                             "groups " + taskGroups);
                 }
-
-                TaskContext context = new TaskContext(this.getPart(), this, graphicalOwner);
-                TaskResult result = _task.performTask(_taskProperties, context, this.getPart(), taskGroups);
-                _filesAdded.putAll(result.getFilesAdded());
+                
+                this.setupActionTempDir(groups);
+                
+                try
+                {
+                    _task.performTask(_taskProperties, new TaskContext(graphicalOwner), this, taskGroups);
+                }
+                catch(TaskConfigurationIssue issue)
+                {
+                    ModalDialog.showMessage(graphicalOwner, "Configuration Issue", issue.getMessage());
+                }
             }
         }
     }
     
-    private boolean resolveMissingHandins(Window owner, Part part, Set<Group> groupsWithMissingHandins)
+    private boolean resolveMissingHandins(Window owner, Set<Group> groupsWithMissingHandins)
     {
-        String groupsOrStudents = (part.getGradableEvent().getAssignment().hasGroups() ? "groups" : "students");
+        String groupsOrStudents = (this.getPart().getAssignment().hasGroups() ? "groups" : "students");
 
         String message = "The following " + groupsOrStudents + " are missing handins:";
         List<Group> sortedGroupsWithMissingHandins = new ArrayList<Group>(groupsWithMissingHandins);
@@ -288,9 +314,40 @@ public class Action implements Comparable<Action>
         return ModalDialog.showConfirmation(owner, "Missing Handins", message, "Proceed", "Cancel");
     }
     
-    Set<File> getFilesAdded(Group group)
+    private void setupActionTempDir(Set<Group> groups) throws TaskException
     {
-        return _filesAdded.get(group); 
+        //Build a set with all of the groups and null, null is used when operating on no groups (ex. a demo task)
+        HashSet<Group> groupsAndNull = new HashSet<Group>();
+        groupsAndNull.addAll(groups);
+        groupsAndNull.add(null);
+        
+        //For each group create an empty temp directory
+        for(Group group : groupsAndNull)
+        {
+            File groupTempDir = Allocator.getPathServices().getActionTempDir(this, group);
+            try
+            {
+                if(groupTempDir.exists())
+                {
+                    Allocator.getFileSystemUtilities().deleteFiles(ImmutableSet.of(groupTempDir));
+                }
+                Allocator.getFileSystemServices().makeDirectory(groupTempDir);
+            }
+            catch(FileDeletingException e)
+            {
+                throw new TaskException("Unable to delete action temp dir\n" +
+                        "Action: " + this.getDebugName() + "\n" +
+                        "Group: " + group + "\n" +
+                        "Directory: " + groupTempDir, e);
+            }
+            catch(ServicesException e)
+            {
+                throw new TaskException("Unable to create action temp dir\n" +
+                        "Action: " + this.getDebugName() + "\n" +
+                        "Group: " + group + "\n" +
+                        "Directory: " + groupTempDir, e);
+            }
+        }
     }
     
     @Override
@@ -301,7 +358,7 @@ public class Action implements Comparable<Action>
     
     public boolean requiresDigitalHandin()
     {
-        return _task.requiresDigitalHandin();
+        return (_task != null) && _task.requiresDigitalHandin();
     }
     
     /**

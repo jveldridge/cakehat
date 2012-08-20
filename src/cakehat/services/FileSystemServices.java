@@ -1,9 +1,8 @@
 package cakehat.services;
 
 import java.io.File;
-import java.util.List;
+import java.util.Set;
 import support.utils.FileCopyingException;
-import support.utils.FileSystemUtilities;
 import support.utils.FileSystemUtilities.FileCopyPermissions;
 import support.utils.FileSystemUtilities.OverwriteMode;
 
@@ -35,12 +34,11 @@ public interface FileSystemServices
      * @return directories created
      * @throws ServicesException
      */
-    public List<File> makeDirectory(File dir) throws ServicesException;
+    public Set<File> makeDirectory(File dir) throws ServicesException;
 
     /**
-     * This method is identical to
-     * {@link FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.CopyFilePermissionMode)}
-     * with the TA group set as the {@code groupOwner}.
+     * This method is identical to {@copy FileSystemUtilities#copy(...)} with the TA group set as the
+     * {@code groupOwner}.
      *
      * @param src
      * @param dst
@@ -49,22 +47,21 @@ public interface FileSystemServices
      * @param copyPermissions
      * @return
      * @throws FileCopyingException
-     *
-     * @see FileSystemUtilities#copy(java.io.File, java.io.File, boolean, boolean, java.lang.String, utils.FileSystemUtilities.FileCopyPermissions) 
      */
-    public List<File> copy(File src, File dst, OverwriteMode overwrite,
-            boolean preserveDate, FileCopyPermissions copyPermissions) throws FileCopyingException;
+    public Set<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate,
+            FileCopyPermissions copyPermissions) throws FileCopyingException;
     
     /**
-     * Makes the user's workspace as specified by {@link PathServices#getUserWorkspace()}. If the workspace already
-     * exists, it will attempt to delete it, but if it does not succeed at this it will fail silently.
+     * Makes the user's temporary directory as specified by {@link PathServices#getTempDir()()}. If the directory
+     * already exists, an attempt will be made to delete it, but this may fail due to NFS issues. Failure to delete the
+     * directory is silent.
      * <br/><br/>
-     * An attempt will be made to remove the user's workspace upon JVM shutdown; however, this may fail silently if
-     * there are issues with NFS.
+     * An attempt will be made to remove the user's temporary directory upon JVM shutdown; however, this may fail
+     * silently if there are issues with NFS.
      *
      * @throws ServicesException if unable to create directory
      */
-    public void makeUserWorkspace() throws ServicesException;
+    public void makeTempDir() throws ServicesException;
     
     /**
      * Attempts to make a backup of the database. The backup will be created in the directory returned by

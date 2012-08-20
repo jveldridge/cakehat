@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import support.utils.posix.NativeFunctions;
 import support.utils.posix.FilePermission;
 import support.utils.posix.NativeException;
@@ -26,18 +26,23 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 {
     private static final NativeFunctions NATIVE_FUNCTIONS = new NativeFunctions();
     
-    private static final FilePermission[] READ_WRITE_PERMISSIONS = new FilePermission[]
-    {
+    private static final Set<FilePermission> READ_WRITE_PERMISSIONS = ImmutableSet.of(
         FilePermission.OWNER_READ, FilePermission.OWNER_WRITE,
-        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE
-    };
+        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE);
 
-    private static final FilePermission[] READ_WRITE_EXECUTE_PERMISSIONS = new FilePermission[]
-    {
+    private static final Set<FilePermission> READ_WRITE_EXECUTE_PERMISSIONS = ImmutableSet.of(
         FilePermission.OWNER_READ, FilePermission.OWNER_WRITE, FilePermission.OWNER_EXECUTE,
-        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE, FilePermission.GROUP_EXECUTE
-    };
-
+        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE, FilePermission.GROUP_EXECUTE);
+    
+    private static final Set<FilePermission> READ_WRITE_EXECUTE_SETGID_PERMISSIONS = ImmutableSet.of(
+        FilePermission.OWNER_READ, FilePermission.OWNER_WRITE, FilePermission.OWNER_EXECUTE,
+        FilePermission.GROUP_READ, FilePermission.GROUP_WRITE, FilePermission.GROUP_EXECUTE,
+        FilePermission.SET_GROUP_ID_UPON_EXECUTION);
+    
+    /******************************************************************************************************************\
+    |*                                                    Temp                                                         |  
+    \******************************************************************************************************************/
+    
     @Override
     public File createTempFile(String prefix, String suffix) throws IOException
     {
@@ -56,11 +61,15 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return tmpFile;
     }
     
+    /******************************************************************************************************************\
+    |*                                                    Copy                                                         |  
+    \******************************************************************************************************************/
+    
     @Override
-    public List<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate, String groupOwner,
+    public Set<File> copy(File src, File dst, OverwriteMode overwrite, boolean preserveDate, String groupOwner,
             FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        List<File> created;
+        Set<File> created;
 
         if(src.isFile())
         {
@@ -72,280 +81,10 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         }
         else
         {
-            throw new FileCopyingException(false, "Source is neither a file nor a directory: " + src.getAbsolutePath());
+            throw new FileCopyingException(src, dst, null, false, "Source is neither a file nor a directory.");
         }
 
         return created;
-    }
-
-    /**
-     * Recursively copies {@code srcDir} and all of its contents into {@code dstDir}. Directories will be merged such
-     * that if the destination directory or a directory in the destination directory needs to be created and already
-     * exist, it will not be deleted. If {@code overwrite} is {@code true} then files may be overwritten in the copying
-     * process.
-     *
-     * @param srcDir directory to copy
-     * @param dstDir
-     * @param overwrite
-     * @param preserveDate
-     * @param groupOwner
-     * @param copyPermissions
-     *
-     * @return all files and directories created in performing the copy
-     * @throws IOException
-     */
-    private ImmutableList<File> copyDirectory(File srcDir, File dstDir, OverwriteMode overwrite, boolean preserveDate,
-            String groupOwner, FileCopyPermissions copyPermissions) throws FileCopyingException
-    {
-        ImmutableList.Builder<File> created = ImmutableList.builder();
-
-        //Perform validation
-        
-        if(!srcDir.exists())
-        {
-            throw new FileCopyingException(false, "Source directory cannot be copied because it does not exist.\n" +
-                    "Source Directory: " + srcDir.getAbsolutePath());
-        }
-
-        if(!srcDir.isDirectory())
-        {
-            throw new FileCopyingException(false, "Source is not a directory, this method only copies directories.\n" +
-                    "Source directory: " + srcDir.getAbsolutePath());
-        }
-
-        // If the directory exists, that is ok, the contents of the source directory will be merged into the destination
-        // directory. However if the destination directory does not exist, create it and record all directories created
-        // in the process
-        if(!dstDir.exists())
-        {
-            //Create directory and parent directories (as needed)
-            List<File> dirsCreated;
-            try
-            {
-                dirsCreated = this.makeDirectory(dstDir, groupOwner);
-                created.addAll(dirsCreated);
-            }
-            catch(IOException e)
-            {
-                throw this.cleanupFailedCopy(created, "Unable to create directory or parent directory.", e, srcDir, dstDir);
-            }
-
-            if(preserveDate)
-            {
-                for(File dirCreated : dirsCreated)
-                {
-                    if(!dirCreated.setLastModified(srcDir.lastModified()))
-                    {
-                        throw this.cleanupFailedCopy(dirsCreated, "Unable to preserve modification date", null, srcDir, dstDir);
-                    }
-                }
-            }
-        }
-
-        //Copy files and directories inside of this directory
-        for(File entry : srcDir.listFiles())
-        {
-            //Build destination path
-            String relativePath = entry.getAbsolutePath().replace(srcDir.getAbsolutePath(), "");
-            File entryDst = new File(dstDir, relativePath);
-
-            if(entry.isFile())
-            {
-                try
-                {
-                    created.addAll(this.copyFile(entry, entryDst, overwrite, preserveDate, groupOwner, copyPermissions));
-                }
-                catch(FileCopyingException e)
-                {
-                    throw this.cleanupFailedCopy(created, "Unable to copy file contained in directory", e, srcDir, dstDir);
-                }
-            }
-            else if(entry.isDirectory())
-            {
-                try
-                {
-                    created.addAll(this.copyDirectory(entry, entryDst, overwrite, preserveDate, groupOwner, copyPermissions));
-                }
-                catch(IOException e)
-                {
-                    throw this.cleanupFailedCopy(created, "Unable to copy directory contained in directory", e, srcDir, dstDir);
-                }
-            }
-        }
-
-        return created.build();
-    }
-
-    /**
-     * Helper method used by copy methods to delete files if an issue has been encountered in copying. This should be
-     * used when a copy has failed and an exception must be thrown, but before doing so all of the files created
-     * so far in the copy should be deleted. The exception to be thrown will be generated and its contents will differ
-     * depending on the success of deleting the files.
-     *
-     * @param toDelete files that need to be deleted
-     * @param message explanation of what went wrong
-     * @param cause the reason that the copy is being aborted, may be {@code null}
-     * @param srcFile
-     * @param dstFile
-     *
-     * @returns FileCopyingException an exception built from the parameters passed and whether deleting the files
-     * succeeded
-     */
-    private FileCopyingException cleanupFailedCopy(List<File> toDelete, String message, Throwable cause, File srcFile,
-            File dstFile)
-    {
-        try
-        {
-            this.deleteFiles(toDelete);
-
-            return new FileCopyingException(false, message + " "  +
-                "The files and/or directories created in the copy have been deleted.\n" +
-                "Source File: " + srcFile + "\n" +
-                "Destination File: " + dstFile, cause);
-        }
-        catch(IOException e)
-        {
-            return new FileCopyingException(true, message + " " +
-                "Unable to delete partially copied files and/or directories.\n" +
-                "Source File: " + srcFile + "\n" +
-                "Destination File: " + dstFile, cause);
-        }
-    }
-    
-    private FileCopyingException cleanupFailedCopy(ImmutableList.Builder<File> toDelete, String message,
-            Throwable cause, File srcFile, File dstFile)
-    {
-        return cleanupFailedCopy(toDelete.build(), message, cause, srcFile, dstFile);
-    }
-
-    @Override
-    public void deleteFileOnExit(File file)
-    {
-        if(file.isDirectory())
-        {
-            file.deleteOnExit();
-
-            for(File entry : file.listFiles())
-            {
-                this.deleteFileOnExit(entry);
-            }
-        }
-        else
-        {
-            file.deleteOnExit();
-        }
-    }
-
-    @Override
-    public void deleteFiles(Iterable<File> files) throws IOException
-    {
-        List<File> failedToDelete = deleteFilesHelper(files);
-
-        if(!failedToDelete.isEmpty())
-        {
-            StringBuilder failedToDeleteBuilder = new StringBuilder();
-            for(File nonDeleted : failedToDelete)
-            {
-                failedToDeleteBuilder.append("\n");
-                failedToDeleteBuilder.append(nonDeleted.getAbsolutePath());
-            }
-
-            throw new IOException("Unable to delete:" + failedToDeleteBuilder.toString());
-        }
-    }
-
-    /**
-     * Helper method that attempts to delete all the {@code files}. The files which could not be deleted are returned.
-     *
-     * @param files
-     * @return files that could not be deleted
-     */
-    private List<File> deleteFilesHelper(Iterable<File> files)
-    {
-        ImmutableList.Builder<File> failedToDelete = ImmutableList.builder();
-
-        for(File file : files)
-        {
-            if(!file.exists())
-            {
-                failedToDelete.add(file);
-            }
-            else if(file.isFile())
-            {
-                if(!file.delete())
-                {
-                    failedToDelete.add(file);
-                }
-            }
-            else if(file.isDirectory())
-            {
-                //To delete a directory succesfully, all of contents must first be deleted
-                File[] entries = file.listFiles();
-
-                //This can occur if the permission to see the directory's entries was not given
-                if(entries == null)
-                {
-                    failedToDelete.add(file);
-                }
-                else
-                {
-                    //Recursively delete contents
-                    List<File> nonDeletedEntries = this.deleteFilesHelper(Arrays.asList(entries));
-
-                    //Delete directory if all contents were deleted
-                    if(nonDeletedEntries.isEmpty())
-                    {
-                        if(!file.delete())
-                        {
-                            failedToDelete.add(file);
-                        }
-                    }
-                    //Not all contents were deleted, so it will not be possible to delete this directory
-                    else
-                    {
-                        failedToDelete.addAll(nonDeletedEntries);
-                        failedToDelete.add(file);
-                    }
-                }
-            }
-            else
-            {
-                failedToDelete.add(file);
-            }
-        }
-
-        return failedToDelete.build();
-    }
-
-    @Override
-    public List<File> makeDirectory(File dir, String groupOwner) throws IOException
-    {
-        ImmutableList.Builder<File> dirsCreated = ImmutableList.builder();
-
-        if(dir != null && !dir.exists())
-        {
-            dirsCreated.addAll(this.makeDirectory(dir.getParentFile(), groupOwner));
-
-            if(!dir.mkdir())
-            {
-                throw new IOException("Unable to create directory: " + dir.getAbsolutePath());
-            }
-
-            try
-            {
-                this.chmod(dir, false, READ_WRITE_EXECUTE_PERMISSIONS);
-                this.changeGroup(dir, groupOwner, false);
-            }
-            catch(NativeException e)
-            {
-                throw new IOException("Unable to set correct permissions and ownership for directory: " +
-                        dir.getAbsolutePath(), e);
-            }
-
-            dirsCreated.add(dir);
-        }
-
-        return dirsCreated.build();
     }
 
     /**
@@ -363,38 +102,37 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
      *
      * @return
      */
-    private ImmutableList<File> copyFile(File srcFile, File dstFile, OverwriteMode overwrite, boolean preserveDate,
+    private Set<File> copyFile(File srcFile, File dstFile, OverwriteMode overwrite, boolean preserveDate,
             String groupOwner, FileCopyPermissions copyPermissions) throws FileCopyingException
     {
-        ImmutableList.Builder<File> created = ImmutableList.builder();
-
         //Perform validation
-        
         if(!srcFile.exists())
         {
-            throw new FileCopyingException(false, "Source file cannot be copied because it does not exist.\n" +
-                    "Source File: " + srcFile.getAbsolutePath());
+            throw new FileCopyingException(srcFile, dstFile, null, false, 
+                    "Source file cannot be copied because it does not exist.");
         }
-
         if(!srcFile.isFile())
         {
-            throw new FileCopyingException(false, "Source is not a file, this method only copies files.\n" +
-                    "Source file: " + srcFile.getAbsolutePath());
+            throw new FileCopyingException(srcFile, dstFile, null, false, 
+                    "Source is not a file, this method only copies files.");
         }
 
+        ImmutableSet.Builder<File> created = ImmutableSet.builder();
         if(dstFile.exists())
         {
             if(overwrite == OverwriteMode.REPLACE_EXISTING)
             {
                 if(!dstFile.delete())
                 {
-                    throw new FileCopyingException(false, "Cannot overwrite destination file; unable to delete it.\n" +
-                            "Destination file: " + dstFile.getAbsolutePath());
+                    throw new FileCopyingException(srcFile, dstFile, null, false, 
+                            "Cannot overwrite destination file; unable to delete it.");
                 }
             }
             else if(overwrite == OverwriteMode.FAIL_ON_EXISTING)
-            {
-                throw new FileExistsException(false, srcFile, dstFile);
+            {   
+                throw new FileCopyingException(srcFile, dstFile, null, true, 
+                        "Cannot copy source file to destination file location because destination file exists and " +
+                        "fail on existing overwrite mode was set.");
             }
             else if(overwrite == OverwriteMode.KEEP_EXISTING)
             {
@@ -402,8 +140,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             }
             else
             {
-                throw new FileCopyingException(false, "Invalid " + OverwriteMode.class.getCanonicalName() + ": " +
-                        overwrite + ".");
+                throw new FileCopyingException(srcFile, dstFile, null, false,
+                        "Invalid " + OverwriteMode.class.getCanonicalName() + ": " + overwrite + ".");
             }
         }
 
@@ -414,10 +152,10 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
             {
                 created.addAll(makeDirectory(dstFile.getParentFile(), groupOwner));
             }
-            catch(IOException e)
-            {
-                throw new FileCopyingException(false, "Unable to create the necessary directories in order to " +
-                        "perform the copy.", e);
+            catch(DirectoryCreationException e)
+            {   
+                throw new FileCopyingException(srcFile, dstFile, e.getRemainingDirectories(), false, 
+                        "Unable to create the necessary directories in order to perform the copy.", e);
             }
         }
 
@@ -448,7 +186,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
                 created.add(dstFile);
             }
 
-            this.cleanupFailedCopy(created, "Error occurred during copying the file.", e, srcFile, dstFile);
+            throw this.cleanupFailedCopy(srcFile, dstFile, created.build(), false,
+                    "Error occurred during copying the file.", e);
         }
         finally
         {
@@ -482,7 +221,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         //If failed to copy the entire file
         if(srcFile.length() != dstFile.length())
         {
-            throw this.cleanupFailedCopy(created, "Unable to copy the full content of the file.", null, srcFile, dstFile);
+            throw this.cleanupFailedCopy(srcFile, dstFile, created.build(), false,
+                    "Unable to copy the full content of the file.", null);
         }
 
         //If requested, set the destination's modified date to that of the source
@@ -490,7 +230,8 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         {
             if(!dstFile.setLastModified(srcFile.lastModified()))
             {
-                throw this.cleanupFailedCopy(created, "Unable to preserve the modification date.", null, srcFile, dstFile);
+                throw this.cleanupFailedCopy(srcFile, dstFile, created.build(), false,
+                        "Unable to preserve the modification date.", null);
             }
         }
 
@@ -499,13 +240,13 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         {
             this.changeGroup(dstFile, groupOwner, false);
         }
-        catch(NativeException e)
+        catch(IOException e)
         {
-            throw this.cleanupFailedCopy(created, "Unable to set the group owner.", e, srcFile, dstFile);
+            throw this.cleanupFailedCopy(srcFile, dstFile, created.build(), false, "Unable to set the group owner.", e);
         }
 
         //Set the specified permissions
-        FilePermission[] permissions;
+        Set<FilePermission> permissions;
         if(copyPermissions == FileCopyPermissions.READ_WRITE ||
             (copyPermissions == FileCopyPermissions.READ_WRITE_PRESERVE_EXECUTE && !srcFile.canExecute()))
         {
@@ -520,18 +261,18 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         //then this block could be reached
         else
         {
-            throw this.cleanupFailedCopy(created, "Invalid " + FileCopyPermissions.class.getCanonicalName() + ": " +
-                    copyPermissions + ".", null, srcFile, dstFile);
+            throw this.cleanupFailedCopy(srcFile, dstFile, created.build(), false,
+                    "Invalid " + FileCopyPermissions.class.getCanonicalName() + ": " + copyPermissions + ".", null);
         }
 
         try
         {
             this.chmod(dstFile, false, permissions);
         }
-        catch(NativeException e)
+        catch(IOException e)
         {
-            throw this.cleanupFailedCopy(created, "Unable to set permissions: " + Arrays.toString(permissions) + ".",
-                    e, srcFile, dstFile);
+            throw this.cleanupFailedCopy(srcFile, dstFile, created.build(), false,
+                    "Unable to set permissions: " + permissions + ".", e);
         }
 
         created.add(dstFile);
@@ -539,6 +280,414 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
         return created.build();
     }
 
+    /**
+     * Recursively copies {@code srcDir} and all of its contents into {@code dstDir}. Directories will be merged such
+     * that if the destination directory or a directory in the destination directory needs to be created and already
+     * exist, it will not be deleted. If {@code overwrite} is {@code true} then files may be overwritten in the copying
+     * process.
+     *
+     * @param srcDir directory to copy
+     * @param dstDir
+     * @param overwrite
+     * @param preserveDate
+     * @param groupOwner
+     * @param copyPermissions
+     *
+     * @return all files and directories created in performing the copy
+     * @throws IOException
+     */
+    private Set<File> copyDirectory(File srcDir, File dstDir, OverwriteMode overwrite, boolean preserveDate,
+            String groupOwner, FileCopyPermissions copyPermissions) throws FileCopyingException
+    {
+        //Perform validation
+        if(!srcDir.exists())
+        {
+            throw new FileCopyingException(srcDir, dstDir, null, false,
+                    "Source directory cannot be copied because it does not exist.");
+        }
+        if(!srcDir.isDirectory())
+        {
+            throw new FileCopyingException(srcDir, dstDir, null, false, 
+                    "Source is not a directory, this method only copies directories.");
+        }
+
+        ImmutableSet.Builder<File> created = ImmutableSet.builder();
+        //If the directory exists, that is ok, the contents of the source directory will be merged into the destination
+        //directory. However if the destination directory does not exist, create it and record all directories created
+        //in the process.
+        if(!dstDir.exists())
+        {
+            //Create directory and parent directories (as needed)
+            Set<File> dirsCreated;
+            try
+            {
+                dirsCreated = this.makeDirectory(dstDir, groupOwner);
+                created.addAll(dirsCreated);
+            }
+            catch(DirectoryCreationException e)
+            {
+                created.addAll(e.getRemainingDirectories());
+                throw this.cleanupFailedCopy(srcDir, dstDir, created.build(), false,
+                        "Unable to create directory or parent directory.", e);
+            }
+
+            if(preserveDate)
+            {
+                for(File dirCreated : dirsCreated)
+                {
+                    if(!dirCreated.setLastModified(srcDir.lastModified()))
+                    {
+                        throw this.cleanupFailedCopy(srcDir, dstDir, dirsCreated, false,
+                                "Unable to preserve modification date.", null);
+                    }
+                }
+            }
+        }
+
+        //Copy files and directories inside of this directory
+        for(File entry : srcDir.listFiles())
+        {
+            //Build destination path
+            String relativePath = entry.getAbsolutePath().replace(srcDir.getAbsolutePath(), "");
+            File entryDst = new File(dstDir, relativePath);
+
+            if(entry.isFile())
+            {
+                try
+                {
+                    created.addAll(this.copyFile(entry, entryDst, overwrite, preserveDate, groupOwner,
+                            copyPermissions));
+                }
+                catch(FileCopyingException e)
+                {
+                    throw this.cleanupFailedCopy(srcDir, dstDir, created.build(), e.isFailureDueToExistingFile(),
+                            "Unable to copy file contained in directory", e);
+                }
+            }
+            else if(entry.isDirectory())
+            {
+                try
+                {
+                    created.addAll(this.copyDirectory(entry, entryDst, overwrite, preserveDate, groupOwner,
+                            copyPermissions));
+                }
+                catch(FileCopyingException e)
+                {
+                    throw this.cleanupFailedCopy(srcDir, dstDir, created.build(), e.isFailureDueToExistingFile(),
+                            "Unable to copy directory contained in directory", e);
+                }
+            }
+        }
+
+        return created.build();
+    }
+
+    /**
+     * Helper method used by copy methods to delete files if an issue has been encountered in copying. This should be
+     * used when a copy has failed and an exception must be thrown, but before doing so all of the files created
+     * so far in the copy should be deleted. The exception to be thrown will be generated and its contents will differ
+     * depending on the success of deleting the files.
+     *
+     * @param src
+     * @param dst
+     * @param toDelete files that need to be deleted
+     * @param failedDueToExistingFile 
+     * @param message explanation of what went wrong
+     * @param cause the reason that the copy is being aborted, may be {@code null}
+     *
+     * @returns FileCopyingException an exception built from the parameters passed and whether deleting the files
+     * succeeded
+     */
+    private FileCopyingException cleanupFailedCopy(File src, File dst, Set<File> toDelete,
+            boolean failedDueToExistingFile, String message, Throwable cause)
+    {   
+        try
+        {
+            this.deleteFiles(toDelete);
+            return new FileCopyingException(src, dst, null, failedDueToExistingFile, message, cause);
+        }
+        catch(FileDeletingException e)
+        {
+            return new FileCopyingException(src, dst, e.getFilesNotDeleted(), failedDueToExistingFile, message, cause);
+        }
+    }
+    
+    /******************************************************************************************************************\
+    |*                                                   Delete                                                        |  
+    \******************************************************************************************************************/
+    
+    @Override
+    public void deleteFiles(Iterable<File> files) throws FileDeletingException
+    {
+        Set<File> failedToDelete = deleteFilesHelper(files);
+        
+        if(!failedToDelete.isEmpty())
+        {
+            throw new FileDeletingException(failedToDelete);
+        }
+    }
+
+    /**
+     * Helper method that attempts to delete all the {@code files}. The files which could not be deleted are returned.
+     *
+     * @param files
+     * @return files that could not be deleted
+     */
+    private static Set<File> deleteFilesHelper(Iterable<File> files)
+    {
+        ImmutableSet.Builder<File> failedToDelete = ImmutableSet.builder();
+        for(File file : files)
+        {
+            if(!file.exists())
+            {
+                failedToDelete.add(file);
+            }
+            else if(file.isFile())
+            {
+                if(!file.delete())
+                {
+                    failedToDelete.add(file);
+                }
+            }
+            else if(file.isDirectory())
+            {
+                //To delete a directory succesfully, all of contents must first be deleted
+                File[] entries = file.listFiles();
+
+                //This can occur if the permission to see the directory's entries was not given
+                if(entries == null)
+                {
+                    failedToDelete.add(file);
+                }
+                else
+                {
+                    //Recursively delete contents
+                    Set<File> nonDeletedEntries = deleteFilesHelper(Arrays.asList(entries));
+
+                    //Delete directory if all contents were deleted
+                    if(nonDeletedEntries.isEmpty())
+                    {
+                        if(!file.delete())
+                        {
+                            failedToDelete.add(file);
+                        }
+                    }
+                    //Not all contents were deleted, so it will not be possible to delete this directory
+                    else
+                    {
+                        failedToDelete.addAll(nonDeletedEntries);
+                        failedToDelete.add(file);
+                    }
+                }
+            }
+            else
+            {
+                failedToDelete.add(file);
+            }
+        }
+
+        return failedToDelete.build();
+    }
+    
+    @Override
+    public void deleteFilesOnExit(Iterable<File> files)
+    {
+        DeleteFilesOnExitThread.INSTANCE.registerFilesToDeleteOnExit(files);
+    }
+    
+    private static class DeleteFilesOnExitThread extends Thread
+    {
+        public static final DeleteFilesOnExitThread INSTANCE = new DeleteFilesOnExitThread();
+        static
+        {
+            Runtime.getRuntime().addShutdownHook(INSTANCE);
+        }
+        
+        //A concurrent hash set backed by a concurrent hash map (there is no built-in concurrent hash set)
+        private final Set<File> _filesToDelete = Collections.newSetFromMap(new ConcurrentHashMap<File, Boolean>());
+        
+        @Override
+        public void run()
+        {
+            //Intentionally call the helper which fails by returning the set of files instead of throwing an exception
+            //because during JVM termination there's no chance to recover or report
+            deleteFilesHelper(_filesToDelete);
+        }
+        
+        public void registerFilesToDeleteOnExit(Iterable<File> files)
+        {
+            for(File file : files)
+            {
+                _filesToDelete.add(file);
+            }
+        }
+    }
+            
+    /******************************************************************************************************************\
+    |*                                               Permissions                                                       |  
+    \******************************************************************************************************************/
+
+    @Override
+    public void chmodDefault(File file, boolean recursive) throws IOException
+    {
+        if(file.isDirectory())
+        {
+            this.chmod(file, false, READ_WRITE_EXECUTE_SETGID_PERMISSIONS);
+            
+            if(recursive)
+            {
+                for(File entry : this.listFiles(file))
+                {
+                    this.chmodDefault(entry, recursive);
+                }
+            }
+        }
+        else
+        {
+            this.chmod(file, false, READ_WRITE_PERMISSIONS);
+        }
+    }
+    
+    /**
+     * Changes the permissions of a file. The user <strong>must</strong> be the owner of the file or else an
+     * {@link IOException} will be thrown.
+     *
+     * @param file
+     * @param recursive
+     * @param permissions the permission mode, a set of {@link FilePermission}
+     * @throws IOException
+     */
+    @Override
+    public void chmod(File file, boolean recursive, Set<FilePermission> permissions) throws IOException
+    {
+        int permissionsValue = 0;
+        for(FilePermission permission : permissions)
+        {
+            permissionsValue += permission.getValue();
+        }
+        
+        try
+        {
+            NATIVE_FUNCTIONS.chmod(file, permissionsValue);
+        }
+        catch(NativeException ex)
+        {
+            throw new IOException("Unable to change permissions of file\n" +
+                    "File: " + file.getAbsolutePath() + "\n" +
+                    "Permissions: " + permissions, ex);
+        }
+
+        if(recursive && file.isDirectory())
+        {
+            for(File entry : this.listFiles(file))
+            {
+                this.chmod(entry, recursive, permissions);
+            }
+        }
+    }
+    
+    @Override
+    public void changeGroup(File file, String group, boolean recursive) throws IOException
+    {
+        try
+        {
+            NATIVE_FUNCTIONS.changeGroup(file, group);
+        }
+        catch(NativeException ex)
+        {
+            throw new IOException("Unable to change group owner of file\n" +
+                    "File: " + file.getAbsolutePath() + "\n" +
+                    "Group Owner: "  + group, ex);
+        }
+
+        if(file.isDirectory() && recursive)
+        {
+            for(File entry : this.listFiles(file))
+            {
+                this.changeGroup(entry, group, recursive);
+            }
+        }
+    }
+            
+    /******************************************************************************************************************\
+    |*                                                Filtering                                                        |  
+    \******************************************************************************************************************/
+
+    @Override
+    public Set<File> getFiles(File file, FileFilter filter) throws IOException
+    {
+        ImmutableSet.Builder<File> acceptedFiles = ImmutableSet.builder();
+
+        if(filter.accept(file))
+        {
+            acceptedFiles.add(file);
+        }
+
+        if(file.isDirectory())
+        {
+            for(File entry : this.listFiles(file))
+            {
+                acceptedFiles.addAll(this.getFiles(entry, filter));
+            }
+        }
+
+        return acceptedFiles.build();
+    }
+
+    @Override
+    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException
+    {
+        List<File> files = new ArrayList<File>(this.getFiles(file, filter));
+        Collections.sort(files, comparator);
+
+        return ImmutableList.copyOf(files);
+    }
+            
+    /******************************************************************************************************************\
+    |*                                                   Misc                                                          |  
+    \******************************************************************************************************************/
+    
+    @Override
+    public Set<File> makeDirectory(File dir, String groupOwner) throws DirectoryCreationException
+    {
+        ImmutableSet.Builder<File> dirsCreated = ImmutableSet.builder();
+
+        if(dir != null && !dir.exists())
+        {
+            dirsCreated.addAll(this.makeDirectory(dir.getParentFile(), groupOwner));
+
+            try
+            {
+                if(!dir.mkdir())
+                {
+                    //Throw an exception so that the cleanup login in the catch clause is run
+                    throw new IOException("Unable to create directory: " + dir.getAbsolutePath());
+                }
+            
+                dirsCreated.add(dir);
+
+                this.chmod(dir, false, READ_WRITE_EXECUTE_SETGID_PERMISSIONS);
+                this.changeGroup(dir, groupOwner, false);
+            }
+            catch(IOException cause)
+            {
+                try
+                {
+                    //Attempt cleanup
+                    this.deleteFiles(dirsCreated.build());
+                    
+                    throw new DirectoryCreationException(dir, ImmutableSet.<File>of(), cause);
+                }
+                catch(FileDeletingException e)
+                {
+                    throw new DirectoryCreationException(dir, e.getFilesNotDeleted(), cause);
+                }
+            }
+        }
+
+        return dirsCreated.build();
+    }
+    
     @Override
     public String readFile(File file) throws FileNotFoundException, IOException
     {
@@ -560,112 +709,28 @@ public class FileSystemUtilitiesImpl implements FileSystemUtilities
 
         return text.toString();
     }
-
-    @Override
-    public void chmod(File file, boolean recursive, FilePermission... mode) throws NativeException
-    {
-        int modeValue = 0;
-        for(FilePermission permission : mode)
-        {
-            modeValue += permission.getValue();
-        }
-
-        this.chmod(file, recursive, modeValue);
-    }
-
-    @Override
-    public void chmodDefault(File file, boolean recursive) throws NativeException
-    {
-        if(file.isDirectory())
-        {
-            this.chmod(file, false, READ_WRITE_EXECUTE_PERMISSIONS);
-
-            if(recursive)
-            {
-                for(File entry : file.listFiles())
-                {
-                    this.chmodDefault(entry, recursive);
-                }
-            }
-        }
-        else
-        {
-            this.chmod(file, false, READ_WRITE_PERMISSIONS);
-        }
-    }
-
+    
+    /******************************************************************************************************************\
+    |*                                             Shared Helpers                                                      |  
+    \******************************************************************************************************************/
+    
     /**
-     * Changes the permissions of a file. The user <strong>must</strong> be the owner of the file or else a
-     * {@link NativeException} will be thrown.
-     *
+     * Calls {@link File#listFiles()} on {@code file} and throws an exception if {@code null} is returned.
+     * 
      * @param file
-     * @param recursive
-     * @param mode the permission mode, an octal value
-     * @throws NativeException
+     * @return
+     * @throws IOException 
      */
-    private void chmod(File file, boolean recursive, int mode) throws NativeException
+    private File[] listFiles(File file) throws IOException
     {
-        NATIVE_FUNCTIONS.chmod(file, mode);
-
-        if(recursive && file.isDirectory())
+        File[] entries = file.listFiles();
+        if(entries == null)
         {
-            for(File subfile : file.listFiles())
-            {
-                this.chmod(subfile, recursive, mode);
-            }
+            throw new IOException("Unable to retrieve contents of directory. This is likely due to a permissions " +
+                    "issue or an IO error\n" +
+                    "Directory: " + file.getAbsolutePath());
         }
-    }
-
-    @Override
-    public void changeGroup(File file, String group, boolean recursive) throws NativeException
-    {
-        NATIVE_FUNCTIONS.changeGroup(file, group);
-
-        if(file.isDirectory() && recursive)
-        {
-            for(File entry : file.listFiles())
-            {
-                this.changeGroup(entry, group, recursive);
-            }
-        }
-    }
-
-    @Override
-    public Set<File> getFiles(File file, FileFilter filter) throws IOException
-    {
-        ImmutableSet.Builder<File> acceptedFiles = ImmutableSet.builder();
-
-        if(filter.accept(file))
-        {
-            acceptedFiles.add(file);
-        }
-
-        if(file.isDirectory())
-        {
-            File[] entries = file.listFiles();
-
-            if(entries == null)
-            {
-                throw new IOException("Unable to retrieve contents of directory: " + file.getAbsoluteFile() + ".\n" +
-                        "This is likely due to a permissions issue or an IO error.");
-            }
-
-            for(File entry : entries)
-            {
-                acceptedFiles.addAll(this.getFiles(entry, filter));
-            }
-        }
-
-        return acceptedFiles.build();
-    }
-
-    @Override
-    public List<File> getFiles(File file, FileFilter filter, Comparator<File> comparator) throws IOException
-    {
-        List<File> files = new ArrayList<File>(this.getFiles(file, filter));
-        Collections.sort(files, comparator);
-        files = ImmutableList.copyOf(files);
-
-        return files;
+        
+        return entries;
     }
 }

@@ -1,7 +1,6 @@
 package cakehat.logging;
 
 import cakehat.Allocator;
-import cakehat.CakehatMain;
 import cakehat.CakehatReleaseInfo;
 import cakehat.CakehatSession;
 import com.google.common.collect.ImmutableSet;

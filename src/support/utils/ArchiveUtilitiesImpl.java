@@ -1,23 +1,31 @@
 package support.utils;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import support.utils.posix.FilePermission;
 
 public class ArchiveUtilitiesImpl implements ArchiveUtilities
 {
+    private final FileSystemUtilities _fileSystemUtils;
+    
+    public ArchiveUtilitiesImpl(FileSystemUtilities fileSystemUtilities)
+    {
+        _fileSystemUtils = fileSystemUtilities;
+    }
+    
     @Override
     public FileFilter getSupportedFormatsFilter()
     {
@@ -25,83 +33,48 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
     }
 
     /**
-     * Gets the appropriate stream depending the file extension of {@code archivePath}.
+     * Gets the appropriate stream depending the file extension of {@code archive}.
      * <br><br>
      * Supported extensions: zip, tar, tgz, tar.gz. Unsupported extensions will result in an exception being throw.
      *
-     * @param archivePath
+     * @param archive
      * @return
      */
-    private ArchiveInputStream getArchiveInputStream(File archive) throws ArchiveException
+    private ArchiveInputStream getArchiveInputStream(File archive) throws IOException
     {
-        //Determine appropriate input stream and compression format
-        InputStream is;
-        String format;
-
+        ArchiveInputStream archiveStream;
+        
         String lowerCaseSrcFile = archive.getAbsolutePath().toLowerCase();
-
         if(lowerCaseSrcFile.endsWith(".zip"))
         {
-            try
-            {
-                is = new FileInputStream(archive);
-                format = "zip";
-            }
-            catch(IOException e)
-            {
-                throw new ArchiveException("Unable to create input stream for: " + archive.getAbsolutePath(), e);
-            }
+            archiveStream = new ZipArchiveInputStream(new FileInputStream(archive));
         }
         else if(lowerCaseSrcFile.endsWith(".tar"))
         {
-            try
-            {
-                is = new FileInputStream(archive);
-                format = "tar";
-            }
-            catch(IOException e)
-            {
-                throw new ArchiveException("Unable to create input stream for: " + archive.getAbsolutePath(), e);
-            }
+            archiveStream = new TarArchiveInputStream(new FileInputStream(archive));
         }
         else if(lowerCaseSrcFile.endsWith(".tgz") || lowerCaseSrcFile.endsWith(".tar.gz"))
         {
-            try
-            {
-                is = new GZIPInputStream(new FileInputStream(archive));
-                format = "tar";
-            }
-            catch(IOException e)
-            {
-                throw new ArchiveException("Unable to create input stream for: " + archive.getAbsolutePath(), e);
-            }
+            archiveStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(archive)));
         }
         else
         {
-            throw new ArchiveException("Unsupported file extension. Supported extensions are: zip, tar, tgz, & tar.gz");
+            throw new IOException("Unsupported file extension. Supported extensions are: zip, tar, tgz, & tar.gz");
         }
 
-        return new ArchiveStreamFactory().createArchiveInputStream(format, is);
+        return archiveStream;
     }
 
     @Override
-    public Collection<ArchiveEntry> getArchiveContents(File archive) throws ArchiveException
+    public Set<ArchiveEntry> getArchiveContents(File archive) throws IOException
     {
-        ArrayList<ArchiveEntry> contents = new ArrayList<ArchiveEntry>();
+        ImmutableSet.Builder<ArchiveEntry> contents = ImmutableSet.builder();
 
         ArchiveInputStream in = getArchiveInputStream(archive);
         while(true)
         {
-            ArchiveEntry entry;
-            try
-            {
-                entry = in.getNextEntry();
-            }
-            catch(IOException e)
-            {
-                throw new ArchiveException("Unable to retrieve next archive entry for: " + archive.getAbsolutePath(), e);
-            }
-
+            ArchiveEntry entry = in.getNextEntry();
+            
             if(entry == null)
             {
                 break;
@@ -109,83 +82,89 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
 
             contents.add(entry);
         }
-        try
-        {
-            in.close();
-        }
-        catch(IOException e)
-        {
-            throw new ArchiveException("Unable to close input stream for archive: " + archive.getAbsolutePath(), e);
-        }
+        in.close();
 
-        return contents;
+        return contents.build();
     }
 
     @Override
-    public void extractArchive(File archive, File dstDir, FileFilter filter) throws ArchiveException
+    public Set<File> extractArchive(File archive, File dstDir, FileFilter filter, String groupOwner)
+            throws ArchiveExtractionException
     {
-        ArchiveInputStream in = getArchiveInputStream(archive);
-        while(true)
-        {
-            ArchiveEntry entry;
-            try
-            {
-                entry = in.getNextEntry();
-            }
-            catch(IOException e)
-            {
-                throw new ArchiveException("Unable to retrieve next archive entry for: " + archive.getAbsolutePath(), e);
-            }
-
-            if(entry == null)
-            {
-                break;
-            }
-
-            File file = new File(dstDir, entry.getName());
-            if(filter.accept(file))
-            {
-                if(entry.isDirectory())
-                {
-                    if(!file.mkdirs())
-                    {
-                        throw new ArchiveException("Unable to make directory: " + file.getAbsolutePath());
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        File parentDir = file.getParentFile();
-                        if(!parentDir.exists())
-                        {
-                            if(!parentDir.mkdirs())
-                            {
-                                throw new ArchiveException("Unable to make directory: " + parentDir.getAbsolutePath() +
-                                        "\nFor file: " + file.getAbsolutePath());
-                            }
-                        }
-
-                        OutputStream out = new FileOutputStream(file);
-                        IOUtils.copy(in, out);
-                        out.close();
-                    }
-                    catch(IOException e)
-                    {
-                        throw new ArchiveException("Unable to unarchive file to: " + file.getAbsolutePath() + "\n" +
-                                "For archive: " + archive.getAbsolutePath(), e);
-                    }
-                }
-            }
-        }
-
+        ImmutableSet.Builder<File> filesCreated = ImmutableSet.builder();
+        
         try
         {
+            ArchiveInputStream in = getArchiveInputStream(archive);
+            while(true)
+            {
+                ArchiveEntry entry = in.getNextEntry();
+
+                if(entry == null)
+                {
+                    break;
+                }
+
+                File file = new File(dstDir, entry.getName());
+                if(filter.accept(file))
+                {
+                    if(entry.isDirectory())
+                    {
+                        //Create directory (and parent directories) as necessary
+                        filesCreated.addAll(_fileSystemUtils.makeDirectory(file, groupOwner));
+                    }
+                    else
+                    {
+                        //Create parent directories of file if necessary
+                        filesCreated.addAll(_fileSystemUtils.makeDirectory(file.getParentFile(), groupOwner));
+
+                        //Create file
+                        OutputStream out = new FileOutputStream(file);
+                        IOUtils.copy(in, out);
+                        filesCreated.add(file);
+                        out.close();
+                        
+                        //Set permissions
+                        _fileSystemUtils.changeGroup(file, groupOwner, false);
+                        Set<FilePermission> permissions = new HashSet<FilePermission>();
+                        permissions.add(FilePermission.OWNER_READ);
+                        permissions.add(FilePermission.OWNER_WRITE);
+                        permissions.add(FilePermission.GROUP_READ);
+                        permissions.add(FilePermission.GROUP_WRITE);
+                        if(file.canExecute())
+                        {
+                            permissions.add(FilePermission.OWNER_EXECUTE);
+                            permissions.add(FilePermission.GROUP_EXECUTE);
+                        }
+                        _fileSystemUtils.chmod(file, false, permissions);
+                    }
+                }
+            }
             in.close();
         }
         catch(IOException e)
         {
-            throw new ArchiveException("Unable to close input stream for archive: " + archive.getAbsolutePath(), e);
+            try
+            {
+                _fileSystemUtils.deleteFiles(filesCreated.build());
+                
+                throw new ArchiveExtractionException(false, ImmutableSet.<File>of(),
+                        "Unable to extract archive. The files and/or directories created in the extraction have " +
+                        "been deleted.\n" +
+                        "Archive: " + archive.getAbsolutePath() + "\n" +
+                        "Destination Directory: " + dstDir.getAbsolutePath() + "\n" +
+                        "Group Owner: " + groupOwner, e);
+            }
+            catch(FileDeletingException ex)
+            {
+                throw new ArchiveExtractionException(false, ex.getFilesNotDeleted(),
+                    "Unable to extract archive. Unable to delete partially extracted files and/or directories.\n" +
+                    "Archive: " + archive.getAbsolutePath() + "\n" +
+                    "Destination Directory: " + dstDir.getAbsolutePath() + "\n" +
+                    "Group Owner: " + groupOwner, e);
+            }
         }
+        
+        return filesCreated.build();
     }
 }

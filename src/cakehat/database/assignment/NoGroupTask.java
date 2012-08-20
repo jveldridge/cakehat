@@ -17,17 +17,17 @@ abstract class NoGroupTask extends Task
     }
     
     @Override
-    public TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part,
-        Set<Group> groups) throws TaskException
+    public void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
+            throws TaskException, TaskConfigurationIssue
     {
-        return this.performTask(properties, context, part);
+        this.performTask(properties, context, action);
     }
     
-    abstract TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part)
-        throws TaskException;
+    abstract void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action)
+        throws TaskException, TaskConfigurationIssue;
 
     @Override
-    public boolean isTaskSupported(Part part, Set<Group> groups)
+    public boolean isTaskSupported(Action action, Set<Group> groups)
     {
         return true;
     }

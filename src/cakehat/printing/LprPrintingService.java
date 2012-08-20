@@ -27,8 +27,8 @@ public class LprPrintingService extends PrintingService
 	}
 
 	//Execute command
-        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
-        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, workspace);
+        File tempDir = Allocator.getPathServices().getTempDir();
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(cmd, tempDir);
 
         //If in developer mode, print out the command so it can be verified as the developer will quite possibly not be
         //on a department machine where printing could actually occur

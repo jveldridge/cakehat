@@ -82,15 +82,15 @@ public class CakehatMain
                         }
                     }
                     
-                    if(runMode.requiresWorkspaceDir())
+                    if(runMode.requiresTempDir())
                     {
                         try
                         {
-                            Allocator.getFileSystemServices().makeUserWorkspace();
+                            Allocator.getFileSystemServices().makeTempDir();
                         }
                         catch(ServicesException e)
                         {
-                            throw new CakehatException("Unable to create user workspace directory", e);
+                            throw new CakehatException("Unable to create user temporary directory", e);
                         }
                     }
                     

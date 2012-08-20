@@ -49,8 +49,7 @@ class ApplicationTasks implements TaskProvider
         private final TaskProperty APPLICATION_PROPERTY =
             new TaskProperty("application",
             "The name of the PDF application to be used. If this property is not set then " + DEFAULT + " will be " +
-            "used. Valid values for this property are: " + SUPPORTED,
-            false);
+            "used. Valid values for this property are: " + SUPPORTED, false);
 
         private PDFViewer()
         {
@@ -84,8 +83,8 @@ class ApplicationTasks implements TaskProvider
         }
 
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
-            throws TaskException
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
+                throws TaskException
         {
             String application = DEFAULT;
 
@@ -97,15 +96,14 @@ class ApplicationTasks implements TaskProvider
                 if(!SUPPORTED.contains(application))
                 {
                     ModalDialog.showMessage(context.getGraphicalOwner(), "Invalid PDF application",
-                            "The PDF application specified in the configuration file is not supported: " +
-                            application + ".\n\n" +
+                            "The PDF application specified in the configuration is not supported: " + application +
+                            ". " + DEFAULT + " will be used instead.\n\n" +
                             "Supported applications: " + SUPPORTED);
-
-                    return TaskResult.NO_CHANGES;
+                    application = DEFAULT;
                 }
             }
 
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
+            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
             FileFilter pdfFilter = new FileExtensionFilter("pdf");
 
             List<File> pdfFiles;
@@ -121,47 +119,44 @@ class ApplicationTasks implements TaskProvider
 
             if(pdfFiles.isEmpty())
             {
-                ModalDialog.showMessage(context.getGraphicalOwner(), "No PDF files",
-                        "There are no PDF files to open.");
-
-                return TaskResult.NO_CHANGES;
+                ModalDialog.showMessage(context.getGraphicalOwner(), "No PDF files", "There are no PDF files to open.");
             }
-
-            //Build commands
-            List<String> commands = new ArrayList<String>();
-
-            if(MULTI_FILE.contains(application))
+            else
             {
-                String command = application;
+                //Build commands
+                List<String> commands = new ArrayList<String>();
 
-                for(File pdfFile : pdfFiles)
+                if(MULTI_FILE.contains(application))
                 {
-                    command += " " + "'" + pdfFile.getAbsolutePath() + "'";
-                }
+                    String command = application;
 
-                commands.add(command);
-            }
-            else if(SINGLE_FILE.contains(application))
-            {
-                for(File pdfFile : pdfFiles)
-                {
-                    String command = application + " " + "'" + pdfFile.getAbsolutePath() + "'";
+                    for(File pdfFile : pdfFiles)
+                    {
+                        command += " " + "'" + pdfFile.getAbsolutePath() + "'";
+                    }
+
                     commands.add(command);
                 }
-            }
+                else if(SINGLE_FILE.contains(application))
+                {
+                    for(File pdfFile : pdfFiles)
+                    {
+                        String command = application + " " + "'" + pdfFile.getAbsolutePath() + "'";
+                        commands.add(command);
+                    }
+                }
 
-            //Run commands
-            try
-            {
-                Allocator.getExternalProcessesUtilities().executeAsynchronously(commands, unarchiveDir);
+                //Run commands
+                try
+                {
+                    Allocator.getExternalProcessesUtilities().executeAsynchronously(commands, unarchiveDir);
+                }
+                catch (IOException e)
+                {
+                    throw new TaskException("Unable to open PDF viewer: " + application + " for " +
+                            group.getName() + "'s handin.", e);
+                }
             }
-            catch (IOException e)
-            {
-                throw new TaskException("Unable to open PDF viewer: " + application + " for " +
-                        group.getName() + "'s handin.", e);
-            }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -179,7 +174,8 @@ class ApplicationTasks implements TaskProvider
 
         private final TaskProperty APPLICATION_PROPERTY =
             new TaskProperty("application",
-            "The name of the text editor to be used. If this property is not set then kate will be used.\n " +
+            "The name of the text editor to be used. If this property is not set then " + DEFAULT + " will be " + 
+            "used. If an invalid editor is provided then " + DEFAULT + " will be used.<br>" +
             "Valid values for this property are: " + SUPPORTED, false);
 
         private final TaskProperty ENV_PROPERTY =
@@ -187,15 +183,15 @@ class ApplicationTasks implements TaskProvider
             "If set to TRUE, attempts to open files using the grader's EDITOR environment variable. If this editor " +
             "is not one of the supported editors, then it will not be used. In that case the editor will either " +
             "be the default (" + DEFAULT + ") or the specified editor if the " + APPLICATION_PROPERTY.getName() +
-            " property is set.\n" +
+            " property is set.<br>" +
             "Supported editors: " + SUPPORTED, false);
 
         private final TaskProperty EXTENSIONS_PROPERTY =
             new TaskProperty("extensions",
             "The extensions of the files in this part that will be opened. To open files that do not have file " +
             "extensions use an underscore. Regardless of extension, the files must be plain text files. List " +
-            "extensions in the following format (without quotation marks):\n" +
-            "single extension - 'java' \n" +
+            "extensions in the following format (without quotation marks):<br>" +
+            "single extension - 'java'<br>" +
             "multiple extensions - 'cpp, h'", true);
 
         private TextEditor()
@@ -229,7 +225,7 @@ class ApplicationTasks implements TaskProvider
         }
         
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
             throws TaskException
         {
             String application = null;
@@ -237,8 +233,7 @@ class ApplicationTasks implements TaskProvider
             //Try to read out EDITOR environment variable
             //If running cakehat from a terminal this variable will probably be set
             //If running from an IDE, it is very unlikely the variable will be set
-            if(properties.containsKey(ENV_PROPERTY) &&
-                    properties.get(ENV_PROPERTY).equalsIgnoreCase("TRUE"))
+            if("TRUE".equalsIgnoreCase(properties.get(ENV_PROPERTY)))
             {
                 String editor = System.getenv("EDITOR");
 
@@ -255,12 +250,11 @@ class ApplicationTasks implements TaskProvider
 
                 if(!SUPPORTED.contains(application))
                 {
-                    ModalDialog.showMessage(context.getGraphicalOwner(), "Invalid PDF application",
-                            "The text editor specified in the configuration file is not supported: " + 
-                            application + ".\n\n" +
+                    ModalDialog.showMessage(context.getGraphicalOwner(), "Invalid text editor",
+                            "The text editor specified in the configuration is not supported: " + application +
+                            ". " + DEFAULT + " will be used instead.\n\n" +
                             "Supported applications: " + SUPPORTED);
-
-                    return TaskResult.NO_CHANGES;
+                    application = DEFAULT;
                 }
             }
 
@@ -270,10 +264,9 @@ class ApplicationTasks implements TaskProvider
             }
 
             //Get files to open
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
-
-            FileFilter extensionsFilter = TaskUtilities
-                    .parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
+            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
+                    
+            FileFilter extensionsFilter = TaskUtilities.parseFileExtensions(properties.get(EXTENSIONS_PROPERTY));
 
             List<File> textFiles;
             try
@@ -291,48 +284,44 @@ class ApplicationTasks implements TaskProvider
                 ModalDialog.showMessage(context.getGraphicalOwner(), "No text files",
                         "There are no text files to open.\n\n" +
                         "Extensions to open are: " + properties.get(EXTENSIONS_PROPERTY));
-
-                return TaskResult.NO_CHANGES;
             }
-
-            //Build run command
-            String command = application;
-            for(File file : textFiles)
+            else
             {
-                command += " " + "'" + file.getAbsolutePath() + "'";
-            }
+                //Build run command
+                String command = application;
+                for(File file : textFiles)
+                {
+                    command += " " + "'" + file.getAbsolutePath() + "'";
+                }
 
-            if(GUI.contains(application))
-            {
-                try
+                if(GUI.contains(application))
                 {
-                    Allocator.getExternalProcessesUtilities().executeAsynchronously(command, unarchiveDir);
+                    try
+                    {
+                        Allocator.getExternalProcessesUtilities().executeAsynchronously(command, unarchiveDir);
+                    }
+                    catch(IOException e)
+                    {
+                        throw new TaskException("Unable to open text editor: " + application + " for " +
+                                group.getName() + "'s handin.", e);
+                    }
                 }
-                catch(IOException e)
+                else if(CLI.contains(application))
                 {
-                    throw new TaskException("Unable to open text editor: " +
-                        application + " for " + group.getName() +
-                        "'s handin.", e);
+                    String title = group.getName() + "'s " + action.getPart().getFullDisplayName();
+
+                    try
+                    {
+                        Allocator.getExternalProcessesUtilities()
+                                .executeInVisibleTerminal(title, command, unarchiveDir);
+                    }
+                    catch(IOException e)
+                    {
+                        throw new TaskException("Unable to open text editor: " + application + " for " +
+                                group.getName() + "'s handin.", e);
+                    }
                 }
             }
-            else if(CLI.contains(application))
-            {
-                String title = group.getName() + "'s " + part.getFullDisplayName();
-
-                try
-                {
-                    Allocator.getExternalProcessesUtilities()
-                            .executeInVisibleTerminal(title, command, unarchiveDir);
-                }
-                catch(IOException e)
-                {
-                    throw new TaskException("Unable to open text editor: " +
-                        application + " for " + group.getName() +
-                        "'s handin.", e);
-                }
-            }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 
@@ -368,23 +357,23 @@ class ApplicationTasks implements TaskProvider
         }
         
         @Override
-        TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
+        void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
             throws TaskException
         {
-            File unarchiveDir = context.getUnarchiveHandinDir(group);
+            File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(action.getPart(), group);
 
-            String terminalName = group.getName() + "'s " + part.getFullDisplayName();
+            String terminalName = group.getName() + "'s " + action.getPart().getFullDisplayName();
             try
             {
-                Allocator.getExternalProcessesUtilities()
-                        .executeInVisibleTerminal(terminalName, null, unarchiveDir);
+                Allocator.getExternalProcessesUtilities().executeInVisibleTerminal(terminalName, null, unarchiveDir);
             }
             catch(IOException e)
             {
-                throw new TaskException("Unable to open terminal for " + group.getName(), e);
+                throw new TaskException("Unable to open terminal\n" +
+                        "Group: " + group.getName() + "\n" +
+                        "Action: " + action.getDebugName() + "\n" +
+                        "Unarchive Directory: " + unarchiveDir.getAbsolutePath(), e);
             }
-
-            return TaskResult.NO_CHANGES;
         }
     }
 }

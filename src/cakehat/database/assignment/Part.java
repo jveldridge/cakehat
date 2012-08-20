@@ -8,18 +8,15 @@ import cakehat.gml.GradingSheetException;
 import cakehat.gml.InMemoryGML;
 import cakehat.gml.InMemoryGML.Section;
 import cakehat.gml.InMemoryGML.Subsection;
-import cakehat.services.ServicesException;
 import java.awt.Window;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveException;
 import support.ui.ModalDialog;
+import support.utils.ArchiveExtractionException;
 
 /**
  * A {@code Part} belongs to a {@link GradableEvent}. A {@code Part} is an arbitrary portion of a gradable event. For
@@ -62,11 +59,6 @@ public class Part implements Comparable<Part>
      * accessing this field, to ensure visibility this value must be volatile.
      */
     private volatile GradableEvent _gradableEvent;
-    
-    /**
-     * Groups that have had their digital handins unarchived.
-     */
-    private final Set<Group> _unarchivedGroups = new HashSet<Group>();
     
     /**
      * Constructs a Part.
@@ -295,73 +287,51 @@ public class Part implements Comparable<Part>
      */
     void unarchive(Window owner, Group group) throws IOException
     {
-        if(!_unarchivedGroups.contains(group))
+        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(this, group);
+        if(!unarchiveDir.exists())
         {
+            //Access the digital handin
+            File handin = _gradableEvent.getDigitalHandin(group);
+            if(handin == null || !handin.exists())
+            {
+                throw new IOException("Expected to be able to access digital handin\n" +
+                        "Group: " + group + "\n" +
+                        "Part: " + this.getFullDisplayName());
+            }
+
+            //Determine if all of files and directories that belong to this part are present in the archive
+            //If not, then create a filter that accepts all files and directory, and notify the user
+            FileFilter filter;
+            Collection<ArchiveEntry> contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
+            StringBuilder builder = new StringBuilder();
+            if(_filterProvider.areFilteredFilesPresent(contents, builder))
+            {
+                filter = _filterProvider.getFileFilter(unarchiveDir);
+            }
+            else
+            {
+                filter = new AlwaysAcceptingFileFilter();
+
+                String msg = "Not all files and/or directories this part expected were found in the digital " +
+                        "handin. All files and directories will now be included for this part so that you " +
+                        "can find files that may be misnamed or placed in the wrong directory.\n\n" +
+                        "The missing files and/or directories are:\n" + builder.toString();
+                ModalDialog.showMessage(owner, group + "'s Digital Handin - Missing Expected Contents", msg);
+            }
+
+            //Extract
             try
             {
-                //Create an empty folder for the unarchived handin
-                File groupDir = Allocator.getPathServices().getUnarchiveHandinDir(this, group);
-                Allocator.getFileSystemServices().makeDirectory(groupDir);
-
-                try
-                {
-                    //Access the digital handin
-                    File handin;
-                    try
-                    {
-                        handin = _gradableEvent.getDigitalHandin(group);
-                        
-                        if(handin == null || !handin.exists())
-                        {
-                            throw new IOException("Expected to be able to access digital handin\n" +
-                                    "Group: " + group + "\n" +
-                                    "Part: " + this.getFullDisplayName());
-                        }
-                    }
-                    catch(IOException e)
-                    {
-                        throw new IOException("Unable to access digital handin\n" +
-                                "Group: " + group + "\n" +
-                                "Part: " + this.getFullDisplayName(), e);
-                    }
-                    
-                    //Determine if all of files and directories that belong to this part are present in the archive
-                    Collection<ArchiveEntry> contents = Allocator.getArchiveUtilities().getArchiveContents(handin);
-                    StringBuilder builder = new StringBuilder();
-
-                    //Build a filter that only accepts files belonging to this part
-                    FileFilter filter;
-                    if(_filterProvider.areFilteredFilesPresent(contents, builder))
-                    {
-                        filter = _filterProvider.getFileFilter(groupDir);
-                    }
-                    //If not all required files are present, then accept all and notify user
-                    else
-                    {
-                        filter = new AlwaysAcceptingFileFilter();
-                        
-                        //Show a message to the user that not all expected filers/directories were present
-                        String msg = "Not all files and/or directories this part expected were found in the digital " +
-                                "handin. All files and directories will now be included for this part so that you " +
-                                "can find files that may be misnamed or placed in the wrong directory.\n\n" +
-                                "The missing files and/or directories are:\n" + builder.toString();
-                        ModalDialog.showMessage(owner, group + "'s Digital Handin - Missing Expected Contents", msg);
-                    }
-
-                    //Extract
-                    Allocator.getArchiveUtilities().extractArchive(handin, groupDir, filter);
-
-                    _unarchivedGroups.add(group);
-                }
-                catch(ArchiveException e)
-                {
-                    throw new IOException("Unable to extract handin for group: " + group.getName(), e);
-                }
+                Allocator.getArchiveUtilities().extractArchive(handin, unarchiveDir, filter,
+                    Allocator.getCourseInfo().getTAGroup());
             }
-            catch(ServicesException e)
+            catch(ArchiveExtractionException e)
             {
-                throw new IOException("Unable to create directory to unarchive the handin for group: " +
-                        group.getName(), e);
+                throw new IOException("Unable to extract digital handin\n" +
+                        "Group: " + group + "\n" +
+                        "Part: " + this.getFullDisplayName() + " \n" +
+                        "Archive: " + handin.getAbsolutePath() + "\n" +
+                        "Unarchive Directory: " + unarchiveDir.getAbsolutePath());
             }
         }
     }

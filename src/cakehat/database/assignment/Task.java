@@ -98,26 +98,26 @@ public abstract class Task
 
     /**
      * Whether the task is supported. If the task is not supported for the provided arguments then
-     * {@link #performTask(Map<TaskProperty,String>, TaskContext, Part, Set<Group>)} should not be called with those
+     * {@link #performTask(Map<TaskProperty,String>, TaskContext, Action, Set<Group>)} should not be called with those
      * arguments.
      * 
-     * @param part
+     * @param action
      * @param groups
      * @return
      * @throws TaskException 
      */
-    abstract boolean isTaskSupported(Part part, Set<Group> groups) throws TaskException;
+    abstract boolean isTaskSupported(Action action, Set<Group> groups) throws TaskException;
     
     /**
-     * Performs the task for the specified part and groups.
+     * Performs the task.
      * 
      * @param properties
      * @param context
-     * @param part
+     * @param action
      * @param groups
-     * @return
      * @throws TaskException 
+     * @throws TaskConfigurationIssue
      */
-    abstract TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part,
-            Set<Group> groups) throws TaskException;
+    abstract void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action,
+            Set<Group> groups) throws TaskException, TaskConfigurationIssue;
 }

@@ -19,8 +19,8 @@ abstract class SingleGroupTask extends Task
     }
     
     @Override
-    public TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part,
-        Set<Group> groups) throws TaskException
+    public void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Set<Group> groups)
+            throws TaskException, TaskConfigurationIssue
     {
         //Enforce that the set passed in only has one group
         Iterator<Group> iter = groups.iterator();
@@ -35,14 +35,14 @@ abstract class SingleGroupTask extends Task
             throw new IllegalArgumentException("Groups iterator contains more than one element");
         }
         
-        return this.performTask(properties, context, part, group);
+        this.performTask(properties, context, action, group);
     }
     
-    abstract TaskResult performTask(Map<TaskProperty, String> properties, TaskContext context, Part part, Group group)
-            throws TaskException;
+    abstract void performTask(Map<TaskProperty, String> properties, TaskContext context, Action action, Group group)
+            throws TaskException, TaskConfigurationIssue;
 
     @Override
-    public boolean isTaskSupported(Part part, Set<Group> groups)
+    public boolean isTaskSupported(Action action, Set<Group> groups)
     {
         return (groups.size() == 1);
     }

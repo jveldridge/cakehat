@@ -12,7 +12,7 @@ class ErrorDisplayCLI
 {
     /**
      * Displays the error via system in and allows the user to interact via system out. This method is synchronized to
-     * ensure that only error is displayed to the user at the same time.
+     * ensure that only one error is displayed to the user at the same time.
      * 
      * @param message
      * @param error 

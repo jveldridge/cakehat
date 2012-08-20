@@ -147,7 +147,7 @@ public class AssignmentsBuilder
         Collections.sort(sortedDbActions);
         for(DbAction dbAction : sortedDbActions)
         {   
-            Task task = TaskRepository.getTask(dbAction.getTask());
+            Task task = dbAction.getTask() == null ? null : TaskRepository.getTask(dbAction.getTask());
             
             Action action = new Action(
                     dbAction.getId(),
@@ -165,13 +165,17 @@ public class AssignmentsBuilder
     private Map<TaskProperty, String> buildActionProperties(Task task, Set<DbActionProperty> dbActionProperties)
     {
         ImmutableMap.Builder<TaskProperty, String> convertedProperties = ImmutableMap.builder();
-        for(TaskProperty actualProperty : task.getProperties())
+        
+        if(task != null)
         {
-            for(DbActionProperty dbActionProperty : dbActionProperties)
+            for(TaskProperty actualProperty : task.getProperties())
             {
-                if(actualProperty.getName().equals(dbActionProperty.getKey()))
+                for(DbActionProperty dbActionProperty : dbActionProperties)
                 {
-                    convertedProperties.put(actualProperty, dbActionProperty.getValue());
+                    if(actualProperty.getName().equals(dbActionProperty.getKey()))
+                    {
+                        convertedProperties.put(actualProperty, dbActionProperty.getValue());
+                    }
                 }
             }
         }

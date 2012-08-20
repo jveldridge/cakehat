@@ -42,8 +42,8 @@ public class EnscriptPrintingService extends PrintingService
             dontPrintCoverSheet = "--no-job-header ";  
         }
 
-        File workspace = Allocator.getPathServices().getUserWorkspaceDir();
-        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand, workspace);
+        File tempDir = Allocator.getPathServices().getTempDir();
+        Allocator.getExternalProcessesUtilities().executeAsynchronously(fullCommand, tempDir);
     }
 
     /**
@@ -56,7 +56,7 @@ public class EnscriptPrintingService extends PrintingService
     {
         //Create temp file that combines the entire request into one file
         File tmpFile = Allocator.getFileSystemUtilities().createTempFile("request", null,
-                Allocator.getPathServices().getUserWorkspaceDir());
+                Allocator.getPathServices().getTempDir());
 
         //Confirm the temporary file was created
         if(tmpFile == null)
