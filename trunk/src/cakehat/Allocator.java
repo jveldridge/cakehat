@@ -30,8 +30,6 @@ import support.utils.ExternalProcessesUtilities;
 import support.utils.ExternalProcessesUtilitiesImpl;
 import support.utils.FileSystemUtilities;
 import support.utils.FileSystemUtilitiesImpl;
-import support.utils.GeneralUtilities;
-import support.utils.GeneralUtilitiesImpl;
 import support.utils.UserUtilities;
 import support.utils.UserUtilitiesImpl;
 
@@ -120,7 +118,6 @@ public class Allocator
     private final SingletonAllocation<PrintingService> _landscapePrintingService;
     private final SingletonAllocation<PrintingService> _portraitPrintingService;
     private final SingletonAllocation<Database> _database;
-    private final SingletonAllocation<GeneralUtilities> _generalUtils;
     private final SingletonAllocation<ArchiveUtilities> _archiveUtils;
     private final SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
     private final SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
@@ -223,16 +220,6 @@ public class Allocator
         else
         {
             _portraitPrintingService = customizer._portraitPrintingService;
-        }
-
-        if(customizer._generalUtils == null)
-        {
-            _generalUtils = new SingletonAllocation<GeneralUtilities>()
-                            { public GeneralUtilities allocate() { return new GeneralUtilitiesImpl(); } };
-        }
-        else
-        {
-            _generalUtils = customizer._generalUtils;
         }
 
         if(customizer._archiveUtils == null)
@@ -361,11 +348,6 @@ public class Allocator
         return getInstance()._portraitPrintingService.getInstance();
     }
 
-    public static GeneralUtilities getGeneralUtilities()
-    {
-        return getInstance()._generalUtils.getInstance();
-    }
-
     public static ArchiveUtilities getArchiveUtilities()
     {
         return getInstance()._archiveUtils.getInstance();
@@ -413,7 +395,6 @@ public class Allocator
         private SingletonAllocation<Database> _database;
         private SingletonAllocation<PrintingService> _landscapePrintingService;
         private SingletonAllocation<PrintingService> _portraitPrintingService;
-        private SingletonAllocation<GeneralUtilities> _generalUtils;
         private SingletonAllocation<ArchiveUtilities> _archiveUtils;
         private SingletonAllocation<ExternalProcessesUtilities> _externalProcessesUtils;
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
@@ -481,13 +462,6 @@ public class Allocator
         public Customizer setPortraitPrintingService(SingletonAllocation<PrintingService> portraitPrintingService)
         {
             _portraitPrintingService = portraitPrintingService;
-
-            return this;
-        }
-
-        public Customizer setGeneralUtils(SingletonAllocation<GeneralUtilities> generalUtils)
-        {
-            _generalUtils = generalUtils;
 
             return this;
         }

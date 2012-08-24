@@ -13,7 +13,7 @@ import support.ui.SelectionListener.SelectionAction;
  *
  * @author jak2
  */
- public class GenericComboBoxModel<T> extends GenericImmutableListModel<T> implements ComboBoxModel
+public class GenericComboBoxModel<T> extends GenericImmutableListModel<T> implements ComboBoxModel
 {
     private T _selectedItem;
 

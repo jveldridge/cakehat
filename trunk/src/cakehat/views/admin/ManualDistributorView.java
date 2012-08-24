@@ -17,6 +17,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.FontMetrics;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -46,6 +48,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -310,8 +313,7 @@ class ManualDistributorView extends JDialog {
         assignControlPanel.add(_randomStudentsSpinner);
         _randomStudentsSpinner.setVisible(false);
 
-        _assignButton = Allocator.getGeneralUtilities()
-                .createTextCenteredButton("Assign",
+        _assignButton = createTextCenteredButton("Assign",
                 IconLoader.loadIcon(IconLoader.IconSize.s16x16, IconLoader.IconImage.GO_NEXT),
                 BUTTON_WIDTH, false);
         _assignButton.setPreferredSize(new Dimension(BUTTON_WIDTH, 25));
@@ -592,7 +594,7 @@ class ManualDistributorView extends JDialog {
                 }
                 
                 Collection<Student> blacklisted = Allocator.getDataServices().getBlacklist(toTA);
-                if (!Allocator.getGeneralUtilities().containsAny(blacklisted, group.getMembers())) {
+                if (Collections.disjoint(blacklisted, group.getMembers())) {
                     groupsToAssign.add(group);
                     numGroupsAssignedSoFar++;
                 }
@@ -672,6 +674,42 @@ class ManualDistributorView extends JDialog {
         
         _fromUnassigned.refreshList();
         _toUnassigned.refreshList();
+    }
+    
+    /**
+     * Creates a button with an icon that has centered text.
+     * <br/><br/>
+     * This is done by calculating the necessary gap space between the icon and the text. There is no built-in way to
+     * center the text in a button (including using HTML) when an icon is also present. When an icon is present, all
+     * text placement is relative to the icon.
+     *
+     * @param text
+     * @param icon
+     * @param buttonWidth the width the button will be when displayed
+     * @param iconOnLeft if {@code true} the icon will be displayed on the left, if {@code false} it will be displayed
+     * on the right
+     * @return
+     */
+    private JButton createTextCenteredButton(String text, Icon icon, int buttonWidth, boolean iconOnLeft) {
+        JButton button = new JButton(text, icon);
+
+        if(iconOnLeft) {
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            button.setHorizontalTextPosition(SwingConstants.RIGHT);
+        }
+        else {
+            button.setHorizontalAlignment(SwingConstants.RIGHT);
+            button.setHorizontalTextPosition(SwingConstants.LEFT);
+        }
+
+        FontMetrics metrics = button.getFontMetrics(button.getFont());
+        int textWidth = metrics.charsWidth(text.toCharArray(), 0, text.length());
+        int textStartX = (buttonWidth - textWidth) / 2;
+        int insetWidth = iconOnLeft ? button.getInsets().left : button.getInsets().right;
+        int textGap = textStartX - insetWidth - icon.getIconWidth();
+        button.setIconTextGap(textGap);
+
+        return button;
     }
 
     private class UnassignedDescriptionProvider extends PartialDescriptionProvider<String> {

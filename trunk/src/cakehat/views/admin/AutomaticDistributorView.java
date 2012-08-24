@@ -410,7 +410,7 @@ class AutomaticDistributorView extends JDialog {
             
             for (TA ta : graders) {
                 //if ta's blacklist does not contain students from the group and ta's dist is not full
-                if (!Allocator.getGeneralUtilities().containsAny(graderBlacklists.get(ta), blGroup.getMembers())
+                if (Collections.disjoint(graderBlacklists.get(ta), blGroup.getMembers())
                         && numStudsNeeded.get(ta) > 0) {
 
                     distribution.get(ta).add(blGroup); //add student to ta's dist

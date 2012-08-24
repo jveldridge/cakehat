@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * A generic list model that allows for its contents to be mutated.
@@ -13,11 +13,11 @@ import java.util.Vector;
  */
 public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
 {
-    private final Vector<T> _elements;
+    private final List<T> _elements;
 
     public GenericMutableListModel(Iterable<T> data)
     {
-        _elements = new Vector<T>();
+        _elements = new ArrayList<T>();
         for(T item : data)
         {
             _elements.add(item);
@@ -41,7 +41,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
      */
     public void insertElementAt(T element, int index)
     {
-        _elements.insertElementAt(element, index);
+        _elements.add(index, element);
         fireIntervalAdded(this, index, index);
     }
 
@@ -58,7 +58,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
         int currIndex = startIndex;
         for(T element : elements)
         {
-            _elements.insertElementAt(element, currIndex);
+            _elements.add(currIndex, element);
             currIndex++;
         }
 
@@ -84,7 +84,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
      */
     public void removeElementAt(int index)
     {
-        _elements.removeElementAt(index);
+        _elements.remove(index);
         fireIntervalRemoved(this, index, index);
     }
 
@@ -132,7 +132,7 @@ public class GenericMutableListModel<T> extends GenericAbstractListModel<T>
     public void removeAll()
     {
         int size = this.getSize();
-        _elements.removeAllElements();
+        _elements.clear();
         fireIntervalRemoved(this, 0, size - 1);
     }
 

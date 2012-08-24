@@ -166,7 +166,7 @@ public class GradingServicesImpl implements GradingServices
         if(ta != null)
         {
             Collection<Student> blacklist = Allocator.getDataServices().getBlacklist(ta);
-            if(Allocator.getGeneralUtilities().containsAny(blacklist, group.getMembers()))
+            if(!Collections.disjoint(blacklist, group.getMembers()))
             {
                 distribute = ModalDialog.showConfirmation(null, "Distribute Blacklisted Student?",
                     "A member of group " + group + " is on TA " + ta.getLogin() + "'s blacklist.",
@@ -181,7 +181,7 @@ public class GradingServicesImpl implements GradingServices
     public boolean isSomeGroupMemberBlacklisted(Group group, Map<TA, Collection<Student>> blacklists) throws ServicesException {
         for (TA ta : blacklists.keySet()) {
             Collection<Student> blackList = blacklists.get(ta);
-            if (Allocator.getGeneralUtilities().containsAny(blackList, group.getMembers())) {
+            if (!Collections.disjoint(blackList, group.getMembers())) {
                 return true;
             }
         }
