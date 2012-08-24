@@ -2,7 +2,6 @@ package support.utils.posix;
 
 import com.google.common.collect.ImmutableSet;
 import com.sun.jna.Platform;
-import java.util.List;
 import java.io.File;
 import java.util.Set;
 

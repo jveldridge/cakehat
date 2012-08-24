@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListModel;
@@ -89,7 +88,7 @@ public class GenericJList<E> extends JList implements DescriptionProviderCellRen
      * @deprecated deprecated due to lack of type-safety
      */
     @Override
-    public void setListData(Vector<?> values)
+    public void setListData(java.util.Vector<?> values)
     {
         throw new UnsupportedOperationException("Not valid for GenericJList. Please use setListData(Iterable<E>)");
     }
