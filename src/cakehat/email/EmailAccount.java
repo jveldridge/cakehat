@@ -1,12 +1,11 @@
 package cakehat.email;
 
 import com.sun.mail.util.MailSSLSocketFactory;
-import java.io.File;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Properties;
 import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
+import javax.activation.DataSource;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -39,22 +38,6 @@ public class EmailAccount
      * The port of the Brown CS SMTP server.
      */
     private static final String EMAIL_PORT = "465";
-
-    /**
-     * A Brown CS login such as {@code jak2} or {@code cs015000}. A course is strongly encouraged to use a test account
-     * for this.
-     */
-    private final String _login;
-    
-    /**
-     * The LDAP password for the account specified by {@link #_login}. This password is set by being logged in as the
-     * user specified by {@link #_login}, running the {@code ldappasswd} command and setting a password. By default a
-     * Brown CS account does not have an LDAP password.
-     * <br/><br/>
-     * This information was retrieved from <a href="http://www.cs.brown.edu/system/accounts/passwords.html">
-     * http://www.cs.brown.edu/system/accounts/passwords.html</a> on 12/16/2011.
-     */
-    private final String _ldapPassword;
     
     /**
      * Properties used to establish an email session.
@@ -62,13 +45,23 @@ public class EmailAccount
     private final Properties _properties;
     
     /**
-     * Provider of the {@link #_login} and {@link #_ldapPassword} to the email session.
+     * Provider of the login and password to the email session.
      */
     private final Authenticator _authenticator;
     
     /**
      * Constructs an {@code EmailAccount} that can send emails using the credentials passed to this constructor.
      * However, emails can be sent as if coming from anyone.
+     * <br/><br/>
+     * The {@code login} is a Brown CS login such as {@code jak2} or {@code cs015000}. A course is strongly encouraged
+     * to use a test account for this.
+     * <br/>
+     * The LDAP password for the account specified by {@code login}. This password is set by being logged in as the
+     * user specified by {@code login}, running the {@code ldappasswd} command and setting a password. By default a
+     * Brown CS account does not have an LDAP password.
+     * <br/>
+     * This information was retrieved from <a href="http://www.cs.brown.edu/system/accounts/passwords.html">
+     * http://www.cs.brown.edu/system/accounts/passwords.html</a> on 12/16/2011.
      * <br/><br/>
      * This constructor is public so that it may be used for verification of email credentials when using the
      * configuration manager. Otherwise, this class should be used indirectly via {@link EmailManager}.
@@ -90,11 +83,8 @@ public class EmailAccount
             throw new NullPointerException("ldapPassword may not be null");
         }
         
-        _login = login;
-        _ldapPassword = ldapPassword;
-        
-        _properties = buildProperties();
-        _authenticator = buildAuthenticator();
+        _properties = buildProperties(login);
+        _authenticator = buildAuthenticator(login, ldapPassword);
     }
 
     /**
@@ -113,7 +103,7 @@ public class EmailAccount
      */
     public void send(InternetAddress from,
                      Iterable<InternetAddress> to, Iterable<InternetAddress> cc, Iterable<InternetAddress> bcc,
-                     String subject, String body, Iterable<File> attachments) throws MessagingException
+                     String subject, String body, Iterable<? extends DataSource> attachments) throws MessagingException
     {
         //Validation
         if(from == null)
@@ -127,6 +117,7 @@ public class EmailAccount
         to = (to == null ? Collections.<InternetAddress>emptyList() : to);
         cc = (cc == null ? Collections.<InternetAddress>emptyList() : cc);
         bcc = (bcc == null ? Collections.<InternetAddress>emptyList() : bcc);
+        attachments = (attachments == null ? Collections.<DataSource>emptyList() : attachments);
         
         //Session
         Session session = Session.getInstance(_properties, _authenticator);
@@ -158,16 +149,13 @@ public class EmailAccount
         mainTextPart.setContent(body, "text/html");
         multipart.addBodyPart(mainTextPart);
 
-        //File attachments
-        if(attachments != null)
+        //Attachments
+        for(DataSource attachment : attachments)
         {
-            for(File attachment : attachments)
-            {
-                MimeBodyPart attachmentPart = new MimeBodyPart();
-                attachmentPart.setDataHandler(new DataHandler(new FileDataSource(attachment)));
-                attachmentPart.setFileName(attachment.getName());
-                multipart.addBodyPart(attachmentPart);
-            }
+            MimeBodyPart attachmentPart = new MimeBodyPart();
+            attachmentPart.setDataHandler(new DataHandler(attachment));
+            attachmentPart.setFileName(attachment.getName());
+            multipart.addBodyPart(attachmentPart);
         }
 
         //Put parts in message
@@ -182,13 +170,13 @@ public class EmailAccount
      *
      * @return
      */
-    private Properties buildProperties() throws GeneralSecurityException
+    private static Properties buildProperties(String login) throws GeneralSecurityException
     {
         //Build properties
         Properties properties = new Properties();
         properties.put("mail.transport.protocol", "smtps");
         properties.put("mail.smtps.host", EMAIL_HOST);
-        properties.put("mail.smtps.user", _login);
+        properties.put("mail.smtps.user", login);
         properties.put("mail.smtp.host", EMAIL_HOST);
         properties.put("mail.smtp.port", EMAIL_PORT);
         properties.put("mail.smtp.ssl.enable", "true");
@@ -211,14 +199,14 @@ public class EmailAccount
      *
      * @return
      */
-    private Authenticator buildAuthenticator()
+    private static Authenticator buildAuthenticator(final String login, final String ldapPassword)
     {
         Authenticator authenticator = new Authenticator()
         {
             @Override
             public PasswordAuthentication getPasswordAuthentication()
             {
-                return new PasswordAuthentication(_login, _ldapPassword);
+                return new PasswordAuthentication(login, ldapPassword);
             }
         };
 

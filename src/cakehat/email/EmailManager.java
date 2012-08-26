@@ -1,7 +1,7 @@
 package cakehat.email;
 
-import java.io.File;
 import java.util.Set;
+import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
@@ -51,7 +51,7 @@ public interface EmailManager
      */
     public void send(InternetAddress from,
                      Iterable<InternetAddress> to, Iterable<InternetAddress> cc, Iterable<InternetAddress> bcc,
-                     String subject, String body, Iterable<File> attachments) throws MessagingException;
+                     String subject, String body, Iterable<? extends DataSource> attachments) throws MessagingException;
     
     /**
      * Gets an immutable set of {@link InternetAddress}es that are to be notified.

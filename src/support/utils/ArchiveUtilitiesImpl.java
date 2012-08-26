@@ -1,6 +1,7 @@
 package support.utils;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -10,10 +11,17 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import javax.activation.DataSource;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import support.utils.posix.FilePermission;
 
@@ -27,59 +35,29 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
     }
     
     @Override
-    public FileFilter getSupportedFormatsFilter()
+    public FileFilter getArchiveFormatsFileFilter()
     {
-        return new FileExtensionFilter("zip", "tar", "tgz", "tar.gz");
-    }
-
-    /**
-     * Gets the appropriate stream depending the file extension of {@code archive}.
-     * <br><br>
-     * Supported extensions: zip, tar, tgz, tar.gz. Unsupported extensions will result in an exception being throw.
-     *
-     * @param archive
-     * @return
-     */
-    private ArchiveInputStream getArchiveInputStream(File archive) throws IOException
-    {
-        ArchiveInputStream archiveStream;
+        ImmutableSet.Builder<String> fileExtensions = ImmutableSet.builder();
+        for(ArchiveFormat format : ArchiveFormat.values())
+        {
+            fileExtensions.addAll(format.getAllFileExtensions());
+        }
         
-        String lowerCaseSrcFile = archive.getAbsolutePath().toLowerCase();
-        if(lowerCaseSrcFile.endsWith(".zip"))
-        {
-            archiveStream = new ZipArchiveInputStream(new FileInputStream(archive));
-        }
-        else if(lowerCaseSrcFile.endsWith(".tar"))
-        {
-            archiveStream = new TarArchiveInputStream(new FileInputStream(archive));
-        }
-        else if(lowerCaseSrcFile.endsWith(".tgz") || lowerCaseSrcFile.endsWith(".tar.gz"))
-        {
-            archiveStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(archive)));
-        }
-        else
-        {
-            throw new IOException("Unsupported file extension. Supported extensions are: zip, tar, tgz, & tar.gz");
-        }
-
-        return archiveStream;
+        return new FileExtensionFilter(fileExtensions.build());
     }
+    
+    /******************************************************************************************************************\
+    |*                                                   Extraction                                                   *|
+    \******************************************************************************************************************/
 
     @Override
     public Set<ArchiveEntry> getArchiveContents(File archive) throws IOException
     {
         ImmutableSet.Builder<ArchiveEntry> contents = ImmutableSet.builder();
-
+        
         ArchiveInputStream in = getArchiveInputStream(archive);
-        while(true)
+        for(ArchiveEntry entry = in.getNextEntry(); entry != null; entry = in.getNextEntry())
         {
-            ArchiveEntry entry = in.getNextEntry();
-            
-            if(entry == null)
-            {
-                break;
-            }
-
             contents.add(entry);
         }
         in.close();
@@ -96,15 +74,8 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         try
         {
             ArchiveInputStream in = getArchiveInputStream(archive);
-            while(true)
+            for(ArchiveEntry entry = in.getNextEntry(); entry != null; entry = in.getNextEntry())
             {
-                ArchiveEntry entry = in.getNextEntry();
-
-                if(entry == null)
-                {
-                    break;
-                }
-
                 File file = new File(dstDir, entry.getName());
                 if(filter.accept(file))
                 {
@@ -166,5 +137,125 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         }
         
         return filesCreated.build();
+    }
+
+    private ArchiveInputStream getArchiveInputStream(File archive) throws IOException
+    {
+        ArchiveInputStream archiveStream;
+        if(ArchiveFormat.ZIP.matchesFormat(archive))
+        {
+            archiveStream = new ZipArchiveInputStream(new FileInputStream(archive));
+        }
+        else if(ArchiveFormat.TAR.matchesFormat(archive))
+        {
+            archiveStream = new TarArchiveInputStream(new FileInputStream(archive));
+        }
+        else if(ArchiveFormat.TAR_GZ.matchesFormat(archive))
+        {
+            archiveStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(archive)));
+        }
+        else
+        {
+            throw new IOException("Unsupported file extension. Archive: " + archive.getAbsolutePath());
+        }
+
+        return archiveStream;
+    }
+    
+    /******************************************************************************************************************\
+    |*                                                  Creation                                                      *|
+    \******************************************************************************************************************/
+    
+    @Override
+    public DataSource createArchiveDataSource(ArchiveFormat format, File src, FileFilter filter) throws IOException
+    {
+        //Name of archive
+        String name = src.getName();
+        if(src.isFile())
+        {
+            //Trim off file extension
+            name = name.substring(0, name.indexOf("."));
+        }
+        name += "." + format.getDefaultFileExtension();
+        
+        return new ByteArrayDataSource(name, format.getMimeType(), createArchiveAsByteArray(format, src, filter));
+    }
+    
+    private byte[] createArchiveAsByteArray(ArchiveFormat format, File src, FileFilter filter) throws IOException
+    {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        
+        ArchiveOutputStream archiveStream = getArchiveOutputStream(format, byteStream);
+        try
+        {
+            for(File file : _fileSystemUtils.getFiles(src, filter))
+            {
+                writeToArchiveOutputStream(format, archiveStream, file, src);
+            }
+        }
+        finally
+        {
+            archiveStream.close();
+        }
+        
+        return byteStream.toByteArray();
+    }
+    
+    private ArchiveOutputStream getArchiveOutputStream(ArchiveFormat format, OutputStream backingStream)
+            throws IOException
+    {
+        ArchiveOutputStream archiveStream;
+        if(format == ArchiveFormat.ZIP)
+        {
+            archiveStream = new ZipArchiveOutputStream(backingStream);
+        }
+        else if(format == ArchiveFormat.TAR)
+        {
+            archiveStream = new TarArchiveOutputStream(backingStream);
+        }
+        else if(format == ArchiveFormat.TAR_GZ)
+        {
+            archiveStream = new TarArchiveOutputStream(new GZIPOutputStream(backingStream)); 
+        }
+        else
+        {
+            throw new IOException("Unsupported archive format: " + format);
+        }
+        
+        return archiveStream;
+    }
+    
+    private void writeToArchiveOutputStream(ArchiveFormat format, ArchiveOutputStream archiveStream, File src,
+            File rootSrc) throws IOException
+    {
+        String entryName = src.getAbsolutePath().replaceFirst(rootSrc.getParentFile().getAbsolutePath(), "");
+        
+        ArchiveEntry entry;
+        if(format == ArchiveFormat.ZIP)
+        {
+            entry = new ZipArchiveEntry(src, entryName);
+        }
+        else if(format == ArchiveFormat.TAR || format == ArchiveFormat.TAR_GZ)
+        {
+            entry = new TarArchiveEntry(src, entryName);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unsupported archive format: " + format);
+        }
+        
+        //Write archive entry info
+        archiveStream.putArchiveEntry(entry);
+ 
+        //If a file - write file contents to the archive stream
+        if(src.isFile())
+        {
+            FileInputStream in = new FileInputStream(src);
+            IOUtils.copy(in, archiveStream);
+            in.close();
+        }
+        
+        //Close the archive entry
+        archiveStream.closeArchiveEntry();
     }
 }
