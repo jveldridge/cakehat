@@ -195,7 +195,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
         {
             if(_handinDirectory != null && _handinDirectory.exists() && _handinDirectory.isDirectory())
             {
-                FileFilter handinFilter = Allocator.getArchiveUtilities().getSupportedFormatsFilter();
+                FileFilter handinFilter = Allocator.getArchiveUtilities().getArchiveFormatsFileFilter();
 
                 try
                 {

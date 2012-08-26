@@ -7,10 +7,10 @@ import cakehat.database.DbNotifyAddress;
 import cakehat.database.DbPropertyValue;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
 import com.google.common.collect.ImmutableSet;
-import java.io.File;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.Set;
+import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -124,7 +124,7 @@ public class EmailManagerImpl implements EmailManager
     @Override
     public void send(InternetAddress from,
                      Iterable<InternetAddress> to, Iterable<InternetAddress> cc, Iterable<InternetAddress> bcc,
-                     String subject, String body, Iterable<File> attachments) throws MessagingException
+                     String subject, String body, Iterable<? extends DataSource> attachments) throws MessagingException
     {
         if(_status == EmailAccountStatus.AVAILABLE)
         {

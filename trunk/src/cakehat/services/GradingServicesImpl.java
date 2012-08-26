@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.swing.BorderFactory;
@@ -554,7 +555,7 @@ public class GradingServicesImpl implements GradingServices
                                                          null,
                                                          subject,
                                                          body,
-                                                         ImmutableSet.of(entry.getValue()));
+                                                         ImmutableSet.of(new FileDataSource(entry.getValue())));
                     }
                     catch(MessagingException e)
                     {
