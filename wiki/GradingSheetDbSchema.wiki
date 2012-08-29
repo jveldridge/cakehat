@@ -34,8 +34,9 @@ gradingsheetdetail
 groupgradingsheet
  * gs_id INTEGER NOT NULL
  * agid INTEGER NOT NULL
- * tid INTEGER //ta who last submitted the group grading sheet; null if never submitted
- * daterecorded VARCHAR //time the group grading sheet was last submitted; null if never submitted
+ * assignedto INTEGER
+ * submittedby INTEGER //ta who last submitted the group grading sheet; null if never submitted
+ * datesubmitted VARCHAR //time the group grading sheet was last submitted; null if never submitted
  * FOREIGN KEY gs_id REFERENCES gradingsheet(gs_id) ON DELETE CASCADE
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
