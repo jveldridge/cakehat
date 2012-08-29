@@ -39,7 +39,8 @@ groupgradingsheet
  * datesubmitted VARCHAR //time the group grading sheet was last submitted; null if never submitted
  * FOREIGN KEY gs_id REFERENCES gradingsheet(gs_id) ON DELETE CASCADE
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
- * FOREIGN KEY tid REFERENCES ta(tid) ON DELETE CASCADE
+ * FOREIGN KEY assignedto REFERENCES ta(tid) ON DELETE CASCADE
+ * FOREIGN KEY submittedby REFERENCES ta(tid) ON DELETE CASCADE
  * CONSTRAINT onepergroup UNIQUE(gs_id, agid) ON CONFLICT REPLACE
 
 groupgradingsheetsubsection
