@@ -102,9 +102,6 @@ public class DataServicesTest {
         _dbPartA1 = DbPart.build(_dbGeA, "partA1", 1);
         _dbPartA2 = DbPart.build(_dbGeA, "partA2", 2);
         _dbPartB1 = DbPart.build(_dbGeB, "partB1", 11);
-        _dbPartA1.setOutOf(10.0);
-        _dbPartA2.setOutOf(12.0);
-        _dbPartB1.setOutOf(15.0);
         _database.putParts(ImmutableSet.of(_dbPartA1, _dbPartA2, _dbPartB1));
         
         _dataServices = new DataServicesImpl();
@@ -1615,7 +1612,7 @@ public class DataServicesTest {
 
         _dataServices.setGrader(partA, group1, ta);
 
-        _dataServices.setEarned(group1, partA, _dbPartA1.getOutOf(), true);
+        _dataServices.setEarned(group1, partA, 5.0, true);
 
          PartGrade pg = _dataServices.getEarned(group1, partA);
 
@@ -1887,7 +1884,6 @@ public class DataServicesTest {
     private void assertPartEqual(DbPart dbpart, Part part) {
         assertEquals((int) dbpart.getId(), (int) part.getId());
         assertEquals(dbpart.getName(), part.getName());
-        assertEquals(dbpart.getOutOf(), part.getOutOf(), 10E-10);
         assertEquals(dbpart.getQuickName(), part.getQuickName());
     }
 }

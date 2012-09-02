@@ -87,7 +87,7 @@ public class DatabaseGradingSheetTest {
     
     @Test
     public void testGetGradingSheetForNonExistentPart() throws SQLException {
-        DbPart part = new DbPart(null, 0, "part", 1, "template", 0.0, "quickname");
+        DbPart part = new DbPart(null, 0, "part", 1, "quickname");
         
         assertNull(_database.getGradingSheet(part));
     }

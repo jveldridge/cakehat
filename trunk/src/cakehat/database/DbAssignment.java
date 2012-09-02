@@ -57,7 +57,7 @@ public class DbAssignment extends DbDataItem implements Comparable<DbAssignment>
         _order = order;
     }
     
-    public Integer getOrder()
+    public int getOrder()
     {
         return _order;
     }

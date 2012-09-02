@@ -9,7 +9,8 @@ import java.util.Set;
  * 
  * @author jeldridg
  */
-public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGradingSheetSection> {
+public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGradingSheetSection>,
+        Orderable<DbGradingSheetSection> {
     
     private volatile DbGradingSheet _gradingSheet;
     private volatile String _name;
@@ -70,10 +71,12 @@ public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGr
         return _name;
     }
     
+    @Override
     public void setOrder(int order) {
         _order = order;
     }
     
+    @Override
     public int getOrder() {
         return _order;
     }
@@ -123,4 +126,8 @@ public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGr
         return new Integer(_order).compareTo(other._order);
     }
     
+    @Override
+    public Iterable<DbGradingSheetSection> getOrderedElements() {
+        return _gradingSheet.getSections();
+    }
 }

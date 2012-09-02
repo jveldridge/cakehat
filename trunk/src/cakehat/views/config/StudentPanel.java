@@ -12,7 +12,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -37,7 +36,6 @@ import javax.swing.Box.Filler;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -46,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import support.ui.FormattedLabel;
+import support.ui.ModalJFrameHostHelper.CloseAction;
 import support.utils.posix.NativeException;
 
 /**
@@ -567,7 +566,7 @@ class StudentPanel extends JPanel
         
         private void addStudents()
         {   
-            //Add students to the database while blocking the UI thread
+            //Determine students that can be added
             try
             {   
                 //Wait for the worker thread to finish all of its tasks
@@ -602,27 +601,37 @@ class StudentPanel extends JPanel
                 }
                 
                 //Display students to be added to the user for confirmation, and allow for not adding a given student
-                Set<DbStudent> studentsToBeAdded = AddStudentsConfirmationDialog.showConfirmation(_configManager, students);
-                
-                //If there are students to be added - add them
-                if(!studentsToBeAdded.isEmpty())
-                {
-                    try
-                    {
-                        Allocator.getDatabase().putStudents(studentsToBeAdded);
-                    }
-                    catch(SQLException e)
-                    {
-                        ErrorReporter.report("Failed to add students to the database", e);
-                    }
-                    
-                    //Re-initialize to show all of the added students
-                    _studentPanel.initialize();
-                }
+                AddStudentsConfirmationPanel confirmationPanel = new AddStudentsConfirmationPanel(students);
+                CloseAction closeAction = _configManager.hostModal(confirmationPanel);
+                confirmationPanel.display(closeAction, this);
             }
             //If unable to wait, re-initialize to guarantee the update is shown visually
             catch(InterruptedException e)
             {
+                _studentPanel.initialize();
+            }
+        }
+        
+        /**
+         * Called by the the {@link AddStudentsConfirmationPanel} if the 'Add' button is pressed.
+         * 
+         * @param studentsToBeAdded 
+         */
+        void addStudentsConfirmed(Set<DbStudent> studentsToBeAdded)
+        {
+            //If there are students to be added - add them
+            if(!studentsToBeAdded.isEmpty())
+            {
+                try
+                {
+                    Allocator.getDatabase().putStudents(studentsToBeAdded);
+                }
+                catch(SQLException e)
+                {
+                    ErrorReporter.report("Failed to add students to the database", e);
+                }
+
+                //Re-initialize to show all of the added students
                 _studentPanel.initialize();
             }
         }
@@ -637,11 +646,14 @@ class StudentPanel extends JPanel
         }
     }
     
-    private static class AddStudentsConfirmationDialog extends JDialog
-    {
-        static Set<DbStudent> showConfirmation(Window owner, List<DbStudent> students)
+    private static class AddStudentsConfirmationPanel extends JPanel
+    {   
+        private final Set<DbStudent> _students;
+        
+        AddStudentsConfirmationPanel(List<DbStudent> students)
         {
-            Set<DbStudent> studentsSet = new TreeSet<DbStudent>(new Comparator<DbStudent>()
+            //Sort students for display
+            _students = new TreeSet<DbStudent>(new Comparator<DbStudent>()
             {
                 @Override
                 public int compare(DbStudent s1, DbStudent s2)
@@ -649,17 +661,12 @@ class StudentPanel extends JPanel
                     return s1.getLogin().compareTo(s2.getLogin());
                 }
             });
-            studentsSet.addAll(students);
-            
-            new AddStudentsConfirmationDialog(owner, studentsSet);
-            
-            return studentsSet;
+            _students.addAll(students);
         }
         
-        private AddStudentsConfirmationDialog(Window owner, final Set<DbStudent> students)
+        void display(final CloseAction closeAction, final NotificationRow notificationRow)
         {
-            super(owner, "Students To Be Added", ModalityType.APPLICATION_MODAL);
-            
+            //Initialize UI
             this.setLayout(new BorderLayout(0, 0));
             
             //Put a 10 pixel pad around the content
@@ -711,7 +718,7 @@ class StudentPanel extends JPanel
             contentPanel.add(scrollPane, BorderLayout.CENTER);
             scrollablePanel.setLayout(new BoxLayout(scrollablePanel, BoxLayout.Y_AXIS));
             
-            for(final DbStudent student : students)
+            for(final DbStudent student : _students)
             {
                 JPanel studentRow = new JPanel(new GridLayout(1, 5))
                 {
@@ -735,11 +742,11 @@ class StudentPanel extends JPanel
                     {
                         if(addCheckBox.isSelected())
                         {
-                            students.add(student);
+                            _students.add(student);
                         }
                         else
                         {
-                            students.remove(student);
+                            _students.remove(student);
                         }
                     }
                 });
@@ -751,51 +758,23 @@ class StudentPanel extends JPanel
                 studentRow.add(FormattedLabel.asContent(student.getEmailAddress()).centerHorizontally());
             }
             
-            //Buttons to Add or Cancel
+            //Add button
             JPanel bottomPanel = new JPanel(new BorderLayout(0, 0));
             contentPanel.add(bottomPanel, BorderLayout.SOUTH);
-            
             bottomPanel.add(Box.createVerticalStrut(5), BorderLayout.NORTH);
-            
-            JPanel buttonPanel = new JPanel(new GridLayout(1, 5));
-            bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
-            buttonPanel.add(Box.createHorizontalBox());
-            
             JButton addButton = new JButton("Add");
             addButton.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed(ActionEvent ae)
                 {
-                    AddStudentsConfirmationDialog.this.dispose();
+                    closeAction.close();
+                    notificationRow.addStudentsConfirmed(_students);
                 }
             });
-            buttonPanel.add(addButton);
+            bottomPanel.add(addButton, BorderLayout.SOUTH);
             
-            buttonPanel.add(Box.createHorizontalBox());
-            
-            JButton cancelButton = new JButton("Cancel");
-            cancelButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    students.clear();
-                    AddStudentsConfirmationDialog.this.dispose();
-                }
-            });
-            buttonPanel.add(cancelButton);
-            
-            buttonPanel.add(Box.createHorizontalBox());
-            
-            //Show
-            this.setResizable(true);
-            this.setMinimumSize(new Dimension(800, 360));
-            this.setPreferredSize(new Dimension(800, 360));
-            this.setAlwaysOnTop(true);
-            this.setLocationRelativeTo(owner);
-            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            this.setVisible(true);   
+            this.validate();
         }
         
         private JLabel makeHeaderLabel(String text, String tooltip)

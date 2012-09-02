@@ -377,13 +377,12 @@ public class DatabaseImpl implements Database
     };
     
     private final DbDataItemLoadOperation<DbPart, DbGradableEvent> PART_LOAD_OP = new DbDataItemLoadOperation<DbPart, DbGradableEvent>(
-            "SELECT pid, geid, name, ordering, gmltemplate, outof, quickname FROM part",
+            "SELECT pid, geid, name, ordering, quickname FROM part",
             "pid", "geid") {
 
         @Override
         DbPart getDbDataItem(DbGradableEvent parent, int id, ResultSet rs) throws SQLException {
-            return new DbPart(parent, id, rs.getString("name"), rs.getInt("ordering"), rs.getString("gmltemplate"),
-                              getDouble(rs, "outof"), rs.getString("quickname"));
+            return new DbPart(parent, id, rs.getString("name"), rs.getInt("ordering"), rs.getString("quickname"));
         }
 
         @Override
@@ -503,19 +502,16 @@ public class DatabaseImpl implements Database
     }
 
     private final DbDataItemPutOperation<DbPart> PART_PUT_OP = new DbDataItemPutOperation<DbPart>(
-            "INSERT INTO PART (geid, name, ordering, gmltemplate, outof, quickname) VALUES (?, ?, ?, ?, ?, ?)",
-            "UPDATE part SET geid = ?, name = ?, ordering = ?, gmltemplate = ?, outof = ?, quickname = ? "
-            + "WHERE pid == ?") {
+            "INSERT INTO PART (geid, name, ordering, quickname) VALUES (?, ?, ?, ?)",
+            "UPDATE part SET geid = ?, name = ?, ordering = ?, quickname = ? WHERE pid == ?") {
 
         @Override
         int setFields(PreparedStatement ps, DbPart item) throws SQLException {
             ps.setInt(1, item.getGradableEvent().getId());
             ps.setString(2, item.getName());
             ps.setInt(3, item.getOrder());
-            setObjectAsStringNullSafe(ps, 4, item.getGmlTemplate());
-            setDouble(ps, 5, item.getOutOf());
-            ps.setString(6, item.getQuickName());
-            return 7;
+            ps.setString(4, item.getQuickName());
+            return 5;
         }
     };
     
@@ -2021,8 +2017,6 @@ public class DatabaseImpl implements Database
                     + " geid INTEGER NOT NULL,"
                     + " name VARCHAR NOT NULL,"
                     + " ordering INTEGER NOT NULL,"
-                    + " gmltemplate VARCHAR,"
-                    + " outof DOUBLE,"
                     + " quickname VARCHAR,"
                     + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE)");
             conn.createStatement().executeUpdate("CREATE TABLE action (acid INTEGER PRIMARY KEY AUTOINCREMENT,"

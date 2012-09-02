@@ -7,9 +7,12 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import support.ui.ModalDialog;
+import support.ui.ModalJFrameHostHelper;
+import support.ui.ModalJFrameHostHelper.CloseAction;
 import support.ui.PaddingPanel;
 
 /**
@@ -59,6 +62,14 @@ public class ConfigManagerView extends JFrame
         this.setLocationRelativeTo(null);
         this.setResizable(true);
         this.setVisible(true);
+    }
+    
+    CloseAction hostModal(JComponent component)
+    {
+        boolean useTransparency = CakehatSession.getUserConnectionType() != ConnectionType.REMOTE;
+        CloseAction closeAction = ModalJFrameHostHelper.host(this, component, 45, useTransparency);
+        
+        return closeAction;
     }
     
     public static void launch()

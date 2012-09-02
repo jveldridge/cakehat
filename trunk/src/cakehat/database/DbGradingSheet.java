@@ -49,7 +49,7 @@ public class DbGradingSheet extends DbDataItem {
         }
     }
     
-    void removeSection(DbGradingSheetSection section) {
+    public void removeSection(DbGradingSheetSection section) {
         synchronized (_sections) {
             _sections.remove(section);
         }

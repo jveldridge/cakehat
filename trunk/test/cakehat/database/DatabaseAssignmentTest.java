@@ -74,8 +74,6 @@ public class DatabaseAssignmentTest {
             assertEquals(t1.getGradableEvent().getId(), t2.getGradableEvent().getId());
             assertEquals(t1.getName(), t2.getName());
             assertEquals(t1.getOrder(), t2.getOrder());
-            assertEquals(t1.getGmlTemplate(), t2.getGmlTemplate());
-            assertEquals(t1.getOutOf(), t2.getOutOf());
             assertEquals(t1.getQuickName(), t2.getQuickName());
             DatabaseTestHelpers.assertSetsEqual(INCLUSION_FILTER_EQC, t1.getInclusionFilters(), t2.getInclusionFilters());
             DatabaseTestHelpers.assertSetsEqual(ACTION_EQC, t1.getActions(), t2.getActions());
@@ -265,7 +263,6 @@ public class DatabaseAssignmentTest {
         assertNotNull(part.getId());
         assertEquals(ge.getId(), part.getGradableEvent().getId());
         
-        part.setOutOf(15.0);
         part.setQuickName("lab");
         _database.putParts(ImmutableSet.of(part));
         

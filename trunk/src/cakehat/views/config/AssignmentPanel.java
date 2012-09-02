@@ -22,7 +22,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Rectangle;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -52,7 +52,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -67,12 +66,14 @@ import support.ui.DescriptionProvider;
 import support.ui.DocumentAdapter;
 import support.ui.DnDList;
 import support.ui.DnDListener;
+import support.ui.FixedWidthJPanel;
 import support.ui.FormattedLabel;
 import support.ui.GenericJComboBox;
 import support.ui.ModalDialog;
 import support.ui.PaddingPanel;
 import support.ui.PartialDescriptionProvider;
 import support.ui.PeriodControl;
+import support.ui.PreferredHeightJPanel;
 import support.ui.SelectionListener;
 import support.ui.SelectionListener.SelectionAction;
 
@@ -634,39 +635,6 @@ class AssignmentPanel extends JPanel
             this.updateDisplayedGradableEventPanels();
         }
         
-        private class FixedWidthJPanel extends JPanel implements Scrollable
-        {
-            @Override
-            public Dimension getPreferredScrollableViewportSize()
-            {
-                return this.getPreferredSize();
-            }
-
-            @Override
-            public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction)
-            {
-                return 1;
-            }
-
-            @Override
-            public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction)
-            {
-                return 10;
-            }
-
-            @Override
-            public boolean getScrollableTracksViewportWidth()
-            {
-                return true;
-            }
-
-            @Override
-            public boolean getScrollableTracksViewportHeight()
-            {
-                return false;
-            }
-        }
-        
         void updateDisplayedGradableEventPanels()
         {
             _gradableEventsPanel.removeAll();
@@ -682,17 +650,7 @@ class AssignmentPanel extends JPanel
                 panel.reorderOccurred();
             }
             
-            JPanel addPanel = new JPanel(new BorderLayout(0, 0))
-            {
-                @Override
-                public Dimension getMaximumSize()
-                {
-                    Dimension size = getPreferredSize();
-                    size.width = Short.MAX_VALUE;
-
-                    return size;
-                }
-            };
+            JPanel addPanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             addPanel.add(_addGradableEventButton, BorderLayout.CENTER);
             _gradableEventsPanel.add(addPanel);
             
@@ -717,7 +675,7 @@ class AssignmentPanel extends JPanel
         }
     }
     
-    private class GradableEventPanel extends JPanel
+    private class GradableEventPanel extends PreferredHeightJPanel
     {
         private final DbGradableEvent _gradableEvent;
         
@@ -745,17 +703,7 @@ class AssignmentPanel extends JPanel
             paddingPanel.setBackground(this.getBackground());
             this.add(paddingPanel, BorderLayout.CENTER);
             
-            JPanel headlinePanel = new JPanel(new BorderLayout(0, 0))
-            {
-                @Override
-                public Dimension getMaximumSize()
-                {
-                    Dimension size = getPreferredSize();
-                    size.width = Short.MAX_VALUE;
-
-                    return size;
-                }
-            };            
+            JPanel headlinePanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             headlinePanel.setAlignmentX(LEFT_ALIGNMENT);
             headlinePanel.setBackground(this.getBackground());
             contentPanel.add(headlinePanel);
@@ -767,7 +715,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            _upButton = new JButton("⇑");
+            _upButton = new JButton("↑");
+            _upButton.setToolTipText("Move up");
+            _upButton.setMargin(new Insets(1, 1, 1, 1));
             _upButton.setEnabled(false);
             _upButton.addActionListener(new ActionListener()
             {
@@ -811,7 +761,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            _downButton = new JButton("⇓");
+            _downButton = new JButton("↓");
+            _downButton.setToolTipText("Move down");
+            _downButton.setMargin(new Insets(1, 1, 1, 1));
             _downButton.setEnabled(false);
             _downButton.addActionListener(new ActionListener()
             {
@@ -857,7 +809,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            JButton deleteButton = new JButton("Delete");
+            JButton deleteButton = new JButton("✗");
+            deleteButton.setToolTipText("Delete");
+            deleteButton.setMargin(new Insets(1, 1, 1, 1));
             deleteButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -1075,7 +1029,6 @@ class AssignmentPanel extends JPanel
                     }
                     
                     final DbPart part = DbPart.build(_gradableEvent, defaultName, partOrder);
-                    part.setOutOf(0D);
                     PartPanel panel = new PartPanel(GradableEventPanel.this, part);
                     _partPanels.put(part, panel);
                     updateDisplayedPartPanels();
@@ -1113,15 +1066,6 @@ class AssignmentPanel extends JPanel
             this.updateDisplayedPartPanels();
         }
         
-        @Override
-        public Dimension getMaximumSize()
-        {
-            Dimension size = getPreferredSize();
-            size.width = Short.MAX_VALUE;
-
-            return size;
-        }
-        
         void reorderOccurred()
         {
             _upButton.setEnabled(_gradableEvent.getOrder() != 0);
@@ -1153,17 +1097,7 @@ class AssignmentPanel extends JPanel
                 panel.reorderOccurred();
             }
             
-            JPanel addPanel = new JPanel(new BorderLayout(0, 0))
-            {
-                @Override
-                public Dimension getMaximumSize()
-                {
-                    Dimension size = getPreferredSize();
-                    size.width = Short.MAX_VALUE;
-
-                    return size;
-                }
-            };
+            JPanel addPanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             addPanel.add(_addPartButton, BorderLayout.CENTER);
             _partsPanel.add(addPanel);
             
@@ -1172,7 +1106,7 @@ class AssignmentPanel extends JPanel
             _partsPanel.revalidate();
         }
         
-        private class DeadlinePanel extends JPanel
+        private class DeadlinePanel extends PreferredHeightJPanel
         {
             private final DateTimeControl _earlyDateControl, _onTimeDateControl, _lateDateControl;
             private final ValidatingTextField _earlyPointsField, _latePointsField;
@@ -1340,15 +1274,6 @@ class AssignmentPanel extends JPanel
                 });
                 
                 this.displayDeadlineInfo();
-            }
-            
-            @Override
-            public Dimension getMaximumSize()
-            {
-                Dimension size = getPreferredSize();
-                size.width = Short.MAX_VALUE;
-
-                return size;
             }
             
             private class RemoveDeadlinesActionListener implements ActionListener
@@ -1632,13 +1557,14 @@ class AssignmentPanel extends JPanel
         }
     }
     
-    private class PartPanel extends JPanel
+    private class PartPanel extends PreferredHeightJPanel
     {
         private final GradableEventPanel _gePanel;
         private final DbPart _part;
         
         private final JButton _upButton, _downButton;
-        private final ValidatingTextField _nameField, _gmlField, _outOfField, _quickNameField;
+        private final ValidatingTextField _nameField, _quickNameField;
+        private final JButton _gradingSheetButton;
         
         private final Map<DbAction, ActionPanel> _actionPanels = new HashMap<DbAction, ActionPanel>();
         private final JPanel _actionsPanel;
@@ -1662,17 +1588,7 @@ class AssignmentPanel extends JPanel
             this.add(paddingPanel, BorderLayout.CENTER);
             
             
-            JPanel headlinePanel = new JPanel(new BorderLayout(0, 0))
-            {
-                @Override
-                public Dimension getMaximumSize()
-                {
-                    Dimension size = getPreferredSize();
-                    size.width = Short.MAX_VALUE;
-
-                    return size;
-                }
-            };            
+            JPanel headlinePanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             headlinePanel.setAlignmentX(LEFT_ALIGNMENT);
             headlinePanel.setBackground(this.getBackground());
             contentPanel.add(headlinePanel);
@@ -1684,7 +1600,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            _upButton = new JButton("⇑");
+            _upButton = new JButton("↑");
+            _upButton.setToolTipText("Move up");
+            _upButton.setMargin(new Insets(1, 1, 1, 1));
             _upButton.setEnabled(false);
             _upButton.addActionListener(new ActionListener()
             {
@@ -1728,7 +1646,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            _downButton = new JButton("⇓");
+            _downButton = new JButton("↓");
+            _downButton.setToolTipText("Move down");
+            _downButton.setMargin(new Insets(1, 1, 1, 1));
             _downButton.setEnabled(false);
             _downButton.addActionListener(new ActionListener()
             {
@@ -1774,7 +1694,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            JButton deleteButton = new JButton("Delete");
+            JButton deleteButton = new JButton("✗");
+            deleteButton.setToolTipText("Delete");
+            deleteButton.setMargin(new Insets(1, 1, 1, 1));
             deleteButton.addActionListener(new ActionListener()
             {
                 @Override
@@ -1848,141 +1770,47 @@ class AssignmentPanel extends JPanel
             
             contentPanel.add(Box.createVerticalStrut(10));
             
+            JPanel combinedPanel = new JPanel(new GridLayout(1, 2, 3, 0));
+            combinedPanel.setAlignmentX(LEFT_ALIGNMENT);
+            combinedPanel.setBackground(contentPanel.getBackground());
+            contentPanel.add(combinedPanel);
+            
+            JPanel gradingSheetPanel = new JPanel(new BorderLayout(0, 0));
+            gradingSheetPanel.setBackground(combinedPanel.getBackground());
+            combinedPanel.add(gradingSheetPanel);
+            
             JLabel gradingSheetLabel = FormattedLabel.asSubheader("Grading Sheet");
             gradingSheetLabel.setToolTipText("A grading sheet is filled out by TAs while grading a student");
-            contentPanel.add(gradingSheetLabel);
+            gradingSheetPanel.add(gradingSheetLabel, BorderLayout.NORTH);
             
-            JPanel gmlPanel = new JPanel(new BorderLayout(5, 0));
-            gmlPanel.setAlignmentX(LEFT_ALIGNMENT);
-            gmlPanel.setBackground(contentPanel.getBackground());
-            contentPanel.add(gmlPanel);
-            gmlPanel.add(FormattedLabel.asContent("GML Template"), BorderLayout.WEST);
-            _gmlField = new ValidatingTextField()
+            _gradingSheetButton = new JButton("Edit Grading Sheet");
+            _gradingSheetButton.addActionListener(new ActionListener()
             {
                 @Override
-                protected String getDbValue()
+                public void actionPerformed(ActionEvent ae)
                 {
-                    return _part.getGmlTemplate() == null ? "" : _part.getGmlTemplate().getAbsolutePath();
-                }
-
-                @Override
-                protected ValidationResult validate(String value)
-                {
-                    ValidationResult result = ValidationResult.NO_ISSUE;
-                    if(!value.isEmpty())
+                    try
                     {
-                        File file = new File(value);
-                        
-                        if(!file.exists())
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified file does not exist");
-                        }
-                        else if(!file.isFile())
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified path is not a file");
-                        }
-                        else if(!file.canRead())
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Cannot read specified file");
-                        }
-                        else if(!value.endsWith("gml"))
-                        {
-                            result = new ValidationResult(ValidationState.WARNING, "Specified file does not end with " +
-                                    ".gml extension");
-                        }
+                        _worker.blockOnQueuedTasks();
+                        _configManager.hostModal(new GradingSheetCreatorPanel(_worker, _part));
                     }
-                    
-                    return result;
-                }
-
-                @Override
-                protected void applyChange(String newValue)
-                {
-                    if(newValue.isEmpty())
+                    catch(InterruptedException e)
                     {
-                        _part.setGmlTemplate(null);
+                        ErrorReporter.report("Unable to show grading sheet creator due to failure to block on " +
+                                "queued tasks", e);
                     }
-                    else
-                    {
-                        _part.setGmlTemplate(new File(newValue));
-                    }
-                    
-                    _part.setOutOf(null);
-                    _outOfField.setText("");
-                    
-                    _part.setQuickName(null);
-                    _quickNameField.setText("");
-                    
-                    _worker.submit(WORKER_TAG, new PartRunnable());
                 }
-            };
-            gmlPanel.add(_gmlField, BorderLayout.CENTER);
+            });
+            gradingSheetPanel.add(_gradingSheetButton);
             
-            JPanel gradingSheetOrPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            gradingSheetOrPanel.setAlignmentX(LEFT_ALIGNMENT);
-            gradingSheetOrPanel.setBackground(contentPanel.getBackground());
-            contentPanel.add(gradingSheetOrPanel);
-            gradingSheetOrPanel.add(FormattedLabel.asContent("OR"));
+            JPanel quickNamePanel = new JPanel(new BorderLayout(0, 0));
+            quickNamePanel.setBackground(combinedPanel.getBackground());
+            combinedPanel.add(quickNamePanel);
             
-            JPanel outOfAndQuickNamePanel = new JPanel(new GridLayout(1, 3));
-            outOfAndQuickNamePanel.setAlignmentX(LEFT_ALIGNMENT);
-            outOfAndQuickNamePanel.setBackground(contentPanel.getBackground());
-            contentPanel.add(outOfAndQuickNamePanel);
+            JLabel quickNameLabel = FormattedLabel.asSubheader("Quick Name");
+            quickNameLabel.setToolTipText("A unique name for the part that can be referenced from a shell script");
+            quickNamePanel.add(quickNameLabel, BorderLayout.NORTH);
             
-            JPanel outOfPanel = new JPanel(new BorderLayout(5, 0));
-            outOfPanel.setAlignmentX(LEFT_ALIGNMENT);
-            outOfPanel.setBackground(outOfAndQuickNamePanel.getBackground());
-            outOfAndQuickNamePanel.add(outOfPanel);
-            outOfPanel.add(FormattedLabel.asContent("Total Points"), BorderLayout.WEST);
-            _outOfField = new ValidatingTextField()
-            {
-                @Override
-                protected String getDbValue()
-                {
-                    return _part.getOutOf() == null ? "" : Double.toString(_part.getOutOf());
-                }
-                    
-                @Override
-                protected ValidationResult validate(String value)
-                {
-                    ValidationResult result = ValidationResult.NO_ISSUE;
-                    if(!value.isEmpty())
-                    {
-                        try
-                        {
-                            double outOf = Double.parseDouble(value);
-                            if(outOf < 0)
-                            {
-                                result = new ValidationResult(ValidationState.WARNING, "Value is negative");
-                            }
-                        }
-                        catch(NumberFormatException e)
-                        {
-                            result = new ValidationResult(ValidationState.ERROR, "Numerical value not provided");
-                        }
-                    }
-                    
-                    return result;
-                }
-
-                @Override
-                protected void applyChange(String newValue)
-                {
-                    _part.setOutOf(newValue.isEmpty() ? null : Double.parseDouble(newValue));
-                    _part.setGmlTemplate(null);
-                    _gmlField.setText("");
-                    _worker.submit(WORKER_TAG, new PartRunnable());
-                }
-            };
-            outOfPanel.add(_outOfField);
-            
-            outOfAndQuickNamePanel.add(FormattedLabel.asContent("and (optionally)").centerHorizontally());
-            
-            JPanel quickNamePanel = new JPanel(new BorderLayout(5, 0));
-            quickNamePanel.setAlignmentX(LEFT_ALIGNMENT);
-            quickNamePanel.setBackground(outOfAndQuickNamePanel.getBackground());
-            outOfAndQuickNamePanel.add(quickNamePanel);
-            quickNamePanel.add(FormattedLabel.asContent("Quick Name"), BorderLayout.WEST);
             _quickNameField = new ValidatingTextField()
             {
                 @Override
@@ -1996,8 +1824,8 @@ class AssignmentPanel extends JPanel
                 {
                     ValidationResult result;
                     
-                    //Allows a through z (upper and lower case), 0 through 9, underscore and dash
-                    Matcher matcher = Pattern.compile("[0-9a-zA-Z_-]*").matcher(value);
+                    //Allows a through z (upper and lower case), 0 through 9, and underscore
+                    Matcher matcher = Pattern.compile("[0-9a-zA-Z_]*").matcher(value);
                     if(matcher.find() && (matcher.end() - matcher.start() == value.length()))
                     {   
                         //TODO: Improve efficiency
@@ -2028,8 +1856,8 @@ class AssignmentPanel extends JPanel
                     }
                     else
                     {
-                        result = new ValidationResult(ValidationState.ERROR, "Only letters, numbers, underscores and " +
-                                "hypens are allowed");
+                        result = new ValidationResult(ValidationState.ERROR, "Only letters, numbers, and underscores " +
+                                "are allowed");
                     }
                     
                     return result;
@@ -2039,12 +1867,10 @@ class AssignmentPanel extends JPanel
                 protected void applyChange(String newValue)
                 {
                     _part.setQuickName(newValue.isEmpty() ? null : newValue);
-                    _part.setGmlTemplate(null);
-                    _gmlField.setText("");
                     _worker.submit(WORKER_TAG, new PartRunnable());
                 }
             };
-            quickNamePanel.add(_quickNameField);
+            quickNamePanel.add(_quickNameField, BorderLayout.CENTER);
             
             contentPanel.add(Box.createVerticalStrut(5));
             
@@ -2148,32 +1974,13 @@ class AssignmentPanel extends JPanel
                 panel.reorderOccurred();
             }
             
-            JPanel addPanel = new JPanel(new BorderLayout(0, 0))
-            {
-                @Override
-                public Dimension getMaximumSize()
-                {
-                    Dimension size = getPreferredSize();
-                    size.width = Short.MAX_VALUE;
-
-                    return size;
-                }
-            };
+            JPanel addPanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             addPanel.add(_addActionButton, BorderLayout.CENTER);
             _actionsPanel.add(addPanel);
             
             //Force visual update to reflect these changes
             _actionsPanel.repaint();
             _actionsPanel.revalidate();
-        }
-        
-        @Override
-        public Dimension getMaximumSize()
-        {
-            Dimension size = getPreferredSize();
-            size.width = Short.MAX_VALUE;
-
-            return size;
         }
         
         void reorderOccurred()
@@ -2237,17 +2044,7 @@ class AssignmentPanel extends JPanel
             this.add(paddingPanel, BorderLayout.CENTER);
             
             
-            JPanel headlinePanel = new JPanel(new BorderLayout(0, 0))
-            {
-                @Override
-                public Dimension getMaximumSize()
-                {
-                    Dimension size = getPreferredSize();
-                    size.width = Short.MAX_VALUE;
-
-                    return size;
-                }
-            };            
+            JPanel headlinePanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             headlinePanel.setAlignmentX(LEFT_ALIGNMENT);
             headlinePanel.setBackground(this.getBackground());
             contentPanel.add(headlinePanel);
@@ -2259,7 +2056,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            _upButton = new JButton("⇑");
+            _upButton = new JButton("↑");
+            _upButton.setToolTipText("Move up");
+            _upButton.setMargin(new Insets(1, 1, 1, 1));
             _upButton.setEnabled(false);
             _upButton.addActionListener(new ActionListener()
             {
@@ -2303,7 +2102,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            _downButton = new JButton("⇓");
+            _downButton = new JButton("↓");
+            _downButton.setToolTipText("Move down");
+            _downButton.setMargin(new Insets(1, 1, 1, 1));
             _downButton.setEnabled(false);
             _downButton.addActionListener(new ActionListener()
             {
@@ -2349,7 +2150,9 @@ class AssignmentPanel extends JPanel
             
             controlPanel.add(Box.createHorizontalStrut(3));
             
-            JButton deleteButton = new JButton("Delete");
+            JButton deleteButton = new JButton("✗");
+            deleteButton.setToolTipText("Delete");
+            deleteButton.setMargin(new Insets(1, 1, 1, 1));
             deleteButton.addActionListener(new ActionListener()
             {
                 @Override
