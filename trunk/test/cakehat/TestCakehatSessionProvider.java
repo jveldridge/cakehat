@@ -9,15 +9,17 @@ import cakehat.CakehatSession.ConnectionType;
  */
 public class TestCakehatSessionProvider implements CakehatSessionProvider
 {
+    private final String _course;
     private final boolean _didStartNormally;
     private final boolean _isDeveloperMode;
     private final CakehatRunMode _runMode;
     private final int _userId;
     private final ConnectionType _connectionType;
     
-    public TestCakehatSessionProvider(boolean didStartNormally, boolean isDeveloperMode, CakehatRunMode runMode,
-            int userId, ConnectionType connectionType)
+    public TestCakehatSessionProvider(String course, boolean didStartNormally, boolean isDeveloperMode,
+            CakehatRunMode runMode, int userId, ConnectionType connectionType)
     {
+        _course = course;
         _didStartNormally = didStartNormally;
         _isDeveloperMode = isDeveloperMode;
         _runMode = runMode;
@@ -27,7 +29,18 @@ public class TestCakehatSessionProvider implements CakehatSessionProvider
     
     public TestCakehatSessionProvider(int userId)
     {
-        this(false, false, CakehatRunMode.UNKNOWN, userId, ConnectionType.UNKNOWN);
+        this("cs000", false, false, CakehatRunMode.UNKNOWN, userId, ConnectionType.UNKNOWN);
+    }
+    
+    public TestCakehatSessionProvider(String course, int userId)
+    {
+        this(course, false, false, CakehatRunMode.UNKNOWN, userId, ConnectionType.UNKNOWN);
+    }
+    
+    @Override
+    public String getCourse()
+    {
+        return _course;
     }
 
     @Override

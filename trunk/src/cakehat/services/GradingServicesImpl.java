@@ -541,7 +541,7 @@ public class GradingServicesImpl implements GradingServices
             if(proceed)
             {
                 InternetAddress from = Allocator.getUserServices().getUser().getEmailAddress();
-                String subject = "[" + Allocator.getCourseInfo().getCourse() + "]" + asgn.getName() + " Graded";
+                String subject = "[" + CakehatSession.getCourse() + "]" + asgn.getName() + " Graded";
                 String body = asgn.getName() + " has been graded; your grading sheet is attached as a plain text file.";
 
                 

@@ -1,6 +1,7 @@
 package cakehat.email;
 
 import cakehat.Allocator;
+import cakehat.CakehatSession;
 import cakehat.InitializationException;
 import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.database.DbNotifyAddress;
@@ -106,7 +107,7 @@ public class EmailManagerImpl implements EmailManager
     {
         try
         {
-            return new InternetAddress(Allocator.getCourseInfo().getCourse() + "headtas@" +
+            return new InternetAddress(CakehatSession.getCourse() + "headtas@" +
                     Allocator.getConstants().getEmailDomain());
         }
         catch (AddressException ex)

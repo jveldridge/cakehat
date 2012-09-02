@@ -1,40 +1,27 @@
 #!/bin/bash
 #==============================================================================
-# A convenience script to run cakehat. Must be located somewhere within the
-# course directory from which cakehat will be run.
+# Runs the latest version of cakehat. Resolves a symbolic path to the latest
+# cakehat version into an absolute path and then runs the cakehat.jar that
+# is in that directory. The resolution from symbolic to absolute path is done
+# so that the JVM will continue to reference the same version of cakehat even
+# if a newer version of cakehat is released (and the symbolic path is updated
+# to point to that release) while a user is running cakehat.
+#
+# Note: This script makes use of realpath, which is not available on OS X.
 #
 # author:  jak2 (Joshua Kaplan)
-# created: January 20, 2010
-# last updated: January 30, 2012
+# created: August 22, 2012
+# last updated: August 22, 2012
 #==============================================================================
 
-#retrieve the location of this script
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+#Relative path to the directory containing the latest version of cakehat
+relative_path_latest="/contrib/projects/cakehat/releases/latest/"
 
-#extract the course name by splitting on each / and then taking the second
-#argument of the resulting array, which will be the course so long as this
-#script is in the course directory (which it absolutely should be)
-path_parts=(`echo $abspath | tr '/' ' '`)
-course=${path_parts[1]}
+#Absolute the path to the directory containing latest version of cakehat
+absolute_path_latest=$(realpath $relative_path_latest)
 
-#location of jar to run
-cakehat="/course/"$course"/.cakehat/bin/cakehat.jar"
+#Absolute path to the latest cakehat jar
+cakehat_path=$absolute_path_latest"/cakehat.jar"
 
-#If no arguments, run the grader view.
-if [[ ( $# == 0 ) ]]
-then
-    java -jar $cakehat grader
-#Else if exactly 1 argument and the argument is admin
-elif [[ ( $# == 1 && $1 == "admin") ]]
-then
-    java -jar $cakehat admin
-#Else if exactly 1 argument and the argument is config
-elif [[ ( $# == 1 && $1 == "config") ]]
-then
-    java -jar $cakehat config
-#Else, improper usage
-else
-    echo "Usage: cakehat"
-    echo "       cakehat admin"
-    echo "       cakehat config"
-fi
+#Runs the cakehat jar, passing along any arguments provided to this script
+java -jar $cakehat_path "$@"

@@ -1,6 +1,5 @@
 package cakehat.services;
 
-import cakehat.Allocator;
 import cakehat.CakehatSession;
 import cakehat.database.assignment.Action;
 import cakehat.database.assignment.Assignment;
@@ -15,11 +14,17 @@ import org.joda.time.DateTime;
  * @author jak2
  */
 public class PathServicesImpl implements PathServices
-{
+{   
     @Override
     public File getCourseDir()
     {
-        return new File("/course", Allocator.getCourseInfo().getCourse());
+        return new File("/course", CakehatSession.getCourse());
+    }
+    
+    @Override
+    public File getTABinDir()
+    {
+        return new File(getCourseDir(), "tabin");
     }
     
     private File getCakehatCurrentYearDir()
