@@ -16,7 +16,6 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.GeneralSecurityException;
@@ -31,7 +30,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -234,7 +232,8 @@ class EmailPanel extends JPanel
                 @Override
                 public void actionPerformed(ActionEvent ae)
                 {
-                    new TestCredentialsDialog(_configManager, _accountProp.getValue(), _passwordProp.getValue());
+                    _configManager.hostModal(new TestCredentialsPanel(_accountProp.getValue(),
+                            _passwordProp.getValue()));
                 }
             });
             buttonPanel.add(_testButton);
@@ -325,14 +324,12 @@ class EmailPanel extends JPanel
         }
     }
     
-    private static class TestCredentialsDialog extends JDialog
+    private static class TestCredentialsPanel extends JPanel
     {
         private final JPanel _contentPanel;
         
-        TestCredentialsDialog(Window owner, final String account, final String password)
-        {
-            super(owner, "Test Email Credentials", ModalityType.APPLICATION_MODAL);
-            
+        TestCredentialsPanel(final String account, final String password)
+        {   
             this.setLayout(new BorderLayout(0, 0));
             this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
             this.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
@@ -344,7 +341,8 @@ class EmailPanel extends JPanel
             this.add(_contentPanel, BorderLayout.CENTER);
             
             final String from = account + "@" + Allocator.getConstants().getEmailDomain();
-            final String to = Allocator.getUserUtilities().getUserLogin() + "@" + Allocator.getConstants().getEmailDomain();
+            final String to = Allocator.getUserUtilities().getUserLogin() + "@" +
+                              Allocator.getConstants().getEmailDomain();
             final String subject = "cakehat Email Verification";
             final String body = "This is a test. cakehat is conducting a test of the Email Delivery System. " +
                                 "This is only a test.";
@@ -365,8 +363,6 @@ class EmailPanel extends JPanel
             
             _contentPanel.add(Box.createVerticalStrut(5));
             
-            JPanel buttonPanel = new JPanel(new GridLayout(1, 5));
-            buttonPanel.add(Box.createHorizontalBox());
             JButton sendButton = new JButton("Send");
             sendButton.addActionListener(new ActionListener()
             {
@@ -405,29 +401,7 @@ class EmailPanel extends JPanel
                     }
                 }
             });
-            buttonPanel.add(sendButton);
-            buttonPanel.add(Box.createHorizontalBox());
-            JButton cancelButton = new JButton("Cancel");
-            cancelButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    TestCredentialsDialog.this.dispose();
-                }
-            });
-            buttonPanel.add(cancelButton);
-            buttonPanel.add(Box.createHorizontalBox());
-            _contentPanel.add(buttonPanel);
-            
-            //Show
-            this.setResizable(false);
-            this.setSize(new Dimension(600, 225));
-            this.setPreferredSize(new Dimension(600, 225));
-            this.setAlwaysOnTop(true);
-            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            this.setLocationRelativeTo(owner);
-            this.setVisible(true);   
+            _contentPanel.add(sendButton);
         }
         
         private void emailSent(String message, boolean success)
@@ -442,20 +416,6 @@ class EmailPanel extends JPanel
                 label.showAsErrorMessage();
             }
             _contentPanel.add(label, BorderLayout.CENTER);
-
-            //Close
-            JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    TestCredentialsDialog.this.dispose();
-                }
-            });
-            JPanel closePanel = new JPanel();
-            closePanel.add(closeButton);
-            _contentPanel.add(closePanel, BorderLayout.SOUTH);
             
             //Force visual update to reflect these changes
             _contentPanel.repaint();
@@ -464,7 +424,7 @@ class EmailPanel extends JPanel
         
         private JPanel createCredentialsRow(String labelText, String valueText)
         {
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0))
+            JPanel panel = new JPanel(new BorderLayout(10, 0))
             {
                 @Override
                 public Dimension getMaximumSize()
@@ -475,18 +435,17 @@ class EmailPanel extends JPanel
                     return size;
                 }
             };
-            
+                        
             JLabel label = FormattedLabel.asContent(labelText);
+            label.setMinimumSize(new Dimension(50, 25));
             label.setPreferredSize(new Dimension(50, 25));
-            panel.add(label);
-            
-            panel.add(Box.createHorizontalStrut(10));
+            panel.add(label, BorderLayout.WEST);
             
             JTextField textField = new JTextField(valueText);
-            textField.setPreferredSize(new Dimension(518, 25));
             textField.setEnabled(false);
             textField.setDisabledTextColor(Color.GRAY);
             panel.add(textField);
+            panel.add(textField, BorderLayout.CENTER);
             
             return panel;
         }

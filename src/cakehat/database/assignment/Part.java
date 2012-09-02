@@ -3,11 +3,6 @@ package cakehat.database.assignment;
 import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;
 import cakehat.database.Group;
-import cakehat.gml.GMLParser;
-import cakehat.gml.GradingSheetException;
-import cakehat.gml.InMemoryGML;
-import cakehat.gml.InMemoryGML.Section;
-import cakehat.gml.InMemoryGML.Subsection;
 import java.awt.Window;
 import java.io.File;
 import java.io.FileFilter;
@@ -25,11 +20,7 @@ import support.utils.ArchiveExtractionException;
  * handin each part could represent a group of files (potentially overlapping) such that each grouping is a solution
  * to an assigned problem. How a course chooses to divide a {@link GradableEvent} into {@code Part}s is entirely up to
  * them. In many cases a {@link GradableEvent} will only have one {@code Part}.
- * <br/><br/>
- * Either a GML template or an amount of points this part is out of may be specified, but not both. If a number of
- * points is specified then a quick name may be specified which allows a TA to enter a grade for a part for a given
- * group using a command line interface.
- *
+ * 
  * @author jak2
  */
 public class Part implements Comparable<Part>
@@ -37,20 +28,8 @@ public class Part implements Comparable<Part>
     private final int _id;
     private final String _name;
     private final int _order;
-    
-    /**
-     * If this Part has its out of determined by the GML template then this value will be loaded lazily. This field is
-     * volatile so that once set other threads will be guaranteed to see the new value. It is still possible this value
-     * could be computed more than once if the method that determines this value is called concurrently, but this will
-     * not cause an issue, it will just be less than optimally efficient in that case. However, by not synchronizing
-     * that method it makes it more efficient in the general case.
-     */
-    private volatile Double _outOf;
-    private final File _gmlTemplate;
     private final String _quickName;
-    
     private final FilterProvider _filterProvider;
-
     private final List<Action> _actions;
     
      /**
@@ -67,37 +46,15 @@ public class Part implements Comparable<Part>
      * @param name human readable name of this Part, may not be {@code null}
      * @param order relative order of this Part to other Parts in the same GradableEvent, must be unique for that
      * GradableEvent
-     * @param outOf must be {@code null} if {@code gmlTemplate} is not {@code null}, otherwise may not be {@code null}
-     * @param gmlTemplate must be {@code null} if {@code outOf} is not {@code null}, otherwise must not be {@code null}
-     * @param quickName must be {@code null} if {@code gmlTemplate} is not {@code null}
+     * @param quickName may be {@code null}
      * @param filterProvider may be {@code null}
      * @param actions may not be {@code null}
      */
-    Part(int id,
-         String name,
-         int order,
-         Double outOf,
-         File gmlTemplate,
-         String quickName,
-         FilterProvider filterProvider,
-         List<Action> actions)
+    Part(int id, String name, int order, String quickName, FilterProvider filterProvider, List<Action> actions)
     {
-        //Validation
         if(name == null)
         {
             throw new NullPointerException("name may not be null");
-        }
-        if(quickName != null && gmlTemplate != null)
-        {
-            throw new IllegalArgumentException("quickName must be null if gmlTemplate is not null");
-        }
-        if(outOf != null && gmlTemplate != null)
-        {
-            throw new IllegalArgumentException("Exactly one of outOf and gmlTemplate must be null");
-        }
-        if(outOf == null && gmlTemplate == null)
-        {
-            throw new NullPointerException("outOf and gmlTemplate may not both be null");
         }
         if(actions == null)
         {
@@ -107,13 +64,8 @@ public class Part implements Comparable<Part>
         _name = name;
         _order = order;
         _id = id;
-        
-        _outOf = outOf;
-        _gmlTemplate = gmlTemplate;
         _quickName = quickName;
-        
         _filterProvider = (filterProvider == null ? new AlwaysAcceptingFilterProvider() : filterProvider);
-        
         _actions = actions;
     }
     
@@ -211,36 +163,10 @@ public class Part implements Comparable<Part>
      * 
      * @return 
      */
+    @Deprecated
     public double getOutOf()
     {
-        if(_outOf == null)
-        {
-            if(_gmlTemplate.exists() && _gmlTemplate.isFile() && _gmlTemplate.canRead())
-            {
-                double totalOutOf = 0;
-                try
-                {
-                    InMemoryGML gml = GMLParser.parse(_gmlTemplate, this, null);
-                    for(Section section : gml.getSections())
-                    {
-                        for(Subsection subsection : section.getSubsections())
-                        {
-                            totalOutOf += subsection.getOutOf();
-                        }
-                    }
-                }
-                //TODO: Figure out how to communicate this case of user error from an incorrectly formatted GML template
-                catch(GradingSheetException e) { }
-                
-                _outOf = totalOutOf;
-            }
-            else
-            {
-                _outOf = 0D;
-            }
-        }
-        
-        return _outOf;
+        return 0.0;
     }
     
     /**
@@ -262,9 +188,10 @@ public class Part implements Comparable<Part>
      *
      * @return
      */
+    @Deprecated
     public boolean hasSpecifiedGMLTemplate()
     {
-        return (_gmlTemplate != null);
+        return false;
     }
 
     /**
@@ -272,9 +199,10 @@ public class Part implements Comparable<Part>
      *
      * @return
      */
+    @Deprecated
     public File getGMLTemplate()
     {
-        return _gmlTemplate;
+        return null;
     }
 
     /**

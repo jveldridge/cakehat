@@ -2,17 +2,14 @@ package cakehat.views.shared.gradingsheet;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.Scrollable;
+import support.ui.FixedWidthJPanel;
 
 /**
  *
  * @author jak2
  */
-class WidthTrackingViewportPanel<T extends JComponent & GradingSheet> extends JPanel implements GradingSheet, Scrollable
+class WidthTrackingViewportPanel<T extends JComponent & GradingSheet> extends FixedWidthJPanel implements GradingSheet
 {   
     private final T _gradingSheet;
     
@@ -22,36 +19,6 @@ class WidthTrackingViewportPanel<T extends JComponent & GradingSheet> extends JP
         
         this.setLayout(new BorderLayout(0, 0));
         this.add(gradingSheet, BorderLayout.CENTER);
-    }
-    
-    @Override
-    public Dimension getPreferredScrollableViewportSize()
-    {
-        return this.getPreferredSize();
-    }
-
-    @Override
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) 
-    {
-        return 1;
-    }
-
-    @Override
-    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) 
-    {
-        return 10;
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportWidth()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportHeight()
-    {
-        return false;
     }
 
     @Override

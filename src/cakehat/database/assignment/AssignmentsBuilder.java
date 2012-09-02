@@ -96,8 +96,6 @@ public class AssignmentsBuilder
                     dbPart.getId(),
                     dbPart.getName(),
                     dbPart.getOrder(),
-                    dbPart.getOutOf(),
-                    dbPart.getGmlTemplate(),
                     dbPart.getQuickName(),
                     buildFilterProvider(dbPart.getInclusionFilters()),
                     actions);

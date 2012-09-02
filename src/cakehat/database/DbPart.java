@@ -18,8 +18,6 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     private volatile DbGradableEvent _gradableEvent;
     private volatile String _name;
     private volatile int _order;
-    private volatile File _gmlTemplate;
-    private volatile Double _outOf;
     private volatile String _quickName;
     private final Set<DbAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
@@ -61,16 +59,13 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
      * @param outOf
      * @param quickName
      */
-    DbPart(DbGradableEvent gradableEvent, int id, String name, int order, String gmlTemplate, Double outOf,
-           String quickName)
+    DbPart(DbGradableEvent gradableEvent, int id, String name, int order, String quickName)
     {
         super(id);
         
         _gradableEvent = gradableEvent;
         _name = name;
         _order = order;
-        _gmlTemplate = gmlTemplate == null ? null : new File(gmlTemplate);
-        _outOf = outOf;
         _quickName = quickName;
         _actions = new HashSet<DbAction>();
         _inclusionFilters = new HashSet<DbInclusionFilter>();
@@ -94,26 +89,6 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     public int getOrder()
     {
         return _order;
-    }
-
-    public void setGmlTemplate(File gmlTemplate)
-    {
-        _gmlTemplate = gmlTemplate;
-    }
-    
-    public File getGmlTemplate()
-    {
-        return _gmlTemplate;
-    }
-
-    public void setOutOf(Double outOf)
-    {
-        _outOf = outOf;
-    }
-    
-    public Double getOutOf()
-    {
-        return _outOf;
     }
 
     public void setQuickName(String quickName)
