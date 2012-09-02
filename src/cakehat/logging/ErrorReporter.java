@@ -135,7 +135,7 @@ public class ErrorReporter
         {
             appendToBody(body, "Stack Trace", getStackTraceAsString(error));
         }
-        appendToBody(body, "Course", Allocator.getCourseInfo().getCourse());
+        appendToBody(body, "Course", CakehatSession.getCourse());
         appendToBody(body, "Run Mode", CakehatSession.getRunMode().toString());
         appendToBody(body, "Developer Mode", Boolean.toString(CakehatSession.isDeveloperMode()));
         appendToBody(body, "Version", CakehatReleaseInfo.getVersion());

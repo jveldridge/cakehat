@@ -6,7 +6,6 @@ import cakehat.database.assignment.Action;
 import org.joda.time.DateTime;
 import cakehat.database.assignment.Part;
 import cakehat.Allocator;
-import cakehat.Allocator.SingletonAllocation;
 import cakehat.CakehatSession;
 import cakehat.TestCakehatSessionProvider;
 import cakehat.database.assignment.Assignment;
@@ -84,20 +83,7 @@ public class PathServicesTest
         replay(_part);
         replay(_action);
         
-        //Mock out course information
-        final CourseInfo courseInfo = createMock(CourseInfo.class);
-        expect(courseInfo.getCourse()).andReturn(COURSE).anyTimes();
-        replay(courseInfo);
-        SingletonAllocation<CourseInfo> courseInfoAlloc =
-            new SingletonAllocation<CourseInfo>()
-            {
-                public CourseInfo allocate() { return courseInfo; };
-            };
-
-        
-        new Allocator.Customizer().setCourseInfo(courseInfoAlloc).customize();
-        
-        CakehatSession.CakehatSessionProvider provider = new TestCakehatSessionProvider(TA_ID);
+        CakehatSession.CakehatSessionProvider provider = new TestCakehatSessionProvider(COURSE, TA_ID);
         _runMode = provider.getRunMode();
         CakehatSession.setSessionProviderForTesting(provider);
 
@@ -110,6 +96,14 @@ public class PathServicesTest
         File expected = new File("/course/" + COURSE);
         
         assertEquals(expected, _service.getCourseDir());
+    }
+    
+    @Test
+    public void testGetTABinDir()
+    {
+        File expected = new File("/course/" + COURSE + "/tabin/");
+        
+        assertEquals(expected, _service.getTABinDir());
     }
     
     @Test

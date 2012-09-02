@@ -1,6 +1,7 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
+import cakehat.CakehatSession;
 import cakehat.database.DeadlineInfo;
 import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.Extension;
@@ -445,7 +446,7 @@ class GradeReportView extends JDialog
         
         
         //Set the initial text into the message area - which will generate the initial preview
-        _messageArea.setText("Below are your current grades for " + Allocator.getCourseInfo().getCourse());
+        _messageArea.setText("Below are your current grades for " + CakehatSession.getCourse());
     }
     
     /**
@@ -576,7 +577,7 @@ class GradeReportView extends JDialog
                     Map<Student, MessagingException> reportsFailedToSend = new HashMap<Student, MessagingException>();
                     
                     InternetAddress from = Allocator.getEmailManager().getHeadTAsEmailAddress();
-                    String subject = Allocator.getCourseInfo().getCourse() + " Grade Report";
+                    String subject = CakehatSession.getCourse() + " Grade Report";
                     for(Student student : _students)
                     {
                         notifyTaskStepStarted("Emailing " + student.getName());
@@ -731,7 +732,7 @@ class GradeReportView extends JDialog
         //Top portion with course, student, and message text
         reportBuilder.append("<body style='font-family: sans-serif; font-size: 10pt'>");
         reportBuilder.append("<h1 style='font-weight: bold; font-size:11pt'>");
-        reportBuilder.append(Allocator.getCourseInfo().getCourse());
+        reportBuilder.append(CakehatSession.getCourse());
         reportBuilder.append(" Grade Report for ");
         reportBuilder.append((student == null ? "Template" : student.getName()));
         reportBuilder.append("</h1>");

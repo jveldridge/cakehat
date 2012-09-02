@@ -24,7 +24,7 @@ public class ConfigManagerView extends JFrame
     private final JTabbedPane _tabbedPane;
     private final UniqueElementSingleThreadWorker _worker = UniqueElementSingleThreadWorker.newInstance();
     
-    private ConfigManagerView()
+    private ConfigManagerView(int selectedIndex)
     {
         super("cakehat (configuration manager)" +
                 (CakehatSession.getUserConnectionType() == ConnectionType.REMOTE ? " [ssh]" : ""));
@@ -54,6 +54,9 @@ public class ConfigManagerView extends JFrame
         _tabbedPane.insertTab("Students", null, new PaddingPanel(new StudentPanel(this, _worker), 10), null, 1);
         _tabbedPane.insertTab("Assignments", null, new PaddingPanel(new AssignmentPanel(this, _worker), 10), null, 2);
         _tabbedPane.insertTab("Email", null, new PaddingPanel(new EmailPanel(this, _worker), 10), null, 3);
+        _tabbedPane.insertTab("Scripts", null, new PaddingPanel(new ScriptsPanel(this), 10), null, 4);
+        
+        _tabbedPane.setSelectedIndex(selectedIndex);
         
         //Display
         this.setMinimumSize(new Dimension(640, 360));
@@ -61,7 +64,6 @@ public class ConfigManagerView extends JFrame
         this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(true);
-        this.setVisible(true);
     }
     
     CloseAction hostModal(JComponent component)
@@ -72,20 +74,25 @@ public class ConfigManagerView extends JFrame
         return closeAction;
     }
     
-    public static void launch()
+    public static void launch(final boolean isCakehatConfigured)
     {   
         EventQueue.invokeLater(new Runnable()
         {
             public void run()
             {   
-                boolean proceed = ModalDialog.showConfirmation(null, "Warning",
+                boolean proceed = true;
+                if(isCakehatConfigured)
+                {
+                    proceed = ModalDialog.showConfirmation(null, "Warning",
                         "The cakehat configuration manager should only be run when no other instances of cakehat are " +
                         "running. Running this configuration manager while other instances of cakehat are running " +
                         "can result in your database being left in an unusable state.",
                         "Proceed", "Cancel");
+                }
+                
                 if(proceed)
                 {
-                    new ConfigManagerView();
+                    new ConfigManagerView(isCakehatConfigured ? 0 : 4).setVisible(true);
                 }
             }
         });

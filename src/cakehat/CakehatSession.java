@@ -18,6 +18,16 @@ public class CakehatSession
     private static volatile CakehatSessionProvider _provider = new DidNotStartNormallyContextProvider();
     
     /**
+     * The course cakehat is running for.
+     * 
+     * @return 
+     */
+    public static String getCourse()
+    {
+        return _provider.getCourse();
+    }
+    
+    /**
      * Whether cakehat was started normally, meaning {@link CakehatMain#main(java.lang.String[])} was called.
      * 
      * @return 
@@ -59,7 +69,7 @@ public class CakehatSession
     }
 
     /**
-     * Indicates whether the user is remotely connected (ssh). Will not be {@code null}. but may be
+     * Indicates whether the user is remotely connected (ssh). Will not be {@code null}, but may be
      * {@link ConnectionType#UNKNOWN} if a failure occurs in determining the information.
      * 
      * @return 
@@ -96,6 +106,8 @@ public class CakehatSession
      */
     public static interface CakehatSessionProvider
     {
+        public String getCourse();
+        
         public boolean didStartNormally();
 
         public boolean isDeveloperMode();
@@ -113,6 +125,12 @@ public class CakehatSession
      */
     private static final class DidNotStartNormallyContextProvider implements CakehatSessionProvider
     {
+        @Override
+        public String getCourse()
+        {
+            return "cs000";
+        }
+        
         @Override
         public boolean didStartNormally()
         {

@@ -29,6 +29,19 @@ public interface PathServices
     public File getCourseDir();
     
     /**
+     * The course's TA bin directory. This directory is not managed by cakehat and is not guaranteed to exist.
+     * 
+     * <pre>
+     * {@code
+     * /course/<course>/tabin/
+     * }
+     * </pre>
+     * 
+     * @return 
+     */
+    public File getTABinDir();
+    
+    /**
      * The database file.
      *
      * <pre>
