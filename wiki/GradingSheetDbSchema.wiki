@@ -7,7 +7,7 @@ gradingsheetsection
  * ordering INTEGER NOT NULL
  * outof DOUBLE //may be null; if not null, used for subtractive grading as earned and out of
  * FOREIGN KEY pid REFERENCES part(pid) ON DELETE CASCADE
- * CONSTRAINT uniquenames UNIQUE (gs_id, gs_sid, name) ON CONFLICT ROLLBACK
+ * CONSTRAINT uniquenames UNIQUE (pid, gs_sid, name) ON CONFLICT ROLLBACK
 
 gradingsheetsubsection
  * gs_ssid INTEGER PRIMARY KEY AUTOINCREMENT
@@ -36,7 +36,7 @@ groupgradingsheet
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY assignedto REFERENCES ta(tid) ON DELETE CASCADE
  * FOREIGN KEY submittedby REFERENCES ta(tid) ON DELETE CASCADE
- * CONSTRAINT onepergroup UNIQUE(gs_id, agid) ON CONFLICT REPLACE
+ * CONSTRAINT onepergroupperpart UNIQUE(pid, agid) ON CONFLICT REPLACE
 
 groupgradingsheetsubsection
  * ggsid INTEGER NOT NULL
