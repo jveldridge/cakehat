@@ -1,18 +1,12 @@
 #summary Proposed schema for storing grading sheets in the database.
 
-gradingsheet
- * gs_id INTEGER PRIMARY KEY AUTOINCREMENT
- * pid INTEGER NOT NULL
- * FOREIGN KEY pid REFERENCES part(pid) ON DELETE CASCADE
- * CONSTRAINT oneperpart UNIQUE(PID) ON CONFLICT ROLLBACK
-
 gradingsheetsection
  * gs_sid INTEGER PRIMARY KEY AUTOINCREMENT
- * gs_id INTEGER NOT NULL
+ * pid INTEGER NOT NULL
  * name VARCHAR NOT NULL
  * ordering INTEGER NOT NULL
  * outof DOUBLE //may be null; if not null, used for subtractive grading as earned and out of
- * FOREIGN KEY gs_id REFERENCES gradingsheet(gs_id) ON DELETE CASCADE
+ * FOREIGN KEY pid REFERENCES part(pid) ON DELETE CASCADE
  * CONSTRAINT uniquenames UNIQUE (gs_id, gs_sid, name) ON CONFLICT ROLLBACK
 
 gradingsheetsubsection
@@ -33,12 +27,12 @@ gradingsheetdetail
 
 groupgradingsheet
  * ggsid INTEGER PRIMARY KEY AUTOINCREMENT
- * gs_id INTEGER NOT NULL
+ * pid INTEGER NOT NULL
  * agid INTEGER NOT NULL
  * assignedto INTEGER
  * submittedby INTEGER //ta who last submitted the group grading sheet; null if never submitted
  * datesubmitted VARCHAR //time the group grading sheet was last submitted; null if never submitted
- * FOREIGN KEY gs_id REFERENCES gradingsheet(gs_id) ON DELETE CASCADE
+ * FOREIGN KEY pid REFERENCES part(pid) ON DELETE CASCADE
  * FOREIGN KEY agid REFERENCES asgngroup(agid) ON DELETE CASCADE
  * FOREIGN KEY assignedto REFERENCES ta(tid) ON DELETE CASCADE
  * FOREIGN KEY submittedby REFERENCES ta(tid) ON DELETE CASCADE
