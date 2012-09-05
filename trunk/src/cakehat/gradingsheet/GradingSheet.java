@@ -4,6 +4,7 @@ import cakehat.database.assignment.Part;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import support.utils.NullMath;
 
 /**
  * A GradingSheet encapsulates the criteria by which groups are graded for a particular Part.  There is exactly one
@@ -75,6 +76,25 @@ public class GradingSheet implements Comparable<GradingSheet> {
         }
 
         return _part;
+    }
+    
+    public Double getOutOf() {
+        Double totalOutOf = null;
+        
+        for (GradingSheetSection section : _sections) {
+            Double sectionOutOf = section.getOutOf();
+            
+            //If the section's out of is null then its total out of is defined by the sum of its subsections' out ofs
+            if (sectionOutOf == null) {
+                for (GradingSheetSubsection subsection : section.getSubsections()) {
+                    sectionOutOf = NullMath.add(sectionOutOf, subsection.getOutOf());
+                }
+            }
+            
+            totalOutOf = NullMath.add(totalOutOf, sectionOutOf);
+        }
+        
+        return totalOutOf;
     }
 
     /**
