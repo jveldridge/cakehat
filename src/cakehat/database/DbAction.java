@@ -147,18 +147,6 @@ public class DbAction extends DbDataItem implements Comparable<DbAction>
     }
 
     @Override
-    void setParentNull()
-    {
-        _part = null;
-    }
-    
-    @Override
-    Iterable<DbActionProperty> getChildren()
-    {
-        return this.getActionProperties();
-    }
-    
-    @Override
     public int compareTo(DbAction other)
     {
         return new Integer(_order).compareTo(other._order);

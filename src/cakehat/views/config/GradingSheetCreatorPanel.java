@@ -1,7 +1,6 @@
 package cakehat.views.config;
 
 import cakehat.Allocator;
-import cakehat.database.DbGradingSheet;
 import cakehat.database.DbGradingSheetDetail;
 import cakehat.database.DbGradingSheetSection;
 import cakehat.database.DbGradingSheetSubsection;
@@ -97,56 +96,26 @@ class GradingSheetCreatorPanel extends JPanel
             @Override
             public void run()
             {
-                try
+                _contentPanel.removeAll();
+                _headerPanel.removeAll();
+
+                _headerPanel.add(FormattedLabel.asHeader(_part.getName() + " Grading Sheet"), BorderLayout.WEST);
+                _headerPanel.add(Box.createHorizontalBox(), BorderLayout.CENTER);
+
+                EventQueue.invokeLater(new Runnable()
                 {
-                    _contentPanel.removeAll();
-                    _headerPanel.removeAll();
-                    
-                    _headerPanel.add(FormattedLabel.asHeader(_part.getName() + " Grading Sheet"), BorderLayout.WEST);
-                    _headerPanel.add(Box.createHorizontalBox(), BorderLayout.CENTER);
-        
-                    //Retrieve the grading sheet, and if none exists yet - create one
-                    DbGradingSheet gradingSheet = Allocator.getDatabase().getGradingSheet(_part);
-                    if(gradingSheet == null)
+                    @Override
+                    public void run()
                     {
-                        gradingSheet = DbGradingSheet.build(_part);
-                        Allocator.getDatabase().putGradingSheets(ImmutableSet.of(gradingSheet));
+                        _contentPanel.add(new GradingSheetPanel(), BorderLayout.CENTER);
+
+                        //Force visual update to reflect these changes
+                        _contentPanel.repaint();
+                        _contentPanel.revalidate();
+                        _headerPanel.repaint();
+                        _headerPanel.revalidate();
                     }
-                    final DbGradingSheet finalGradingSheet = gradingSheet;
-                    
-                    EventQueue.invokeLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            _contentPanel.add(new GradingSheetPanel(finalGradingSheet), BorderLayout.CENTER);
-                            
-                            //Force visual update to reflect these changes
-                            _contentPanel.repaint();
-                            _contentPanel.revalidate();
-                            _headerPanel.repaint();
-                            _headerPanel.revalidate();
-                        }
-                    });
-                }
-                catch(final SQLException e)
-                {
-                    EventQueue.invokeLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            _contentPanel.removeAll();
-                            _headerPanel.removeAll();
-                            
-                            //Force visual update to reflect these changes
-                            _contentPanel.repaint();
-                            _contentPanel.revalidate();
-                            
-                            ErrorReporter.report(e);
-                        }
-                    });
-                }
+                });
             }
         });
     }
@@ -177,12 +146,10 @@ class GradingSheetCreatorPanel extends JPanel
 
     private class GradingSheetPanel extends JPanel implements OrderableController<DbGradingSheetSection>
     {
-        private final DbGradingSheet _gradingSheet;
         private final OrderableControllerHelper<DbGradingSheetSection> _helper;
         
-        GradingSheetPanel(DbGradingSheet sheet)
+        GradingSheetPanel()
         {   
-            _gradingSheet = sheet;
             
             this.setLayout(new BorderLayout(0, 0));
             
@@ -193,13 +160,13 @@ class GradingSheetCreatorPanel extends JPanel
                 @Override
                 Set<DbGradingSheetSection> getChildren()
                 {
-                    return _gradingSheet.getSections();
+                    return _part.getGradingSheetSections();
                 }
 
                 @Override
                 DbGradingSheetSection createChild(int order)
                 {
-                    return DbGradingSheetSection.build(_gradingSheet, "Section " + order, order, null);
+                    return DbGradingSheetSection.build(_part, "Section " + order, order, null);
                 }
 
                 @Override
@@ -235,7 +202,7 @@ class GradingSheetCreatorPanel extends JPanel
         @Override
         public void removeFromParent(DbGradingSheetSection section)
         {
-            _gradingSheet.removeSection(section);
+            _part.removeGradingSheetSection(section);
             _helper.visuallyRemoveChild(section);
         }
 

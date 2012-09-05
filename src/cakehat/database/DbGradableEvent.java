@@ -216,16 +216,6 @@ public class DbGradableEvent extends DbDataItem implements Comparable<DbGradable
     {
         return _asgn;
     }
-    
-    @Override
-    void setParentNull() {
-        _asgn = null;
-    }
-    
-    @Override
-    Iterable<DbPart> getChildren() {
-        return this.getParts();
-    }
 
     @Override
     public int compareTo(DbGradableEvent other)

@@ -77,6 +77,7 @@ public class DatabaseAssignmentTest {
             assertEquals(t1.getQuickName(), t2.getQuickName());
             DatabaseTestHelpers.assertSetsEqual(INCLUSION_FILTER_EQC, t1.getInclusionFilters(), t2.getInclusionFilters());
             DatabaseTestHelpers.assertSetsEqual(ACTION_EQC, t1.getActions(), t2.getActions());
+            DatabaseTestHelpers.assertSetsEqual(GRADING_SHEET_SECTION_EQC, t1.getGradingSheetSections(), t2.getGradingSheetSections());
         }
     };
     
@@ -110,6 +111,39 @@ public class DatabaseAssignmentTest {
             assertEquals(t1.getPart().getId(), t2.getPart().getId());
             assertEquals(t1.getType(), t2.getType());
             assertEquals(t1.getPath(), t2.getPath());
+        }
+    };
+    
+    private final EqualityAsserter<DbGradingSheetSection> GRADING_SHEET_SECTION_EQC = new EqualityAsserter<DbGradingSheetSection>() {
+        @Override
+        public void assertEqual(DbGradingSheetSection t1, DbGradingSheetSection t2) {
+            assertEquals(t1.getId(), t2.getId());
+            assertEquals(t1.getName(), t2.getName());
+            assertEquals(t1.getOrder(), t2.getOrder());
+            assertEquals(t1.getOutOf(), t2.getOutOf());
+            DatabaseTestHelpers.assertSetsEqual(GRADING_SHEET_SUBSECTION_EQC, t1.getSubsections(), t2.getSubsections());
+        }
+    };
+    
+    private final EqualityAsserter<DbGradingSheetSubsection> GRADING_SHEET_SUBSECTION_EQC = new EqualityAsserter<DbGradingSheetSubsection>() {
+        @Override
+        public void assertEqual(DbGradingSheetSubsection t1, DbGradingSheetSubsection t2) {
+            assertEquals(t1.getId(), t2.getId());
+            assertEquals(t1.getSection().getId(), t2.getSection().getId());
+            assertEquals(t1.getText(), t2.getText());
+            assertEquals(t1.getOrder(), t2.getOrder());
+            assertEquals(t1.getOutOf(), t2.getOutOf());
+            DatabaseTestHelpers.assertSetsEqual(GRADING_SHEET_DETAIL_EQC, t1.getDetails(), t2.getDetails());
+        }
+    };
+    
+    private final EqualityAsserter<DbGradingSheetDetail> GRADING_SHEET_DETAIL_EQC = new EqualityAsserter<DbGradingSheetDetail>() {
+        @Override
+        public void assertEqual(DbGradingSheetDetail t1, DbGradingSheetDetail t2) {
+            assertEquals(t1.getId(), t2.getId());
+            assertEquals(t1.getSubsection().getId(), t2.getSubsection().getId());
+            assertEquals(t1.getText(), t2.getText());
+            assertEquals(t1.getOrder(), t2.getOrder());
         }
     };
     
@@ -294,6 +328,15 @@ public class DatabaseAssignmentTest {
         actionProperty.setValue("value");
         _database.putActionProperties(ImmutableSet.of(actionProperty));
         
+        DbGradingSheetSection section = DbGradingSheetSection.build(part, "section", 1, null);        
+        _database.putGradingSheetSections(ImmutableSet.of(section));
+        
+        DbGradingSheetSubsection subsection = DbGradingSheetSubsection.build(section, "subsection", 1, null);
+        _database.putGradingSheetSubsections(ImmutableSet.of(subsection));
+        
+        DbGradingSheetDetail detail = DbGradingSheetDetail.build(subsection, "detail", 1);
+        _database.putGradingSheetDetails(ImmutableSet.of(detail));
+        
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
     }
@@ -311,13 +354,19 @@ public class DatabaseAssignmentTest {
         action.setTask("java:compile-and-run");
         DbActionProperty actionProperty = DbActionProperty.build(action, "key");
         actionProperty.setValue("value");
-        
+        DbGradingSheetSection section = DbGradingSheetSection.build(part, "section", 1, null);
+        DbGradingSheetSubsection subsection = DbGradingSheetSubsection.build(section, "subsection", 1, null);
+        DbGradingSheetDetail detail = DbGradingSheetDetail.build(subsection, "detail", 1);
+
         _database.putAssignments(ImmutableSet.of(asgn));
         _database.putGradableEvents(ImmutableSet.of(ge));
         _database.putParts(ImmutableSet.of(part));
         _database.putInclusionFilters(ImmutableSet.of(filter));
         _database.putActions(ImmutableSet.of(action));
         _database.putActionProperties(ImmutableSet.of(actionProperty));
+        _database.putGradingSheetSections(ImmutableSet.of(section));
+        _database.putGradingSheetSubsections(ImmutableSet.of(subsection));
+        _database.putGradingSheetDetails(ImmutableSet.of(detail));
         
         Set<DbAssignment> assignments = _database.getAssignments();
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
@@ -351,17 +400,6 @@ public class DatabaseAssignmentTest {
         DatabaseTestHelpers.assertSetContainsGivenElements(ASGN_EQC, assignments, asgn);
         
         _database.removeAssignments(ImmutableSet.of(asgn));
-        assertNull(asgn.getId());
-        assertNull(ge.getId());
-        assertNull(ge.getAssignment());
-        assertNull(part.getId());
-        assertNull(part.getGradableEvent());
-        assertNull(filter.getId());
-        assertNull(filter.getPart());
-        assertNull(action.getId());
-        assertNull(action.getPart());
-        assertNull(actionProperty.getId());
-        assertNull(actionProperty.getAction());
         
         assignments = _database.getAssignments();
         assertEquals(0, assignments.size());

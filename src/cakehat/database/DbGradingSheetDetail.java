@@ -71,16 +71,6 @@ public class DbGradingSheetDetail extends DbDataItem implements Comparable<DbGra
     DbGradingSheetSubsection getSubsection() {
         return _gradingSheetSubsection;
     }
-    
-    @Override
-    void setParentNull() {
-        _gradingSheetSubsection = null;
-    }
-    
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
 
     @Override
     public int compareTo(DbGradingSheetDetail other) {

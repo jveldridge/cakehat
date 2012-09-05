@@ -70,14 +70,5 @@ public class DbActionProperty extends DbDataItem
     DbAction getAction() {
         return _action;
     }
-
-    @Override
-    void setParentNull() {
-        _action = null;
-    }
     
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
 }

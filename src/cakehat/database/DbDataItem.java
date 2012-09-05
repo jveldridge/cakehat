@@ -24,8 +24,5 @@ public abstract class DbDataItem
     {
         return _id;
     }
-    
-    abstract void setParentNull();
-    
-    abstract Iterable<? extends DbDataItem> getChildren();
+
 }

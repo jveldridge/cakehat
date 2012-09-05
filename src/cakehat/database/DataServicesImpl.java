@@ -7,6 +7,9 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.AssignmentsBuilder;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
+import cakehat.gradingsheet.GradingSheet;
+import cakehat.gradingsheet.GradingSheetSection;
+import cakehat.gradingsheet.GradingSheetSubsection;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -62,9 +65,10 @@ public class DataServicesImpl implements DataServices {
     
     private final ImmutableList<Assignment> _assignments;
     private final ImmutableMap<Integer, Assignment> _asgnIdMap;
-    private final ImmutableMap<Integer, GradableEvent> _geIdMap;
     private final ImmutableMap<Integer, Part> _partIdMap;
     
+    private final ImmutableMap<Integer, GradingSheet> _gradingSheetIdMap;
+            
     public DataServicesImpl()
     {
         try
@@ -72,26 +76,25 @@ public class DataServicesImpl implements DataServices {
             //Assignments
             _assignments = new AssignmentsBuilder().buildAssigments(Allocator.getDatabase().getAssignments());
             ImmutableMap.Builder<Integer, Assignment> asgnMapBuilder = ImmutableMap.builder();
-            ImmutableMap.Builder<Integer, GradableEvent> geMapBuilder = ImmutableMap.builder();
             ImmutableMap.Builder<Integer, Part> partMapBuilder = ImmutableMap.builder();
+            ImmutableMap.Builder<Integer, GradingSheet> gradingSheetMapBuilder = ImmutableMap.builder();
             for(Assignment asgn : _assignments)
             {
                 asgnMapBuilder.put(asgn.getId(), asgn);
                 _groupsCache.put(asgn.getId(), new ConcurrentHashMap<Integer, Group>());
                 
                 for(GradableEvent ge : asgn)
-                {
-                    geMapBuilder.put(ge.getId(), ge);
-                    
+                {                    
                     for(Part part : ge)
                     {
                         partMapBuilder.put(part.getId(), part);
+                        gradingSheetMapBuilder.put(part.getId(), part.getGradingSheet());
                     }
                 }
             }
             _asgnIdMap = asgnMapBuilder.build();
-            _geIdMap = geMapBuilder.build();
             _partIdMap = partMapBuilder.build();
+            _gradingSheetIdMap = gradingSheetMapBuilder.build();
             
             //TAs
             ImmutableSet.Builder<TA> tasBuilder = ImmutableSet.builder();
@@ -289,6 +292,78 @@ public class DataServicesImpl implements DataServices {
         {
             throw new ServicesException("Unable to retrieve extensions for gradable event " +
                     gradableEvent.getFullDisplayName() + " for groups: " + groups, e);
+        }
+    }
+    
+    @Override
+    public GroupGradingSheet getGroupGradingSheet(Part part, Group group) throws ServicesException {
+        try {
+            //create db variable so subsequent lines of code don't get too long and hard to read
+            Database db = Allocator.getDatabase();
+            
+            GradingSheet gs = part.getGradingSheet();
+            Set<Integer> sectionIds = new HashSet<Integer>();
+            Set<Integer> subsectionIds = new HashSet<Integer>();
+            for (GradingSheetSection section : gs.getSections()) {
+                sectionIds.add(section.getId());
+                
+                for (GradingSheetSubsection subsection : section.getSubsections()) {
+                    subsectionIds.add(subsection.getId());
+                }
+            }
+           
+            Map<Integer, DbGroupGradingSheet> groupGradingSheets = db.getGroupGradingSheets(ImmutableSet.of(part.getId()),
+                                                                                            subsectionIds,
+                                                                                            sectionIds,
+                                                                                            ImmutableSet.of(group.getId())).get(part.getId());
+            DbGroupGradingSheet groupGradingSheet = null;
+            if (groupGradingSheets != null) {
+                groupGradingSheet = groupGradingSheets.get(group.getId());
+            }
+            if (groupGradingSheet == null) {
+                groupGradingSheet = new DbGroupGradingSheet(group.getId(), part.getId());
+            }
+            
+            return new GroupGradingSheet(group, gs, groupGradingSheet);
+        } catch (SQLException ex) {
+            throw new ServicesException("Unable to retrieve group grading sheet for group " + group + " on part " +
+                    part.getFullDisplayName() + ".", ex);
+        }
+    }
+    
+    @Override
+    public void saveGroupGradingSheet(GroupGradingSheet groupGradingSheet) throws ServicesException {
+        try {
+            Allocator.getDatabase().putGroupGradingSheets(ImmutableSet.of(groupGradingSheet.getDbGroupGradingSheet()));
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not save group grading sheet.", ex);
+        }
+    }
+
+    @Override
+    public void setGroupGradingSheetsSubmitted(Set<GroupGradingSheet> groupGradingSheets,
+                                               boolean submitted) throws ServicesException {
+        Set<DbGroupGradingSheet> ggsForDb = new HashSet<DbGroupGradingSheet>();      
+        for (GroupGradingSheet ggs : groupGradingSheets) {
+            ggsForDb.add(ggs.getDbGroupGradingSheet());
+        }
+        
+        Integer submittedById = null;
+        String submissionTime = null;
+        if (submitted) {
+            submittedById = Allocator.getUserServices().getUser().getId();
+            submissionTime = DateTime.now().toString();
+        }
+
+        try {
+            //if grading sheets are being submitted, save them first
+            if (submitted) {
+                Allocator.getDatabase().putGroupGradingSheets(ggsForDb);
+            }
+            
+            Allocator.getDatabase().submitGroupGradingSheets(ggsForDb, submittedById, submissionTime);
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not save group grading sheet.", ex);
         }
     }
 
@@ -491,7 +566,7 @@ public class DataServicesImpl implements DataServices {
         ImmutableSet.Builder<Group> builder = ImmutableSet.builder();
         
         for (DbGroup group : dbGroups) {
-            builder.add(this.groupIdToGroup(group.getId()));
+            builder.add(this.getGroup(group.getId()));
         }
 
         return builder.build();
@@ -965,13 +1040,14 @@ public class DataServicesImpl implements DataServices {
     
     private <T extends Collection<Integer>, S extends Collection<Group>> S idsToGroups(T ids, S groups) throws ServicesException {
         for (Integer id : ids) {
-            groups.add(this.groupIdToGroup(id));
+            groups.add(this.getGroup(id));
         }
         
         return groups;
     }
     
-    private Group groupIdToGroup(int groupId) throws ServicesException {
+    @Override
+    public Group getGroup(int groupId) throws ServicesException {
         if (!_groupIdMap.containsKey(groupId)) {
             this.updateDataCache();
             if (!_groupIdMap.containsKey(groupId)) {
