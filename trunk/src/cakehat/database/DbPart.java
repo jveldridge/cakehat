@@ -1,9 +1,6 @@
 package cakehat.database;
 
 import com.google.common.collect.ImmutableSet;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +18,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
     private volatile String _quickName;
     private final Set<DbAction> _actions;
     private final Set<DbInclusionFilter> _inclusionFilters;
+    private final Set<DbGradingSheetSection> _gradingSheetSections;
     
     public static DbPart build(DbGradableEvent gradableEvent, String name, int order) {
         DbPart part = new DbPart(gradableEvent, name, order);
@@ -46,6 +44,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         
         _actions = new HashSet<DbAction>();
         _inclusionFilters = new HashSet<DbInclusionFilter>();
+        _gradingSheetSections = new HashSet<DbGradingSheetSection>();
     }
     
     /**
@@ -69,6 +68,7 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         _quickName = quickName;
         _actions = new HashSet<DbAction>();
         _inclusionFilters = new HashSet<DbInclusionFilter>();
+        _gradingSheetSections = new HashSet<DbGradingSheetSection>();
     }
     
     public void setName(String name)
@@ -149,24 +149,33 @@ public class DbPart extends DbDataItem implements Comparable<DbPart>
         }
     }
     
+    void addGradingSheetSection(DbGradingSheetSection section)
+    {
+        synchronized(_gradingSheetSections)
+        {
+            _gradingSheetSections.add(section);
+        }
+    }
+    
+    public void removeGradingSheetSection(DbGradingSheetSection section)
+    {
+        synchronized(_gradingSheetSections)
+        {
+            _gradingSheetSections.remove(section);
+        }
+    }
+    
+    public ImmutableSet<DbGradingSheetSection> getGradingSheetSections()
+    {
+        synchronized(_gradingSheetSections)
+        {
+            return ImmutableSet.copyOf(_gradingSheetSections);
+        }
+    }
+    
     DbGradableEvent getGradableEvent()
     {
         return _gradableEvent;
-    }
-    
-    @Override
-    void setParentNull() {
-        _gradableEvent = null;
-    }
-    
-    @Override
-    Iterable<DbDataItem> getChildren() {
-        Collection<DbDataItem> children = new ArrayList<DbDataItem>();
-        
-        children.addAll(this.getActions());
-        children.addAll(this.getInclusionFilters());
-        
-        return children;
     }
     
     @Override

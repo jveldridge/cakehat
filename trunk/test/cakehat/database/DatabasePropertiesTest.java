@@ -243,8 +243,6 @@ public class DatabasePropertiesTest {
         DatabaseTestHelpers.assertSetContainsGivenElements(DB_NOTIFY_ADDRESS_EQ_C, addresses, address1, address2);
         
         _database.removeNotifyAddresses(ImmutableSet.of(address1));
-        //database method must updated the ID of the removed element
-        assertNull(address1.getId());
         
         addresses = _database.getNotifyAddresses();
         assertEquals(1, addresses.size());

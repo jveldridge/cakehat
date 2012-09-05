@@ -92,16 +92,6 @@ public class DbGroup extends DbDataItem
     }
     
     @Override
-    void setParentNull() {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
-    
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public String toString(){
         return _name;
     }

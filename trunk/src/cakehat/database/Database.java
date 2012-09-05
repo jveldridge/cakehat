@@ -87,10 +87,6 @@ public interface Database
     
     public void removeInclusionFilters(Set<DbInclusionFilter> inclusionFilters) throws SQLException;
     
-    public void putGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException;
-    
-    public void removeGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException;
-    
     public void putGradingSheetSections(Set<DbGradingSheetSection> gradingSheetSections) throws SQLException;
     
     public void removeGradingSheetSections(Set<DbGradingSheetSection> gradingSheetSections) throws SQLException;
@@ -102,8 +98,6 @@ public interface Database
     public void putGradingSheetDetails(Set<DbGradingSheetDetail> gradingSheetDetails) throws SQLException;
     
     public void removeGradingSheetDetails(Set<DbGradingSheetDetail> gradingSheetDetails) throws SQLException;
-    
-    public DbGradingSheet getGradingSheet(DbPart part) throws SQLException;
     
     /**
      * Sets the enabled status of the student corresponding to each student ID in the key set of the given map to the
@@ -349,6 +343,31 @@ public interface Database
      */
     public Map<Integer, ExtensionRecord> getExtensions(int geId, Set<Integer> groupIds) throws SQLException;
     
+    public void putGroupGradingSheets(Set<DbGroupGradingSheet> groupGradingSheets) throws SQLException;
+    
+    /**
+     * Returns a map of part IDs to maps of group IDs to the GroupGradingSheet for that group and part. There will only
+     * be an entry in the map for a particular part ID if there is a group grading sheet stored in the database for at
+     * least one group for the corresponding part; thus, if there are no group grading sheets in the database an empty
+     * map is returned.
+     * 
+     * @return
+     * @throws SQLException 
+     */
+    public Map<Integer, Map<Integer, DbGroupGradingSheet>> getGroupGradingSheets(Set<Integer> partIds,
+                                                                                 Set<Integer> gradingSheetSubsectionIds,
+                                                                                 Set<Integer> gradingSheetSectionIds,
+                                                                                 Set<Integer> groupIds) throws SQLException;
+    
+    /**
+     * @param groupGradingSheets
+     * @param submitterId - pass {@code null} to un-submit
+     * @param submissionTime - pass {@code null} to un-submit
+     * @throws SQLException 
+     */
+    public void submitGroupGradingSheets(Set<DbGroupGradingSheet> groupGradingSheets, Integer submitterId,
+                                         String submissionTime) throws SQLException;
+        
     /**
      * Assigns a grade of score to the group with the given group ID on the part with the given part ID. If the group ID
      * is invalid then a SQLException is thrown.

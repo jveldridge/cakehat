@@ -1,14 +1,8 @@
 package cakehat.gradingsheet;
 
-import cakehat.database.DbGradingSheet;
-import cakehat.database.DbPart;
-import cakehat.database.assignment.Assignment;
-import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.Collections;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
 
 /**
@@ -16,19 +10,14 @@ import java.util.List;
  * GradingSheet per part, and a GradingSheet is merely a collection of GradingSheetSections that further define grading
  * criteria.
  * 
- * Note that unlike {@link Assignment}, {@link GradableEvent}, etc., GradingSheet objects are not managed. That is, 
- * there may be multiple GradingSheet objects that represent a single grading sheet; GradingSheet objects are assumed to
- * be equal if their IDs are equal.  Thus, {@code GradingSheet} differs from {@link DbGradingSheet} only in that it is
- * immutable and refers to {@link Part} rather than {@link DbPart}.
- * 
  * @author jeldridg
  */
 public class GradingSheet implements Comparable<GradingSheet> {
     
-    private final int _id;
-    private final Part _part;
+    private volatile Part _part;
     private final ImmutableList<GradingSheetSection> _sections;
-    private final ImmutableSet<GradingSheetSubsection> _subsections;
+    private final ImmutableMap<Integer, GradingSheetSection> _sectionMap;
+    private final ImmutableMap<Integer, GradingSheetSubsection> _subsectionMap;
     
     /**
      * Constructs a GradingSheet.
@@ -37,48 +26,57 @@ public class GradingSheet implements Comparable<GradingSheet> {
      * @param part the Part this GradingSheet belongs to
      * @param sections the GradingSheetSections that make up this GradingSheet
      */
-    GradingSheet(int id, Part part, List<GradingSheetSection> sections) {
-        if (part == null) {
-            throw new NullPointerException("part may not be null.");
-        }
+    GradingSheet(List<GradingSheetSection> sections) {
         if (sections == null) {
             throw new NullPointerException("sections may not be null");
-        }
+        } 
+        _sections = ImmutableList.copyOf(sections);
         
-        _id = id;
-        _part = part;
-        
-        List<GradingSheetSection> sectionsToSort = new ArrayList<GradingSheetSection>(sections);
-        Collections.sort(sectionsToSort);
-        _sections = ImmutableList.copyOf(sectionsToSort);
-        
-        ImmutableSet.Builder<GradingSheetSubsection> subsectionBuilder = ImmutableSet.builder();
+        ImmutableMap.Builder<Integer, GradingSheetSection> sectionsBuilder = ImmutableMap.builder();       
+        ImmutableMap.Builder<Integer, GradingSheetSubsection> subsectionBuilder = ImmutableMap.builder();
         for (GradingSheetSection section : _sections) {
+            sectionsBuilder.put(section.getId(), section);
             for (GradingSheetSubsection subsection : section.getSubsections()) {
-                subsectionBuilder.add(subsection);
+                subsectionBuilder.put(subsection.getId(), subsection);
             }
         }
-        _subsections = subsectionBuilder.build();
+        _sectionMap = sectionsBuilder.build();
+        _subsectionMap = subsectionBuilder.build();
     }
     
     /**
-     * The unique identifier for this grading sheet, stable across all changes.
+     * Sets the Part this GradingSheet belongs to.
      * 
-     * @return
+     * @param part
+     * @throws NullPointerException if {@code gradableEvent} is null
+     * @throws IllegalStateException if this method has been called before for this instance
      */
-    public int getId() {
-        return _id;
+    public void setPart(Part part) {
+        if (part == null) {
+            throw new NullPointerException("Grading sheet cannot belong to a null Part");
+        }
+
+        if (_part != null) {
+            throw new IllegalStateException("Part may only be set once");
+        }
+
+        _part = part;
     }
-    
+
     /**
      * The Part to which this grading sheet belongs.
      * 
      * @return 
+     * @throws IllegalStateException if the Part this GradingSheet belongs to has not yet been set
      */
     public Part getPart() {
+        if (_part == null) {
+            throw new IllegalStateException("Part has not yet been set");
+        }
+
         return _part;
     }
-    
+
     /**
      * Returns an immutable list of all of the {@code GradingSheetSection}s that belong to this grading sheet, sorted 
      * by order. 
@@ -89,6 +87,14 @@ public class GradingSheet implements Comparable<GradingSheet> {
         return _sections;
     }
     
+    public GradingSheetSection getSection(int sectionId) {
+        return _sectionMap.get(sectionId);
+    }
+    
+    public GradingSheetSubsection getSubsection(int subsectionId) {
+        return _subsectionMap.get(subsectionId);
+    }
+    
     /**
      * Returns whether some section of this grading sheet contains the given {@code GradingSheetSubsection}; that is,
      * some section contains a {@code GradingSheetSubsection} with the same ID as the one given.
@@ -97,17 +103,17 @@ public class GradingSheet implements Comparable<GradingSheet> {
      * @return 
      */
     public boolean containsSubsection(GradingSheetSubsection subsection) {
-        return _subsections.contains(subsection);
+        return _subsectionMap.containsKey(subsection.getId());
     }
     
     @Override
     public int hashCode() {
-        return _id;
+        return this.getPart().getId();
     }
     
     @Override
     public boolean equals(Object o) {        
-        return o instanceof GradingSheet && this.getId() == ((GradingSheet) o).getId();
+        return o instanceof GradingSheet && this.getPart().equals(((GradingSheet) o).getPart());
     }
 
     @Override

@@ -7,6 +7,7 @@ import cakehat.database.DbGradableEvent;
 import cakehat.database.DbInclusionFilter;
 import cakehat.database.DbInclusionFilter.FilterType;
 import cakehat.database.DbPart;
+import cakehat.gradingsheet.GradingSheetBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import java.util.Set;
  */
 public class AssignmentsBuilder
 {   
+    private final GradingSheetBuilder _gsBuilder = new GradingSheetBuilder();
+    
     /**
      * Builds an immutable list of {@link Assignment}s.
      * 
@@ -98,13 +101,15 @@ public class AssignmentsBuilder
                     dbPart.getOrder(),
                     dbPart.getQuickName(),
                     buildFilterProvider(dbPart.getInclusionFilters()),
-                    actions);
+                    actions,
+                    _gsBuilder.buildGradingSheet(dbPart.getGradingSheetSections()));
             partsBuilder.add(part);
             
             for(Action action : actions)
             {
                 action.setPart(part);
             }
+            part.getGradingSheet().setPart(part);
         }
         
         return partsBuilder.build();

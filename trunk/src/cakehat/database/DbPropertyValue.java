@@ -37,16 +37,6 @@ public class DbPropertyValue<T> extends DbDataItem
     {
         return _value;
     }
-
-    @Override
-    void setParentNull() {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
-    
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
     
     /**
      * A key for the specific property values recognized by the database. Allows for setting and getting data in a type

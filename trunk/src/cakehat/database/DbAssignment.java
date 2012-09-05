@@ -95,17 +95,7 @@ public class DbAssignment extends DbDataItem implements Comparable<DbAssignment>
             return ImmutableSet.copyOf(_gradableEvents);
         }
     }
-    
-    @Override
-    void setParentNull() {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
-    
-    @Override
-    Iterable<DbGradableEvent> getChildren() {
-        return this.getGradableEvents();
-    }
-    
+
     @Override
     public int compareTo(DbAssignment other)
     {

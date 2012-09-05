@@ -12,16 +12,16 @@ import java.util.Set;
 public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGradingSheetSection>,
         Orderable<DbGradingSheetSection> {
     
-    private volatile DbGradingSheet _gradingSheet;
+    private volatile DbPart _part;
     private volatile String _name;
     private volatile int _order;
     private volatile Double _outOf;
     
     private final Set<DbGradingSheetSubsection> _subsections;
     
-    public static DbGradingSheetSection build(DbGradingSheet gradingSheet, String name, int order, Double outOf) {
-        DbGradingSheetSection section = new DbGradingSheetSection(gradingSheet, name, order, outOf);
-        gradingSheet.addSection(section);
+    public static DbGradingSheetSection build(DbPart part, String name, int order, Double outOf) {
+        DbGradingSheetSection section = new DbGradingSheetSection(part, name, order, outOf);
+        part.addGradingSheetSection(section);
         
         return section;
     }
@@ -29,14 +29,14 @@ public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGr
     /**
      * Constructor to be used by the grading sheet editor to create a subsection for a grading sheet template.
      * 
-     * @param gradingSheet
+     * @param part
      * @param name
      * @param order
      * @param outOf 
      */
-    private DbGradingSheetSection(DbGradingSheet gradingSheet, String name, int order, Double outOf) {
+    private DbGradingSheetSection(DbPart part, String name, int order, Double outOf) {
         super(null);
-        _gradingSheet = gradingSheet;
+        _part = part;
         _name = name;
         _order = order;
         _outOf = outOf;
@@ -47,15 +47,15 @@ public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGr
     /**
      * Constructor to be used by the database to load grading sheet section data into memory.
      * 
-     * @param gradingSheet
+     * @param part
      * @param id
      * @param name
      * @param order
      * @param outOf
      */
-    DbGradingSheetSection(DbGradingSheet gradingSheet, int id, String name, int order, Double outOf) {
+    DbGradingSheetSection(DbPart part, int id, String name, int order, Double outOf) {
         super(id);
-        _gradingSheet = gradingSheet;
+        _part = part;
         _name = name;
         _order = order;
         _outOf = outOf;
@@ -107,18 +107,8 @@ public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGr
         }
     }
     
-    DbGradingSheet getGradingSheet() {
-        return _gradingSheet;
-    }
-    
-    @Override
-    void setParentNull() {
-        _gradingSheet = null;
-    }
-    
-    @Override
-    Iterable<DbGradingSheetSubsection> getChildren() {
-        return this.getSubsections();
+    DbPart getPart() {
+        return _part;
     }
 
     @Override
@@ -128,6 +118,6 @@ public class DbGradingSheetSection extends DbDataItem implements Comparable<DbGr
     
     @Override
     public Iterable<DbGradingSheetSection> getOrderedElements() {
-        return _gradingSheet.getSections();
+        return _part.getGradingSheetSections();
     }
 }

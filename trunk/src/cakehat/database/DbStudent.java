@@ -100,14 +100,5 @@ public class DbStudent extends DbDataItem
     {
         return _hasCollabContract;
     }
-
-    @Override
-    void setParentNull() {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
     
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
 }

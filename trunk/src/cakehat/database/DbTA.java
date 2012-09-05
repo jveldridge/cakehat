@@ -1,7 +1,5 @@
 package cakehat.database;
 
-import java.util.Collections;
-
 /**
  *
  * @author jak2
@@ -75,14 +73,5 @@ public class DbTA extends DbDataItem
     {
         return _isAdmin;
     }
-    
-    @Override
-    void setParentNull() {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
-    
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
+
 }

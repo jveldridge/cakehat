@@ -1,8 +1,6 @@
 package cakehat.gradingsheet;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,7 +11,7 @@ import java.util.List;
  * 
  * @author jeldridg
  */
-public class GradingSheetSection implements Comparable<GradingSheetSection> {
+public class GradingSheetSection {
     
     private final int _id;
     private volatile GradingSheet _gradingSheet;
@@ -40,11 +38,11 @@ public class GradingSheetSection implements Comparable<GradingSheetSection> {
             throw new NullPointerException("subsections may not be null");
         }
         
-        subsections = new ArrayList<GradingSheetSubsection>(subsections);
+        _subsections = ImmutableList.copyOf(subsections);
         
         //if outOf is not specified, every subsection *must* specify outOf
         if (outOf == null) {
-            for (GradingSheetSubsection subsection : subsections) {
+            for (GradingSheetSubsection subsection : _subsections) {
                 if (subsection.getOutOf() == null) {
                     throw new IllegalArgumentException("Since section [" + name + "] of the grading sheet for part ["
                             + _gradingSheet.getPart().getFullDisplayName() + "] does not specify an out of value, each "
@@ -53,7 +51,7 @@ public class GradingSheetSection implements Comparable<GradingSheetSection> {
             }
         }
         else { //if outOf is specified, *no* subsection may specify outOf
-            for (GradingSheetSubsection subsection : subsections) {
+            for (GradingSheetSubsection subsection : _subsections) {
                 if (subsection.getOutOf() != null) {
                     throw new IllegalArgumentException("Since section [" + name + "] of the grading sheet for part ["
                             + _gradingSheet.getPart().getFullDisplayName() + "] specifies an out of value,  none of its "
@@ -66,9 +64,6 @@ public class GradingSheetSection implements Comparable<GradingSheetSection> {
         _name = name;
         _order = order;
         _outOf = outOf;
-        
-        Collections.sort(subsections);
-        _subsections = ImmutableList.copyOf(subsections);
     }
     
     /**
@@ -148,31 +143,4 @@ public class GradingSheetSection implements Comparable<GradingSheetSection> {
         return _subsections;
     }
     
-    @Override
-    public int hashCode() {
-        return _id;
-    }
-    
-    @Override
-    public boolean equals(Object o) {        
-        return o instanceof GradingSheetSection && this.getId() == ((GradingSheetSection) o).getId();
-    }
-
-    /**
-     * Compares first by grading sheet, then by order within a grading sheet.
-     * 
-     * @param gss
-     * @return 
-     */
-    @Override
-    public int compareTo(GradingSheetSection gss) {
-        int comparison = this.getGradingSheet().compareTo(gss.getGradingSheet());
-        
-        if (comparison == 0) {
-            comparison = ((Integer) this.getOrder()).compareTo(gss.getOrder());
-        }
-
-        return comparison;
-    }
-
 }

@@ -3,6 +3,7 @@ package cakehat.database.assignment;
 import cakehat.Allocator;
 import support.utils.AlwaysAcceptingFileFilter;
 import cakehat.database.Group;
+import cakehat.gradingsheet.GradingSheet;
 import java.awt.Window;
 import java.io.File;
 import java.io.FileFilter;
@@ -31,6 +32,7 @@ public class Part implements Comparable<Part>
     private final String _quickName;
     private final FilterProvider _filterProvider;
     private final List<Action> _actions;
+    private final GradingSheet _gradingSheet;
     
      /**
      * This value will be set after construction because the gradable event object will not be constructed until after
@@ -49,8 +51,10 @@ public class Part implements Comparable<Part>
      * @param quickName may be {@code null}
      * @param filterProvider may be {@code null}
      * @param actions may not be {@code null}
+     * @param gradingSheet may not be {@code null}
      */
-    Part(int id, String name, int order, String quickName, FilterProvider filterProvider, List<Action> actions)
+    Part(int id, String name, int order, String quickName, FilterProvider filterProvider, List<Action> actions,
+         GradingSheet gradingSheet)
     {
         if(name == null)
         {
@@ -60,6 +64,10 @@ public class Part implements Comparable<Part>
         {
             throw new NullPointerException("actions may not be null");
         }
+        if (gradingSheet == null)
+        {
+            throw new NullPointerException("gradingSheet may not be null");
+        }
         
         _name = name;
         _order = order;
@@ -67,6 +75,7 @@ public class Part implements Comparable<Part>
         _quickName = quickName;
         _filterProvider = (filterProvider == null ? new AlwaysAcceptingFilterProvider() : filterProvider);
         _actions = actions;
+        _gradingSheet = gradingSheet;
     }
     
     /**
@@ -155,6 +164,11 @@ public class Part implements Comparable<Part>
     public String getQuickName()
     {
         return _quickName;
+    }
+    
+    public GradingSheet getGradingSheet()
+    {
+        return _gradingSheet;
     }
     
     /**

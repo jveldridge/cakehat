@@ -3,9 +3,10 @@ package cakehat.database;
 import cakehat.Allocator;
 import cakehat.InitializationException;
 import cakehat.database.DbPropertyValue.DbPropertyKey;
+import cakehat.database.DbGroupGradingSheet.GroupSectionCommentsRecord;
+import cakehat.database.DbGroupGradingSheet.GroupSubsectionEarnedRecord;
 import cakehat.services.ServicesException;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
@@ -394,6 +395,7 @@ public class DatabaseImpl implements Database
         void loadChildren(Connection conn, Map<Integer, DbPart> items) throws SQLException {
             loadDbDataItem(conn, items, INCLUSION_FILTER_LOAD_OP);
             loadDbDataItem(conn, items, ACTION_LOAD_OP);
+            loadDbDataItem(conn, items, GRADING_SHEET_SECTION_LOAD_OP);
         }
     };
     
@@ -442,6 +444,63 @@ public class DatabaseImpl implements Database
         @Override
         public void addToParent(DbAction parent, DbActionProperty child) {
             parent.addActionProperty(child);
+        }
+    };
+    
+    private final DbDataItemLoadOperation<DbGradingSheetSection, DbPart> GRADING_SHEET_SECTION_LOAD_OP
+            = new DbDataItemLoadOperation<DbGradingSheetSection, DbPart>(
+            "SELECT gs_sid, pid, name, ordering, outof FROM gradingsheetsection", "gs_sid", "pid") {
+
+        @Override
+        DbGradingSheetSection getDbDataItem(DbPart parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradingSheetSection(parent, id, rs.getString("name"), rs.getInt("ordering"),
+                                             getDouble(rs, "outof"));
+        }
+
+        @Override
+        void addToParent(DbPart parent, DbGradingSheetSection child) {
+            parent.addGradingSheetSection(child);
+        }
+
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbGradingSheetSection> items) throws SQLException {
+            loadDbDataItem(conn, items, GRADING_SHEET_SUBSECTION_LOAD_OP);
+        }
+    };
+    
+    private final DbDataItemLoadOperation<DbGradingSheetSubsection, DbGradingSheetSection> GRADING_SHEET_SUBSECTION_LOAD_OP
+            = new DbDataItemLoadOperation<DbGradingSheetSubsection, DbGradingSheetSection>(
+            "SELECT gs_ssid, gs_sid, text, ordering, outof FROM gradingsheetsubsection", "gs_ssid", "gs_sid") {
+
+        @Override
+        DbGradingSheetSubsection getDbDataItem(DbGradingSheetSection parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradingSheetSubsection(parent, id, rs.getString("text"), rs.getInt("ordering"),
+                                                getDouble(rs, "outof"));
+        }
+
+        @Override
+        void addToParent(DbGradingSheetSection parent, DbGradingSheetSubsection child) {
+            parent.addSubsection(child);
+        }
+
+        @Override
+        void loadChildren(Connection conn, Map<Integer, DbGradingSheetSubsection> items) throws SQLException {
+            loadDbDataItem(conn, items, GRADING_SHEET_DETAIL_LOAD_OP);
+        }
+    };
+    
+    private final DbDataItemLoadOperation<DbGradingSheetDetail, DbGradingSheetSubsection> GRADING_SHEET_DETAIL_LOAD_OP
+            = new ChildlessDbDataItemLoadOperation<DbGradingSheetDetail, DbGradingSheetSubsection>(
+            "SELECT gs_did, gs_ssid, text, ordering FROM gradingsheetdetail", "gs_did", "gs_ssid") {
+
+        @Override
+        DbGradingSheetDetail getDbDataItem(DbGradingSheetSubsection parent, int id, ResultSet rs) throws SQLException {
+            return new DbGradingSheetDetail(parent, id, rs.getString("text"), rs.getInt("ordering"));
+        }
+
+        @Override
+        void addToParent(DbGradingSheetSubsection parent, DbGradingSheetDetail child) {
+            parent.addDetail(child);
         }
     };
 
@@ -596,29 +655,13 @@ public class DatabaseImpl implements Database
         this.removeDbDataItems("inclusionfilter", "ifid", inclusionFilters);
     }
     
-    private final DbDataItemPutOperation<DbGradingSheet> GRADING_SHEET_PUT_OP = new DbDataItemPutOperation<DbGradingSheet>(
-            "INSERT INTO gradingsheet (pid) VALUES (?)",
-            "UPDATE gradingsheet SET pid = ? WHERE gs_id == ?") {
-
-        @Override
-        int setFields(PreparedStatement ps, DbGradingSheet item) throws SQLException {
-            ps.setInt(1, item.getPart().getId());
-            return 2;
-        }
-    };
-    
-    @Override
-    public void putGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException {
-        this.putDbDataItems(gradingSheets, GRADING_SHEET_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
-    }
-    
     private final DbDataItemPutOperation<DbGradingSheetSection> GRADING_SHEET_SECTION_PUT_OP = new DbDataItemPutOperation<DbGradingSheetSection>(
-            "INSERT INTO gradingsheetsection (gs_id, name, ordering, outof) VALUES (?, ?, ?, ?)",
-            "UPDATE gradingsheetsection SET gs_id = ?, name = ?, ordering = ?, outof = ? WHERE gs_sid == ?") {
+            "INSERT INTO gradingsheetsection (pid, name, ordering, outof) VALUES (?, ?, ?, ?)",
+            "UPDATE gradingsheetsection SET pid = ?, name = ?, ordering = ?, outof = ? WHERE gs_sid == ?") {
 
         @Override
         int setFields(PreparedStatement ps, DbGradingSheetSection item) throws SQLException {
-            ps.setInt(1, item.getGradingSheet().getId());
+            ps.setInt(1, item.getPart().getId());
             ps.setString(2, item.getName());
             ps.setInt(3, item.getOrder());
             setDouble(ps, 4, item.getOutOf());
@@ -668,93 +711,197 @@ public class DatabaseImpl implements Database
         this.putDbDataItems(gradingSheetDetails, GRADING_SHEET_DETAIL_PUT_OP, DEFAULT_INSERTION_ID_UPDATER);
     }
     
+    private final DbDataItemPutOperation<DbGroupGradingSheet> GROUP_GRADING_SHEET_PUT_OP = new DbDataItemPutOperation<DbGroupGradingSheet>(
+            "INSERT INTO groupgradingsheet (pid, agid, assignedto, submittedby, datesubmitted) VALUES (?, ?, ?, ?, ?)",
+            "UPDATE groupgradingsheet SET pid = ?, agid = ?, assignedto = ?, submittedby = ?, datesubmitted = ? WHERE ggsid == ?") {
+
+        @Override
+        int setFields(PreparedStatement ps, DbGroupGradingSheet item) throws SQLException {
+            ps.setInt(1, item.getPartId());
+            ps.setInt(2, item.getGroupId());
+            setInteger(ps, 3, item.getAssignedToId());
+            setInteger(ps, 4, item.getSubmittedById());
+            ps.setString(5, item.getSubmittedDate());
+            return 5;
+        }
+    };
+    
     @Override
-    public DbGradingSheet getGradingSheet(DbPart part) throws SQLException {
-        DbGradingSheet gradingSheet = null;
+    public void putGroupGradingSheets(Set<DbGroupGradingSheet> groupGradingSheets) throws SQLException {
         Connection conn = this.openConnection();
         
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT gs_id FROM gradingsheet WHERE pid == ?");
-            ps.setInt(1, part.getId());
+            conn.setAutoCommit(false);
+            
+            this.putDbDataItems(groupGradingSheets, GROUP_GRADING_SHEET_PUT_OP, DEFAULT_INSERTION_ID_UPDATER, conn);
+            
+            PreparedStatement psEarned = conn.prepareStatement("INSERT INTO groupgradingsheetsubsection (ggsid, gs_ssid, "
+                    + "earned, lastmodifiedby, lastmodifieddate) VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement psComments = conn.prepareStatement("INSERT INTO groupgradingsheetcomments (ggsid, gs_sid, "
+                    + "comments, lastmodifiedby, lastmodifieddate) VALUES (?, ?, ?, ?, ?)");
+            
+            for (DbGroupGradingSheet gradingSheet : groupGradingSheets) {
+                for (Entry<Integer, GroupSubsectionEarnedRecord> earned : gradingSheet.getSubsectionEarnedPoints().entrySet()) {
+                    psEarned.setInt(1, gradingSheet.getId());
+                    psEarned.setInt(2, earned.getKey());
+                    setDouble(psEarned, 3, earned.getValue().getEarnedPoints());
+                    psEarned.setInt(4, earned.getValue().getLastModifiedBy());
+                    psEarned.setString(5, earned.getValue().getLastModifiedTime());
+                    psEarned.addBatch();
+                }
+                
+                for (Entry<Integer, GroupSectionCommentsRecord> comments : gradingSheet.getSectionComments().entrySet()) {
+                    psComments.setInt(1, gradingSheet.getId());
+                    psComments.setInt(2, comments.getKey());
+                    psComments.setString(3, comments.getValue().getComments());
+                    psComments.setInt(4, comments.getValue().getLastModifiedBy());
+                    psComments.setString(5, comments.getValue().getLastModifiedTime());
+                    psComments.addBatch();
+                }
+            }
+            
+            psEarned.executeBatch();
+            psComments.executeBatch();
+            conn.commit();
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public Map<Integer, Map<Integer, DbGroupGradingSheet>> getGroupGradingSheets(Set<Integer> partIds,
+                                                                                 Set<Integer> gradingSheetSubsectionIds,
+                                                                                 Set<Integer> gradingSheetSectionIds,
+                                                                                 Set<Integer> groupIds) throws SQLException {
+        Map<Integer, Map<Integer, DbGroupGradingSheet>> groupGradingSheets = new HashMap<Integer, Map<Integer, DbGroupGradingSheet>>();
+        Connection conn = this.openConnection();
+        
+        try {
+            Map<Integer, Map<Integer, GroupSubsectionEarnedRecord>> earnedRecords = this.getGroupSubsectionEarnedRecords(conn, gradingSheetSubsectionIds);
+            Map<Integer, Map<Integer, GroupSectionCommentsRecord>> commentRecords = this.getGroupSectionCommentRecords(conn, gradingSheetSectionIds);
+            
+            PreparedStatement ps = conn.prepareStatement("SELECT ggsid, pid, agid, assignedto, submittedby,"
+                    + " datesubmitted FROM groupgradingsheet WHERE agid IN (" + this.idSetToString(groupIds) + ") AND"
+                    + " pid IN (" + this.idSetToString(partIds) + ")");
             
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                int id = rs.getInt("gs_id");
-                gradingSheet = new DbGradingSheet(part, id);
-                loadDbDataItem(conn, ImmutableMap.of(id, gradingSheet), new GradingSheetSectionLoadOp(id));
+            while (rs.next()) {
+                int id = rs.getInt("ggsid");
+                int partId = rs.getInt("pid");
+                if (!groupGradingSheets.containsKey(partId)) {
+                    groupGradingSheets.put(partId, new HashMap<Integer, DbGroupGradingSheet>());
+                }
+                
+                int groupId = rs.getInt("agid");
+                groupGradingSheets.get(partId).put(groupId, new DbGroupGradingSheet(id, groupId, partId,
+                                                                                        getInteger(rs, "assignedto"),
+                                                                                        getInteger(rs, "submittedby"),
+                                                                                        rs.getString("datesubmitted"),
+                                                                                        earnedRecords.get(id),
+                                                                                        commentRecords.get(id)));
             }
 
-            return gradingSheet;
+            return groupGradingSheets;
         } finally {
             this.closeConnection(conn);
         }
     }
     
-    private class GradingSheetSectionLoadOp extends DbDataItemLoadOperation<DbGradingSheetSection, DbGradingSheet> {
-        
-        private GradingSheetSectionLoadOp(int gradingSheetId) {
-            super("SELECT gs_sid, gs_id, name, ordering, outof FROM gradingsheetsection", "gs_sid", "gs_id", gradingSheetId);
-        }
-        
-        @Override
-        DbGradingSheetSection getDbDataItem(DbGradingSheet parent, int id, ResultSet rs) throws SQLException {
-            return new DbGradingSheetSection(parent, id, rs.getString("name"), rs.getInt("ordering"), getDouble(rs, "outof"));
-        }
-
-        @Override
-        void addToParent(DbGradingSheet parent, DbGradingSheetSection child) {
-            parent.addSection(child);
-        }
-
-        @Override
-        void loadChildren(Connection conn, Map<Integer, DbGradingSheetSection> items) throws SQLException {
-            loadDbDataItem(conn, items, new GradingSheetSubsectionLoadOp(_parentId));
-        }
-    }
-    
-    private class GradingSheetSubsectionLoadOp extends DbDataItemLoadOperation<DbGradingSheetSubsection, DbGradingSheetSection> {
-
-        private GradingSheetSubsectionLoadOp(int gradingSheetId) {
-            super("SELECT gs_ssid, gs_sid, text, ordering, outof FROM gradingsheetsubsection", "gs_ssid", "gs_sid", gradingSheetId);
-        }
-        
-        @Override
-        DbGradingSheetSubsection getDbDataItem(DbGradingSheetSection parent, int id, ResultSet rs) throws SQLException {
-            return new DbGradingSheetSubsection(parent, id, rs.getString("text"), rs.getInt("ordering"), getDouble(rs, "outof"));
-        }
-
-        @Override
-        void addToParent(DbGradingSheetSection parent, DbGradingSheetSubsection child) {
-            parent.addSubsection(child);
-        }
-
-        @Override
-        void loadChildren(Connection conn, Map<Integer, DbGradingSheetSubsection> items) throws SQLException {
-            loadDbDataItem(conn, items, new GradingSheetDetailLoadOp(_parentId));
-        }
-        
-    }
-    
-    private class GradingSheetDetailLoadOp extends ChildlessDbDataItemLoadOperation<DbGradingSheetDetail, DbGradingSheetSubsection> {
-
-        private GradingSheetDetailLoadOp(int gradingSheetSubsectionId) {
-            super("SELECT gs_did, gs_ssid, text, ordering FROM gradingsheetdetail", "gs_did", "gs_ssid", gradingSheetSubsectionId);
-        }
-        
-        @Override
-        DbGradingSheetDetail getDbDataItem(DbGradingSheetSubsection parent, int id, ResultSet rs) throws SQLException {
-            return new DbGradingSheetDetail(parent, id, rs.getString("text"), rs.getInt("ordering"));
-        }
-
-        @Override
-        void addToParent(DbGradingSheetSubsection parent, DbGradingSheetDetail child) {
-            parent.addDetail(child);
-        } 
-    }
-    
     @Override
-    public void removeGradingSheets(Set<DbGradingSheet> gradingSheets) throws SQLException {
-        this.removeDbDataItems("gradingsheet", "gs_id", gradingSheets);
+    public void submitGroupGradingSheets(Set<DbGroupGradingSheet> groupGradingSheets, Integer submitterId,
+                                         String submissionTime) throws SQLException {
+        Connection conn = this.openConnection();
+        
+        try {
+            conn.setAutoCommit(false);
+            
+            PreparedStatement ps = conn.prepareStatement("UPDATE groupgradingsheet SET submittedby = ?, datesubmitted = ?"
+                    + " WHERE ggsid == ?");
+            for (DbGroupGradingSheet ggs : groupGradingSheets) {
+                ps.setInt(1, submitterId);
+                ps.setString(2, submissionTime);
+                ps.setInt(3, ggs.getId());
+                ps.addBatch();
+            }
+        
+            ps.executeBatch();
+            conn.commit();
+            
+            for (DbGroupGradingSheet ggs : groupGradingSheets) {
+                ggs.markSubmitted(submitterId, submissionTime);
+            }
+            
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            this.closeConnection(conn);
+        }
+    }
+    
+    /**
+     * Returns a map of group grading sheet IDs to maps of subsection ID to earned points record for the group grading
+     * sheet and subsection.
+     * 
+     * @param conn
+     * @return
+     * @throws SQLException 
+     */
+    private Map<Integer, Map<Integer, GroupSubsectionEarnedRecord>> getGroupSubsectionEarnedRecords(Connection conn,
+                                                                                                    Set<Integer> gradingSheetSubsectionIds) throws SQLException {
+        Map<Integer, Map<Integer, GroupSubsectionEarnedRecord>> earnedRecords = new HashMap<Integer, Map<Integer, GroupSubsectionEarnedRecord>>();
+        
+        PreparedStatement ps = conn.prepareStatement("SELECT ggsid, gs_ssid, earned, lastmodifiedby, lastmodifieddate"
+                + " FROM groupgradingsheetsubsection WHERE gs_ssid IN (" + this.idSetToString(gradingSheetSubsectionIds) + ")");
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int groupGradingSheetId = rs.getInt("ggsid");
+            if (!earnedRecords.containsKey(groupGradingSheetId)) {
+                earnedRecords.put(groupGradingSheetId, new HashMap<Integer, GroupSubsectionEarnedRecord>());
+            }
+
+            int subsectionId = rs.getInt("gs_ssid");
+            earnedRecords.get(groupGradingSheetId).put(subsectionId, new GroupSubsectionEarnedRecord(rs.getDouble("earned"),
+                                                                                                     rs.getInt("lastmodifiedby"),
+                                                                                                     rs.getString("lastmodifieddate")));
+        }
+
+        return earnedRecords;
+    }
+    
+    /**
+     * Returns a map of group grading sheet IDs to maps of section ID to comment record for the group grading sheet and
+     * section.
+     * 
+     * @param conn
+     * @return
+     * @throws SQLException 
+     */
+    private Map<Integer, Map<Integer, GroupSectionCommentsRecord>> getGroupSectionCommentRecords(Connection conn,
+                                                                                                 Set<Integer> gradingSheetSectionIds) throws SQLException {
+        Map<Integer, Map<Integer, GroupSectionCommentsRecord>> commentRecords = new HashMap<Integer, Map<Integer, GroupSectionCommentsRecord>>();
+        
+        PreparedStatement ps = conn.prepareStatement("SELECT ggsid, gs_sid, comments, lastmodifiedby, lastmodifieddate"
+                + " FROM groupgradingsheetcomments WHERE gs_sid IN (" + this.idSetToString(gradingSheetSectionIds) + ")");
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int groupGradingSheetId = rs.getInt("ggsid");
+            if (!commentRecords.containsKey(groupGradingSheetId)) {
+                commentRecords.put(groupGradingSheetId, new HashMap<Integer, GroupSectionCommentsRecord>());
+            }
+            
+            int sectionId = rs.getInt("gs_sid");
+            commentRecords.get(groupGradingSheetId).put(sectionId, new GroupSectionCommentsRecord(rs.getString("comments"),
+                                                                                                  rs.getInt("lastmodifiedby"),
+                                                                                                  rs.getString("lastmodifieddate")));
+        }
+        
+        return commentRecords;
     }
 
     @Override
@@ -790,6 +937,24 @@ public class DatabaseImpl implements Database
         }
     }
     
+    private Integer getInteger(ResultSet rs, String field) throws SQLException {
+        Integer i = rs.getInt(field);
+        if (rs.wasNull()) {
+            i = null;
+        }
+
+        return i;
+    }
+    
+    private void setInteger(PreparedStatement ps, int pos, Integer i) throws SQLException {
+        if (i == null) {
+            ps.setNull(pos, java.sql.Types.INTEGER);
+        }
+        else {
+            ps.setInt(pos, i);
+        }
+    }
+   
     private void setObjectAsStringNullSafe(PreparedStatement ps, int pos, Object o) throws SQLException {
         String toSet = o == null ? null : o.toString();
         ps.setString(pos, toSet);
@@ -918,10 +1083,20 @@ public class DatabaseImpl implements Database
         
         abstract int setFields(PreparedStatement ps, T item) throws SQLException;
     }
-
+    
     private <T extends DbDataItem> void putDbDataItems(Set<T> items, DbDataItemPutOperation<T> operation,
                                                        DbDataItemIdUpdater idUpdater) throws SQLException {
-        Connection conn = this.openConnection();
+        this.putDbDataItems(items, operation, idUpdater, null);
+    }
+
+    private <T extends DbDataItem> void putDbDataItems(Set<T> items, DbDataItemPutOperation<T> operation,
+                                                       DbDataItemIdUpdater idUpdater, Connection conn) throws SQLException {
+        boolean preserveConnection = true;
+        if (conn == null) {
+            conn = this.openConnection();
+            preserveConnection = false;
+        }
+        
         try {
             conn.setAutoCommit(false);
             PreparedStatement psInsert = conn.prepareStatement(operation._insertCommand);
@@ -958,12 +1133,16 @@ public class DatabaseImpl implements Database
             psInsert.close();
             psUpdate.close();
             
-            conn.commit();            
+            if (!preserveConnection) {
+                conn.commit();
+            }
         } catch (SQLException ex) {
             conn.rollback();
             throw ex;
         } finally {
-            this.closeConnection(conn);
+            if (!preserveConnection) {
+                this.closeConnection(conn);
+            }
         }
     }
     
@@ -984,7 +1163,6 @@ public class DatabaseImpl implements Database
             
             int[] results = ps.executeBatch();
             this.checkUpdateValidity(results, orderingedItems);
-            REMOVAL_ID_UPDATER.updateIds(ps, orderingedItems);
             
             conn.commit();
         } catch (SQLException ex) {
@@ -1022,29 +1200,10 @@ public class DatabaseImpl implements Database
         }
     };
     
-    //used by the DbTA object because the IDs are POSIX IDs, not autogenerated DB IDs.
     private final DbDataItemIdUpdater DO_NOTHING_ID_UPDATER = new DbDataItemIdUpdater() {
         @Override
         public void updateIds(PreparedStatement ps, List<? extends DbDataItem> items) throws SQLException {}
     };
-    
-    private final DbDataItemIdUpdater REMOVAL_ID_UPDATER = new DbDataItemIdUpdater() {
-        @Override
-        public void updateIds(PreparedStatement ps, List<? extends DbDataItem> items) throws SQLException {
-            for (DbDataItem item : items) {
-                item.setId(null);
-                setChildIdsNull(item.getChildren());
-            }
-        }
-    };
-    
-    private void setChildIdsNull(Iterable<? extends DbDataItem> children) {
-        for (DbDataItem child : children) {
-            child.setParentNull();
-            child.setId(null);
-            this.setChildIdsNull(child.getChildren());
-        }
-    }
     
     private <T extends DbDataItem> void checkUpdateValidity(int[] results, List<T> modifedItems) throws SQLException {
         //a non-positive element in the results array means an update was unsuccessful or did not update any rows
@@ -1398,9 +1557,9 @@ public class DatabaseImpl implements Database
         return groupsForAsgn;
     }
     
-    private String partIDsSetToString(Set<Integer> partIDs) {
+    private String idSetToString(Set<Integer> ids) {
         StringBuilder builder = new StringBuilder();
-        Iterator<Integer> iterator = partIDs.iterator();
+        Iterator<Integer> iterator = ids.iterator();
         while (iterator.hasNext()) {
             builder.append('\'').append(iterator.next()).append('\'');
             if (iterator.hasNext()) {
@@ -1417,7 +1576,7 @@ public class DatabaseImpl implements Database
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.agid) AS rowcount"
                     + " FROM distribution AS d"
-                    + " WHERE d.pid IN (" + this.partIDsSetToString(partIDs) + ")");
+                    + " WHERE d.pid IN (" + this.idSetToString(partIDs) + ")");
             ResultSet rs = ps.executeQuery();
             int rows = rs.getInt("rowcount");
             ps.close();
@@ -1670,7 +1829,7 @@ public class DatabaseImpl implements Database
             PreparedStatement ps = conn.prepareStatement(
                     "SELECT agid, ontime, shiftdates, note, daterecorded, tid"
                     + " FROM extension AS e"
-                    + " WHERE e.agid IN ("+ this.groupIDsSetToString(groupIds) +")"
+                    + " WHERE e.agid IN ("+ this.idSetToString(groupIds) +")"
                     + " AND e.geid == ? ");
             ps.setInt(1, geId);
             
@@ -1796,19 +1955,6 @@ public class DatabaseImpl implements Database
             this.closeConnection(conn);
         }
     }
-    
-    private String groupIDsSetToString(Set<Integer> groupIDs) {
-        String groupIDString = "";
-        Iterator<Integer> groupIter = groupIDs.iterator();
-        while (groupIter.hasNext()) {
-            groupIDString += "'" + groupIter.next() + "'";
-            if (groupIter.hasNext()) {
-                groupIDString += ",";
-            }
-        }
-        
-        return groupIDString;
-    }
 
     @Override
     public Map<Integer, GradeRecord> getEarned(int partID, Set<Integer> groupIDs) 
@@ -1820,7 +1966,7 @@ public class DatabaseImpl implements Database
             PreparedStatement ps = conn.prepareStatement(
                     "SELECT agid, daterecorded, tid, earned, submitted"
                     + " FROM grade AS g"
-                    + " WHERE g.agid IN ("+ this.groupIDsSetToString(groupIDs) +")"
+                    + " WHERE g.agid IN ("+ this.idSetToString(groupIDs) +")"
                     + " AND g.pid == ? ");
             ps.setInt(1, partID);
             
@@ -1849,7 +1995,7 @@ public class DatabaseImpl implements Database
             PreparedStatement ps = conn.prepareStatement(
                     "SELECT agid, time, daterecorded, tid"
                     + " FROM geoccurrence AS geo"
-                    + " WHERE geo.agid IN (" + this.groupIDsSetToString(groupIds) + ")"
+                    + " WHERE geo.agid IN (" + this.idSetToString(groupIds) + ")"
                     + " AND geo.geid == ? ");
             ps.setInt(1, geId);
             
@@ -1946,6 +2092,9 @@ public class DatabaseImpl implements Database
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS adjustment");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS flag");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS grade");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheetcomments");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheetsubsection");
+            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheet");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS exemption");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS extension");
@@ -1955,7 +2104,6 @@ public class DatabaseImpl implements Database
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheetdetail");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheetsubsection");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheetsection");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS gradingsheet");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS inclusionfilter");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS actionproperty");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS action");
@@ -2038,17 +2186,13 @@ public class DatabaseImpl implements Database
                     + " path VARCHAR NOT NULL,"
                     + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
                     + " CONSTRAINT pidpathunique UNIQUE (pid, path) ON CONFLICT ROLLBACK)");
-            conn.createStatement().executeUpdate("CREATE TABLE gradingsheet (gs_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + " pid INTEGER NOT NULL,"
-                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
-                    + " CONSTRAINT oneperpart UNIQUE(pid) ON CONFLICT ROLLBACK)");
             conn.createStatement().executeUpdate("CREATE TABLE gradingsheetsection (gs_sid INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + " gs_id INTEGER NOT NULL,"
+                    + " pid INTEGER NOT NULL,"
                     + " name VARCHAR NOT NULL,"
                     + " ordering INTEGER NOT NULL,"
                     + " outof DOUBLE," //may be null; if not null, used for subtractive grading as earned and out of
-                    + " FOREIGN KEY (gs_id) REFERENCES gradingsheet(gs_id) ON DELETE CASCADE,"
-                    + " CONSTRAINT uniquenames UNIQUE(gs_id, gs_sid, name) ON CONFLICT ROLLBACK)");
+                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
+                    + " CONSTRAINT uniquenames UNIQUE(pid, gs_sid, name) ON CONFLICT ROLLBACK)");
             conn.createStatement().executeUpdate("CREATE TABLE gradingsheetsubsection (gs_ssid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " gs_sid INTEGER NOT NULL,"
                     + " text VARCHAR NOT NULL,"
@@ -2107,6 +2251,35 @@ public class DatabaseImpl implements Database
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
                     + " CONSTRAINT onegrader UNIQUE (agid, pid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE groupgradingsheet (ggsid INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " pid INTEGER NOT NULL,"
+                    + " agid INTEGER NOT NULL,"
+                    + " assignedto INTEGER,"
+                    + " submittedby INTEGER,"
+                    + " datesubmitted VARCHAR,"
+                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (assignedto) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (submittedby) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT onepergroupperpart UNIQUE(pid, agid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE groupgradingsheetsubsection (ggsid INTEGER NOT NULL,"
+                    + " gs_ssid INTEGER NOT NULL,"
+                    + " earned DOUBLE,"
+                    + " lastmodifiedby INTEGER NOT NULL,"
+                    + " lastmodifieddate VARCHAR NOT NULL,"
+                    + " FOREIGN KEY (ggsid) REFERENCES groupgradingsheet(ggsid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (gs_ssid) REFERENCES gradingsheetsubsection(gs_ssid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (lastmodifiedby) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT onepersubsectionpergroupgradingsheet UNIQUE (gs_ssid, ggsid) ON CONFLICT REPLACE)");
+            conn.createStatement().executeUpdate("CREATE TABLE groupgradingsheetcomments (ggsid INTEGER NOT NULL,"
+                    + " gs_sid INTEGER NOT NULL,"
+                    + " comments VARCHAR,"
+                    + " lastmodifiedby INTEGER NOT NULL,"
+                    + " lastmodifieddate VARCHAR NOT NULL,"
+                    + " FOREIGN KEY (ggsid) REFERENCES groupgradingsheet(ggsid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (gs_sid) REFERENCES gradingsheetsection(gs_sid) ON DELETE CASCADE,"
+                    + " FOREIGN KEY (lastmodifiedby) REFERENCES ta(tid) ON DELETE CASCADE,"
+                    + " CONSTRAINT onepersectionpergroupgradingsheet UNIQUE (gs_sid, ggsid) ON CONFLICT REPLACE)");
             conn.createStatement().executeUpdate("CREATE TABLE grade (pid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
                     + " earned DOUBLE,"

@@ -1,12 +1,13 @@
 package cakehat.database;
 
 import cakehat.Allocator;
+import cakehat.database.DbGroupGradingSheet.GroupSectionCommentsRecord;
+import cakehat.database.DbGroupGradingSheet.GroupSubsectionEarnedRecord;
 import cakehat.gradingsheet.GradingSheet;
 import cakehat.gradingsheet.GradingSheetSection;
 import cakehat.gradingsheet.GradingSheetSubsection;
-import java.util.Collections;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.joda.time.DateTime;
 
 /**
@@ -14,39 +15,44 @@ import org.joda.time.DateTime;
  * 
  * @author jeldridg
  */
-public class GroupGradingSheet extends DbDataItem {
+public class GroupGradingSheet {
     
     private final Group _group;
+    private final DbGroupGradingSheet _dbSheet;
     private final GradingSheet _gradingSheet;
     
-    /**
-     * The TA who most recently submitted this group's grading sheet; may be {@code null} if never submitted.
-     */
-    private TA _submittedBy;
-    
-    /**
-     * The time at which this group's grading sheet was most recently submitted; may be {@code null} if never submitted.
-     */
-    private DateTime _submittedTime;
-    
-    /**
-     * These maps store points earned and comments.  They are concurrent so that they can be safely written to the
-     * database on a thread other than the thread on which TAs enter this information (i.e., the UI thread).
-     */
-    private final ConcurrentHashMap<GradingSheetSubsection, GroupSubsectionEarned> _subsectionEarnedPoints;
-    private final ConcurrentHashMap<GradingSheetSection, GroupSectionComments> _sectionComments;
-    
-    public GroupGradingSheet(Integer id, Group group, GradingSheet gradingSheet) {
-        super(id);
+    GroupGradingSheet(Group group, GradingSheet gradingSheet, DbGroupGradingSheet dbSheet) {
+        if (group.getId() != dbSheet.getGroupId()) {
+            throw new IllegalArgumentException("group and dbSheet must have the same group ID");
+        }
+        if (gradingSheet.getPart().getId() != dbSheet.getPartId()) {
+            throw new IllegalArgumentException("gradingSheet and dbSheet must have the same part ID");
+        }
+        
         _group = group;
         _gradingSheet = gradingSheet;
-        
-        _subsectionEarnedPoints = new ConcurrentHashMap<GradingSheetSubsection, GroupSubsectionEarned>();
-        _sectionComments = new ConcurrentHashMap<GradingSheetSection, GroupSectionComments>();
+        _dbSheet = dbSheet;
+    }
+    
+    /**
+     * Returns the {@link DbGroupGradingSheet} that backs this {@code GroupGradingSheet} object.
+     * 
+     * @return
+     */
+    DbGroupGradingSheet getDbGroupGradingSheet() {
+        return _dbSheet;
+    }
+    
+    public int getId() {
+        return _dbSheet.getId();
     }
     
     public Group getGroup() {
         return _group;
+    }
+    
+    public boolean isSubmitted() {
+        return _dbSheet.getSubmittedDate() != null;
     }
     
     public GradingSheet getGradingSheet() {
@@ -59,7 +65,8 @@ public class GroupGradingSheet extends DbDataItem {
                     + "] does not contain subsection [" + subsection.getText() + "].");
         }
         
-        _subsectionEarnedPoints.put(subsection, new GroupSubsectionEarned(pointsEarned));
+        _dbSheet.setEarnedPoints(subsection.getId(), pointsEarned, Allocator.getUserServices().getUser().getId(),
+                              DateTime.now().toString());
     }
     
     public void setComments(GradingSheetSection section, String comments) {
@@ -68,66 +75,76 @@ public class GroupGradingSheet extends DbDataItem {
                     + "] does not  contain section [" + section.getName() + "].");
         }
         
-        _sectionComments.put(section, new GroupSectionComments(comments));
+        _dbSheet.setComments(section.getId(), comments, Allocator.getUserServices().getUser().getId(),
+                           DateTime.now().toString());
     }
     
     /**
-     * Returns an unmodifiable map of grading sheet subsections to points earned by the group for that subsection.
+     * Returns a map of grading sheet subsections to points earned by the group for that subsection.
      * 
      * @return 
      */
     public Map<GradingSheetSubsection, GroupSubsectionEarned> getEarnedPoints() {
-        return Collections.unmodifiableMap(_subsectionEarnedPoints);
+        Map<Integer, GroupSubsectionEarnedRecord> earnedRecords = _dbSheet.getSubsectionEarnedPoints();
+        
+        ImmutableMap.Builder<GradingSheetSubsection, GroupSubsectionEarned> earned = ImmutableMap.builder();
+        for (Integer subsectionId : earnedRecords.keySet()) {
+            earned.put(_gradingSheet.getSubsection(subsectionId),
+                       new GroupSubsectionEarned(earnedRecords.get(subsectionId)));
+        }
+        
+        return earned.build();
     }
     
     /**
-     * Returns an unmodifiable map of grading sheet sections to comments for the group for that subsection.
+     * Returns a map of grading sheet sections to comments for the group for that subsection.
      * @return 
      */
     public Map<GradingSheetSection, GroupSectionComments> getComments() {
-        return Collections.unmodifiableMap(_sectionComments);
+        Map<Integer, GroupSectionCommentsRecord> commentRecords = _dbSheet.getSectionComments();
+        
+        ImmutableMap.Builder<GradingSheetSection, GroupSectionComments> comments = ImmutableMap.builder();
+        for (Integer sectionId : commentRecords.keySet()) {
+            comments.put(_gradingSheet.getSection(sectionId),
+                       new GroupSectionComments(commentRecords.get(sectionId)));
+        }
+        
+        return comments.build();
     }
 
+    public TA getAssignedTo() {
+        return _dbSheet.getAssignedToId() == null ? null : Allocator.getDataServices().getTA(_dbSheet.getAssignedToId());
+    }
+    
+    public void setAssignedTo(TA grader) {
+        _dbSheet.setAssignedToId(grader == null ? null : grader.getId());
+    }
+    
     public TA getSubmittedBy() {
-        return _submittedBy;
+        return _dbSheet.getSubmittedById() == null ? null : Allocator.getDataServices().getTA(_dbSheet.getSubmittedById());
     }
     
     public DateTime getSubmittedTime() {
-        return _submittedTime;
+        return _dbSheet.getSubmittedDate() == null ? null : new DateTime(_dbSheet.getSubmittedDate());
     }
-    
-    void markSubmitted() {
-        _submittedBy = Allocator.getUserServices().getUser();
-        _submittedTime = DateTime.now();
-    }
-    
-    @Override
-    void setParentNull() {
-        throw new UnsupportedOperationException("This data item type has no parent.");
-    }
-    
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
-    
+
     public static class GroupSubsectionEarned {
         
-        private Double _earned;
-        private TA _lastModifiedBy;
-        private DateTime _lastModifiedTime;
+        private final Double _earned;
+        private final TA _lastModifiedBy;
+        private final DateTime _lastModifiedTime;
         
-        private GroupSubsectionEarned(Double earned) {
-            _earned = earned;
-            _lastModifiedBy = Allocator.getUserServices().getUser();
-            _lastModifiedTime = DateTime.now();
+        GroupSubsectionEarned(GroupSubsectionEarnedRecord record) {
+            _earned = record.getEarnedPoints();
+            _lastModifiedBy = Allocator.getDataServices().getTA(record.getLastModifiedBy());
+            _lastModifiedTime = new DateTime(record.getLastModifiedTime());
         }
         
         public Double getEarned() {
             return _earned;
         }
         
-        public TA getLastModifiedby() {
+        public TA getLastModifiedBy() {
             return _lastModifiedBy;
         }
         
@@ -139,21 +156,21 @@ public class GroupGradingSheet extends DbDataItem {
     
     public static class GroupSectionComments {
         
-        private String _comments;
-        private TA _lastModifiedBy;
-        private DateTime _lastModifiedTime;
-        
-        private GroupSectionComments(String comments) {
-            _comments = comments;
-            _lastModifiedBy = Allocator.getUserServices().getUser();
-            _lastModifiedTime = DateTime.now();
+        private final String _comments;
+        private final TA _lastModifiedBy;
+        private final DateTime _lastModifiedTime;
+
+        GroupSectionComments(GroupSectionCommentsRecord record) {
+            _comments = record.getComments();
+            _lastModifiedBy = Allocator.getDataServices().getTA(record.getLastModifiedBy());
+            _lastModifiedTime = new DateTime(record.getLastModifiedTime());
         }
         
         public String getComments() {
             return _comments;
         }
         
-        public TA getLastModifiedby() {
+        public TA getLastModifiedBy() {
             return _lastModifiedBy;
         }
         

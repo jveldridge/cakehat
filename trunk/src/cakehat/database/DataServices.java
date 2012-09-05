@@ -18,7 +18,7 @@ public interface DataServices {
         
     /**
      * Returns an immutable Set snapshot containing a {@link Student} object for each student in the database at the
-     * time {@link DataServicesV5#updateDataCache()} was called. If the database contained no students, an empty Set is
+     * time {@link DataServices#updateDataCache()} was called. If the database contained no students, an empty Set is
      * returned.
      * 
      * @return
@@ -27,7 +27,7 @@ public interface DataServices {
     
     /**
      * Returns an immutable Set view containing a {@link Student} object for each enabled student in the database at the
-     * time {@link DataServicesV5#updateDataCache()} was called.  If the database contained no enabled students, an
+     * time {@link DataServices#updateDataCache()} was called.  If the database contained no enabled students, an
      * empty Set is returned.
      *
      * @return
@@ -236,6 +236,21 @@ public interface DataServices {
      * @throws ServicesException if thrown no changes to extensions will have occurred
      */
     public void deleteExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException;
+        
+    public GroupGradingSheet getGroupGradingSheet(Part part, Group group) throws ServicesException;
+    
+    public void saveGroupGradingSheet(GroupGradingSheet groupGradingSheet) throws ServicesException;
+    
+    /**
+     * Marks the given group grading sheets as submitted or unsubmitted based on the given boolean.  If marking as
+     * submitted, all of the group grading sheets will be saved first.
+     * 
+     * @param groupGradingSheets
+     * @param submitted
+     * @throws ServicesException 
+     */
+    public void setGroupGradingSheetsSubmitted(Set<GroupGradingSheet> groupGradingSheets,
+                                               boolean submitted) throws ServicesException;
     
     /**
      * Returns the points earned for the given Group and Part. If no such value is stored in the database, {@code null}
@@ -305,7 +320,7 @@ public interface DataServices {
     public Set<TA> getDefaultGraders();
     
     /**
-     * Returns the TA with the corresponding id.
+     * Returns the TA with the corresponding id, {@code null} if there is no such TA.
      * 
      * @param taId
      * @return 
@@ -336,6 +351,14 @@ public interface DataServices {
      * @throws ServicesException 
      */
     public Set<Group> getGroups(Assignment asgn) throws ServicesException;
+    
+    /**
+     * Returns the Group with the corresponding id, {@null} if no such group exists.
+     * 
+     * @param groupId
+     * @return 
+     */
+    public Group getGroup(int groupId) throws ServicesException;
     
     /**
      * Returns an immutable ordered list of all assignment.

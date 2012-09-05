@@ -1,8 +1,6 @@
 package cakehat.gradingsheet;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,7 +20,7 @@ public class GradingSheetSubsection implements Comparable<GradingSheetSubsection
     
     private final ImmutableList<GradingSheetDetail> _details;
 
-    public GradingSheetSubsection(int id, String text, int order, Double outOf, List<GradingSheetDetail> details) {
+    GradingSheetSubsection(int id, String text, int order, Double outOf, List<GradingSheetDetail> details) {
         if (text == null) {
             throw new NullPointerException("text may not be null");
         }
@@ -35,8 +33,6 @@ public class GradingSheetSubsection implements Comparable<GradingSheetSubsection
         _order = order;
         _outOf = outOf;
         
-        List<GradingSheetDetail> detailsToSort = new ArrayList<GradingSheetDetail>(details);
-        Collections.sort(detailsToSort);
         _details = ImmutableList.copyOf(details);
     }
     
@@ -135,7 +131,7 @@ public class GradingSheetSubsection implements Comparable<GradingSheetSubsection
      */
     @Override
     public int compareTo(GradingSheetSubsection gsss) {
-        int comparison = this.getSection().compareTo(gsss.getSection());
+        int comparison = this.getSection().getGradingSheet().getPart().compareTo(gsss.getSection().getGradingSheet().getPart());
         
         if (comparison == 0) {
             comparison = ((Integer) this.getOrder()).compareTo(gsss.getOrder());

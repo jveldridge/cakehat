@@ -75,15 +75,5 @@ public class DbInclusionFilter extends DbDataItem
     DbPart getPart() {
         return _part;
     }
-    
-    @Override
-    void setParentNull() {
-        _part = null;
-    }
-    
-    @Override
-    Iterable<? extends DbDataItem> getChildren() {
-        return Collections.emptyList();
-    }
 
 }
