@@ -9,6 +9,7 @@ import cakehat.gradingsheet.GradingSheetSubsection;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.joda.time.DateTime;
+import support.utils.NullMath;
 
 /**
  * Represents the grading sheet for a group with points and comments.
@@ -94,6 +95,26 @@ public class GroupGradingSheet {
         }
         
         return earned.build();
+    }
+    
+    public Double getEarned() {
+        Double totalEarned = null;
+        
+        Map<GradingSheetSubsection, GroupSubsectionEarned> earnedMap = getEarnedPoints();
+        
+        for (GradingSheetSection section : _gradingSheet.getSections()) {
+            //If the section's out of is not null then this is the starting value earned and the subsection values
+            //will be negative and deduct from this value as needed
+            if(section.getOutOf() != null) {
+                totalEarned = NullMath.add(totalEarned, section.getOutOf());
+            }
+            
+            for (GradingSheetSubsection subsection : section.getSubsections()) {
+                totalEarned = NullMath.add(totalEarned, earnedMap.get(subsection).getEarned());
+            }
+        }
+        
+        return totalEarned;
     }
     
     /**

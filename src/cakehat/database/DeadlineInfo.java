@@ -383,12 +383,19 @@ public class DeadlineInfo
          * the deadlines this effect was calculated relative to
          * @return the penalty or bonus the group received
          */
-        public double getPenaltyOrBonus(double unadjustedGradableEventTotalEarned)
+        public double getPenaltyOrBonus(Double unadjustedGradableEventTotalEarned)
         {
             double penaltyOrBonus = _penaltyOrBonus;
             if(_status == TimeStatus.NC_LATE)
             {
-                penaltyOrBonus = -unadjustedGradableEventTotalEarned;
+                if(unadjustedGradableEventTotalEarned == null)
+                {
+                    penaltyOrBonus = 0;
+                }
+                else
+                {
+                    penaltyOrBonus = -unadjustedGradableEventTotalEarned;
+                }
             }
             
             return penaltyOrBonus;
