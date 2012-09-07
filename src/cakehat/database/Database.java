@@ -240,30 +240,6 @@ public interface Database
     public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) throws SQLException;
 
     /**
-     * Assigns the group corresponding to the given group ID to the TA with the given ID to grade for the Part
-     * corresponding to the given partID. If the group is already assigned to the TA for the Part, this method has no
-     * effect. The group will be unassigned from any TA to which it was previously assigned for this Part. If the
-     * groupID is invalid, a SQLException will be thrown.
-     * <br/><br/>
-     * <strong>Note:</strong> This method should not be used to create an initial distribution for a project; it should
-     * be used only to reassign grading.To create an initial distribution, use {@link #setDistribution(java.util.Map)}.
-     *
-     * @param groupID
-     * @param partID
-     * @param taID
-     */
-    public void assignGroup(int groupID, int partID, int taID) throws SQLException;
-
-    /**
-     * Unassigns the group with the given ID from the TA with the given ID on the Part with the given part ID.
-     *
-     * @param groupID
-     * @param partID
-     * @param taID
-     */
-    public void unassignGroup(int groupID, int partID) throws SQLException;
-
-    /**
      * Returns an ImmutableSet of IDs for the groups that the given TA has been assigned to grade for the Part with the
      * given ID. Returns an empty Set if no groups are assigned to the TA for the Part or if there is no distribution
      * for the Part in the database. 
@@ -293,17 +269,6 @@ public interface Database
      * @return
      */
     public Set<Integer> getPartsWithAssignedGroups(int taID) throws SQLException;
-    
-    /**
-     * Returns the ID of the TA who has been assigned to grade the group with the given ID for the Part with the given
-     * ID. If no such TA exists, or the groupID is invalid, {@code null} will be returned.
-     * 
-     * @param partID
-     * @param groupID
-     * @return
-     * @throws SQLException
-     */
-    public Integer getGrader(Integer partID, int groupID) throws SQLException;
 
     /**
      * Sets the same extension for the groups specified by {@code groupIds} for gradable event {@code geId}. The groups

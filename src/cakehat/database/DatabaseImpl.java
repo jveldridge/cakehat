@@ -722,7 +722,7 @@ public class DatabaseImpl implements Database
             setInteger(ps, 3, item.getAssignedToId());
             setInteger(ps, 4, item.getSubmittedById());
             ps.setString(5, item.getSubmittedDate());
-            return 5;
+            return 6;
         }
     };
     
@@ -1574,14 +1574,13 @@ public class DatabaseImpl implements Database
     public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(d.agid) AS rowcount"
-                    + " FROM distribution AS d"
-                    + " WHERE d.pid IN (" + this.idSetToString(partIDs) + ")");
+            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(pid) AS partcount FROM groupgradingsheet "
+                    + "WHERE assignedto NOT NULL AND pid IN (" + this.idSetToString(partIDs) + ")");
             ResultSet rs = ps.executeQuery();
-            int rows = rs.getInt("rowcount");
+            int count = rs.getInt("partcount");
             ps.close();
 
-            return rows == 0;
+            return count == 0;
         } finally {
             this.closeConnection(conn);
         }
@@ -1593,14 +1592,12 @@ public class DatabaseImpl implements Database
         try {
             SetMultimap<Integer, Integer> dist = HashMultimap.create();
 
-            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taID, d.agid AS agid"
-                    + " FROM distribution AS d"
-                    + " WHERE d.pid == ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT assignedto, agid FROM groupgradingsheet WHERE pid == ?");
             ps.setInt(1, partID);
             ResultSet rs = ps.executeQuery();
             
             while (rs.next()) {
-                dist.put(rs.getInt("taID"), rs.getInt("agid"));
+                dist.put(rs.getInt("assignedto"), rs.getInt("agid"));
             }
             
             return dist; 
@@ -1613,35 +1610,45 @@ public class DatabaseImpl implements Database
     public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) 
                                                         throws SQLException {
         Connection conn = this.openConnection();
-        try {  
+        
+        try {             
             conn.setAutoCommit(false);
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
-                    + " WHERE distribution.pid == ?");
-            for (int partID : distribution.keySet()) {
-                ps.setInt(1, partID);
-                ps.addBatch();
-            }
-            ps.executeBatch();
-            ps.close();
             
-            ps = conn.prepareStatement(
-                    "INSERT INTO distribution ('pid', 'agid', 'tid') "
+            //get IDs of groups that already have a group grading sheet
+            Set<Integer> groupsWithGradingSheet = new HashSet<Integer>();
+            PreparedStatement ps = conn.prepareStatement("SELECT agid FROM groupgradingsheet WHERE assignedto NOT NULL "
+                    + "AND pid IN (" + this.idSetToString(distribution.keySet()) + ")");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                groupsWithGradingSheet.add(rs.getInt("agid"));
+            }
+            
+            PreparedStatement psUpdate = conn.prepareStatement("UPDATE groupgradingsheet SET assignedto = ? "
+                    + "WHERE pid == ? AND agid == ?");
+            PreparedStatement psInsert = conn.prepareStatement("INSERT INTO groupgradingsheet (pid, agid, assignedto) "
                     + "VALUES (?, ?, ?)");
-            for (int partID : distribution.keySet()) {
-                for (int taID : distribution.get(partID).keySet()) {
-                    for (Integer groupID : distribution.get(partID).get(taID)) {
-                        ps.setInt(1, partID);
-                        ps.setInt(2, groupID);
-                        ps.setInt(3, taID);
-                        ps.addBatch();   
+            
+            for (int partId : distribution.keySet()) {
+                for (int taId : distribution.get(partId).keySet()) {
+                    for (int groupId : distribution.get(partId).get(taId)) {
+                        if (groupsWithGradingSheet.contains(groupId)) {
+                            psUpdate.setInt(1, taId);
+                            psUpdate.setInt(2, partId);
+                            psUpdate.setInt(3, groupId);
+                            psUpdate.addBatch();
+                        }
+                        else {
+                            psInsert.setInt(1, partId);
+                            psInsert.setInt(2, groupId);
+                            psInsert.setInt(3, taId);
+                            psInsert.addBatch();
+                        }
                     }
                 }
             }
-
-            ps.executeBatch();
-            ps.close();
-
-            // commit all the inserts to the DB file
+            
+            psInsert.executeBatch();
+            psUpdate.executeBatch();
             conn.commit();
         } catch (SQLException e) {
             // the exception is caught so that any old distribution is preserved
@@ -1649,38 +1656,6 @@ public class DatabaseImpl implements Database
 
             //then the exception is re-thrown to inform the client of the error
             throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void assignGroup(int groupID, int partID, int taID) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO distribution ('agid', 'tid', 'pid')"
-                    + " VALUES (?, ?, ?)");
-            ps.setInt(1, groupID);
-            ps.setInt(2, taID);
-            ps.setInt(3, partID);
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public void unassignGroup(int groupID, int partID) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM distribution"
-                    + " WHERE pid == ?"
-                    + " AND agid == ?");
-            ps.setInt(1, partID);
-            ps.setInt(2, groupID);
-
-            ps.executeUpdate();
         } finally {
             this.closeConnection(conn);
         }
@@ -1709,39 +1684,16 @@ public class DatabaseImpl implements Database
         Connection conn = this.openConnection();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.pid AS partID"
-                    + " FROM distribution AS d"
-                    + " WHERE d.tid == ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT pid FROM groupgradingsheet WHERE assignedto == ?");
             ps.setInt(1, taID);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                int partID = rs.getInt("partID");
+                int partID = rs.getInt("pid");
                 partIDs.add(partID);
             }
 
             return ImmutableSet.copyOf(partIDs);
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Integer getGrader(Integer partID, int groupID) throws SQLException {
-        Connection conn = this.openConnection();
-        
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT d.tid AS taID"
-                    + " FROM distribution AS d"
-                    + " WHERE d.pid==? AND d.agid==?");
-            ps.setInt(1, partID);
-            ps.setInt(2, groupID);
-            
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("taID");
-            }
-            return null;
         } finally {
             this.closeConnection(conn);
         }
@@ -2095,7 +2047,6 @@ public class DatabaseImpl implements Database
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheetcomments");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheetsubsection");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheet");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS distribution");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS exemption");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS extension");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS geoccurrence");
@@ -2245,12 +2196,6 @@ public class DatabaseImpl implements Database
                     + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
                     + " CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE)");
-            conn.createStatement().executeUpdate("CREATE TABLE distribution (pid INTEGER NOT NULL,"
-                    + " agid INTEGER NOT NULL,"
-                    + " tid INTEGER NOT NULL,"
-                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
-                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
-                    + " CONSTRAINT onegrader UNIQUE (agid, pid) ON CONFLICT REPLACE)");
             conn.createStatement().executeUpdate("CREATE TABLE groupgradingsheet (ggsid INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + " pid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
