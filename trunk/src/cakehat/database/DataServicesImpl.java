@@ -202,27 +202,13 @@ public class DataServicesImpl implements DataServices {
 
     @Override
     public TA getGrader(Part part, Group group) throws ServicesException {
-        try {
-            return _taIdMap.get(Allocator.getDatabase().getGrader(part.getId(), group.getId()));
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not get grader for group [" + group.getName() + "] "
-                    + "on part [" + part.getName() + "] from the database.", ex);
-        }
+        throw new UnsupportedOperationException("No longer supported.  Use GroupGradingSheet#getAssignedTo() instead.");
     }
 
     @Override
     public void setGrader(Part part, Group group, TA ta) throws ServicesException
     {
-        try {
-            if (ta == null) {
-                Allocator.getDatabase().unassignGroup(group.getId(), part.getId());
-            } else {
-                Allocator.getDatabase().assignGroup(group.getId(), part.getId(), ta.getId());
-            }
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not set grader for group [" + group.getName() + "]"
-                    + " on part [" + part.getName() + "].", ex);
-        }
+        throw new UnsupportedOperationException("No longer supported.  Use GroupGradingSheet#setAssignedTo(TA) instead.");
     }
     
     @Override
@@ -899,7 +885,7 @@ public class DataServicesImpl implements DataServices {
 
     @Override
     public void setDistribution(Map<Part, Map<TA, Set<Group>>> distribution) throws ServicesException {
-        try {
+        try {           
             Map<Integer, Map<Integer, Set<Integer>>> distForDb = new HashMap<Integer, Map<Integer, Set<Integer>>>();
             for (Part part : distribution.keySet()) {
                 distForDb.put(part.getId(), new HashMap<Integer, Set<Integer>>());

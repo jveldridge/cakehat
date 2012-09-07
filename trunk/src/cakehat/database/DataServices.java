@@ -185,6 +185,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException
      */
+    @Deprecated
     public TA getGrader(Part part, Group group) throws ServicesException;
 
     /**
@@ -199,6 +200,7 @@ public interface DataServices {
      * @param ta
      * @throws ServicesException
      */
+    @Deprecated
     public void setGrader(Part part, Group group, TA ta) throws ServicesException;
 
     /**
@@ -261,6 +263,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException
      */
+    @Deprecated
     public PartGrade getEarned(Group group, Part part) throws ServicesException;
     
     /**
@@ -272,6 +275,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
+    @Deprecated
     public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException;
     
     /**
@@ -284,6 +288,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
+    @Deprecated
     public void setEarned(Group group, Part part, Double earned, boolean submitted) throws ServicesException;
     
     /**
@@ -294,6 +299,7 @@ public interface DataServices {
      * @param earned
      * @throws ServicesException 
      */
+    @Deprecated
     public void setEarned(Part part, Map<Group, Pair<Double, Boolean>> earned) throws ServicesException;
     
     /**
@@ -303,6 +309,7 @@ public interface DataServices {
      * @param submitted
      * @throws ServicesException 
      */
+    @Deprecated
     public void setEarnedSubmitted(Part part, Map<Group, Boolean> submitted) throws ServicesException;
     
     /**

@@ -22,6 +22,9 @@ import static org.junit.Assert.*;
 public class DatabaseDistributionTest {
     
     private Database _database;
+    private DbPart _part;
+    private DbTA _ta;
+    private DbGroup _group;
     
     public DatabaseDistributionTest() throws IOException {
         _database = new DatabaseImpl(Allocator.getFileSystemUtilities().createTempFile("tempDB", "db"));
@@ -37,6 +40,52 @@ public class DatabaseDistributionTest {
     @Before
     public void setUp() throws SQLException {
         _database.resetDatabase();
+        
+        _ta = new DbTA(1, "talogin", "first", "last", true, true);
+        _database.putTAs(ImmutableSet.of(_ta));
+        
+        DbAssignment asgn = new DbAssignment("asgn", 1);
+        DbGradableEvent ge = DbGradableEvent.build(asgn, "ge", 1);
+        _part = DbPart.build(ge, "part", 1);
+        _database.putAssignments(ImmutableSet.of(asgn));
+        _database.putGradableEvents(ImmutableSet.of(ge));
+        _database.putParts(ImmutableSet.of(_part));
+        
+        DbStudent student = new DbStudent("login", "first", "last", "email");
+        _database.putStudents(ImmutableSet.of(student));
+        _group = new DbGroup(asgn.getId(), "group", ImmutableSet.of(student.getId()));
+        _database.putGroups(ImmutableSet.of(_group));
+    }
+    
+    @Test
+    public void testIsDistInitiallyEmptyForSinglePart() throws SQLException {
+        assertTrue(_database.isDistEmpty(ImmutableSet.of(_part.getId())));
+    }
+    
+    @Test
+    public void testIsDistEmptyAfterAssigningOneGroupForOnePart() throws SQLException {       
+        Map<Integer, Map<Integer, Set<Integer>>> dist = new HashMap<Integer, Map<Integer, Set<Integer>>>();
+        dist.put(_part.getId(), new HashMap<Integer, Set<Integer>>());
+        dist.get(_part.getId()).put(_ta.getId(), ImmutableSet.of(_group.getId()));
+        
+        _database.setDistribution(dist);
+        
+        assertFalse(_database.isDistEmpty(ImmutableSet.of(_part.getId())));
+    }
+    
+    @Test
+    public void testSetGetDistributionForOneGroupForOnePart() throws SQLException {
+        Map<Integer, Map<Integer, Set<Integer>>> dist = new HashMap<Integer, Map<Integer, Set<Integer>>>();
+        dist.put(_part.getId(), new HashMap<Integer, Set<Integer>>());
+        dist.get(_part.getId()).put(_ta.getId(), ImmutableSet.of(_group.getId()));
+        
+        _database.setDistribution(dist);
+        
+        SetMultimap<Integer, Integer> distFromDb = _database.getDistribution(_part.getId());
+        assertEquals(1, distFromDb.size());
+        assertTrue(distFromDb.containsKey(_part.getId()));
+        assertEquals(1, distFromDb.get(_part.getId()).size());
+        assertEquals(_group.getId(), distFromDb.get(_part.getId()).iterator().next());
     }
     
     @Test
@@ -61,48 +110,6 @@ public class DatabaseDistributionTest {
         assertEquals(1, part1Dist.keySet().size());
         assertEquals(true, part1Dist.containsKey(wrapper._taId1));
         assertEquals(2, part1Dist.get(wrapper._taId1).size());
-    }
-    
-    @Test
-    public void testAssignGroup() throws SQLException {
-        DatabaseContentWrapper wrapper = new DatabaseContentWrapper(_database);
-        
-        _database.assignGroup(wrapper._dbGroup1.getId(), 
-                              wrapper._part1.getId(), wrapper._taId1);
-        _database.assignGroup(wrapper._dbGroup2.getId(), 
-                              wrapper._part1.getId(), wrapper._taId1);
-        Set<Integer> assignedGroupsFB = 
-                _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId1);
-        DatabaseTestHelpers.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup1.getId(), 
-                                                        wrapper._dbGroup2.getId()), 
-                                       assignedGroupsFB);
-        assertEquals(true, _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId2).isEmpty());
-        
-        _database.assignGroup(wrapper._dbGroup1.getId(), 
-                              wrapper._part1.getId(), wrapper._taId2);
-        assertEquals((int)wrapper._taId2, (int)_database.getGrader(wrapper._part1.getId(), wrapper._dbGroup1.getId()));
-        assignedGroupsFB = _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId1);
-        DatabaseTestHelpers.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup2.getId()), 
-                                       assignedGroupsFB);
-        assignedGroupsFB = _database.getAssignedGroups(wrapper._part1.getId());
-        DatabaseTestHelpers.assertIntCollectionsEqual(ImmutableSet.of(wrapper._dbGroup1.getId(), 
-                                                        wrapper._dbGroup2.getId()), 
-                                       assignedGroupsFB);
-        
-        _database.unassignGroup(wrapper._dbGroup1.getId(), wrapper._part1.getId());
-        assertEquals(null, _database.getGrader(wrapper._part1.getId(), wrapper._dbGroup1.getId()));
-        assertEquals(true, _database.getAssignedGroups(wrapper._part1.getId(), wrapper._taId2).isEmpty());
-        assertEquals(true, _database.getPartsWithAssignedGroups(wrapper._taId2).isEmpty());
-        
-        Set<Integer> assignPartsDB = _database.getPartsWithAssignedGroups(wrapper._taId1);
-        DatabaseTestHelpers.assertIntCollectionsEqual(assignPartsDB, ImmutableSet.of(wrapper._part1.getId()));
-        assertEquals(true, _database.getAssignedGroups(wrapper._part2.getId()).isEmpty());
-        
-        _database.assignGroup(wrapper._dbGroup1.getId(), 
-                              wrapper._part2.getId(), wrapper._taId1);
-        assignPartsDB = _database.getPartsWithAssignedGroups(wrapper._taId1);
-        DatabaseTestHelpers.assertIntCollectionsEqual(assignPartsDB, ImmutableSet.of(wrapper._part1.getId(), 
-                                                                      wrapper._part2.getId()));
     }
     
 }
