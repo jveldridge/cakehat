@@ -1,6 +1,6 @@
 package cakehat.database;
 
-import cakehat.database.assignment.Assignment;
+import cakehat.assignment.Assignment;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
 import java.sql.SQLException;

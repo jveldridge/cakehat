@@ -2,14 +2,14 @@ package cakehat.services;
 
 import cakehat.CakehatRunMode;
 import cakehat.database.Student;
-import cakehat.database.assignment.Action;
+import cakehat.assignment.Action;
 import org.joda.time.DateTime;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import cakehat.Allocator;
 import cakehat.CakehatSession;
 import cakehat.TestCakehatSessionProvider;
-import cakehat.database.assignment.Assignment;
-import cakehat.database.assignment.GradableEvent;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.GradableEvent;
 import cakehat.database.Group;
 import java.io.File;
 import java.io.IOException;

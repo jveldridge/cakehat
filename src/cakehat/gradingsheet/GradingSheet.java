@@ -1,6 +1,6 @@
 package cakehat.gradingsheet;
 
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;

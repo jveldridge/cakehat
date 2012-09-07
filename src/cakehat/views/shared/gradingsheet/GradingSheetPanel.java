@@ -1,9 +1,9 @@
 package cakehat.views.shared.gradingsheet;
 
 import cakehat.database.Group;
-import cakehat.database.assignment.Assignment;
-import cakehat.database.assignment.GradableEvent;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.GradableEvent;
+import cakehat.assignment.Part;
 import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;

@@ -1,6 +1,6 @@
 package cakehat.database;
 
-import cakehat.database.assignment.Assignment;
+import cakehat.assignment.Assignment;
 import org.joda.time.DateTime;
 
 /**

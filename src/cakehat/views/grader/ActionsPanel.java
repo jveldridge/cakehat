@@ -1,9 +1,9 @@
 package cakehat.views.grader;
 
 import cakehat.database.Group;
-import cakehat.database.assignment.Action;
-import cakehat.database.assignment.Part;
-import cakehat.database.assignment.TaskException;
+import cakehat.assignment.Action;
+import cakehat.assignment.Part;
+import cakehat.assignment.TaskException;
 import cakehat.logging.ErrorReporter;
 import java.awt.Color;
 import java.awt.Dimension;

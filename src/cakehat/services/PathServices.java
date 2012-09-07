@@ -1,11 +1,11 @@
 package cakehat.services;
 
 import cakehat.CakehatSession;
-import cakehat.database.assignment.Assignment;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
-import cakehat.database.assignment.Action;
+import cakehat.assignment.Action;
 import java.io.File;
 
 /**

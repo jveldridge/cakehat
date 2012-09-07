@@ -1,6 +1,6 @@
 package cakehat.services;
 
-import cakehat.database.assignment.Assignment;
+import cakehat.assignment.Assignment;
 import java.awt.GridLayout;
 import java.io.File;
 import java.util.Collection;
@@ -14,8 +14,8 @@ import javax.swing.JRadioButton;
 import cakehat.Allocator;
 import cakehat.CakehatSession;
 import cakehat.database.GradableEventOccurrence;
-import cakehat.database.assignment.GradableEvent;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.GradableEvent;
+import cakehat.assignment.Part;
 import cakehat.database.TA;
 import cakehat.database.Group;
 import cakehat.database.PartGrade;
