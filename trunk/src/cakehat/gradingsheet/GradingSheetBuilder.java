@@ -54,7 +54,7 @@ public class GradingSheetBuilder {
             GradingSheetSubsection subsection = new GradingSheetSubsection(dbSubsection.getId(), dbSubsection.getText(),
                                                                            dbSubsection.getOrder(), dbSubsection.getOutOf(),
                                                                            buildDetails(dbSubsection.getDetails()));
-            subsectionsBuilder.add();
+            subsectionsBuilder.add(subsection);
             
             for (GradingSheetDetail detail : subsection.getDetails()) {
                 detail.setGradingSheetSubsection(subsection);

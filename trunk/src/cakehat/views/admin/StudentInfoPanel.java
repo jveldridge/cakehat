@@ -19,30 +19,25 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import support.ui.FormattedLabel;
+import support.ui.PaddingPanel;
 
 /**
  *
  * @author jak2
  */
-class StudentInfoPanel extends JPanel
+class StudentInfoPanel extends PaddingPanel
 {
     private final JPanel _contentPanel;
     private final FormattedLabel _headerLabel;
     
     StudentInfoPanel()
     {
-        this.setBackground(Color.WHITE);
-        
-        this.setLayout(new BorderLayout(0, 0));
-        this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
-        this.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
-        this.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-        this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
+        super(10, Color.WHITE);
         
         JPanel centerPanel = new JPanel();
         centerPanel.setBackground(Color.WHITE);
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        this.add(centerPanel, BorderLayout.CENTER);
+        this.addContentComponent(centerPanel);
         
         _headerLabel = FormattedLabel.asHeader("");
         centerPanel.add(_headerLabel);

@@ -1,5 +1,6 @@
 package support.ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import javax.swing.JPanel;
@@ -16,6 +17,22 @@ public class PreferredHeightJPanel extends JPanel
     public PreferredHeightJPanel(LayoutManager layoutManager)
     {
         super(layoutManager);
+        
+        this.setAlignmentX(LEFT_ALIGNMENT);
+    }
+    
+    public PreferredHeightJPanel(LayoutManager manager, Color background)
+    {
+        super(manager);
+        
+        this.setBackground(background);
+        this.setAlignmentX(LEFT_ALIGNMENT);
+    }
+
+    public PreferredHeightJPanel(Color background)
+    {   
+        this.setBackground(background);
+        this.setAlignmentX(LEFT_ALIGNMENT);
     }
     
     @Override
@@ -25,5 +42,5 @@ public class PreferredHeightJPanel extends JPanel
         size.width = Short.MAX_VALUE;
 
         return size;
-    }   
+    }
 }

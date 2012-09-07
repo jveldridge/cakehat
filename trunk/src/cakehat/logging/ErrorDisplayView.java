@@ -72,7 +72,7 @@ class ErrorDisplayView extends JDialog
         //Panel to hold everything
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        this.add(new PaddingPanel(panel, 10));
+        this.add(new PaddingPanel(panel, PaddingPanel.DEFAULT_PAD, panel.getBackground()));
 
         //Description
         panel.add(Box.createVerticalStrut(5));

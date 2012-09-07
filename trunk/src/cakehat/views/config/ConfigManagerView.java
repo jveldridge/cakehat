@@ -50,11 +50,11 @@ public class ConfigManagerView extends JFrame
         //Create a tab for each configuration category: TAs, students, assignments, & email
         _tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
         this.add(_tabbedPane);
-        _tabbedPane.insertTab("TAs", null, new PaddingPanel(new TAPanel(_worker), 10), null, 0);
-        _tabbedPane.insertTab("Students", null, new PaddingPanel(new StudentPanel(this, _worker), 10), null, 1);
-        _tabbedPane.insertTab("Assignments", null, new PaddingPanel(new AssignmentPanel(this, _worker), 10), null, 2);
-        _tabbedPane.insertTab("Email", null, new PaddingPanel(new EmailPanel(this, _worker), 10), null, 3);
-        _tabbedPane.insertTab("Scripts", null, new PaddingPanel(new ScriptsPanel(this), 10), null, 4);
+        _tabbedPane.insertTab("TAs", null, new PaddingPanel(new TAPanel(_worker)), null, 0);
+        _tabbedPane.insertTab("Students", null, new PaddingPanel(new StudentPanel(this, _worker)), null, 1);
+        _tabbedPane.insertTab("Assignments", null, new PaddingPanel(new AssignmentPanel(this, _worker)), null, 2);
+        _tabbedPane.insertTab("Email", null, new PaddingPanel(new EmailPanel(this, _worker)), null, 3);
+        _tabbedPane.insertTab("Scripts", null, new PaddingPanel(new ScriptsPanel(this)), null, 4);
         
         _tabbedPane.setSelectedIndex(selectedIndex);
         

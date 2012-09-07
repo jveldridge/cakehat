@@ -12,7 +12,7 @@ import cakehat.database.Student;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
-import cakehat.views.shared.gradingsheet.GradingSheet;
+import cakehat.views.shared.gradingsheet.GradingSheetPanel;
 import com.google.common.collect.Iterables;
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
@@ -52,7 +52,7 @@ public class AdminView extends JFrame
     
     private AssignmentTreeSelection _treeSelection;
     private Set<Student> _selectedStudents; 
-    private GradingSheet _currentlyDisplayedSheet;
+    private GradingSheetPanel _currentlyDisplayedSheet;
     
     private AdminView()
     {
@@ -281,34 +281,37 @@ public class AdminView extends JFrame
                             "Students: " + selectedStudentsNotInGroups);
                 }
             }
-            //Multiple groups have been selected
-            else if(selectedGroups.size() > 1)
+            //Zero groups selected
+            else if(selectedGroups.isEmpty())
             {
-                _statisticsPanel.displayFor(treeSelection, selectedGroups);
+                 _statisticsPanel.displayFor(treeSelection, null);
                 componentToDisplay = _statisticsPanel;
-            }       
-            //Zero or one groups have been selected
-            else if(selectedGroups.isEmpty() || selectedGroups.size() == 1)
+            }    
+            //One group selected
+            else if(selectedGroups.size() == 1)
             {
                 //If the group is null a template will be shown
                 Group group = selectedGroups.isEmpty() ? null : Iterables.get(selectedGroups, 0);
                 if(part != null)
                 {
-                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
-                            .getGradingSheet(part, group, true, true);
+                    _currentlyDisplayedSheet = GradingSheetPanel.getPanel(part, group, true, false);
                 }
                 else if(ge != null)
                 {
-                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
-                            .getGradingSheet(ge, group, true, true);
+                    _currentlyDisplayedSheet = GradingSheetPanel.getPanel(ge, group, true);
                 }
                 else
                 {
-                    _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
-                            .getGradingSheet(asgn, group, true, true);
+                    _currentlyDisplayedSheet = GradingSheetPanel.getPanel(asgn, group, true);
                 }
                 
-                componentToDisplay = _currentlyDisplayedSheet.getAsComponent();
+                componentToDisplay = _currentlyDisplayedSheet;
+            }
+            //Multiple groups selected
+            else if(selectedGroups.size() > 1)
+            {
+                _statisticsPanel.displayFor(treeSelection, selectedGroups);
+                componentToDisplay = _statisticsPanel;
             }
         }
         

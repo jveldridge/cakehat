@@ -7,6 +7,7 @@ import cakehat.database.Extension;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.database.Group;
+import cakehat.database.TA;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableMap;
@@ -22,9 +23,11 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -41,6 +44,9 @@ import org.joda.time.format.PeriodFormat;
 import org.joda.time.format.PeriodFormatter;
 import support.ui.DateTimeControl;
 import support.ui.FormattedLabel;
+import support.ui.PaddingPanel;
+import support.ui.PreferredHeightJPanel;
+import support.utils.NullMath;
 
 /**
  *
@@ -53,29 +59,40 @@ class GradableEventPanel extends GradingSheetPanel
     private final boolean _fullyShowingAllParts;
     private final Group _group;
     private final boolean _isAdmin;
-    private final boolean _submitOnSave;
     
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<PartPanel, Boolean> _partPanelSaveStatus = new HashMap<PartPanel, Boolean>();
     
     private final List<Component> _focusableComponents = new ArrayList<Component>();
     
-    private double _totalEarned = 0;
-    private double _totalOutOf = 0;
+    private Double _totalEarned = null;
+    private Double _totalOutOf = null;
     
     private GroupDeadlineResolutionPanel _groupDeadlineResolutionPanel;
     
-    GradableEventPanel(GradableEvent gradableEvent, Set<Part> partsToFullyShow, Group group,
-                       boolean isAdmin, boolean submitOnSave, boolean showBorder)
+    GradableEventPanel(GradableEvent gradableEvent, Iterable<Part> partsToFullyShow, Group group, boolean isAdmin,
+            boolean showBorder)
     {
         super(Color.WHITE, showBorder);
         
+        if(gradableEvent == null)
+        {
+            throw new NullPointerException("gradableEvent may not be null");
+        }
+        if(partsToFullyShow == null)
+        {
+            throw new NullPointerException("partsToFullyShow may not be null");
+        }
+        if(group == null)
+        {
+            throw new NullPointerException("group may not be null");
+        }
+        
         _gradableEvent = gradableEvent;
-        _partsToFullyShow = partsToFullyShow;
+        _partsToFullyShow = ImmutableSet.copyOf(partsToFullyShow);
         _fullyShowingAllParts = _partsToFullyShow.containsAll(_gradableEvent.getParts());
         _group = group;
         _isAdmin = isAdmin;
-        _submitOnSave = submitOnSave;
         
         init();
     }
@@ -85,15 +102,10 @@ class GradableEventPanel extends GradingSheetPanel
         try
         {
             DeadlineInfo deadlineInfo = Allocator.getDataServices().getDeadlineInfo(_gradableEvent);
-            
-            DateTime occurrenceDate = null;
-            Extension extension = null;
-            if(_group != null)
-            {
-                occurrenceDate = Allocator.getGradingServices().getOccurrenceDates(_gradableEvent, ImmutableSet.of(_group)).get(_group);
-                extension = Allocator.getDataServices().getExtensions(_gradableEvent, ImmutableSet.of(_group)).get(_group);
-            }
-            
+            DateTime occurrenceDate = Allocator.getGradingServices()
+                    .getOccurrenceDates(_gradableEvent, ImmutableSet.of(_group)).get(_group);
+            Extension extension = Allocator.getDataServices()
+                    .getExtensions(_gradableEvent, ImmutableSet.of(_group)).get(_group);
             initUI(deadlineInfo, occurrenceDate, extension);
         }
         catch(ServicesException e)
@@ -115,7 +127,7 @@ class GradableEventPanel extends GradingSheetPanel
         
         addContent(Box.createVerticalStrut(10));
         
-        if(deadlineInfo.getType() != DeadlineInfo.Type.NONE && _group != null)
+        if(deadlineInfo.getType() != DeadlineInfo.Type.NONE)
         {
             if(_isAdmin)
             {
@@ -277,7 +289,7 @@ class GradableEventPanel extends GradingSheetPanel
         final JButton extensionButton = new JButton(extension == null ? "Grant Extension" : "Revoke Extension");
         
         //Panel holding extension controls, the panel can be hidden / made visible as needed
-        final JPanel extensionPanel = new PreferredHeightPanel(this.getBackground());
+        final JPanel extensionPanel = new PreferredHeightJPanel(this.getBackground());
         extensionPanel.setVisible(extension != null);
         
         //Extension date time control
@@ -424,7 +436,7 @@ class GradableEventPanel extends GradingSheetPanel
         extensionPanel.setLayout(new BoxLayout(extensionPanel, BoxLayout.Y_AXIS));
         addContent(extensionPanel);
         
-        JPanel datePanel = new PreferredHeightPanel(this.getBackground());
+        JPanel datePanel = new PreferredHeightJPanel(this.getBackground());
         datePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         extensionPanel.add(datePanel);
         datePanel.add(FormattedLabel.asContent("On Time:"));
@@ -433,7 +445,7 @@ class GradableEventPanel extends GradingSheetPanel
         
         extensionPanel.add(Box.createVerticalStrut(5));
         
-        JPanel shiftPanel = new PreferredHeightPanel(this.getBackground());
+        JPanel shiftPanel = new PreferredHeightJPanel(this.getBackground());
         shiftPanel.setToolTipText("<html>Check to shift all deadline dates relative to the new on time date." +
                                   "<br/>Otherwise only this new on time date will be used, and any other" +
                                   "<br/>dates from the original deadline will be ignored.</html>");
@@ -507,7 +519,8 @@ class GradableEventPanel extends GradingSheetPanel
             this.setBackground(background);
             
             //Add a panel to show the received date
-            JPanel receivedPanel = new PreferredHeightPanel(new FlowLayout(FlowLayout.LEFT, 0, 0), this.getBackground());
+            JPanel receivedPanel = new PreferredHeightJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0),
+                    this.getBackground());
             addContent(receivedPanel);
             receivedPanel.add(_receivedLabel);
             
@@ -560,7 +573,7 @@ class GradableEventPanel extends GradingSheetPanel
             }
             
             //Add a panel to show the resolution from the deadline
-            JPanel resolutionPanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
+            JPanel resolutionPanel = new PreferredHeightJPanel(new BorderLayout(0, 0), this.getBackground());
             addContent(resolutionPanel);
 
             //Text
@@ -678,14 +691,14 @@ class GradableEventPanel extends GradingSheetPanel
             {
                 //Subtract out the current penalty or bonus, use raw total earned to calculate new penalty or bonus,
                 //then add that to the raw total earned
-                double prevTotalEarned = _totalEarned;
-                _totalEarned -= _currPenaltyOrBonus;
-                _currPenaltyOrBonus = resolution.getPenaltyOrBonus(_totalEarned);
-                _totalEarned += _currPenaltyOrBonus;
-
+                Double prevTotalEarned = _totalEarned;
+                _totalEarned = NullMath.subtract(_totalEarned, _currPenaltyOrBonus);
+                _currPenaltyOrBonus = resolution.getPenaltyOrBonus(_currPenaltyOrBonus);
+                _totalEarned = NullMath.add(_totalEarned, _currPenaltyOrBonus);
+                
                 //Visually update
-                _penaltyOrBonusField.setText(Double.toString(_currPenaltyOrBonus));
-
+                _penaltyOrBonusField.setText(NullMath.toString(_currPenaltyOrBonus));
+                
                 //Notify
                 if(notify && prevTotalEarned != _totalEarned)
                 {
@@ -697,29 +710,28 @@ class GradableEventPanel extends GradingSheetPanel
     
     private void initPartsUI()
     {
-        for(int i = 0; i < _gradableEvent.getParts().size(); i++)
+        for(Iterator<Part> partsIterator = _gradableEvent.iterator(); partsIterator.hasNext();)
         {
-            Part part = _gradableEvent.getParts().get(i);
+            Part part = partsIterator.next();
             
-            final PartPanel partPanel;
             if(_partsToFullyShow.contains(part))
             {
-                partPanel = PartPanel.getPartPanel(part, _group, _isAdmin, _submitOnSave, true);
-                _focusableComponents.addAll(partPanel.getFocusableComponents());
+                final PartPanel panel = new PartPanel(part, _group, _isAdmin, true);
+                _focusableComponents.addAll(panel.getFocusableComponents());
 
-                _partPanelSaveStatus.put(partPanel, false);
-                _totalEarned += partPanel.getEarned();
-                _totalOutOf += partPanel.getOutOf();
+                _partPanelSaveStatus.put(panel, false);
+                _totalEarned = NullMath.add(_totalEarned, panel.getEarned());
+                _totalOutOf = NullMath.add(_totalOutOf, panel.getOutOf());
 
-                partPanel.addGradingSheetListener(new GradingSheetListener()
+                panel.addGradingSheetListener(new GradingSheetListener()
                 {
                     @Override
-                    public void earnedChanged(double prevEarned, double currEarned)
+                    public void earnedChanged(Double prevEarned, Double currEarned)
                     {
-                        double prevTotalEarned = _totalEarned;
+                        Double prevTotalEarned = _totalEarned;
 
-                        _totalEarned -= prevEarned;
-                        _totalEarned += currEarned;
+                        _totalEarned = NullMath.subtract(_totalEarned, prevEarned);
+                        _totalEarned = NullMath.add(_totalEarned, currEarned);
 
                         if(_groupDeadlineResolutionPanel != null)
                         {
@@ -733,7 +745,7 @@ class GradableEventPanel extends GradingSheetPanel
                     @Override
                     public void saveChanged(boolean hasUnsavedChanges)
                     {
-                        _partPanelSaveStatus.put(partPanel, hasUnsavedChanges);
+                        _partPanelSaveStatus.put(panel, hasUnsavedChanges);
 
                         if(hasUnsavedChanges)
                         {
@@ -754,16 +766,15 @@ class GradableEventPanel extends GradingSheetPanel
                         }
                     };
                 });
+                
+                addContent(panel);
             }
             else
             {
-                partPanel = new PartInfoPanel(part, _group, true);
+                addContent(createPartialPartPanel(part));
             }
             
-            //Visually add
-            partPanel.setAlignmentX(LEFT_ALIGNMENT);
-            addContent(partPanel);
-            if(i != _gradableEvent.getParts().size() - 1)
+            if(partsIterator.hasNext())
             {
                 addContent(Box.createVerticalStrut(10));
             }
@@ -777,13 +788,13 @@ class GradableEventPanel extends GradingSheetPanel
     }
 
     @Override
-    public double getEarned()
+    Double getEarned()
     {
         return _totalEarned;
     }
 
     @Override
-    public double getOutOf()
+    Double getOutOf()
     {
         return _totalOutOf;
     }
@@ -798,5 +809,42 @@ class GradableEventPanel extends GradingSheetPanel
                 panel.save();
             }
         }
+    }
+    
+    private JPanel createPartialPartPanel(Part part)
+    {
+        JPanel partPanel = new PreferredHeightJPanel(new BorderLayout(0, 0), Color.WHITE);
+        partPanel.setBorder(BorderFactory.createEtchedBorder());
+        JPanel contentPanel = new PreferredHeightJPanel(partPanel.getBackground());
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.add(FormattedLabel.asHeader(part.getName()));
+        partPanel.add(new PaddingPanel(contentPanel, 10, contentPanel.getBackground()), BorderLayout.CENTER);
+
+        try
+        {
+            TA assignedTo = Allocator.getDataServices().getGroupGradingSheet(part, _group).getAssignedTo();
+            String taText;
+            if(assignedTo == null)
+            {
+                taText = "Unassigned";
+            }
+            else
+            {
+                taText = "Grader: " + assignedTo.getName() + " (" + assignedTo.getLogin() + ")";
+            }
+            contentPanel.add(FormattedLabel.asSubheader(taText).grayOut());
+        }
+        catch(ServicesException e)
+        {
+            JLabel errorLabel = FormattedLabel.asSubheader("Unable to retrieve assigned TA data")
+                    .centerHorizontally().showAsErrorMessage();
+            contentPanel.add(new PaddingPanel(errorLabel, 10, 10, 0, 0, contentPanel.getBackground()));
+
+            ErrorReporter.report("Unable to retrieve TA info from the database\n" +
+                    "Part: " + part.getFullDisplayName() + "\n" +
+                    "Group: " + _group.getName(), e);
+        }
+        
+        return partPanel;
     }
 }

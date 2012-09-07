@@ -1,7 +1,6 @@
 package cakehat.views.grader;
 
 import cakehat.Allocator;
-import cakehat.CakehatMain;
 import cakehat.CakehatReleaseInfo;
 import cakehat.CakehatSession;
 import cakehat.CakehatSession.ConnectionType;
@@ -9,7 +8,7 @@ import cakehat.database.Group;
 import cakehat.database.assignment.Part;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import cakehat.views.shared.gradingsheet.GradingSheet;
+import cakehat.views.shared.gradingsheet.GradingSheetPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -33,6 +32,7 @@ import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import support.ui.FormattedLabel;
+import support.ui.PaddingPanel;
 
 /**
  *
@@ -58,7 +58,7 @@ public class GraderView extends JFrame
     private final PartAndGroupPanel _partAndGroupPanel;
     private final ActionsPanel _actionsPanel;
     
-    private GradingSheet _currentlyDisplayedSheet;
+    private GradingSheetPanel _currentlyDisplayedSheet;
     
     private GraderView()
     {
@@ -137,16 +137,8 @@ public class GraderView extends JFrame
         navigationBufferPanel.setPreferredSize(new Dimension(0, 42));
         navigationBufferPanel.setLayout(new BorderLayout(0, 0));
         navigationBufferPanel.add(Box.createVerticalStrut(5), BorderLayout.NORTH);
-        JPanel centerNavigationBufferPanel = new JPanel(new BorderLayout(0, 0));
+        JPanel centerNavigationBufferPanel = new PaddingPanel(_navigationPanel, 5, 5, 10, 10, new Color(195, 195, 195));
         navigationBufferPanel.add(centerNavigationBufferPanel, BorderLayout.CENTER);
-        
-        centerNavigationBufferPanel.setBackground(new Color(195, 195, 195));
-        _navigationPanel.setBackground(centerNavigationBufferPanel.getBackground());
-        centerNavigationBufferPanel.add(_navigationPanel, BorderLayout.CENTER);
-        centerNavigationBufferPanel.add(Box.createVerticalStrut(5), BorderLayout.NORTH);
-        centerNavigationBufferPanel.add(Box.createVerticalStrut(5), BorderLayout.SOUTH);
-        centerNavigationBufferPanel.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
-        centerNavigationBufferPanel.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
         
         this.addNotifyStudentsButton();
         
@@ -204,9 +196,8 @@ public class GraderView extends JFrame
             else if(groups.size() == 1)
             {
                 Group group = groups.iterator().next();
-                _currentlyDisplayedSheet = Allocator.getGradingSheetManager()
-                        .getGradingSheet(part, group, false, false);
-                componentToDisplay = _currentlyDisplayedSheet.getAsComponent();
+                _currentlyDisplayedSheet = GradingSheetPanel.getPanel(part, group, false, true);
+                componentToDisplay = _currentlyDisplayedSheet;
             }
             else
             {
