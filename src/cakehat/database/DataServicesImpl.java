@@ -14,6 +14,7 @@ import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -283,37 +284,55 @@ public class DataServicesImpl implements DataServices {
     
     @Override
     public GroupGradingSheet getGroupGradingSheet(Part part, Group group) throws ServicesException {
+        return this.getGroupGradingSheets(ImmutableSetMultimap.of(part, group)).get(part).get(group);
+    }
+    
+    @Override
+    public Map<Part, Map<Group, GroupGradingSheet>> getGroupGradingSheets(SetMultimap<Part, Group> toRetrieve) throws ServicesException {
         try {
+            Map<Part, Map<Group, GroupGradingSheet>> gradingSheets = new HashMap<Part, Map<Group, GroupGradingSheet>>();
+            
             //create db variable so subsequent lines of code don't get too long and hard to read
             Database db = Allocator.getDatabase();
             
-            GradingSheet gs = part.getGradingSheet();
+            Map<Integer, Part> partMap = new HashMap<Integer, Part>();
             Set<Integer> sectionIds = new HashSet<Integer>();
             Set<Integer> subsectionIds = new HashSet<Integer>();
-            for (GradingSheetSection section : gs.getSections()) {
-                sectionIds.add(section.getId());
-                
-                for (GradingSheetSubsection subsection : section.getSubsections()) {
-                    subsectionIds.add(subsection.getId());
+            for (Part part : toRetrieve.keySet()) {
+                partMap.put(part.getId(), part);
+                GradingSheet gs = part.getGradingSheet();
+                for (GradingSheetSection section : gs.getSections()) {
+                    sectionIds.add(section.getId());
+
+                    for (GradingSheetSubsection subsection : section.getSubsections()) {
+                        subsectionIds.add(subsection.getId());
+                    }
                 }
             }
            
-            Map<Integer, DbGroupGradingSheet> groupGradingSheets = db.getGroupGradingSheets(ImmutableSet.of(part.getId()),
-                                                                                            subsectionIds,
-                                                                                            sectionIds,
-                                                                                            ImmutableSet.of(group.getId())).get(part.getId());
-            DbGroupGradingSheet groupGradingSheet = null;
-            if (groupGradingSheets != null) {
-                groupGradingSheet = groupGradingSheets.get(group.getId());
-            }
-            if (groupGradingSheet == null) {
-                groupGradingSheet = new DbGroupGradingSheet(group.getId(), part.getId());
-            }
+            Map<Integer, Map<Integer, DbGroupGradingSheet>> gradingSheetsFromDb =
+                    db.getGroupGradingSheets(partMap.keySet(), subsectionIds,  sectionIds,
+                                             groupsToIdCollection(toRetrieve.values(), new HashSet<Integer>()));
             
-            return new GroupGradingSheet(group, gs, groupGradingSheet);
+            for (Part part : toRetrieve.keySet()) {
+                gradingSheets.put(part, new HashMap<Group, GroupGradingSheet>());
+                
+                Map<Integer, DbGroupGradingSheet> gradingSheetsForPart = gradingSheetsFromDb.get(part.getId()) == null ?
+                        ImmutableMap.<Integer, DbGroupGradingSheet>of() : gradingSheetsFromDb.get(part.getId());
+                
+                for (Group group : toRetrieve.get(part)) {
+                    DbGroupGradingSheet dbGradingSheet = gradingSheetsForPart.get(group.getId());
+                    if (dbGradingSheet == null) {
+                        dbGradingSheet = new DbGroupGradingSheet(group.getId(), part.getId());
+                    }
+                    
+                    gradingSheets.get(part).put(group, new GroupGradingSheet(group, part.getGradingSheet(), dbGradingSheet));
+                }
+            }
+
+            return gradingSheets;
         } catch (SQLException ex) {
-            throw new ServicesException("Unable to retrieve group grading sheet for group " + group + " on part " +
-                    part.getFullDisplayName() + ".", ex);
+            throw new ServicesException("Unable to retrieve group grading sheets.", ex);
         }
     }
     
