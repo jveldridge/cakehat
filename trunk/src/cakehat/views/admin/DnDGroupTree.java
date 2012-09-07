@@ -3,7 +3,7 @@ package cakehat.views.admin;
 import cakehat.Allocator;
 import cakehat.database.DbGroup;
 import cakehat.database.Student;
-import cakehat.database.assignment.Assignment;
+import cakehat.assignment.Assignment;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import com.google.common.collect.HashMultimap;

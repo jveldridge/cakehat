@@ -1,9 +1,9 @@
 package cakehat.views.admin;
 
 import cakehat.Allocator;
-import cakehat.database.assignment.Assignment;
-import cakehat.database.assignment.GradableEvent;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.GradableEvent;
+import cakehat.assignment.Part;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;

@@ -5,7 +5,7 @@ import cakehat.CakehatReleaseInfo;
 import cakehat.CakehatSession;
 import cakehat.CakehatSession.ConnectionType;
 import cakehat.database.Group;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import cakehat.views.shared.gradingsheet.GradingSheetPanel;

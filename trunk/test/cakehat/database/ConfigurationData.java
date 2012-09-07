@@ -1,8 +1,8 @@
 package cakehat.database;
 
-import cakehat.database.assignment.GradableEvent;
-import cakehat.database.assignment.Assignment;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.GradableEvent;
+import cakehat.assignment.Assignment;
+import cakehat.assignment.Part;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Random;
@@ -234,7 +234,7 @@ public class ConfigurationData
             members.add(generateNewDatabaseStudent());
         }
         
-        cakehat.database.assignment.Assignment asgn = generateNewNonGroupAssignment();
+        cakehat.assignment.Assignment asgn = generateNewNonGroupAssignment();
         String name = generateRandomString();
         
         Group group = createMock(Group.class);

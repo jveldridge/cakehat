@@ -3,7 +3,7 @@ package cakehat.gml;
 import java.util.ArrayList;
 import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import cakehat.database.ConfigurationData;
 import cakehat.database.Group;
 import java.io.File;

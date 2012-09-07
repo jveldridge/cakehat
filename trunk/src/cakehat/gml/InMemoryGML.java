@@ -1,6 +1,6 @@
 package cakehat.gml;
 
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import cakehat.database.Group;
 import java.util.ArrayList;
 

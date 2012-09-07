@@ -3,7 +3,7 @@ package cakehat.database;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
 import cakehat.database.DatabaseTestHelpers.EqualityAsserter;
-import cakehat.database.assignment.ActionDescription;
+import cakehat.assignment.ActionDescription;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.sql.SQLException;

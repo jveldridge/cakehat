@@ -4,7 +4,7 @@ import cakehat.gml.InMemoryGML.Subsection;
 import cakehat.gml.InMemoryGML.Section;
 import org.w3c.dom.NodeList;
 import cakehat.database.Group;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

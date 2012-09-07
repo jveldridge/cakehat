@@ -3,7 +3,7 @@ package cakehat.views.admin;
 import cakehat.Allocator;
 import cakehat.database.Group;
 import cakehat.database.Student;
-import cakehat.database.assignment.Assignment;
+import cakehat.assignment.Assignment;
 import cakehat.services.ServicesException;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;

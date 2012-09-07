@@ -6,7 +6,7 @@ import cakehat.database.GroupGradingSheet;
 import cakehat.database.GroupGradingSheet.GroupSectionComments;
 import cakehat.database.GroupGradingSheet.GroupSubsectionEarned;
 import cakehat.database.TA;
-import cakehat.database.assignment.Part;
+import cakehat.assignment.Part;
 import cakehat.gradingsheet.GradingSheetDetail;
 import cakehat.gradingsheet.GradingSheetSection;
 import cakehat.gradingsheet.GradingSheetSubsection;
