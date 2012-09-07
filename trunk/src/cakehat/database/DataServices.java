@@ -4,6 +4,7 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.services.ServicesException;
+import com.google.common.collect.SetMultimap;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
@@ -240,6 +241,8 @@ public interface DataServices {
     public void deleteExtensions(GradableEvent gradableEvent, Set<Group> groups) throws ServicesException;
         
     public GroupGradingSheet getGroupGradingSheet(Part part, Group group) throws ServicesException;
+    
+    public Map<Part, Map<Group, GroupGradingSheet>> getGroupGradingSheets(SetMultimap<Part, Group> toRetrieve) throws ServicesException;
     
     public void saveGroupGradingSheet(GroupGradingSheet groupGradingSheet) throws ServicesException;
     
