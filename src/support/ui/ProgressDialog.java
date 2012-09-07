@@ -94,8 +94,7 @@ public class ProgressDialog extends JDialog
     {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        PaddingPanel mainPanel = new PaddingPanel(contentPanel, 10);
-        this.add(mainPanel);
+        this.add(new PaddingPanel(contentPanel));
             
         //Message
         JLabel messageLabel = new JLabel();

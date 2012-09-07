@@ -4,15 +4,16 @@ import cakehat.database.assignment.Assignment;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.Group;
 import cakehat.database.Student;
-import com.google.common.collect.ImmutableSet;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import support.ui.FormattedLabel;
+import support.utils.NullMath;
 
 /**
  *
@@ -23,7 +24,6 @@ class AssignmentPanel extends GradingSheetPanel
     private final Assignment _asgn;
     private final Group _group;
     private final boolean _isAdmin;
-    private final boolean _submitOnSave;
     
     //Map from panel to if it has unsaved changes (true = unsaved changes)
     private final Map<GradableEventPanel, Boolean> _gradableEventPanelSaveStatus =
@@ -31,17 +31,25 @@ class AssignmentPanel extends GradingSheetPanel
     
     private final List<Component> _focusableComponents = new ArrayList<Component>();
     
-    private double _totalEarned = 0;
-    private double _totalOutOf = 0;
+    private Double _totalEarned = null;
+    private Double _totalOutOf = null;
     
-    AssignmentPanel(Assignment asgn, Group group, boolean isAdmin, boolean submitOnSave, boolean showBorder)
+    AssignmentPanel(Assignment asgn, Group group, boolean isAdmin, boolean showBorder)
     {
         super(Color.WHITE, showBorder);
+        
+        if(asgn == null)
+        {
+            throw new NullPointerException("asgn may not be null");
+        }
+        if(group == null)
+        {
+            throw new NullPointerException("group may not be null");
+        }
         
         _asgn = asgn;
         _group = group;
         _isAdmin = isAdmin;
-        _submitOnSave = submitOnSave;
         
         initUI();
     }
@@ -59,53 +67,46 @@ class AssignmentPanel extends GradingSheetPanel
     {
         addContent(FormattedLabel.asHeader(_asgn.getName()));
         
-        if(_group == null)
+        if(_group.isGroupOfOne())
         {
-            addContent(FormattedLabel.asSubheader("Template").grayOut());
+            Student student = _group.getOnlyMember();
+            addContent(FormattedLabel.asSubheader("Student: " +  student.getName() + " (" + student.getLogin() + ")")
+                    .grayOut());
         }
         else
         {
-            if(_group.isGroupOfOne())
+            addContent(FormattedLabel.asSubheader("Group: " + _group.getName()).grayOut());
+            for(Student member : _group)
             {
-                Student student = _group.getOnlyMember();
-                addContent(FormattedLabel.asSubheader("Student: " +  student.getName() + " (" + student.getLogin() +
-                        ")").grayOut());
-            }
-            else
-            {
-                addContent(FormattedLabel.asSubheader("Group: " + _group.getName()).grayOut());
-                for(Student member : _group)
-                {
-                    addContent(FormattedLabel.asSubheader("\t" + member.getName() + " (" + member.getLogin() + ")")
-                            .grayOut());
-                }
+                addContent(FormattedLabel.asSubheader("\t" + member.getName() + " (" + member.getLogin() + ")")
+                        .grayOut());
             }
         }
     }
     
     private void initGradableEventsUI()
     {
-        for(int i = 0; i < _asgn.getGradableEvents().size(); i++)
+        for(Iterator<GradableEvent> geIterator = _asgn.iterator(); geIterator.hasNext();)
         {
-            final GradableEvent gradableEvent = _asgn.getGradableEvents().get(i);
+            GradableEvent gradableEvent = geIterator.next();
             
-            final GradableEventPanel panel = new GradableEventPanel(gradableEvent,
-                    ImmutableSet.copyOf(gradableEvent.getParts()), _group, _isAdmin, _submitOnSave, true);
+            final GradableEventPanel panel = new GradableEventPanel(gradableEvent, gradableEvent.getParts(), _group,
+                    _isAdmin, true);
             _focusableComponents.addAll(panel.getFocusableComponents());
             
             _gradableEventPanelSaveStatus.put(panel, false);
-            _totalEarned += panel.getEarned();
-            _totalOutOf += panel.getOutOf();
+            _totalEarned = NullMath.add(_totalEarned, panel.getEarned());
+            _totalOutOf = NullMath.add(_totalOutOf, panel.getOutOf());
             
             panel.addGradingSheetListener(new GradingSheetListener()
             {
                 @Override
-                public void earnedChanged(double prevEarned, double currEarned)
+                public void earnedChanged(Double prevEarned, Double currEarned)
                 {
-                    double prevTotalEarned = _totalEarned;
+                    Double prevTotalEarned = _totalEarned;
 
-                    _totalEarned -= prevEarned;
-                    _totalEarned += currEarned;
+                    _totalEarned = NullMath.subtract(_totalEarned, prevEarned);
+                    _totalEarned = NullMath.add(_totalEarned, currEarned);
 
                     notifyEarnedChanged(prevTotalEarned, _totalEarned);
                     notifyUnsavedChangeOccurred();
@@ -136,9 +137,8 @@ class AssignmentPanel extends GradingSheetPanel
                 };
             });
             
-            panel.setAlignmentX(LEFT_ALIGNMENT);
             addContent(panel);
-            if(i != _asgn.getGradableEvents().size() - 1)
+            if(geIterator.hasNext())
             {
                 addContent(Box.createVerticalStrut(10));
             }
@@ -152,13 +152,13 @@ class AssignmentPanel extends GradingSheetPanel
     }
 
     @Override
-    public double getEarned()
+    Double getEarned()
     {
         return _totalEarned;
     }
 
     @Override
-    public double getOutOf()
+    Double getOutOf()
     {
         return _totalOutOf;
     }

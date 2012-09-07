@@ -27,8 +27,13 @@ public class ModalJFrameHostHelper
     {
         final CloseAction closeAction = new CloseAction(frame, frame.getGlassPane());
         
+        JPanel componentHostPanel = new JPanel(new BorderLayout(0,0));
+        componentHostPanel.setBorder(BorderFactory.createEtchedBorder());
+        componentHostPanel.setOpaque(true);
+        componentHostPanel.add(component, BorderLayout.CENTER);
+        
         final Color glassColor = useTransparency ? new Color(192, 192, 192, 200) : Color.LIGHT_GRAY;
-        JPanel glassPane = new JPanel()
+        JPanel glassPane = new PaddingPanel(componentHostPanel)
         {
             @Override
             protected void paintComponent(Graphics g)
@@ -41,18 +46,6 @@ public class ModalJFrameHostHelper
         glassPane.setOpaque(false);
         frame.setGlassPane(glassPane);
         glassPane.setVisible(true);
-        
-        glassPane.setLayout(new BorderLayout(0, 0));
-        glassPane.add(Box.createVerticalStrut(padding), BorderLayout.NORTH);
-        glassPane.add(Box.createVerticalStrut(padding), BorderLayout.SOUTH);
-        glassPane.add(Box.createHorizontalStrut(padding), BorderLayout.WEST);
-        glassPane.add(Box.createHorizontalStrut(padding), BorderLayout.EAST);
-        
-        JPanel componentHostPanel = new JPanel(new BorderLayout(0,0));
-        componentHostPanel.setBorder(BorderFactory.createEtchedBorder());
-        glassPane.add(componentHostPanel, BorderLayout.CENTER);
-        componentHostPanel.setOpaque(true);
-        componentHostPanel.add(component, BorderLayout.CENTER);
         
         frame.validate();
         

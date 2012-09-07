@@ -45,6 +45,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import support.ui.FormattedLabel;
 import support.ui.ModalJFrameHostHelper.CloseAction;
+import support.ui.PaddingPanel;
 import support.utils.posix.NativeException;
 
 /**
@@ -150,13 +151,10 @@ class StudentPanel extends JPanel
                             }
 
                             //Allow students to be added manually
-                            JPanel buttonPanel = new JPanel(new BorderLayout(0, 0));
-                            buttonPanel.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-                            buttonPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 35));
                             JButton addStudentButton = new JButton("Add Student");
-                            buttonPanel.add(Box.createHorizontalStrut(5), BorderLayout.WEST);
-                            buttonPanel.add(addStudentButton, BorderLayout.CENTER);
-                            buttonPanel.add(Box.createHorizontalStrut(5), BorderLayout.EAST);
+                            JPanel buttonPanel = new PaddingPanel(addStudentButton, 10, 0, 5, 5,
+                                    studentsPanel.getBackground());
+                            buttonPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 35));
                             _scrollablePanel.add(buttonPanel);
                             addStudentButton.addActionListener(new ActionListener()
                             {
@@ -646,7 +644,7 @@ class StudentPanel extends JPanel
         }
     }
     
-    private static class AddStudentsConfirmationPanel extends JPanel
+    private static class AddStudentsConfirmationPanel extends PaddingPanel
     {   
         private final Set<DbStudent> _students;
         
@@ -666,16 +664,8 @@ class StudentPanel extends JPanel
         
         void display(final CloseAction closeAction, final NotificationRow notificationRow)
         {
-            //Initialize UI
-            this.setLayout(new BorderLayout(0, 0));
-            
-            //Put a 10 pixel pad around the content
             JPanel contentPanel = new JPanel(new BorderLayout(0, 0));
-            this.add(contentPanel, BorderLayout.CENTER);
-            this.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-            this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
-            this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
-            this.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
+            this.addContentComponent(contentPanel);
             
             //Header row
             JPanel topPanel = new JPanel();

@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Set;
 import org.joda.time.DateTime;
-import support.utils.Pair;
 
 /**
  *
@@ -293,27 +292,6 @@ public interface DataServices {
      */
     @Deprecated
     public void setEarned(Group group, Part part, Double earned, boolean submitted) throws ServicesException;
-    
-    /**
-     * Sets the points earned and submitted for the given Part for the provided groups. The double value for earned in
-     * the pair may be null, the boolean value for submitted may not be null.
-     * 
-     * @param part
-     * @param earned
-     * @throws ServicesException 
-     */
-    @Deprecated
-    public void setEarned(Part part, Map<Group, Pair<Double, Boolean>> earned) throws ServicesException;
-    
-    /**
-     * Sets the submitted for the given Part for the provided groups. The earned value is not altered.
-     * 
-     * @param part
-     * @param submitted
-     * @throws ServicesException 
-     */
-    @Deprecated
-    public void setEarnedSubmitted(Part part, Map<Group, Boolean> submitted) throws ServicesException;
     
     /**
      * Returns an immutable set of all TAs.

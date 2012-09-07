@@ -1,8 +1,14 @@
 package cakehat.views.shared.gradingsheet;
 
+import cakehat.database.Group;
+import cakehat.database.assignment.Assignment;
+import cakehat.database.assignment.GradableEvent;
+import cakehat.database.assignment.Part;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,22 +19,48 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import support.ui.FixedWidthJPanel;
 import support.ui.FormattedLabel;
+import support.ui.PreferredHeightJPanel;
 
 /**
  *
  * @author jak2
  */
-abstract class GradingSheetPanel extends PreferredHeightPanel implements GradingSheet
+public abstract class GradingSheetPanel extends FixedWidthJPanel
 {
-    private final JPanel _contentPanel;
+    public static GradingSheetPanel getPanel(Assignment asgn, Group group, boolean isAdmin)
+    {
+        return new AssignmentPanel(asgn, group, isAdmin, false);
+    }
     
+    public static GradingSheetPanel getPanel(GradableEvent ge, Group group, boolean isAdmin)
+    {
+        return new GradableEventPanel(ge, ge.getParts(), group, isAdmin, false);
+    }
+    
+    public static GradingSheetPanel getPanel(Part part, Group group, boolean isAdmin, boolean partiallyShowOtherParts)
+    {
+        GradingSheetPanel panel;
+        if(partiallyShowOtherParts)
+        {
+            panel = new GradableEventPanel(part.getGradableEvent(), ImmutableSet.of(part), group, isAdmin, false);
+        }
+        else
+        {
+            panel = new PartPanel(part, group, isAdmin, false);
+        }
+        
+        return panel;
+    }
+    
+    private final JPanel _contentPanel;
     private boolean _hasUnsavedChanges = false;
     private final Set<GradingSheetListener> _listeners = new HashSet<GradingSheetListener>();
     
     GradingSheetPanel(Color backgroundColor, boolean showBorder)
     {
-        super(backgroundColor);
+        this.setBackground(backgroundColor);
         
         if(showBorder)
         {
@@ -41,20 +73,13 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         this.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
         this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
         
-        _contentPanel = new PreferredHeightPanel(backgroundColor);
+        _contentPanel = new PreferredHeightJPanel(backgroundColor);
         _contentPanel.setLayout(new BoxLayout(_contentPanel, BoxLayout.Y_AXIS));
         this.add(_contentPanel, BorderLayout.CENTER);
     }
     
-    @Override
-    public Component getAsComponent()
-    {
-        return this;
-    }
-    
     abstract List<Component> getFocusableComponents();
     
-    @Override
     public Component getFirstComponent()
     {
         Component first = null;
@@ -66,7 +91,6 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         return first;
     }
 
-    @Override
     public Component getLastComponent()
     {
         Component last = null;
@@ -78,13 +102,11 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         return last;
     }
 
-    @Override
     public boolean containsComponent(Component component)
     {
         return getFocusableComponents().contains(component);
     }
 
-    @Override
     public Component getComponentAfter(Component component)
     {   
         int index = getFocusableComponents().indexOf(component);
@@ -103,7 +125,6 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         return next;
     }
 
-    @Override
     public Component getComponentBefore(Component component)
     {
         int index = getFocusableComponents().indexOf(component);
@@ -124,25 +145,32 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     
     // Listener
     
-    @Override
+    public static interface GradingSheetListener
+    {
+        public void earnedChanged(Double prevEarned, Double currEarned);
+        
+        public void saveChanged(boolean hasUnsavedChanges);
+    }
+        
     public void addGradingSheetListener(GradingSheetListener listener)
     {
         _listeners.add(listener);
     }
     
-    @Override
     public void removeGradingSheetListener(GradingSheetListener listener)
     {
         _listeners.remove(listener);
     }
         
-    protected void notifyEarnedChanged(double prevEarned, double currEarned)
+    protected void notifyEarnedChanged(Double prevEarned, Double currEarned)
     {
         for(GradingSheetListener listener : _listeners)
         {
             listener.earnedChanged(prevEarned, currEarned);
         }
     }
+    
+    public abstract void save();
     
     protected void notifyUnsavedChangeOccurred()
     {
@@ -170,7 +198,6 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         }
     }  
     
-    @Override
     public boolean hasUnsavedChanges()
     {
         return _hasUnsavedChanges;
@@ -190,7 +217,7 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
     
     protected void addErrorMessagePanel(String message)
     {
-        JPanel errorPanel = new PreferredHeightPanel(new BorderLayout(0, 0), this.getBackground());
+        JPanel errorPanel = new PreferredHeightJPanel(new BorderLayout(0, 0), this.getBackground());
         JLabel errorLabel = FormattedLabel.asSubheader(message).centerHorizontally().showAsErrorMessage();
         errorPanel.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
         errorPanel.add(errorLabel, BorderLayout.CENTER);
@@ -207,5 +234,18 @@ abstract class GradingSheetPanel extends PreferredHeightPanel implements Grading
         field.setHorizontalAlignment(JTextField.CENTER);
         
         return field;
+    }
+    
+    abstract Double getEarned();
+    
+    abstract Double getOutOf();
+    
+    @Override
+    public Dimension getMaximumSize()
+    {
+        Dimension size = getPreferredSize();
+        size.width = Short.MAX_VALUE;
+
+        return size;
     }
 }

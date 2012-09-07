@@ -44,7 +44,7 @@ public class GroupGradingSheet {
         return _dbSheet;
     }
     
-    public int getId() {
+    public Integer getId() {
         return _dbSheet.getId();
     }
     
@@ -110,7 +110,8 @@ public class GroupGradingSheet {
             }
             
             for (GradingSheetSubsection subsection : section.getSubsections()) {
-                totalEarned = NullMath.add(totalEarned, earnedMap.get(subsection).getEarned());
+                GroupSubsectionEarned earned = earnedMap.get(subsection);
+                totalEarned = NullMath.add(totalEarned, earned == null ? null : earned.getEarned());
             }
         }
         

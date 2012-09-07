@@ -2,14 +2,15 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.database.Group;
-import cakehat.database.PartGrade;
+import cakehat.database.GroupGradingSheet;
 import cakehat.database.Student;
 import cakehat.database.assignment.GradableEvent;
 import cakehat.database.assignment.Part;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
-import java.awt.BorderLayout;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
@@ -24,43 +25,45 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import support.ui.FormattedLabel;
+import support.ui.PaddingPanel;
 
 /**
- * A panel shown when multiple groups are selected and a part, gradable event, or assignment is selected. This view is
- * intended to show relevant statistics on the selected elements.
+ * A panel showing information for groups and the selected part, gradable event, or assignment. This view is intended to
+ * show relevant statistics on the selected elements.
  * <br/><br/>
  * For now it just shows grading status, but this is intended to be expanded in the future.
  *
  * @author jak2
  */
-class StatisticsPanel extends JPanel
+class StatisticsPanel extends PaddingPanel
 {   
     private final JPanel _contentPanel;
     
     StatisticsPanel()
     {
-        this.setBackground(Color.WHITE);
-        
-        this.setLayout(new BorderLayout(0, 0));
-        this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
-        this.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
-        this.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-        this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
+        super(PaddingPanel.DEFAULT_PAD, Color.WHITE);
         
         JPanel centerPanel = new JPanel();
-        centerPanel.setBackground(Color.WHITE);
+        centerPanel.setBackground(this.getBackground());
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        this.add(centerPanel, BorderLayout.CENTER);
+        this.addContentComponent(centerPanel);
         
         centerPanel.add(FormattedLabel.asHeader("Grading Status"));
         
         _contentPanel = new JPanel();
-        _contentPanel.setBackground(Color.WHITE);
+        _contentPanel.setBackground(centerPanel.getBackground());
         _contentPanel.setLayout(new BoxLayout(_contentPanel, BoxLayout.Y_AXIS));
         _contentPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         centerPanel.add(_contentPanel);
     }
     
+    /**
+     * Shows statistics for the provided selection. If {@code groupSelection} is {@code null} then all groups for the
+     * assignment are used.
+     * 
+     * @param assignmentSelection may not be {@code null}
+     * @param groupSelection may be {@code null}, if so then all groups for the selected assignment will be used
+     */
     void displayFor(AssignmentTreeSelection assignmentSelection, Set<Group> groupSelection)
     {
         _contentPanel.removeAll();
@@ -90,12 +93,19 @@ class StatisticsPanel extends JPanel
         
         try
         {
-            Map<Part, Map<Group, PartGrade>> grades = new HashMap<Part, Map<Group, PartGrade>>();
+            if(groupSelection == null)
+            {
+                groupSelection = Allocator.getDataServices().getGroups(assignmentSelection.getAssignment());
+            }
+            
+            SetMultimap<Part, Group> dataToQuery = HashMultimap.create();
             for(Part part : parts)
             {
-                grades.put(part, Allocator.getDataServices().getEarned(groupSelection, part));
+                dataToQuery.putAll(part, groupSelection);
             }
-
+            Map<Part, Map<Group, GroupGradingSheet>> gradingSheets = Allocator.getDataServices()
+                    .getGroupGradingSheets(dataToQuery);
+            
             //Categories
             // - Not started (no parts submitted or in progress)
             // - Grading in progress (some, but not all, parts submitted OR
@@ -111,12 +121,14 @@ class StatisticsPanel extends JPanel
                 
                 for(Part part : parts)
                 {
-                    PartGrade grade = grades.get(part).get(group);
-                    if(grade != null)
+                    GroupGradingSheet gradingSheet = gradingSheets.get(part).get(group);
+                    
+                    if(gradingSheet.getId() != null)
                     {
                         anySubmittedOrInProgress = true;
                     }
-                    else if(grade == null || !grade.isSubmitted())
+                    
+                    if(gradingSheet.getId() == null || !gradingSheet.isSubmitted())
                     {
                         allSubmitted = false;
                     }

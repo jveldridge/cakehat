@@ -66,7 +66,7 @@ class GradingSheetCreatorPanel extends JPanel
         
         _headerPanel = new JPanel(new BorderLayout(0, 0));
         
-        this.add(new PaddingPanel(_headerPanel, 10, 10, 5, 5), BorderLayout.NORTH);
+        this.add(new PaddingPanel(_headerPanel, 10, 10, 5, 5, _headerPanel.getBackground()), BorderLayout.NORTH);
         this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
         this.add(Box.createHorizontalStrut(5), BorderLayout.EAST);
         this.add(Box.createHorizontalStrut(5), BorderLayout.WEST);
@@ -661,11 +661,7 @@ class GradingSheetCreatorPanel extends JPanel
                 {
                     ReorderablePanel panel = _childrenPanelMap.get(child);
                     panel.reorderOccurred();
-                    
-                    PaddingPanel childPaddingPanel = new PaddingPanel(panel, 3, 3, 10, 10);
-                    childPaddingPanel.setBackground(_childrenPanel.getBackground());
-                    
-                    _childrenPanel.add(childPaddingPanel);
+                    _childrenPanel.add(new PaddingPanel(panel, 3, 3, 10, 10, _childrenPanel.getBackground()));
                 }
             }
 

@@ -699,9 +699,7 @@ class AssignmentPanel extends JPanel
             JPanel contentPanel = new JPanel();
             contentPanel.setBackground(this.getBackground());
             contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-            PaddingPanel paddingPanel = new PaddingPanel(contentPanel, 5);
-            paddingPanel.setBackground(this.getBackground());
-            this.add(paddingPanel, BorderLayout.CENTER);
+            this.add(new PaddingPanel(contentPanel, 5, this.getBackground()), BorderLayout.CENTER);
             
             JPanel headlinePanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
             headlinePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -1583,9 +1581,7 @@ class AssignmentPanel extends JPanel
             JPanel contentPanel = new JPanel();
             contentPanel.setBackground(this.getBackground());
             contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-            PaddingPanel paddingPanel = new PaddingPanel(contentPanel, 5);
-            paddingPanel.setBackground(this.getBackground());
-            this.add(paddingPanel, BorderLayout.CENTER);
+            this.add(new PaddingPanel(contentPanel, 5, this.getBackground()), BorderLayout.CENTER);
             
             
             JPanel headlinePanel = new PreferredHeightJPanel(new BorderLayout(0, 0));
@@ -2039,9 +2035,7 @@ class AssignmentPanel extends JPanel
             JPanel contentPanel = new JPanel();
             contentPanel.setBackground(this.getBackground());
             contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-            PaddingPanel paddingPanel = new PaddingPanel(contentPanel, 5);
-            paddingPanel.setBackground(this.getBackground());
-            this.add(paddingPanel, BorderLayout.CENTER);
+            this.add(new PaddingPanel(contentPanel, 5, this.getBackground()), BorderLayout.CENTER);
             
             
             JPanel headlinePanel = new PreferredHeightJPanel(new BorderLayout(0, 0));

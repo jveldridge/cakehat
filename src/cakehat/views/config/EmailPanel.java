@@ -37,6 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import support.ui.FormattedLabel;
+import support.ui.PaddingPanel;
 /**
  *
  * @author jak2
@@ -324,21 +325,15 @@ class EmailPanel extends JPanel
         }
     }
     
-    private static class TestCredentialsPanel extends JPanel
+    private static class TestCredentialsPanel extends PaddingPanel
     {
         private final JPanel _contentPanel;
         
         TestCredentialsPanel(final String account, final String password)
         {   
-            this.setLayout(new BorderLayout(0, 0));
-            this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
-            this.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
-            this.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-            this.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
-
             _contentPanel = new JPanel();
             _contentPanel.setLayout(new BoxLayout(_contentPanel, BoxLayout.Y_AXIS));
-            this.add(_contentPanel, BorderLayout.CENTER);
+            this.addContentComponent(_contentPanel);
             
             final String from = account + "@" + Allocator.getConstants().getEmailDomain();
             final String to = Allocator.getUserUtilities().getUserLogin() + "@" +

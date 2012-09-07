@@ -21,8 +21,6 @@ import cakehat.services.PathServices;
 import cakehat.services.PathServicesImpl;
 import cakehat.services.UserServices;
 import cakehat.services.UserServicesImpl;
-import cakehat.views.shared.gradingsheet.GradingSheetManager;
-import cakehat.views.shared.gradingsheet.GradingSheetManagerImpl;
 import support.testutils.TestUtilities;
 import support.utils.ArchiveUtilities;
 import support.utils.ArchiveUtilitiesImpl;
@@ -123,7 +121,6 @@ public class Allocator
     private final SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
     private final SingletonAllocation<UserUtilities> _userUtils;
     private final SingletonAllocation<DataServices> _dataServices;
-    private final SingletonAllocation<GradingSheetManager> _gradingSheetManager;
     private final SingletonAllocation<EmailManager> _emailManager;
 
     /**
@@ -276,16 +273,6 @@ public class Allocator
         {
             _dataServices = customizer._dataServices;
         }
-        
-        if(customizer._gradingSheetManager == null)
-        {
-            _gradingSheetManager = new SingletonAllocation<GradingSheetManager>()
-                    { public GradingSheetManager allocate() { return new GradingSheetManagerImpl(); } };
-        }
-        else
-        {
-            _gradingSheetManager = customizer._gradingSheetManager;
-        }
             
         if(customizer._emailManager == null)
         {
@@ -368,11 +355,6 @@ public class Allocator
         return getInstance()._userUtils.getInstance();
     }
     
-    public static GradingSheetManager getGradingSheetManager()
-    {
-        return getInstance()._gradingSheetManager.getInstance();
-    }
-    
     public static EmailManager getEmailManager()
     {
         return getInstance()._emailManager.getInstance();
@@ -400,7 +382,6 @@ public class Allocator
         private SingletonAllocation<FileSystemUtilities> _fileSystemUtils;
         private SingletonAllocation<UserUtilities> _userUtils;
         private SingletonAllocation<DataServices> _dataServices;
-        private SingletonAllocation<GradingSheetManager> _gradingSheetManager;
         private SingletonAllocation<EmailManager> _emailManager;
 
         public Customizer setCourseInfo(SingletonAllocation<CourseInfo> courseInfo)

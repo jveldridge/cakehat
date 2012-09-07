@@ -4,12 +4,10 @@ import java.awt.event.FocusEvent;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.FocusListener;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -19,20 +17,23 @@ import support.ui.DocumentAdapter;
  *
  * @author jak2
  */
-class EarnedField extends JFormattedTextField
+class EarnedField extends JTextField
 {
+    private static final Color WARNING_COLOR = new Color(255, 255, 204);    //Pastel yellow
+    private static final Color ERROR_COLOR = new Color(255, 204, 204);      //Pastel red
+    private static final Color VALID_COLOR = Color.WHITE;
+    
     private final Set<EarnedListener> _listeners = new HashSet<EarnedListener>();
-    private double _currEarned;
-    private double _outOf;
+    private Double _currEarned;
+    private final Double _outOf;
 
-    public EarnedField(double initialEarned, double outOf)
+    EarnedField(Double initialEarned, Double outOf)
     {
-        super(NumberFormat.getNumberInstance());
-
         _currEarned = initialEarned;
         _outOf = outOf;
         
         this.setColumns(5);
+        this.setBorder(BorderFactory.createEtchedBorder());
         this.setMinimumSize(this.getPreferredSize());
         this.setMaximumSize(this.getPreferredSize());
         this.setHorizontalAlignment(JTextField.CENTER);
@@ -61,9 +62,17 @@ class EarnedField extends JFormattedTextField
                     @Override
                     public void run()
                     {
-                        if(getText().isEmpty())
+                        String text = getText();
+                        if(!text.isEmpty())
                         {
-                            setText("0");
+                            try
+                            {
+                                Double.parseDouble(text);
+                            }
+                            catch(NumberFormatException e)
+                            {
+                                setEarned(null);
+                            }
                         }
                     }
                 });
@@ -75,12 +84,14 @@ class EarnedField extends JFormattedTextField
             @Override
             public void modificationOccurred(DocumentEvent de)
             {
-                Double earned = 0D;
+                boolean isEmpty = false;
+                Double earned = null;
                 try
                 {   
                     String text = de.getDocument().getText(0, de.getDocument().getLength());
-
-                    if(!text.isEmpty())
+                    isEmpty = text.isEmpty();
+                    
+                    if(!isEmpty)
                     {
                         try
                         {
@@ -94,14 +105,13 @@ class EarnedField extends JFormattedTextField
                 }
                 catch(BadLocationException e) { }
                 
-                applyColorIndicator(earned);
+                applyColorIndicator(earned, isEmpty);
                 
                 //Notify listeners
-                double numericEarned = (earned == null ? 0 : earned);
-                if(_currEarned != numericEarned)
+                if(_currEarned != earned)
                 {
-                    notifyListeners(_currEarned, numericEarned);
-                    _currEarned = numericEarned;
+                    notifyListeners(_currEarned, earned);
+                    _currEarned = earned;
                 }
             }
         });
@@ -109,19 +119,24 @@ class EarnedField extends JFormattedTextField
         this.setEarned(initialEarned);
     }
 
-    public final void setEarned(double value)
+    final void setEarned(Double value)
     {
-        try
+        if(value == null)
         {
-            this.setText(this.getFormatter().valueToString(value));
+            this.setText("");
+            this.applyColorIndicator(value, true);
         }
-        catch(ParseException ex) { }
+        else
+        {
+            this.setText(Double.toString(value));
+            this.applyColorIndicator(value, false);
+        }
     }
 
-    public final double getEarned()
+    final Double getEarned()
     {
-        double points = 0;
-
+        Double points = null;
+        
         String text = this.getText();
         if(!text.isEmpty())
         {
@@ -134,47 +149,61 @@ class EarnedField extends JFormattedTextField
 
         return points;
     }
-
-    private void applyColorIndicator(Double earned)
+    
+    private void applyColorIndicator(Double earned, boolean isEmpty)
     {
-        if(earned == null)
+        //Subtractive grading - this scenario is not fully supported yet
+        if(_outOf == null)
         {
-            this.setBackground(Color.RED);
-            this.setToolTipText("Value is not a number");
-        }
-        else if(earned == 0.0D)
-        {
-            this.setBackground(Color.YELLOW);
-            this.setToolTipText("No points have been assigned");
-        }
-        else if(earned <= _outOf)
-        {
-            this.setBackground(Color.WHITE);
+            this.setBackground(VALID_COLOR);
             this.setToolTipText(null);
         }
         else
         {
-            this.setBackground(Color.RED);
-            this.setToolTipText("Points assigned exceeds out of");
+            if(isEmpty)
+            {
+                this.setBackground(WARNING_COLOR);
+                this.setToolTipText("No points have been assigned");
+            }
+            else if(earned == null)
+            {
+                this.setBackground(ERROR_COLOR);
+                this.setToolTipText("Value is not a number");
+            }
+            else if(earned < 0.0)
+            {
+                this.setBackground(WARNING_COLOR);
+                this.setToolTipText("Points assigned is negative");
+            }
+            else if(earned <= _outOf)
+            {
+                this.setBackground(VALID_COLOR);
+                this.setToolTipText(null);
+            }
+            else
+            {
+                this.setBackground(WARNING_COLOR);
+                this.setToolTipText("Points assigned exceeds out of");
+            }
         }
     }
     
     static interface EarnedListener
     {
-        public void earnedChanged(double prevEarned, double currEarned);
+        void earnedChanged(Double prevEarned, Double currEarned);
     }
     
-    public void addEarnedListener(EarnedListener listener)
+    void addEarnedListener(EarnedListener listener)
     {
         _listeners.add(listener);
     }
     
-    public void removeEarnedListener(EarnedListener listener)
+    void removeEarnedListener(EarnedListener listener)
     {
         _listeners.remove(listener);
     }
     
-    private void notifyListeners(double prevEarned, double currEarned)
+    private void notifyListeners(Double prevEarned, Double currEarned)
     {
         for(EarnedListener listener : _listeners)
         {
