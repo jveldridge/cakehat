@@ -2171,7 +2171,8 @@ public class DatabaseImpl implements Database
                     + " agid INTEGER NOT NULL,"
                     + " time VARCHAR NOT NULL,"
                     + " daterecorded VARCHAR NOT NULL,"
-                    + " tid INTEGER NOT NULL,"
+                    + " path VARCHAR," //may be null; means a non-digital handin for which the time was recorded manually
+                    + " tid INTEGER," //if null, means was a digital handin for which the time was recorded automatically
                     + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
