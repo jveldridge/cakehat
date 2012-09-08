@@ -10,6 +10,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
+import javax.swing.plaf.BorderUIResource.CompoundBorderUIResource;
+import javax.swing.plaf.basic.BasicBorders.MarginBorder;
+import javax.swing.plaf.metal.MetalBorders.TextFieldBorder;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
 
@@ -33,7 +36,6 @@ class EarnedField extends JTextField
         _outOf = outOf;
         
         this.setColumns(5);
-        this.setBorder(BorderFactory.createEtchedBorder());
         this.setMinimumSize(this.getPreferredSize());
         this.setMaximumSize(this.getPreferredSize());
         this.setHorizontalAlignment(JTextField.CENTER);
@@ -118,6 +120,16 @@ class EarnedField extends JTextField
         
         this.setEarned(initialEarned);
     }
+    
+    @Override
+    public void setEnabled(boolean enable)
+    {
+        super.setEnabled(enable);
+        
+        //Call setEarned(...) with the current earned value so that the visual is updated to reflect the disabled
+        //status
+        this.setEarned(_currEarned);
+    }
 
     final void setEarned(Double value)
     {
@@ -152,39 +164,56 @@ class EarnedField extends JTextField
     
     private void applyColorIndicator(Double earned, boolean isEmpty)
     {
-        //Subtractive grading - this scenario is not fully supported yet
-        if(_outOf == null)
+        if(this.isEnabled())
         {
-            this.setBackground(VALID_COLOR);
-            this.setToolTipText(null);
-        }
-        else
-        {
-            if(isEmpty)
-            {
-                this.setBackground(WARNING_COLOR);
-                this.setToolTipText("No points have been assigned");
-            }
-            else if(earned == null)
-            {
-                this.setBackground(ERROR_COLOR);
-                this.setToolTipText("Value is not a number");
-            }
-            else if(earned < 0.0)
-            {
-                this.setBackground(WARNING_COLOR);
-                this.setToolTipText("Points assigned is negative");
-            }
-            else if(earned <= _outOf)
+            //The custom border used when enabled
+            this.setBorder(BorderFactory.createEtchedBorder());
+            
+            //Subtractive grading - this scenario is not fully supported yet
+            if(_outOf == null)
             {
                 this.setBackground(VALID_COLOR);
                 this.setToolTipText(null);
             }
             else
             {
-                this.setBackground(WARNING_COLOR);
-                this.setToolTipText("Points assigned exceeds out of");
+                if(isEmpty)
+                {
+                    this.setBackground(WARNING_COLOR);
+                    this.setToolTipText("No points have been assigned");
+                }
+                else if(earned == null)
+                {
+                    this.setBackground(ERROR_COLOR);
+                    this.setToolTipText("Value is not a number");
+                }
+                else if(earned < 0.0)
+                {
+                    this.setBackground(WARNING_COLOR);
+                    this.setToolTipText("Points assigned is negative");
+                }
+                else if(earned <= _outOf)
+                {
+                    this.setBackground(VALID_COLOR);
+                    this.setToolTipText(null);
+                }
+                else
+                {
+                    this.setBackground(WARNING_COLOR);
+                    this.setToolTipText("Points assigned exceeds out of");
+                }
             }
+        }
+        else
+        {
+            //Creates and sets a border identical to the default Swing Metal border
+            MarginBorder innerBorder = new MarginBorder();
+            TextFieldBorder outerBorder = new TextFieldBorder();
+            CompoundBorderUIResource border = new CompoundBorderUIResource(innerBorder, outerBorder);
+            this.setBorder(border);
+            
+            this.setBackground(VALID_COLOR);
+            this.setToolTipText("Points cannot be modified while grading is submitted");
         }
     }
     

@@ -134,10 +134,12 @@ public class GraderView extends JFrame
         _contentPanel.add(_actionsPanel);
         
         //Navigation panel
+        _navigationPanel.setBackground(new Color(195, 195, 195));
         navigationBufferPanel.setPreferredSize(new Dimension(0, 42));
         navigationBufferPanel.setLayout(new BorderLayout(0, 0));
         navigationBufferPanel.add(Box.createVerticalStrut(5), BorderLayout.NORTH);
-        JPanel centerNavigationBufferPanel = new PaddingPanel(_navigationPanel, 5, 5, 10, 10, new Color(195, 195, 195));
+        JPanel centerNavigationBufferPanel = new PaddingPanel(_navigationPanel, 5, 5, 10, 10,
+                _navigationPanel.getBackground());
         navigationBufferPanel.add(centerNavigationBufferPanel, BorderLayout.CENTER);
         
         this.addNotifyStudentsButton();

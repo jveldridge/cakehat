@@ -116,7 +116,7 @@ class DbGroupGradingSheet extends DbDataItem {
         return _sectionComments;
     }
     
-    void markSubmitted(int submitterId, String submissionDate) {
+    void markSubmitted(Integer submitterId, String submissionDate) {
         _submittedById = submitterId;
         _submittedDate = submissionDate;
     }

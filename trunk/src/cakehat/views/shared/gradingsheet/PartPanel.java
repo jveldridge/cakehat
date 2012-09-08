@@ -12,22 +12,25 @@ import cakehat.gradingsheet.GradingSheetSection;
 import cakehat.gradingsheet.GradingSheetSubsection;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
-import java.awt.AWTException;
+import com.google.common.collect.ImmutableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Robot;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -183,6 +186,7 @@ class PartPanel extends GradingSheetPanel
     
     private void initGradingSheetUI()
     {
+        final Set<EarnedField> earnedFields = new HashSet<EarnedField>();
         final JTextField totalEarnedField = new JTextField(5);
         boolean hasSubsection = false;
         
@@ -245,6 +249,7 @@ class PartPanel extends GradingSheetPanel
                     }
                 });
                 pointsPanel.add(earnedField);
+                earnedFields.add(earnedField);
                 _focusableComponents.add(earnedField);
 
                 //Spacing
@@ -256,7 +261,8 @@ class PartPanel extends GradingSheetPanel
             
             //Comments
             addContent(Box.createVerticalStrut(5));
-            JTextArea commentArea = new JTextArea();
+            final JTextArea commentArea = new JTextArea();
+            _focusableComponents.add(commentArea);
             addContent(new PaddingPanel(commentArea, 0, 0, 5, 122, this.getBackground()));
             commentArea.setRows(2);
             commentArea.setLineWrap(true);
@@ -280,26 +286,25 @@ class PartPanel extends GradingSheetPanel
                     catch(BadLocationException e) { }
                 }
             });
-            //Remap tab to insert 4 spaces
-            commentArea.getActionMap().put("tab", new AbstractAction("tab")
+            
+            //Override tab behavior to move focus instead of inserting the tab character
+            commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                    ImmutableSet.of(KeyStroke.getKeyStroke("pressed TAB")));
+            commentArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                    ImmutableSet.of(KeyStroke.getKeyStroke("shift pressed TAB")));
+            
+            //When the comment area gains focus, scroll it into view
+            commentArea.addFocusListener(new FocusAdapter()
             {
                 @Override
-                public void actionPerformed(ActionEvent evt)
+                public void focusGained(FocusEvent fe)
                 {
-                    try
+                    if(commentArea.getParent() instanceof JComponent)
                     {
-                        //Replaces tab with 4 spaces and fires the key events so that the user sees the spaces happen
-                        Robot robot = new Robot();
-                        for(int i = 0; i < 4; i++)
-                        {
-                            robot.keyPress(KeyEvent.VK_SPACE);
-                            robot.keyRelease(KeyEvent.VK_SPACE);
-                        }
+                        ((JComponent) commentArea.getParent()).scrollRectToVisible(commentArea.getBounds());
                     }
-                    catch(AWTException ex) {}
                 }
-             });
-            commentArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0, false), "tab");
+            });
             
             addContent(Box.createVerticalStrut(10));
         }
@@ -326,7 +331,67 @@ class PartPanel extends GradingSheetPanel
 
             //Total out of
             pointsPanel.add(createDisabledField(_groupSheet.getGradingSheet().getOutOf()));
+        
+            addContent(Box.createVerticalStrut(10));
         }
+        
+        //Submit UI
+        addContent(FormattedLabel.asSubheader("Submission"));
+        JPanel submitPanel = new PreferredHeightJPanel(new BorderLayout(0, 0), this.getBackground());
+        addContent(submitPanel);
+        final JButton submitButton = new JButton();
+        
+        //When the submit button gains focus, scroll it into view
+        submitButton.addFocusListener(new FocusAdapter()
+        {
+            @Override
+            public void focusGained(FocusEvent fe)
+            {
+                if(submitButton.getParent() instanceof JComponent)
+                {
+                    ((JComponent) submitButton.getParent()).scrollRectToVisible(submitButton.getBounds());
+                }
+            }
+        });
+        submitPanel.add(submitButton, BorderLayout.EAST);
+        _focusableComponents.add(submitButton);
+        final FormattedLabel submitLabel = FormattedLabel.asContent("").usePlainFont();
+        submitPanel.add(submitLabel, BorderLayout.WEST);
+        
+        final Runnable updateSubmitUIRunnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                submitButton.setText(_groupSheet.isSubmitted() ? "Unsubmit" : "Submit");
+                submitLabel.setText(_groupSheet.isSubmitted() ? "Unsubmit to modify grading sheet" :
+                        "Submit when you are finished grading");
+                for(EarnedField earnedField : earnedFields)
+                {
+                    earnedField.setEnabled(!_groupSheet.isSubmitted());
+                }
+            }
+        };
+        updateSubmitUIRunnable.run();
+        submitButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                try
+                {
+                    Allocator.getDataServices().setGroupGradingSheetsSubmitted(ImmutableSet.of(_groupSheet),
+                        !_groupSheet.isSubmitted());
+                    updateSubmitUIRunnable.run();
+                }
+                catch(ServicesException e)
+                {
+                    ErrorReporter.report("Unable to submit/unsubmit grading sheet\n" +
+                            "Part: " + _part.getFullDisplayName() + "\n" +
+                            "Group: " + _group, e);
+                }
+            }
+        });
     }
     
     @Override

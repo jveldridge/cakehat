@@ -821,7 +821,7 @@ public class DatabaseImpl implements Database
             PreparedStatement ps = conn.prepareStatement("UPDATE groupgradingsheet SET submittedby = ?, datesubmitted = ?"
                     + " WHERE ggsid == ?");
             for (DbGroupGradingSheet ggs : groupGradingSheets) {
-                ps.setInt(1, submitterId);
+                setInteger(ps, 1, submitterId);
                 ps.setString(2, submissionTime);
                 ps.setInt(3, ggs.getId());
                 ps.addBatch();
