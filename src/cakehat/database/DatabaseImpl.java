@@ -1800,140 +1800,6 @@ public class DatabaseImpl implements Database
             this.closeConnection(conn);
         }
     }
-
-    @Override
-    public void setEarned(int groupID, int partID, int taID, Double earned,
-                boolean submitted, String dateRecorded) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            //database uniqueness constraint ensures that any existing grade
-            //for this group will be replaced
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
-                + "('agid', 'pid', 'tid', 'earned', 'submitted', 'daterecorded')"
-                + " VALUES (?, ?, ?, ?, ?, ?)");
-            ps.setInt(1, groupID);
-            ps.setInt(2, partID);
-            ps.setInt(3, taID);
-            this.setDouble(ps, 4, earned);
-            ps.setBoolean(5, submitted);
-            ps.setString(6, dateRecorded);
-            
-            ps.executeUpdate();
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-    
-    @Override
-    public void setEarned(int partId, int taId, String dateRecorded, Map<Integer, Pair<Double, Boolean>> earned)
-            throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            conn.setAutoCommit(false);
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
-                + "('agid', 'pid', 'tid', 'earned', 'submitted', 'daterecorded')"
-                + " VALUES (?, ?, ?, ?, ?, ?)");
-            
-            for (Entry<Integer, Pair<Double, Boolean>> entry : earned.entrySet()) {
-                ps.setInt(1, entry.getKey());
-                ps.setInt(2, partId);
-                ps.setInt(3, taId);
-                this.setDouble(ps, 4, entry.getValue().getFirst());
-                ps.setBoolean(5, entry.getValue().getSecond());
-                ps.setString(6, dateRecorded);
-                ps.addBatch();
-            }
-            
-            ps.executeBatch();
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-    
-    @Override
-    public void setEarnedSubmitted(int partId, int taId, String dateRecorded, Map<Integer, Boolean> submitted)
-            throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            conn.setAutoCommit(false);
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO grade "
-                + "('agid', 'pid', 'tid', 'submitted', 'daterecorded')"
-                + " VALUES (?, ?, ?, ?, ?)");
-            
-            for (Entry<Integer, Boolean> entry : submitted.entrySet()) {
-                ps.setInt(1, entry.getKey());
-                ps.setInt(2, partId);
-                ps.setInt(3, taId);
-                ps.setBoolean(4, entry.getValue());
-                ps.setString(5, dateRecorded);
-                ps.addBatch();
-            }
-            
-            ps.executeBatch();
-            conn.commit();
-        } catch (SQLException ex) {
-            conn.rollback();
-            throw ex;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public GradeRecord getEarned(int groupID, int partID) throws SQLException {
-        GradeRecord record = null;
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement(
-                    "SELECT daterecorded, tid, earned, submitted" 
-                    + " FROM grade AS g"
-                    + " WHERE g.agid == ? AND g.pid == ?");
-            ps.setInt(1, groupID);
-            ps.setInt(2, partID);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                record = new GradeRecord(rs.getString("daterecorded"), rs.getInt("tid"), 
-                            this.getDouble(rs, "earned"), rs.getBoolean("submitted"));
-            }
-
-            return record;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Map<Integer, GradeRecord> getEarned(int partID, Set<Integer> groupIDs) 
-                                                        throws SQLException {
-        Map<Integer, GradeRecord> records = new HashMap<Integer, GradeRecord>();
-
-        Connection conn = this.openConnection();
-        try {
-            PreparedStatement ps = conn.prepareStatement(
-                    "SELECT agid, daterecorded, tid, earned, submitted"
-                    + " FROM grade AS g"
-                    + " WHERE g.agid IN ("+ this.idSetToString(groupIDs) +")"
-                    + " AND g.pid == ? ");
-            ps.setInt(1, partID);
-            
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                records.put(rs.getInt("agid"), 
-                            new GradeRecord(rs.getString("daterecorded"), rs.getInt("tid"),
-                                    this.getDouble(rs, "earned"), rs.getBoolean("submitted")));
-            }
-
-            return records;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
     
     @Override
     public Map<Integer, GradableEventOccurrenceRecord> getGradableEventOccurrences(int geId, Set<Integer> groupIds)
@@ -2043,7 +1909,6 @@ public class DatabaseImpl implements Database
             //DROP all tables in DB
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS adjustment");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS flag");
-            conn.createStatement().executeUpdate("DROP TABLE IF EXISTS grade");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheetcomments");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheetsubsection");
             conn.createStatement().executeUpdate("DROP TABLE IF EXISTS groupgradingsheet");
@@ -2226,16 +2091,6 @@ public class DatabaseImpl implements Database
                     + " FOREIGN KEY (gs_sid) REFERENCES gradingsheetsection(gs_sid) ON DELETE CASCADE,"
                     + " FOREIGN KEY (lastmodifiedby) REFERENCES ta(tid) ON DELETE CASCADE,"
                     + " CONSTRAINT onepersectionpergroupgradingsheet UNIQUE (gs_sid, ggsid) ON CONFLICT REPLACE)");
-            conn.createStatement().executeUpdate("CREATE TABLE grade (pid INTEGER NOT NULL,"
-                    + " agid INTEGER NOT NULL,"
-                    + " earned DOUBLE,"
-                    + " daterecorded VARCHAR NOT NULL,"
-                    + " tid INTEGER NOT NULL,"
-                    + " submitted INTEGER NOT NULL DEFAULT 1,"
-                    + " FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE,"
-                    + " FOREIGN KEY (pid) REFERENCES part(pid) ON DELETE CASCADE,"
-                    + " FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE,"
-                    + " CONSTRAINT onegrade UNIQUE (agid, pid) ON CONFLICT REPLACE)");
             conn.createStatement().executeUpdate("CREATE TABLE flag (pid INTEGER NOT NULL,"
                     + " agid INTEGER NOT NULL,"
                     + " note TEXT,"

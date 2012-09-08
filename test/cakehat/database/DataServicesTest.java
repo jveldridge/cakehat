@@ -1562,62 +1562,6 @@ public class DataServicesTest {
 
         assertNull(returnedTANull);
     }
-
-    @Test
-    public void testGetEarnedNoGrade() throws SQLException, ServicesException{
-        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
-        _database.putStudents(ImmutableSet.of(dbStudent1));
-
-        Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _database.putGroups(ImmutableSet.of(dbGroup1));
-
-        Part partA = createMock(Part.class);
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        replay(partA);
-
-        Group group1 = createMock(Group.class);
-        expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
-        replay(group1);
-
-         _dataServices.updateDataCache();
-
-         PartGrade pg = _dataServices.getEarned(group1, partA);
-
-         assertNull(pg);
-    }
-
-    @Test
-    public void testGetSetEarned() throws SQLException, ServicesException{
-        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
-        _database.putStudents(ImmutableSet.of(dbStudent1));
-
-        Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
-        _database.putGroups(ImmutableSet.of(dbGroup1));
-
-        Part partA = createMock(Part.class);
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        replay(partA);
-
-        Group group1 = createMock(Group.class);
-        expect(group1.getId()).andReturn(dbGroup1.getId()).anyTimes();
-        expect(group1.getName()).andReturn(dbGroup1.getName()).anyTimes();
-        replay(group1);
-
-        TA ta = createMock(TA.class);
-        expect(ta.getId()).andReturn(_dbUserTA.getId()).anyTimes();
-        replay(ta);
-
-        _dataServices.setGrader(partA, group1, ta);
-
-        _dataServices.setEarned(group1, partA, 5.0, true);
-
-         PartGrade pg = _dataServices.getEarned(group1, partA);
-
-         assertNotNull(pg);
-    }
     
     @Test
     public void testSetGetExtensions() throws ServicesException, SQLException
