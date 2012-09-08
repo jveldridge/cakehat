@@ -74,31 +74,31 @@ class AdminMenu extends JMenuBar
         gradesMenu.add(gradesReportItem);
         
         //CSV Export item
-        JMenuItem csvExportItem = new JMenuItem("CSV Export");
-        csvExportItem.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent ae)
-            {
-                JFileChooser chooser = new JFileChooser(Allocator.getPathServices().getCourseDir());
-                chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
-                if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
-                {
-                    ProgressDialog.ExceptionReporter excReporter = new ProgressDialog.ExceptionReporter()
-                    {
-                        @Override
-                        public void report(String message, Exception exception)
-                        {
-                            ErrorReporter.report(message, exception);
-                        }
-                    };
-                    CSVExportTask exportTask = new CSVExportTask(chooser.getSelectedFile());
-                    ProgressDialog.show(_adminView, _adminView, "CSV Export",
-                            "<html><center><h2>Exporting student grades</h2></center></html>", exportTask, excReporter);
-                }
-            }
-        });
-        gradesMenu.add(csvExportItem);
+//        JMenuItem csvExportItem = new JMenuItem("CSV Export");
+//        csvExportItem.addActionListener(new ActionListener()
+//        {
+//            @Override
+//            public void actionPerformed(ActionEvent ae)
+//            {
+//                JFileChooser chooser = new JFileChooser(Allocator.getPathServices().getCourseDir());
+//                chooser.setFileFilter(new FileNameExtensionFilter("Comma-separated values", "csv"));
+//                if(chooser.showSaveDialog(_adminView) == JFileChooser.APPROVE_OPTION)
+//                {
+//                    ProgressDialog.ExceptionReporter excReporter = new ProgressDialog.ExceptionReporter()
+//                    {
+//                        @Override
+//                        public void report(String message, Exception exception)
+//                        {
+//                            ErrorReporter.report(message, exception);
+//                        }
+//                    };
+//                    CSVExportTask exportTask = new CSVExportTask(chooser.getSelectedFile());
+//                    ProgressDialog.show(_adminView, _adminView, "CSV Export",
+//                            "<html><center><h2>Exporting student grades</h2></center></html>", exportTask, excReporter);
+//                }
+//            }
+//        });
+//        gradesMenu.add(csvExportItem);
 
         //Help menu
         JMenu helpMenu = new JMenu("Help");
