@@ -281,19 +281,6 @@ public interface DataServices {
     public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException;
     
     /**
-     * Sets the points earned and submitted for the given Group and Part.
-     * 
-     * @param group
-     * @param part
-     * @param earned
-     * @param submitted
-     * @return
-     * @throws ServicesException 
-     */
-    @Deprecated
-    public void setEarned(Group group, Part part, Double earned, boolean submitted) throws ServicesException;
-    
-    /**
      * Returns an immutable set of all TAs.
      * 
      * @return

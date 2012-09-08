@@ -332,51 +332,6 @@ public interface Database
      */
     public void submitGroupGradingSheets(Set<DbGroupGradingSheet> groupGradingSheets, Integer submitterId,
                                          String submissionTime) throws SQLException;
-        
-    /**
-     * Assigns a grade of score to the group with the given group ID on the part with the given part ID. If the group ID
-     * is invalid then a SQLException is thrown.
-     *
-     * @param groupID
-     * @param partID
-     * @param taID
-     * @param dateRecorded
-     * @param earned
-     * @param submitted
-     * @param dateRecorded
-     * 
-     */
-    public void setEarned(int groupID, int partID, int taID, Double earned, boolean submitted, String dateRecorded)
-            throws SQLException;
-    
-    public void setEarned(int partId, int taId, String dateRecorded, Map<Integer, Pair<Double, Boolean>> earned)
-            throws SQLException;
-    
-    public void setEarnedSubmitted(int partId, int taId, String dateRecorded, Map<Integer, Boolean> submitted)
-            throws SQLException;
-
-    /**
-     * Returns a GradeRecord object containing the grade information of the group with the given group ID on the part
-     * with the given part ID, or null if no such grade information is stored in the database.
-     *
-     * @param groupID
-     * @param partID
-     * @return
-     */
-    public GradeRecord getEarned(int groupID, int partID) throws SQLException;
-
-    /**
-     * Returns a Map that maps a group ID to the GradeRecord object representing the grade information for that group on
-     * the part corresponding to the given partID for each group ID in the given Set. Any Groups with no score stored in
-     * the database will not have an entry in the returned Map. Invalid groups will also not have an entry in the
-     * returned Map.
-     *
-     * @param partID
-     * @param groupIDs
-     * @return
-     */
-    public Map<Integer, GradeRecord> getEarned(int partID, Set<Integer> groupIDs) 
-                                                        throws SQLException;
 
     public Map<Integer, GradableEventOccurrenceRecord> getGradableEventOccurrences(int geId, Set<Integer> groupIds)
             throws SQLException;

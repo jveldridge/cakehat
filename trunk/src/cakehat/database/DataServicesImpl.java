@@ -374,59 +374,13 @@ public class DataServicesImpl implements DataServices {
     @Override
     public PartGrade getEarned(Group group, Part part) throws ServicesException
     {
-        try {
-            GradeRecord record = Allocator.getDatabase().getEarned(group.getId(), part.getId());
-            
-            PartGrade grade = null;
-            if (record != null) {
-                grade = new PartGrade(part, group, _taIdMap.get(record.getTAId()),
-                            new DateTime(record.getDateRecorded()), record.getEarned(), record.isSubmitted());
-            }
-            return grade;
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not get the score for group [" + group.getName() + "]"
-                    + " on part [" + part.getName() + "].", ex);
-        }
+        throw new UnsupportedOperationException("Use group grading sheet method instead");
     }
     
     @Override
     public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException
     {
-        try
-        {
-            Map<Integer, Group> idsToGroups = groupsToIdMap(groups, new HashMap<Integer, Group>());
-            
-            Map<Integer, GradeRecord> records = Allocator.getDatabase().getEarned(part.getId(), idsToGroups.keySet());
-            
-            Map<Group, PartGrade> grades = new HashMap<Group, PartGrade>(records.size());
-            for(Entry<Integer, GradeRecord> entry : records.entrySet())
-            {
-                GradeRecord record = entry.getValue();
-                Group group = idsToGroups.get(entry.getKey());
-                PartGrade grade = new PartGrade(part, group, _taIdMap.get(record.getTAId()),
-                        new DateTime(record.getDateRecorded()), record.getEarned(), record.isSubmitted());
-                grades.put(group, grade);
-            }
-            
-            return grades;
-        }
-        catch(SQLException e)
-        {
-            throw new ServicesException("Unable to retrieve earned for part " + part.getFullDisplayName() + " for " +
-                    "groups: " + groups, e);
-        }
-    }
-
-    @Override
-    public void setEarned(Group group, Part part, Double earned, boolean matchesGml) throws ServicesException
-    {
-        int taId = CakehatSession.getUserId();
-        try {
-            Allocator.getDatabase().setEarned(group.getId(), part.getId(), taId, earned, matchesGml, new DateTime().toString());
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not store the score for group [" + group.getName() + "]"
-                    + " on part " + part.getName() + "].", ex);
-        }
+        throw new UnsupportedOperationException("Use group grading sheet method instead");
     }
 
     @Override
