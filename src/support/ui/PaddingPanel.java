@@ -24,6 +24,11 @@ public class PaddingPanel extends JPanel
     {
         this(null, pad, pad, pad, pad, background);
     }
+        
+    protected PaddingPanel(int pad, JComponent component)
+    {
+        this(component, pad, pad, pad, pad, null);
+    }
     
     public PaddingPanel(JComponent component)
     {

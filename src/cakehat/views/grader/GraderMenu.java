@@ -42,7 +42,7 @@ class GraderMenu extends JMenuBar
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                graderView.showModalContentInFrame(new BlacklistPanel());
+                graderView.hostModal(new BlacklistPanel()); 
             }
         });
         fileMenu.add(blacklistItem);

@@ -1,22 +1,21 @@
 package cakehat.views.grader;
 
 import cakehat.Allocator;
-import cakehat.database.Group;
-import cakehat.database.PartGrade;
-import cakehat.database.Student;
-import cakehat.database.TA;
 import cakehat.assignment.GradableEvent;
+import cakehat.database.Group;
+import cakehat.database.TA;
 import cakehat.assignment.Part;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Box;
@@ -43,7 +42,7 @@ class PartAndGroupPanel extends JPanel
     private final GenericJComboBox<Part> _partComboBox;
     private final GenericJList<Group> _groupList;
     
-    private final Map<Part, Map<Group, GroupStatus>> _assignedGroups = new HashMap<Part, Map<Group, GroupStatus>>();
+    private final SetMultimap<Part, Group> _assignedGroups = HashMultimap.create();
     
     private final List<PartAndGroupSelectionListener> _listeners =
             new CopyOnWriteArrayList<PartAndGroupSelectionListener>();
@@ -67,9 +66,15 @@ class PartAndGroupPanel extends JPanel
         _partComboBox.addSelectionListener(new SelectionListener<Part>()
         {
             @Override
-            public void selectionPerformed(Part currValue, Part newValue, SelectionAction action)
+            public void selectionPerformed(Part currValue, final Part newValue, SelectionAction action)
             {
-                notifyPartSelectionChanged(newValue);
+                EventQueue.invokeLater(new Runnable()
+                {
+                    public void run()
+                    {
+                        notifyPartSelectionChanged(newValue);
+                    }
+                });
             }
         });
         northPanel.add(_partComboBox);
@@ -91,7 +96,13 @@ class PartAndGroupPanel extends JPanel
             {
                 if(!lse.getValueIsAdjusting())
                 {
-                    notifyGroupSelectionChanged(new HashSet<Group>(_groupList.getGenericSelectedValues()));
+                    EventQueue.invokeLater(new Runnable()
+                    {
+                        public void run()
+                        {
+                            notifyGroupSelectionChanged(new HashSet<Group>(_groupList.getGenericSelectedValues()));
+                        }
+                    });
                 }
             }
         });
@@ -100,7 +111,14 @@ class PartAndGroupPanel extends JPanel
         this.add(groupListPane, BorderLayout.CENTER);
         
         //Load data from database into the UI elements
-        loadAssignedGrading();
+        EventQueue.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                loadAssignedGrading();
+            }
+        });
     }
     
     private void notifyPartSelectionChanged(Part part)
@@ -164,18 +182,9 @@ class PartAndGroupPanel extends JPanel
      */
     private void populateGroupsList(Part part)
     {
-        List<GroupStatus> statuses = new ArrayList<GroupStatus>();
-        if(part != null)
-        {
-            statuses.addAll(_assignedGroups.get(part).values());
-        }
-        Collections.sort(statuses);
-        List<Group> groups = new ArrayList<Group>();
-        for(GroupStatus status : statuses)
-        {
-            groups.add(status.getGroup());
-        }
-        _groupList.setDescriptionProvider(new GroupDescriptionProvider(part));
+        List<Group> groups = new ArrayList<Group>(_assignedGroups.get(part));
+        Collections.sort(groups);
+        
         _groupList.setListData(groups, true);
         if(_groupList.isSelectionEmpty())
         {
@@ -195,13 +204,7 @@ class PartAndGroupPanel extends JPanel
             for(Part part : parts)
             {
                 Set<Group> groups = new HashSet<Group>(Allocator.getDataServices().getAssignedGroups(part, user));
-                Map<Group, PartGrade> grades = Allocator.getDataServices().getEarned(groups, part);
-                
-                _assignedGroups.put(part, new HashMap<Group, GroupStatus>());
-                for(Group group : groups)
-                {
-                    _assignedGroups.get(part).put(group, new GroupStatus(group, grades.get(group)));
-                }
+                _assignedGroups.putAll(part, groups);
             }
         }
         catch(ServicesException e)
@@ -234,177 +237,6 @@ class PartAndGroupPanel extends JPanel
         }
     }
     
-    /**
-     * The status of a group, which is made up whether it has been submitted or modified.
-     */
-    private static class GroupStatus implements Comparable<GroupStatus>
-    {
-        private final Group _group;
-        private boolean _submitted;
-        private boolean _modified;
-
-        public GroupStatus(Group group, PartGrade partGrade)
-        {
-            _group = group;
-            _submitted = (partGrade != null && partGrade.isSubmitted());
-            _modified = (partGrade != null);
-        }
-
-        public Group getGroup()
-        {
-            return _group;
-        }
-
-        public boolean isSubmitted()
-        {
-            return _submitted;
-        }
-
-        public boolean isModified()
-        {
-            return _modified;
-        }
-        
-        public void setSubmitted(boolean submitted)
-        {
-            _submitted = submitted;
-        }
-        
-        public void setModified(boolean modified)
-        {
-            _modified = modified;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            boolean equals = false;
-            if(obj instanceof GroupStatus)
-            {
-                GroupStatus other = (GroupStatus) obj;
-                equals = other._group.equals(_group) && other._modified == _modified && other._submitted == _submitted;
-            }
-            
-            return equals;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int hash = 3;
-            hash = 61 * hash + (this._group != null ? this._group.hashCode() : 0);
-            hash = 61 * hash + (this._submitted ? 1 : 0);
-            hash = 61 * hash + (this._modified ? 1 : 0);
-            
-            return hash;
-        }
-
-        @Override
-        public int compareTo(GroupStatus other)
-        {
-            //Comparison on group names breaks ties
-            int groupComp = this.getGroup().getName().compareTo(other.getGroup().getName());
-
-            //Heirarchy
-            // - submitted
-            // - modified
-            // - nothing
-            if(this.isSubmitted() && other.isSubmitted())
-            {
-                return groupComp;
-            }
-            else if(this.isSubmitted())
-            {
-                return -1;
-            }
-            else if(other.isSubmitted())
-            {
-                return 1;
-            }
-            else if(this.isModified() && other.isModified())
-            {
-                return groupComp;
-            }
-            else if(this.isModified())
-            {
-                return -1;
-            }
-            else if(other.isModified())
-            {
-                return 1;
-            }
-            else
-            {
-                return groupComp;
-            }
-        }
-    }
-
-    private final class GroupDescriptionProvider implements DescriptionProvider<Group>
-    {
-        private final Part _part;
-
-        public GroupDescriptionProvider(Part part)
-        {
-            _part = part;
-        }
-
-        @Override
-        public String getDisplayText(Group group)
-        {
-            boolean modified = false;
-            boolean submitted = false;
-            
-            GroupStatus groupStatus = _part == null ? null : _assignedGroups.get(_part).get(group);  
-            if(groupStatus != null)
-            {
-                modified = groupStatus.isModified();
-                submitted = groupStatus.isSubmitted();
-            }
-
-            //Build representation
-            String pre;
-            String post;
-            if(submitted)
-            {
-                pre = "<font color=green>✓</font> <font color=#686868>";
-                post = "</font>";
-            }
-            else if(modified)
-            {
-                pre = "<strong><font color=#686868>";
-                post = "</font><strong>";
-            }
-            else
-            {
-                pre = "<strong>";
-                post = "<strong>";
-            }
-
-            String representation = "<html>" + pre + group.getName() + post + "</html>";
-
-            return representation;
-        }
-
-        @Override
-        public String getToolTipText(Group group)
-        {
-            String toolTip = "";
-            List<Student> students = new ArrayList<Student>(group.getMembers());
-            Collections.sort(students);
-            for(int i = 0; i < students.size(); i++)
-            {
-                toolTip += students.get(i).getName();
-                if(i != students.size() - 1)
-                {
-                    toolTip += ", ";
-                }
-            }
-            
-            return toolTip;
-        }
-    }
-    
     private class PartDescriptionProvider implements DescriptionProvider<Part>
     {
         @Override
@@ -418,7 +250,7 @@ class PartAndGroupPanel extends JPanel
         {
             return getRepresentation(part);
         }
-        
+
         private String getRepresentation(Part part)
         {
             String representation;
@@ -442,7 +274,7 @@ class PartAndGroupPanel extends JPanel
                     representation = part.getFullDisplayName();
                 }
             }
-                
+
             return representation;
         }
     }
