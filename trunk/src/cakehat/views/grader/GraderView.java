@@ -14,7 +14,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -27,11 +26,14 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import support.ui.FormattedLabel;
+import support.ui.ModalJFrameHostHelper;
+import support.ui.ModalJFrameHostHelper.CloseAction;
 import support.ui.PaddingPanel;
 
 /**
@@ -52,8 +54,6 @@ public class GraderView extends JFrame
         });
     }
     
-    private final JPanel _contentPanel;
-    private final JPanel _navigationPanel;
     private final JScrollPane _mainPane;
     private final PartAndGroupPanel _partAndGroupPanel;
     private final ActionsPanel _actionsPanel;
@@ -77,8 +77,6 @@ public class GraderView extends JFrame
         });
         
         //Setup UI
-        _contentPanel = new JPanel();
-        _navigationPanel = new JPanel();
         _mainPane = new JScrollPane();
         _partAndGroupPanel = new PartAndGroupPanel();
         _actionsPanel = new ActionsPanel(this, _partAndGroupPanel);
@@ -95,54 +93,47 @@ public class GraderView extends JFrame
     
     private void initUI()
     {
-        JPanel navigationBufferPanel = new JPanel();
-        
         //Visual setup
-        this.setLayout(new BorderLayout(0, 0));
-        this.add(_contentPanel, BorderLayout.CENTER);
-        this.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-        this.add(navigationBufferPanel, BorderLayout.SOUTH);
-        this.add(Box.createHorizontalStrut(10), BorderLayout.WEST);
-        this.add(Box.createHorizontalStrut(10), BorderLayout.EAST);
+        this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.X_AXIS));
         
-        //Content panel
-        _contentPanel.setLayout(new BoxLayout(_contentPanel, BoxLayout.X_AXIS));
-        
+        //Part and group panel
+        JPanel partAndGroupPaddingPanel = new PaddingPanel(_partAndGroupPanel, 10, 10, 10, 5,
+                _partAndGroupPanel.getBackground());
         Dimension partAndGroupPanelSize = new Dimension(200, Short.MAX_VALUE);
-        _partAndGroupPanel.setMinimumSize(partAndGroupPanelSize);
-        _partAndGroupPanel.setPreferredSize(partAndGroupPanelSize);
-        _partAndGroupPanel.setMaximumSize(partAndGroupPanelSize);
-        _contentPanel.add(_partAndGroupPanel);
+        partAndGroupPaddingPanel.setMinimumSize(partAndGroupPanelSize);
+        partAndGroupPaddingPanel.setPreferredSize(partAndGroupPanelSize);
+        partAndGroupPaddingPanel.setMaximumSize(partAndGroupPanelSize);
+        this.add(partAndGroupPaddingPanel);
         
-        _contentPanel.add(Box.createHorizontalStrut(5));
+        //Right panel
+        JPanel rightPanel = new JPanel(new BorderLayout(0, 0));
+        JPanel rightContentPanel = new JPanel();
+        rightContentPanel.setLayout(new BoxLayout(rightContentPanel, BoxLayout.X_AXIS));
+        rightPanel.add(rightContentPanel, BorderLayout.CENTER);
+        this.add(new PaddingPanel(rightPanel, 10, 0, 0, 10, this.getBackground()));
         
+        //Main panel
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        _contentPanel.add(mainPanel);
         mainPanel.add(FormattedLabel.asHeader(" ")); //Used to match the spacing of the label headers for other panels
-        mainPanel.add(Box.createVerticalStrut(5));
+        mainPanel.add(Box.createVerticalStrut(10));
         _mainPane.setAlignmentX(LEFT_ALIGNMENT);
         _mainPane.getViewport().setBackground(Color.WHITE);
         mainPanel.add(_mainPane);
+        rightContentPanel.add(mainPanel);
         
-        _contentPanel.add(Box.createHorizontalStrut(5));
+        rightContentPanel.add(Box.createHorizontalStrut(5)); 
         
+        //Actions panel
         Dimension actionsPanelSize = new Dimension(185, Short.MAX_VALUE);
         _actionsPanel.setMinimumSize(actionsPanelSize);
         _actionsPanel.setPreferredSize(actionsPanelSize);
         _actionsPanel.setMaximumSize(actionsPanelSize);
-        _contentPanel.add(_actionsPanel);
+        rightContentPanel.add(_actionsPanel);
         
-        //Navigation panel
-        _navigationPanel.setBackground(new Color(195, 195, 195));
-        navigationBufferPanel.setPreferredSize(new Dimension(0, 42));
-        navigationBufferPanel.setLayout(new BorderLayout(0, 0));
-        navigationBufferPanel.add(Box.createVerticalStrut(5), BorderLayout.NORTH);
-        JPanel centerNavigationBufferPanel = new PaddingPanel(_navigationPanel, 5, 5, 10, 10,
-                _navigationPanel.getBackground());
-        navigationBufferPanel.add(centerNavigationBufferPanel, BorderLayout.CENTER);
-        
-        this.addNotifyStudentsButton();
+        //Notify students bar
+        JPanel notifyBarPanel = this.createNotifyBar(rightPanel, rightContentPanel);
+        rightPanel.add(notifyBarPanel, BorderLayout.SOUTH);
         
         //Selection change
         _partAndGroupPanel.addSelectionListener(new PartAndGroupPanel.PartAndGroupSelectionListener()
@@ -156,23 +147,70 @@ public class GraderView extends JFrame
         this.notifySelectionChanged(_partAndGroupPanel.getSelectedPart(), _partAndGroupPanel.getSelectedGroups());
     }
     
-    private void addNotifyStudentsButton()
+    private JPanel createNotifyBar(final JPanel containerPanel, final JPanel currentContentPanel)
     {
-        _navigationPanel.removeAll();
-        _navigationPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        JButton notifyButton = new JButton("Notify Students", IconLoader.loadIcon(IconSize.s16x16, IconImage.GO_NEXT));
+        final NotifyStudentsPanel notifyPanel = new NotifyStudentsPanel(this, _partAndGroupPanel);
+        
+        //Layout
+        JPanel buttonPanel = new JPanel(new BorderLayout(0, 0));
+        
+        final JButton notifyButton = new JButton("Notify Students",
+                IconLoader.loadIcon(IconSize.s16x16, IconImage.GO_NEXT));
         notifyButton.setHorizontalTextPosition(SwingConstants.LEFT);
         notifyButton.setIconTextGap(10);
-        _navigationPanel.add(notifyButton);
+        buttonPanel.add(notifyButton, BorderLayout.EAST);
+        
+        final JButton backButton = new JButton("Grade", IconLoader.loadIcon(IconSize.s16x16, IconImage.GO_PREVIOUS));
+        backButton.setVisible(false);
+        backButton.setIconTextGap(10);
+        buttonPanel.add(backButton, BorderLayout.WEST);
+
+        JPanel innerPanel = new JPanel(new BorderLayout(0, 0));
+        innerPanel.add(new JSeparator(JSeparator.HORIZONTAL), BorderLayout.NORTH);
+        innerPanel.add(Box.createVerticalStrut(5), BorderLayout.CENTER);
+        innerPanel.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel outerPanel = new PaddingPanel(innerPanel, 5, 10, 0, 10, innerPanel.getBackground());
+        
+        //Logic
+        final Runnable backAction = new Runnable()
+        {
+            public void run()
+            {
+                notifyButton.setVisible(true);
+                backButton.setVisible(false);
+                
+                containerPanel.remove(notifyPanel);
+                containerPanel.add(currentContentPanel, BorderLayout.CENTER);
+                containerPanel.repaint();
+                containerPanel.revalidate();
+            }
+        };
+        notifyPanel.setBackAction(backAction);
         
         notifyButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                showModalContentInFrame(new NotifyStudentsPanel());
+                notifyButton.setVisible(false);
+                backButton.setVisible(true);
+                
+                containerPanel.remove(currentContentPanel);
+                containerPanel.add(notifyPanel, BorderLayout.CENTER);
+                containerPanel.repaint();
+                containerPanel.revalidate();
             }
         });
+        backButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                backAction.run();
+            }
+        });
+                
+        return outerPanel;
     }
     
     private void notifySelectionChanged(Part part, Set<Group> groups)
@@ -238,31 +276,11 @@ public class GraderView extends JFrame
         }
     }
     
-    void showModalContentInFrame(final JComponent modalContent)
+    CloseAction hostModal(JComponent component)
     {
-        //Add back button to navigation panel
-        _navigationPanel.removeAll();
-        _navigationPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        JButton backButton = new JButton("Grade", IconLoader.loadIcon(IconSize.s16x16, IconImage.GO_PREVIOUS));
-        backButton.setIconTextGap(10);
-        _navigationPanel.add(backButton);
-
-        //Hide current content and show modal content
-        GraderView.this.getJMenuBar().setVisible(false);
-        GraderView.this.remove(_contentPanel);
-        GraderView.this.add(modalContent, BorderLayout.CENTER);
-
-        //Restore content when the back button is pressed
-        backButton.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent ae)
-            {
-                GraderView.this.getJMenuBar().setVisible(true);
-                GraderView.this.remove(modalContent);
-                GraderView.this.add(_contentPanel, BorderLayout.CENTER);
-                GraderView.this.addNotifyStudentsButton();
-            }
-        });
+        boolean useTransparency = CakehatSession.getUserConnectionType() != ConnectionType.REMOTE;
+        CloseAction closeAction = ModalJFrameHostHelper.host(this, component, 45, useTransparency);
+        
+        return closeAction;
     }
 }

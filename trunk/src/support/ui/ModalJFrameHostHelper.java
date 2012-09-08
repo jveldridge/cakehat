@@ -33,7 +33,7 @@ public class ModalJFrameHostHelper
         componentHostPanel.add(component, BorderLayout.CENTER);
         
         final Color glassColor = useTransparency ? new Color(192, 192, 192, 200) : Color.LIGHT_GRAY;
-        JPanel glassPane = new PaddingPanel(componentHostPanel)
+        JPanel glassPane = new PaddingPanel(padding, componentHostPanel)
         {
             @Override
             protected void paintComponent(Graphics g)
