@@ -99,13 +99,6 @@ groupmember
   * FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE
   * CONSTRAINT singlemembership UNIQUE (agid, sid) ON CONFLICT ROLLBACK
 
-distribution
-  * pid INTEGER NOT NULL
-  * agid INTEGER NOT NULL; FOREIGN KEY(agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
-  * tid INTEGER NOT NULL; FOREIGN KEY(tid) REFERENCES ta(tid) ON DELETE CASCADE
-  * CONSTRAINT onegrader UNIQUE (agid, pid) ON CONFLICT REPLACE
-  * CONSTRAINT rowsunique UNIQUE (agid, pid, tid) ON CONFLICT IGNORE
-
 grade
   * pid INTEGER NOT NULL
   * agid INTEGER NOT NULL
@@ -141,12 +134,13 @@ extension
   * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
   * CONSTRAINT singleextension UNIQUE (agid, geid) ON CONFLICT REPLACE
 
-handintime  //only use if non-digital
+geoccurrence
   * geid INTEGER NOT NULL
   * agid INTEGER NOT NULL
   * time VARCHAR NOT NULL
+  * path VARCHAR //if null, means a non-digital handin for which the time was recorded manually
   * daterecorded VARCHAR NOT NULL
-  * tid INTEGER NOT NULL
+  * tid INTEGER //if null, means was a digital handin the time of which was recorded automatically
   * FOREIGN KEY (geid) REFERENCES gradableevent(geid) ON DELETE CASCADE
   * FOREIGN KEY (agid) REFERENCES asgngroup(agid) ON DELETE CASCADE
   * FOREIGN KEY (tid) REFERENCES ta(tid) ON DELETE CASCADE
