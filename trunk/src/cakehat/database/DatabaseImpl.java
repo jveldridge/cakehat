@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.sqlite.SQLiteConfig;
-import support.utils.Pair;
 
 /**
  *
@@ -1592,7 +1591,8 @@ public class DatabaseImpl implements Database
         try {
             SetMultimap<Integer, Integer> dist = HashMultimap.create();
 
-            PreparedStatement ps = conn.prepareStatement("SELECT assignedto, agid FROM groupgradingsheet WHERE pid == ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT assignedto, agid FROM groupgradingsheet WHERE pid == ? "
+                    + "AND assignedto NOT NULL");
             ps.setInt(1, partID);
             ResultSet rs = ps.executeQuery();
             
@@ -1629,10 +1629,10 @@ public class DatabaseImpl implements Database
                     + "VALUES (?, ?, ?)");
             
             for (int partId : distribution.keySet()) {
-                for (int taId : distribution.get(partId).keySet()) {
+                for (Integer taId : distribution.get(partId).keySet()) {
                     for (int groupId : distribution.get(partId).get(taId)) {
                         if (groupsWithGradingSheet.contains(groupId)) {
-                            psUpdate.setInt(1, taId);
+                            setInteger(psUpdate, 1, taId);
                             psUpdate.setInt(2, partId);
                             psUpdate.setInt(3, groupId);
                             psUpdate.addBatch();
@@ -1640,7 +1640,7 @@ public class DatabaseImpl implements Database
                         else {
                             psInsert.setInt(1, partId);
                             psInsert.setInt(2, groupId);
-                            psInsert.setInt(3, taId);
+                            setInteger(psInsert, 3, taId);
                             psInsert.addBatch();
                         }
                     }

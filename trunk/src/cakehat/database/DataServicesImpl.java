@@ -206,9 +206,19 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public void setGrader(Part part, Group group, TA ta) throws ServicesException
-    {
-        throw new UnsupportedOperationException("No longer supported.  Use GroupGradingSheet#setAssignedTo(TA) instead.");
+    public void setGrader(Part part, Group group, TA ta) throws ServicesException {
+        Integer taId = ta == null ? null : ta.getId();
+        
+        Map<Integer, Map<Integer, Set<Integer>>> distForDb = new HashMap<Integer, Map<Integer, Set<Integer>>>(1);
+        distForDb.put(part.getId(), new HashMap<Integer, Set<Integer>>(1));
+        distForDb.get(part.getId()).put(taId, ImmutableSet.of(group.getId()));
+        
+        try {
+            Allocator.getDatabase().setDistribution(distForDb);
+        } catch (SQLException ex) {
+            throw new ServicesException("Could not set grader for group [" + group.getName() + "] on part ["
+                    + part.getFullDisplayName() + "].", ex);
+        }
     }
     
     @Override
