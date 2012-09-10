@@ -200,7 +200,6 @@ public interface DataServices {
      * @param ta
      * @throws ServicesException
      */
-    @Deprecated
     public void setGrader(Part part, Group group, TA ta) throws ServicesException;
 
     /**
