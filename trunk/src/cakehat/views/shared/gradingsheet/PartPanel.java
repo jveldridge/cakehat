@@ -36,6 +36,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
+import javax.swing.plaf.BorderUIResource.CompoundBorderUIResource;
+import javax.swing.plaf.basic.BasicBorders.MarginBorder;
+import javax.swing.plaf.metal.MetalBorders.TextFieldBorder;
 import javax.swing.text.BadLocationException;
 import support.ui.DocumentAdapter;
 import support.ui.FormattedLabel;
@@ -187,6 +190,7 @@ class PartPanel extends GradingSheetPanel
     private void initGradingSheetUI()
     {
         final Set<EarnedField> earnedFields = new HashSet<EarnedField>();
+        final Set<JTextArea> commentFields = new HashSet<JTextArea>();
         final JTextField totalEarnedField = new JTextField(5);
         boolean hasSubsection = false;
         
@@ -286,6 +290,7 @@ class PartPanel extends GradingSheetPanel
                     catch(BadLocationException e) { }
                 }
             });
+            commentFields.add(commentArea);
             
             //Override tab behavior to move focus instead of inserting the tab character
             commentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
@@ -369,6 +374,20 @@ class PartPanel extends GradingSheetPanel
                 for(EarnedField earnedField : earnedFields)
                 {
                     earnedField.setEnabled(!_groupSheet.isSubmitted());
+                }
+                for (JTextArea commentField : commentFields) {
+                    commentField.setEnabled(!_groupSheet.isSubmitted());
+                    
+                    if (commentField.isEnabled()) {
+                        commentField.setBorder(BorderFactory.createEtchedBorder());
+                    }
+                    else {
+                        //Creates and sets a border identical to the default Swing Metal border
+                        MarginBorder innerBorder = new MarginBorder();
+                        TextFieldBorder outerBorder = new TextFieldBorder();
+                        CompoundBorderUIResource border = new CompoundBorderUIResource(innerBorder, outerBorder);
+                        commentField.setBorder(border);
+                    }
                 }
             }
         };
