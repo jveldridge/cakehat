@@ -172,18 +172,6 @@ public class Part implements Comparable<Part>
     }
     
     /**
-     * The amount of points this part is out of. If this is determined by a GML template and the specified template does
-     * not exist or cannot be read then {@code 0} will be returned.
-     * 
-     * @return 
-     */
-    @Deprecated
-    public double getOutOf()
-    {
-        return 0.0;
-    }
-    
-    /**
      * Returns a convenient human readable string describing this part. The format is "[Assignment Name] - 
      * [Gradable Event Name] - [Part Name]"
      * 
@@ -197,37 +185,15 @@ public class Part implements Comparable<Part>
     }
 
     /**
-     * If a GML template was specified for this part. Just because a GML template was specified does not mean the
-     * specified file actually exists and is a valid GML template file.
-     *
-     * @return
-     */
-    @Deprecated
-    public boolean hasSpecifiedGMLTemplate()
-    {
-        return false;
-    }
-
-    /**
-     * Returns a file to the specified GML template.
-     *
-     * @return
-     */
-    @Deprecated
-    public File getGMLTemplate()
-    {
-        return null;
-    }
-
-    /**
      * Unarchives a group's most recent digital handin for the gradable event this part belongs to.
      *
      * @throws IOException
      *
      * @param group
      * @param owner the graphical owner of any dialogs shown while unarchiving
+     * @param silent if {@code true}, then a warning about the inclusion filter not being satisfied will not be shown
      */
-    void unarchive(Window owner, Group group) throws IOException
+    public void unarchive(Window owner, Group group, boolean silent) throws IOException
     {
         File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(this, group);
         if(!unarchiveDir.exists())
@@ -254,18 +220,21 @@ public class Part implements Comparable<Part>
             {
                 filter = new AlwaysAcceptingFileFilter();
 
-                String msg = "Not all files and/or directories this part expected were found in the digital " +
-                        "handin. All files and directories will now be included for this part so that you " +
-                        "can find files that may be misnamed or placed in the wrong directory.\n\n" +
-                        "The missing files and/or directories are:\n" + builder.toString();
-                ModalDialog.showMessage(owner, group + "'s Digital Handin - Missing Expected Contents", msg);
+                if(!silent)
+                {
+                    String msg = "Not all files and/or directories this part expected were found in the digital " +
+                            "handin. All files and directories will now be included for this part so that you " +
+                            "can find files that may be misnamed or placed in the wrong directory.\n\n" +
+                            "The missing files and/or directories are:\n" + builder.toString();
+                    ModalDialog.showMessage(owner, group + "'s Digital Handin - Missing Expected Contents", msg);
+                }
             }
 
             //Extract
             try
             {
                 Allocator.getArchiveUtilities().extractArchive(handin, unarchiveDir, filter,
-                    Allocator.getCourseInfo().getTAGroup());
+                        Allocator.getCourseInfo().getTAGroup());
             }
             catch(ArchiveExtractionException e)
             {

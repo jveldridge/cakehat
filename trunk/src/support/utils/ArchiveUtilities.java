@@ -104,11 +104,13 @@ public interface ArchiveUtilities
      * the archive is specified by {@code format}. Only the files and directories contained {@code src} that are
      * accepted by the {@code filter} are included in the archive.
      * 
+     * @param archiveName
      * @param format
      * @param src
      * @param filter
      * @return
      * @throws IOException 
      */
-    public DataSource createArchiveDataSource(ArchiveFormat format, File src, FileFilter filter) throws IOException;
+    public DataSource createArchiveDataSource(String archiveName, ArchiveFormat format, File src, FileFilter filter)
+            throws IOException;
 }

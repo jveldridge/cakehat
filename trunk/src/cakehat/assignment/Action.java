@@ -252,7 +252,7 @@ public class Action implements Comparable<Action>
                         }
                         else
                         {
-                            this.getPart().unarchive(graphicalOwner, group);
+                            this.getPart().unarchive(graphicalOwner, group, false);
                         }
                     }
                     catch(IOException e)
