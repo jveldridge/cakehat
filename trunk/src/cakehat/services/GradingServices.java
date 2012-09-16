@@ -34,33 +34,19 @@ public interface GradingServices
     public Map<Group, DateTime> getOccurrenceDates(GradableEvent ge, Set<Group> groups) throws ServicesException;
 
     /**
-     * Returns an immutable list of the printers in the CIT that the user is
-     * allowed to print to.
+     * Returns an immutable list of the printers in the CIT that the user is allowed to print to.
      *
      * @return
      */
     public List<CITPrinter> getAllowedPrinters();
 
     /**
-     * Returns the default CIT printer to be used. This printer corresponds to
-     * the printer available on the floor 3, the floor the TA Lab is on.
+     * Returns the default CIT printer to be used. This printer corresponds to the printer available on the floor 3, the
+     * floor the TA Lab is on.
      *
      * @return
      */
     public CITPrinter getDefaultPrinter();
-
-    /**
-     * Creates and prints GRD files (plain text files with a .txt file extension) for each student in the given groups
-     * for the assignment they all belong to. The output will be printed to the provided printer.
-     * <br/><br/>
-     * If the groups do not all belong to the assignment an exception will be thrown.
-     * 
-     * @param asgn
-     * @param groups
-     * @param printer
-     * @throws ServicesException 
-     */
-    public void printGRDFiles(Assignment asgn, Set<Group> groups, CITPrinter printer) throws ServicesException;
     
     /**
      * Creates and emails GRD files (plain text files with a .txt file extension) for each student in the given groups
