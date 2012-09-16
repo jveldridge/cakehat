@@ -105,7 +105,7 @@ class ActionsPanel extends JPanel
     
     private class AssignmentPanel extends JPanel
     {
-        private final StandardButton _emailGradingSheetButton, _printGradingSheetButton, _manageGroupsButton;
+        private final StandardButton _emailGradingSheetButton, _manageGroupsButton;
         private final JLabel _noActionsAvailable;
         
         AssignmentPanel()
@@ -130,17 +130,6 @@ class ActionsPanel extends JPanel
             });
             this.add(_emailGradingSheetButton);
             
-            _printGradingSheetButton = new StandardButton("Print Grading Sheet", "Print Grading Sheets", IconImage.DOCUMENT_PRINT);
-            _printGradingSheetButton.addActionListener(new ActionListener()
-            {
-                @Override
-                public void actionPerformed(ActionEvent ae)
-                {
-                    printGradingSheetButtonActionPerformed();
-                }
-            });
-            this.add(_printGradingSheetButton);
-            
             _manageGroupsButton = new StandardButton("Manage Groups", null, IconImage.SYSTEM_USERS);
             _manageGroupsButton.addActionListener(new ActionListener()
             {
@@ -160,13 +149,11 @@ class ActionsPanel extends JPanel
             boolean showManageGroupsButton = assignment != null && assignment.hasGroups();
             
             _emailGradingSheetButton.setVisible(showGradingSheetButtons);
-            _printGradingSheetButton.setVisible(showGradingSheetButtons);
             _manageGroupsButton.setVisible(showManageGroupsButton);
             
             _noActionsAvailable.setVisible(!(showGradingSheetButtons || showManageGroupsButton));
             
             _emailGradingSheetButton.updateText(selectedGroups.size() < 2);
-            _printGradingSheetButton.updateText(selectedGroups.size() < 2);
         }
     }
     
@@ -324,25 +311,6 @@ class ActionsPanel extends JPanel
         new ManualDistributorView(_treeSelection.getPart(), _adminView);
     }
     
-    private void printGradingSheetButtonActionPerformed()
-    {
-        CITPrinter printer = Allocator.getGradingServices().getPrinter();
-        if(printer != null)
-        {
-            //Save the current grading sheet so that GRD generation reflects any changes made
-            _adminView.saveDisplayedGradingSheet();
-            
-            try
-            {
-                Allocator.getGradingServices().printGRDFiles(_treeSelection.getAssignment(), _selectedGroups, printer);
-            }
-            catch(ServicesException ex)
-            {
-                ErrorReporter.report(ex);
-            }
-        }
-    }
-
     private void emailGradingSheetButtonActionPerformed()
     {
         //Save the current grading sheet so that GRD generation reflects any changes made

@@ -489,39 +489,6 @@ public class GradingServicesImpl implements GradingServices
 
         return toReturn;
     }
-
-    @Override
-    public void printGRDFiles(Assignment asgn, Set<Group> groups, CITPrinter printer) throws ServicesException
-    {
-        //Create a set of print requests - one for each student
-        Map<Student, File> grdFiles = generateGRDFiles(asgn, groups);
-        TA ta = Allocator.getUserServices().getUser();
-        Set<PrintRequest> requests = new HashSet<PrintRequest>();
-        for(Entry<Student, File> entry : grdFiles.entrySet())
-        {
-            try
-            {
-                requests.add(new PrintRequest(entry.getValue(), ta, entry.getKey()));
-            }
-            catch (FileNotFoundException ex)
-            {
-                throw new ServicesException("Could not print GRD file, because file was not found.\n" +
-                        "File: " + entry.getValue().getAbsolutePath() + "\n" +
-                        "Student: " + entry.getKey().getLogin() + "\n" +
-                        "Assignment: " + asgn, ex);
-            }
-        }
-
-        //Submit print requests
-        try
-        {
-            Allocator.getPortraitPrintingService().print(requests, printer);
-        }
-        catch(IOException e)
-        {
-            throw new ServicesException("Unable to issue print command for GRD files", e);
-        }
-    }
     
     @Override
     public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
