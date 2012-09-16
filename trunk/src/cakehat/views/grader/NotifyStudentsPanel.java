@@ -33,6 +33,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import org.joda.time.DateTime;
 import support.ui.FormattedLabel;
 import support.ui.ModalDialog;
 import support.ui.PreferredHeightJPanel;
@@ -113,6 +114,8 @@ class NotifyStudentsPanel extends JPanel
         //Body
         _bodyTextArea.setAlignmentX(LEFT_ALIGNMENT);
         _bodyTextArea.setBorder(BorderFactory.createEtchedBorder());
+        _bodyTextArea.setLineWrap(true);
+        _bodyTextArea.setWrapStyleWord(true);
         _contentPanel.add(_bodyTextArea);
         
         _contentPanel.add(Box.createVerticalStrut(5));
@@ -213,11 +216,12 @@ class NotifyStudentsPanel extends JPanel
         Set<Student> successStudents = new HashSet<Student>();
         Set<Student> failStudents = new HashSet<Student>();
         
+        boolean attachHandins = _attachHandinCheckBox.isSelected();
         for(Group group : groups)
         {
             boolean proceed = true;
             Set<DataSource> attachments = new HashSet<DataSource>();
-            if(_attachHandinCheckBox.isSelected())
+            if(attachHandins)
             {
                 try
                 {
@@ -273,11 +277,16 @@ class NotifyStudentsPanel extends JPanel
             }
         }
         
-        //Show confirmation of email sending
+        //Show confirmation of email sending and send an email notifying the notify addresses
         StringBuilder sendCompleteMessage = new StringBuilder("Email sending complete\n\n");
         if(!successStudents.isEmpty())
         {
             sendCompleteMessage.append("Succesfully sent to:\n");
+            
+            StringBuilder notifyEmailMessage = new StringBuilder("At ").append(DateTime.now().toString()).append(", ");
+            notifyEmailMessage.append(Allocator.getUserServices().getUser().getLogin()).append(" submitted grading for ");
+            notifyEmailMessage.append(part.getFullDisplayName()).append(" for the following students: <blockquote>");
+            
             for(Student student : successStudents)
             {
                 sendCompleteMessage.append(student.getLogin());
@@ -286,6 +295,36 @@ class NotifyStudentsPanel extends JPanel
                 sendCompleteMessage.append(" (");
                 sendCompleteMessage.append(student.getEmailAddress().getAddress());
                 sendCompleteMessage.append(")\n");
+                notifyEmailMessage.append(student.getLogin());
+                notifyEmailMessage.append(" - ");
+                notifyEmailMessage.append(student.getName());
+                notifyEmailMessage.append(" (");
+                notifyEmailMessage.append(student.getEmailAddress().getAddress());
+                notifyEmailMessage.append(")<br/>");
+            }
+            
+            notifyEmailMessage.append("</blockquote>");
+            notifyEmailMessage.append("The following message was sent to the students: <blockquote>");
+            notifyEmailMessage.append(_bodyTextArea.getText().replaceAll("\n", "<br>")).append("</blockquote>");
+            notifyEmailMessage.append("Grading sheets were included");
+            if (attachHandins) {
+                notifyEmailMessage.append(" and the students' handins were attached");
+            }
+            notifyEmailMessage.append(".");
+
+            try
+            {
+                Allocator.getEmailManager().send(Allocator.getUserServices().getUser().getEmailAddress(),
+                                                 Allocator.getEmailManager().getNotifyAddresses(),
+                                                 ImmutableSet.of(Allocator.getUserServices().getUser().getEmailAddress()),
+                                                 null,
+                                                 _subjectField.getText(),
+                                                 notifyEmailMessage.toString(),
+                                                 null);
+            }
+            catch(MessagingException e)
+            {
+                ErrorReporter.report("Unable to send an email to the notify addresses", e);
             }
         }
         if(!failStudents.isEmpty())
