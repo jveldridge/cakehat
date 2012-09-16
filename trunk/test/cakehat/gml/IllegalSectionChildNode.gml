@@ -1,8 +1,0 @@
-<GRADING-SHEET GML-VERSION="5.0" TYPE="ADDITIVE">
-
-    <SECTION NAME="name">
-        <ILLEGAL>
-        </ILLEGAL>
-    </SECTION>
-
-</GRADING-SHEET>
