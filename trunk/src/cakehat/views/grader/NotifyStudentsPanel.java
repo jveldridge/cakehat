@@ -4,17 +4,22 @@ import cakehat.Allocator;
 import cakehat.CakehatSession;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
+import cakehat.database.GroupGradingSheet;
 import cakehat.database.Student;
 import cakehat.email.EmailManager.EmailAccountStatus;
 import cakehat.logging.ErrorReporter;
+import cakehat.services.ServicesException;
 import cakehat.views.grader.PartAndGroupPanel.PartAndGroupSelectionListener;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.activation.DataSource;
@@ -119,7 +124,7 @@ class NotifyStudentsPanel extends JPanel
             @Override
             public void actionPerformed(ActionEvent ae)
             {
-                sendEmail();
+                sendEmailActionPerformed();
             }
         });
         _contentPanel.add(sendPanel);
@@ -161,11 +166,43 @@ class NotifyStudentsPanel extends JPanel
         }       
     }
     
-    private void sendEmail()
-    {
+    private void sendEmailActionPerformed()
+    {   
         Part part = _partAndGroupPanel.getSelectedPart();
         Set<Group> groups = _partAndGroupPanel.getSelectedGroups();
         
+        try
+        {
+            this.submitUnsubmittedGroups(part, groups);
+            this.sendEmail(part, groups);
+        }
+        catch(ServicesException e)
+        {
+            ErrorReporter.report("Unable to submit unsubmitted grading sheets. No email was sent.", e);
+        }
+    }
+    
+    private void submitUnsubmittedGroups(Part part, Set<Group> groups) throws ServicesException
+    {
+        SetMultimap<Part, Group> toRetrieve = HashMultimap.create();
+        toRetrieve.putAll(part, groups);
+        
+        Collection<GroupGradingSheet> gradingSheets = 
+                    Allocator.getDataServices().getGroupGradingSheets(toRetrieve).get(part).values();
+        
+        Set<GroupGradingSheet> unsubmittedGradingSheets = new HashSet<GroupGradingSheet>();
+        for(GroupGradingSheet sheet : gradingSheets)
+        {
+            if(!sheet.isSubmitted())
+            {
+                unsubmittedGradingSheets.add(sheet);
+            }
+        }
+        Allocator.getDataServices().setGroupGradingSheetsSubmitted(unsubmittedGradingSheets, true);
+    }
+    
+    private void sendEmail(Part part, Set<Group> groups)
+    {
         Set<Student> successStudents = new HashSet<Student>();
         Set<Student> failStudents = new HashSet<Student>();
         

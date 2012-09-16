@@ -179,6 +179,8 @@ public class GraderView extends JFrame
                 notifyButton.setVisible(true);
                 backButton.setVisible(false);
                 
+                notifySelectionChanged(_partAndGroupPanel.getSelectedPart(), _partAndGroupPanel.getSelectedGroups());
+                
                 containerPanel.remove(notifyPanel);
                 containerPanel.add(currentContentPanel, BorderLayout.CENTER);
                 containerPanel.repaint();
@@ -194,6 +196,8 @@ public class GraderView extends JFrame
             {
                 notifyButton.setVisible(false);
                 backButton.setVisible(true);
+                
+                saveDisplayedGradingSheet();
                 
                 containerPanel.remove(currentContentPanel);
                 containerPanel.add(notifyPanel, BorderLayout.CENTER);
