@@ -16,22 +16,28 @@ import cakehat.CakehatSession;
 import cakehat.database.GradableEventOccurrence;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
+import cakehat.database.DeadlineInfo;
+import cakehat.database.DeadlineInfo.DeadlineResolution;
+import cakehat.database.DeadlineInfo.Type;
+import cakehat.database.Extension;
 import cakehat.database.TA;
 import cakehat.database.Group;
-import cakehat.database.PartGrade;
+import cakehat.database.GroupGradingSheet;
+import cakehat.database.GroupGradingSheet.GroupSectionComments;
+import cakehat.database.GroupGradingSheet.GroupSubsectionEarned;
 import cakehat.database.Student;
 import cakehat.email.EmailManager.EmailAccountStatus;
-import cakehat.gml.GMLGRDWriter;
-import cakehat.gml.GradingSheetException;
+import cakehat.gradingsheet.GradingSheetDetail;
+import cakehat.gradingsheet.GradingSheetSection;
+import cakehat.gradingsheet.GradingSheetSubsection;
 import cakehat.printing.CITPrinter;
-import cakehat.printing.PrintRequest;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -39,16 +45,18 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.swing.BorderFactory;
@@ -500,19 +508,24 @@ public class GradingServicesImpl implements GradingServices
         }
         else
         {
-            Map<Student, File> grdFiles = generateGRDFiles(asgn, groups);
+            Set<Student> students = new HashSet<Student>();
+            for (Group group : groups) {
+                students.addAll(group.getMembers());
+            }
+            
+            Map<Student, String> grdStrings = generateGRD(asgn, students);
         
             boolean proceed = ModalDialog.showConfirmation(null, "Email Grading Sheets",
-                    "Each student will be sent an email with their grading sheet attached, do you wish to proceed?",
+                    "Each student will be sent an email with their grading sheet. Do you wish to proceed?",
                     "Email Students", "Cancel");
             if(proceed)
             {
                 InternetAddress from = Allocator.getUserServices().getUser().getEmailAddress();
                 String subject = "[" + CakehatSession.getCourse() + "]" + asgn.getName() + " Graded";
-                String body = asgn.getName() + " has been graded; your grading sheet is attached as a plain text file.";
+                String body = asgn.getName() + " has been graded; your grading sheet is below.";
 
                 
-                for(Entry<Student, File> entry : grdFiles.entrySet())
+                for(Entry<Student, String> entry : grdStrings.entrySet())
                 {
                     try
                     {
@@ -521,114 +534,297 @@ public class GradingServicesImpl implements GradingServices
                                                          null,
                                                          null,
                                                          subject,
-                                                         body,
-                                                         ImmutableSet.of(new FileDataSource(entry.getValue())));
+                                                         body + "<br/><br/>" + entry.getValue(),
+                                                         null);
                     }
                     catch(MessagingException e)
                     {
                         throw new ServicesException("Unable to send grading sheet\n" +
                                 "Student: " + entry.getKey().getLogin() + "\n" +
-                                "Student's email: " + entry.getKey().getEmailAddress() + "\n" +
-                                "File: " + entry.getValue().getAbsolutePath() , e);
+                                "Student's email: " + entry.getKey().getEmailAddress() + "\n", e);
                     }
                 }
             }
         }
     }
-
+    
     @Override
-    public Map<Student, File> generateGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
-    {
-        //Validate all groups belong to the assignment
-        for(Group group : groups)
-        {
-            if(!group.getAssignment().equals(asgn))
-            {
-                throw new ServicesException(group.getName() + " does not belong to assignment " + asgn.getName());
+    public Map<Student, String> generateGRD(Assignment asgn, Set<Student> students) throws ServicesException {
+        Map<Student, Group> groupsForStudents = new HashMap<Student, Group>();
+        for (Student student : students) {
+            groupsForStudents.put(student, Allocator.getDataServices().getGroup(asgn, student));
+        }
+
+        SetMultimap<Part, Group> toRetrieve = HashMultimap.create();
+        for (GradableEvent ge : asgn) {
+            for (Part part : ge) {
+                toRetrieve.putAll(part, groupsForStudents.values());
             }
         }
         
-        //Determine which grades have not been submitted
-        Multimap<Group, Part> groupsWithNonSubmittedGrades = HashMultimap.create();
-        for(GradableEvent ge : asgn)
-        {
-            for(Part part : ge)
-            {
-                Map<Group, PartGrade> grades = Allocator.getDataServices().getEarned(groups, part);
-                
-                for(Group group : groups)
-                {
-                    PartGrade grade = grades.get(group);
-                    if(grade == null || !grade.isSubmitted())
-                    {
-                        groupsWithNonSubmittedGrades.put(group, part);
-                    }
-                }
-            }
-        }
+        Map<Part, Map<Group, GroupGradingSheet>> gradingSheets =
+                Allocator.getDataServices().getGroupGradingSheets(toRetrieve);
         
-        //Determine whether to proceed if not all groups have submitted grades
-        boolean proceed = true;
-        if(!groupsWithNonSubmittedGrades.isEmpty())
-        {
-            String groupsOrStudents = asgn.hasGroups() ? "groups" : "students";
+        Map<Student, String> toReturn = new HashMap<Student, String>();
+        for (Student student : students) {
+            Map<Part, GroupGradingSheet> gradingSheetsForStudent = new HashMap<Part, GroupGradingSheet>();
+            for (Part part : toRetrieve.keySet()) {
+                gradingSheetsForStudent.put(part, gradingSheets.get(part).get(groupsForStudents.get(student)));
+            }
             
-            StringBuilder builder = new StringBuilder();
-            builder.append("The following ");
-            builder.append(groupsOrStudents);
-            builder.append(" do not have grades submitted for one or more parts:\n\n");
-            for(Entry<Group, Collection<Part>> entry : groupsWithNonSubmittedGrades.asMap().entrySet())
-            {
-                builder.append(entry.getKey().getName());
-                builder.append("\n");
-                
-                for(Part part : entry.getValue())
-                {
-                    builder.append(" • ");
-                    builder.append(part.getFullDisplayName());
-                    builder.append("\n");
-                }
-            }
-            builder.append("\n\nThese ");
-            builder.append(groupsOrStudents);
-            builder.append(" will not be included, do you wish to proceed?");
-            
-            proceed = ModalDialog.showConfirmation(null, "Some Grades Not Submitted", builder.toString(),
-                    "Proceed", "Cancel");
+            toReturn.put(student, this.generateGrd(asgn, student, gradingSheetsForStudent));
         }
         
-        //Generate GRD files
-        HashMap<Student, File> generatedGRDs = new HashMap<Student, File>();
-        if(proceed)
-        {
-            HashSet<Group> groupsWithSubmittedGrades = new HashSet<Group>(groups);
-            groupsWithSubmittedGrades.removeAll(groupsWithNonSubmittedGrades.keySet());
-            
-            for(Group group : groupsWithSubmittedGrades)
-            {
-                for(Student student : group)
-                {
-                    File grdFile = Allocator.getPathServices().getStudentGRDFile(asgn, student);
-                    try
-                    {
-                        GMLGRDWriter.write(group, grdFile);
-                        generatedGRDs.put(student, grdFile);
-                    }
-                    catch(GradingSheetException e)
-                    {
-                        throw new ServicesException("Unable to create GRD file\n" +
-                                "Group: " + group.getName() + "\n" +
-                                "Student: " + student.getName() + "\n" +
-                                "Assignment: " + asgn.getName() + "\n" +
-                                "File: " + grdFile.getAbsolutePath());
-                    }
-                }
+        return toReturn;
+    }
+    
+    private String generateGrd(Assignment asgn, Student student, Map<Part, GroupGradingSheet> gradingSheets) throws ServicesException {
+        Group group = Allocator.getDataServices().getGroup(asgn, student) ;
+
+        StringBuilder grdBuilder = new StringBuilder();
+        grdBuilder.append("<center>").append(group.getAssignment().getName()).append(" Grading Sheet</center>");
+        
+        grdBuilder.append("<p><b>Student:</b> ").append(student.getName());
+        grdBuilder.append(" (").append(student.getLogin()).append(')');
+        if (group.size() > 1) {
+            Iterator<Student> members = group.getMembers().iterator();
+            grdBuilder.append("<br/><b>Group:</b> ").append(group.getName()).append(" (").append(members.next().getLogin());
+            while (members.hasNext()) {
+                grdBuilder.append(", ").append(members.next().getLogin());
             }
+            grdBuilder.append(')');
+        }
+        grdBuilder.append("</p>");
+        
+        double asgnEarned = 0;
+        double asgnOutOf = 0;
+        
+        for (GradableEvent ge : group.getAssignment()){
+            Score geScore = this.generateGradableEventGRD(ge, group, gradingSheets, grdBuilder);
+            
+            asgnEarned += geScore._earned;
+            asgnOutOf += geScore._outOf;
+            
+            grdBuilder.append("<br/>");
+        }
+
+        grdBuilder.append("<table width='600px' style='border: 1px solid; border-spacing: 0px'>");
+        this.writeLineWithEarnedAndOutOf("<b>Total Grade</b>", "Earned", "Out of", grdBuilder, TopLineStyle.NONE);
+        this.writeLineWithEarnedAndOutOf("Total Score:", doubleToString(asgnEarned), doubleToString(asgnOutOf),
+                                         grdBuilder, TopLineStyle.FULL);
+        grdBuilder.append("</table>");
+        
+        return grdBuilder.toString();
+    }
+    
+    private Score generateGradableEventGRD(GradableEvent ge, Group group, Map<Part, GroupGradingSheet> gradingSheets,
+                                           StringBuilder grdBuilder) throws ServicesException {
+        double geEarned = 0;
+        double geOutOf = 0;
+        
+        grdBuilder.append("<table width='600px' style='border: 1px solid; border-spacing: 0px'>");
+        
+        grdBuilder.append("<tr><td colspan='3' style='border-bottom: 1px solid'><b>").append(ge.getName()).append("</b></td></tr>");
+        for (Part part : ge) {
+            Score partScore = this.generatePartGRD(gradingSheets.get(part), grdBuilder);
+            
+            geEarned += partScore._earned;
+            geOutOf += partScore._outOf;
         }
         
-        return generatedGRDs;
+        this.writeLineWithEarnedAndOutOf("Parts total:", doubleToString(geEarned), doubleToString(geOutOf), grdBuilder,
+                                         TopLineStyle.FULL);
+
+        DeadlineInfo info = Allocator.getDataServices().getDeadlineInfo(ge);
+        if (info.getType() != Type.NONE) {
+            DeadlineResolution res;
+            DateTime occurrenceDate = Allocator.getGradingServices().getOccurrenceDates(ge, ImmutableSet.of(group)).get(group);
+            Extension extension = Allocator.getDataServices().getExtensions(ge, ImmutableSet.of(group)).get(group);
+            res = info.apply(occurrenceDate, extension); 
+            double penalty = res.getPenaltyOrBonus(geEarned);
+
+            this.writeLineWithEarnedAndOutOf("Deadline resolution: " + res.getTimeStatus().toString(),
+                                             doubleToString(penalty), "", grdBuilder, TopLineStyle.FULL);
+
+            geEarned += penalty;
+        }
+        
+        this.writeLineWithEarnedAndOutOf(ge.getName() + " Score", doubleToString(geEarned), doubleToString(geOutOf),
+                                         grdBuilder, TopLineStyle.FULL);
+        grdBuilder.append("</table>");
+        
+        return new Score(geEarned, geOutOf);
+    }
+    
+    private Score generatePartGRD(GroupGradingSheet groupGradingSheet, StringBuilder grdBuilder) {
+        double partEarned = 0;
+        double partOutOf = 0;
+        
+        grdBuilder.append("<tr><td colspan='3' style='border-top: 1px solid; border-bottom: 1px solid'>Part: ").append(groupGradingSheet.getGradingSheet().getPart().getName());
+        String grader = groupGradingSheet.getAssignedTo() == null
+                ? "Not specified"
+                : groupGradingSheet.getAssignedTo().getName() + " (" + groupGradingSheet.getAssignedTo().getLogin() + ")";
+        grdBuilder.append("<br/>Grader: ").append(grader).append("</td></tr>");
+        
+        if (groupGradingSheet.isSubmitted()) {
+            for (GradingSheetSection section : groupGradingSheet.getGradingSheet().getSections()) {
+                Score sectionScore = this.generateSectionGRD(section, groupGradingSheet, grdBuilder);
+
+                partEarned += sectionScore._earned;
+                partOutOf += sectionScore._outOf;
+            }
+        }
+        else {
+            grdBuilder.append("<tr><td colspan='3'>");
+            grdBuilder.append("<i>Your grade has not been submitted for this part. Please contact the TAs.</i>");
+            grdBuilder.append("</td></tr>");
+        }
+        
+        this.writeLineWithEarnedAndOutOf("Part total:", doubleToString(partEarned), doubleToString(partOutOf),
+                                         grdBuilder, TopLineStyle.FULL);
+        
+        return new Score(partEarned, partOutOf);
+    }
+    
+    private Score generateSectionGRD(GradingSheetSection section, GroupGradingSheet gradingSheet,
+                                             StringBuilder grdBuilder) {        
+        if (section.getOutOf() == null) { //additive grading
+            return this.generateAdditiveSectionGRD(section, gradingSheet, grdBuilder);
+        }
+        else {                            //subtractive grading
+            return this.generateSubtractiveSectionGRD(section, gradingSheet, grdBuilder);
+        }
+    }
+    
+    private Score generateAdditiveSectionGRD(GradingSheetSection section, GroupGradingSheet gradingSheet,
+                                             StringBuilder grdBuilder) {            
+        double sectionEarned = 0;
+        double sectionOutOf = 0;
+
+        this.writeLineWithEarnedAndOutOf(section.getName(), "Earned", "Out of", grdBuilder, TopLineStyle.POINTS_ONLY);
+
+        for (GradingSheetSubsection subsection : section.getSubsections()) {
+            StringBuilder subsectionBuilder = new StringBuilder(this.generateSpaces(5));
+            subsectionBuilder.append(subsection.getText());
+
+            if (!subsection.getDetails().isEmpty()) {
+                subsectionBuilder.append("<ul style='margin: 0px 5px 10px;'>");
+                for (GradingSheetDetail detail : subsection.getDetails()) {
+                    subsectionBuilder.append("<li>").append(detail.getText()).append("</li>");
+                }
+                subsectionBuilder.append("</ul>");
+            }
+
+            Double earned = null;
+            GroupSubsectionEarned earnedRecord = gradingSheet.getEarnedPoints().get(subsection);
+            if (earnedRecord != null) {
+                earned = earnedRecord.getEarned();
+            }
+
+            String earnedString = earned == null ? "--" : doubleToString(earned);
+            this.writeLineWithEarnedAndOutOf(subsectionBuilder.toString(), earnedString,
+                                             doubleToString(subsection.getOutOf()), grdBuilder, TopLineStyle.NONE);
+
+            sectionEarned += earned == null ? 0 : earned;
+            sectionOutOf += subsection.getOutOf();
+        }
+
+        this.generateCommentsGRD(gradingSheet.getComments().get(section), grdBuilder);
+
+        this.writeLineWithEarnedAndOutOf("Total&nbsp;&nbsp;", TextAlignment.RIGHT, doubleToString(sectionEarned),
+                                         doubleToString(sectionOutOf), grdBuilder, TopLineStyle.NONE);
+
+        return new Score(sectionEarned, sectionOutOf);
+    }
+    
+    private Score generateSubtractiveSectionGRD(GradingSheetSection section, GroupGradingSheet gradingSheet,
+                                              StringBuilder grdBuilder) {
+        throw new UnsupportedOperationException("Subtractive grading is not yet supported.");
+    }
+    
+    private void generateCommentsGRD(GroupSectionComments commentsRecord, StringBuilder grdBuilder) {
+        if (commentsRecord != null && commentsRecord.getComments() != null && !commentsRecord.getComments().isEmpty()) {
+            StringBuilder comments = new StringBuilder("<br/>Comments:<blockquote>");
+            comments.append(commentsRecord.getComments());
+            comments.append("</blockquote>");
+
+            this.writeLineWithEarnedAndOutOf(comments.toString(), "", "", grdBuilder, TopLineStyle.NONE);
+        }
+    }
+    
+    private void writeLineWithEarnedAndOutOf(String text, String earned, String outOf, StringBuilder grdBuilder,
+                                             TopLineStyle topLineStyle) {
+        this.writeLineWithEarnedAndOutOf(text, TextAlignment.LEFT, earned, outOf, grdBuilder, topLineStyle);
+    }
+    
+    private void writeLineWithEarnedAndOutOf(String text, TextAlignment alignment, String earned, String outOf,
+                                             StringBuilder grdBuilder, TopLineStyle topLineStyle) {
+        String textTd = "", pointsTd = "";
+        String alignStyle = alignment == TextAlignment.RIGHT ? "text-align: right" : "";
+        
+        if (topLineStyle == TopLineStyle.NONE) {
+            textTd = String.format("<td style='%s'>", alignStyle);
+            pointsTd = "<td style='text-align: center; vertical-align: top; width: 60px; border-left: 1px solid;'>";
+        }
+        else if (topLineStyle == topLineStyle.POINTS_ONLY) {
+            textTd = String.format("<td style='%s'>", alignStyle);
+            pointsTd = "<td style='text-align: center; vertical-align: top; width: 60px; border-left: 1px solid; border-top: 1px solid'>";
+        }
+        else if (topLineStyle == topLineStyle.FULL) {
+            textTd = String.format("<td style='%s; border-top: 1px solid'>", alignStyle);
+            pointsTd = "<td style='text-align: center; vertical-align: top; width: 60px; border-left: 1px solid; border-top: 1px solid'>";
+        }
+        else {
+            throw new IllegalArgumentException("Invalid TopLineStyle given.");
+        }
+
+        grdBuilder.append("<tr>").append(textTd).append(text).append("</td>");
+        grdBuilder.append(pointsTd).append(earned).append("</td>");
+        grdBuilder.append(pointsTd).append(outOf).append("</td></tr>");
+    }
+    
+    private static enum TextAlignment {
+        LEFT, RIGHT;
+    }
+    
+    private static enum TopLineStyle {
+        NONE, FULL, POINTS_ONLY;
+    }
+    
+    private String generateSpaces(int numSpaces) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < numSpaces; i++) {
+            builder.append("&nbsp;");
+        }
+        
+        return builder.toString();
     }
 
+    private static class Score {
+        private double _earned;
+        private double _outOf;
+
+        public Score(double earned, double outOf) {
+            _earned = earned;
+            _outOf = outOf;
+        }   
+    }
+
+    private static String doubleToString(double value) {
+        double roundedVal;
+        
+        if(Double.isNaN(value)) {
+            roundedVal = Double.NaN;
+        }
+        else {
+            BigDecimal bd = new BigDecimal(Double.toString(value));
+            bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+            roundedVal = bd.doubleValue();
+        }
+
+        return Double.toString(roundedVal);
+    }
+    
     /**
      * panel containing student login, resolution radio buttons, and radio button group.
      * used in the warning dialog for issue handins

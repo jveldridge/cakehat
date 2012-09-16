@@ -1,3 +1,0 @@
-<RUBRIC>
-
-</RUBRIC>

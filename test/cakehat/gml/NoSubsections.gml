@@ -1,7 +1,0 @@
-<GRADING-SHEET GML-VERSION="5.0" TYPE="ADDITIVE">
-
-    <SECTION NAME="Name">
-        
-    </SECTION>
-
-</GRADING-SHEET>

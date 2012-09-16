@@ -864,7 +864,7 @@ public class DatabaseImpl implements Database
             }
 
             int subsectionId = rs.getInt("gs_ssid");
-            earnedRecords.get(groupGradingSheetId).put(subsectionId, new GroupSubsectionEarnedRecord(rs.getDouble("earned"),
+            earnedRecords.get(groupGradingSheetId).put(subsectionId, new GroupSubsectionEarnedRecord(getDouble(rs, "earned"),
                                                                                                      rs.getInt("lastmodifiedby"),
                                                                                                      rs.getString("lastmodifieddate")));
         }

@@ -1,7 +1,0 @@
-<GRADING-SHEET GML-VERSION="5.0" TYPE="ADDITIVE">
-
-    <SECTION NAME = "Problem 1">
-        <SUBSECTION NAME = "part b" OUTOF = "5" EARNED = "2" ILLEGAL = "hello"/>
-    </SECTION>
-
-</GRADING-SHEET>

@@ -103,7 +103,7 @@ class PartPanel extends GradingSheetPanel
                 "Part: " + _part.getFullDisplayName() + "\n" +
                 "Group: " + _group.getName(), ex);
         }
-        
+                
         return sheet;
     }
     
