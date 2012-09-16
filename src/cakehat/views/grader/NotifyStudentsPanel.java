@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.activation.DataSource;
 import javax.mail.MessagingException;
@@ -159,9 +160,7 @@ class NotifyStudentsPanel extends JPanel
         {
             _attachHandinCheckBox.setEnabled(part.getGradableEvent().hasDigitalHandins());
             _subjectField.setText("[" + CakehatSession.getCourse() + "] " + part.getFullDisplayName() + " Graded");
-            String body = part.getFullDisplayName() + " has been graded." +
-                          "\n\n--\n" +
-                          Allocator.getUserServices().getUser().getName();
+            String body = part.getFullDisplayName() + " has been graded.";
             _bodyTextArea.setText(body);
         }       
     }
@@ -201,8 +200,16 @@ class NotifyStudentsPanel extends JPanel
         Allocator.getDataServices().setGroupGradingSheetsSubmitted(unsubmittedGradingSheets, true);
     }
     
-    private void sendEmail(Part part, Set<Group> groups)
+    private void sendEmail(Part part, Set<Group> groups) throws ServicesException
     {
+        Set<Student> allStudents = new HashSet<Student>();
+        for(Group group : groups)
+        {
+            allStudents.addAll(group.getMembers());
+        }
+        Map<Student, String> gradingSheets = Allocator.getGradingServices()
+                .generateGRD(part.getAssignment(), allStudents);
+        
         Set<Student> successStudents = new HashSet<Student>();
         Set<Student> failStudents = new HashSet<Student>();
         
@@ -239,6 +246,8 @@ class NotifyStudentsPanel extends JPanel
             {   
                 for(Student student : group)
                 {
+                    String body = _bodyTextArea.getText().replaceAll("\n", "<br>") + "<br><br>" +
+                                  gradingSheets.get(student);
                     try
                     {
                         Allocator.getEmailManager().send(Allocator.getUserServices().getUser().getEmailAddress(), //from
@@ -246,7 +255,7 @@ class NotifyStudentsPanel extends JPanel
                             null, //cc
                             null, //bcc
                             _subjectField.getText(), //subject
-                            _bodyTextArea.getText(), //body
+                            body, //body
                             attachments); //attachments
                         successStudents.add(student);
                     }
