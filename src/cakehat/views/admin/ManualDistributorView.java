@@ -455,7 +455,7 @@ class ManualDistributorView extends JDialog {
             ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setMaximum(_unassignedGroups.size());
             ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setValue(_unassignedGroups.isEmpty()? 0 : 1);
         }
-        else {
+        else if (!_fromTAList.isSelectionEmpty()) {
             TA fromTA = _fromTAList.getSelectedValue();
             Collection<Group> studentsAssigned = Allocator.getDataServices().getAssignedGroups(_part, fromTA);
             groupsToDisplay = new ArrayList<Group>(studentsAssigned);
@@ -465,6 +465,9 @@ class ManualDistributorView extends JDialog {
             ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setMaximum(studentsAssigned.size());
             ((SpinnerNumberModel) _randomStudentsSpinner.getModel()).setValue(studentsAssigned.isEmpty() ? 0 : 1);
         }
+        else {
+            groupsToDisplay = new ArrayList<Group>();
+        }
 
         Collections.sort(groupsToDisplay);
         _fromGroupList.setListData(groupsToDisplay);
@@ -472,6 +475,10 @@ class ManualDistributorView extends JDialog {
 
         if (_fromRandom.isSelectionEmpty()) {
             _fromGroupList.selectFirst();
+        }
+        
+        if (_fromUnassigned.isSelectionEmpty() && _fromTAList.isSelectionEmpty()) {
+            _assignButton.setEnabled(false);
         }
     }
 
@@ -491,6 +498,10 @@ class ManualDistributorView extends JDialog {
 
         Collections.sort(groupsToDisplay);
         _toGroupList.setListData(groupsToDisplay);
+        
+        if (_toUnassigned.isSelectionEmpty() && _toTAList.isSelectionEmpty()) {
+            _assignButton.setEnabled(false);
+        }
     }
 
     private void handleAssignButtonClick() throws SQLException, ServicesException {
@@ -792,7 +803,7 @@ class ManualDistributorView extends JDialog {
         
         Part part = null;
         for (Assignment asgn : Allocator.getDataServices().getAssignments()) {
-            for (GradableEvent ge : asgn.getGradableEvents()) {
+            for (GradableEvent ge : asgn) {
                 if (!ge.getParts().isEmpty()) {
                     part = ge.getParts().get(0);
                     break;
@@ -801,7 +812,9 @@ class ManualDistributorView extends JDialog {
         }
         
         if(part != null) {
-            new ManualDistributorView(part, null).setVisible(true);
+            ManualDistributorView mdv = new ManualDistributorView(part, null);
+            mdv.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            mdv.setVisible(true);
         } else {
             System.err.println("Cannot test view because the configuration contains no assignments with gradable events "
                     + "with parts.");
