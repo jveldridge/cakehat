@@ -9,7 +9,6 @@ import cakehat.database.Student;
 import cakehat.assignment.Action;
 import cakehat.assignment.TaskException;
 import cakehat.logging.ErrorReporter;
-import cakehat.printing.CITPrinter;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
