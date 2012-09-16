@@ -79,8 +79,6 @@ public class ConfigurationData
         Part part1 = createMock(Part.class);
         expect(part1.getName()).andReturn("The Hard Part").anyTimes();
         expect(part1.getId()).andReturn(1).anyTimes();
-        expect(part1.getOutOf()).andReturn(100.0).anyTimes();
-        expect(part1.hasSpecifiedGMLTemplate()).andReturn(true).anyTimes();
         
         expect(part1.getGradableEvent()).andReturn(gradableEvent1).anyTimes();
         replay(part1);
@@ -88,9 +86,7 @@ public class ConfigurationData
         Part part2 = createMock(Part.class);
         expect(part2.getName()).andReturn("The Easy Part").anyTimes();
         expect(part2.getId()).andReturn(2).anyTimes();
-        expect(part2.getOutOf()).andReturn(80.0).anyTimes();
         expect(part2.getGradableEvent()).andReturn(gradableEvent2).anyTimes();
-        expect(part2.hasSpecifiedGMLTemplate()).andReturn(true).anyTimes();
         
         replay(part2);
         
@@ -98,8 +94,6 @@ public class ConfigurationData
         Part part3 = createMock(Part.class);
         expect(part3.getName()).andReturn("The Middle Part").anyTimes();
         expect(part3.getId()).andReturn(3).anyTimes();
-        expect(part3.getOutOf()).andReturn(20.0).anyTimes();
-        expect(part3.hasSpecifiedGMLTemplate()).andReturn(true).anyTimes();
         
         expect(part3.getGradableEvent()).andReturn(gradableEvent2).anyTimes();
         replay(part3);
@@ -139,8 +133,6 @@ public class ConfigurationData
         Part part1 = createMock(Part.class);
         expect(part1.getName()).andReturn("The Hard Part").anyTimes();
         expect(part1.getId()).andReturn(1).anyTimes();
-        expect(part1.getOutOf()).andReturn(10.0).anyTimes();
-        expect(part1.hasSpecifiedGMLTemplate()).andReturn(true).anyTimes();
         expect(part1.getQuickName()).andReturn("Lab0").anyTimes();
         expect(part1.hasQuickName()).andReturn(true).anyTimes();
         expect(part1.getFullDisplayName()).andReturn("Some Assignment - Gradable Event 1 - The Hard Part").anyTimes();
@@ -187,8 +179,6 @@ public class ConfigurationData
         Part part1 = createMock(Part.class);
         expect(part1.getName()).andReturn("The Hard Part").anyTimes();
         expect(part1.getId()).andReturn(1).anyTimes();
-        expect(part1.getOutOf()).andReturn(100.0).anyTimes();
-        expect(part1.hasSpecifiedGMLTemplate()).andReturn(false).anyTimes();
         
         expect(part1.getGradableEvent()).andReturn(gradableEvent1).anyTimes();
         replay(part1);

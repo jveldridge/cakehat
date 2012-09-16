@@ -167,21 +167,17 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
     \******************************************************************************************************************/
     
     @Override
-    public DataSource createArchiveDataSource(ArchiveFormat format, File src, FileFilter filter) throws IOException
+    public DataSource createArchiveDataSource(String archiveName, ArchiveFormat format, File src, FileFilter filter)
+            throws IOException
     {
-        //Name of archive
-        String name = src.getName();
-        if(src.isFile())
-        {
-            //Trim off file extension
-            name = name.substring(0, name.indexOf("."));
-        }
-        name += "." + format.getDefaultFileExtension();
+        String name = archiveName + "." + format.getDefaultFileExtension();
         
-        return new ByteArrayDataSource(name, format.getMimeType(), createArchiveAsByteArray(format, src, filter));
+        return new ByteArrayDataSource(name, format.getMimeType(),
+                createArchiveAsByteArray(archiveName, format, src, filter));
     }
     
-    private byte[] createArchiveAsByteArray(ArchiveFormat format, File src, FileFilter filter) throws IOException
+    private byte[] createArchiveAsByteArray(String rootEntryName, ArchiveFormat format, File src, FileFilter filter)
+            throws IOException
     {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         
@@ -190,7 +186,7 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
         {
             for(File file : _fileSystemUtils.getFiles(src, filter))
             {
-                writeToArchiveOutputStream(format, archiveStream, file, src);
+                writeToArchiveOutputStream(format, archiveStream, file, src, rootEntryName);
             }
         }
         finally
@@ -226,9 +222,17 @@ public class ArchiveUtilitiesImpl implements ArchiveUtilities
     }
     
     private void writeToArchiveOutputStream(ArchiveFormat format, ArchiveOutputStream archiveStream, File src,
-            File rootSrc) throws IOException
+            File rootSrc, String rootEntryName) throws IOException
     {
-        String entryName = src.getAbsolutePath().replaceFirst(rootSrc.getParentFile().getAbsolutePath(), "");
+        String entryName;
+        if(src.equals(rootSrc))
+        {
+            entryName = rootEntryName;
+        }
+        else
+        {
+            entryName = rootEntryName + "/" + src.getAbsolutePath().replaceFirst(rootSrc.getAbsolutePath(), "");
+        }
         
         ArchiveEntry entry;
         if(format == ArchiveFormat.ZIP)

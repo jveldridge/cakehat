@@ -219,26 +219,31 @@ class NotifyStudentsPanel extends JPanel
             Set<DataSource> attachments = new HashSet<DataSource>();
             if(_attachHandinCheckBox.isSelected())
             {
-                File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
-                //No unarchive dir may exist - it is valid for a group to not have a handin for gradable event that
-                //does have digital handins (for example - student did not turn in the assignment)
-                if(unarchiveDir.exists())
+                try
                 {
-                   try
+                    //No digital handin may exist - it is valid for a group to not have a handin for gradable event that
+                    //does have digital handins (for example - student did not turn in the assignment)
+                    if(part.getGradableEvent().hasDigitalHandin(group))
                     {
+                        //It is possible the group's digital handin has not yet been unarchived (if no action has been
+                        //taken on it)
+                        part.unarchive(_graderView, group, true);
+
+                        //Create zip attachment of the unarchive directory 
+                        File unarchiveDir = Allocator.getPathServices().getUnarchiveHandinDir(part, group);
                         DataSource digitalHandin = Allocator.getArchiveUtilities().createArchiveDataSource(
+                                part.getFullDisplayName() + " [" + group.getName() + "]",
                                 ArchiveFormat.ZIP, unarchiveDir, new AlwaysAcceptingFileFilter());
                         attachments.add(digitalHandin);
                     }
-                    catch(IOException e)
-                    {
-                        proceed = false;
-                        failStudents.addAll(group.getMembers());
-                        ErrorReporter.report("Unable to zip up digital handin\n" +
-                                "Part: " + part.getFullDisplayName() + "\n" +
-                                "Group: " + group + "\n" +
-                                "Unarchive Dir: " + unarchiveDir.getAbsolutePath(), e);
-                    } 
+                }
+                catch(IOException e)
+                {
+                    proceed = false;
+                    failStudents.addAll(group.getMembers());
+                    ErrorReporter.report("Unable to zip up digital handin\n" +
+                            "Part: " + part.getFullDisplayName() + "\n" +
+                            "Group: " + group, e);
                 }
             }
             
