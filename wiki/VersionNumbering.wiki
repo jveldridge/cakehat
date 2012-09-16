@@ -1,7 +1,38 @@
 #summary Describes the version number system.
 
 =About Releasing=
-Make sure to update the information in CakehatReleaseInfo.java!
+Make sure to update the information in `manifest.mf` with the latest release info. This file lives in the root directory of the repository.
+
+The format is:
+{{{
+cakehat-Version: Major.Minor (Development)
+cakehat-Release-Commit-Number: r####
+cakehat-Release-Date: MM/DD/YYYY
+}}}
+
+Example for a release:
+{{{
+cakehat-Version: 6.0
+cakehat-Release-Commit-Number: r1100
+cakehat-Release-Date: 9/16/2012
+}}}
+
+Example during development (in trunk branch):
+{{{
+cakehat-Version: 6.0 (Development)
+cakehat-Release-Commit-Number: N/A
+cakehat-Release-Date: N/A
+}}}
+
+
+To create a new branch:
+{{{
+svn copy https://cakehat.googlecode.com/svn/trunk https://cakehat.googlecode.com/svn/branches/[branch name] --username [your user name] -m "Creates new release branch"
+}}}
+
+Where `[branch name]` has the format `release[Major.Minor]`. Example: `release6.0`
+
+Where `[your user name]` is your Google Code user name. Example: `jveldridge`
 
 =Release Types=
 There are three type of releases for cakehat:
@@ -14,23 +45,20 @@ Major releases are *incompatible* with all previous versions of cakehat.  Any of
   * the database structure
   * the .cakehat directory structure
   * valid configuration settings
-  * GML structure
   * run and lab checkoff scripts
 
 Major releases are expected to occur only at the beginning of a semester. 
 
-A release branch should be created for all major release branches.  A development branch may also be used.
+A release branch should be created for all major release branches.
 
 == Minor Releases ==
 Minor releases add new features, enhancements, and non-critical bug fixes.
 
-There could be several minor releases over the course of a semester, depending on the rate of development.  Courses will be encouraged but not required to update to the latest minor release.
+There could be several minor releases over the course of a semester, depending on the rate of development.
 
 A release branch should be created for all minor release branches.
 
 == Minor-Minor Releases ==
 Minor-minor releases are used only for critical bug fixes.  They are not to add any new features.
-
-Minor-minor releases can occur at any point.  Since they will be made only for critical bug fixes, all courses will be required to update to the latest minor-minor release.
 
 For the time being, new release branches will not be created for minor-minor releases.  Instead, further critical fixes will be made in the corresponding minor release branch (which should be renamed).
