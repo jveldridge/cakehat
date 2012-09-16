@@ -1,19 +1,13 @@
 package cakehat.views.admin;
 
-import cakehat.Allocator;
 import cakehat.CakehatAboutBox;
-import cakehat.logging.ErrorReporter;
-import cakehat.services.CSVExportTask;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import support.ui.ProgressDialog;
 
 /**
  *
@@ -58,20 +52,20 @@ class AdminMenu extends JMenuBar
         fileMenu.add(quitItem);
         
         //Grades menu
-        JMenu gradesMenu = new JMenu("Grades");
-        this.add(gradesMenu);
+//        JMenu gradesMenu = new JMenu("Grades");
+//        this.add(gradesMenu);
         
         //Grades Report item
-        JMenuItem gradesReportItem = new JMenuItem("Send Grade Reports");
-        gradesReportItem.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent ae)
-            {
-                GradeReportView.display(_adminView);
-            }
-        });
-        gradesMenu.add(gradesReportItem);
+//        JMenuItem gradesReportItem = new JMenuItem("Send Grade Reports");
+//        gradesReportItem.addActionListener(new ActionListener()
+//        {
+//            @Override
+//            public void actionPerformed(ActionEvent ae)
+//            {
+//                GradeReportView.display(_adminView);
+//            }
+//        });
+//        gradesMenu.add(gradesReportItem);
         
         //CSV Export item
 //        JMenuItem csvExportItem = new JMenuItem("CSV Export");

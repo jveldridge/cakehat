@@ -175,18 +175,6 @@ public interface DataServices {
      * @throws ServicesException 
      */
     public Set<Part> getPartsWithAssignedGroups(TA ta) throws ServicesException;
-    
-    /**
-     * Returns the TA who has been assigned to grade the given Group for the given Part. If no such TA exists,
-     * {@code null} will be returned.
-     * 
-     * @param part
-     * @param group
-     * @return
-     * @throws ServicesException
-     */
-    @Deprecated
-    public TA getGrader(Part part, Group group) throws ServicesException;
 
     /**
      * Sets the TA who has been assigned to grade the given Group and  Part. Pass {@code ta} as {@code null} to
@@ -254,30 +242,6 @@ public interface DataServices {
      */
     public void setGroupGradingSheetsSubmitted(Set<GroupGradingSheet> groupGradingSheets,
                                                boolean submitted) throws ServicesException;
-    
-    /**
-     * Returns the points earned for the given Group and Part. If no such value is stored in the database, {@code null}
-     * will be returned.
-     *
-     * @param group
-     * @param part
-     * @return
-     * @throws ServicesException
-     */
-    @Deprecated
-    public PartGrade getEarned(Group group, Part part) throws ServicesException;
-    
-    /**
-     * Returns a mapping from group to part grade for each group that has a value stored in the database. If no value
-     * is stored in the database for a given group, that group will not be the key set.
-     * 
-     * @param groups
-     * @param part
-     * @return
-     * @throws ServicesException 
-     */
-    @Deprecated
-    public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException;
     
     /**
      * Returns an immutable set of all TAs.

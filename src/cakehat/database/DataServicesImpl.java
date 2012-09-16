@@ -201,11 +201,6 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public TA getGrader(Part part, Group group) throws ServicesException {
-        throw new UnsupportedOperationException("No longer supported.  Use GroupGradingSheet#getAssignedTo() instead.");
-    }
-
-    @Override
     public void setGrader(Part part, Group group, TA ta) throws ServicesException {
         Integer taId = ta == null ? null : ta.getId();
         
@@ -379,18 +374,6 @@ public class DataServicesImpl implements DataServices {
         } catch (SQLException ex) {
             throw new ServicesException("Could not save group grading sheet.", ex);
         }
-    }
-
-    @Override
-    public PartGrade getEarned(Group group, Part part) throws ServicesException
-    {
-        throw new UnsupportedOperationException("Use group grading sheet method instead");
-    }
-    
-    @Override
-    public Map<Group, PartGrade> getEarned(Set<Group> groups, Part part) throws ServicesException
-    {
-        throw new UnsupportedOperationException("Use group grading sheet method instead");
     }
 
     @Override
