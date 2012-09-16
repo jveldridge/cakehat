@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+cakehat-Version: 6.0 (Development)
+cakehat-Release-Commit-Number: N/A
+cakehat-Release-Date: N/A
+X-COMMENT: Main-Class will be added automatically by build
