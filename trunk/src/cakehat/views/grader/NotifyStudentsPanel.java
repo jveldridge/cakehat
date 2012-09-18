@@ -114,6 +114,9 @@ class NotifyStudentsPanel extends JPanel
         //Body
         _bodyTextArea.setAlignmentX(LEFT_ALIGNMENT);
         _bodyTextArea.setBorder(BorderFactory.createEtchedBorder());
+        //Setting minimum size is needed to work around issue with turning on line wrapping preventing text area from
+        //decreasing in size once it has increased in size
+        _bodyTextArea.setMinimumSize(new Dimension(0, 0));
         _bodyTextArea.setLineWrap(true);
         _bodyTextArea.setWrapStyleWord(true);
         _contentPanel.add(_bodyTextArea);
