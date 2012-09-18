@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-cakehat-Version: 6.1 (Development)
-cakehat-Release-Commit-Number: N/A
-cakehat-Release-Date: N/A
+cakehat-Version: 6.1
+cakehat-Release-Commit-Number: r1111
+cakehat-Release-Date: 9/18/2012
 X-COMMENT: Main-Class will be added automatically by build
