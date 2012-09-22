@@ -1,15 +1,20 @@
 package cakehat;
 
+import cakehat.icon.CakehatIconLoader;
+import cakehat.icon.CakehatIconLoader.IconSize;
+import com.google.common.collect.ImmutableList;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import support.ui.PaddingPanel;
 
 /**
  * The about box displays information about which release of cakehat this is and gives credit to the developers who have
@@ -19,10 +24,16 @@ import javax.swing.JPanel;
  */
 public class CakehatAboutBox extends JDialog
 {
-    private static final int PANEL_HEIGHT = 200;
-    private static final Dimension IMAGE_PANEL_SIZE = new Dimension(160, PANEL_HEIGHT);
-    private static final Dimension INFO_PANEL_SIZE = new Dimension(270, PANEL_HEIGHT);
-    private static final Dimension PANEL_SIZE = new Dimension(IMAGE_PANEL_SIZE.width + INFO_PANEL_SIZE.width, PANEL_HEIGHT);
+    private static final ImmutableList<String> DEVELOPERS = ImmutableList.of(
+            "Jonathan Eldridge",
+            "Yudi Fu",
+            "Joshua Kaplan",
+            "Stephen Poletto",
+            "Hannah Rosen",
+            "Paul Sastrasinh",
+            "Alex Unger",
+            "Wil Yegelwel");
+    private static final String CAKEHAT_URL = "http://cakehat.googlecode.com";
 
     private static CakehatAboutBox _currentlyDisplayedBox;
 
@@ -31,37 +42,53 @@ public class CakehatAboutBox extends JDialog
         super(owner, "About cakehat", ModalityType.MODELESS);
 
         // Overall
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setSize(PANEL_SIZE);
-        panel.setPreferredSize(PANEL_SIZE);        
-        this.add(panel);
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setPreferredSize(new Dimension(500, 200));
+        this.setContentPane(new PaddingPanel(contentPanel, 10, contentPanel.getBackground()));
 
         // Icon
-        ImageIcon cakehatIcon = new ImageIcon(getClass().getResource("/cakehat/cakehat.png"));
-        panel.add(new JLabel(cakehatIcon), BorderLayout.CENTER);
-
+        Icon cakehatIcon = CakehatIconLoader.loadIcon(IconSize.s200x200);
+        JLabel cakehatIconLabel = new JLabel(cakehatIcon);
+        cakehatIconLabel.setMinimumSize(new Dimension(cakehatIcon.getIconWidth(), cakehatIcon.getIconWidth()));
+        contentPanel.add(cakehatIconLabel, BorderLayout.WEST);
+        
         // Info
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        String infoText =
-                "<html><h2>Version " + CakehatReleaseInfo.getVersion() + "</h2>" +
-               "<font color=gray>" +
-                CakehatReleaseInfo.getReleaseCommitNumber() +
-                " (" + CakehatReleaseInfo.getReleaseDate() + ")</font>" +
-                "<br/><br/>" +
-                "<h3>Developers</h3>" +
-                "Jonathan Eldridge, Yudi Fu, Joshua Kaplan," +
-                "<br/>Stephen Poletto, Hannah Rosen, Paul" +
-                "<br/>Sastrasinh, Alex Unger, & Wil Yegelwel" +
-                "<br/><br/>" +
-                "<a href=http://cakehat.googlecode.com/>http://cakehat.googlecode.com</a>" +
-                "</html>";
-        infoPanel.add(new JLabel(infoText));infoPanel.setPreferredSize(INFO_PANEL_SIZE);
-        panel.add(infoPanel, BorderLayout.EAST);
+        StringBuilder infoText = new StringBuilder("<html>");
+        infoText.append("<h2 style='margin-bottom:0px;'>Version ");
+        infoText.append(CakehatReleaseInfo.getVersion());
+        infoText.append("</h2>");
+        infoText.append("<font color=gray>");
+        infoText.append(CakehatReleaseInfo.getReleaseCommitNumber());
+        infoText.append(" (");
+        infoText.append(CakehatReleaseInfo.getReleaseDate());
+        infoText.append(")</font>");
+        infoText.append("<br/><br/>");
+        infoText.append("<h3 style='margin-top:0px; margin-bottom:0px;'>Developers</h3>");
+        for(int i = 0; i < DEVELOPERS.size(); i++)
+        {
+            infoText.append(DEVELOPERS.get(i));
+
+            if(i != DEVELOPERS.size() - 1)
+            {
+                infoText.append(", ");
+            }
+            if(i == DEVELOPERS.size() - 2)
+            {
+                infoText.append("& ");
+            }
+        }
+        infoText.append("<br/><br/>");
+        infoText.append(CAKEHAT_URL);
+        infoText.append("</html>");
+        JLabel infoLabel = new JLabel(infoText.toString());
+        infoLabel.setFont(new Font("Dialog", Font.PLAIN, this.getFont().getSize()));
+        contentPanel.add(infoLabel, BorderLayout.CENTER);
 
         // Display
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.pack();
-        this.setResizable(false);
+        this.setMinimumSize(this.getSize());
 
         // Close operation
         this.addWindowListener(new WindowAdapter()

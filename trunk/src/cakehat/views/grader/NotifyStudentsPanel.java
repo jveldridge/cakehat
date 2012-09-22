@@ -204,6 +204,11 @@ class NotifyStudentsPanel extends JPanel
             }
         }
         Allocator.getDataServices().setGroupGradingSheetsSubmitted(unsubmittedGradingSheets, true);
+        
+        for(GroupGradingSheet gradingSheet : unsubmittedGradingSheets)
+        {
+            _partAndGroupPanel.notifyGradingSheetSubmissionChanged(part, gradingSheet.getGroup(), true);
+        }
     }
     
     private void sendEmail(Part part, Set<Group> groups) throws ServicesException

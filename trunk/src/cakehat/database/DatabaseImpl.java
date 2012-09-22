@@ -1570,34 +1570,24 @@ public class DatabaseImpl implements Database
     }
     
     @Override
-    public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException {
+    public Map<Integer, SetMultimap<Integer, Integer>> getDistribution() throws SQLException {
         Connection conn = this.openConnection();
         try {
-            PreparedStatement ps = conn.prepareStatement("SELECT COUNT(pid) AS partcount FROM groupgradingsheet "
-                    + "WHERE assignedto NOT NULL AND pid IN (" + this.idSetToString(partIDs) + ")");
-            ResultSet rs = ps.executeQuery();
-            int count = rs.getInt("partcount");
-            ps.close();
+            Map<Integer, SetMultimap<Integer, Integer>> dist = new HashMap<Integer, SetMultimap<Integer, Integer>>();
 
-            return count == 0;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-    
-    @Override
-    public SetMultimap<Integer, Integer> getDistribution(int partID) throws SQLException {
-        Connection conn = this.openConnection();
-        try {
-            SetMultimap<Integer, Integer> dist = HashMultimap.create();
-
-            PreparedStatement ps = conn.prepareStatement("SELECT assignedto, agid FROM groupgradingsheet WHERE pid == ? "
-                    + "AND assignedto NOT NULL");
-            ps.setInt(1, partID);
+            PreparedStatement ps = conn.prepareStatement("SELECT pid, assignedto, agid FROM groupgradingsheet " +
+                    "WHERE assignedto NOT NULL");
             ResultSet rs = ps.executeQuery();
             
             while (rs.next()) {
-                dist.put(rs.getInt("assignedto"), rs.getInt("agid"));
+                int pid = rs.getInt("pid");
+                SetMultimap<Integer, Integer> partDist = dist.get(pid);
+                if (partDist == null) {
+                    partDist = HashMultimap.create();
+                    dist.put(pid, partDist);
+                }
+                
+                partDist.put(rs.getInt("assignedto"), rs.getInt("agid"));
             }
             
             return dist; 
@@ -1607,8 +1597,7 @@ public class DatabaseImpl implements Database
     }
     
     @Override
-    public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) 
-                                                        throws SQLException {
+    public void setDistribution(Map<Integer, SetMultimap<Integer, Integer>> distribution) throws SQLException {
         Connection conn = this.openConnection();
         
         try {             
@@ -1656,44 +1645,6 @@ public class DatabaseImpl implements Database
 
             //then the exception is re-thrown to inform the client of the error
             throw e;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public Set<Integer> getAssignedGroups(int partID, int taID) 
-                                                        throws SQLException {
-        Collection<Integer> fromDist = this.getDistribution(partID).get(taID);
-        if (fromDist != null) {
-            return ImmutableSet.copyOf(fromDist);
-        }
-
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Set<Integer> getAssignedGroups(int partID) throws SQLException {
-        return ImmutableSet.copyOf(this.getDistribution(partID).values());
-    }
-
-    @Override
-    public Set<Integer> getPartsWithAssignedGroups(int taID) throws SQLException {
-        Set<Integer> partIDs = new HashSet<Integer>();
-
-        Connection conn = this.openConnection();
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT pid FROM groupgradingsheet WHERE assignedto == ?");
-            ps.setInt(1, taID);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                int partID = rs.getInt("pid");
-                partIDs.add(partID);
-            }
-
-            return ImmutableSet.copyOf(partIDs);
         } finally {
             this.closeConnection(conn);
         }

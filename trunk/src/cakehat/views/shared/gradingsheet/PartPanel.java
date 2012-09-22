@@ -62,6 +62,7 @@ class PartPanel extends GradingSheetPanel
     
     private final List<Component> _focusableComponents = new ArrayList<Component>();
     private final GroupGradingSheet _groupSheet;
+    private boolean _hasUnsavedChanges = false;
     
     PartPanel(Part part, Group group, boolean isAdmin, boolean showBorder)
     {   
@@ -106,7 +107,6 @@ class PartPanel extends GradingSheetPanel
                 
         return sheet;
     }
-    
     
     private void initHeaderUI()
     {
@@ -154,6 +154,7 @@ class PartPanel extends GradingSheetPanel
                         {
                             _groupSheet.setAssignedTo(newValue);
                             Allocator.getDataServices().saveGroupGradingSheet(_groupSheet);
+                            notifyModificationOccurred();
                         }
                         else
                         {
@@ -248,8 +249,9 @@ class PartPanel extends GradingSheetPanel
 
                         totalEarnedField.setText(NullMath.toString(currTotalEarned));
 
+                        _hasUnsavedChanges = true;
                         notifyEarnedChanged(prevTotalEarned, currTotalEarned);
-                        notifyUnsavedChangeOccurred();
+                        notifyModificationOccurred();
                     }
                 });
                 pointsPanel.add(earnedField);
@@ -284,8 +286,9 @@ class PartPanel extends GradingSheetPanel
                 {
                     try
                     {
-                        _groupSheet.setComments(section, de.getDocument().getText(0, de.getDocument().getLength()));                
-                        notifyUnsavedChangeOccurred();
+                        _groupSheet.setComments(section, de.getDocument().getText(0, de.getDocument().getLength()));
+                        _hasUnsavedChanges = true;
+                        notifyModificationOccurred();
                     }
                     catch(BadLocationException e) { }
                 }
@@ -402,6 +405,7 @@ class PartPanel extends GradingSheetPanel
                     Allocator.getDataServices().setGroupGradingSheetsSubmitted(ImmutableSet.of(_groupSheet),
                         !_groupSheet.isSubmitted());
                     updateSubmitUIRunnable.run();
+                    notifySubmissionChanged(_part, _groupSheet.isSubmitted());
                 }
                 catch(ServicesException e)
                 {
@@ -442,25 +446,21 @@ class PartPanel extends GradingSheetPanel
         
         return outOf;
     }
-
+    
     @Override
     public void save()
     {
-        if(this.hasUnsavedChanges())
+        if(_hasUnsavedChanges && _groupSheet != null)
         {
-            if(_groupSheet != null)
+            try
             {
-                try
-                {
-                    Allocator.getDataServices().saveGroupGradingSheet(_groupSheet);
-                    notifySavedSuccessfully();
-                }
-                catch(ServicesException e)
-                {
-                    ErrorReporter.report("Unable to save grading sheet\n" +
-                            "Part: " + _part.getFullDisplayName() + "\n" +
-                            "Group: " + _group.getName(), e);
-                }
+                Allocator.getDataServices().saveGroupGradingSheet(_groupSheet);
+            }
+            catch(ServicesException e)
+            {
+                ErrorReporter.report("Unable to save grading sheet\n" +
+                        "Part: " + _part.getFullDisplayName() + "\n" +
+                        "Group: " + _group.getName(), e);
             }
         }
     }

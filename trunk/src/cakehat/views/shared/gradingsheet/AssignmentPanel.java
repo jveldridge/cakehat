@@ -2,15 +2,17 @@ package cakehat.views.shared.gradingsheet;
 
 import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
+import cakehat.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.views.shared.gradingsheet.GradableEventPanel;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import javax.swing.Box;
 import support.ui.FormattedLabel;
 import support.utils.NullMath;
@@ -25,10 +27,7 @@ class AssignmentPanel extends GradingSheetPanel
     private final Group _group;
     private final boolean _isAdmin;
     
-    //Map from panel to if it has unsaved changes (true = unsaved changes)
-    private final Map<GradableEventPanel, Boolean> _gradableEventPanelSaveStatus =
-            new HashMap<GradableEventPanel, Boolean>();
-    
+    private final Set<GradableEventPanel> _gradableEventPanels = new HashSet<GradableEventPanel>();
     private final List<Component> _focusableComponents = new ArrayList<Component>();
     
     private Double _totalEarned = null;
@@ -92,9 +91,9 @@ class AssignmentPanel extends GradingSheetPanel
             
             final GradableEventPanel panel = new GradableEventPanel(gradableEvent, gradableEvent.getParts(), _group,
                     _isAdmin, true);
+            _gradableEventPanels.add(panel);
             _focusableComponents.addAll(panel.getFocusableComponents());
             
-            _gradableEventPanelSaveStatus.put(panel, false);
             _totalEarned = NullMath.add(_totalEarned, panel.getEarned());
             _totalOutOf = NullMath.add(_totalOutOf, panel.getOutOf());
             
@@ -109,32 +108,19 @@ class AssignmentPanel extends GradingSheetPanel
                     _totalEarned = NullMath.add(_totalEarned, currEarned);
 
                     notifyEarnedChanged(prevTotalEarned, _totalEarned);
-                    notifyUnsavedChangeOccurred();
                 }
-              
-                @Override
-                public void saveChanged(boolean hasUnsavedChanges)
-                {
-                    _gradableEventPanelSaveStatus.put(panel, hasUnsavedChanges);
-                    
-                    if(hasUnsavedChanges)
-                    {
-                        notifyUnsavedChangeOccurred();
-                    }
-                    else
-                    {
-                        boolean allSaved = true;
-                        for(boolean unsavedChanges : _gradableEventPanelSaveStatus.values())
-                        {
-                            allSaved = allSaved && !unsavedChanges;
-                        }
 
-                        if(allSaved)
-                        {
-                            notifySavedSuccessfully();
-                        }
-                    }
-                };
+                @Override
+                public void modificationOccurred()
+                {
+                    notifyModificationOccurred();
+                }
+
+                @Override
+                public void submissionChanged(Part part, boolean submitted)
+                {
+                    notifySubmissionChanged(part, submitted);
+                }
             });
             
             addContent(panel);
@@ -162,16 +148,13 @@ class AssignmentPanel extends GradingSheetPanel
     {
         return _totalOutOf;
     }
-
+    
     @Override
     public void save()
     {
-        for(GradableEventPanel panel : _gradableEventPanelSaveStatus.keySet())
+        for(GradableEventPanel panel : _gradableEventPanels)
         {
-            if(panel.hasUnsavedChanges())
-            {
-                panel.save();
-            }
+            panel.save();
         }
     }
 }

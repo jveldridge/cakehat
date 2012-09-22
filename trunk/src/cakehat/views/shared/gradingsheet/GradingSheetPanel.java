@@ -55,7 +55,6 @@ public abstract class GradingSheetPanel extends FixedWidthJPanel
     }
     
     private final JPanel _contentPanel;
-    private boolean _hasUnsavedChanges = false;
     private final Set<GradingSheetListener> _listeners = new HashSet<GradingSheetListener>();
     
     GradingSheetPanel(Color backgroundColor, boolean showBorder)
@@ -149,7 +148,9 @@ public abstract class GradingSheetPanel extends FixedWidthJPanel
     {
         public void earnedChanged(Double prevEarned, Double currEarned);
         
-        public void saveChanged(boolean hasUnsavedChanges);
+        public void modificationOccurred();
+        
+        public void submissionChanged(Part part, boolean submitted);
     }
         
     public void addGradingSheetListener(GradingSheetListener listener)
@@ -170,37 +171,20 @@ public abstract class GradingSheetPanel extends FixedWidthJPanel
         }
     }
     
-    public abstract void save();
-    
-    protected void notifyUnsavedChangeOccurred()
-    {
-        if(!_hasUnsavedChanges)
-        {
-            _hasUnsavedChanges = true;
-            notifySaveChanged(_hasUnsavedChanges);
-        }
-    }
-    
-    protected void notifySavedSuccessfully()
-    {
-        if(_hasUnsavedChanges)
-        {
-            _hasUnsavedChanges = false;
-            notifySaveChanged(_hasUnsavedChanges);
-        }
-    }
-
-    private void notifySaveChanged(boolean hasUnsavedChanges)
+    protected void notifyModificationOccurred()
     {
         for(GradingSheetListener listener : _listeners)
         {
-            listener.saveChanged(hasUnsavedChanges);
+            listener.modificationOccurred();
         }
-    }  
+    }
     
-    public boolean hasUnsavedChanges()
+    protected void notifySubmissionChanged(Part part, boolean submitted)
     {
-        return _hasUnsavedChanges;
+        for(GradingSheetListener listener : _listeners)
+        {
+            listener.submissionChanged(part, submitted);
+        }
     }
     
     // Helper methods
@@ -239,6 +223,8 @@ public abstract class GradingSheetPanel extends FixedWidthJPanel
     abstract Double getEarned();
     
     abstract Double getOutOf();
+    
+    public abstract void save();
     
     @Override
     public Dimension getMaximumSize()

@@ -13,6 +13,7 @@ import cakehat.logging.ErrorReporter;
 import support.resources.icons.IconLoader;
 import cakehat.services.ServicesException;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -34,7 +35,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -764,7 +764,7 @@ class ManualDistributorView extends JDialog {
     };
 
     private class TADescriptionProvider extends PartialDescriptionProvider<TA> {
-        private Map<TA, Set<Group>> _distribution;
+        private SetMultimap<TA, Group> _distribution;
 
         public void updateData() {
             _distribution = null;
