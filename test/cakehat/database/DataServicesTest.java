@@ -1,5 +1,6 @@
 package cakehat.database;
 
+import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
 import java.io.File;
 import org.joda.time.DateTime;
@@ -14,6 +15,7 @@ import cakehat.assignment.Assignment;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.services.ServicesException;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -39,12 +41,16 @@ public class DataServicesTest {
     
     private DataServices _dataServices;
     private Database _database;
+    
     private DbTA _dbUserTA, _dbTA2;
     private DbAssignment _dbAsgnA, _dbAsgnB;
     private DbGradableEvent _dbGeA, _dbGeB;
     private DbPart _dbPartA1, _dbPartA2, _dbPartB1;
+    
+    private TA _userTA, _ta2;
     private Assignment _asgnA, _asgnB;
     private GradableEvent _geA, _geB;
+    private Part _partA1, _partA2, _partB1;
     
     @Before
     public void setUp() throws ServicesException, SQLException, IOException {
@@ -73,31 +79,9 @@ public class DataServicesTest {
         _dbAsgnB.setHasGroups(false);
         _database.putAssignments(ImmutableSet.of(_dbAsgnA, _dbAsgnB));
         
-        _asgnA = createMock(Assignment.class);
-        expect(_asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(_asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(_asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        replay(_asgnA);
-        
-        _asgnB = createMock(Assignment.class);
-        expect(_asgnB.getName()).andReturn(_dbAsgnB.getName()).anyTimes();
-        expect(_asgnB.getId()).andReturn(_dbAsgnB.getId()).anyTimes();
-        expect(_asgnB.hasGroups()).andReturn(_dbAsgnB.hasGroups()).anyTimes();
-        replay(_asgnB);
-        
         _dbGeA = DbGradableEvent.build(_dbAsgnA, "geA", 1);
         _dbGeB = DbGradableEvent.build(_dbAsgnB, "geB", 2);
         _database.putGradableEvents(ImmutableSet.of(_dbGeA, _dbGeB));
-        
-        _geA = createMock(GradableEvent.class);
-        expect(_geA.getAssignment()).andReturn(_asgnA).anyTimes();
-        expect(_geA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        replay(_geA);
-        
-        _geB = createMock(GradableEvent.class);
-        expect(_geB.getAssignment()).andReturn(_asgnB).anyTimes();
-        expect(_geB.getId()).andReturn(_dbGeB.getId()).anyTimes();
-        replay(_geB);
         
         _dbPartA1 = DbPart.build(_dbGeA, "partA1", 1);
         _dbPartA2 = DbPart.build(_dbGeA, "partA2", 2);
@@ -105,6 +89,58 @@ public class DataServicesTest {
         _database.putParts(ImmutableSet.of(_dbPartA1, _dbPartA2, _dbPartB1));
         
         _dataServices = new DataServicesImpl();
+        
+        for(Assignment asgn : _dataServices.getAssignments())
+        {
+            if(asgn.getId() == _dbAsgnA.getId())
+            {
+                _asgnA = asgn;
+            }
+            else if(asgn.getId() == _dbAsgnB.getId())
+            {
+                _asgnB = asgn;
+            }
+            
+            for(GradableEvent ge : asgn)
+            {
+                if(ge.getId() == _dbGeA.getId())
+                {
+                    _geA = ge;
+                }
+                else if(ge.getId() == _dbGeB.getId())
+                {
+                    _geB = ge;
+                }
+                
+                for(Part part : ge)
+                {
+                    if(part.getId() == _dbPartA1.getId())
+                    {
+                        _partA1 = part;
+                    }
+                    else if(part.getId() == _dbPartA2.getId())
+                    {
+                        _partA2 = part;
+                    }
+                    else if(part.getId() == _dbPartB1.getId())
+                    {
+                        _partB1 = part;
+                    }
+                }
+            }
+        }
+        
+        for(TA ta : _dataServices.getTAs())
+        {
+            if(ta.getId() == _dbUserTA.getId())
+            {
+                _userTA = ta;
+            }
+            else if(ta.getId() == _dbTA2.getId())
+            {
+                _ta2 = ta;
+            }
+        }
     }
     
     @Test
@@ -551,623 +587,257 @@ public class DataServicesTest {
     
     @Test
     public void testAssignUnassignedGroup() throws SQLException, ServicesException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
         
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        _dataServices.setGrader(part, group, ta);
-        
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
     }
     
     @Test
     public void testAssignPreviouslyAssignedGroup() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
-        TA ta2 = _dataServices.getTA(_dbTA2.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
         
         // first assign group1 to ta1
-        _dataServices.setGrader(part, group, ta1);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta1).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta1).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
         
         // reassign group1 to ta2
-        _dataServices.setGrader(part, group, ta2);
+        _dataServices.setGrader(_partA1, group, _ta2);
         
         // check that group1 is now assigned to ta2 and not ta1
-        assertEquals(0, _dataServices.getAssignedGroups(part, ta1).size());
-        assertFalse(_dataServices.getAssignedGroups(part, ta1).contains(group));
+        assertEquals(0, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertFalse(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
         
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta2).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta2).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _ta2).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _ta2).contains(group));
     }
     
     @Test
     public void testNoEffectWhenAlreadyAssignedToSameTA() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
 
-        _dataServices.setGrader(part, group, ta);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
         
         // this shouldn't throw an exception or do anything 
-        _dataServices.setGrader(part, group, ta);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
     }
     
     @Test
     public void testUnassignGroup() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        events.add(eventA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
 
-        _dataServices.setGrader(part, group, ta);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
         
         // unassign the group1 and check that the group1 is no longer assigned to the ta1
-        _dataServices.setGrader(part, group, null);
+        _dataServices.setGrader(_partA1, group, null);
         
-        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(_partA1, _userTA).size());
     }
     
     @Test
     public void testUnassignGroupWhenGroupWasNotAssigned() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
 
         // group1 has not been assigned
         
-        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(_partA1, _userTA).size());
         
         // unassign the group1 and check that nothing happens
-        _dataServices.setGrader(part, group, null);
+        _dataServices.setGrader(_partA1, group, null);
         
-        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(_partA1, _userTA).size());
     }
     
     @Test
     public void testGetAssignedGroupsForTAWhenNoneAssigned() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
         
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        events.add(eventA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        replay(partA);
-        
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
         TA ta = _dataServices.getTA(_dbUserTA.getId());
         
         // make sure that getAssignedGroups returns an empty collection
-        assertEquals(0, _dataServices.getAssignedGroups(part, ta).size());
+        assertEquals(0, _dataServices.getAssignedGroups(_partA1, ta).size());
     }
     
     @Test
     public void testGetAssignedGroupsForTAWhenOneAssigned() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
 
-        _dataServices.setGrader(part, group, ta);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
         // check that the list only has 1 group1 in it and it is the correct group1
-        assertEquals(1, _dataServices.getAssignedGroups(part, ta).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group));
     }
     
     @Test
     public void testGetAssignedGroupsForTAWhenTwoAssigned() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
         
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
-        Group group1 = _dataServices.getGroup(asgnA, student1);
-        Group group2 = _dataServices.getGroup(asgnA, student2);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group1 = _dataServices.getGroup(_asgnA, student1);
+        Group group2 = _dataServices.getGroup(_asgnA, student2);
 
-        _dataServices.setGrader(part, group1, ta);
-        _dataServices.setGrader(part, group2, ta);
+        _dataServices.setGrader(_partA1, group1, _userTA);
+        _dataServices.setGrader(_partA1, group2, _userTA);
         
         // check that the list only has 1 group1 in it and it is the correct group1
-        assertEquals(2, _dataServices.getAssignedGroups(part, ta).size());
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group1));
-        assertTrue(_dataServices.getAssignedGroups(part, ta).contains(group2));
+        assertEquals(2, _dataServices.getAssignedGroups(_partA1, _userTA).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group1));
+        assertTrue(_dataServices.getAssignedGroups(_partA1, _userTA).contains(group2));
     }
     
     @Test
     public void testGetAssignedGroupsStartsEmpty() throws ServicesException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
-        assertEquals(0, _dataServices.getAssignedGroups(partA).size());
+        assertEquals(0, _dataServices.getAssignedGroups(_partA1).size());
     }
     
     @Test
     public void testGetAssignedGroupsWhenOnlyAssignedToOneTA() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        events.add(eventA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
 
-        _dataServices.setGrader(part, group, ta);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
         // check that the list only has 1 group in it and it is the correct group
-        assertEquals(1, _dataServices.getAssignedGroups(part).size());
-        assertTrue(_dataServices.getAssignedGroups(part).contains(group));
+        assertEquals(1, _dataServices.getAssignedGroups(_partA1).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1).contains(group));
     }
     
     @Test
     public void testGetAssignedGroupsWhenAssignedToMultipleTAs() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
         
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
-        Group group1 = _dataServices.getGroup(asgnA, student1);
-        Group group2 = _dataServices.getGroup(asgnA, student2);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
-        TA ta2 = _dataServices.getTA(_dbTA2.getId());
+        Group group1 = _dataServices.getGroup(_asgnA, student1);
+        Group group2 = _dataServices.getGroup(_asgnA, student2);
 
-        _dataServices.setGrader(part, group1, ta1);
-        _dataServices.setGrader(part, group2, ta2);
+        _dataServices.setGrader(_partA1, group1, _userTA);
+        _dataServices.setGrader(_partA1, group2, _ta2);
         
         // check that the list only has 1 group1 in it and it is the correct group1
-        assertEquals(2, _dataServices.getAssignedGroups(part).size());
-        assertTrue(_dataServices.getAssignedGroups(part).contains(group1));
-        assertTrue(_dataServices.getAssignedGroups(part).contains(group2));
+        assertEquals(2, _dataServices.getAssignedGroups(_partA1).size());
+        assertTrue(_dataServices.getAssignedGroups(_partA1).contains(group1));
+        assertTrue(_dataServices.getAssignedGroups(_partA1).contains(group2));
     }
     
     @Test
-    public void testGetPartsWithAssignedGroupsStartsEmpty() throws ServicesException {
-        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
-        
-        assertEquals(0, _dataServices.getPartsWithAssignedGroups(ta1).size());
-    }
-    
-    @Test
-    public void testGetPartsWithAssignedGroupsWhenOnePartAssigned() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
+    public void testGetAssignedGroupsWhenOnePartAssigned() throws ServicesException, SQLException {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
         
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        _dataServices.setGrader(part, group, ta);
-        
-        assertEquals(1, _dataServices.getPartsWithAssignedGroups(ta).size());
+        assertEquals(1, _dataServices.getAssignedGroups(_userTA).keySet().size());
 
         // make sure that it is the correct part1
-        this.assertPartEqual(_dbPartA1, _dataServices.getPartsWithAssignedGroups(ta).iterator().next());
+        this.assertPartEqual(_dbPartA1, _dataServices.getAssignedGroups(_userTA).keySet().iterator().next());
     }
     
     @Test
-    public void testGetPartsWithAssignedGroupsWhenMultiplePartsAssigned() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA1 = createMock(Part.class);
-        expect(partA1.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA1.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA1);
-        
-        Part partA2 = createMock(Part.class);
-        expect(partA2.getName()).andReturn(_dbPartA2.getName()).anyTimes();
-        expect(partA2.getId()).andReturn(_dbPartA2.getId()).anyTimes();
-        parts.add(partA2);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA1);
-        replay(partA2);
-        
+    public void testGetAssignedGroupsWhenMultiplePartsAssigned() throws ServicesException, SQLException {
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
         
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
-        Group group1 = _dataServices.getGroup(asgnA, student1);
-        Group group2 = _dataServices.getGroup(asgnA, student2);
-        Part part1 = asgnA.getGradableEvents().get(0).getParts().get(0);
-        Part part2 = asgnA.getGradableEvents().get(0).getParts().get(1);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group1 = _dataServices.getGroup(_asgnA, student1);
+        Group group2 = _dataServices.getGroup(_asgnA, student2);
         
+        _dataServices.setGrader(_partA1, group1, _userTA);
+        _dataServices.setGrader(_partA2, group2, _userTA);
         
-        _dataServices.setGrader(part1, group1, ta);
-        _dataServices.setGrader(part2, group2, ta);
-        
-        assertEquals(2, _dataServices.getPartsWithAssignedGroups(ta).size());
+        assertEquals(2, _dataServices.getAssignedGroups(_userTA).keySet().size());
 
         // make sure that it is the correct part1
         ArrayList<DbPart> dbParts = new ArrayList<DbPart>();
         dbParts.add(_dbPartA1);
         dbParts.add(_dbPartA2);
-        this.assertPartCollectionEqual(dbParts, _dataServices.getPartsWithAssignedGroups(ta));
+        this.assertPartCollectionEqual(dbParts, _dataServices.getAssignedGroups(_userTA).keySet());
     }
     
     @Test
@@ -1289,206 +959,79 @@ public class DataServicesTest {
     
     @Test
     public void testIsDistEmptyWhenEmpty() throws ServicesException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
-        assertTrue(_dataServices.isDistEmpty(eventA));
+        assertTrue(_dataServices.isDistEmpty(_geA));
     }
     
     @Test
     public void testIsDistEmptyWhenNotEmpty() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        events.add(eventA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        replay(partA);
-        
-         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
+        Group group = _dataServices.getGroup(_asgnA, student1);
         
-        _dataServices.setGrader(part, group, ta);
+        _dataServices.setGrader(_partA1, group, _userTA);
         
-        assertFalse(_dataServices.isDistEmpty(eventA));
+        assertFalse(_dataServices.isDistEmpty(_geA));
     }
     
     @Test
     public void testGetDistributionInitiallyEmptyForTA() throws ServicesException, SQLException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA = createMock(Part.class);
-        expect(partA.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA);
-        
-         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
+        DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         _database.putStudents(ImmutableSet.of(dbStudent1));
         
         Student student1 = new Student(dbStudent1);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
         _database.putGroups(ImmutableSet.of(dbGroup1));
         
-        Group group = _dataServices.getGroup(asgnA, student1);
-        Part part = asgnA.getGradableEvents().get(0).getParts().get(0);
-        TA ta = _dataServices.getTA(_dbUserTA.getId());
-        
-        assertEquals(0, _dataServices.getDistribution(part).get(ta).size());
+        assertEquals(0, _dataServices.getDistribution(_partA1).get(_userTA).size());
     }
     
     @Test
     public void testGetSetDistribution() throws SQLException, ServicesException {
-        ArrayList<GradableEvent> events = new ArrayList<GradableEvent>();
-        ArrayList<Part> parts = new ArrayList<Part>();
-
-        Assignment asgnA = createMock(Assignment.class);
-        expect(asgnA.getName()).andReturn(_dbAsgnA.getName()).anyTimes();
-        expect(asgnA.getId()).andReturn(_dbAsgnA.getId()).anyTimes();
-        expect(asgnA.hasGroups()).andReturn(_dbAsgnA.hasGroups()).anyTimes();
-        
-        GradableEvent eventA = createMock(GradableEvent.class);
-        expect(eventA.getName()).andReturn(_dbGeA.getName()).anyTimes();
-        expect(eventA.getId()).andReturn(_dbGeA.getId()).anyTimes();
-        
-        Part partA1 = createMock(Part.class);
-        expect(partA1.getName()).andReturn(_dbPartA1.getName()).anyTimes();
-        expect(partA1.getId()).andReturn(_dbPartA1.getId()).anyTimes();
-        parts.add(partA1);
-        
-        Part partA2 = createMock(Part.class);
-        expect(partA2.getName()).andReturn(_dbPartA2.getName()).anyTimes();
-        expect(partA2.getId()).andReturn(_dbPartA2.getId()).anyTimes();
-        parts.add(partA2);
-        
-        expect(asgnA.getGradableEvents()).andReturn(events).anyTimes();
-        expect(eventA.getParts()).andReturn(parts).anyTimes();
-        
-        replay(asgnA);
-        replay(eventA);
-        events.add(eventA);
-        replay(partA1);
-        replay(partA2);
-        
         DbStudent dbStudent1 = new DbStudent("sLogin1", "sFirst1", "sLast1", "sEmail1");
         DbStudent dbStudent2 = new DbStudent("sLogin2", "sFirst2", "sLast2", "sEmail2"); 
         _database.putStudents(ImmutableSet.of(dbStudent1, dbStudent2));
         
         Student student1 = new Student(dbStudent1);
         Student student2 = new Student(dbStudent2);
-        DbGroup dbGroup1 = new DbGroup(asgnA, student1);
-        DbGroup dbGroup2 = new DbGroup(asgnA, student2);
+        DbGroup dbGroup1 = new DbGroup(_asgnA, student1);
+        DbGroup dbGroup2 = new DbGroup(_asgnA, student2);
         _database.putGroups(ImmutableSet.of(dbGroup1, dbGroup2));
         
-        Group group1 = _dataServices.getGroup(asgnA, student1);
-        Group group2 = _dataServices.getGroup(asgnA, student2);
-        Part part1 = asgnA.getGradableEvents().get(0).getParts().get(0);
-        Part part2 = asgnA.getGradableEvents().get(0).getParts().get(1);
-        TA ta1 = _dataServices.getTA(_dbUserTA.getId());
-        TA ta2 = _dataServices.getTA(_dbTA2.getId());
+        Group group1 = _dataServices.getGroup(_asgnA, student1);
+        Group group2 = _dataServices.getGroup(_asgnA, student2);
         
-        Map<Part, Map<TA, Set<Group>>> dist = new HashMap<Part, Map<TA, Set<Group>>>();
-        Map<TA, Set<Group>> part1Map = new HashMap<TA, Set<Group>>();
-        Map<TA, Set<Group>> part2Map = new HashMap<TA, Set<Group>>();
+        Map<Part, SetMultimap<TA, Group>> dist = new HashMap<Part, SetMultimap<TA, Group>>();
+        SetMultimap<TA, Group> part1Map = HashMultimap.create();
+        SetMultimap<TA, Group> part2Map = HashMultimap.create();
         
-        HashSet<Group> both = new HashSet<Group>();
-        both.add(group1);
-        both.add(group2);
+        part1Map.put(_userTA, group1);
+        part1Map.put(_ta2, group2);
+        part2Map.putAll(_userTA, ImmutableSet.of(group1, group2));
         
-        HashSet<Group> first = new HashSet<Group>();
-        first.add(group1);
-        
-        HashSet<Group> second = new HashSet<Group>();
-        second.add(group2);
-        
-        part1Map.put(ta1, first);
-        part1Map.put(ta2, second);
-        part2Map.put(ta1, both);
-        part2Map.put(ta2, new HashSet<Group>());
-        
-        dist.put(part1, part1Map);
-        dist.put(part2, part2Map);
+        dist.put(_partA1, part1Map);
+        dist.put(_partA2, part2Map);
         
         _dataServices.setDistribution(dist);
         
-        Map<TA, Set<Group>> result1 = _dataServices.getDistribution(part1);
-        Map<TA, Set<Group>> result2 = _dataServices.getDistribution(part2);
+        SetMultimap<TA, Group> result1 = _dataServices.getDistribution(_partA1);
+        SetMultimap<TA, Group> result2 = _dataServices.getDistribution(_partA2);
         assertEquals(2, result1.size());
         assertEquals(2, result2.size());
         
-        Set<Group> part1TA1Groups = result1.get(ta1);
-        Set<Group> part1TA2Groups = result1.get(ta2);
+        Set<Group> part1TA1Groups = result1.get(_userTA);
+        Set<Group> part1TA2Groups = result1.get(_ta2);
         assertEquals(1, part1TA1Groups.size());
         assertEquals(1, part1TA2Groups.size());
         assertTrue(part1TA1Groups.contains(group1));
         assertTrue(part1TA2Groups.contains(group2));
         
-        Collection<Group> part2TA1Groups = result2.get(ta1);
-        Collection<Group> part2TA2Groups = result2.get(ta2);
+        Collection<Group> part2TA1Groups = result2.get(_userTA);
+        Collection<Group> part2TA2Groups = result2.get(_ta2);
         assertEquals(2, part2TA1Groups.size());
         assertEquals(0, part2TA2Groups.size());
         assertTrue(part2TA1Groups.contains(group1));

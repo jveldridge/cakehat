@@ -27,6 +27,8 @@ import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.database.TA;
 import cakehat.logging.ErrorReporter;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import support.resources.icons.IconLoader;
 import support.resources.icons.IconLoader.IconImage;
 import support.resources.icons.IconLoader.IconSize;
@@ -218,7 +220,7 @@ class AutomaticDistributorView extends JDialog {
     private boolean oneClickGradingSetup() throws ServicesException, IOException {
         
         if (!Allocator.getDataServices().isDistEmpty(_gradableEvent)) {
-            if (!ModalDialog.showConfirmation(this, "Confirm Overwrite", "Any existing distribution will be"
+            if (!ModalDialog.showConfirmation(this, "Confirm Overwrite", "Any existing distribution will be  "
                     + "overwritten, though no existing student grading sheets will be deleted or modified. "
                     + "Do you wish to continue?", "Yes", "No")) {
                 return false;
@@ -302,11 +304,10 @@ class AutomaticDistributorView extends JDialog {
             }
         }
 
-        Map<Part, Map<TA, Set<Group>>> distForDB = new HashMap<Part, Map<TA, Set<Group>>>();
+        Map<Part, SetMultimap<TA, Group>> distForDB = new HashMap<Part, SetMultimap<TA, Group>>();
         for (Part part : _gradableEvent) {
             distForDB.put(part, distribution.get(part).getDistribution());
         }
-
         Allocator.getDataServices().setDistribution(distForDB);
 
         return true;
@@ -348,12 +349,9 @@ class AutomaticDistributorView extends JDialog {
 
         //overallDist represents distribution of both Groups that have members blacklisted by
         //some TA and Groups in which no member is blacklisted
-        Map<TA, Set<Group>> overallDist = new HashMap<TA, Set<Group>>(blacklistedResponse.getDistribution());
+        SetMultimap<TA, Group> overallDist = HashMultimap.create(blacklistedResponse.getDistribution());
         for (TA ta : remainingDist.keySet()) {
-            if (!overallDist.containsKey(ta)) {
-                overallDist.put(ta, new HashSet<Group>());
-            }
-            overallDist.get(ta).addAll(remainingDist.get(ta));
+            overallDist.putAll(ta, remainingDist.get(ta));
         }
 
         //students who could not be distributed without violating some TA's blacklisted
@@ -397,10 +395,7 @@ class AutomaticDistributorView extends JDialog {
                                          Map<TA, Collection<Student>> graderBlacklists) {
         List<TA> graders = new ArrayList<TA>(numStudsNeeded.keySet());
 
-        Map<TA, Set<Group>> distribution = new HashMap<TA, Set<Group>>();
-        for (TA grader : graders) {
-            distribution.put(grader, new HashSet<Group>());
-        }
+        SetMultimap<TA, Group> distribution = HashMultimap.create();
 
         Set<Group> unDistributed = new HashSet<Group>();
 
@@ -413,7 +408,7 @@ class AutomaticDistributorView extends JDialog {
                 if (Collections.disjoint(graderBlacklists.get(ta), blGroup.getMembers())
                         && numStudsNeeded.get(ta) > 0) {
 
-                    distribution.get(ta).add(blGroup); //add student to ta's dist
+                    distribution.put(ta, blGroup); //add student to ta's dist
                     numStudsNeeded.put(ta, numStudsNeeded.get(ta) - 1); //reduce num ta needs
                     distributed = true;
                     break;
@@ -519,15 +514,15 @@ class AutomaticDistributorView extends JDialog {
 
     private class DistributionResponse {
 
-        private Map<TA, Set<Group>> _distribution;
+        private SetMultimap<TA, Group> _distribution;
         private Set<Group> _problemGroups;
 
-        public DistributionResponse(Map<TA, Set<Group>> distribution, Set<Group> problemGroup) {
+        public DistributionResponse(SetMultimap<TA, Group> distribution, Set<Group> problemGroup) {
             _distribution = distribution;
             _problemGroups = problemGroup;
         }
 
-        public Map<TA, Set<Group>> getDistribution() {
+        public SetMultimap<TA, Group> getDistribution() {
             return _distribution;
         }
 

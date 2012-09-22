@@ -11,6 +11,7 @@ import cakehat.gradingsheet.GradingSheet;
 import cakehat.gradingsheet.GradingSheetSection;
 import cakehat.gradingsheet.GradingSheetSubsection;
 import cakehat.services.ServicesException;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -204,9 +205,9 @@ public class DataServicesImpl implements DataServices {
     public void setGrader(Part part, Group group, TA ta) throws ServicesException {
         Integer taId = ta == null ? null : ta.getId();
         
-        Map<Integer, Map<Integer, Set<Integer>>> distForDb = new HashMap<Integer, Map<Integer, Set<Integer>>>(1);
-        distForDb.put(part.getId(), new HashMap<Integer, Set<Integer>>(1));
-        distForDb.get(part.getId()).put(taId, ImmutableSet.of(group.getId()));
+        Map<Integer, SetMultimap<Integer, Integer>> distForDb = new HashMap<Integer, SetMultimap<Integer, Integer>>();
+        distForDb.put(part.getId(), HashMultimap.<Integer, Integer>create());
+        distForDb.get(part.getId()).put(taId, group.getId());
         
         try {
             Allocator.getDatabase().setDistribution(distForDb);
@@ -294,11 +295,6 @@ public class DataServicesImpl implements DataServices {
     @Override
     public Map<Part, Map<Group, GroupGradingSheet>> getGroupGradingSheets(SetMultimap<Part, Group> toRetrieve) throws ServicesException {
         try {
-            Map<Part, Map<Group, GroupGradingSheet>> gradingSheets = new HashMap<Part, Map<Group, GroupGradingSheet>>();
-            
-            //create db variable so subsequent lines of code don't get too long and hard to read
-            Database db = Allocator.getDatabase();
-            
             Map<Integer, Part> partMap = new HashMap<Integer, Part>();
             Set<Integer> sectionIds = new HashSet<Integer>();
             Set<Integer> subsectionIds = new HashSet<Integer>();
@@ -315,9 +311,9 @@ public class DataServicesImpl implements DataServices {
             }
            
             Map<Integer, Map<Integer, DbGroupGradingSheet>> gradingSheetsFromDb =
-                    db.getGroupGradingSheets(partMap.keySet(), subsectionIds,  sectionIds,
+                    Allocator.getDatabase().getGroupGradingSheets(partMap.keySet(), subsectionIds,  sectionIds,
                                              groupsToIdCollection(toRetrieve.values(), new HashSet<Integer>()));
-            
+            Map<Part, Map<Group, GroupGradingSheet>> gradingSheets = new HashMap<Part, Map<Group, GroupGradingSheet>>();
             for (Part part : toRetrieve.keySet()) {
                 gradingSheets.put(part, new HashMap<Group, GroupGradingSheet>());
                 
@@ -769,55 +765,63 @@ public class DataServicesImpl implements DataServices {
 
     @Override
     public boolean isDistEmpty(GradableEvent ge) throws ServicesException {
-        Set<Integer> partIDs = new HashSet<Integer>();
-        for (Part p : ge.getParts()) {
-            partIDs.add(p.getId());
-        }
-        
         try {
-            return Allocator.getDatabase().isDistEmpty(partIDs);
+            Map<Integer, SetMultimap<Integer, Integer>> dbDist = Allocator.getDatabase().getDistribution();
+            
+            boolean isEmpty = true;
+            for (Part part : ge) {
+                if (dbDist.containsKey(part.getId())) {
+                    isEmpty = false;
+                    break;
+                }
+            }
+            
+            return isEmpty;
         } catch (SQLException ex) {
             throw new ServicesException("Could not determine whether the distribution "
                     + "is empty for gradable event [" + ge.getFullDisplayName() + "].", ex);
         }
     }
-
+    
     @Override
-    public Map<TA, Set<Group>> getDistribution(Part part) throws ServicesException {
-        Map<TA, Set<Group>> dist = new HashMap<TA, Set<Group>>();
-        SetMultimap<Integer, Integer> idDist;
+    public Map<Part, SetMultimap<TA, Group>> getDistribution() throws ServicesException {
         try {
-            idDist = Allocator.getDatabase().getDistribution(part.getId());
+            Map<Integer, SetMultimap<Integer, Integer>> dbDist = Allocator.getDatabase().getDistribution();
+            
+            Map<Part, SetMultimap<TA, Group>> dist = new HashMap<Part, SetMultimap<TA, Group>>();
+            for (int partId : dbDist.keySet()) {
+                SetMultimap<TA, Group> partDist = HashMultimap.create();
+                dist.put(_partIdMap.get(partId), partDist);
+                
+                for (int taId : dbDist.get(partId).keySet()) {
+                    for (int groupId : dbDist.get(partId).get(taId)) {
+                        partDist.put(_taIdMap.get(taId), _groupIdMap.get(groupId));
+                    }
+                }
+            }
+            
+            return dist;
         } catch (SQLException ex) {
-            throw new ServicesException("Could not read distribution for part [" + part + "] from the database.", ex);
+            throw new ServicesException("Could not read distribution from the database.", ex);
         }
-        
-        for (TA ta : this.getTAs()) {
-            if (idDist.containsKey(ta.getId())) {
-                Set<Integer> toGrade = idDist.get(ta.getId());
-                dist.put(ta, this.idsToGroups(toGrade, new HashSet<Group>(toGrade.size())));
-            }
-            else {
-                //for any TA who has not been assigned any groups to grade, add an empty set to the map 
-                dist.put(ta, Collections.<Group>emptySet());
-            }
-        }
-        
-        return dist;
     }
 
     @Override
-    public void setDistribution(Map<Part, Map<TA, Set<Group>>> distribution) throws ServicesException {
+    public SetMultimap<TA, Group> getDistribution(Part part) throws ServicesException {
+        SetMultimap<TA, Group> partDist = this.getDistribution().get(part);
+        
+        return partDist == null ? HashMultimap.<TA, Group>create() : partDist;
+    }
+
+    @Override
+    public void setDistribution(Map<Part, SetMultimap<TA, Group>> distribution) throws ServicesException {
         try {           
-            Map<Integer, Map<Integer, Set<Integer>>> distForDb = new HashMap<Integer, Map<Integer, Set<Integer>>>();
+            Map<Integer, SetMultimap<Integer, Integer>> distForDb = new HashMap<Integer, SetMultimap<Integer, Integer>>();
             for (Part part : distribution.keySet()) {
-                distForDb.put(part.getId(), new HashMap<Integer, Set<Integer>>());
-                
+                distForDb.put(part.getId(), HashMultimap.<Integer, Integer>create());
                 for (TA ta : distribution.get(part).keySet()) {
-                    distForDb.get(part.getId()).put(ta.getId(), new HashSet<Integer>(distribution.get(part).get(ta).size()));
-                    
                     for (Group group : distribution.get(part).get(ta)) {
-                        distForDb.get(part.getId()).get(ta.getId()).add(group.getId());
+                        distForDb.get(part.getId()).put(ta.getId(), group.getId());
                     }
                 }
             }
@@ -829,40 +833,34 @@ public class DataServicesImpl implements DataServices {
     }
 
     @Override
-    public Set<Group> getAssignedGroups(Part part, TA ta) throws ServicesException {
-        try {
-            Set<Integer> groupIDs = Allocator.getDatabase().getAssignedGroups(part.getId(), ta.getId());
-            return this.idsToGroups(groupIDs, new HashSet<Group>(groupIDs.size()));
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not read groups assigned to TA [" +
-                    ta + "] on part [" + part + "] from the database.", ex);
+    public SetMultimap<Part, Group> getAssignedGroups(TA ta) throws ServicesException {
+        Map<Part, SetMultimap<TA, Group>> dist = this.getDistribution();
+        
+        SetMultimap<Part, Group> assigned = HashMultimap.create();
+        for (Part part : dist.keySet()) {
+            if (dist.get(part).containsKey(ta)) {
+                assigned.putAll(part, dist.get(part).get(ta));
+            }
         }
+        
+        return assigned;
+    }
+    
+    @Override
+    public Set<Group> getAssignedGroups(Part part, TA ta) throws ServicesException {
+        return this.getAssignedGroups(ta).get(part);
     }
 
     @Override
     public Set<Group> getAssignedGroups(Part part) throws ServicesException {
-        try {
-            Set<Integer> groupIDs = Allocator.getDatabase().getAssignedGroups(part.getId());
-            return this.idsToGroups(groupIDs, new HashSet<Group>(groupIDs.size()));
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not read all assigned groups "
-                    + "for part [" + part + "] from the database.", ex);
-        }   
-    }
-
-    @Override
-    public Set<Part> getPartsWithAssignedGroups(TA ta) throws ServicesException {
-        try {
-            Set<Part> toReturn = new HashSet<Part>();
-            for (int partID : Allocator.getDatabase().getPartsWithAssignedGroups(ta.getId())) {
-                toReturn.add(_partIdMap.get(partID));
-            }
-            
-            return toReturn;
-        } catch (SQLException ex) {
-            throw new ServicesException("Could not read parts with assigned groups for TA [" + ta + 
-                    "] from the database.", ex);
+        SetMultimap<TA, Group> partDist = this.getDistribution().get(part); 
+        
+        Set<Group> allGroupsForPartDist = new HashSet<Group>();
+        if(partDist != null) {
+            allGroupsForPartDist.addAll(partDist.values());
         }
+        
+        return allGroupsForPartDist;
     }
     
     @Override

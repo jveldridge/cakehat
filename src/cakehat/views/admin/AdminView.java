@@ -9,6 +9,7 @@ import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.database.Group;
 import cakehat.database.Student;
+import cakehat.icon.CakehatIconLoader;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
 import cakehat.views.admin.AssignmentTree.AssignmentTreeSelection;
@@ -35,6 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import support.ui.FormattedLabel;
 
 /**
@@ -124,7 +126,7 @@ public class AdminView extends JFrame
         contentPanel.add(mainPanel);
         //This label exists to match the exact spacing of the label headers for assignments, students, and actions
         mainPanel.add(FormattedLabel.asHeader(" "));
-        mainPanel.add(Box.createVerticalStrut(5));
+        mainPanel.add(Box.createVerticalStrut(10));
         _mainPane.setAlignmentX(LEFT_ALIGNMENT);
         _mainPane.getViewport().setBackground(Color.WHITE);
         mainPanel.add(_mainPane);
@@ -234,8 +236,12 @@ public class AdminView extends JFrame
         {
             if(selectedStudentsNotInGroups.isEmpty())
             {
-                componentToDisplay = FormattedLabel.asHeader("cakehat v" + CakehatReleaseInfo.getVersion())
+                FormattedLabel cakehatLabel = FormattedLabel.asHeader("cakehat v" + CakehatReleaseInfo.getVersion())
                         .centerHorizontally();
+                cakehatLabel.setIcon(CakehatIconLoader.loadIcon(CakehatIconLoader.IconSize.s300x300));
+                cakehatLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+                cakehatLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+                componentToDisplay = cakehatLabel;
             }
             else
             {
@@ -318,6 +324,15 @@ public class AdminView extends JFrame
         _mainPane.setViewportView(componentToDisplay);
         _mainPane.repaint();
         _mainPane.revalidate();
+        
+        //Scroll to top after layout has occurred
+        EventQueue.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                _mainPane.getVerticalScrollBar().setValue(0); 
+            }
+        });
     }
     
     void saveDisplayedGradingSheet()

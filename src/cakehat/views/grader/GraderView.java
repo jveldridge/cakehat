@@ -1,14 +1,16 @@
 package cakehat.views.grader;
 
 import cakehat.Allocator;
-import cakehat.CakehatReleaseInfo;
 import cakehat.CakehatSession;
 import cakehat.CakehatSession.ConnectionType;
 import cakehat.database.Group;
 import cakehat.assignment.Part;
+import cakehat.icon.CakehatIconLoader;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.ServicesException;
+import cakehat.views.grader.PartAndGroupPanel.AssignedGradingStatus;
 import cakehat.views.shared.gradingsheet.GradingSheetPanel;
+import cakehat.views.shared.gradingsheet.GradingSheetPanel.GradingSheetListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -169,7 +171,7 @@ public class GraderView extends JFrame
         innerPanel.add(new JSeparator(JSeparator.HORIZONTAL), BorderLayout.NORTH);
         innerPanel.add(Box.createVerticalStrut(5), BorderLayout.CENTER);
         innerPanel.add(buttonPanel, BorderLayout.SOUTH);
-        JPanel outerPanel = new PaddingPanel(innerPanel, 5, 10, 0, 10, innerPanel.getBackground());
+        JPanel outerPanel = new PaddingPanel(innerPanel, 5, 10, 0, 0, innerPanel.getBackground());
         
         //Logic
         final Runnable backAction = new Runnable()
@@ -217,43 +219,95 @@ public class GraderView extends JFrame
         return outerPanel;
     }
     
-    private void notifySelectionChanged(Part part, Set<Group> groups)
+    private void notifySelectionChanged(final Part part, Set<Group> groups)
     {   
         saveDisplayedGradingSheet();
         _currentlyDisplayedSheet = null;
         
         Component componentToDisplay = null;
         
-        if(part == null)
+        AssignedGradingStatus status = _partAndGroupPanel.getAssignedGradingStatus();
+        if(status == AssignedGradingStatus.NOT_LOADED)
         {
-            componentToDisplay = FormattedLabel.asHeader("cakehat v" + CakehatReleaseInfo.getVersion())
-                        .centerHorizontally();
+            FormattedLabel loadingLabel = FormattedLabel.asHeader("Loading...").centerHorizontally();
+            loadingLabel.setIcon(CakehatIconLoader.loadIcon(CakehatIconLoader.IconSize.s300x300));
+            loadingLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+            loadingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+            componentToDisplay = loadingLabel;
         }
-        else
-        {   
-            if(groups.isEmpty())
+        else if(status == AssignedGradingStatus.ERROR_LOADING)
+        {
+            componentToDisplay = FormattedLabel.asHeader("Your assigned grading could not be loaded")
+                    .showAsErrorMessage().centerHorizontally();
+        }
+        else if(status == AssignedGradingStatus.LOADED_NONE_ASSIGNED)
+        {
+            componentToDisplay = FormattedLabel.asHeader("You have no assigned grading").centerHorizontally();
+        }
+        else if(status == AssignedGradingStatus.LOADED_GROUPS_ASSIGNED)
+        {
+            if(part == null)
             {
-                String studentOrGroup = part.getAssignment().hasGroups() ? "group" : "student";
-                componentToDisplay = FormattedLabel.asHeader("Select a " + studentOrGroup + " to continue grading")
-                        .centerHorizontally();
-            }
-            else if(groups.size() == 1)
-            {
-                Group group = groups.iterator().next();
-                _currentlyDisplayedSheet = GradingSheetPanel.getPanel(part, group, false, true);
-                componentToDisplay = _currentlyDisplayedSheet;
+                componentToDisplay = FormattedLabel.asHeader("Select an assignment part to continue grading")
+                            .centerHorizontally();
             }
             else
-            {
-                String studentOrGroup = part.getAssignment().hasGroups() ? "group" : "student";
-                componentToDisplay = FormattedLabel.asHeader("Select a single " + studentOrGroup + " to fill out " + 
-                        "their grading sheet").centerHorizontally();
+            {   
+                if(groups.isEmpty())
+                {
+                    String studentOrGroup = part.getAssignment().hasGroups() ? "group" : "student";
+                    componentToDisplay = FormattedLabel.asHeader("Select a " + studentOrGroup + " to continue grading")
+                            .centerHorizontally();
+                }
+                else if(groups.size() == 1)
+                {
+                    final Group group = groups.iterator().next();
+                    _currentlyDisplayedSheet = GradingSheetPanel.getPanel(part, group, false, true);
+                    _currentlyDisplayedSheet.addGradingSheetListener(new GradingSheetListener()
+                    {
+                        @Override
+                        public void earnedChanged(Double prevEarned, Double currEarned) { }
+
+                        @Override
+                        public void modificationOccurred()
+                        {
+                            _partAndGroupPanel.notifyGradingSheetModified(part, group);
+                        }
+
+                        @Override
+                        public void submissionChanged(Part part, boolean submitted)
+                        {
+                            _partAndGroupPanel.notifyGradingSheetSubmissionChanged(part, group, submitted);
+                        }
+                    });
+
+                    componentToDisplay = _currentlyDisplayedSheet;
+                }
+                else
+                {
+                    String studentOrGroup = part.getAssignment().hasGroups() ? "group" : "student";
+                    componentToDisplay = FormattedLabel.asHeader("Select a single " + studentOrGroup + " to fill out " + 
+                            "their grading sheet").centerHorizontally();
+                }
             }
+        }
+        else
+        {
+            throw new IllegalStateException("Unsupported assigned grading status: " + status);
         }
         
         _mainPane.setViewportView(componentToDisplay);
         _mainPane.repaint();
         _mainPane.revalidate();
+        
+        //Scroll to top after layout has occurred
+        EventQueue.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                _mainPane.getVerticalScrollBar().setValue(0); 
+            }
+        });
     }
     
     private void saveDisplayedGradingSheet()

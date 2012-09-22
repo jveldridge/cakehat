@@ -22,10 +22,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -60,9 +59,7 @@ class GradableEventPanel extends GradingSheetPanel
     private final Group _group;
     private final boolean _isAdmin;
     
-    //Map from panel to if it has unsaved changes (true = unsaved changes)
-    private final Map<PartPanel, Boolean> _partPanelSaveStatus = new HashMap<PartPanel, Boolean>();
-    
+    private final Set<PartPanel> _partPanels = new HashSet<PartPanel>();
     private final List<Component> _focusableComponents = new ArrayList<Component>();
     
     private Double _totalEarned = null;
@@ -367,6 +364,8 @@ class GradableEventPanel extends GradingSheetPanel
                         ErrorReporter.report("Could not revoke extension", e);
                     }
                 }
+                
+                notifyModificationOccurred();
             }
         });
         
@@ -380,6 +379,7 @@ class GradableEventPanel extends GradingSheetPanel
                     Allocator.getDataServices().setExtensions(_gradableEvent, ImmutableSet.of(_group), newDateTime,
                             shiftDatesCheckBox.isSelected(), noteArea.getText());
                     _groupDeadlineResolutionPanel.updateExtension(newDateTime, shiftDatesCheckBox.isSelected());
+                    notifyModificationOccurred();
                 }
                 catch(ServicesException e)
                 {
@@ -401,6 +401,7 @@ class GradableEventPanel extends GradingSheetPanel
                     Allocator.getDataServices().setExtensions(_gradableEvent, ImmutableSet.of(_group),
                             dateTimeControl.getDateTime(), selected, noteArea.getText());
                     _groupDeadlineResolutionPanel.updateExtension(dateTimeControl.getDateTime(), selected);
+                    notifyModificationOccurred();
                 }
                 catch(ServicesException e)
                 {
@@ -421,6 +422,7 @@ class GradableEventPanel extends GradingSheetPanel
                 {
                     Allocator.getDataServices().setExtensions(_gradableEvent, ImmutableSet.of(_group),
                             dateTimeControl.getDateTime(), shiftDatesCheckBox.isSelected(), note);
+                    notifyModificationOccurred();
                 }
                 catch(ServicesException e)
                 {
@@ -562,6 +564,7 @@ class GradableEventPanel extends GradingSheetPanel
                             Allocator.getDataServices().setGradableEventOccurrences(_gradableEvent,
                                     ImmutableMap.of(_group, newDateTime));
                             updateReceived(newDateTime);
+                            notifyModificationOccurred();
                         }
                         catch(ServicesException e)
                         {
@@ -617,6 +620,7 @@ class GradableEventPanel extends GradingSheetPanel
                     newReceivedOn = new DateTime().millisOfSecond().setCopy(0);
                     Allocator.getDataServices().setGradableEventOccurrences(_gradableEvent,
                             ImmutableMap.of(_group, newReceivedOn));
+                    notifyModificationOccurred();
                 }
                 else
                 {
@@ -717,9 +721,9 @@ class GradableEventPanel extends GradingSheetPanel
             if(_partsToFullyShow.contains(part))
             {
                 final PartPanel panel = new PartPanel(part, _group, _isAdmin, true);
+                _partPanels.add(panel);
                 _focusableComponents.addAll(panel.getFocusableComponents());
 
-                _partPanelSaveStatus.put(panel, false);
                 _totalEarned = NullMath.add(_totalEarned, panel.getEarned());
                 _totalOutOf = NullMath.add(_totalOutOf, panel.getOutOf());
 
@@ -739,32 +743,19 @@ class GradableEventPanel extends GradingSheetPanel
                         }
 
                         notifyEarnedChanged(prevTotalEarned, _totalEarned);
-                        notifyUnsavedChangeOccurred();
                     }
 
                     @Override
-                    public void saveChanged(boolean hasUnsavedChanges)
+                    public void modificationOccurred()
                     {
-                        _partPanelSaveStatus.put(panel, hasUnsavedChanges);
+                        notifyModificationOccurred();
+                    }
 
-                        if(hasUnsavedChanges)
-                        {
-                            notifyUnsavedChangeOccurred();
-                        }
-                        else
-                        {
-                            boolean allSaved = true;
-                            for(boolean unsavedChanges : _partPanelSaveStatus.values())
-                            {
-                                allSaved = allSaved && !unsavedChanges;
-                            }
-
-                            if(allSaved)
-                            {
-                                notifySavedSuccessfully();
-                            }
-                        }
-                    };
+                    @Override
+                    public void submissionChanged(Part part, boolean submitted)
+                    {
+                        notifySubmissionChanged(part, submitted);
+                    }
                 });
                 
                 addContent(panel);
@@ -797,18 +788,6 @@ class GradableEventPanel extends GradingSheetPanel
     Double getOutOf()
     {
         return _totalOutOf;
-    }
-
-    @Override
-    public void save()
-    {
-        for(PartPanel panel : _partPanelSaveStatus.keySet())
-        {
-            if(panel.hasUnsavedChanges())
-            {
-                panel.save();
-            }
-        }
     }
     
     private JPanel createPartialPartPanel(Part part)
@@ -846,5 +825,14 @@ class GradableEventPanel extends GradingSheetPanel
         }
         
         return partPanel;
+    }
+    
+    @Override
+    public void save()
+    {
+        for(PartPanel panel : _partPanels)
+        {
+            panel.save();
+        }
     }
 }

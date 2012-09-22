@@ -126,6 +126,8 @@ public interface DataServices {
      */
     public boolean isDistEmpty(GradableEvent ge) throws ServicesException;
     
+    public Map<Part, SetMultimap<TA, Group>> getDistribution() throws ServicesException;
+    
     /**
      * Returns a map that maps a TA to a Set of Groups that TA has been assigned to grade for the given Part. There will
      * be an entry in the map for each TA; if a TA has not been assigned any groups to grade, the value for that TA's
@@ -135,7 +137,7 @@ public interface DataServices {
      * @return
      * @throws ServicesException 
      */
-    public Map<TA, Set<Group>> getDistribution(Part part) throws ServicesException;
+    public SetMultimap<TA, Group> getDistribution(Part part) throws ServicesException;
     
     /**
      * Assigns Groups for each TA to grade for each Part. Any existing distributions will be overwritten.
@@ -143,8 +145,18 @@ public interface DataServices {
      * @param distribution
      * @throws ServicesException 
      */
-    public void setDistribution(Map<Part, Map<TA, Set<Group>>> distribution) throws ServicesException;
+    public void setDistribution(Map<Part, SetMultimap<TA, Group>> distribution) throws ServicesException;
 
+    /**
+     * Returns a mapping from part to a set of groups assigned to that TA for the part. If the TA has no groups to grade
+     * for a given part then that part will not be in the multimap.
+     * 
+     * @param ta
+     * @return
+     * @throws ServicesException 
+     */
+    public SetMultimap<Part, Group> getAssignedGroups(TA ta) throws ServicesException;
+    
     /**
      * Returns a Set of Groups that the given TA is assigned to grade for the given Part part. Returns an empty Set if
      * no groups are assigned to the TA for the given Part or if there is no distribution for the Part in the database.
@@ -166,15 +178,6 @@ public interface DataServices {
      * @throws ServicesException 
      */
     public Set<Group> getAssignedGroups(Part part) throws ServicesException;
-    
-    /**
-     * Returns a Set of Parts for which the given TA has been assigned at least one Group to grade.
-     *
-     * @param ta
-     * @return
-     * @throws ServicesException 
-     */
-    public Set<Part> getPartsWithAssignedGroups(TA ta) throws ServicesException;
 
     /**
      * Sets the TA who has been assigned to grade the given Group and  Part. Pass {@code ta} as {@code null} to

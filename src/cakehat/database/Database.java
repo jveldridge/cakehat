@@ -5,7 +5,6 @@ import com.google.common.collect.SetMultimap;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
-import support.utils.Pair;
 
 /**
  *
@@ -205,70 +204,24 @@ public interface Database
     public void removeGroups(Set<DbGroup> groups) throws SQLException;
     
     /**
-     * Indicates whether all Parts corresponding to the part IDs in the given Set have no distribution. This is intended
-     * to be used to determine if a distribution has been set for any Parts of an Assignment; however, this does not
-     * need to be the case.
-     * <br/><br/>
-     * Returns true if the distribution is empty for all of the parts, and false if it is non-empty for at least one of
-     * them.
-     *
-     * @param partIDs
-     * @return
-     */
-    public boolean isDistEmpty(Set<Integer> partIDs) throws SQLException;
-    
-    /**
-     * Returns the distribution for the Part with the given ID. The SetMultimap returned maps a TA's ID to a Set of
-     * group IDs representing the groups that TA has been assigned to grade for the Part. The SetMultiap returned
-     * contains entries only for those TAs who have groups assigned to them. If no distribution has yet been set, an
-     * empty SetMultimap is returned.
+     * Returns all distributions. Map from part id to set multimap of TA id to group id. For a part without a
+     * distribution the part id will not be in the map. For a TA for a given part that does not have any assigned
+     * groups their id will not be in the set multimap.
      * 
-     * @param partID
-     * @return
+     * @return distribution
+     * @throws SQLException 
      */
-    public SetMultimap<Integer, Integer> getDistribution(int partID) throws SQLException;
+    public Map<Integer, SetMultimap<Integer, Integer>> getDistribution() throws SQLException;
     
     /**
-     * Stores a distribution in the database.  The given Map maps the ID of a Part to a Map that maps a TA's ID to a Set
-     * of group IDs representing groups that TA has been assigned to grade for that Part. Any existing distribution for
-     * the Part will be overwritten. The distribution will either be set in its entirety or not at all; if the new
-     * distribution is not successfully set in its entirety, the database table will be in whatever state it was in
-     * before this method was called.
+     * Stores a distribution in the database. The given Map maps the ID of a Part to a multimap that maps a TA's ID to
+     * the group IDs representing groups that TA has been assigned to grade for that Part. The distribution will either
+     * be set in its entirety or not at all; if the new distribution is not successfully set in its entirety, the
+     * database table will be in whatever state it was in before this method was called.
      *
      * @param distribution
      */
-    public void setDistribution(Map<Integer, Map<Integer, Set<Integer>>> distribution) throws SQLException;
-
-    /**
-     * Returns an ImmutableSet of IDs for the groups that the given TA has been assigned to grade for the Part with the
-     * given ID. Returns an empty Set if no groups are assigned to the TA for the Part or if there is no distribution
-     * for the Part in the database. 
-     *
-     * @param partID
-     * @param taID
-     * @return
-     */
-    public Set<Integer> getAssignedGroups(int partID, int taID) throws SQLException;
-
-    /**
-     * Returns an ImmutableSet of IDs for groups that have been assigned to any TA to grade for the given Part. This can
-     * be used to find students who have not been assigned to any TA to grade. If no distribution exists yet, an empty
-     * Set will be returned.
-     *
-     * @param partID
-     * @return
-     */
-    public Set<Integer> getAssignedGroups(int partID) throws SQLException;
-
-    /**
-     * Returns an ImmutableSet of part IDs representing Parts for which at least one group has been assigned to the TA
-     * with the given ID for grading. If the TA has not been assigned any groups to grade, an empty Set will be
-     * returned.
-     *
-     * @param taID
-     * @return
-     */
-    public Set<Integer> getPartsWithAssignedGroups(int taID) throws SQLException;
+    public void setDistribution(Map<Integer, SetMultimap<Integer, Integer>> distribution) throws SQLException;
 
     /**
      * Sets the same extension for the groups specified by {@code groupIds} for gradable event {@code geId}. The groups

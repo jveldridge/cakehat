@@ -16,17 +16,22 @@ import support.ui.SelectionListener.SelectionAction;
 public class GenericComboBoxModel<T> extends GenericImmutableListModel<T> implements ComboBoxModel
 {
     private T _selectedItem;
+    private boolean _isSelectionInProgress;
 
     public GenericComboBoxModel(Iterable<T> data)
     {
         super(data);
 
         _selectedItem = this.hasElements() ? this.getElementAt(0) : null;
+        _isSelectionInProgress = false;
     }
-
-    public GenericComboBoxModel(T[] data)
+    
+    public GenericComboBoxModel(Iterable<T> data, T initialSelection)
     {
-        this(Arrays.asList(data));
+        super(data);
+        
+        _selectedItem = findMatchingObject(initialSelection) != null ? initialSelection : null;
+        _isSelectionInProgress = false;
     }
 
     public GenericComboBoxModel()
@@ -106,13 +111,20 @@ public class GenericComboBoxModel<T> extends GenericImmutableListModel<T> implem
     
     boolean notifySelectionListeners(T currValue, T newValue, boolean isCancellable)
     {
+        _isSelectionInProgress = true;
         SelectionAction action = new SelectionAction(isCancellable);
         for(SelectionListener<T> listener : _listeners)
         {
             listener.selectionPerformed(currValue, newValue, action);
         }
+        _isSelectionInProgress = false;
         
         return action.isCancelled();
+    }
+    
+    public boolean isSelectionInProgress()
+    {
+        return _isSelectionInProgress;
     }
 
     /**

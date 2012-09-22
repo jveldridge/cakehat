@@ -1,14 +1,13 @@
 package cakehat.database;
 
-import cakehat.database.DatabaseTestHelpers.DatabaseContentWrapper;
 import com.google.common.collect.SetMultimap;
 import java.util.HashMap;
 import java.util.Map;
 import com.google.common.collect.ImmutableSet;
-import java.util.Set;
 import org.junit.Test;
 import cakehat.Allocator;
 import cakehat.Allocator.SingletonAllocation;
+import com.google.common.collect.HashMultimap;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.Before;
@@ -58,58 +57,19 @@ public class DatabaseDistributionTest {
     }
     
     @Test
-    public void testIsDistInitiallyEmptyForSinglePart() throws SQLException {
-        assertTrue(_database.isDistEmpty(ImmutableSet.of(_part.getId())));
-    }
-    
-    @Test
-    public void testIsDistEmptyAfterAssigningOneGroupForOnePart() throws SQLException {       
-        Map<Integer, Map<Integer, Set<Integer>>> dist = new HashMap<Integer, Map<Integer, Set<Integer>>>();
-        dist.put(_part.getId(), new HashMap<Integer, Set<Integer>>());
-        dist.get(_part.getId()).put(_ta.getId(), ImmutableSet.of(_group.getId()));
-        
-        _database.setDistribution(dist);
-        
-        assertFalse(_database.isDistEmpty(ImmutableSet.of(_part.getId())));
-    }
-    
-    @Test
     public void testSetGetDistributionForOneGroupForOnePart() throws SQLException {
-        Map<Integer, Map<Integer, Set<Integer>>> dist = new HashMap<Integer, Map<Integer, Set<Integer>>>();
-        dist.put(_part.getId(), new HashMap<Integer, Set<Integer>>());
-        dist.get(_part.getId()).put(_ta.getId(), ImmutableSet.of(_group.getId()));
+        Map<Integer, SetMultimap<Integer, Integer>> dist = new HashMap<Integer, SetMultimap<Integer, Integer>>();
+        dist.put(_part.getId(), HashMultimap.<Integer, Integer>create());
+        dist.get(_part.getId()).put(_ta.getId(), _group.getId());
         
         _database.setDistribution(dist);
         
-        SetMultimap<Integer, Integer> distFromDb = _database.getDistribution(_part.getId());
+        Map<Integer, SetMultimap<Integer, Integer>> distFromDb = _database.getDistribution();
         assertEquals(1, distFromDb.size());
         assertTrue(distFromDb.containsKey(_part.getId()));
         assertEquals(1, distFromDb.get(_part.getId()).size());
-        assertEquals(_group.getId(), distFromDb.get(_part.getId()).iterator().next());
+        assertTrue(distFromDb.get(_part.getId()).containsKey(_ta.getId()));
+        assertEquals(1, distFromDb.get(_part.getId()).get(_ta.getId()).size());
+        assertTrue(distFromDb.get(_part.getId()).get(_ta.getId()).contains(_group.getId()));
     }
-    
-    @Test
-    public void testDistribution() throws SQLException {
-        DatabaseContentWrapper wrapper = new DatabaseContentWrapper(_database);
-        
-        assertEquals(true, _database.isDistEmpty(wrapper._partIDs));
-        assertEquals(true, _database.getDistribution(wrapper._part1.getId()).isEmpty());  
-        
-        Map<Integer, Map<Integer, Set<Integer>>> distribution =
-                new HashMap<Integer, Map<Integer, Set<Integer>>>();
-        Map<Integer, Set<Integer>> taToGroups = new HashMap<Integer, Set<Integer>>();
-        taToGroups.put(wrapper._taId1, 
-                ImmutableSet.of(wrapper._dbGroup1.getId(), wrapper._dbGroup2.getId()));
-        distribution.put(wrapper._part1.getId(), taToGroups);
-        _database.setDistribution(distribution);
-        
-        assertEquals(false, _database.isDistEmpty(wrapper._partIDs));
-        assertEquals(true, _database.getDistribution(wrapper._part2.getId()).isEmpty());
-        
-        SetMultimap<Integer, Integer> part1Dist = _database.getDistribution(wrapper._part1.getId());
-        assertEquals(1, part1Dist.keySet().size());
-        assertEquals(true, part1Dist.containsKey(wrapper._taId1));
-        assertEquals(2, part1Dist.get(wrapper._taId1).size());
-    }
-    
 }

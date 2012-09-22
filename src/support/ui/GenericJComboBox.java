@@ -127,6 +127,11 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
     {
         this.setModel(new GenericComboBoxModel<E>(items));
     }
+    
+    public void setItems(Iterable<E> items, E initialSelection)
+    {
+        this.setModel(new GenericComboBoxModel<E>(items, initialSelection));
+    }
 
     /**
      * Returns an immutable list of all of items in this combo box.
@@ -181,7 +186,7 @@ public class GenericJComboBox<E> extends JComboBox implements DescriptionProvide
         _model = model;
         super.setModel(model);
         
-        //It initial selection is in the new model maintain the selection
+        //If initial selection is in the new model maintain the selection
         if(_model.getElements().contains(initSelection))
         {
             _model.setGenericSelectedItem(initSelection);
