@@ -214,7 +214,7 @@ public class AdminView extends JFrame
         }
         
         //Tell the actions panel to update
-        _actionsPanel.notifySelectionChanged(treeSelection, selectedGroups, selectedStudentsNotInGroups);
+        _actionsPanel.notifySelectionChanged(treeSelection, students, selectedGroups, selectedStudentsNotInGroups);
         
         //Update the center panel
         updateMainPane(treeSelection, selectedGroups, selectedStudentsNotInGroups);

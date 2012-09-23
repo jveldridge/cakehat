@@ -47,11 +47,19 @@ public abstract class LongRunningTask
          * @param currStep
          */
         public void taskStepCompleted(int currStep);
+        
+        /**
+         * Called to notify some portion of the task failed, but did not cause the overall task to fail. This method may
+         * not be called if the task does not have clearly defined tasks.
+         * 
+         * @param currStep 
+         */
+        public void taskStepFailed(int currStep, Exception cause, String msg);
 
         /**
          * Called to notify the listener that the task has completed.
          */
-        public void taskCompleted();
+        public void taskCompleted(String message);
         
         /**
          * Called to notify the listener that the task has been canceled.
@@ -160,7 +168,7 @@ public abstract class LongRunningTask
      * Attempts to cancel the task. This method is guaranteed to be called at most once. After the task has been
      * successfully canceled {@link #notifyCanceled()} should be called.
      */
-    protected abstract void cancelTask();
+    protected void cancelTask() { };
     
     /**
      * If an attempt to cancel the task has occurred.
@@ -172,6 +180,21 @@ public abstract class LongRunningTask
         return _cancelAttempted;
     }
 
+    /**
+     * If the task has been canceled, then calling this method will result in an {@link InterruptedException} being
+     * thrown. This exception should be caught by the task and used to terminate execution, but should not be further
+     * propagated as this exception does not represent a failure case.
+     * 
+     * @throws InterruptedException 
+     */
+    protected final void checkAttemptCancel() throws InterruptedException
+    {
+        if(isCancelAttempted())
+        {
+            throw new InterruptedException("task canceled");
+        }
+    }
+    
     /**
      * Notifies listeners the task started.
      */
@@ -222,13 +245,29 @@ public abstract class LongRunningTask
     }
     
     /**
+     * Notifies listeners a step in progressing towards completion has occurred unsuccessfully, but has not caused
+     * the task as a whole to fail.
+     * 
+     * @param cause
+     * @param msg 
+     */
+    protected void notifyTaskStepFailed(Exception cause, String msg)
+    {
+        int step = _currStep.incrementAndGet();
+        for(ProgressListener listener : _listeners)
+        {
+            listener.taskStepFailed(step, cause, msg);
+        }
+    }
+    
+    /**
      * Notifies listeners the task has completed.
      */
-    protected void notifyTaskCompleted()
+    protected void notifyTaskCompleted(String message)
     {
         for(ProgressListener listener : _listeners)
         {
-            listener.taskCompleted();
+            listener.taskCompleted(message);
         }
     }
 

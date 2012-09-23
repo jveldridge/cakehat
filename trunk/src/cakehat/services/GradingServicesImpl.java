@@ -497,56 +497,6 @@ public class GradingServicesImpl implements GradingServices
     }
     
     @Override
-    public void emailGRDFiles(Assignment asgn, Set<Group> groups) throws ServicesException
-    {
-        EmailAccountStatus emailStatus = Allocator.getEmailManager().getEmailAccountStatus();
-        if(emailStatus == EmailAccountStatus.NOT_CONFIGURED)
-        {
-            ModalDialog.showMessage(null, "Email Unavailable", "Email has not been configured by your course");
-        }
-        else
-        {
-            Set<Student> students = new HashSet<Student>();
-            for (Group group : groups) {
-                students.addAll(group.getMembers());
-            }
-            
-            Map<Student, String> grdStrings = generateGRD(asgn, students);
-        
-            boolean proceed = ModalDialog.showConfirmation(null, "Email Grading Sheets",
-                    "Each student will be sent an email with their grading sheet. Do you wish to proceed?",
-                    "Email Students", "Cancel");
-            if(proceed)
-            {
-                InternetAddress from = Allocator.getUserServices().getUser().getEmailAddress();
-                String subject = "[" + CakehatSession.getCourse() + "]" + asgn.getName() + " Graded";
-                String body = asgn.getName() + " has been graded; your grading sheet is below.";
-
-                
-                for(Entry<Student, String> entry : grdStrings.entrySet())
-                {
-                    try
-                    {
-                        Allocator.getEmailManager().send(from,
-                                                         ImmutableSet.of(entry.getKey().getEmailAddress()),
-                                                         null,
-                                                         null,
-                                                         subject,
-                                                         body + "<br/><br/>" + entry.getValue(),
-                                                         null);
-                    }
-                    catch(MessagingException e)
-                    {
-                        throw new ServicesException("Unable to send grading sheet\n" +
-                                "Student: " + entry.getKey().getLogin() + "\n" +
-                                "Student's email: " + entry.getKey().getEmailAddress() + "\n", e);
-                    }
-                }
-            }
-        }
-    }
-    
-    @Override
     public Map<Student, String> generateGRD(Assignment asgn, Set<Student> students) throws ServicesException {
         Map<Student, Group> groupsForStudents = new HashMap<Student, Group>();
         for (Student student : students) {
