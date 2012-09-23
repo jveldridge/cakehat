@@ -1,8 +1,11 @@
 package cakehat.views.admin;
 
+import cakehat.Allocator;
 import cakehat.CakehatSession;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
+import cakehat.database.DbPropertyValue;
+import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.database.Student;
 import cakehat.logging.ErrorReporter;
 import cakehat.services.EmailGradingTask;
@@ -16,6 +19,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -64,6 +68,8 @@ class EmailGradingView extends JDialog
     private final JTextArea _bodyArea;
     private final JButton _sendButton;
     
+    private final boolean _defaultAttachHandins;
+    
     EmailGradingView(AssignmentTreeSelection asgnSelection, Set<Student> students, Window owner)
     {
         super(owner, "Email Grading", ModalityType.MODELESS);
@@ -104,6 +110,21 @@ class EmailGradingView extends JDialog
             }
         }
         _parts = partsBuilder.build();
+        
+        boolean defaultAttachHandins = false;
+        try
+        {
+            DbPropertyValue<Boolean> prop = Allocator.getDatabase()
+                    .getPropertyValue(DbPropertyKey.ATTACH_DIGITAL_HANDIN);
+            defaultAttachHandins = prop == null ? false : prop.getValue();
+        }
+        catch(SQLException e)
+        {
+            defaultAttachHandins = false;
+            ErrorReporter.report("Unable to determine default behavior for attaching digital handins, will default " +
+                    "to false", e);
+        }
+        _defaultAttachHandins = defaultAttachHandins;
         
         this.initUI();
         this.pack();
@@ -224,6 +245,10 @@ class EmailGradingView extends JDialog
                 _attachHandinsCheckBox.setEnabled(true);
                 break;
             }
+        }
+        if(_attachHandinsCheckBox.isEnabled())
+        {
+            _attachHandinsCheckBox.setSelected(_defaultAttachHandins);
         }
         attachPanel.add(_attachHandinsCheckBox, BorderLayout.CENTER);
         contentPanel.add(attachPanel);

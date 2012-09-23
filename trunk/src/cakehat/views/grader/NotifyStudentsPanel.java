@@ -3,6 +3,8 @@ package cakehat.views.grader;
 import cakehat.Allocator;
 import cakehat.CakehatSession;
 import cakehat.assignment.Part;
+import cakehat.database.DbPropertyValue;
+import cakehat.database.DbPropertyValue.DbPropertyKey;
 import cakehat.database.Group;
 import cakehat.database.GroupGradingSheet;
 import cakehat.database.Student;
@@ -19,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -52,6 +55,8 @@ class NotifyStudentsPanel extends JPanel
     private final JCheckBox _attachHandinCheckBox;
     private final JButton _sendButton;
     
+    private final boolean _defaultAttachHandins;
+    
     NotifyStudentsPanel(GraderView graderView, PartAndGroupPanel partAndGroupPanel)
     {
         _graderView = graderView;
@@ -61,6 +66,21 @@ class NotifyStudentsPanel extends JPanel
         _bodyTextArea = new JTextArea();
         _attachHandinCheckBox = new JCheckBox("Attach digital handins");
         _sendButton = new JButton("Send email");
+        
+        boolean defaultAttachHandins = false;
+        try
+        {
+            DbPropertyValue<Boolean> prop = Allocator.getDatabase()
+                    .getPropertyValue(DbPropertyKey.ATTACH_DIGITAL_HANDIN);
+            defaultAttachHandins = prop == null ? false : prop.getValue();
+        }
+        catch(SQLException e)
+        {
+            defaultAttachHandins = false;
+            ErrorReporter.report("Unable to determine default behavior for attaching digital handins, will default " +
+                    "to false", e);
+        }
+        _defaultAttachHandins = defaultAttachHandins;
         
         this.setLayout(new BorderLayout(0, 0));
         _contentPanel = new JPanel();
@@ -101,6 +121,7 @@ class NotifyStudentsPanel extends JPanel
         _contentPanel.add(_subjectField);
         
         //Attach handin
+        _attachHandinCheckBox.setSelected(_defaultAttachHandins);
         _attachHandinCheckBox.setAlignmentX(LEFT_ALIGNMENT);
         _contentPanel.add(_attachHandinCheckBox);
         
@@ -164,10 +185,16 @@ class NotifyStudentsPanel extends JPanel
         else
         {
             _attachHandinCheckBox.setEnabled(part.getGradableEvent().hasDigitalHandins());
+            
             _subjectField.setText("[" + CakehatSession.getCourse() + "] " + part.getFullDisplayName() + " Graded");
             String body = part.getFullDisplayName() + " has been graded.";
             _bodyTextArea.setText(body);
-        }       
+        }
+        
+        if(_attachHandinCheckBox.isEnabled())
+        {
+            _attachHandinCheckBox.setSelected(_defaultAttachHandins);
+        }
     }
     
     private void sendEmailActionPerformed()
