@@ -155,6 +155,8 @@ class GradeReportView extends JDialog
         ImmutableMap.Builder<GradableEvent, DeadlineInfo> deadlinesBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<GradableEvent, Map<Group, DateTime>> occurrenceDatesBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<GradableEvent, Map<Group, Extension>> extensionsBuilder = ImmutableMap.builder();
+        
+        SetMultimap<Part, Group> partsToGroups = HashMultimap.create();
         for(Assignment asgn : Allocator.getDataServices().getAssignments())
         {
             Set<Group> groups = Allocator.getDataServices().getGroups(asgn);
@@ -170,7 +172,6 @@ class GradeReportView extends JDialog
             }
             groupsBuilder.put(asgn, studentToGroupBuilder.build());
             
-            SetMultimap<Part, Group> partsToGroups = HashMultimap.create();
             for(GradableEvent ge : asgn)
             {
                 //Deadlines
@@ -188,11 +189,10 @@ class GradeReportView extends JDialog
                     partsToGroups.putAll(part, groups);
                 }
             }
-            
-            partGradesBuilder.putAll(Allocator.getDataServices().getGroupGradingSheets(partsToGroups));
         }
+
         _groups = groupsBuilder.build();
-        _partGrades = partGradesBuilder.build();
+        _partGrades = ImmutableMap.copyOf(Allocator.getDataServices().getGroupGradingSheets(partsToGroups));
         _deadlines = deadlinesBuilder.build();
         _occurrenceDates = occurrenceDatesBuilder.build();
         _extensions = extensionsBuilder.build();

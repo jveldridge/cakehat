@@ -328,6 +328,7 @@ public class AdminView extends JFrame
         //Scroll to top after layout has occurred
         EventQueue.invokeLater(new Runnable()
         {
+            @Override
             public void run()
             {
                 _mainPane.getVerticalScrollBar().setValue(0); 
