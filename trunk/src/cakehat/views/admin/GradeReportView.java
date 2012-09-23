@@ -2,12 +2,12 @@ package cakehat.views.admin;
 
 import cakehat.Allocator;
 import cakehat.CakehatSession;
-import cakehat.database.DeadlineInfo;
-import cakehat.database.DeadlineInfo.DeadlineResolution;
 import cakehat.database.Extension;
 import cakehat.database.Group;
 import cakehat.database.Student;
 import cakehat.assignment.Assignment;
+import cakehat.assignment.DeadlineInfo;
+import cakehat.assignment.DeadlineInfo.DeadlineResolution;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
 import cakehat.database.GroupGradingSheet;
@@ -131,7 +131,6 @@ class GradeReportView extends JDialog
     //All of the data needed to generate reports
     private final Map<Assignment, Map<Student, Group>> _groups;
     private final Map<Part, Map<Group, GroupGradingSheet>> _partGrades;
-    private final Map<GradableEvent, DeadlineInfo> _deadlines;
     private final Map<GradableEvent, Map<Group, DateTime>> _occurrenceDates;
     private final Map<GradableEvent, Map<Group, Extension>> _extensions;
     
@@ -152,7 +151,6 @@ class GradeReportView extends JDialog
         //Load data into thread safe data structures (reports will be sent on a separate thread)
         ImmutableMap.Builder<Assignment, Map<Student, Group>> groupsBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<Part, Map<Group, GroupGradingSheet>> partGradesBuilder = ImmutableMap.builder();
-        ImmutableMap.Builder<GradableEvent, DeadlineInfo> deadlinesBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<GradableEvent, Map<Group, DateTime>> occurrenceDatesBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<GradableEvent, Map<Group, Extension>> extensionsBuilder = ImmutableMap.builder();
         
@@ -173,10 +171,7 @@ class GradeReportView extends JDialog
             groupsBuilder.put(asgn, studentToGroupBuilder.build());
             
             for(GradableEvent ge : asgn)
-            {
-                //Deadlines
-                deadlinesBuilder.put(ge, Allocator.getDataServices().getDeadlineInfo(ge));
-                
+            {   
                 //Occurrence dates
                 occurrenceDatesBuilder.put(ge, ImmutableMap.copyOf(Allocator.getGradingServices().getOccurrenceDates(ge, groups)));
                 
@@ -193,7 +188,6 @@ class GradeReportView extends JDialog
 
         _groups = groupsBuilder.build();
         _partGrades = ImmutableMap.copyOf(Allocator.getDataServices().getGroupGradingSheets(partsToGroups));
-        _deadlines = deadlinesBuilder.build();
         _occurrenceDates = occurrenceDatesBuilder.build();
         _extensions = extensionsBuilder.build();
         
@@ -789,7 +783,7 @@ class GradeReportView extends JDialog
                     //Include penalty or bonus from deadline resolution
                     DateTime occurrenceDate = _occurrenceDates.get(ge).get(group);
                     Extension extension = _extensions.get(ge).get(group);
-                    DeadlineInfo deadlineInfo = _deadlines.get(ge);
+                    DeadlineInfo deadlineInfo = ge.getDeadlineInfo();
                     DeadlineResolution deadlineResolution = deadlineInfo.apply(occurrenceDate, extension);
                     double penaltyOrBonus = deadlineResolution.getPenaltyOrBonus(gradableEventEarned);
                     gradableEventEarned = NullMath.add(gradableEventEarned, penaltyOrBonus);

@@ -1,5 +1,6 @@
 package cakehat.database;
 
+import cakehat.assignment.DeadlineInfo;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.HashSet;
@@ -50,6 +51,7 @@ public class DbGradableEvent extends DbDataItem implements Comparable<DbGradable
         _name = name;
         _order = order;
         _parts = new HashSet<DbPart>();
+        _deadlineType = DeadlineInfo.Type.NONE;
     }
     
     /**

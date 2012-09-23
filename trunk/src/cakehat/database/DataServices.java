@@ -309,15 +309,6 @@ public interface DataServices {
     public List<Assignment> getAssignments();
     
     /**
-     * Returns the deadline info for the given gradable event.
-     * 
-     * @param gradableEvent
-     * @return
-     * @throws ServicesException 
-     */
-    public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException;
-    
-    /**
      * Returns the gradable event occurrences for the given gradable events and groups. If a group does not have a
      * recorded gradable event occurrence it will not be in the map.
      * 
@@ -367,13 +358,4 @@ public interface DataServices {
      * @throws ServicesException
      */
     public Student getStudentFromLogin(String studentLogin) throws ServicesException;
-
-    /**
-     * Returns whether or not the given student login corresponds to a valid Student object.
-     * 
-     * @param studentLogin
-     * @return
-     * @throws ServicesException
-     */
-    public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException;
 }

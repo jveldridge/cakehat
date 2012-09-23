@@ -1,11 +1,12 @@
-package cakehat.database;
+package cakehat.assignment;
 
+import cakehat.database.Extension;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Period;
 
 /**
- * The deadline information for a {@link cakehat.database.assignment.GradableEvent}.
+ * The deadline information for a {@link GradableEvent}.
  *
  * @author jak2
  */

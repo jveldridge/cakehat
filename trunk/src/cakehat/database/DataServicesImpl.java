@@ -482,42 +482,6 @@ public class DataServicesImpl implements DataServices {
     {   
         return _assignments;
     }
-
-    @Override
-    public DeadlineInfo getDeadlineInfo(GradableEvent gradableEvent) throws ServicesException
-    {
-        DbGradableEvent dbEvent = null;
-        try
-        {
-            dbEvent = Allocator.getDatabase().getDbGradableEvent(gradableEvent.getId());
-        }
-        catch(SQLException ex)
-        {
-            throw new ServicesException("Unable to retrieve gradable event [" + gradableEvent.getName() +
-                    "] from the database.", ex);
-        }
-       
-        if(dbEvent == null)
-        {
-            throw new ServicesException("Gradable event [" + gradableEvent.getName() + "] no longer in database.");
-        }
-        
-        DeadlineInfo info = DeadlineInfo.newNoDeadlineInfo();
-        if(DeadlineInfo.Type.VARIABLE.equals(dbEvent.getDeadlineType()))
-        {
-            info = DeadlineInfo.newVariableDeadlineInfo(dbEvent.getOnTimeDate(),
-                                                        dbEvent.getLateDate(), dbEvent.getLatePoints(), 
-                                                        dbEvent.getLatePeriod());
-        }
-        else if(DeadlineInfo.Type.FIXED.equals(dbEvent.getDeadlineType()))
-        {
-            info = DeadlineInfo.newFixedDeadlineInfo(dbEvent.getEarlyDate(), dbEvent.getEarlyPoints(),
-                                                     dbEvent.getOnTimeDate(),
-                                                     dbEvent.getLateDate(), dbEvent.getLatePoints());
-        }
-        
-        return info;
-    }
     
     @Override
     public Map<Group, GradableEventOccurrence> getGradableEventOccurrences(GradableEvent gradableEvent,
@@ -869,14 +833,6 @@ public class DataServicesImpl implements DataServices {
             this.updateDataCache();
         }
         return _studentLoginMap.get(studentLogin);
-    }
-    
-    @Override
-    public boolean isStudentLoginInDatabase(String studentLogin) throws ServicesException {
-        if (!_studentLoginMap.containsKey(studentLogin)) {
-            this.updateDataCache();
-        }
-        return _studentLoginMap.containsKey(studentLogin);
     }
     
     private <T extends Collection<Integer>, S extends Collection<Student>> S idsToStudents(T ids, S students) throws ServicesException {

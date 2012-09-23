@@ -2,11 +2,11 @@ package cakehat.services;
 
 import cakehat.Allocator;
 import cakehat.assignment.Assignment;
+import cakehat.assignment.DeadlineInfo;
+import cakehat.assignment.DeadlineInfo.DeadlineResolution;
+import cakehat.assignment.DeadlineInfo.Type;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
-import cakehat.database.DeadlineInfo;
-import cakehat.database.DeadlineInfo.DeadlineResolution;
-import cakehat.database.DeadlineInfo.Type;
 import cakehat.database.Extension;
 import cakehat.database.Group;
 import cakehat.database.GroupGradingSheet;
@@ -120,7 +120,7 @@ public class GrdGeneratorImpl implements GrdGenerator {
         writeLineWithEarnedAndOutOf("Parts total:", doubleToString(geEarned), doubleToString(geOutOf), grdBuilder,
                                          TopLineStyle.FULL);
 
-        DeadlineInfo info = Allocator.getDataServices().getDeadlineInfo(ge);
+        DeadlineInfo info = ge.getDeadlineInfo();
         if (info.getType() != Type.NONE) {
             DeadlineResolution res;
             DateTime occurrenceDate = Allocator.getGradingServices().getOccurrenceDates(ge, ImmutableSet.of(group)).get(group);

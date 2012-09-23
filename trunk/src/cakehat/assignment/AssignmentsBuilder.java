@@ -73,6 +73,7 @@ public class AssignmentsBuilder
                     dbGradableEvent.getName(),
                     dbGradableEvent.getOrder(),
                     dbGradableEvent.getDirectory(),
+                    buildDeadlineInfo(dbGradableEvent),
                     parts);
             gradableEventsBuilder.add(gradableEvent);
             
@@ -83,6 +84,34 @@ public class AssignmentsBuilder
         }
         
         return gradableEventsBuilder.build();
+    }
+    
+    private DeadlineInfo buildDeadlineInfo(DbGradableEvent dbGradableEvent)
+    {
+        DeadlineInfo info;
+        DeadlineInfo.Type deadlineType = dbGradableEvent.getDeadlineType();
+        if(DeadlineInfo.Type.NONE.equals(deadlineType) || deadlineType == null)
+        {
+            info = DeadlineInfo.newNoDeadlineInfo();
+        }
+        else if(DeadlineInfo.Type.VARIABLE.equals(deadlineType))
+        {
+            info = DeadlineInfo.newVariableDeadlineInfo(dbGradableEvent.getOnTimeDate(),
+                                                        dbGradableEvent.getLateDate(), dbGradableEvent.getLatePoints(), 
+                                                        dbGradableEvent.getLatePeriod());
+        }
+        else if(DeadlineInfo.Type.FIXED.equals(deadlineType))
+        {
+            info = DeadlineInfo.newFixedDeadlineInfo(dbGradableEvent.getEarlyDate(), dbGradableEvent.getEarlyPoints(),
+                                                     dbGradableEvent.getOnTimeDate(),
+                                                     dbGradableEvent.getLateDate(), dbGradableEvent.getLatePoints());
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unknown " + DeadlineInfo.Type.class.getName() + ": " + deadlineType);
+        }
+        
+        return info;
     }
     
     private ImmutableList<Part> buildParts(Set<DbPart> dbParts)

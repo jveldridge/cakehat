@@ -1,8 +1,8 @@
 package cakehat.views.shared.gradingsheet;
 
 import cakehat.Allocator;
-import cakehat.database.DeadlineInfo;
-import cakehat.database.DeadlineInfo.DeadlineResolution;
+import cakehat.assignment.DeadlineInfo;
+import cakehat.assignment.DeadlineInfo.DeadlineResolution;
 import cakehat.database.Extension;
 import cakehat.assignment.GradableEvent;
 import cakehat.assignment.Part;
@@ -98,12 +98,11 @@ class GradableEventPanel extends GradingSheetPanel
     {   
         try
         {
-            DeadlineInfo deadlineInfo = Allocator.getDataServices().getDeadlineInfo(_gradableEvent);
             DateTime occurrenceDate = Allocator.getGradingServices()
                     .getOccurrenceDates(_gradableEvent, ImmutableSet.of(_group)).get(_group);
             Extension extension = Allocator.getDataServices()
                     .getExtensions(_gradableEvent, ImmutableSet.of(_group)).get(_group);
-            initUI(deadlineInfo, occurrenceDate, extension);
+            initUI(occurrenceDate, extension);
         }
         catch(ServicesException e)
         {
@@ -114,29 +113,28 @@ class GradableEventPanel extends GradingSheetPanel
         }
     }
     
-    private void initUI(DeadlineInfo deadlineInfo, DateTime receivedTime, Extension extension)
-            throws GradingSheetInitializationException
+    private void initUI(DateTime receivedTime, Extension extension) throws GradingSheetInitializationException
     {
         addContent(FormattedLabel.asHeader(_gradableEvent.getName()));
         
         addContent(Box.createVerticalStrut(10));
         
-        this.initDeadlineUI(deadlineInfo);
+        this.initDeadlineUI();
         
         addContent(Box.createVerticalStrut(10));
         
-        if(deadlineInfo.getType() != DeadlineInfo.Type.NONE)
+        if(_gradableEvent.getDeadlineInfo().getType() != DeadlineInfo.Type.NONE)
         {
             if(_isAdmin)
             {
-                this.initAdminGroupExtensionUI(deadlineInfo, extension);
+                this.initAdminGroupExtensionUI(extension);
             }
             else
             {
                 this.initViewGroupExtensionUI(extension);
             }
             
-            this.initGroupDeadlineResolutionUI(deadlineInfo, receivedTime, extension);
+            this.initGroupDeadlineResolutionUI(receivedTime, extension);
         }
         
         this.initPartsUI();
@@ -147,8 +145,10 @@ class GradableEventPanel extends GradingSheetPanel
         }
     }
     
-    private void initDeadlineUI(DeadlineInfo deadlineInfo)
+    private void initDeadlineUI()
     {
+        DeadlineInfo deadlineInfo = _gradableEvent.getDeadlineInfo();
+        
         addContent(FormattedLabel.asSubheader("Deadline Info"));
         addContent(Box.createVerticalStrut(3));
         
@@ -281,7 +281,7 @@ class GradableEventPanel extends GradingSheetPanel
         }
     }
     
-    private void initAdminGroupExtensionUI(final DeadlineInfo deadlineInfo, Extension extension)
+    private void initAdminGroupExtensionUI(Extension extension)
     {
         //Button to revoke or grant extension
         final JButton extensionButton = new JButton(extension == null ? "Grant Extension" : "Revoke Extension");
@@ -327,7 +327,7 @@ class GradableEventPanel extends GradingSheetPanel
                 {
                     try
                     {
-                        DateTime defaultExtensionDateTime = deadlineInfo.getOnTimeDate();
+                        DateTime defaultExtensionDateTime = _gradableEvent.getDeadlineInfo().getOnTimeDate();
                         Allocator.getDataServices().setExtensions(_gradableEvent, ImmutableSet.of(_group),
                                 defaultExtensionDateTime, true, null);
                         _groupDeadlineResolutionPanel.updateExtension(defaultExtensionDateTime, true);
@@ -471,12 +471,12 @@ class GradableEventPanel extends GradingSheetPanel
         addContent(Box.createVerticalStrut(10));
     }
     
-    private void initGroupDeadlineResolutionUI(DeadlineInfo deadlineInfo, DateTime receivedTime, Extension extension)
+    private void initGroupDeadlineResolutionUI(DateTime receivedTime, Extension extension)
     {
         addContent(FormattedLabel.asSubheader("Deadline Resolution"));
         
-        _groupDeadlineResolutionPanel = new GroupDeadlineResolutionPanel(this.getBackground(), deadlineInfo,
-                receivedTime, extension == null ? null : extension.getNewOnTime(),
+        _groupDeadlineResolutionPanel = new GroupDeadlineResolutionPanel(this.getBackground(),
+                _gradableEvent.getDeadlineInfo(), receivedTime, extension == null ? null : extension.getNewOnTime(),
                 extension == null ? null : extension.getShiftDates());
         addContent(_groupDeadlineResolutionPanel);
         

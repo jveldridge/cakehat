@@ -324,32 +324,6 @@ public class DatabaseImpl implements Database
         }
     }
     
-    @Override
-    public DbGradableEvent getDbGradableEvent(int geid) throws SQLException {      
-        Connection conn = this.openConnection();
-        DbGradableEvent gradableEvent = null;
-
-        try {
-            PreparedStatement ps = conn.prepareStatement("SELECT aid, name, ordering, directory, deadlinetype,"
-                + "earlydate, earlypoints, ontimedate, latedate, latepoints, lateperiod FROM gradableevent"
-                + " WHERE geid == ?");
-            ps.setInt(1, geid);
-            
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                gradableEvent =  new DbGradableEvent(null, geid, rs.getString("name"), rs.getInt("ordering"),
-                                                     rs.getString("directory"), rs.getString("deadlinetype"),
-                                                     rs.getString("earlydate"), getDouble(rs, "earlypoints"),
-                                                     rs.getString("ontimedate"), rs.getString("latedate"),
-                                                     getDouble(rs, "latepoints"), rs.getString("lateperiod"));
-            }
-            
-            return gradableEvent;
-        } finally {
-            this.closeConnection(conn);
-        }
-    }
-    
     private final DbDataItemLoadOperation<DbGradableEvent, DbAssignment> GRADABLE_EVENT_LOAD_OP =
             new DbDataItemLoadOperation<DbGradableEvent, DbAssignment>(
             "SELECT geid, aid, name, ordering, directory, deadlinetype, earlydate, earlypoints, ontimedate, latedate, "

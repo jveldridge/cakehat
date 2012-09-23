@@ -36,6 +36,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     private final int _order;
     
     private final File _handinDirectory;
+    private final DeadlineInfo _deadlineInfo;
     
     /**
      * This value will be set after construction because the assignment object will not be constructed until after the
@@ -63,14 +64,19 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
      * for that Assignment
      * @param handinDirectory directory containing digital handins for the parts that belong to this GradableEvent, does
      * not have to be a valid directory, may be {@code null}
+     * @param deadlineInfo may not be {@code null}
      * @param parts may not be {@code null}
      */
-    GradableEvent(int id, String name, int order, File handinDirectory, List<Part> parts)
+    GradableEvent(int id, String name, int order, File handinDirectory, DeadlineInfo deadlineInfo, List<Part> parts)
     {
         //Validation
         if(name == null)
         {
             throw new NullPointerException("name may not be null");
+        }
+        if(deadlineInfo == null)
+        {
+            throw new NullPointerException("deadlineInfo may not be null");
         }
         if(parts == null)
         {
@@ -81,6 +87,7 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
         _name = name;
         _order = order;
         _handinDirectory = handinDirectory;
+        _deadlineInfo = deadlineInfo;
         _parts = ImmutableList.copyOf(parts);
     }
     
@@ -161,6 +168,16 @@ public class GradableEvent implements Comparable<GradableEvent>, Iterable<Part>
     public List<Part> getParts()
     {
         return _parts;
+    }
+    
+    /**
+     * Returns the deadline information for this gradable event.
+     * 
+     * @return 
+     */
+    public DeadlineInfo getDeadlineInfo()
+    {
+        return _deadlineInfo;
     }
     
     /**
