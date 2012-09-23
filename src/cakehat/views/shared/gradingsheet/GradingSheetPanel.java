@@ -16,11 +16,9 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import support.ui.FixedWidthJPanel;
-import support.ui.FormattedLabel;
 import support.ui.PreferredHeightJPanel;
 
 /**
@@ -31,24 +29,51 @@ public abstract class GradingSheetPanel extends FixedWidthJPanel
 {
     public static GradingSheetPanel getPanel(Assignment asgn, Group group, boolean isAdmin)
     {
-        return new AssignmentPanel(asgn, group, isAdmin, false);
+        GradingSheetPanel panel;
+        try
+        {
+            panel = new AssignmentPanel(asgn, group, isAdmin, false);
+        }
+        catch(GradingSheetInitializationException e)
+        {
+            panel = new FailedInitializationPanel(e);
+        }
+        
+        return panel;
     }
     
     public static GradingSheetPanel getPanel(GradableEvent ge, Group group, boolean isAdmin)
     {
-        return new GradableEventPanel(ge, ge.getParts(), group, isAdmin, false);
+        GradingSheetPanel panel;
+        try
+        {
+            panel = new GradableEventPanel(ge, ge.getParts(), group, isAdmin, false);
+        }
+        catch(GradingSheetInitializationException e)
+        {
+            panel = new FailedInitializationPanel(e);
+        }
+        
+        return panel;
     }
     
     public static GradingSheetPanel getPanel(Part part, Group group, boolean isAdmin, boolean partiallyShowOtherParts)
     {
         GradingSheetPanel panel;
-        if(partiallyShowOtherParts)
+        try
         {
-            panel = new GradableEventPanel(part.getGradableEvent(), ImmutableSet.of(part), group, isAdmin, false);
+            if(partiallyShowOtherParts)
+            {
+                panel = new GradableEventPanel(part.getGradableEvent(), ImmutableSet.of(part), group, isAdmin, false);
+            }
+            else
+            {
+                panel = new PartPanel(part, group, isAdmin, false);
+            }
         }
-        else
+        catch(GradingSheetInitializationException e)
         {
-            panel = new PartPanel(part, group, isAdmin, false);
+            panel = new FailedInitializationPanel(e);
         }
         
         return panel;
@@ -197,17 +222,6 @@ public abstract class GradingSheetPanel extends FixedWidthJPanel
         }
         
         _contentPanel.add(comp);
-    }
-    
-    protected void addErrorMessagePanel(String message)
-    {
-        JPanel errorPanel = new PreferredHeightJPanel(new BorderLayout(0, 0), this.getBackground());
-        JLabel errorLabel = FormattedLabel.asSubheader(message).centerHorizontally().showAsErrorMessage();
-        errorPanel.add(Box.createVerticalStrut(10), BorderLayout.NORTH);
-        errorPanel.add(errorLabel, BorderLayout.CENTER);
-        errorPanel.add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
-        
-        addContent(errorPanel);
     }
     
     static JComponent createDisabledField(Double value)

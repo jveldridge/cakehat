@@ -68,7 +68,7 @@ class GradableEventPanel extends GradingSheetPanel
     private GroupDeadlineResolutionPanel _groupDeadlineResolutionPanel;
     
     GradableEventPanel(GradableEvent gradableEvent, Iterable<Part> partsToFullyShow, Group group, boolean isAdmin,
-            boolean showBorder)
+            boolean showBorder) throws GradingSheetInitializationException
     {
         super(Color.WHITE, showBorder);
         
@@ -94,7 +94,7 @@ class GradableEventPanel extends GradingSheetPanel
         init();
     }
     
-    private void init()
+    private void init() throws GradingSheetInitializationException
     {   
         try
         {
@@ -107,14 +107,15 @@ class GradableEventPanel extends GradingSheetPanel
         }
         catch(ServicesException e)
         {
-            ErrorReporter.report("Unable to retrieve deadline, occurrence time, or extension info.\n" +
+            throw new GradingSheetInitializationException("Unable to retrieve deadline, occurrence time, or " +
+                    "extension info.\n" +
                     "Gradable Event: " + _gradableEvent.getName() + "\n" +
-                    "Group: " + _group.getName(), e);
-            addErrorMessagePanel("Unable to retrieve deadline related info");
+                    "Group: " + _group.getName(), e, "Unable to retrieve deadline-related info");
         }
     }
     
     private void initUI(DeadlineInfo deadlineInfo, DateTime receivedTime, Extension extension)
+            throws GradingSheetInitializationException
     {
         addContent(FormattedLabel.asHeader(_gradableEvent.getName()));
         
@@ -712,7 +713,7 @@ class GradableEventPanel extends GradingSheetPanel
         }
     }
     
-    private void initPartsUI()
+    private void initPartsUI() throws GradingSheetInitializationException
     {
         for(Iterator<Part> partsIterator = _gradableEvent.iterator(); partsIterator.hasNext();)
         {

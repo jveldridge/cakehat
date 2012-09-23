@@ -34,6 +34,7 @@ class AssignmentPanel extends GradingSheetPanel
     private Double _totalOutOf = null;
     
     AssignmentPanel(Assignment asgn, Group group, boolean isAdmin, boolean showBorder)
+            throws GradingSheetInitializationException
     {
         super(Color.WHITE, showBorder);
         
@@ -53,7 +54,7 @@ class AssignmentPanel extends GradingSheetPanel
         initUI();
     }
     
-    private void initUI()
+    private void initUI() throws GradingSheetInitializationException
     {
         initHeaderUI();
         
@@ -83,7 +84,7 @@ class AssignmentPanel extends GradingSheetPanel
         }
     }
     
-    private void initGradableEventsUI()
+    private void initGradableEventsUI() throws GradingSheetInitializationException
     {
         for(Iterator<GradableEvent> geIterator = _asgn.iterator(); geIterator.hasNext();)
         {
